@@ -1,6 +1,7 @@
 {
   "title": "CLEAR the Claim: Command of Evidence",
   "description": "Use the CLEAR routine to predict the evidence a claim needs, control strengthen-versus-weaken direction, and choose textual or quantitative evidence that is both accurate and relevant.",
+  "authoring_notes": "COUPLING: the debrief text blocks 'authentic_textual_debrief' and 'authentic_quant_debrief' restate the content and answers of the two linked bank questions (question_link ids 7d1178af-ad95-466c-ab85-78f98cbefa25 and 80df19d8-611c-47f8-9a20-49078658f64e). If either bank question is edited or replaced, rewrite the matching debrief in the same change — it will not go stale on its own.",
   "blocks": [
     {
       "kind": "text",

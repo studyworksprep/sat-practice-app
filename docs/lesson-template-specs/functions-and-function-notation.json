@@ -223,7 +223,7 @@
       "id": "graph_evaluation_check",
       "block_type": "check",
       "content": {
-        "prompt": "The graph and the line \\(x=3\\) intersect at \\((3,6)\\). What is \\(f(3)\\)?",
+        "prompt": "The graph of \\(f\\) and the line \\(x=3\\) are open in the calculator. Click the point where they meet. What is \\(f(3)\\)?",
         "choices": [
           "\\(3\\)",
           "\\(-3\\)",
@@ -232,7 +232,7 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "At input 3, read the second coordinate as the function's output.",
+        "hint": "Click the intersection to see its coordinates. At input 3, read the second coordinate as the function's output.",
         "explanation": "Right. The point \\((3,6)\\) means \\(f(3)=6\\)."
       },
       "calculator": {

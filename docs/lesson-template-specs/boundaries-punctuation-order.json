@@ -306,7 +306,7 @@
     {
       "kind": "text",
       "id": "dash_transition",
-      "html": "<h2>Step 3: Test the dash after the colon fails</h2><p>The SAT uses a long dash. In the examples below, <strong>two hyphens (--) represent that single long dash</strong> so the lesson text renders consistently.</p><p>There are two patterns to test: a <strong>pair of dashes</strong> around extra information, or a <strong>single dash</strong> before an ending detail.</p>",
+      "html": "<h2>Step 3: Test the dash after the colon fails</h2><p>The SAT uses a long dash (—). There are two patterns to test: a <strong>pair of dashes</strong> around extra information, or a <strong>single dash</strong> before an ending detail.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -314,7 +314,7 @@
     {
       "kind": "text",
       "id": "paired_dash",
-      "html": "<h2>A pair of dashes surrounds removable information</h2><p>When a sentence contains two dashes, read the sentence without the words between them.</p><blockquote><p>The comet--first seen in May--returned in August.</p></blockquote><p>Without <strong>first seen in May</strong>, the sentence still says <strong>The comet returned in August</strong>. The middle detail adds information but is not needed to identify the comet or complete the sentence.</p><p><strong>Pair test:</strong> two dashes, one removable interruption.</p>",
+      "html": "<h2>A pair of dashes surrounds removable information</h2><p>When a sentence contains two dashes, read the sentence without the words between them.</p><blockquote><p>The comet—first seen in May—returned in August.</p></blockquote><p>Without <strong>first seen in May</strong>, the sentence still says <strong>The comet returned in August</strong>. The middle detail adds information but is not needed to identify the comet or complete the sentence.</p><p><strong>Pair test:</strong> two dashes, one removable interruption.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -326,10 +326,10 @@
       "content": {
         "prompt": "Which sentence correctly uses a pair of dashes around removable information?",
         "choices": [
-          "The comet, first seen in May--returned in August.",
+          "The comet, first seen in May—returned in August.",
           "The comet: first seen in May: returned in August.",
           "The comet first seen in May, returned in August.",
-          "The comet--first seen in May--returned in August."
+          "The comet—first seen in May—returned in August."
         ],
         "correct_index": 3,
         "allow_retry": true,
@@ -343,7 +343,7 @@
     {
       "kind": "text",
       "id": "single_dash",
-      "html": "<h2>A single dash introduces an ending detail</h2><p>A single dash can appear after a complete sentence and before an added detail that finishes the sentence.</p><blockquote><p>The field team reached one conclusion--the valley had once held a lake.</p></blockquote><p>Before the dash, <strong>The field team reached one conclusion</strong> is complete. The ending detail reveals and emphasizes that conclusion.</p><p><strong>Single-dash test:</strong> complete sentence first, ending detail second.</p>",
+      "html": "<h2>A single dash introduces an ending detail</h2><p>A single dash can appear after a complete sentence and before an added detail that finishes the sentence.</p><blockquote><p>The field team reached one conclusion—the valley had once held a lake.</p></blockquote><p>Before the dash, <strong>The field team reached one conclusion</strong> is complete. The ending detail reveals and emphasizes that conclusion.</p><p><strong>Single-dash test:</strong> complete sentence first, ending detail second.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -355,10 +355,10 @@
       "content": {
         "prompt": "Which sentence follows the single-dash pattern?",
         "choices": [
-          "The field team--reached one conclusion.",
-          "The field team reached one conclusion--the valley had once held a lake.",
-          "The field team reached--one conclusion about the valley.",
-          "--The field team reached one conclusion about the valley."
+          "The field team—reached one conclusion.",
+          "The field team reached one conclusion—the valley had once held a lake.",
+          "The field team reached—one conclusion about the valley.",
+          "—The field team reached one conclusion about the valley."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -548,12 +548,12 @@
       "id": "practice_dash",
       "block_type": "check",
       "content": {
-        "prompt": "The violin--made in 1721 ___ remains in remarkably good condition.",
+        "prompt": "The violin—made in 1721 ___ remains in remarkably good condition.",
         "choices": [
           ",",
           ":",
           ";",
-          "--"
+          "—"
         ],
         "correct_index": 3,
         "allow_retry": true,

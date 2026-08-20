@@ -36,7 +36,7 @@
     {
       "kind": "text",
       "id": "name_the_pattern",
-      "html": "<h2>The odd-one-out pattern</h2><p>The SAT repeatedly builds subject–verb agreement questions with a visible answer pattern:</p><ul><li>three choices are definitely plural and one is definitely singular, or</li><li>three choices are definitely singular and one is definitely plural.</li></ul><p>The one that differs is the correct answer.</p><p>Across the digital SAT and the previous version of the SAT, this pattern has been accurate in every reviewed question where the safety conditions are met.</p>",
+      "html": "<h2>The odd-one-out pattern</h2><p>The SAT repeatedly builds subject–verb agreement questions with a visible answer pattern:</p><ul><li>three choices are definitely plural and one is definitely singular, or</li><li>three choices are definitely singular and one is definitely plural.</li></ul><p>The one that differs is the correct answer.</p><p>In our review of released digital SAT and earlier SAT forms, this pattern has held in every question where the safety conditions are met.</p>",
       "calculator": { "display": "hidden" }
     },
     {

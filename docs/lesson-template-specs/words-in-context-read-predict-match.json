@@ -111,7 +111,7 @@
     {
       "kind": "text",
       "id": "perfect_sentence_fit",
-      "html": "<h2>Test the whole sentence, not just the general topic</h2><p>An answer can be related to the passage and still fail in the blank. Check three kinds of fit:</p><ol><li><strong>Grammar:</strong> Does the sentence require a noun, verb, adjective, or adverb?</li><li><strong>Relationship:</strong> Can this subject reasonably perform that action on this object?</li><li><strong>Logic:</strong> Does the completed sentence express the relationship supported by the text?</li></ol><p>Then read the completed sentence from beginning to end. A correct answer should work cleanly, without forcing an unusual interpretation.</p>",
+      "html": "<h2>Test the whole sentence, not just the general topic</h2><p>An answer can be related to the passage and still fail in the blank. Check two kinds of fit:</p><ol><li><strong>Relationship:</strong> Can this subject reasonably perform that action on this object?</li><li><strong>Logic:</strong> Does the completed sentence express the relationship supported by the text?</li></ol><p>Then read the completed sentence from beginning to end. A correct answer should work cleanly, without forcing an unusual interpretation.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -142,15 +142,15 @@
     },
     {
       "kind": "raw_block",
-      "id": "grammar_fit_check",
+      "id": "logic_fit_check",
       "block_type": "check",
       "content": {
-        "prompt": "The archive's labels were so _____ that researchers could locate individual letters within minutes. Which choice fits both the grammar and the logic?",
-        "choices": ["methodically", "catalog", "precise", "organize"],
+        "prompt": "The archive's labels were so _____ that researchers could locate individual letters within minutes. Which choice completes the text most logically?",
+        "choices": ["cryptic", "durable", "precise", "abundant"],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "After 'were so,' the sentence needs an adjective describing the labels. The result was easy location of individual letters.",
-        "explanation": "Right. 'Precise' is an adjective, and precise labels would help researchers locate items quickly. The other choices do not fit the required grammatical role."
+        "hint": "Use the result clue: researchers located individual letters within minutes. Which quality of a label would make that possible?",
+        "explanation": "Right. Precise labels let researchers find exactly what they need quickly. Cryptic labels would have the opposite effect, and durable or abundant labels say nothing about how fast a letter can be found."
       },
       "calculator": { "display": "hidden" }
     },
@@ -197,7 +197,7 @@
     {
       "kind": "text",
       "id": "eliminate_by_context",
-      "html": "<h2>When prediction is difficult, eliminate by context</h2><p>Sometimes you understand the passage but cannot produce a clean word. In that case, test each answer against the same standards:</p><ul><li>Does it fit the grammar?</li><li>Can the subject and object have this relationship?</li><li>Does it follow the text's logic and tone?</li><li>Can you point to a specific clue that supports it?</li></ul><p>Eliminate choices that fail. A remaining choice is not correct merely because the others are unfamiliar; it still needs textual support.</p>",
+      "html": "<h2>When prediction is difficult, eliminate by context</h2><p>Sometimes you understand the passage but cannot produce a clean word. In that case, test each answer against the same standards:</p><ul><li>Can the subject and object have this relationship?</li><li>Does it follow the text's logic and tone?</li><li>Can you point to a specific clue that supports it?</li></ul><p>Eliminate choices that fail. A remaining choice is not correct merely because the others are unfamiliar; it still needs textual support.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -237,7 +237,7 @@
     {
       "kind": "text",
       "id": "unknown_does_not_mean_wrong",
-      "html": "<h2>Do not force a familiar word into the blank</h2><p>Some students deliberately avoid an unfamiliar answer and force a word they know into the sentence. Familiarity is not evidence. A familiar word that conflicts with the text is still wrong, while an unfamiliar word may be exactly right.</p><p>The digital SAT lets you visually eliminate answer choices. Use that tool to remove a choice when you can name a contextual reason it fails: wrong logic, wrong grammar, wrong subject–object relationship, or no supporting clue.</p><blockquote><p><strong>Elimination rule:</strong> Cross out answers that do not fit. Do not cross out an answer merely because you do not understand it.</p></blockquote>",
+      "html": "<h2>Do not force a familiar word into the blank</h2><p>Some students deliberately avoid an unfamiliar answer and force a word they know into the sentence. Familiarity is not evidence. A familiar word that conflicts with the text is still wrong, while an unfamiliar word may be exactly right.</p><p>The digital SAT lets you visually eliminate answer choices. Use that tool to remove a choice when you can name a contextual reason it fails: wrong logic, wrong subject–object relationship, or no supporting clue.</p><blockquote><p><strong>Elimination rule:</strong> Cross out answers that do not fit. Do not cross out an answer merely because you do not understand it.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {

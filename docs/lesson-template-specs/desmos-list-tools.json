@@ -442,7 +442,7 @@
     {
       "kind": "text",
       "id": "repeat_warning",
-      "html": "<h2>Do not rely on repeat for the SAT</h2><p>Some versions of Desmos include a function named <strong>repeat</strong>, but it is not supported in the testing version used for this course's SAT workflow.</p><blockquote><p><strong>Test-safe rule:</strong> Do not use or memorize <strong>repeat()</strong> for SAT problems. Build your solution with supported list definitions, arithmetic, join, and statistics functions.</p></blockquote>",
+      "html": "<h2>Do not rely on repeat for the SAT</h2><p>The general Desmos calculator includes a function named <strong>repeat</strong>, but the Bluebook testing calculator — the one you will use on test day — does not support it.</p><blockquote><p><strong>Test-safe rule:</strong> Do not use or memorize <strong>repeat()</strong> for SAT problems. Build your solution with supported list definitions, arithmetic, join, and statistics functions.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {

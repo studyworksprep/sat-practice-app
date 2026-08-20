@@ -509,7 +509,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Read the displayed quadratic. As a quick check, substitute \\(x=2\\); the result must be \\(-3\\).",
+        "hint": "Read the displayed quadratic. As a quick check, substitute \\(x=5\\); the result must be \\(6\\).",
         "explanation": "Correct. \\(y=x^2-4x+1\\) gives \\(y=-3\\) at \\(x=2\\) and \\(y=6\\) at both symmetric inputs \\(x=-1\\) and \\(x=5\\)."
       },
       "calculator": {

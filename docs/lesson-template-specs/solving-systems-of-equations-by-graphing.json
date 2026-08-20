@@ -184,7 +184,7 @@
       "id": "first_system_solution_check",
       "block_type": "check",
       "content": {
-        "prompt": "The graphs of \\(3x+2y=16\\) and \\(4x-y=3\\) intersect at \\((2,5)\\). What is the solution to the system?",
+        "prompt": "The graphs of \\(3x+2y=16\\) and \\(4x-y=3\\) are open in the calculator. Click the point where they cross. What is the solution to the system?",
         "choices": [
           "\\(x=5\\), \\(y=2\\)",
           "\\(x=2\\) only",
@@ -193,13 +193,13 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "In \\((x,y)\\), the first coordinate is x and the second is y.",
+        "hint": "Click the intersection to see its coordinates. In \\((x,y)\\), the first coordinate is x and the second is y.",
         "explanation": "Correct. The intersection \\((2,5)\\) means \\(x=2\\) and \\(y=5\\)."
       },
       "calculator": {
         "display": "open",
         "mode": "preset",
-        "title": "Read the ordered pair",
+        "title": "Click the intersection and read the ordered pair",
         "initial_expressions": [
           {
             "id": "solution_check_one",
@@ -307,30 +307,30 @@
       "id": "requested_quantity_check",
       "block_type": "check",
       "content": {
-        "prompt": "The graphs of a system intersect at \\((3,6)\\). What is the value of \\(x-y\\)?",
+        "prompt": "The graphs of \\(x+y=8\\) and \\(y=3x\\) are open in the calculator. Click their intersection. What is the value of \\(x-y\\)?",
         "choices": [
-          "\\(-3\\)",
-          "\\(3\\)",
-          "\\(9\\)",
-          "\\(18\\)"
+          "\\(-4\\)",
+          "\\(4\\)",
+          "\\(8\\)",
+          "\\(12\\)"
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "Use x = 3 and y = 6 in the expression x - y.",
-        "explanation": "Correct. \\(x-y=3-6=-3\\). The requested expression, not the ordered pair, is the final answer."
+        "hint": "Click the intersection to read x and y, then substitute both values into \\(x-y\\). Watch the order of subtraction.",
+        "explanation": "Correct. The intersection is \\((2,6)\\), so \\(x-y=2-6=-4\\). The requested expression, not the ordered pair, is the final answer."
       },
       "calculator": {
         "display": "open",
         "mode": "preset",
-        "title": "Read the intersection, then calculate",
+        "title": "Click the intersection, then calculate",
         "initial_expressions": [
           {
             "id": "quantity_one",
-            "latex": "x+y=9"
+            "latex": "x+y=8"
           },
           {
             "id": "quantity_two",
-            "latex": "y=2x"
+            "latex": "y=3x"
           }
         ],
         "editable": true,
@@ -408,7 +408,7 @@
       "id": "first_gated_solution_check",
       "block_type": "check",
       "content": {
-        "prompt": "The two graphs intersect at \\((3,1)\\). If the question asks for y, what is the answer?",
+        "prompt": "The system \\(2x+y=7\\) and \\(y=x-2\\) you just graphed is open in the calculator. Click the intersection. If the question asks for y, what is the answer?",
         "choices": [
           "\\(y=3\\)",
           "\\(y=1\\)",
@@ -417,8 +417,26 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "In the ordered pair (x, y), y is the second coordinate.",
+        "hint": "Click the intersection to read its coordinates. In the ordered pair (x, y), y is the second coordinate.",
         "explanation": "Right. The intersection \\((3,1)\\) gives \\(x=3\\) and \\(y=1\\), so the requested value is \\(y=1\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click the intersection",
+        "initial_expressions": [
+          {
+            "id": "gated_solution_one",
+            "latex": "2x+y=7"
+          },
+          {
+            "id": "gated_solution_two",
+            "latex": "y=x-2"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
       }
     },
     {
@@ -594,17 +612,35 @@
       "id": "transfer_answer_check",
       "block_type": "check",
       "content": {
-        "prompt": "The renamed graphs intersect at \\((2,3)\\) and \\((-3,8)\\). Which values are the possible values of q in the original system?",
+        "prompt": "The renamed system you just graphed is open in the calculator. Click every intersection. Which values are the possible values of q in the original system?",
         "choices": [
           "\\(q=2\\) and \\(q=-3\\)",
           "\\(q=3\\) only",
           "\\(q=3\\) and \\(q=8\\)",
-          "\\(q=-3\\) and \\(q=2\\)"
+          "\\(q=8\\) only"
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "The y-coordinate stood for q. Read the second coordinate from each intersection.",
-        "explanation": "Correct. The two y-coordinates are \\(3\\) and \\(8\\), so the original system has possible q-values \\(3\\) and \\(8\\)."
+        "hint": "A line and a parabola can cross twice, so check for a second intersection. The y-coordinate stood for q: read the second coordinate from each point.",
+        "explanation": "Correct. The intersections are \\((2,3)\\) and \\((-3,8)\\). The two y-coordinates are \\(3\\) and \\(8\\), so the original system has possible q-values \\(3\\) and \\(8\\). The x-coordinates \\(2\\) and \\(-3\\) are the p-values, and stopping after one intersection misses a solution."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click every intersection",
+        "initial_expressions": [
+          {
+            "id": "transfer_answer_one",
+            "latex": "x+y=5"
+          },
+          {
+            "id": "transfer_answer_two",
+            "latex": "y=x^2-1"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
       }
     },
     {

@@ -82,7 +82,7 @@
     {
       "kind": "text",
       "id": "verify_by_expanding",
-      "html": "<h2>Multiply back to verify</h2><p>Distribution checks the factorization:</p><p>\\[6(3x+5)=6(3x)+6(5)=18x+30.\\]</p><p>If either product does not reproduce its original term, revise the quotient inside the parentheses.</p><blockquote><p><strong>Fast check:</strong> outside factor \\(\times\\) every inside term must rebuild the original polynomial.</p></blockquote>",
+      "html": "<h2>Multiply back to verify</h2><p>Distribution checks the factorization:</p><p>\\[6(3x+5)=6(3x)+6(5)=18x+30.\\]</p><p>If either product does not reproduce its original term, revise the quotient inside the parentheses.</p><blockquote><p><strong>Fast check:</strong> outside factor \\(\\times\\) every inside term must rebuild the original polynomial.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
