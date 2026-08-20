@@ -466,14 +466,14 @@
         "prompt": "Which situation is the best fit for solving with x-intercepts?",
         "choices": [
           "Solve \\(x+2=5\\), where one algebra step gives the exact answer.",
-          "Evaluate \\(3^4\\).",
-          "Find the y-intercept of a line.",
+          "Find the minimum value of a quadratic function from its graph.",
+          "Find the slope of the line through two given points.",
           "Find all real solutions of a quadratic that is awkward to factor."
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "Look for a question where the graph reveals every real solution and avoids awkward algebra.",
-        "explanation": "Exactly. Every x-intercept gives a real solution, so graphing is useful when a quadratic is awkward to factor. <strong>You are ready to use the full process independently.</strong>"
+        "hint": "The tool answers one question: where does the graph meet the x-axis? Look for the task that is asking exactly that, and where algebra would be slow.",
+        "explanation": "Exactly. Every x-intercept gives a real solution, so graphing is useful when a quadratic is awkward to factor. A one-step equation is faster by hand; the minimum value of a quadratic comes from the vertex, not the x-intercepts; and a slope question never asks where a graph meets the x-axis. <strong>You are ready to use the full process independently.</strong>"
       }
     },
     {
@@ -527,7 +527,7 @@
     {
       "kind": "text",
       "id": "practice_set_intro",
-      "html": "<h2>Practice the complete process</h2><p>You have completed the guided examples. Now you will solve three new equations <strong>from beginning to end</strong>.</p><p>For each equation, you will:</p><ol><li>get zero on one side;</li><li>enter the expression to graph;</li><li>find every x-intercept;</li><li>report the complete answer in the requested form.</li></ol><p>After those full problems, one conceptual question will help you decide when this tool is useful.</p><blockquote><p><strong>Use the required calculator on each setup screen.</strong> Do the rewrite yourself before entering the graph.</p></blockquote>"
+      "html": "<h2>Practice the complete process</h2><p>You have completed the guided examples. Now you will solve three new equations <strong>from beginning to end</strong>.</p><p>For each equation, you will:</p><ol><li>get zero on one side;</li><li>enter the expression to graph;</li><li>find every x-intercept;</li><li>report the complete answer in the requested form.</li></ol><p>After those full problems, a final question will ask you to recall the whole process without looking back.</p><blockquote><p><strong>Use the required calculator on each setup screen.</strong> Do the rewrite yourself before entering the graph.</p></blockquote>"
     },
     {
       "kind": "desmos_enter_expression",
@@ -671,24 +671,6 @@
         "editable": false,
         "resettable": true,
         "lock_viewport": false
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "practice_method_choice",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which question is the strongest reason to use x-intercepts in Desmos?",
-        "choices": [
-          "Solve \\(2x=10\\) in one algebra step.",
-          "Find every real solution of an equation that is difficult to factor.",
-          "Compute the mean of five numbers.",
-          "Find the slope between two points."
-        ],
-        "correct_index": 1,
-        "allow_retry": true,
-        "hint": "Choose the task where every place the graph meets the x-axis directly answers the question.",
-        "explanation": "Exactly. X-intercepts reveal every visible real solution and can replace difficult factoring."
       }
     },
     {

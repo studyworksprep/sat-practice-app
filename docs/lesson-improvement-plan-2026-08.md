@@ -4,7 +4,7 @@
 > the findings in `lesson-suite-review-2026-08-18.md` (Historical).
 > Delivery is tracked in the **Status ledger** below; every step that
 > lands updates its row, per the docs rules. Last verified against code
-> 2026-08-18.
+> 2026-08-20.
 
 This plan turns the review's recommendations into phased work and says,
 for every step, **who does it**: an AI-authored step (a Claude Code /
@@ -22,7 +22,7 @@ depends on that work it says so.
 
 | Phase | State | Notes |
 |---|---|---|
-| 0 — Unblock QA | Not started | |
+| 0 — Unblock QA | In progress | **0.1 and 0.2 applied 2026-08-19** (one PR, 11 specs; every spec still passes the validator with zero warnings). 0.1: all seven §6.1 defects closed as specified, except Scale Factor 39-D uses `5:6` (the reversed A-to-B ratio) rather than the review's `72:50`, which reduces to choice A. 0.2: Systems 11/17/20/26 now say "click the intersection" (17 gets a fresh system, `x+y=8`/`y=3x`, because block 16 printed the old one; 20/26 gain a preset of the just-entered system; 26-D `{−3,2}` duplicated 26-A and is now "q=8 only"); Functions 14; Percentages 24 (90 is 25% greater than 72), guided 13–15 → 48 of 60 (80%), practice 35–36 → 51 of 85 (60%), plus the §6.2 20/22 pair (19/21 success messages no longer state the answer; block 16's example decoupled); x-Intercepts 29 rebuilt with graph-adjacent distractors and 40 deleted (spec is now 41 blocks — block numbers after 39 shift down by one relative to `dca3e524`). **0.4 verified and 0.3 applied 2026-08-20** (3 more specs; validator still zero warnings): (1) Subject–Verb 4 hedged to "In our review of released digital SAT and earlier SAT forms…"; (2) tutors confirmed `repeat()` exists in general Desmos but not in Bluebook — List Tools 28 kept, wording tightened to name the Bluebook calculator; (3) "%→of" auto-insert confirmed on all Desmos versions — no change; (4) tutor decision: no `stdev`/`stdevp` footnote in Standard Deviation; (5) Command of Evidence carries a top-level `authoring_notes` key coupling the two debriefs to their `question_link` UUIDs (importer ignores unknown top-level keys). **0.6 imports done 2026-08-20**, with a corrected premise: production (studyworks.io / Supabase `noqtadytxyslkoetchrs`) never matched the review's "21 drafts, 9 unimported" snapshot — that described the dev DB. In reality 29/30 specs were already imported **and published** (spec add-dates track lesson creation 2026-07-20→08-18). With the owner's approval, the 14 Phase-0-edited specs were re-imported (replace) into their live published lessons via Admin → Import, and `similar-triangles` was imported as a new draft (37 blocks). Three production lessons have no repo spec: "Testing Equivalent Expressions with Desmos Sliders", "Find Missing Constants in Equivalent Expressions with Regression" (published), "Special Right Triangles: Recognize, Scale, Solve" (draft) — reverse-drift to reconcile. Pending: 0.5 preview-as-student sign-off (now on live lessons). |
 | 1 — Make checks mean something | Not started | |
 | 2 — Item-quality pass | Not started | |
 | 3 — Use the medium | Not started | |

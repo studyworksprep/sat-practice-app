@@ -242,12 +242,12 @@
           "Crickets are insects that produce sounds.",
           "Roads are harmful to every animal living nearby.",
           "Quiet fields contain more crickets than cities do.",
-          "Traffic noise may delay when nearby crickets begin calling."
+          "Being near busy roads may delay when crickets begin calling."
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "Choose the statement that preserves the comparison and does not add a new universal claim.",
-        "explanation": "Correct. It captures the reported relationship between traffic noise and calling time without overclaiming or demanding exact wording."
+        "hint": "Choose the statement that preserves the comparison and does not add a new universal claim or a new cause.",
+        "explanation": "Correct. It captures the reported relationship between busy roads and calling time without overclaiming, demanding exact wording, or naming a cause (such as noise) that the passage never states."
       },
       "calculator": { "display": "hidden" }
     },

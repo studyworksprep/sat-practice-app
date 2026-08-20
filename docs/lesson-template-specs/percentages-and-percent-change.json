@@ -213,7 +213,7 @@
     {
       "kind": "text",
       "id": "basic_percent_process",
-      "html": "<h2>A four-step process for percent sentences</h2><ol><li><strong>Find the result and the base.</strong> In the statement <em>54 is what percent of 72</em>, the result is \\(54\\) and the base after <em>of</em> is \\(72\\).</li><li><strong>Choose an acceptable variable.</strong> Use \\(p\\) for an unknown percent unless the question requires another letter.</li><li><strong>Translate the complete sentence.</strong> Enter <strong>54~p% of 72</strong>.</li><li><strong>Read and check.</strong> Report \\(p\\) as a percent, confirm RMSE is zero or tiny, and substitute the value into the sentence.</li></ol><blockquote><p><strong>Next step:</strong> Build this regression yourself on the next screen.</p></blockquote>"
+      "html": "<h2>A four-step process for percent sentences</h2><ol><li><strong>Find the result and the base.</strong> In the statement <em>48 is what percent of 60</em>, the result is \\(48\\) and the base after <em>of</em> is \\(60\\).</li><li><strong>Choose an acceptable variable.</strong> Use \\(p\\) for an unknown percent unless the question requires another letter.</li><li><strong>Translate the complete sentence.</strong> Enter <strong>48~p% of 60</strong>.</li><li><strong>Read and check.</strong> Report \\(p\\) as a percent, confirm RMSE is zero or tiny, and substitute the value into the sentence.</li></ol><blockquote><p><strong>Next step:</strong> Build this regression yourself on the next screen.</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -222,7 +222,7 @@
       "content": {
         "type": "desmos_interactive",
         "title": "Translate the whole percent sentence",
-        "instructions_html": "<p>Use regression to answer: <strong>54 is what percent of 72?</strong></p><p>Enter the complete translation with <strong>~</strong>, the variable <strong>p</strong>, and Desmos <strong>% of</strong> notation.</p>",
+        "instructions_html": "<p>Use regression to answer: <strong>48 is what percent of 60?</strong></p><p>Enter the complete translation with <strong>~</strong>, the variable <strong>p</strong>, and Desmos <strong>% of</strong> notation.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -231,7 +231,7 @@
         "validation": {
           "mode": "normalized",
           "expected": [
-            "54\\sim p\\%\\operatorname{of}72"
+            "48\\sim p\\%\\operatorname{of}60"
           ],
           "state_rules": {
             "min_expressions": 1,
@@ -241,15 +241,15 @@
         },
         "feedback": {
           "success_message_html": "<p>Good translation. Now read the value assigned to \\(p\\) and check the RMSE.</p>",
-          "retry_message_html": "<p>Keep the sentence in order: <strong>54 ~ p% of 72</strong>.</p>",
+          "retry_message_html": "<p>Keep the sentence in order: <strong>48 ~ p% of 60</strong>.</p>",
           "attempt_based_hints": [
             {
               "min_attempts": 2,
-              "message_html": "<p>Type <strong>54~p% of 72</strong>. Entering % makes Desmos add <strong>of</strong>.</p>"
+              "message_html": "<p>Type <strong>48~p% of 60</strong>. Entering % makes Desmos add <strong>of</strong>.</p>"
             }
           ],
           "reveal_solution_after_attempts": 3,
-          "solution_html": "<p>The required entry is <strong>54~p% of 72</strong>.</p>"
+          "solution_html": "<p>The required entry is <strong>48~p% of 60</strong>.</p>"
         },
         "progression": {
           "require_success": true
@@ -261,17 +261,17 @@
       "id": "guided_percent_result",
       "block_type": "check",
       "content": {
-        "prompt": "What percent of \\(72\\) is \\(54\\)?",
+        "prompt": "What percent of \\(60\\) is \\(48\\)?",
         "choices": [
-          "\\(54\\%\\)",
-          "\\(75\\%\\)",
-          "\\(72\\%\\)",
-          "\\(133.3\\%\\)"
+          "\\(48\\%\\)",
+          "\\(80\\%\\)",
+          "\\(60\\%\\)",
+          "\\(125\\%\\)"
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Read the assigned value of p. Check that p% of 72 equals 54.",
-        "explanation": "Correct. Desmos assigns \\(p=75\\), and \\(75\\%\\) of \\(72\\) is \\(0.75(72)=54\\)."
+        "hint": "Read the assigned value of p. Check that p% of 60 equals 48.",
+        "explanation": "Correct. Desmos assigns \\(p=80\\), and \\(80\\%\\) of \\(60\\) is \\(0.8(60)=48\\)."
       },
       "calculator": {
         "display": "open",
@@ -280,7 +280,7 @@
         "initial_expressions": [
           {
             "id": "guided_percent_result_regression",
-            "latex": "54\\sim p\\%\\operatorname{of}72"
+            "latex": "48\\sim p\\%\\operatorname{of}60"
           }
         ],
         "editable": false,
@@ -291,7 +291,7 @@
     {
       "kind": "text",
       "id": "old_and_new",
-      "html": "<h2>Next: identify Old and New</h2><p>A <strong>percent change</strong> compares a value after a change with the value used as the starting point.</p><ul><li><strong>Old</strong> is the starting value or basis for comparison.</li><li><strong>New</strong> is the value after the increase or decrease.</li></ul><blockquote><p><strong>Key idea:</strong> The change is always a percent of Old.</p></blockquote><p>If a price rises from \\(80\\) to \\(92\\), the increase is based on \\(80\\), not \\(92\\).</p>"
+      "html": "<h2>Next: identify Old and New</h2><p>A <strong>percent change</strong> compares a value after a change with the value used as the starting point.</p><ul><li><strong>Old</strong> is the starting value or basis for comparison.</li><li><strong>New</strong> is the value after the increase or decrease.</li></ul><blockquote><p><strong>Key idea:</strong> The change is always a percent of Old.</p></blockquote><p>If a price rises from \\(50\\) to \\(58\\), the increase is based on \\(50\\), not \\(58\\).</p>"
     },
     {
       "kind": "text",
@@ -341,7 +341,7 @@
           }
         },
         "feedback": {
-          "success_message_html": "<p>Correct. Desmos assigns \\(n=92\\) with RMSE zero or tiny. The increase is \\(15\\%\\) of \\(80\\), or \\(12\\), so \\(80+12=92\\).</p>",
+          "success_message_html": "<p>Correct. Now read the value Desmos assigns to \\(n\\), and check that the RMSE is zero or tiny. You will report that value on the next screen.</p>",
           "retry_message_html": "<p>Start with Old, add the percent of Old, and use \\(n\\) for New.</p>",
           "attempt_based_hints": [
             {
@@ -400,7 +400,7 @@
           }
         },
         "feedback": {
-          "success_message_html": "<p>Correct. Desmos assigns \\(p=15\\) with RMSE zero or tiny. The decrease is \\(12\\), and \\(12\\) is \\(15\\%\\) of Old, \\(80\\).</p>",
+          "success_message_html": "<p>Correct. Now read the value Desmos assigns to \\(p\\), and check that the RMSE is zero or tiny. You will report that percent on the next screen.</p>",
           "retry_message_html": "<p>New is \\(68\\), Old is \\(80\\), and a decrease subtracts a percent of Old.</p>",
           "attempt_based_hints": [
             {
@@ -444,17 +444,17 @@
       "id": "than_basis_check",
       "block_type": "check",
       "content": {
-        "prompt": "In the statement \\(84\\) is \\(40\\%\\) greater than \\(60\\), which value is Old, the basis for comparison?",
+        "prompt": "In the statement \\(90\\) is \\(25\\%\\) greater than \\(72\\), which value is Old, the basis for comparison?",
         "choices": [
-          "\\(84\\)",
-          "\\(60\\)",
-          "\\(40\\)",
-          "\\(24\\)"
+          "\\(90\\)",
+          "\\(72\\)",
+          "\\(25\\)",
+          "\\(18\\)"
         ],
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Find the value after the word than. The percent change is based on that value.",
-        "explanation": "Correct. The value after than is \\(60\\), so the added amount is \\(40\\%\\) of \\(60\\)."
+        "explanation": "Correct. The value after than is \\(72\\), so the added amount is \\(25\\%\\) of \\(72\\), which is \\(18\\)."
       }
     },
     {
@@ -631,7 +631,7 @@
       "content": {
         "type": "desmos_interactive",
         "title": "Practice 1: translate a percent sentence",
-        "instructions_html": "<p><strong>63 is what percent of 84?</strong></p><p>Enter one complete regression using \\(p\\), <strong>~</strong>, and Desmos <strong>% of</strong> notation.</p>",
+        "instructions_html": "<p><strong>51 is what percent of 85?</strong></p><p>Enter one complete regression using \\(p\\), <strong>~</strong>, and Desmos <strong>% of</strong> notation.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -640,7 +640,7 @@
         "validation": {
           "mode": "normalized",
           "expected": [
-            "63\\sim p\\%\\operatorname{of}84"
+            "51\\sim p\\%\\operatorname{of}85"
           ],
           "state_rules": {
             "min_expressions": 1,
@@ -654,11 +654,11 @@
           "attempt_based_hints": [
             {
               "min_attempts": 2,
-              "message_html": "<p>Enter <strong>63~p% of 84</strong>.</p>"
+              "message_html": "<p>Enter <strong>51~p% of 85</strong>.</p>"
             }
           ],
           "reveal_solution_after_attempts": 3,
-          "solution_html": "<p>The required entry is <strong>63~p% of 84</strong>.</p>"
+          "solution_html": "<p>The required entry is <strong>51~p% of 85</strong>.</p>"
         },
         "progression": {
           "require_success": true
@@ -670,17 +670,17 @@
       "id": "practice_basic_result",
       "block_type": "check",
       "content": {
-        "prompt": "What percent of \\(84\\) is \\(63\\)?",
+        "prompt": "What percent of \\(85\\) is \\(51\\)?",
         "choices": [
-          "\\(56\\%\\)",
-          "\\(75\\%\\)",
-          "\\(84\\%\\)",
-          "\\(133.3\\%\\)"
+          "\\(51\\%\\)",
+          "\\(60\\%\\)",
+          "\\(85\\%\\)",
+          "\\(166.7\\%\\)"
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Read the value assigned to p, then check that p% of 84 equals 63.",
-        "explanation": "Correct. Desmos assigns \\(p=75\\), and \\(75\\%\\) of \\(84\\) is \\(63\\)."
+        "hint": "Read the value assigned to p, then check that p% of 85 equals 51.",
+        "explanation": "Correct. Desmos assigns \\(p=60\\), and \\(60\\%\\) of \\(85\\) is \\(51\\)."
       },
       "calculator": {
         "display": "open",
@@ -689,7 +689,7 @@
         "initial_expressions": [
           {
             "id": "practice_basic_regression",
-            "latex": "63\\sim p\\%\\operatorname{of}84"
+            "latex": "51\\sim p\\%\\operatorname{of}85"
           }
         ],
         "editable": false,

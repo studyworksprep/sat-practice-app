@@ -480,12 +480,12 @@
           "\\(36:25\\)",
           "\\(6:5\\)",
           "\\(216:125\\)",
-          "\\(18:15\\)"
+          "\\(5:6\\)"
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Take the cube root of \\(216\\) and \\(125\\).",
-        "explanation": "Correct. \\(\\sqrt[3]{216}:\\sqrt[3]{125}=6:5\\)."
+        "hint": "Take the cube root of \\(216\\) and \\(125\\), and keep the A-to-B order.",
+        "explanation": "Correct. \\(\\sqrt[3]{216}:\\sqrt[3]{125}=6:5\\). \\(5:6\\) is the B-to-A ratio, \\(36:25\\) is the surface-area ratio, and \\(216:125\\) is the volume ratio you started with."
       }
     },
     {
