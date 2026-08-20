@@ -20,6 +20,7 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
 import { AssignmentReport } from '@/lib/practice/AssignmentReport';
 
@@ -124,6 +125,7 @@ export default async function TutorSessionReviewPage({ params }) {
       questionNotesIsAdmin={questionNotesIsAdmin}
       currentUserId={currentUserId}
       canFlagBroken={['manager', 'admin'].includes(profile.role)}
+      canViewStats={QUESTION_STATS_ROLES.includes(profile.role)}
       rebuildHref={rebuildHref}
     />
   );

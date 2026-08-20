@@ -74,6 +74,7 @@ export function AssignmentReport({
   questionNotesIsAdmin = false,
   currentUserId = null,
   canFlagBroken = false,
+  canViewStats = false,
   // Optional URL the tutor can click to force a fresh rebuild
   // of the report from raw attempts (skips whichever
   // practice_sessions row the page picked, expands to legacy
@@ -519,20 +520,20 @@ export function AssignmentReport({
                   initialNote={selected.errorNote ?? null}
                 />
               )}
+              {canViewStats && !selected.missing && (
+                <QuestionStatsButton
+                  key={`stats-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  canView
+                />
+              )}
               {canFlagBroken && !selected.missing && (
-                <>
-                  <QuestionStatsButton
-                    key={`stats-${selected.questionId}`}
-                    questionId={selected.questionId}
-                    canView
-                  />
-                  <BrokenButton
-                    key={`broken-${selected.questionId}`}
-                    questionId={selected.questionId}
-                    canEdit
-                    lazy
-                  />
-                </>
+                <BrokenButton
+                  key={`broken-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  canEdit
+                  lazy
+                />
               )}
             </div>
           </div>

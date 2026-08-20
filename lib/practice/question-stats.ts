@@ -14,11 +14,14 @@
 
 import type { UserRole } from '@/lib/types';
 
-/** Who may open the stats modal. The DB function itself admits any
- *  staff role (is_teacher() = teacher | manager | admin, matching
- *  item_stats); this array is the product-level gate and is the only
- *  thing to change when teachers get access. */
-export const QUESTION_STATS_ROLES: readonly UserRole[] = ['manager', 'admin'];
+/** Who may open the stats modal — every staff role, matching the DB
+ *  function's own gate (is_teacher() = teacher | manager | admin, the
+ *  item_stats precedent). Teachers see aggregate bank-wide counts here
+ *  that their row-level attempts visibility (roster-only) doesn't
+ *  grant — a deliberate product call: aggregates only, no student ids,
+ *  same exposure item_stats already gives them. */
+export const QUESTION_STATS_ROLES: readonly UserRole[] =
+  ['teacher', 'manager', 'admin'];
 
 export interface QuestionStatsCut {
   n_students: number;
