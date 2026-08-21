@@ -45,7 +45,8 @@
     <text x="578" y="337" font-size="26" font-weight="700" fill="#175cd3">Degrees</text>
     <rect x="514" y="296" width="220" height="64" rx="30" fill="none" stroke="#b42318" stroke-width="4"/>
 
-    <rect x="530" y="382" width="330" height="52" rx="12" fill="#fff1f0" stroke="#f97066" stroke-width="2"/>
-    <text x="695" y="416" text-anchor="middle" font-size="21" font-weight="700" fill="#912018">Choose the mode the question uses.</text>
+    <rect x="540" y="372" width="310" height="72" rx="14" fill="#fff1f0" stroke="#f97066" stroke-width="2"/>
+    <text x="695" y="402" text-anchor="middle" font-size="20" font-weight="700" fill="#912018">Choose the mode</text>
+    <text x="695" y="428" text-anchor="middle" font-size="20" font-weight="700" fill="#912018">the question uses.</text>
   </g>
 </svg>
