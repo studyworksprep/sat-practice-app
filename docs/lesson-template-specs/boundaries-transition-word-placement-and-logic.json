@@ -86,7 +86,7 @@
     {
       "kind": "text",
       "id": "flexible_placement",
-      "html": "<h2>A transition can appear anywhere in its clause</h2><p>At the beginning, in the middle, and at the very end are all possible. The placement changes emphasis, not the direction of the connection.</p><ul><li>However, the backup system worked.</li><li>The backup system, however, worked.</li><li>The backup system worked, however.</li></ul><blockquote><p><strong>Watch out:</strong> A sentence absolutely can end with a transition word or phrase.</p></blockquote><p>In every version, <strong>however</strong> belongs to the clause about the backup system and points backward to the independent clause before it.</p>",
+      "html": "<h2>A transition can appear anywhere in its clause</h2><p>At the beginning, in the middle, and at the very end are all possible. The placement changes emphasis, not the direction of the connection.</p><ul><li>However, the backup system worked.</li><li>The backup system, however, worked.</li><li>The backup system worked, however.</li></ul><blockquote><p><strong>Watch out:</strong> A sentence absolutely can end with a transition word or phrase.</p></blockquote><p>In every version, <strong>however</strong> belongs to the clause about the backup system and points backward to the independent clause before it.</p><p>One transition is pickier: <strong>though</strong> cannot lead its clause. You will practice that special case later in this lesson.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -298,7 +298,7 @@
     {
       "kind": "text",
       "id": "though_two_jobs",
-      "html": "<h2>Watch for the special word though</h2><p><strong>Though</strong> can do two different jobs.</p><ul><li><strong>Transition:</strong> The forecast predicted rain. The match continued, <strong>though</strong>.</li><li><strong>Subordinating word:</strong> <strong>Though the forecast predicted rain</strong> ...</li></ul><p>In the first version, <strong>though</strong> means <strong>however</strong>. It is nonessential and separated by a comma.</p><p>In the second version, <strong>though</strong> is followed directly by a subject and verb, with no comma after <strong>though</strong>. It makes the idea dependent: <strong>Though the forecast predicted rain</strong> cannot stand alone.</p>",
+      "html": "<h2>Watch for the special word though</h2><p><strong>Though</strong> can do two different jobs.</p><ul><li><strong>Transition:</strong> The forecast predicted rain. The match continued, <strong>though</strong>.</li><li><strong>Subordinating word:</strong> <strong>Though the forecast predicted rain</strong> ...</li></ul><p>In the first version, <strong>though</strong> means <strong>however</strong>. It is nonessential and separated by a comma.</p><p>In the second version, <strong>though</strong> is followed directly by a subject and verb, with no comma after <strong>though</strong>. It makes the idea dependent: <strong>Though the forecast predicted rain</strong> cannot stand alone.</p><blockquote><p><strong>Position tells you the job:</strong> as a transition meaning however, though appears only in the middle or at the end of its clause. At the front of a clause, though is always the subordinating word.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -317,6 +317,31 @@
         "allow_retry": true,
         "hint": "Look for a complete independent clause that remains complete when though is removed.",
         "explanation": "Correct. Remove ', though' and 'The match continued' remains complete. Here though is a nonessential transition pointing backward."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "though_initial_rules",
+      "html": "<h2>Two fast rules for though at the front of a clause</h2><p>Because the transition job belongs only to the middle and end of a clause, an answer choice that puts <strong>though</strong> first can be judged immediately:</p><ul><li><strong>Initial though + comma</strong> (<strong>. Though,</strong> or <strong>; though,</strong>) — the choice is treating though like <em>However,</em> — a position though cannot take. <strong>Eliminate it on sight.</strong></li><li><strong>Initial though + no comma</strong> (<strong>though the crews kept working</strong>) — though is the subordinating word, so the clause is <strong>dependent</strong>. It is correct only when a main clause follows in the same sentence. Standing alone after a period, it is a fragment; after a semicolon, it breaks the independent-clause rule.</li></ul><blockquote><p><strong>Contrast with however:</strong> <em>However, the field remained wet</em> is fine. <em>Though, the field remained wet</em> is not. The two words share a meaning — not a position.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "though_initial_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which version uses though correctly?",
+        "choices": [
+          "The forecast called for rain. Though, the crews kept working.",
+          "The forecast called for rain; though the crews kept working.",
+          "The forecast called for rain. The crews, though, kept working.",
+          "The forecast called for rain. Though the crews kept working."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "As a transition, though never leads its clause. When though is first, it is the subordinating word — then check what that does to the sentence.",
+        "explanation": "Correct. Mid-clause with commas, though is a valid transition. The first version treats though like However, — a position it cannot take. The second puts a dependent clause after a semicolon, and the fourth leaves a dependent clause standing alone as a fragment."
       },
       "calculator": { "display": "hidden" }
     },
