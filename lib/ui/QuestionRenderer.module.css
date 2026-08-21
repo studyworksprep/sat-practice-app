@@ -98,13 +98,22 @@
    and a compressing table should claim the full pane before it
    starts breaking words. width: max-content + max-width: 100%
    = natural size when it fits, full-pane (not narrower) when it
-   doesn't. */
+   doesn't.
+
+   !important because some imported stimuli carry an authored
+   inline width on the <table> itself (e.g. M-00429's
+   style="width: 25%" — sized for the source site's full-width
+   page, far too narrow for this pane). An inline width beats any
+   non-important rule here, and combined with the td
+   `overflow-wrap: anywhere` above it lets auto-layout satisfy
+   the tiny width by breaking cell text character-by-character.
+   Overriding with !important restores natural sizing. */
 .stimulusColumn figure {
   margin-inline: 0;
 }
 .stimulusColumn table {
-  width: max-content;
-  max-width: 100%;
+  width: max-content !important;
+  max-width: 100% !important;
 }
 
 /* In a genuinely narrow pane, cell padding is a meaningful share
