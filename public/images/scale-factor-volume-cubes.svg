@@ -2,8 +2,8 @@
   <title id="title">A scale factor of two makes the volume eight times as large</title>
   <desc id="desc">A cube with edge length 1 and volume 1 is compared with a similar cube with edge length 2 and volume 8. Length, width, and height are each multiplied by 2, so volume is multiplied by 2 times 2 times 2, or 8.</desc>
   <defs>
-    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-      <path d="M0,0 L12,6 L0,12 Z" fill="#7a5af8"/>
+    <marker id="arrow" markerWidth="26" markerHeight="26" refX="22" refY="13" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L26,13 L0,26 Z" fill="#7a5af8"/>
     </marker>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#101828" flood-opacity="0.16"/>

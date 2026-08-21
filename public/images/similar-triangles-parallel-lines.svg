@@ -1,21 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="560" viewBox="0 0 1120 560" role="img" aria-labelledby="title desc">
   <title id="title">A smaller triangle formed by a segment parallel to the base of a larger triangle</title>
-  <desc id="desc">Large triangle ABC has A at the top, B at the lower left, and C at the lower right. Points D and E lie on sides AB and AC. Segment DE is parallel to base BC, so triangle ADE and triangle ABC have two pairs of equal corresponding angles.</desc>
+  <desc id="desc">Large triangle ABC has A at the top, B at the lower left, and C at the lower right. Points D and E lie on sides AB and AC. Segment DE is parallel to base BC, so triangle ADE and triangle ABC have two pairs of equal corresponding angles: the single-arc angles at D and B, and the double-arc angles at E and C.</desc>
   <rect width="1120" height="560" rx="28" fill="#f7f9fc"/>
   <g font-family="Arial, Helvetica, sans-serif" fill="#101828">
     <text x="560" y="48" text-anchor="middle" font-size="29" font-weight="700">Similarity can be hidden inside one diagram</text>
     <path d="M560 82 L125 480 L995 480 Z" fill="#eff8ff" stroke="#102a43" stroke-width="6" stroke-linejoin="round"/>
     <path d="M340 283 L780 283" stroke="#175cd3" stroke-width="7"/>
-    <path d="M534 112 A42 42 0 0 0 586 112" fill="none" stroke="#7f56d9" stroke-width="6"/>
-    <path d="M166 442 A54 54 0 0 0 204 480" fill="none" stroke="#067647" stroke-width="6"/>
-    <path d="M368 256 A38 38 0 0 0 394 283" fill="none" stroke="#067647" stroke-width="6"/>
-    <path d="M916 480 A54 54 0 0 0 954 442" fill="none" stroke="#175cd3" stroke-width="6"/>
-    <path d="M726 283 A38 38 0 0 0 752 256" fill="none" stroke="#175cd3" stroke-width="6"/>
-    <g stroke="#175cd3" stroke-width="4">
-      <path d="M525 283 l14 -10 l14 10" fill="none"/>
-      <path d="M552 283 l14 -10 l14 10" fill="none"/>
-      <path d="M525 480 l14 -10 l14 10" fill="none"/>
-      <path d="M552 480 l14 -10 l14 10" fill="none"/>
+    <path d="M530.5 109 A40 40 0 0 0 589.5 109" fill="none" stroke="#7f56d9" stroke-width="6"/>
+    <path d="M164.8 443.5 A54 54 0 0 1 179 480" fill="none" stroke="#067647" stroke-width="6"/>
+    <path d="M368.1 257.4 A38 38 0 0 1 378 283" fill="none" stroke="#067647" stroke-width="6"/>
+    <path d="M955.2 443.5 A54 54 0 0 0 941 480" fill="none" stroke="#175cd3" stroke-width="6"/>
+    <path d="M947.8 436.8 A64 64 0 0 0 931 480" fill="none" stroke="#175cd3" stroke-width="6"/>
+    <path d="M751.9 257.4 A38 38 0 0 0 742 283" fill="none" stroke="#175cd3" stroke-width="6"/>
+    <path d="M744.6 250.6 A48 48 0 0 0 732 283" fill="none" stroke="#175cd3" stroke-width="6"/>
+    <g stroke="#175cd3" stroke-width="4" fill="none" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M537 275 L551 283 L537 291"/>
+      <path d="M557 275 L571 283 L557 291"/>
+      <path d="M537 472 L551 480 L537 488"/>
+      <path d="M557 472 L571 480 L557 488"/>
     </g>
     <circle cx="560" cy="82" r="7" fill="#7f56d9"/>
     <circle cx="125" cy="480" r="7" fill="#067647"/>
@@ -28,6 +30,11 @@
     <text x="302" y="282" font-size="27" font-weight="700" fill="#067647">D</text>
     <text x="794" y="282" font-size="27" font-weight="700" fill="#175cd3">E</text>
     <rect x="390" y="388" width="340" height="62" rx="14" fill="#ffffff" stroke="#84adff" stroke-width="3"/>
-    <text x="560" y="428" text-anchor="middle" font-size="25" font-weight="700" fill="#1849a9">DE ∥ BC</text>
+    <text x="542" y="428" text-anchor="end" font-size="25" font-weight="700" fill="#1849a9">DE</text>
+    <g stroke="#1849a9" stroke-width="3.5" stroke-linecap="round">
+      <path d="M559 408 L553 430"/>
+      <path d="M570 408 L564 430"/>
+    </g>
+    <text x="581" y="428" font-size="25" font-weight="700" fill="#1849a9">BC</text>
   </g>
 </svg>
