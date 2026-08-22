@@ -637,6 +637,38 @@
   color: var(--fg2);
 }
 
+.completeStruggled {
+  margin: 0;
+  font-size: var(--body-sm-size);
+  color: var(--fg2);
+}
+
+.completeBreakdown {
+  font-size: var(--body-sm-size);
+  color: var(--fg2);
+}
+
+.completeBreakdown summary {
+  cursor: pointer;
+  color: var(--tile-success-fg);
+  font-weight: 600;
+}
+
+.breakdownTable {
+  margin: var(--s2) auto 0;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.breakdownTable th,
+.breakdownTable td {
+  padding: 2px var(--s3);
+}
+
+.breakdownTable th {
+  font-weight: 600;
+}
+
 .completeCta {
   margin-top: var(--s2);
   display: inline-flex;

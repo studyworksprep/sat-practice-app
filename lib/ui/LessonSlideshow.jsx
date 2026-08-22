@@ -9,9 +9,15 @@
 //
 // Side effects are wired through optional callbacks:
 //   onMarkBlockComplete(blockId)
-//   onSubmitCheck(blockId, selectedIndex, isCorrect)
-//   onSubmitDesmos(blockId, isCorrect)
+//   onSubmitCheck(blockId, selectedIndex, isCorrect, { markComplete })
+//   onSubmitDesmos(blockId, isCorrect, { markComplete })
 //   onMarkComplete()
+//
+// Every submitted attempt is reported — including wrong attempts on
+// retry checks and gated Desmos blocks. markComplete says whether this
+// attempt finalizes the block; when false the handler must persist the
+// attempt WITHOUT adding the block to completed_blocks, or the retry
+// gate could be bypassed on reload.
 //
 // Student viewer wires these to /api/lessons/[id]/progress; admin
 // preview leaves them undefined and the runtime keeps progress in
@@ -51,9 +57,12 @@ import {
   resolveResumeIndex,
 } from '@/lib/lesson/runtime-navigation.mjs';
 import {
+  applyCheckAttempt,
+  resolveCheckRestoreState,
   skippedBlockIdsForForwardJump,
   shouldCompleteDesmosResult,
   shouldCompleteOnContinue,
+  summarizeCheckAttempts,
 } from '@/lib/lesson/runtime-progress.mjs';
 
 // Above this many blocks the per-step segments get too thin to read, so
@@ -134,9 +143,13 @@ export function LessonSlideshow({
     }
     return baseCalculatorPresentation;
   }, [baseCalculatorPresentation, currentBlock, workflowDesmosContext]);
-  const currentCalculatorOverride = calculatorOpenOverride?.blockId === currentBlock?.id
-    ? calculatorOpenOverride.open
-    : null;
+  // Guard on the override existing first: with no override AND no
+  // current block (a lesson with zero blocks), the blockId comparison
+  // is undefined === undefined and reading .open would crash.
+  const currentCalculatorOverride =
+    calculatorOpenOverride && calculatorOpenOverride.blockId === currentBlock?.id
+      ? calculatorOpenOverride.open
+      : null;
   const calculatorOpen = calculatorPresentation.display !== 'hidden' && (
     currentCalculatorOverride ?? calculatorPresentation.display === 'open'
   );
@@ -149,23 +162,13 @@ export function LessonSlideshow({
       ? Math.round((completedBlockIds.size / blocks.length) * 100)
       : 0;
 
-  // Answered-check tally for the completion banner. Counts only blocks
-  // the learner actually submitted, so a lesson finished without doing
+  // First-try tally for the completion banner. Counts only blocks the
+  // learner actually submitted, so a lesson finished without doing
   // every optional check still reports an honest denominator.
-  const checkTally = useMemo(() => {
-    let answered = 0;
-    let correct = 0;
-    for (const block of blocks) {
-      if (block.block_type !== 'check' && block.block_type !== 'desmos_interactive') {
-        continue;
-      }
-      const answer = checkAnswers[block.id];
-      if (!answer) continue;
-      answered += 1;
-      if (answer.correct) correct += 1;
-    }
-    return { answered, correct };
-  }, [blocks, checkAnswers]);
+  const checkTally = useMemo(
+    () => summarizeCheckAttempts(blocks, checkAnswers),
+    [blocks, checkAnswers],
+  );
 
   // Why Continue is disabled, as learner-facing copy — null when it
   // isn't. A silently dead button reads as a broken page, so the footer
@@ -224,8 +227,14 @@ export function LessonSlideshow({
     recordBlocksComplete([blockId]);
   }, [recordBlocksComplete]);
 
-  function recordCheckAnswer(blockId, payload, { markComplete = true } = {}) {
-    setCheckAnswers((prev) => ({ ...prev, [blockId]: payload }));
+  function recordCheckAnswer(blockId, attempt, { markComplete = true } = {}) {
+    setCheckAnswers((prev) => ({
+      ...prev,
+      [blockId]: applyCheckAttempt(prev[blockId], {
+        ...attempt,
+        at: new Date().toISOString(),
+      }),
+    }));
     if (markComplete) {
       const next = new Set(completedBlockIdsRef.current);
       next.add(blockId);
@@ -448,24 +457,30 @@ export function LessonSlideshow({
               block={currentBlock}
               previousAnswer={checkAnswers[currentBlock.id]}
               onSubmit={(selected, correct) => {
-                // In retry mode an incorrect attempt is purely a
-                // client-side nudge: it must not be persisted (the
-                // progress action marks any submitted check complete,
-                // which would let the gate be bypassed on reload) and
-                // must not arm navigation. Only a correct answer — or
-                // any answer when retry is off — finalizes the block.
+                // Every attempt is recorded — a wrong answer in retry
+                // mode included, so the attempt history survives reload
+                // and tutors can see where a student struggled. But only
+                // a correct answer (or any answer when retry is off)
+                // finalizes the block: a wrong retry attempt must not
+                // mark it complete (the gate would be bypassed on
+                // reload) and must not arm navigation.
                 const allowRetry = Boolean(currentBlock.content?.allow_retry);
-                if (allowRetry && !correct) return;
-                recordCheckAnswer(currentBlock.id, {
-                  selected,
-                  correct,
-                });
+                const finalizes = !allowRetry || correct;
+                recordCheckAnswer(
+                  currentBlock.id,
+                  { selected, correct },
+                  { markComplete: finalizes },
+                );
                 if (onSubmitCheck) {
                   enqueueProgressWrite(() =>
-                    onSubmitCheck(currentBlock.id, selected, correct),
+                    onSubmitCheck(currentBlock.id, selected, correct, {
+                      markComplete: finalizes,
+                    }),
                   );
                 }
-                recordAnswerNav(currentBlock, correct);
+                if (finalizes) {
+                  recordAnswerNav(currentBlock, correct);
+                }
               }}
             />
           )}
@@ -487,6 +502,7 @@ export function LessonSlideshow({
                 // For a require_success block, only a correct answer
                 // completes it (and so unlocks Continue) — an incorrect
                 // attempt leaves it locked so the learner can retry.
+                // Either way the attempt itself is persisted.
                 const markComplete = shouldCompleteDesmosResult(currentBlock, isCorrect);
                 recordCheckAnswer(
                   currentBlock.id,
@@ -497,9 +513,9 @@ export function LessonSlideshow({
                   },
                   { markComplete },
                 );
-                if (markComplete && onSubmitDesmos) {
+                if (onSubmitDesmos) {
                   enqueueProgressWrite(() =>
-                    onSubmitDesmos(currentBlock.id, isCorrect),
+                    onSubmitDesmos(currentBlock.id, isCorrect, { markComplete }),
                   );
                 }
                 recordAnswerNav(currentBlock, isCorrect);
@@ -637,11 +653,53 @@ export function LessonSlideshow({
             ✓
           </div>
           <div className={s.completeText}>Lesson complete</div>
+          {/* First-try accuracy, not final accuracy: retry checks are
+              always eventually correct, so counting the final answer
+              would read 100% for everyone. Copy is a draft pending the
+              tutor-team review (plan step 1.7). */}
           {checkTally.answered > 0 && (
-            <p className={s.completeScore}>
-              You answered {checkTally.correct} of {checkTally.answered}{' '}
-              {checkTally.answered === 1 ? 'check' : 'checks'} correctly.
-            </p>
+            <>
+              <p className={s.completeScore}>
+                You got {checkTally.firstTryCorrect} of {checkTally.answered}{' '}
+                {checkTally.answered === 1 ? 'check' : 'checks'} right on the
+                first try.
+              </p>
+              {checkTally.struggledBlocks.length > 0 && (
+                <p className={s.completeStruggled}>
+                  Took 3+ tries:{' '}
+                  {checkTally.struggledBlocks
+                    .map((row) => `Step ${row.stepNumber}`)
+                    .join(', ')}
+                  {' '}— worth another look.
+                </p>
+              )}
+              <details className={s.completeBreakdown}>
+                <summary>Check-by-check breakdown</summary>
+                <table className={s.breakdownTable}>
+                  <thead>
+                    <tr>
+                      <th scope="col">Check</th>
+                      <th scope="col">First try</th>
+                      <th scope="col">Tries</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {checkTally.perBlock.map((row) => (
+                      <tr key={row.blockId}>
+                        <td>
+                          Step {row.stepNumber}
+                          {row.blockType === 'desmos_interactive'
+                            ? ' (Desmos)'
+                            : ''}
+                        </td>
+                        <td>{row.firstTryCorrect ? '✓' : '✗'}</td>
+                        <td>{row.attempts}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </details>
+            </>
           )}
           {completionHref && (
             <a href={completionHref} className={s.completeCta}>
@@ -775,15 +833,17 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
   const allowRetry = Boolean(content.allow_retry);
   const hintHtml = content.hint || 'Not quite — take another look and try again.';
 
-  const [selected, setSelected] = useState(previousAnswer?.selected ?? null);
+  const [selected, setSelected] = useState(
+    () => resolveCheckRestoreState(previousAnswer, allowRetry).selected,
+  );
   // `revealed` = block finalized: choices lock, correct answer + the
   // explanation show. In retry mode this happens only once correct; in
   // one-shot mode it happens on the first submit. A restored answer is
-  // revealed when it was correct, or whenever retry is off.
-  const [revealed, setRevealed] = useState(() => {
-    if (!previousAnswer) return false;
-    return allowRetry ? Boolean(previousAnswer.correct) : true;
-  });
+  // revealed when it was correct, or whenever retry is off — a persisted
+  // wrong retry attempt restores live so the learner keeps trying.
+  const [revealed, setRevealed] = useState(
+    () => resolveCheckRestoreState(previousAnswer, allowRetry).revealed,
+  );
   // Set after a wrong attempt in retry mode: show the hint and keep the
   // choices live. Cleared the moment the learner changes their pick.
   const [showHint, setShowHint] = useState(false);

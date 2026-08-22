@@ -14,6 +14,7 @@
 'use server';
 
 import { requireUser } from '@/lib/api/auth';
+import { applyCheckAttempt } from '@/lib/lesson/runtime-progress.mjs';
 
 async function loadOrCreateProgress(supabase, lessonId, userId) {
   const { data: existing } = await supabase
@@ -70,13 +71,24 @@ export async function markBlockComplete(lessonId, blockId) {
   return loadProgress(supabase, lessonId, user.id);
 }
 
-export async function submitCheckAnswer(lessonId, blockId, selected, correct) {
+// Both submit actions persist EVERY attempt: the entry accumulates an
+// attempts array via applyCheckAttempt (shared with the slideshow's
+// local state). markComplete=false is the runtime's signal that this
+// attempt doesn't finalize the block — a wrong answer on a retry check
+// or a gated Desmos activity — so the block stays out of
+// completed_blocks and the Continue gate holds across a reload.
+export async function submitCheckAnswer(lessonId, blockId, selected, correct, options = {}) {
+  const markComplete = options?.markComplete !== false;
   const { user, supabase } = await requireUser();
   const progress = await loadOrCreateProgress(supabase, lessonId, user.id);
   const completedSet = new Set(progress.completed_blocks || []);
-  completedSet.add(blockId);
+  if (markComplete) completedSet.add(blockId);
   const answers = { ...(progress.check_answers || {}) };
-  answers[blockId] = { selected, correct };
+  answers[blockId] = applyCheckAttempt(answers[blockId], {
+    selected,
+    correct,
+    at: new Date().toISOString(),
+  });
   await applyUpdates(supabase, lessonId, user.id, {
     completed_blocks: [...completedSet],
     check_answers: answers,
@@ -84,13 +96,19 @@ export async function submitCheckAnswer(lessonId, blockId, selected, correct) {
   return loadProgress(supabase, lessonId, user.id);
 }
 
-export async function submitDesmosResult(lessonId, blockId, correct) {
+export async function submitDesmosResult(lessonId, blockId, correct, options = {}) {
+  const markComplete = options?.markComplete !== false;
   const { user, supabase } = await requireUser();
   const progress = await loadOrCreateProgress(supabase, lessonId, user.id);
   const completedSet = new Set(progress.completed_blocks || []);
-  completedSet.add(blockId);
+  if (markComplete) completedSet.add(blockId);
   const answers = { ...(progress.check_answers || {}) };
-  answers[blockId] = { selected: null, correct, type: 'desmos_interactive' };
+  answers[blockId] = applyCheckAttempt(answers[blockId], {
+    selected: null,
+    correct,
+    at: new Date().toISOString(),
+    type: 'desmos_interactive',
+  });
   await applyUpdates(supabase, lessonId, user.id, {
     completed_blocks: [...completedSet],
     check_answers: answers,
