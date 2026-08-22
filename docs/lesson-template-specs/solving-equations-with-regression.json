@@ -206,7 +206,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "solution": "The equation is \\(5q+7=42\\); \\(q\\) is an acceptable regression variable, so keep it.\nEnter \\(5q+7\\sim42\\); Desmos adjusts \\(q\\) until the two sides match.\nDesmos assigns \\(q=7\\), with RMSE zero or extremely close to zero.\nCheck: \\(5(7)+7=35+7=42\\).\nSo the answer is choice A, \\(q=7\\).",
+        "solution": "The equation is \\(5q+7=42\\); \\(q\\) is an acceptable regression variable, so keep it.\nEnter \\(5q+7\\sim42\\); Desmos adjusts \\(q\\) until the two sides match.\nDesmos assigns \\(q=7\\) and reports an RMSE of zero or extremely close to zero, which confirms the fit is exact.\nSo the answer is choice A, \\(q=7\\).",
         "hint": "Check which choice makes \\(5q+7\\) equal \\(42\\).",
         "explanation": "Correct. \\(5(7)+7=42\\), so \\(q=7\\)."
       }
@@ -529,7 +529,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "solution": "The system is entered as the definition \\(u=13-v\\) and the one regression \\(u^2+v^2\\sim85\\).\nCheck the reported pair: \\(6+7=13\\) and \\(6^2+7^2=36+49=85\\), so \\(u=6,\\ v=7\\) satisfies both equations.\nRegression settles on one set of values that fits; it does not search out every pair, so \\((7,6)\\) is also a solution even though regression did not report it.\nWhen a question requires every solution, graphing or another complete method is safer.\nSo the answer is choice B: \\((6,7)\\) is a valid solution, but regression has not shown that it is the only solution.",
+        "solution": "The system is entered as the definition \\(u=13-v\\) and the one regression \\(u^2+v^2\\sim85\\).\nDesmos reports \\(u=6\\) and \\(v=7\\) with RMSE near zero, so regression found a pair that fits both equations.\nRegression settles on one set of values; it does not search out every pair, so \\((7,6)\\) is also a solution even though regression did not report it.\nWhen a question requires every solution, graphing or another complete method is safer.\nSo the answer is choice B: \\((6,7)\\) is a valid solution, but regression has not shown that it is the only solution.",
         "hint": "Remember what regression returns when several matches are possible.",
         "explanation": "Correct. Regression found one valid pair. If the question required every pair, graphing or another complete method would be safer."
       }
@@ -553,7 +553,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "solution": "The equation \\(4x+7=31\\) uses lowercase \\(x\\), which already has a graphing job in Desmos, so temporarily replace it with uppercase \\(X\\).\nEnter \\(4X+7\\sim31\\); Desmos assigns \\(X=6\\).\nCheck: \\(4(6)+7=24+7=31\\).\nTranslate back to the original variable and report \\(x=6\\).\nSo the answer is choice B, \\(x=6\\).",
+        "solution": "The equation \\(4x+7=31\\) uses lowercase \\(x\\), which already has a graphing job in Desmos, so temporarily replace it with uppercase \\(X\\).\nEnter \\(4X+7\\sim31\\); Desmos assigns \\(X=6\\), with RMSE zero or tiny — an exact fit.\nTranslate back to the original variable and report \\(x=6\\).\nSo the answer is choice B, \\(x=6\\).",
         "hint": "Because the original variable is lowercase x, enter \\(4X+7\\sim31\\). Then translate the assigned value back to x.",
         "explanation": "Correct. Desmos assigns \\(X=6\\), and \\(4(6)+7=31\\). The original equation uses \\(x\\), so report \\(x=6\\)."
       }
@@ -572,7 +572,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "solution": "The regression \\(3t-2\\sim10\\) assigns \\(t=4\\), and Desmos remembers that assignment on later lines.\nCheck the assignment: \\(3(4)-2=10\\).\nOn the later line, \\(t^2+3\\) evaluates with \\(t=4\\): \\(4^2+3=16+3=19\\).\nSo the answer is choice A, \\(19\\).",
+        "solution": "The regression \\(3t-2\\sim10\\) assigns \\(t=4\\), and Desmos remembers that assignment on later lines.\nType \\(t^2+3\\) on a new line; Desmos evaluates it using the assigned \\(t\\) and displays \\(19\\).\nNo hand calculation is needed — the calculator carries the assignment forward.\nSo the answer is choice A, \\(19\\).",
         "hint": "The regression leaves t assigned. Substitute \\(t=4\\) into the later expression.",
         "explanation": "Right. Desmos keeps \\(t=4\\), so \\(t^2+3=4^2+3=19\\)."
       }
@@ -591,7 +591,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "solution": "Keep both sides of the original equation and use \\(\\sim\\) in place of \\(=\\), so the entry starts with \\(w^2\\sim64\\).\nAdd a restriction in braces to tell regression where it is allowed to look: \\(\\{w<0\\}\\) limits the search to negative values.\nWith \\(w^2\\sim64\\;\\{w<0\\}\\), Desmos assigns \\(w=-8\\), and \\((-8)^2=64\\) checks.\nSo the answer is choice C, \\(w^2\\sim64\\;\\{w<0\\}\\).",
+        "solution": "Keep both sides of the original equation and use \\(\\sim\\) in place of \\(=\\), so the entry starts with \\(w^2\\sim64\\).\nAdd a restriction in braces to tell regression where it is allowed to look: \\(\\{w<0\\}\\) limits the search to negative values.\nWith \\(w^2\\sim64\\;\\{w<0\\}\\), Desmos assigns \\(w=-8\\), the negative solution the question asks for.\nSo the answer is choice C, \\(w^2\\sim64\\;\\{w<0\\}\\).",
         "hint": "Keep the original two sides, use ~, and restrict w to values below zero.",
         "explanation": "Correct. The restriction \\(\\{w<0\\}\\) directs regression toward the negative solution, \\(w=-8\\)."
       }

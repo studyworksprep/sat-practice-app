@@ -396,6 +396,15 @@ the first try:
   reveal falls back to the `explanation`, which rarely walks the steps —
   author the `solution` on every retry check whose answer takes more than
   one step.
+- **The solution demonstrates the lesson's technique, not a general math
+  solution.** In a Desmos-method lesson the steps are the calculator
+  workflow (what to enter, what Desmos assigns/displays/returns), and even
+  the confirmation stays in the tool's terms — the RMSE readout, the
+  intercept labels, the assigned value — using only vocabulary the lesson
+  itself teaches. A by-hand algebra path in a lesson that exists to
+  replace by-hand algebra undermines the method; hand steps appear only
+  where the lesson's own workflow includes them (e.g. rewriting to zero
+  form before graphing).
 - `max_attempts_before_reveal` (optional integer ≥ 1): overrides the
   two-miss default. Rarely needed.
 - A retry check also **gates Continue** until it finalizes — a correct

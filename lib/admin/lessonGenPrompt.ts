@@ -81,6 +81,7 @@ For central ideas, prefer retry checks (allow_retry: true) with a targeted hint,
 - The hint helps the learner inspect the relevant evidence or redo ONE step without giving away the answer — "Subtract \\(4x\\) from both sides and look at the left side", never "Try again" or "Remember the rule".
 - The explanation connects the answer to the underlying idea — never a bare "Correct."
 - The solution is the full worked path revealed after the learner misses twice (the runtime then unlocks Continue instead of looping them): every step from the given problem to the keyed answer, written to be read after failure — plain steps separated by newlines, no "Correct!" tone, no reference to what the learner picked. Without a solution the runtime falls back to the explanation, which rarely walks the steps — author the solution.
+- The solution demonstrates the LESSON'S technique, never a general math solution: in a Desmos-method lesson the steps are the calculator workflow (what to enter, what Desmos assigns/displays/returns), and the confirmation stays in the tool's terms (RMSE readout, intercept labels, assigned values) using only vocabulary the lesson teaches. Hand algebra appears only where the lesson's own workflow includes it (e.g. rewriting to zero form before graphing).
 - Transfer checks and the final retrieval check are MEASUREMENT items: set allow_retry: false on them (one submission, immediate explanation) so their first-try data is meaningful. They need no hint or solution.
 
 ## Remediation branching

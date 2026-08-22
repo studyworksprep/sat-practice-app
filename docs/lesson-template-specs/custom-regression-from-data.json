@@ -186,7 +186,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "solution": "Enter the point \\((2,34)\\) in a table, so \\(x_1=2\\) and \\(y_1=34\\).\nEnter the definition \\(a=10-b\\), then the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\).\nDesmos adjusts the one free constant and reports \\(b=5\\); the definition then supplies \\(a=10-5=5\\).\nCheck both conditions: \\(a+b=5+5=10\\), and \\(r(2)=5(4)+5(2)+4=34\\).\nSo the answer is choice B, \\(a=5,\\ b=5\\).",
+        "solution": "Enter the point \\((2,34)\\) in a table, so \\(x_1=2\\) and \\(y_1=34\\).\nEnter the definition \\(a=10-b\\), then the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\).\nDesmos adjusts the one free constant and assigns \\(b=5\\); the definition line reports the matching \\(a=5\\) automatically.\nRead both assigned values: \\(a=5\\) and \\(b=5\\).\nSo the answer is choice B, \\(a=5,\\ b=5\\).",
         "hint": "Read the assigned value of \\(b\\), then use \\(a=10-b\\). Check that \\(4a+2b+4=34\\).",
         "explanation": "Correct. Regression gives \\(b=5\\), and the definition gives \\(a=10-5=5\\). The equation is \\(r(t)=5t^2+5t+4\\)."
       },
@@ -295,7 +295,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "solution": "Enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table.\nSubstitute the rule for \\(f\\): since \\(g(x)=f(x)-c\\) and \\(f(x)=x^2+5\\), the model is \\(g(x)=x^2+5-c\\).\nEnter the regression \\(y_1\\sim x_1^2+5-c\\); Desmos assigns \\(c=8\\).\nCheck every row: \\(0^2+5-8=-3\\), \\(2^2+5-8=1\\), and \\(3^2+5-8=6\\).\nSo the answer is choice B, \\(c=8\\).",
+        "solution": "Enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table.\nSubstitute the given rule for \\(f\\): since \\(g(x)=f(x)-c\\) and \\(f(x)=x^2+5\\), the model to fit is \\(y_1\\sim x_1^2+5-c\\).\nRun the regression and read the assigned value: Desmos assigns \\(c=8\\), fitting every row of the table at once.\nSo the answer is choice B, \\(c=8\\).",
         "hint": "Use the first row: \\(-3=0^2+5-c\\).",
         "explanation": "Right. Desmos assigns \\(c=8\\). Substitution gives \\(g(x)=x^2+5-8=x^2-3\\), which matches all three table rows."
       },
@@ -443,7 +443,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "solution": "Translate \\(H(3)=18\\) as input 3, output 18, and add the table row \\((3,18)\\).\nEnter the definition \\(v=6-u\\), then the regression \\(y_1\\sim u(x_1-1)^2+v\\).\nDesmos assigns \\(u=4\\); the definition gives \\(v=6-4=2\\).\nCheck: \\(H(3)=4(3-1)^2+2=4(4)+2=18\\), and \\(u+v=4+2=6\\).\nSo the answer is choice C, \\(u=4,\\ v=2\\).",
+        "solution": "Translate \\(H(3)=18\\) as input 3, output 18, and add the table row \\((3,18)\\).\nEnter the definition \\(v=6-u\\), then the regression \\(y_1\\sim u(x_1-1)^2+v\\).\nRead the assigned values: Desmos assigns \\(u=4\\), and the definition line reports \\(v=2\\) to match.\nSo the answer is choice C, \\(u=4,\\ v=2\\).",
         "hint": "Use \\(v=6-u\\) in \\(18=u(3-1)^2+v\\).",
         "explanation": "Correct. Regression gives \\(u=4\\), and the definition gives \\(v=6-4=2\\)."
       },

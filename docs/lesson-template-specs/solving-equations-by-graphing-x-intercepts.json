@@ -561,7 +561,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "solution": "Start from \\(x^2+6=5x\\); subtract \\(5x\\) from both sides to get \\(x^2-5x+6=0\\).\nGraph \\(x^2-5x+6\\) and click every place the curve meets the x-axis.\nThe labels show x-intercepts at \\((2,0)\\) and \\((3,0)\\).\nCheck both in the original equation: \\(2^2+6=10=5(2)\\) and \\(3^2+6=15=5(3)\\).\nSo the answer is choice C, \\(x=2\\) and \\(x=3\\).",
+        "solution": "Start from \\(x^2+6=5x\\); the workflow's first move is to get zero on one side, so subtract \\(5x\\): \\(x^2-5x+6=0\\).\nGraph \\(x^2-5x+6\\) and click every place the curve meets the x-axis.\nThe labels show x-intercepts exactly at \\((2,0)\\) and \\((3,0)\\), and every x-intercept is a solution of the original equation, so read both.\nSo the answer is choice C, \\(x=2\\) and \\(x=3\\).",
         "hint": "Click both places where the curve meets the x-axis. Read the first number in each label.",
         "explanation": "Correct. Rewriting gives \\(x^2-5x+6=0\\), and the graph has x-intercepts at \\((2,0)\\) and \\((3,0)\\). Therefore, the complete solution is \\(x=2\\) and \\(x=3\\)."
       },

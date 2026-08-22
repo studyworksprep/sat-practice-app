@@ -529,7 +529,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "solution": "Define \\(A=[1,4,7]\\) and \\(B=[2,5,8]\\), then enter \\(\\operatorname{median}(\\operatorname{join}(A,B))\\).\njoin concatenates the lists end to end: \\(\\operatorname{join}(A,B)=[1,4,7,2,5,8]\\).\nIn sorted order the six values are \\([1,2,4,5,7,8]\\); the two middle values are 4 and 5, so the median is \\(\\frac{4+5}{2}=4.5\\).\nSo the answer is choice B, \\(4.5\\).",
+        "solution": "Define \\(A=[1,4,7]\\) and \\(B=[2,5,8]\\), then enter \\(\\operatorname{median}(\\operatorname{join}(A,B))\\).\njoin concatenates the lists end to end into one six-value list, and median finds its middle value.\nDesmos returns \\(4.5\\) — with six values, the median averages the two middle values.\nSo the answer is choice B, \\(4.5\\).",
         "hint": "Join all six values, then ask Desmos for the median. In sorted order, the two middle values are 4 and 5.",
         "explanation": "Correct. The combined values have middle pair 4 and 5, so their median is 4.5."
       },

@@ -256,7 +256,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "solution": "Enter \\((-1,11)\\), \\((0,9)\\), \\((2,5)\\), and \\((4,1)\\) in a table, click the Regression button, and keep the model set to Linear.\nDesmos displays \\(y=-2x+9\\).\nCheck against the table: from \\((0,9)\\) to \\((2,5)\\) the output drops 4 while the input rises 2, a slope of \\(-2\\), and the input 0 gives output 9, matching the intercept.\nSo the answer is choice B, \\(y=-2x+9\\).",
+        "solution": "Enter \\((-1,11)\\), \\((0,9)\\), \\((2,5)\\), and \\((4,1)\\) in a table and click the Regression button.\nThe points follow a line, so keep the model set to Linear.\nDesmos displays the fitted equation directly: \\(y=-2x+9\\).\nSo the answer is choice B, \\(y=-2x+9\\).",
         "hint": "Read the equation beside the table. The output is 9 when the input is 0, and the outputs decrease as x increases.",
         "explanation": "Exactly. The regression gives \\(y=-2x+9\\). It has a negative slope and passes through \\((0,9)\\)."
       },
@@ -342,7 +342,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "solution": "Enter \\((0,96)\\), \\((1,48)\\), and \\((2,24)\\) in a table, click the Regression button, and select Exponential from the dropdown.\nDesmos displays \\(y=96(0.5)^x\\).\nCheck: the output at \\(x=0\\) is 96, and each one-hour step multiplies the output by \\(0.5\\): \\(96\\to48\\to24\\).\nTranslate the roles back to the problem: \\(x\\) stands for \\(t\\) and \\(y\\) stands for \\(g(t)\\).\nSo the answer is choice B, \\(g(t)=96(0.5)^t\\).",
+        "solution": "Enter \\((0,96)\\), \\((1,48)\\), and \\((2,24)\\) in a table and click the Regression button.\nEach step multiplies the output by the same factor, so select Exponential from the model dropdown.\nDesmos displays \\(y=96(0.5)^x\\); translate the roles back to the problem, where \\(x\\) stands for \\(t\\) and \\(y\\) stands for \\(g(t)\\).\nSo the answer is choice B, \\(g(t)=96(0.5)^t\\).",
         "hint": "The initial output is 96, and each one-hour increase multiplies the output by 0.5.",
         "explanation": "Correct. Desmos's \\(y=96(0.5)^x\\) becomes \\(g(t)=96(0.5)^t\\) in the problem's notation."
       },
