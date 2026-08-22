@@ -30,11 +30,11 @@ export function LessonViewerInteractive({
       initialCheckAnswers={initialCheckAnswers}
       initialIsComplete={initialIsComplete}
       onMarkBlockComplete={(blockId) => markBlockComplete(lessonId, blockId)}
-      onSubmitCheck={(blockId, selected, correct) =>
-        submitCheckAnswer(lessonId, blockId, selected, correct)
+      onSubmitCheck={(blockId, selected, correct, options) =>
+        submitCheckAnswer(lessonId, blockId, selected, correct, options)
       }
-      onSubmitDesmos={(blockId, correct) =>
-        submitDesmosResult(lessonId, blockId, correct)
+      onSubmitDesmos={(blockId, correct, options) =>
+        submitDesmosResult(lessonId, blockId, correct, options)
       }
       onMarkComplete={() => markLessonComplete(lessonId)}
       questionLinkHref={(qid) => `/practice/${qid}`}

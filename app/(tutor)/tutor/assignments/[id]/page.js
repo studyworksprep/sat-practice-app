@@ -15,9 +15,11 @@ import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate, isPastDueDate } from '@/lib/formatters';
+import { buildLessonCheckRollup, tallyFirstTry } from '@/lib/lesson/progress-report.mjs';
 import { addAssignmentMembers, submitAssignmentOnBehalf } from './actions';
 import { reassignAssignment } from './reassign-actions';
 import { AddMembersPicker } from './AddMembersPicker';
+import { LessonChecksRollupSection } from './LessonProgressSections';
 import { ReassignPanel } from './ReassignPanel';
 import { SubmitOnBehalfButton } from './SubmitOnBehalfButton';
 import s from './AssignmentDetail.module.css';
@@ -69,6 +71,11 @@ export default async function TutorAssignmentDetailPage({ params }) {
   const isQuestionLike =
     assignment.assignment_type === 'questions'
     || assignment.assignment_type === 'lesson_pack';
+  // Lesson assignments get their own progress surface: per-student
+  // block/check progress from lesson_progress (RLS can_view lets the
+  // tutor read student rows) plus the struggled-blocks rollup below.
+  const isLesson =
+    assignment.assignment_type === 'lesson' && Boolean(assignment.lesson_id);
   const questionIds =
     isQuestionLike && Array.isArray(assignment.question_ids)
       ? assignment.question_ids
@@ -96,7 +103,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
   // section below can show display_code + skill + per-question
   // cohort accuracy. Skipped when the assignment has no question
   // pool (lesson / practice-test types).
-  const [attemptRowsRes, questionMetaRes, sessionRowsRes] = await Promise.all([
+  const [attemptRowsRes, questionMetaRes, sessionRowsRes, lessonBlocksRes, lessonProgressRes] = await Promise.all([
     attemptQuestionIds.length > 0 && studentIds.length > 0
       ? supabase
           .from('attempts')
@@ -124,6 +131,22 @@ export default async function TutorAssignmentDetailPage({ params }) {
           .eq('test_type', 'sat')
           .eq('filter_criteria->>assignment_id', assignmentId)
           .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
+    // Lesson assignments: the lesson's blocks (to know the checks and
+    // the step count) and every enrolled student's progress row.
+    isLesson
+      ? supabase
+          .from('lesson_blocks')
+          .select('id, sort_order, block_type, content')
+          .eq('lesson_id', assignment.lesson_id)
+          .order('sort_order')
+      : Promise.resolve({ data: [] }),
+    isLesson && studentIds.length > 0
+      ? supabase
+          .from('lesson_progress')
+          .select('student_id, completed_blocks, check_answers, completed_at')
+          .eq('lesson_id', assignment.lesson_id)
+          .in('student_id', studentIds)
       : Promise.resolve({ data: [] }),
   ]);
   const attemptRows = attemptRowsRes.data ?? [];
@@ -184,6 +207,25 @@ export default async function TutorAssignmentDetailPage({ params }) {
     }
   }
 
+  // Lesson-progress derivations. lessonCheckRollup drives the
+  // struggled-blocks section; lessonStatsByStudent the roster columns.
+  const lessonBlocks = lessonBlocksRes.data ?? [];
+  const lessonProgressRows = lessonProgressRes.data ?? [];
+  const lessonCheckRollup = isLesson
+    ? buildLessonCheckRollup(lessonBlocks, lessonProgressRows)
+    : [];
+  const lessonStatsByStudent = new Map(
+    lessonProgressRows.map((row) => [
+      row.student_id,
+      {
+        completedBlocks: (row.completed_blocks ?? []).length,
+        completedAt: row.completed_at,
+        ...tallyFirstTry(lessonBlocks, row.check_answers),
+      },
+    ]),
+  );
+  const totalLessonBlocks = lessonBlocks.length;
+
   const students = (junctionRows ?? []).map((r) => {
     const stats = statusByStudent.get(r.student_id) ?? { done: 0, correct: 0 };
     const name =
@@ -208,6 +250,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
       completed_at: r.completed_at,
       done: stats.done,
       correct: stats.correct,
+      lesson: lessonStatsByStudent.get(r.student_id) ?? null,
       reportSessionId:
         reportSession && reportSession.status === 'completed'
           ? reportSession.id
@@ -293,6 +336,15 @@ export default async function TutorAssignmentDetailPage({ params }) {
     ?? 'Assignment';
 
   const totalQuestions = questionIds.length;
+  // Cohort-wide first-try accuracy across every submitted lesson check.
+  let lessonAnswered = 0;
+  let lessonFirstTry = 0;
+  for (const stats of lessonStatsByStudent.values()) {
+    lessonAnswered += stats.answered;
+    lessonFirstTry += stats.firstTryCorrect;
+  }
+  const lessonFirstTryPctCohort =
+    lessonAnswered > 0 ? Math.round((lessonFirstTry / lessonAnswered) * 100) : null;
   const completedCount = students.filter((s) => s.completed_at).length;
   const cohortAccuracyPct =
     cohortDone > 0 ? Math.round((cohortCorrect / cohortDone) * 100) : null;
@@ -368,6 +420,14 @@ export default async function TutorAssignmentDetailPage({ params }) {
             tone={accTone(cohortAccuracyPct)}
           />
         )}
+        {isLesson && lessonFirstTryPctCohort != null && (
+          <StatTile
+            label="First-try accuracy"
+            value={`${lessonFirstTryPctCohort}%`}
+            sub={`${lessonFirstTry.toLocaleString()} of ${lessonAnswered.toLocaleString()} checks`}
+            tone={accTone(lessonFirstTryPctCohort)}
+          />
+        )}
       </div>
 
       <section className={s.card}>
@@ -418,8 +478,14 @@ export default async function TutorAssignmentDetailPage({ params }) {
                       <th className={s.thNum}>Accuracy</th>
                     </>
                   )}
+                  {isLesson && (
+                    <>
+                      <th className={s.thProgress}>Progress</th>
+                      <th className={s.thNum}>First try</th>
+                    </>
+                  )}
                   <th className={s.th}>Completed</th>
-                  {isQuestionLike && (
+                  {(isQuestionLike || isLesson) && (
                     <th className={s.th}>Report</th>
                   )}
                 </tr>
@@ -435,8 +501,23 @@ export default async function TutorAssignmentDetailPage({ params }) {
                       ? Math.round((stu.correct / stu.done) * 100)
                       : null;
                   const reportHref =
-                    isQuestionLike
+                    isQuestionLike || isLesson
                       ? `/tutor/assignments/${assignment.id}/students/${stu.id}`
+                      : null;
+                  // Lesson progress: blocks completed over the lesson's
+                  // step count, and first-try accuracy over the checks
+                  // this student actually submitted.
+                  const lessonDonePct =
+                    isLesson && totalLessonBlocks > 0
+                      ? Math.round(
+                          ((stu.lesson?.completedBlocks ?? 0) / totalLessonBlocks) * 100,
+                        )
+                      : null;
+                  const lessonFirstTryPct =
+                    isLesson && (stu.lesson?.answered ?? 0) > 0
+                      ? Math.round(
+                          (stu.lesson.firstTryCorrect / stu.lesson.answered) * 100,
+                        )
                       : null;
                   return (
                     <tr key={stu.id} className={s.row}>
@@ -486,6 +567,29 @@ export default async function TutorAssignmentDetailPage({ params }) {
                           </td>
                         </>
                       )}
+                      {isLesson && (
+                        <>
+                          <td className={s.tdProgress}>
+                            <div className={s.progress}>
+                              <div
+                                className={s.progressBar}
+                                style={{ width: `${lessonDonePct ?? 0}%` }}
+                              />
+                            </div>
+                          </td>
+                          <td className={s.tdNum}>
+                            {lessonFirstTryPct == null ? (
+                              <span className={s.muted}>—</span>
+                            ) : (
+                              <span
+                                className={`${s.accBadge} ${accBadgeTone(lessonFirstTryPct, s)}`}
+                              >
+                                {lessonFirstTryPct}%
+                              </span>
+                            )}
+                          </td>
+                        </>
+                      )}
                       <td className={s.td}>
                         {stu.completed_at ? (
                           <span className={s.completedTag}>
@@ -504,7 +608,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
                           <span className={s.muted}>—</span>
                         )}
                       </td>
-                      {isQuestionLike && (
+                      {(isQuestionLike || isLesson) && (
                         <td className={s.td}>
                           <Link
                             href={reportHref}
@@ -522,6 +626,13 @@ export default async function TutorAssignmentDetailPage({ params }) {
           </div>
         )}
       </section>
+
+      {isLesson && students.length > 0 && (
+        <LessonChecksRollupSection
+          rollup={lessonCheckRollup}
+          studentCount={students.length}
+        />
+      )}
 
       {isQuestionLike && questionIds.length > 0 && (
         <section className={s.card}>

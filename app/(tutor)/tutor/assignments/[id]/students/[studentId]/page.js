@@ -24,6 +24,8 @@ import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentReport } from '@/lib/practice/AssignmentReport';
+import { buildLessonCheckRows } from '@/lib/lesson/progress-report.mjs';
+import { LessonStudentReport } from '../../LessonProgressSections';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +59,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
   ] = await Promise.all([
     supabase
       .from('assignments_v2')
-      .select('id, title, description, assignment_type, question_ids, due_date, created_at, deleted_at')
+      .select('id, title, description, assignment_type, question_ids, lesson_id, due_date, created_at, deleted_at, lesson:lessons (id, title)')
       .eq('id', assignmentId)
       .maybeSingle(),
     supabase
@@ -98,12 +100,45 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       ? `/tutor/teachers/${studentId}`
       : `/tutor/students/${studentId}`;
 
+  // Lesson assignment: the report is the per-check attempt table from
+  // lesson_progress (which RLS lets the tutor read via can_view), not a
+  // question-session review. Rendered whether or not the student has
+  // started — an all-"Not answered" table tells the tutor exactly that.
+  if (assignment.assignment_type === 'lesson' && assignment.lesson_id) {
+    const [{ data: lessonBlocks }, { data: lessonProgress }] = await Promise.all([
+      supabase
+        .from('lesson_blocks')
+        .select('id, sort_order, block_type, content')
+        .eq('lesson_id', assignment.lesson_id)
+        .order('sort_order'),
+      supabase
+        .from('lesson_progress')
+        .select('completed_blocks, check_answers, completed_at')
+        .eq('lesson_id', assignment.lesson_id)
+        .eq('student_id', studentId)
+        .maybeSingle(),
+    ]);
+    const blocks = lessonBlocks ?? [];
+    return (
+      <LessonStudentReport
+        title={assignment.title ?? assignment.lesson?.title ?? 'Lesson'}
+        studentName={ownerName}
+        studentHref={ownerHomeHref}
+        backHref={`/tutor/assignments/${assignmentId}`}
+        rows={buildLessonCheckRows(blocks, lessonProgress?.check_answers)}
+        totalBlocks={blocks.length}
+        completedBlocksCount={(lessonProgress?.completed_blocks ?? []).length}
+        completedAt={lessonProgress?.completed_at ?? junction.completed_at ?? null}
+      />
+    );
+  }
+
   const questionIds = Array.isArray(assignment.question_ids)
     ? assignment.question_ids.filter(Boolean)
     : [];
 
-  // No questions on the assignment (lesson / practice-test type, or
-  // a malformed pool). Nothing to report on.
+  // No questions on the assignment (practice-test type, or a
+  // malformed pool). Nothing to report on.
   if (questionIds.length === 0) {
     return (
       <EmptyReport
