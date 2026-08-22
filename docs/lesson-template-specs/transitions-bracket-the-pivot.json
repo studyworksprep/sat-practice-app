@@ -11,7 +11,7 @@
     {
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Try the unusual version first</h2><p>Read this text before studying the choices:</p><blockquote><p>Modern restoration projects are rarely designed merely to freeze a building at one historical moment. _____ they adapt old structures for new uses while preserving important features.</p></blockquote><p>Translate the two ideas:</p><ul><li><strong>Uncommon:</strong> freeze the building in time</li><li><strong>Usual:</strong> adapt the building while preserving it</li></ul><p>In your own words, what should the blank say?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Nevertheless,</li><li>More often,</li><li>For example,</li><li>Therefore,</li></ol>",
+      "html": "<h2>Start with the usual version</h2><p>Read this text before studying the choices:</p><blockquote><p>Researchers found that shade from street trees lowers sidewalk temperatures during the hottest part of the day. _____ several cities seeking to reduce heat exposure have expanded tree-planting programs.</p></blockquote><p>Translate the two ideas:</p><ul><li><strong>Finding:</strong> Trees reduce sidewalk heat.</li><li><strong>Action:</strong> Cities plant more trees.</li></ul><p>In your own words, what should the blank say?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Moreover,</li><li>Therefore,</li><li>For example,</li><li>Nevertheless,</li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -19,36 +19,36 @@
       "id": "opening_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which choice most logically completes the restoration text?",
+        "prompt": "Which choice most logically completes the street-tree text?",
         "choices": [
-          "Nevertheless,",
-          "More often,",
+          "Moreover,",
+          "Therefore,",
           "For example,",
-          "Therefore,"
+          "Nevertheless,"
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Pair the word rarely with a phrase that compares the usual alternative by frequency.",
-        "explanation": "Yes. More often completes the scale already opened by rarely: rarely X; more often Y. The second sentence gives the usual alternative, not a result, example, or despite-that outcome."
+        "hint": "Ask whether the finding merely agrees with the cities' action or gives them a reason to take it.",
+        "explanation": "Yes. The finding gives cities a reason to expand tree planting, so the second idea follows from the first. Therefore signals that result or warranted response; the ideas do not merely agree."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "opening_debrief",
-      "html": "<h2>The relationship can hide inside one small word</h2><p>This question still tests a relationship, but the first half of that relationship is packed into <strong>rarely</strong>. The blank completes a comparison of frequency: <strong>rarely X; more often Y</strong>.</p><p>That is why reading only for broad categories such as addition or contrast can fail. Some transitions point the reader along a scale, sequence, or alternative already set up by the sentence.</p><blockquote><p><strong>Key idea:</strong> When the usual two-sentence relationship seems missing, look for a local hinge such as <em>rarely</em>, <em>one</em>, <em>first</em>, <em>earlier</em>, or <em>not</em>.</p></blockquote>",
+      "html": "<h2>The usual question connects two complete ideas</h2><p>Most transition questions can be solved by making a small map of the idea before the blank and the idea after it. Here, the heat-reduction finding explains the cities' action:</p><p><strong>trees reduce heat</strong> → <strong>cities plant more trees</strong></p><p>The precise prediction is not merely <em>same direction</em>. It is <strong>the second idea follows because of the first</strong>.</p><blockquote><p><strong>Key idea:</strong> Build the relationship in your own words before the answer choices name it for you. Later, you will learn how to adapt this same method when a local signal carries part of the relationship.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "bracket_the_pivot_process",
-      "html": "<h2>Use Bracket the Pivot</h2><ol><li><strong>Bracket:</strong> Mark the exact idea before the blank and the exact idea after it.</li><li><strong>Shrink:</strong> Translate each idea into a short subject-action-result statement.</li><li><strong>Predict:</strong> State the relationship in your own words before judging the choices.</li><li><strong>Match:</strong> Translate each serious choice into its precise logical job.</li><li><strong>Verify:</strong> Substitute that plain-English job and check any local hinge.</li></ol><blockquote><p><strong>Do not begin with the answer choices.</strong> Prediction keeps four polished words from becoming four competing interpretations.</p></blockquote>",
+      "html": "<h2>Use Bracket the Pivot</h2><ol><li><strong>Bracket:</strong> Mark the exact idea before the blank and the exact idea after it.</li><li><strong>Shrink:</strong> Translate each idea into a short subject-action-result statement.</li><li><strong>Predict:</strong> State the relationship in your own words before judging the choices.</li><li><strong>Match and verify:</strong> Translate each serious choice into its precise logical job, substitute that job, and check any local hinge.</li></ol><blockquote><p><strong>Do not begin with the answer choices.</strong> Prediction keeps four polished words from becoming four competing interpretations.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "bracket_exact_ideas",
-      "html": "<h2>Step 1: Bracket ideas, not just sentences</h2><p>A sentence can contain several logical units. Keep the unit that actually drives the next idea.</p><blockquote><p>The new coating was expensive to produce, but it resisted corrosion twice as long as the standard coating. Therefore, manufacturers adopted it for ships exposed to saltwater.</p></blockquote><p>The important pivot is not simply <strong>sentence 1 to sentence 2</strong>. It is:</p><p><strong>coating lasts much longer</strong> → <strong>manufacturers adopt it</strong></p><p>The cost is a real detail, but it does not explain the adoption.</p>",
+      "html": "<h2>Step 1: Bracket ideas, not just sentences</h2><p>A sentence can contain several logical units. Keep the unit that actually drives the next idea.</p><blockquote><p>The new coating was expensive to produce, but it resisted corrosion twice as long as the standard coating. Manufacturers adopted it for ships exposed to saltwater.</p></blockquote><p>The important pivot is not simply <strong>sentence 1 to sentence 2</strong>. It is:</p><p><strong>coating lasts much longer</strong> → <strong>manufacturers adopt it</strong></p><p>The cost is a real detail, but it does not explain the adoption.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -56,7 +56,7 @@
       "id": "bracket_exact_ideas_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which pair of ideas most directly supports therefore in the coating passage?",
+        "prompt": "Which pair of ideas forms the most useful pivot in the coating passage?",
         "choices": [
           "The coating was expensive → saltwater damages ships.",
           "The standard coating was cheaper → manufacturers adopted the new coating.",
@@ -66,14 +66,14 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Find the property of the new coating that gives manufacturers a reason to choose it.",
-        "explanation": "Right. Greater corrosion resistance explains the adoption. The price creates a complication, but it is not the reason signaled by therefore."
+        "explanation": "Right. Greater corrosion resistance explains the adoption. The price creates a complication, but it is not the reason manufacturers choose the coating."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "shrink_the_ideas",
-      "html": "<h2>Step 2: Shrink without changing the logic</h2><p>Delete names, dates, and technical vocabulary unless they control the relationship.</p><blockquote><p>Because seeds of the alpine poppy germinate only after prolonged cold, researchers store the seeds at low temperatures for several weeks before planting them.</p></blockquote><p>A useful translation is:</p><ul><li><strong>Idea 1:</strong> Seeds need cold to germinate.</li><li><strong>Idea 2:</strong> Researchers chill the seeds before planting.</li></ul><p>Keep the arrow: <strong>requirement → action taken because of the requirement</strong>.</p>",
+      "html": "<h2>Step 2: Shrink without changing the logic</h2><p>Delete names, dates, and technical vocabulary unless they control the relationship.</p><blockquote><p>Seeds of the alpine poppy germinate only after prolonged cold. Researchers store the seeds at low temperatures for several weeks before planting them.</p></blockquote><p>A useful translation is:</p><ul><li><strong>Idea 1:</strong> Seeds need cold to germinate.</li><li><strong>Idea 2:</strong> Researchers chill the seeds before planting.</li></ul><p>Keep the arrow: <strong>requirement → action taken because of the requirement</strong>.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -81,7 +81,7 @@
       "id": "shrink_the_ideas_check",
       "block_type": "check",
       "content": {
-        "prompt": "A museum digitized a set of fragile manuscripts. As a result, scholars around the world could study the manuscripts without handling the originals. Which translation best preserves the logic?",
+        "prompt": "A museum digitized a set of fragile manuscripts. Scholars around the world could study the manuscripts without handling the originals. Which translation best preserves the logic?",
         "choices": [
           "Museum creates digital copies → access expands without physical handling.",
           "Manuscripts are fragile → every scholar visits the museum.",
@@ -98,7 +98,7 @@
     {
       "kind": "text",
       "id": "predict_relationship_menu",
-      "html": "<h2>Step 3: Finish one plain-English sentence</h2><p>Before matching a word, complete this frame:</p><blockquote><p><strong>Idea 2 ______ Idea 1.</strong></p></blockquote><ul><li>adds another supporting point to</li><li>gives a specific case of</li><li>confirms or sharpens</li><li>contrasts with or holds despite</li><li>results from or is a conclusion supported by</li><li>serves the goal stated in</li><li>comes next, replaces an alternative, or completes a scale in</li></ul><p>Your prediction can be short: <strong>result</strong>, <strong>example</strong>, <strong>despite that</strong>, <strong>next step</strong>, or <strong>usually Y, not X</strong>.</p>",
+      "html": "<h2>Step 3: Predict the relationship in plain English</h2><p>Before matching a word, complete this frame:</p><blockquote><p><strong>Idea 2 ______ Idea 1.</strong></p></blockquote><ul><li>adds another supporting point to</li><li>gives a specific case of</li><li>confirms or sharpens</li><li>contrasts with or holds despite</li><li>results from or is a conclusion supported by</li><li>serves the goal stated in</li><li>comes next, replaces an alternative, or completes a scale in</li></ul><p>Your prediction can be short: <strong>result</strong>, <strong>example</strong>, <strong>despite that</strong>, <strong>next step</strong>, or <strong>usually Y, not X</strong>. Most questions fall into a few broad families, but the family is only a first pass; exact definitions still decide the answer.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -106,7 +106,7 @@
       "id": "predict_relationship_check",
       "block_type": "check",
       "content": {
-        "prompt": "A city converted paper bus schedules into live digital displays. Consequently, riders could see delays before reaching a stop. Which prediction best describes the relationship?",
+        "prompt": "A city converted paper bus schedules into live digital displays. Riders could see delays before reaching a stop. Which prediction best describes the relationship?",
         "choices": [
           "The second idea gives one example of a broad claim in the first.",
           "The second idea concedes a weakness in the first.",
@@ -123,7 +123,7 @@
     {
       "kind": "text",
       "id": "same_direction_words",
-      "html": "<h2>Same direction does not mean same job</h2><ul><li><strong>Moreover, furthermore, additionally:</strong> add another supporting point or item.</li><li><strong>Similarly, likewise:</strong> add a genuinely parallel or similar case.</li><li><strong>For example, for instance:</strong> introduce a case that illustrates a broader statement.</li><li><strong>Specifically, in particular:</strong> narrow a broad statement to an exact detail or selected case.</li><li><strong>Indeed, in fact:</strong> confirm, strengthen, or sharpen the previous point.</li><li><strong>In other words:</strong> restate the same idea more clearly; it does not add new evidence.</li></ul><blockquote><p><strong>Precision test:</strong> “Same topic” is not enough. Ask what new job the second idea performs.</p></blockquote>",
+      "html": "<h2>Some relationships are roughly agreement</h2><ul><li><strong>Moreover, furthermore, additionally:</strong> add another supporting point or item.</li><li><strong>Similarly, likewise:</strong> add a genuinely parallel or similar case.</li><li><strong>For example, for instance:</strong> introduce a case that illustrates a broader statement.</li><li><strong>Specifically, in particular:</strong> narrow a broad statement to an exact detail or selected case.</li><li><strong>Indeed, in fact:</strong> confirm, strengthen, or sharpen the previous point.</li><li><strong>In other words:</strong> restate the same idea more clearly; it does not add new evidence.</li></ul><blockquote><p><strong>Precision test:</strong> Rough agreement is only the family. “Same topic” is not enough; ask what new job the second idea performs.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -148,7 +148,7 @@
     {
       "kind": "text",
       "id": "result_and_purpose_words",
-      "html": "<h2>Separate result from purpose</h2><ul><li><strong>Therefore, thus, consequently, hence, as a result:</strong> the current idea follows as an outcome or a conclusion warranted by the previous idea.</li><li><strong>Accordingly:</strong> the current action or judgment is an appropriate response to the previous condition.</li><li><strong>To that end:</strong> the current action is taken to achieve a goal just stated.</li></ul><blockquote><p><strong>Therefore is not a stronger version of “also.”</strong> You should be able to substitute <em>because of that</em> or <em>it follows that</em>.</p></blockquote><p>A cause can be physical, but it can also be logical evidence for a conclusion. The first idea must do more than agree with the second.</p>",
+      "html": "<h2>Some relationships explain why the next idea follows</h2><ul><li><strong>Therefore, thus, consequently, hence, as a result:</strong> the current idea follows as an outcome or a conclusion warranted by the previous idea.</li><li><strong>Accordingly:</strong> the current action or judgment is an appropriate response to the previous condition.</li><li><strong>To that end:</strong> the current action is taken to achieve a goal just stated.</li></ul><blockquote><p><strong>Therefore is not a stronger version of “also.”</strong> You should be able to substitute <em>because of that</em> or <em>it follows that</em>.</p></blockquote><p>These transitions all answer a version of <em>why this next?</em>, but direction matters: a result follows from an earlier cause, while a purposeful action serves an earlier goal.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -173,7 +173,7 @@
     {
       "kind": "text",
       "id": "turning_words",
-      "html": "<h2>Not every turn is the same turn</h2><ul><li><strong>However, by contrast:</strong> mark a direct difference or opposing point.</li><li><strong>Nevertheless, nonetheless, even so:</strong> mean <em>despite that, this is still true</em>; the previous idea creates an expectation that the current one defeats.</li><li><strong>On the other hand:</strong> present another side, option, or aspect of a comparison.</li><li><strong>Conversely:</strong> reverse the direction of a relationship, not merely disagree.</li><li><strong>Granted, admittedly:</strong> concede a point or limitation that the writer accepts.</li><li><strong>Instead, rather:</strong> replace a rejected or unused alternative.</li></ul><p>Several of these can overlap in ordinary writing. On the SAT, use the one whose specific job is uniquely supported by the text.</p>",
+      "html": "<h2>Some relationships involve a turn or contrast</h2><ul><li><strong>However, by contrast:</strong> mark a direct difference or opposing point.</li><li><strong>Nevertheless, nonetheless, even so:</strong> mean <em>despite that, this is still true</em>; the previous idea creates an expectation that the current one defeats.</li><li><strong>On the other hand:</strong> present another side, option, or aspect of a comparison.</li><li><strong>Conversely:</strong> reverse the direction of a relationship, not merely disagree.</li><li><strong>Granted, admittedly:</strong> concede a point or limitation that the writer accepts.</li><li><strong>Instead, rather:</strong> replace a rejected or unused alternative.</li></ul><p>The broad family is a turn or contrast, but the exact turn still matters. On the SAT, use the choice whose specific job is uniquely supported by the text.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -198,7 +198,7 @@
     {
       "kind": "text",
       "id": "sequence_and_local_signals",
-      "html": "<h2>Some answers complete a built-in map</h2><ul><li><strong>Then, next, subsequently:</strong> move to a later event or step.</li><li><strong>Meanwhile:</strong> shift to something happening at the same time.</li><li><strong>Ultimately, finally:</strong> reach a final stage or outcome.</li><li><strong>More often, less often:</strong> compare frequency with an explicit or implied baseline.</li><li><strong>Instead:</strong> replace the option that was rejected, avoided, or uncommon.</li><li><strong>In turn:</strong> continue a chain in which one result produces the next.</li></ul><p>Scan for paired signals: <strong>rarely → more often</strong>, <strong>first → next</strong>, <strong>earlier → subsequently</strong>, <strong>not X → instead Y</strong>, <strong>one approach → another approach</strong>.</p><blockquote><p><strong>This is the screenshot pattern:</strong> the blank may seem to point mostly at the current sentence because one small word before it has already established the comparison.</p></blockquote>",
+      "html": "<h2>Some relationships organize ideas by order, alternative, or scale</h2><ul><li><strong>Then, next, subsequently:</strong> move to a later event or step.</li><li><strong>Meanwhile:</strong> shift to something happening at the same time.</li><li><strong>Ultimately, finally:</strong> reach a final stage or outcome.</li><li><strong>More often, less often:</strong> compare frequency with an explicit or implied baseline.</li><li><strong>Instead:</strong> replace the option that was rejected, avoided, or uncommon.</li><li><strong>In turn:</strong> continue a chain in which one result produces the next.</li></ul><p>Scan for paired signals: <strong>rarely → more often</strong>, <strong>first → next</strong>, <strong>earlier → subsequently</strong>, <strong>not X → instead Y</strong>, <strong>one approach → another approach</strong>.</p><blockquote><p><strong>This is the less common local-signal pattern:</strong> the blank may seem to point mostly at the current sentence because one small word before it has already established the comparison. The four-step routine still works; your bracket simply needs to include that signal.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -223,7 +223,7 @@
     {
       "kind": "text",
       "id": "match_and_substitute",
-      "html": "<h2>Steps 4 and 5: Translate the transition, then test it</h2><p>Do not test only the polished word. Replace it with its plain logical job:</p><ul><li><strong>therefore</strong> → because of that / it follows that</li><li><strong>for example</strong> → one case is</li><li><strong>specifically</strong> → more exactly</li><li><strong>nevertheless</strong> → despite that, this is still true</li><li><strong>in other words</strong> → stated another way</li><li><strong>more often</strong> → at a higher frequency than the alternative</li></ul><p>If the paraphrase changes the logic you predicted, reject the choice even if the original word sounds smooth.</p>",
+      "html": "<h2>Step 4: Match and verify by paraphrasing</h2><p>Matching and verifying are one judgment loop: replace a serious choice with its plain logical job, then test whether that job preserves your predicted map.</p><ul><li><strong>therefore</strong> → because of that / it follows that</li><li><strong>for example</strong> → one case is</li><li><strong>specifically</strong> → more exactly</li><li><strong>nevertheless</strong> → despite that, this is still true</li><li><strong>in other words</strong> → stated another way</li><li><strong>more often</strong> → at a higher frequency than the alternative</li></ul><p>If the paraphrase changes the logic you predicted, reject the choice even if the original word sounds smooth.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -284,8 +284,8 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "Retrieve the five actions in Bracket the Pivot and the extra check for words such as rarely or first.",
-        "explanation": "You have the routine. Build the logic before the choices, demand an exact definition, and inspect a local hinge when the relationship seems to live mostly inside the current sentence."
+        "hint": "Retrieve the four actions in Bracket the Pivot and the extra check for words such as rarely or first.",
+        "explanation": "You have the four-step routine. Build the logic before the choices, match and verify with exact definitions, and inspect a local hinge when the relationship seems to live mostly inside the current sentence."
       },
       "calculator": { "display": "hidden" }
     },
