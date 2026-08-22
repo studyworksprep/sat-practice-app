@@ -1,14 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
   <title id="title">Two similar right triangles drawn in different orientations</title>
-  <desc id="desc">Triangle ABC has a right angle at A, a blue angle at B, and a green angle at C. A larger, rotated triangle DFE has a right angle at D, a blue angle at F, and a green angle at E. Matching colors show A corresponds to D, B to F, and C to E.</desc>
+  <desc id="desc">Triangle ABC has a right angle at A, a blue angle at B, and a green angle at C. A larger, rotated triangle DFE has a right angle at D, a blue angle at F, and a green angle at E. Matching colors show A corresponds to D, B to F, and C to E; the green C and E angles carry double arcs, and the blue F and B angles carry single arcs.</desc>
   <rect width="1120" height="520" rx="28" fill="#f7f9fc"/>
   <g font-family="Arial, Helvetica, sans-serif" fill="#101828">
     <text x="560" y="48" text-anchor="middle" font-size="29" font-weight="700">Match angles before you match sides</text>
 
     <path d="M110 410 L430 410 L110 170 Z" fill="#eff8ff" stroke="#102a43" stroke-width="6" stroke-linejoin="round"/>
     <path d="M110 410 L110 382 L138 382 L138 410" fill="none" stroke="#c4320a" stroke-width="5"/>
-    <path d="M382 410 A48 48 0 0 0 391.6 381.2" fill="none" stroke="#175cd3" stroke-width="6"/>
-    <path d="M110 218 A48 48 0 0 0 138.8 208.4" fill="none" stroke="#067647" stroke-width="6"/>
+    <path d="M382 410 A48 48 0 0 1 391.6 381.2" fill="none" stroke="#175cd3" stroke-width="6"/>
+    <path d="M110 218 A48 48 0 0 0 148.4 198.8" fill="none" stroke="#067647" stroke-width="6"/>
+    <path d="M110 230 A60 60 0 0 0 158 206" fill="none" stroke="#067647" stroke-width="6"/>
     <circle cx="110" cy="410" r="8" fill="#c4320a"/>
     <circle cx="430" cy="410" r="8" fill="#175cd3"/>
     <circle cx="110" cy="170" r="8" fill="#067647"/>
@@ -18,7 +19,8 @@
 
     <path d="M690 150 L690 438 L1074 150 Z" fill="#ecfdf3" stroke="#102a43" stroke-width="6" stroke-linejoin="round"/>
     <path d="M690 150 L718 150 L718 178 L690 178" fill="none" stroke="#c4320a" stroke-width="5"/>
-    <path d="M690 390 A48 48 0 0 0 718.8 399.6" fill="none" stroke="#067647" stroke-width="6"/>
+    <path d="M690 390 A48 48 0 0 1 728.4 409.2" fill="none" stroke="#067647" stroke-width="6"/>
+    <path d="M690 378 A60 60 0 0 1 738 402" fill="none" stroke="#067647" stroke-width="6"/>
     <path d="M1026 150 A48 48 0 0 0 1035.6 178.8" fill="none" stroke="#175cd3" stroke-width="6"/>
     <circle cx="690" cy="150" r="8" fill="#c4320a"/>
     <circle cx="1074" cy="150" r="8" fill="#175cd3"/>
@@ -33,7 +35,7 @@
     <text x="560" y="306" text-anchor="middle" font-size="24" fill="#175cd3">B ↔ F</text>
     <text x="560" y="348" text-anchor="middle" font-size="24" fill="#067647">C ↔ E</text>
 
-    <text x="270" y="490" text-anchor="middle" font-size="24" font-weight="700">△ABC</text>
-    <text x="882" y="490" text-anchor="middle" font-size="24" font-weight="700">△DFE</text>
+    <text x="270" y="490" text-anchor="middle" font-size="24" font-weight="700">Triangle ABC</text>
+    <text x="882" y="490" text-anchor="middle" font-size="24" font-weight="700">Triangle DFE</text>
   </g>
 </svg>

@@ -26,7 +26,12 @@
     <text x="158" y="335" font-size="28" fill="#344054">tan(35)</text>
 
     <rect x="851" y="97" width="54" height="44" rx="10" fill="#ffffff" stroke="#b42318" stroke-width="4"/>
-    <text x="878" y="130" text-anchor="middle" font-size="30" fill="#344054">⚙</text>
+    <g transform="translate(878 119) rotate(45)">
+      <rect x="-3.5" y="-2" width="7" height="18" rx="3" fill="#344054"/>
+      <circle cx="0" cy="-8" r="8" fill="#344054"/>
+      <rect x="-3" y="-19" width="6" height="11" fill="#ffffff"/>
+      <circle cx="0" cy="-8" r="3.5" fill="#ffffff"/>
+    </g>
     <text x="700" y="119" text-anchor="middle" font-size="20" font-weight="700" fill="#b42318">Graph Settings</text>
     <path d="M780 120 L845 120" stroke="#b42318" stroke-width="5" marker-end="url(#arrow)"/>
 
@@ -40,7 +45,8 @@
     <text x="578" y="337" font-size="26" font-weight="700" fill="#175cd3">Degrees</text>
     <rect x="514" y="296" width="220" height="64" rx="30" fill="none" stroke="#b42318" stroke-width="4"/>
 
-    <rect x="530" y="382" width="330" height="52" rx="12" fill="#fff1f0" stroke="#f97066" stroke-width="2"/>
-    <text x="695" y="416" text-anchor="middle" font-size="21" font-weight="700" fill="#912018">Choose the mode the question uses.</text>
+    <rect x="540" y="372" width="310" height="72" rx="14" fill="#fff1f0" stroke="#f97066" stroke-width="2"/>
+    <text x="695" y="402" text-anchor="middle" font-size="20" font-weight="700" fill="#912018">Choose the mode</text>
+    <text x="695" y="428" text-anchor="middle" font-size="20" font-weight="700" fill="#912018">the question uses.</text>
   </g>
 </svg>

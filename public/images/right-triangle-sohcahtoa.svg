@@ -14,7 +14,7 @@
     <path d="M170 495 L170 452 L213 452 L213 495" fill="none" stroke="#c4320a" stroke-width="7"/>
     <text x="118" y="484" font-size="25" font-weight="700" fill="#c4320a">90°</text>
 
-    <path d="M744 495 A66 66 0 0 0 752 461" fill="none" stroke="#067647" stroke-width="7"/>
+    <path d="M750 495 A60 60 0 0 1 757.4 466.2" fill="none" stroke="#067647" stroke-width="7"/>
     <text x="718" y="450" font-size="34" font-weight="700" font-style="italic" fill="#067647">θ</text>
 
     <rect x="26" y="265" width="178" height="64" rx="16" fill="#fff4ed" stroke="#f79009" stroke-width="3"/>
