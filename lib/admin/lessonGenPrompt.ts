@@ -77,9 +77,11 @@ Every check must satisfy all of these rules:
 
 ## Feedback that produces another attempt
 
-For central ideas, prefer retry checks (allow_retry: true) with a targeted hint and a confirming explanation:
+For central ideas, prefer retry checks (allow_retry: true) with a targeted hint, a worked solution, and a confirming explanation:
 - The hint helps the learner inspect the relevant evidence or redo ONE step without giving away the answer — "Subtract \\(4x\\) from both sides and look at the left side", never "Try again" or "Remember the rule".
 - The explanation connects the answer to the underlying idea — never a bare "Correct."
+- The solution is the full worked path revealed after the learner misses twice (the runtime then unlocks Continue instead of looping them): every step from the given problem to the keyed answer, written to be read after failure — plain steps separated by newlines, no "Correct!" tone, no reference to what the learner picked. Without a solution the runtime falls back to the explanation, which rarely walks the steps — author the solution.
+- Transfer checks and the final retrieval check are MEASUREMENT items: set allow_retry: false on them (one submission, immediate explanation) so their first-try data is meaningful. They need no hint or solution.
 
 ## Remediation branching
 
@@ -124,7 +126,7 @@ Blocks render to the learner top-to-bottom, one slide at a time, in array order.
 
 - \`text\` — { kind: "text", html }: one teaching idea in clean HTML.
 - \`raw_block\` — { kind: "raw_block", block_type, content } for these block types:
-  - \`check\`: content { prompt, choices (2-5 strings, plain text or inline LaTeX), correct_index (0-based), explanation }. Optional retry gate: add { allow_retry: true, hint } — a wrong answer shows the hint and a Try Again button WITHOUT revealing the answer, and the learner cannot continue until correct. Optional branch fields (see Branching). Never combine allow_retry with branch fields.
+  - \`check\`: content { prompt, choices (2-5 strings, plain text or inline LaTeX), correct_index (0-based), explanation }. Optional retry gate: add { allow_retry: true, hint, solution } — a wrong answer shows the hint and a Try Again button WITHOUT revealing the answer; after 2 misses the runtime reveals the solution (a full worked path, newline-separated steps; falls back to explanation) and unlocks Continue. Optional max_attempts_before_reveal (integer ≥ 1) overrides the 2-miss default. Transfer and final-retrieval checks set allow_retry: false. Optional branch fields (see Branching). Never combine allow_retry with branch fields.
   - \`lesson_complete\`: content { html, button_label } — the closing block. Exactly one, as the very last block.
   - \`desmos_interactive\`: content is the full validated-calculator schema — { title, instructions_html, initial_expressions (may be []), goal: { type: "enter_expression" | "multi_expression" }, validation: { mode: "equivalent", expected: ["y=2x+1"], test_values: [-2,0,2] } for a checked activity or { mode: "state", state_rules: {...} } for open work, feedback: { success_message_html, retry_message_html, optional targeted_hints, attempt_based_hints, reveal_solution_after_attempts + solution_html }, progression: { require_success } }. Prefer \`desmos_enter_expression\` below unless you need this level of control.
 - \`desmos_enter_expression\` — { kind, title, instructions_html, expression, expected_expression?, test_values? (3-6 x-values that distinguish right from plausible-wrong answers), require_success?, initial_expressions? }: the learner must produce one expression, numerically validated. This is the vehicle for gated transfer tasks.

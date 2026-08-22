@@ -151,12 +151,20 @@ function CheckEditor({ content, onChange }) {
         <span className={f.labelText}>Let the learner retry until correct</span>
       </label>
       {content.allow_retry && (
-        <MathTextArea
-          label="Hint (shown after a wrong answer)"
-          value={content.hint}
-          onChange={(v) => set('hint', v)}
-          rows={2}
-        />
+        <>
+          <MathTextArea
+            label="Hint (shown after a wrong answer)"
+            value={content.hint}
+            onChange={(v) => set('hint', v)}
+            rows={2}
+          />
+          <MathTextArea
+            label="Worked solution (revealed after 2 misses; falls back to the explanation)"
+            value={content.solution}
+            onChange={(v) => set('solution', v)}
+            rows={4}
+          />
+        </>
       )}
     </Section>
   );

@@ -58,6 +58,8 @@ import {
 } from '@/lib/lesson/runtime-navigation.mjs';
 import {
   applyCheckAttempt,
+  checkMissCount,
+  maxAttemptsBeforeReveal,
   resolveCheckRestoreState,
   skippedBlockIdsForForwardJump,
   shouldCompleteDesmosResult,
@@ -456,16 +458,20 @@ export function LessonSlideshow({
             <CheckBlock
               block={currentBlock}
               previousAnswer={checkAnswers[currentBlock.id]}
-              onSubmit={(selected, correct) => {
+              onSubmit={(selected, correct, { solutionRevealed = false } = {}) => {
                 // Every attempt is recorded — a wrong answer in retry
                 // mode included, so the attempt history survives reload
-                // and tutors can see where a student struggled. But only
-                // a correct answer (or any answer when retry is off)
-                // finalizes the block: a wrong retry attempt must not
-                // mark it complete (the gate would be bypassed on
-                // reload) and must not arm navigation.
+                // and tutors can see where a student struggled. A block
+                // finalizes on a correct answer, on any answer when
+                // retry is off, or when the escalation policy revealed
+                // the solution (2 misses by default) — that last case
+                // completes the block with correct:false so the gate
+                // opens but the struggle stays visible. A wrong retry
+                // attempt below the reveal threshold must not mark the
+                // block complete (the gate would be bypassed on reload)
+                // and must not arm navigation.
                 const allowRetry = Boolean(currentBlock.content?.allow_retry);
-                const finalizes = !allowRetry || correct;
+                const finalizes = !allowRetry || correct || solutionRevealed;
                 recordCheckAnswer(
                   currentBlock.id,
                   { selected, correct },
@@ -666,11 +672,10 @@ export function LessonSlideshow({
               </p>
               {checkTally.struggledBlocks.length > 0 && (
                 <p className={s.completeStruggled}>
-                  Took 3+ tries:{' '}
+                  Worth another look:{' '}
                   {checkTally.struggledBlocks
                     .map((row) => `Step ${row.stepNumber}`)
                     .join(', ')}
-                  {' '}— worth another look.
                 </p>
               )}
               <details className={s.completeBreakdown}>
@@ -824,25 +829,41 @@ function getEmbedUrl(url) {
 //     and explanation and locks the block.
 //   - retry (content.allow_retry): a wrong answer shows a hint and lets
 //     the learner pick again without revealing the answer; the block
-//     reveals + locks only once they're correct. The parent gates
-//     Continue and completion on that correct answer.
+//     reveals + locks once they're correct, or once they've missed
+//     max_attempts_before_reveal times (default 2) — then the worked
+//     solution (content.solution, falling back to the explanation) is
+//     shown, the block completes as struggled, and Continue unlocks.
 function CheckBlock({ block, previousAnswer, onSubmit }) {
   const content = block.content || {};
   const choices = content.choices || [];
   const correctIdx = content.correct_index ?? 0;
   const allowRetry = Boolean(content.allow_retry);
   const hintHtml = content.hint || 'Not quite — take another look and try again.';
+  const maxAttempts = maxAttemptsBeforeReveal(content);
 
   const [selected, setSelected] = useState(
-    () => resolveCheckRestoreState(previousAnswer, allowRetry).selected,
+    () => resolveCheckRestoreState(previousAnswer, allowRetry, maxAttempts).selected,
   );
   // `revealed` = block finalized: choices lock, correct answer + the
-  // explanation show. In retry mode this happens only once correct; in
-  // one-shot mode it happens on the first submit. A restored answer is
-  // revealed when it was correct, or whenever retry is off — a persisted
-  // wrong retry attempt restores live so the learner keeps trying.
+  // explanation show. In retry mode this happens on a correct answer or
+  // when the misses hit the reveal threshold; in one-shot mode on the
+  // first submit. A persisted wrong retry attempt below the threshold
+  // restores live so the learner keeps trying.
   const [revealed, setRevealed] = useState(
-    () => resolveCheckRestoreState(previousAnswer, allowRetry).revealed,
+    () => resolveCheckRestoreState(previousAnswer, allowRetry, maxAttempts).revealed,
+  );
+  // Wrong submissions so far, restored from the persisted attempt
+  // history so a reload can't reset the escalation countdown.
+  const [misses, setMisses] = useState(() => checkMissCount(previousAnswer));
+  // Whether the block finalized via the solution reveal rather than a
+  // correct answer — that swaps the explanation box for the worked
+  // solution. Restored entries finalized wrong in retry mode were
+  // revealed by escalation.
+  const [showSolution, setShowSolution] = useState(
+    () =>
+      allowRetry &&
+      resolveCheckRestoreState(previousAnswer, allowRetry, maxAttempts).revealed &&
+      !previousAnswer?.correct,
   );
   // Set after a wrong attempt in retry mode: show the hint and keep the
   // choices live. Cleared the moment the learner changes their pick.
@@ -857,11 +878,23 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
   function handleSubmit() {
     if (selected === null) return;
     const isCorrect = selected === correctIdx;
-    onSubmit(selected, isCorrect);
     if (allowRetry && !isCorrect) {
-      setShowHint(true);
+      const nextMisses = misses + 1;
+      setMisses(nextMisses);
+      if (nextMisses >= maxAttempts) {
+        // Escalate: reveal the solution and finalize the block as
+        // struggled instead of looping the learner forever.
+        onSubmit(selected, false, { solutionRevealed: true });
+        setShowHint(false);
+        setShowSolution(true);
+        setRevealed(true);
+      } else {
+        onSubmit(selected, false);
+        setShowHint(true);
+      }
       return;
     }
+    onSubmit(selected, isCorrect);
     setShowHint(false);
     setRevealed(true);
   }
@@ -936,7 +969,16 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
         </div>
       )}
 
-      {revealed && content.explanation && (
+      {revealed && showSolution && (content.solution || content.explanation) && (
+        <div className={s.solutionReveal}>
+          <strong>Worked solution:</strong>{' '}
+          <MathText as="span" className={s.solutionSteps}>
+            {content.solution || content.explanation}
+          </MathText>
+        </div>
+      )}
+
+      {revealed && !showSolution && content.explanation && (
         <div className={s.explanation}>
           <strong>Explanation:</strong> <MathText as="span">{content.explanation}</MathText>
         </div>

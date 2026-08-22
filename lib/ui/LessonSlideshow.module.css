@@ -400,6 +400,25 @@
   line-height: 1.55;
 }
 
+/* The escalation reveal: shown instead of the explanation box when a
+   retry check finalized via the 2-miss solution reveal. Accent border
+   so it reads as teaching, not as the usual post-answer footnote. */
+.solutionReveal {
+  margin-top: var(--s3);
+  padding: 12px var(--s4);
+  border-radius: var(--radius-sm);
+  background: var(--color-app-accent-bg);
+  border: 1px solid var(--color-app-accent);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* Worked solutions are authored as plain text + LaTeX with newlines
+   between steps; pre-line turns those newlines into step breaks. */
+.solutionSteps {
+  white-space: pre-line;
+}
+
 .hint {
   margin-top: var(--s3);
   padding: 12px var(--s4);
