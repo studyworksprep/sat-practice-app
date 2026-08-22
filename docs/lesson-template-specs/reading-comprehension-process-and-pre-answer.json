@@ -376,7 +376,7 @@
           "Fish raised in clean water are unable to detect chemical cues from predators."
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Combine the fish's normal use of chemical cues with the experiment's pollution result.",
         "explanation": "Correct. The choice captures both the survival response and the evidence that modest pollution may weaken it."
       },
@@ -401,7 +401,7 @@
           "It provides a specific example of the local detail that a neighborhood newsletter can preserve."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Connect the example in sentence 2 to the general claim in sentence 1.",
         "explanation": "Right. The newsletter's record of the delivery network is concrete evidence for Patel's broader point."
       },
@@ -420,7 +420,7 @@
           "Ignore introductions, summarize only the longest sentence, and choose the most detailed answer."
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve all five steps in order, especially the point at which you first view the choices.",
         "explanation": "Exactly. Context and task come first, then usable passage meaning and your own answer target. Only then do you reveal and prove a choice."
       },

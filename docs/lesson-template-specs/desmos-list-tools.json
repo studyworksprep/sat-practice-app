@@ -502,7 +502,7 @@
           "\\(38\\)"
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Define A, then enter total(A+2). The transformed list is [7,9,10,12].",
         "explanation": "Correct. \\(A+2=[7,9,10,12]\\), and those values total 38."
       },
@@ -529,6 +529,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "Define \\(A=[1,4,7]\\) and \\(B=[2,5,8]\\), then enter \\(\\operatorname{median}(\\operatorname{join}(A,B))\\).\njoin concatenates the lists end to end: \\(\\operatorname{join}(A,B)=[1,4,7,2,5,8]\\).\nIn sorted order the six values are \\([1,2,4,5,7,8]\\); the two middle values are 4 and 5, so the median is \\(\\frac{4+5}{2}=4.5\\).\nSo the answer is choice B, \\(4.5\\).",
         "hint": "Join all six values, then ask Desmos for the median. In sorted order, the two middle values are 4 and 5.",
         "explanation": "Correct. The combined values have middle pair 4 and 5, so their median is 4.5."
       },
@@ -554,7 +555,7 @@
           "\\(\\operatorname{total}(P)+\\operatorname{total}(Q)\\)"
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "First create one list containing every value, then apply the mean function.",
         "explanation": "Correct. join(P,Q) creates the five-value combined list, and mean finds its average."
       },
@@ -574,6 +575,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "Define \\(A=[1,3]\\) and \\(B=[5,7]\\), then enter \\(\\operatorname{join}(A,B)+1\\).\njoin runs first and concatenates the lists: \\([1,3,5,7]\\).\nAdding a number to a list adds it to every element: \\([1+1,\\ 3+1,\\ 5+1,\\ 7+1]=[2,4,6,8]\\).\nSo the answer is choice A, \\([2,4,6,8]\\).",
         "hint": "Join first to get [1,3,5,7], then add 1 to every element.",
         "explanation": "Exactly. join makes \\([1,3,5,7]\\), and adding 1 transforms every element into \\([2,4,6,8]\\)."
       },
@@ -592,7 +594,7 @@
           "Square brackets create lists; arithmetic transforms elements; join combines lists; mean, median, and total summarize data"
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Recall the brackets, the difference between arithmetic and join, and the three statistics functions.",
         "explanation": "You have it. Define lists with square brackets, reuse their names, transform elements with arithmetic, combine groups with join, and summarize with mean, median, or total."
       },

@@ -514,7 +514,7 @@
           "no punctuation"
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Begin at step 1. Read each side of the blank as its own sentence.",
         "explanation": "Correct. Both sides are complete sentences, so the semicolon passes the full-stop test. The second sentence contrasts with the first rather than explaining it, so the colon does not fit."
       },
@@ -535,7 +535,7 @@
           "."
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The words after the blank are not a complete sentence, so full stops fail. Does that fragment identify the problem?",
         "explanation": "Right. The words before the colon are complete, and <strong>a shortage of matching stone</strong> identifies the remaining problem."
       },
@@ -556,7 +556,7 @@
           "—"
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The first dash opens removable information. Which mark must close that interruption?",
         "explanation": "Correct. Matching dashes surround <strong>made in 1721</strong>. Removing the detail leaves <strong>The violin remains in remarkably good condition</strong>."
       },
@@ -577,7 +577,7 @@
           "no punctuation"
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The opening words cannot stand alone. Mark where that opening part ends and the main statement begins.",
         "explanation": "Right. The comma closes the opening part <strong>Although the temperature fell below freezing</strong> before the main statement begins."
       },
@@ -598,7 +598,7 @@
           "period, then period"
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Each city-country item already contains a comma. Also notice the word and before the final item.",
         "explanation": "Correct. Semicolons separate the three list items, and the final boundary creates the useful clue <strong>; and</strong>."
       },
@@ -619,7 +619,7 @@
           "Check for a serial-semicolon list; test full stops, then colon, then dash, then comma; stop when one answer is uniquely supported."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Remember both the special semicolon check and the four-category order. Commas belong at the end.",
         "explanation": "Exactly. Check the serial-semicolon possibility, then use <strong>full stop, colon, dash, comma</strong>. The order saves time and keeps later traps from influencing a decision you have already proved."
       },

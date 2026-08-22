@@ -240,6 +240,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "From \\(\\triangle ABC\\sim\\triangle DFE\\), match letters in order: \\(AB\\leftrightarrow DF\\) and \\(AC\\leftrightarrow DE\\).\nKeep the first triangle on top in both ratios: \\(\\frac{AB}{DF}=\\frac{AC}{DE}\\), so \\(\\frac{x}{15}=\\frac{8}{12}\\).\nSimplify the right side to \\(\\frac{2}{3}\\), then \\(x=15\\cdot\\frac{2}{3}=10\\).\nCheck: the first triangle is smaller since \\(8<12\\), and \\(10<15\\) fits.\nSo the answer is choice A, \\(10\\).",
         "hint": "Use \\(AB/DF=AC/DE\\), so \\(x/15=8/12\\).",
         "explanation": "Correct. \\(x/15=8/12=2/3\\), so \\(x=10\\). Both ratios compare the first triangle with the second."
       },
@@ -279,6 +280,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "In the parallel-lines diagram, \\(\\triangle ADE\\sim\\triangle ABC\\), so \\(AD\\leftrightarrow AB\\) and \\(DE\\leftrightarrow BC\\).\nKeep small triangle over large triangle in both ratios: \\(\\frac{AD}{AB}=\\frac{DE}{BC}\\), so \\(\\frac{4}{10}=\\frac{6}{x}\\).\nCross multiply: \\(4x=60\\), so \\(x=15\\).\nCheck: \\(BC=15\\) is longer than \\(DE=6\\), which fits the larger triangle.\nSo the answer is choice C, \\(15\\).",
         "hint": "Keep small over large: \\(AD/AB=DE/BC\\).",
         "explanation": "Correct. \\(4/10=6/x\\), so \\(4x=60\\) and \\(x=15\\)."
       },
@@ -304,7 +306,7 @@
           "\\(24\\)"
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Use one direction for both pairs: \\(4/10=6/x\\).",
         "explanation": "Right. The large-to-small scale factor is \\(10/4=5/2\\), so \\(x=6(5/2)=15\\)."
       },
@@ -439,6 +441,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "Rank the sides: in the large triangle, \\(AB=25\\) is the large side and \\(AC=15\\) is the small side; in the left triangle, \\(AC=15\\) is the large side and \\(AD=d\\) is the small side.\nMatch positions with the large triangle on top: large over large equals small over small, so \\(\\frac{AB}{AC}=\\frac{AC}{AD}\\).\nSubstitute the lengths: \\(\\frac{25}{15}=\\frac{15}{d}\\).\nThe side \\(AC=15\\) correctly appears twice because it plays a different size role in each triangle.\nSo the answer is choice B, \\(\\frac{25}{15}=\\frac{15}{d}\\).",
         "hint": "Match large with large and small with small while keeping the large triangle on top.",
         "explanation": "Correct. Large-to-large is \\(AB/AC=25/15\\), and small-to-small is \\(AC/AD=15/d\\)."
       },
@@ -494,6 +497,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "The proportion \\(\\frac{4}{h}=\\frac{h}{9}\\) compares small over medium in each of the two smaller triangles, with the altitude appearing in both.\nCross multiply: \\(h^2=4\\cdot9=36\\).\nA length is positive, so \\(h=\\sqrt{36}=6\\).\nCheck: \\(6\\) sits between the pieces \\(4\\) and \\(9\\), matching its size position.\nSo the answer is choice A, \\(6\\).",
         "hint": "Cross multiply to get \\(h^2=36\\), then use the positive value because \\(h\\) is a length.",
         "explanation": "Correct. \\(h^2=4\\cdot9=36\\), so the positive altitude is \\(h=6\\)."
       },
@@ -553,7 +557,7 @@
           "\\(26\\)"
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Cross multiply: \\(x^2=18\\cdot8=144\\).",
         "explanation": "Correct. \\(x^2=144\\), so the positive side length is \\(x=12\\). It is shorter than hypotenuse \\(18\\), which fits."
       },
@@ -579,7 +583,7 @@
           "Rotate every triangle on paper; match only the horizontal sides; use area ratios for missing lengths."
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Recall the sequence: angles, correspondence, consistent proportion, size check.",
         "explanation": "You have it. Angles establish similarity, correspondence determines the side pairs, consistent ratios produce the equation, and a size check catches mismatches."
       },

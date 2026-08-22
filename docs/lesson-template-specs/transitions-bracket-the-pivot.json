@@ -246,6 +246,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "Bracket the two exact ideas around the blank: before it, the new tracking system detected many moths moving in daylight; after it, the earlier night-only conclusion reflected limits of the old equipment.\nShrink each idea: Idea 1 is that new equipment shows daytime movement; Idea 2 is that the old conclusion came from the old equipment, not the moths' behavior.\nPredict the relationship: Idea 2 is a conclusion supported by Idea 1, since the daytime detections are evidence that the old picture was distorted.\nMatch and substitute: therefore means \"it follows that,\" and \"it follows that the earlier conclusion reflected limits of the old equipment\" keeps the predicted logic. \"For example\" would need a specific case, \"Meanwhile\" a simultaneous event, and \"Additionally\" a second supporting point, and none of those matches.\nSo the answer is choice C, \"Therefore,\".",
         "hint": "The new evidence gives the researchers a logical basis for revising what the older detections seemed to show.",
         "explanation": "Yes. The new daytime detections support the conclusion that the old equipment distorted the earlier picture. Therefore signals a warranted conclusion, not simple agreement."
       },
@@ -264,7 +265,7 @@
           "Nevertheless,"
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Bracket the uncommon method and the usual alternative, then look for a phrase that compares their frequency.",
         "explanation": "Right. The text says rigid sleeves are rare and contrasts them with the method used at a higher frequency. More often completes that scale precisely."
       },
@@ -283,7 +284,7 @@
           "Bracket exact ideas, shrink them, predict their link, paraphrase choices, and check local signals."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the five actions in Bracket the Pivot and the extra check for words such as rarely or first.",
         "explanation": "You have the routine. Build the logic before the choices, demand an exact definition, and inspect a local hinge when the relationship seems to live mostly inside the current sentence."
       },

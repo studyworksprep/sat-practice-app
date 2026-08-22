@@ -370,6 +370,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "Solve each equation for \\(y\\): \\(ax+2y=10\\) becomes \\(y=-\\frac{a}{2}x+5\\), and \\(6x+3y=c\\) becomes \\(y=-2x+\\frac{c}{3}\\).\nNo solution means parallel lines: same slope, different y-intercepts.\nMatch the slopes: \\(-\\frac{a}{2}=-2\\), so \\(a=4\\).\nKeep the y-intercepts different: \\(\\frac{c}{3}\\ne5\\), so \\(c\\ne15\\). If \\(c=15\\) as well, the lines overlap and the system has infinitely many solutions instead.\nSo the answer is choice A, \\(a=4\\) and \\(c\\ne15\\).",
         "hint": "No solution requires equal slopes but unequal y-intercepts.",
         "explanation": "Correct. \\(a=4\\) matches the slopes, and \\(c\\ne15\\) keeps the intercepts different."
       }
@@ -504,6 +505,7 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
+        "solution": "Infinitely many solutions means the equations graph as the same line, so every term of \\(4x+6y=10\\) is multiplied by one scale factor to produce \\(10x+ny=25\\).\nFind the factor from the known pairs: \\(\\frac{10}{4}=2.5\\) and \\(\\frac{25}{10}=2.5\\).\nApply that same factor to the y-coefficient: \\(n=6(2.5)=15\\).\nCheck the full proportion: \\(\\frac{10}{4}=\\frac{15}{6}=\\frac{25}{10}=2.5\\), so all three terms use the same multiplier.\nSo the answer is choice D, \\(15\\).",
         "hint": "The multiplier from 4 to 10 must also multiply 6.",
         "explanation": "Correct. The scale factor is \\(\\frac{10}{4}=2.5\\), so \\(n=6(2.5)=15\\)."
       }
@@ -550,6 +552,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "The equations represent the same line, so the ratio of the x-coefficient to the y-coefficient is the same in both equations: \\(\\frac{p}{q}=\\frac{15}{25}\\).\nReduce the ratio: \\(\\frac{15}{25}=\\frac{3}{5}\\).\nThe individual values are unnecessary, but they confirm it: the constants give the scale factor \\(\\frac{20}{50}=\\frac{2}{5}\\), so \\(p=15\\cdot\\frac{2}{5}=6\\) and \\(q=25\\cdot\\frac{2}{5}=10\\), and \\(\\frac{6}{10}=\\frac{3}{5}\\).\nSo the answer is choice C, \\(\\frac{3}{5}\\).",
         "hint": "For equivalent lines, \\(\\frac{p}{q}=\\frac{15}{25}\\). Reduce that ratio.",
         "explanation": "Correct. \\(\\frac{p}{q}=\\frac{15}{25}=\\frac{3}{5}\\). The individual values of p and q are unnecessary."
       }
@@ -572,7 +575,7 @@
           "\\(8\\)"
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The constant 8 is multiplied by 3 to become 24. Apply that factor to both variable coefficients.",
         "explanation": "Correct. Multiplying the first equation by \\(3\\) gives the second: \\(3(k+1)=9\\), so \\(k=2\\), and \\(3m=12\\), so \\(m=4\\). Therefore, \\(k+m=6\\)."
       }
@@ -590,7 +593,7 @@
           "No solution means equal slopes and unequal intercepts; infinitely many means equal slopes and equal intercepts; one unknown can be explored with a slider, while several unknowns call for equations or proportions."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Recall the two pictures and the method choice based on the number of missing constants.",
         "explanation": "You have it. The graph identifies the required relationship, and slope-intercept form or proportions makes that relationship exact."
       }

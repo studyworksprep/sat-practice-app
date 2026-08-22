@@ -452,7 +452,7 @@
           "During construction, the nearby reef became louder and received fewer dolphin visits, while the distant reef changed little."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Keep the observed comparison between the reefs without claiming a cause the researchers did not determine.",
         "explanation": "Correct. D reports the paired changes and nothing more. A and C invent a proven cause and stronger claims. B reverses which reef changed."
       },
@@ -471,7 +471,7 @@
           "The distant reef changed more than the nearby reef."
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Compare proved and only with the final sentence of the passage.",
         "explanation": "Right. The timing and observations may make noise a possibility, but the passage does not prove it or rule out other causes."
       },

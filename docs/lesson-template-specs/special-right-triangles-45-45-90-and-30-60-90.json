@@ -84,6 +84,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "Clue: a \\(45\\)-\\(45\\)-\\(90\\) triangle has sides \\(k\\), \\(k\\), and \\(k\\sqrt{2}\\).\nRole: the given side \\(10\\sqrt{2}\\) is the hypotenuse, so match it to the \\(k\\sqrt{2}\\) position.\nSolve for \\(k\\): \\(k\\sqrt{2}=10\\sqrt{2}\\), so dividing both sides by \\(\\sqrt{2}\\) gives \\(k=10\\).\nBuild: each leg equals \\(k\\), so both legs are \\(10\\).\nCheck: the hypotenuse \\(10\\sqrt{2}\\) is longer than each leg, as it must be.\nSo the answer is choice B, \\(10\\).",
         "hint": "Match \\(10\\sqrt{2}\\) to the hypotenuse position \\(k\\sqrt{2}\\), then solve for \\(k\\).",
         "explanation": "Correct. \\(k\\sqrt{2}=10\\sqrt{2}\\), so \\(k=10\\). Both legs have length \\(10\\)."
       },
@@ -203,6 +204,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "Clue: a \\(30\\)-\\(60\\)-\\(90\\) triangle has short leg \\(k\\), long leg \\(k\\sqrt{3}\\), and hypotenuse \\(2k\\).\nRole: the given \\(18\\) is the hypotenuse, so \\(2k=18\\) and \\(k=9\\).\nBuild: the short leg is \\(k=9\\) and the long leg is \\(k\\sqrt{3}=9\\sqrt{3}\\).\nCheck: \\(9<9\\sqrt{3}<18\\), so short leg < long leg < hypotenuse holds.\nSo the answer is choice A, \\(9\\) and \\(9\\sqrt{3}\\).",
         "hint": "Match \\(18\\) to \\(2k\\). After finding \\(k\\), keep the short and long roles in order.",
         "explanation": "Right. \\(2k=18\\), so \\(k=9\\). The short leg is \\(9\\), and the long leg is \\(9\\sqrt{3}\\)."
       },
@@ -228,6 +230,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "Role: the given side \\(15\\sqrt{3}\\) is the long leg, so match it to the \\(k\\sqrt{3}\\) position.\nSolve for \\(k\\): \\(k\\sqrt{3}=15\\sqrt{3}\\) gives \\(k=15\\).\nBuild: the short leg is \\(k=15\\) and the hypotenuse is \\(2k=30\\).\nCheck: \\(15<15\\sqrt{3}<30\\), so the size order fits.\nSo the answer is choice C, \\(15\\) and \\(30\\).",
         "hint": "Match the long leg \\(15\\sqrt{3}\\) to \\(k\\sqrt{3}\\).",
         "explanation": "Correct. \\(k=15\\), so the short leg is \\(15\\) and the hypotenuse is \\(2k=30\\)."
       },
@@ -316,6 +319,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "The area gives the side: \\(s^2=72\\), so \\(s=\\sqrt{72}=6\\sqrt{2}\\).\nClue: the diagonal splits the square into two \\(45\\)-\\(45\\)-\\(90\\) triangles with the square's sides as equal legs.\nBuild: the diagonal is \\(s\\sqrt{2}=(6\\sqrt{2})(\\sqrt{2})=6\\cdot2=12\\).\nCheck: the diagonal \\(12\\) is longer than the side \\(6\\sqrt{2}\\), as a hypotenuse must be.\nSo the answer is choice C, \\(12\\).",
         "hint": "The area is \\(s^2\\). Find the side \\(s\\) first, then use \\(d=s\\sqrt{2}\\).",
         "explanation": "Correct. The side is \\(6\\sqrt{2}\\), so the diagonal is \\((6\\sqrt{2})(\\sqrt{2})=12\\)."
       },
@@ -341,6 +345,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "Clue: the two radii are equal and meet at \\(90^\\circ\\), so the triangle they form with the chord is an isosceles right triangle, a \\(45\\)-\\(45\\)-\\(90\\).\nRole: each radius is a leg, so \\(k=11\\).\nBuild: the chord is the hypotenuse, \\(k\\sqrt{2}=11\\sqrt{2}\\).\nCheck: the chord \\(11\\sqrt{2}\\) is longer than each radius, as a hypotenuse must be.\nSo the answer is choice B, \\(11\\sqrt{2}\\).",
         "hint": "The two radii are equal legs of an isosceles right triangle. The chord is the hypotenuse.",
         "explanation": "Right. The equal legs are \\(11\\), so the chord-hypotenuse is \\(11\\sqrt{2}\\)."
       },
@@ -366,6 +371,7 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
+        "solution": "Each side of the equilateral triangle is \\(42\\div3=14\\).\nClue: the altitude splits the triangle into two \\(30\\)-\\(60\\)-\\(90\\) triangles; in each half, the equilateral side \\(14\\) is the hypotenuse.\nRole: \\(2k=14\\), so \\(k=7\\), and the short leg (half the base) is \\(7\\).\nBuild: the altitude is the long leg, \\(k\\sqrt{3}=7\\sqrt{3}\\).\nCheck: \\(7<7\\sqrt{3}<14\\), so the size order fits.\nSo the answer is choice D, \\(7\\sqrt{3}\\).",
         "hint": "Find one side from the perimeter. In a half-triangle, that side is the hypotenuse and half of it is the short leg.",
         "explanation": "Correct. Each side is \\(14\\), so the short leg is \\(7\\) and the altitude-long leg is \\(7\\sqrt{3}\\)."
       },
@@ -422,7 +428,7 @@
           "\\(28\\)"
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Treat the diagonal as the hypotenuse \\(k\\sqrt{2}\\). Find the side \\(k\\), then square it for area.",
         "explanation": "Correct. \\(k\\sqrt{2}=14\\sqrt{2}\\), so the square's side is \\(14\\) and its area is \\(14^2=196\\)."
       },
@@ -441,7 +447,7 @@
           "\\(6x\\)"
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The altitude is the long leg \\(k\\sqrt{3}\\) of a half-triangle. Find \\(k\\), then remember that the equilateral side is the half-triangle's hypotenuse \\(2k\\).",
         "explanation": "Right. \\(k\\sqrt{3}=x\\sqrt{3}\\), so \\(k=x\\). Each equilateral side is \\(2x\\), giving perimeter \\(6x\\)."
       },
@@ -460,7 +466,7 @@
           "Call the shortest side the hypotenuse, use \\(1:1:2\\) for \\(45\\)-\\(45\\)-\\(90\\), and use \\(1:2:\\sqrt{3}\\) in any order for \\(30\\)-\\(60\\)-\\(90\\)."
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the five-part move: Clue, Role, k, Build, Check.",
         "explanation": "You have it. Recognition chooses the ratio, the side role tells you how to recover \\(k\\), and one size check catches most reversals."
       },

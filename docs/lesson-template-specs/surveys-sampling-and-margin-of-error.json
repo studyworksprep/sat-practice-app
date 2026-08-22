@@ -339,7 +339,7 @@
           "Only the 250 sampled first-year students"
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Keep both restrictions from the selection list: first-year students and that university.",
         "explanation": "Correct. The random sample represents all first-year students at that university, not other class years or other universities."
       },
@@ -358,7 +358,7 @@
           "Composting food waste causes households to participate in surveys."
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Choose an estimate about the sampled target population, not an exact claim, broader population, or causal statement.",
         "explanation": "Right. The conclusion uses cautious language and stays within the town households represented by the random sample."
       },
@@ -377,7 +377,7 @@
           "65% to 77%"
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Subtract 6 from 71 for the lower end and add 6 to 71 for the upper end.",
         "explanation": "Correct. 71 − 6 = 65 and 71 + 6 = 77, so 65% to 77% is the plausible range."
       },
@@ -396,7 +396,7 @@
           "Apply every random sample to the whole country and reduce margin of error by rewriting the survey question."
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the four moves: population, selection, claim, range.",
         "explanation": "You have it. A trustworthy inference begins with representative random selection, stays inside the represented population, and treats the margin-of-error interval as plausible rather than certain."
       },

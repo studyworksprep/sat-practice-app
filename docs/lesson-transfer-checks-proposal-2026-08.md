@@ -1,13 +1,14 @@
-# Transfer-Check Designations — Proposal for Tutor Confirmation
+# Transfer-Check Designations
 
-> **Status: Living — pending tutor confirmation.** Drafted 2026-08-22 as
-> the AI-proposes half of plan step **1.7** in
-> `lesson-improvement-plan-2026-08.md`; the confirmed version of the
-> table below is the input to step **1.5** (the scripted pass that sets
-> `allow_retry: false` on the designated checks). Once 1.5 lands, this
-> document records which checks are each lesson's measurement
-> instrument — the same designations feed the 55–80% first-try band in
-> the plan's success metrics and Phase 5.3's delayed retrieval.
+> **Status: Living — confirmed and applied.** Drafted 2026-08-22 as the
+> AI-proposes half of plan step **1.7** in
+> `lesson-improvement-plan-2026-08.md`; **confirmed as proposed by the
+> owner the same day**, and applied to the specs by step **1.5**
+> (`scripts/apply-one-shot-checks.mjs`, which carries this table as its
+> id list). This document records which checks are each lesson's
+> measurement instrument — the same designations feed the 55–80%
+> first-try band in the plan's success metrics and Phase 5.3's delayed
+> retrieval.
 
 ## Decided policy (owner, 2026-08-22)
 
@@ -21,8 +22,11 @@ Two of the three 1.7 decisions are made:
    spot-reviewed in 1.8); the runtime falls back to `explanation` where
    no `solution` exists yet.
 
-The third decision is this document: **which checks are "transfer" in
-each lesson.** Tutors confirm, trim, or swap rows below.
+The third decision is the table below, **confirmed as proposed
+(owner, 2026-08-22)** — including all ⚠ judgment calls as drafted. To
+change a designation later, edit the id list in
+`scripts/apply-one-shot-checks.mjs` (and flip the spec) so this table,
+the script, and the specs stay in step.
 
 ## The rule being proposed
 

@@ -328,7 +328,7 @@
         "prompt": "The researchers expected other laboratories to question their surprising result. Despite this initial _____, several teams agreed to repeat the experiment, and all obtained similar findings. Which choice completes the text?",
         "choices": ["enthusiasm", "skepticism", "precision", "acclaim"],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The first sentence predicts questioning. 'Despite' says the teams repeated the work even though that reaction existed.",
         "explanation": "Correct. 'Skepticism' means doubt, matching both the expected questioning and the contrast introduced by 'Despite.'"
       },
@@ -342,7 +342,7 @@
         "prompt": "The poet revised every line repeatedly, sometimes replacing a single image dozens of times. Describing the finished poem as spontaneous would therefore be _____. Which choice completes the text?",
         "choices": ["appropriate", "premature", "inconsequential", "inaccurate"],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Repeated revision conflicts with the idea that the poem was created spontaneously. 'Therefore' introduces that result.",
         "explanation": "Exactly. Calling the heavily revised poem spontaneous would be inaccurate because the description conflicts with the evidence."
       },
@@ -356,7 +356,7 @@
         "prompt": "Rather than overturning the earlier theory, the discovery _____ it by identifying the limited conditions under which its predictions remained accurate. Which choice completes the text?",
         "choices": ["ignored", "refined", "dramatized", "replaced"],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "'Rather than' rejects total replacement. The discovery made the theory more exact by defining its limits.",
         "explanation": "Correct. The discovery refined the theory: it did not discard it, but made its scope more precise."
       },
@@ -370,7 +370,7 @@
         "prompt": "Without looking back, which process best solves a Words in Context question?",
         "choices": ["Read only the blank's sentence, choose a familiar word, and ignore choices you cannot define.", "Study the answer choices first, select the word with the most positive feeling, and reread only if necessary.", "Read the entire text, connect its logic and clues, predict a perfectly fitting meaning, then match and verify a choice.", "Translate every unfamiliar choice into a root before deciding what the passage is saying."],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the four moves: read, connect, predict, match.",
         "explanation": "You have it. The text determines the meaning; your prediction creates a target; and the final reread proves that the selected answer fits."
       },

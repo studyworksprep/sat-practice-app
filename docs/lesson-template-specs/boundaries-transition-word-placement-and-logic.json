@@ -215,6 +215,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "Label the clauses: A is \"The museum's climate-control system failed,\" B is \"Staff moved the paintings to a protected storage room,\" and C is \"the room was renovated in 2022.\"\nTest the logic to find the result pair: the system failure caused the move, so B is a result of A; moving the paintings did not cause the 2022 renovation, so C is not a result of B.\nAttach: consequently connects A to B, so it belongs at the end of B, before the full stop, which is \", consequently;\". Placing it after the semicolon would attach it to C and wrongly test B to C.\nVerify with the mental rewrite: \"The museum's climate-control system failed. Consequently, staff moved the paintings to a protected storage room. The room was renovated in 2022.\"\nSo the answer is choice A, \", consequently;\".",
         "hint": "Label the clauses A, B, and C. The system failure caused which clause: B or C?",
         "explanation": "Correct. A caused B, so consequently belongs at the end of B, before the semicolon. Moving it gives: 'The system failed. Consequently, staff moved the paintings.'"
       },
@@ -240,6 +241,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "Label the clauses: A is \"Repairs to the telescope ended on Monday,\" B is \"Astronomers expected to resume observations that night,\" and C is \"dense clouds covered the sky.\"\nTest the logic: A leads naturally to B, since finished repairs explain the expectation, so there is no contrast between A and B; the contrast is between B and C, because the astronomers expected to observe but clouds blocked the sky.\nAttach: however connects B to C, so it belongs at the beginning of C, after the full stop; the semicolon ends B and \"however,\" begins C.\nVerify: \"Astronomers expected to resume observations that night; however, dense clouds covered the sky\" states the contrast between the right pair.\nSo the answer is choice C, \"; however,\".",
         "hint": "The contrast is between the expectation in B and the clouds in C. Attach however to the clause about the clouds.",
         "explanation": "Right. The semicolon ends B, and 'however,' begins C. The transition points backward from C to the contrasting expectation in B."
       },
@@ -389,7 +391,7 @@
           "; consequently;"
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The flood in A caused the closure in B. The closure did not cause the upper trail to remain open. Attach consequently to B.",
         "explanation": "Correct. Consequently belongs to B because B results from A: 'The river flooded the lower trail. Consequently, park officials closed that route.' The sentence-final transition comes before the semicolon."
       },
@@ -408,7 +410,7 @@
           "; however,"
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The contrast is between the ten-hour expectation in B and the six-hour result in C. Attach however to C.",
         "explanation": "Exactly. However begins C after the semicolon and points backward to the contrasting expectation in B."
       },
@@ -427,7 +429,7 @@
           "Ignore the clause before the blank and choose whichever punctuation creates the longest pause."
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the labels, attachment rule, movement trick, logic pair, and though check.",
         "explanation": "You have it. Before the full stop means test A–B; after the full stop means test B–C. A transition may end its clause, and though without the transition comma may create a dependent clause instead."
       },

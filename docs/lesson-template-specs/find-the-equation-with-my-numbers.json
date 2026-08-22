@@ -377,7 +377,7 @@
         "prompt": "A venue charges a one-time cleaning fee of $75 plus $12.50 per attendee. Let \\(n\\) be the number of attendees and \\(C\\) be the total charge. Which equation represents this context?",
         "choices": ["\\(C=75n+12.5\\)", "\\(C=12.5n+75\\)", "\\(C=12.5(n+75)\\)", "\\(C=87.5n\\)"],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Build an example: with \\(n=20\\), the attendee charge is $250 and the total is \\(C=325\\). Test \\(n=20\\) and \\(C=325\\) in every choice.",
         "explanation": "Correct. Your value set gives \\(325=12.5(20)+75\\), so \\(C=12.5n+75\\)."
       },
@@ -396,7 +396,7 @@
           "Ignore the equations; build and record one legal value set from the story; test every choice with it; rebuild and retest if choices tie."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the order: story, values, record, same-value testing, and collision response.",
         "explanation": "You have it. The story creates the evidence, every equation faces the same evidence, and a second legal example resolves an accidental tie."
       },

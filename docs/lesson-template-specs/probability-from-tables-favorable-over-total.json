@@ -159,6 +159,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "Find Total first: the condition given that the book selected is hardcover restricts the selection to the hardcover row, whose total is \\(40\\) books.\nFind Favorable inside that Total: within the hardcover row, \\(24\\) books are fiction.\nWrite Favorable over Total: \\(\\frac{24}{40}\\), which simplifies to \\(\\frac{3}{5}\\).\nThe grand total \\(90\\) cannot be the denominator, because paperback books are no longer possible outcomes.\nSo the answer is choice A, \\(\\frac{24}{40}\\).",
         "hint": "The Total is all 40 hardcover books. Favorable is the fiction count within hardcover.",
         "explanation": "Right. Within the 40 hardcover books, 24 are fiction, so the probability is \\(\\frac{24}{40}=\\frac{3}{5}\\)."
       },
@@ -209,6 +210,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "Read the selection: the student is chosen from all \\(70\\) students, and no wording restricts the group, so the Total is the grand total, \\(70\\).\nFind Favorable inside that Total: art students come from both grades, so \\(18+14=32\\).\nWrite Favorable over Total: \\(\\frac{32}{70}\\). Using one grade's row, such as \\(\\frac{18}{30}\\), would leave out part of the allowed group.\nSo the answer is choice B, \\(\\frac{32}{70}\\).",
         "hint": "There is no restriction by grade. Add the art counts for Favorable and use all students for Total.",
         "explanation": "Exactly. There are 18 + 14 = 32 art students among all 70 students, so the probability is \\(\\frac{32}{70}\\)."
       },
@@ -284,6 +286,7 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
+        "solution": "Find Total first: the condition given that the student attends the afternoon session restricts the selection to the afternoon row.\nThe table omits the totals, so add only the needed group: \\(16+9=25\\) afternoon students.\nFind Favorable inside that Total: \\(9\\) geometry students in the afternoon row.\nWrite Favorable over Total: \\(\\frac{9}{25}\\). Check: Favorable is smaller than Total, so the probability lies from 0 to 1.\nSo the answer is choice D, \\(\\frac{9}{25}\\).",
         "hint": "First add 16 + 9 for the afternoon Total. Then place the 9 geometry students over that Total.",
         "explanation": "Correct. The afternoon Total is 25, and 9 of those students are in geometry, so the probability is \\(\\frac{9}{25}\\)."
       },
@@ -346,6 +349,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "Find Total first: the condition after given that says the visitor selected is an adult, so only adult visitors are allowed outcomes.\nIn the museum table, the adult row total is \\(65\\), so the Total is all \\(65\\) adult visitors.\nScience is the target before given that, so it determines Favorable inside the adult row; it does not set the Total.\nThe grand total \\(100\\) fails the condition, because youth visitors are no longer possible outcomes.\nSo the answer is choice C, \\(65\\) adult visitors.",
         "hint": "Treat the condition 'given that the visitor selected is an adult' as the description of every outcome allowed in the Total.",
         "explanation": "Correct. The condition after 'given that' restricts the selection to all 65 adult visitors. Science determines Favorable inside that row."
       },
@@ -364,7 +368,7 @@
           "\\(\\frac{26}{65}\\)"
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The adult Total is 65. Find the science count within the adult row.",
         "explanation": "Right. Of the 65 adult visitors, 39 chose the science tour, so the probability is \\(\\frac{39}{65}\\)."
       },
@@ -383,7 +387,7 @@
           "\\(\\frac{40}{100}\\)"
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "There is no age restriction. Use all 100 visitors for Total and the full history column for Favorable.",
         "explanation": "Correct. All 100 visitors are possible, and 14 + 26 = 40 chose history, so the probability is \\(\\frac{40}{100}\\)."
       },
@@ -402,7 +406,7 @@
           "Find Favorable first, treat it as the denominator, and combine categories with and/or."
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the order: Total, the condition after 'given that,' Favorable inside the restricted group, fraction.",
         "explanation": "You have it. Starting with Total prevents denominator traps, and treating the condition after 'given that' as a restriction keeps both numbers inside the same subset."
       },
