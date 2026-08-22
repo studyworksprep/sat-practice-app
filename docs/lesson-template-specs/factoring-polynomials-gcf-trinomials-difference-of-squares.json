@@ -126,6 +126,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "For \\(x^2+11x+24\\), the pair needs product \\(24\\) and sum \\(11\\).\nList the factor pairs of \\(24\\) in order: \\(1,24\\) sums to \\(25\\); \\(2,12\\) sums to \\(14\\); \\(3,8\\) sums to \\(11\\); \\(4,6\\) sums to \\(10\\).\nOnly \\(3,8\\) gives the needed sum of \\(11\\).\nSo the answer is choice C, \\(3\\) and \\(8\\).",
         "hint": "List the pairs \\(1,24\\), \\(2,12\\), \\(3,8\\), and \\(4,6\\), then compare their sums with \\(11\\).",
         "explanation": "Right. \\(3\\cdot8=24\\) and \\(3+8=11\\)."
       },
@@ -145,6 +146,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "The pair \\(3,8\\) has product \\(24\\) and sum \\(11\\).\nPut the pair into binomials: \\(x^2+11x+24=(x+3)(x+8)\\).\nVerify by distributing: \\(x^2+8x+3x+24=x^2+11x+24\\).\nSo the answer is choice A, \\((x+3)(x+8)\\).",
         "hint": "Use the pair \\(3,8\\) from the previous question.",
         "explanation": "Correct. The pair becomes \\((x+3)(x+8)\\), and expansion returns \\(x^2+11x+24\\)."
       },
@@ -170,6 +172,7 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
+        "solution": "The constant \\(21\\) is positive, so the two numbers have matching signs; the middle term \\(-10x\\) is negative, so both are negative.\nFind the pair: \\((-3)(-7)=21\\) and \\(-3+(-7)=-10\\).\nPut the pair into binomials: \\(x^2-10x+21=(x-3)(x-7)\\).\nVerify by distributing: \\(x^2-7x-3x+21=x^2-10x+21\\).\nSo the answer is choice D, \\((x-3)(x-7)\\).",
         "hint": "The product is positive, so the signs match. Their sum must be \\(-10\\).",
         "explanation": "Correct. \\((-3)(-7)=21\\) and \\(-3+(-7)=-10\\)."
       },
@@ -195,6 +198,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "The constant \\(-15\\) is negative, so one number is positive and the other is negative.\nThe sum must be \\(-2\\), so the number with the greater absolute value is negative: \\((-5)(3)=-15\\) and \\(-5+3=-2\\).\nPut the pair into binomials: \\(x^2-2x-15=(x-5)(x+3)\\).\nVerify by distributing: \\(x^2+3x-5x-15=x^2-2x-15\\).\nSo the answer is choice B, \\((x-5)(x+3)\\).",
         "hint": "Find a pair with product \\(-15\\) and sum \\(-2\\).",
         "explanation": "Right. \\((-5)(3)=-15\\) and \\(-5+3=-2\\), so the factors are \\((x-5)(x+3)\\)."
       },
@@ -295,6 +299,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "Check the pattern: exactly two terms, subtraction between them, and a perfect square on each side.\nFind the square roots: \\(25x^2=(5x)^2\\) and \\(64=8^2\\), so \\(A=5x\\) and \\(B=8\\).\nApply \\(A^2-B^2=(A-B)(A+B)\\): \\(25x^2-64=(5x-8)(5x+8)\\).\nExpanding verifies it: the middle products \\(40x\\) and \\(-40x\\) cancel.\nSo the answer is choice C, \\((5x-8)(5x+8)\\).",
         "hint": "The square roots are \\(5x\\) and \\(8\\). Use one minus factor and one plus factor.",
         "explanation": "Correct. \\(25x^2-64=(5x)^2-8^2=(5x-8)(5x+8)\\)."
       },
@@ -320,6 +325,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "Both terms are perfect squares: halve each even exponent to find the entire square roots.\n\\(81m^4=(9m^2)^2\\) and \\(16n^6=(4n^3)^2\\), so \\(A=9m^2\\) and \\(B=4n^3\\).\nApply \\(A^2-B^2=(A-B)(A+B)\\): \\(81m^4-16n^6=(9m^2-4n^3)(9m^2+4n^3)\\).\nSo the answer is choice A, \\((9m^2-4n^3)(9m^2+4n^3)\\).",
         "hint": "Find each entire square root, including half of every even variable exponent.",
         "explanation": "Right. The square roots are \\(9m^2\\) and \\(4n^3\\), so use their conjugate factors."
       },
@@ -400,7 +406,7 @@
           "\\(3x(x^2+6x+9)\\)"
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "First remove \\(3x\\). Then decide whether \\(x^2+6x+9\\) can factor further.",
         "explanation": "Correct. \\(3x^3+18x^2+27x=3x(x^2+6x+9)=3x(x+3)^2\\)."
       },
@@ -419,7 +425,7 @@
           "\\((2a-3b)(10a+15b)\\)"
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Remove the GCF before inspecting the expression inside parentheses.",
         "explanation": "Right. \\(20a^2-45b^2=5(4a^2-9b^2)=5(2a-3b)(2a+3b)\\)."
       },
@@ -438,7 +444,7 @@
           "Prime over the integers"
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Search factor pairs of \\(-24\\) for a sum of \\(-5\\).",
         "explanation": "Correct. \\((-8)(3)=-24\\) and \\(-8+3=-5\\), so \\(x^2-5x-24=(x-8)(x+3)\\)."
       },
@@ -463,7 +469,7 @@
           "Write two binomials immediately."
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "This step comes before choosing any pattern.",
         "explanation": "Correct. Removing the full GCF simplifies the expression and may reveal the next factoring pattern."
       },

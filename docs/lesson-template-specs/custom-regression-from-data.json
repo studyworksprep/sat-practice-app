@@ -186,6 +186,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "Enter the point \\((2,34)\\) in a table, so \\(x_1=2\\) and \\(y_1=34\\).\nEnter the definition \\(a=10-b\\), then the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\).\nDesmos adjusts the one free constant and assigns \\(b=5\\); the definition line reports the matching \\(a=5\\) automatically.\nRead both assigned values: \\(a=5\\) and \\(b=5\\).\nSo the answer is choice B, \\(a=5,\\ b=5\\).",
         "hint": "Read the assigned value of \\(b\\), then use \\(a=10-b\\). Check that \\(4a+2b+4=34\\).",
         "explanation": "Correct. Regression gives \\(b=5\\), and the definition gives \\(a=10-5=5\\). The equation is \\(r(t)=5t^2+5t+4\\)."
       },
@@ -294,6 +295,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "Enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table.\nSubstitute the given rule for \\(f\\): since \\(g(x)=f(x)-c\\) and \\(f(x)=x^2+5\\), the model to fit is \\(y_1\\sim x_1^2+5-c\\).\nRun the regression and read the assigned value: Desmos assigns \\(c=8\\), fitting every row of the table at once.\nSo the answer is choice B, \\(c=8\\).",
         "hint": "Use the first row: \\(-3=0^2+5-c\\).",
         "explanation": "Right. Desmos assigns \\(c=8\\). Substitution gives \\(g(x)=x^2+5-8=x^2-3\\), which matches all three table rows."
       },
@@ -409,7 +411,7 @@
           "Table \\((1,6)\\); definition \\(v=18-u\\); model \\(y_1=u(x_1-3)^2+v\\)"
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Translate \\(H(3)=18\\) as input 3, output 18. Isolate one constant in the relationship, then use the table variables and regression symbol.",
         "explanation": "Exactly. The data row is \\((3,18)\\), \\(v=6-u\\) is a definition, and \\(y_1\\sim u(x_1-1)^2+v\\) preserves the required vertex form."
       }
@@ -441,6 +443,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "Translate \\(H(3)=18\\) as input 3, output 18, and add the table row \\((3,18)\\).\nEnter the definition \\(v=6-u\\), then the regression \\(y_1\\sim u(x_1-1)^2+v\\).\nRead the assigned values: Desmos assigns \\(u=4\\), and the definition line reports \\(v=2\\) to match.\nSo the answer is choice C, \\(u=4,\\ v=2\\).",
         "hint": "Use \\(v=6-u\\) in \\(18=u(3-1)^2+v\\).",
         "explanation": "Correct. Regression gives \\(u=4\\), and the definition gives \\(v=6-4=2\\)."
       },
@@ -466,7 +469,7 @@
           "\\(H(t)=4t^2-1+2\\)"
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Return to the supplied form \\(H(t)=u(t-1)^2+v\\) and substitute \\(u=4\\), \\(v=2\\).",
         "explanation": "Right. The required function is \\(H(t)=4(t-1)^2+2\\), and \\(H(3)=4(2)^2+2=18\\)."
       }
@@ -489,7 +492,7 @@
           "Enter input-output points, rewrite extra relationships as definitions, substitute other function rules, and fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\)."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Recall the essential translations: points into the table, relationships into definitions, other functions into formulas, and the required model into \\(y_1\\sim\\) an expression in \\(x_1\\).",
         "explanation": "You have it. That workflow preserves the equation form the question requires while giving Desmos every data point and coefficient relationship it needs."
       }

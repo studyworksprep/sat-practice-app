@@ -182,6 +182,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "Start from \\(2x^2+5=7x\\); an x-intercept shows where an expression equals zero, so first get zero on one side.\nSubtract \\(7x\\) from both sides: \\(2x^2-7x+5=0\\).\nThe expression to graph is \\(2x^2-7x+5\\); its x-intercepts are the solutions of the original equation.\nSo the answer is choice C, \\(2x^2-7x+5\\).",
         "hint": "Subtract \\(7x\\) from both sides so the right side becomes zero.",
         "explanation": "Yes. Rewriting gives \\(2x^2-7x+5=0\\), so graph \\(2x^2-7x+5\\)."
       }
@@ -317,6 +318,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "Type each exact choice into the scratch calculator and compare its decimal value with the intercepts near \\(\\pm2.646\\).\nThe values are \\(\\sqrt{7}\\approx2.646\\), \\(\\frac{\\sqrt{14}}{2}\\approx1.871\\), and \\(\\frac{7}{2}=3.5\\); only \\(\\sqrt{7}\\) matches.\nThe graph has both a negative and a positive intercept, so the answer must include both signs.\nSo the answer is choice A, \\(x=\\pm\\sqrt{7}\\).",
         "hint": "Evaluate the positive size of each exact choice. Which one is about \\(2.646\\)? Then check whether the graph has one intercept or two.",
         "explanation": "Yes. \\(\\sqrt{7}\\approx2.646\\), and the graph has both a negative and a positive intercept. The exact solutions are \\(x=\\pm\\sqrt{7}\\). <strong>Next, you will use intercepts to count real solutions.</strong>"
       },
@@ -510,7 +512,7 @@
           "\\(p=\\frac{5\\pm\\sqrt{47}}{6}\\)"
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Evaluate the two values from one choice. Look for decimals close to \\(-0.808\\) and \\(2.475\\), and keep the original variable p.",
         "explanation": "Correct. \\(\\frac{5-\\sqrt{97}}{6}\\approx-0.808\\) and \\(\\frac{5+\\sqrt{97}}{6}\\approx2.475\\). You completed the entire process on a new equation."
       },
@@ -559,6 +561,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "Start from \\(x^2+6=5x\\); the workflow's first move is to get zero on one side, so subtract \\(5x\\): \\(x^2-5x+6=0\\).\nGraph \\(x^2-5x+6\\) and click every place the curve meets the x-axis.\nThe labels show x-intercepts exactly at \\((2,0)\\) and \\((3,0)\\), and every x-intercept is a solution of the original equation, so read both.\nSo the answer is choice C, \\(x=2\\) and \\(x=3\\).",
         "hint": "Click both places where the curve meets the x-axis. Read the first number in each label.",
         "explanation": "Correct. Rewriting gives \\(x^2-5x+6=0\\), and the graph has x-intercepts at \\((2,0)\\) and \\((3,0)\\). Therefore, the complete solution is \\(x=2\\) and \\(x=3\\)."
       },
@@ -607,6 +610,7 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
+        "solution": "Start from \\(2r^2+r=7\\); subtract 7 to get \\(2r^2+r-7=0\\), and replace \\(r\\) with \\(x\\) for Desmos.\nGraph \\(2x^2+x-7\\) and click both x-intercepts.\nThe labels show intercepts near \\(-2.137\\) and \\(1.637\\); rounded to the nearest tenth, \\(-2.1\\) and \\(1.6\\).\nTranslate the temporary \\(x\\) back to the original variable: \\(r\\approx-2.1\\) and \\(r\\approx1.6\\).\nSo the answer is choice D, \\(r\\approx-2.1\\) and \\(r\\approx1.6\\).",
         "hint": "Click both x-intercepts, round each x-coordinate to the nearest tenth, and then replace the temporary x with r.",
         "explanation": "Right. The graph gives x-intercepts near \\(-2.137\\) and \\(1.637\\). Rounded to the nearest tenth and translated back to the original variable, the solutions are \\(r\\approx-2.1\\) and \\(r\\approx1.6\\)."
       },
@@ -654,7 +658,7 @@
           "Infinitely many real solutions"
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Look across the graph for every crossing or touch. Does the curve ever reach the x-axis?",
         "explanation": "Correct. Rewriting gives \\(n^2+4n+8=0\\). Its graph stays above the x-axis, so there are no x-intercepts and therefore no real solutions."
       },
@@ -686,7 +690,7 @@
           "Graph both sides separately; report every point that appears on either graph."
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Recall the four action words: zero, graph, intercepts, report.",
         "explanation": "You have it. That sequence turns every x-intercept into a solution while preserving the variable and answer format the question requires."
       }

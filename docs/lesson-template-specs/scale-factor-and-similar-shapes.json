@@ -166,6 +166,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "The direction is small to large, and the path is linear to area, so square the linear factor.\nThe area multiplier is \\(\\left(\\frac{5}{2}\\right)^2=\\frac{25}{4}\\).\nUse \\(A_{\\text{new}}=A_{\\text{original}}s^2\\): \\(28\\cdot\\frac{25}{4}=\\frac{700}{4}=175\\).\nSo the answer is choice C, \\(175\\).",
         "hint": "Square \\(5/2\\), then multiply the smaller area by that area factor.",
         "explanation": "Correct. The area factor is \\(25/4\\), so the larger area is \\(28(25/4)=175\\)."
       }
@@ -246,6 +247,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "The direction is small to large, and the path is linear to volume, so cube the linear factor.\nThe volume multiplier is \\(\\left(\\frac{5}{2}\\right)^3=\\frac{125}{8}\\).\nUse \\(V_{\\text{new}}=V_{\\text{original}}s^3\\): \\(16\\cdot\\frac{125}{8}=\\frac{2000}{8}=250\\).\nSo the answer is choice B, \\(250\\).",
         "hint": "Cube \\(5/2\\), then multiply \\(16\\) by the result.",
         "explanation": "Correct. The volume factor is \\(125/8\\), so the larger volume is \\(16(125/8)=250\\)."
       }
@@ -315,6 +317,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "Do not cube the area ratio directly; bridge through the linear factor first.\nSurface area follows \\(s^2\\), so the linear ratio is \\(\\sqrt{4}:\\sqrt{49}=2:7\\), keeping the first-to-second direction.\nCube the linear ratio to get the volume ratio: \\(2^3:7^3=8:343\\).\nSo the answer is choice C, \\(8:343\\).",
         "hint": "Surface area gives \\(s^2\\). Take the square root to get \\(2:7\\), then cube.",
         "explanation": "Exactly. The linear ratio is \\(2:7\\), so the volume ratio is \\(2^3:7^3=8:343\\)."
       }
@@ -430,6 +433,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "Name the path: linear to area, so square the scale factor.\nThe area multiplier is \\(\\left(\\frac{4}{3}\\right)^2=\\frac{16}{9}\\).\nMultiply the smaller area: \\(45\\cdot\\frac{16}{9}=80\\).\nSo the answer is choice A, \\(80\\).",
         "hint": "Square \\(4/3\\), then multiply \\(45\\) by \\(16/9\\).",
         "explanation": "Correct. \\(45(16/9)=80\\)."
       }
@@ -448,6 +452,7 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
+        "solution": "Name the path: surface area to linear. Surface area follows the area rule \\(s^2\\), so take a square root.\nTake the square root of each term, keeping the A-to-B direction: \\(\\sqrt{121}:\\sqrt{64}\\).\nThat simplifies to \\(11:8\\).\nSo the answer is choice D, \\(11:8\\).",
         "hint": "Surface area follows the area rule. Take the square root of both ratio terms.",
         "explanation": "Right. The linear ratio is \\(\\sqrt{121}:\\sqrt{64}=11:8\\)."
       }
@@ -466,6 +471,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "Name the path: linear to volume, so cube the scale factor.\nThe volume multiplier is \\(\\left(\\frac{3}{2}\\right)^3=\\frac{27}{8}\\).\nMultiply the smaller volume: \\(80\\cdot\\frac{27}{8}=270\\).\nSo the answer is choice B, \\(270\\).",
         "hint": "Cube \\(3/2\\), then multiply \\(80\\) by \\(27/8\\).",
         "explanation": "Correct. \\(80(27/8)=270\\)."
       }
@@ -484,6 +490,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "Name the path: volume to linear, so take a cube root.\nTake the cube root of each term, keeping the A-to-B direction: \\(\\sqrt[3]{216}:\\sqrt[3]{125}=6:5\\).\nCheck the direction: A has the larger volume, so its linear measure is larger too, and \\(6:5\\) fits.\nSo the answer is choice B, \\(6:5\\).",
         "hint": "Take the cube root of \\(216\\) and \\(125\\), and keep the A-to-B order.",
         "explanation": "Correct. \\(\\sqrt[3]{216}:\\sqrt[3]{125}=6:5\\). \\(5:6\\) is the B-to-A ratio, \\(36:25\\) is the surface-area ratio, and \\(216:125\\) is the volume ratio you started with."
       }
@@ -501,7 +508,7 @@
           "\\(100:9\\)"
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Take the cube root to get the linear ratio \\(10:3\\), then square it for surface area.",
         "explanation": "Exactly. The linear ratio is \\(10:3\\), so the surface-area ratio is \\(100:9\\)."
       }
@@ -519,7 +526,7 @@
           "\\(625:16\\)"
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Take the square root to get the linear ratio \\(5:2\\), then cube it.",
         "explanation": "Exactly. The linear ratio is \\(5:2\\), so the volume ratio is \\(5^3:2^3=125:8\\)."
       }
@@ -538,6 +545,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
+        "solution": "Name the path: linear to perimeter. A perimeter is a sum of lengths, so it stays linear and keeps the same factor.\nThe perimeter ratio therefore equals the side ratio, \\(7:3\\).\nSo the answer is choice A, \\(7:3\\).",
         "hint": "Perimeter is a sum of linear measurements, so it uses the same ratio as corresponding side lengths.",
         "explanation": "Correct. Perimeters scale linearly, so their ratio is also \\(7:3\\)."
       }
@@ -555,7 +563,7 @@
           "Use the area ratio directly as the volume ratio whenever the shapes are similar."
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Match one, two, and three dimensions with the first, second, and third powers of the linear scale factor.",
         "explanation": "You have it. Length and perimeter are linear, area and surface area are two-dimensional, and volume is three-dimensional. For a linear factor of \\(2\\), those multipliers are \\(2\\), \\(4\\), and \\(8\\). Moving backward requires the matching root."
       }

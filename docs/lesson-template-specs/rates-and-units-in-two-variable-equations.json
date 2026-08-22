@@ -53,6 +53,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
+        "solution": "The rate is \\(18\\) pages per minute, and the printer runs for \\(7\\) minutes, a quantity in the same unit named after per.\nUse the unit engine: rate times matching quantity equals total amount. Multiplying \\(\\frac{\\text{pages}}{\\text{minute}}\\) by minutes cancels the minute units and leaves pages.\nCompute the product: \\(18\\times7=126\\), so the total is \\(126\\) pages.\nAdding \\(18+7\\) mixes two different units, and dividing the rate by minutes does not leave pages, so neither produces a total amount.\nSo the answer is choice B, \\(18\\,\\frac{\\text{pages}}{\\text{minute}}\\times7\\,\\text{minutes}=126\\,\\text{pages}\\).",
         "hint": "The minutes must pair with the denominator unit in pages per minute, leaving pages.",
         "explanation": "Correct. The minute units cancel, so the product is a total number of pages: \\(126\\)."
       },
@@ -260,6 +261,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
+        "solution": "The rate is \\(70\\) meters per \\(20\\)-minute interval, so express the time in that same interval unit before multiplying.\nConvert the time: \\(2\\) hours \\(=120\\) minutes.\nCount the intervals: \\(120\\div20=6\\) twenty-minute intervals.\nMultiply the rate by the matching quantity: \\(70\\times6=420\\) meters.\nSo the answer is choice C, \\(420\\).",
         "hint": "Convert 2 hours to 120 minutes, then count how many 20-minute intervals fit into 120 minutes.",
         "explanation": "Correct. Two hours contain \\(120\\div20=6\\) intervals, and \\(70\\times6=420\\) meters."
       },
@@ -284,7 +286,7 @@
           "\\(75\\) liters"
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The four display tanks hold \\(4(60)=240\\) liters. Subtract that subtotal from 690, then divide the remainder among 9 research tanks.",
         "explanation": "Correct. The research tanks hold \\(690-240=450\\) liters total, so \\(r=450\\div9=50\\) liters per research tank."
       },
@@ -303,7 +305,7 @@
           "Label each factor's units, pair a rate with its matching quantity, read the product as a subtotal, and read the sum as the grand total."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Recall the Label–Pair–Product–Whole process and the fact that either factor can carry the rate.",
         "explanation": "You have it. Unit labels reveal whether the coefficient or variable is the rate, what the complete term totals, and how the terms combine."
       },

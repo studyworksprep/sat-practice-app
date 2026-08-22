@@ -357,7 +357,7 @@
         "prompt": "Which expression gives the total number of tickets?",
         "choices": ["\\(3p\\)", "\\(p+3\\)", "\\(p^3\\)", "\\(4p\\)"],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "For example, choose \\(p=5\\). Then there are \\(15\\) standard tickets and \\(20\\) total tickets. Which choice equals \\(20\\)?",
         "explanation": "Correct. With \\(p=5\\), \\(4p=20\\), matching your concrete total. One group of premium tickets plus three equally sized groups of standard tickets makes four groups."
       },
@@ -376,7 +376,7 @@
           "Spot open quantities; choose easy legal values; follow every relationship; answer the question; test all choices with the same values; retest if several match."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the opening, the legal-number rule, consistency across choices, and the collision response.",
         "explanation": "You have it. My Numbers turns one valid situation into evidence, keeps that situation consistent, and uses another legal example only when needed."
       },

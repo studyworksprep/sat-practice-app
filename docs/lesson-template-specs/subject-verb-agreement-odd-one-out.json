@@ -410,7 +410,7 @@
           "have inspired"
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Classify every complete phrase with he and they. Three fit they; one fits he.",
         "explanation": "Correct. <strong>Has inspired</strong> is the singular odd one out. Once the three-to-one split appeared, the sentence could not distract you."
       },
@@ -429,7 +429,7 @@
           "predicted; predicts; predict; is predicting"
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "One set contains a choice that works after both he and they.",
         "explanation": "Right. <strong>Predicted</strong> fits both <strong>he</strong> and <strong>they</strong>, so that set fails the eligibility gate. Each of the other sets creates a clean three-to-one split."
       },
@@ -448,7 +448,7 @@
           "Test every choice after he and they; continue only if each fits exactly one and the split is three to one; choose the answer that differs."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the testing frames, the safety gate, and the final action.",
         "explanation": "You have it: <strong>he or they, exactly one, three to one, choose the different answer</strong>."
       },

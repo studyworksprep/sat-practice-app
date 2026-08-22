@@ -620,7 +620,7 @@
           "\\(q=8\\) only"
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "A line and a parabola can cross twice, so check for a second intersection. The y-coordinate stood for q: read the second coordinate from each point.",
         "explanation": "Correct. The intersections are \\((2,3)\\) and \\((-3,8)\\). The two y-coordinates are \\(3\\) and \\(8\\), so the original system has possible q-values \\(3\\) and \\(8\\). The x-coordinates \\(2\\) and \\(-3\\) are the p-values, and stopping after one intersection misses a solution."
       },
@@ -656,7 +656,7 @@
           "Add the equations together; graph the sum; report the graph's highest point."
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Recall the action sequence: variables, enter both, intersections, translate, answer.",
         "explanation": "You have it. Entering both equations directly makes every shared point visible, and the final steps ensure you report exactly what the question asks."
       }

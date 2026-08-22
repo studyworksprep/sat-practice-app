@@ -135,7 +135,15 @@ modeled.
 
 Use checks to strengthen retrieval and diagnose a specific misconception,
 not merely to add activity. For central ideas, prefer `allow_retry: true`, a
-targeted `hint`, and a short confirming `explanation`.
+targeted `hint`, a full worked `solution` (revealed after two misses — see
+§3b), and a short confirming `explanation`.
+
+**Transfer and retrieval checks are one-shot.** The check(s) that apply the
+lesson's move to fresh content, and the final retrieval check, set
+`allow_retry: false`: they are the lesson's measurement items, and their
+first-try data is the signal that the lesson worked. Everything else
+teaches with retry. The designated per-lesson list lives in
+`lesson-transfer-checks-proposal-2026-08.md`.
 
 Every check should satisfy all of these rules:
 
@@ -365,6 +373,7 @@ the first try:
     "correct_index": 2,
     "allow_retry": true,
     "hint": "The slope is the number multiplied by \\(x\\).",
+    "solution": "Compare with slope-intercept form \\(y = mx + b\\).\nIn \\(y = 3x - 2\\), the number multiplying \\(x\\) is \\(3\\).\nSo the slope is \\(3\\) — choice C.",
     "explanation": "Right — the coefficient of \\(x\\) is the slope, so \\(3\\)."
   }
 }
@@ -372,14 +381,40 @@ the first try:
 - `allow_retry` (optional boolean): when `true`, a wrong answer shows the
   `hint` and a **Try Again** button and lets the learner pick again
   **without** revealing the correct choice. The block reveals the answer
-  and the `explanation` only once they answer correctly.
+  and the `explanation` once they answer correctly — or, after two misses,
+  the runtime reveals the `solution` instead and unlocks Continue, so a
+  stuck learner is never trapped (the block records as struggled either
+  way; tutors see it on the assignment report).
 - `hint` (optional string, used only with `allow_retry`): the nudge shown
   after a wrong answer. If omitted, a generic "take another look" message
   is used. Use the `explanation` for the confirming message on success.
-- A retry check also **gates Continue**: the learner can't advance until
-  they answer correctly (the same way a `require_success` Desmos block
-  gates). Don't combine `allow_retry` with branch fields — retry keeps the
-  learner on the one block rather than routing them elsewhere.
+- `solution` (optional string, used only with `allow_retry`): the full
+  worked path shown on the two-miss reveal — every step from the given
+  problem to the keyed answer, written to be read after failure: plain
+  text + LaTeX, one step per line (newlines render as line breaks), no
+  "Correct!" tone, no reference to what the learner picked. If omitted the
+  reveal falls back to the `explanation`, which rarely walks the steps —
+  author the `solution` on every retry check whose answer takes more than
+  one step.
+- **The solution demonstrates the lesson's technique, not a general math
+  solution.** In a Desmos-method lesson the steps are the calculator
+  workflow (what to enter, what Desmos assigns/displays/returns), and even
+  the confirmation stays in the tool's terms — the RMSE readout, the
+  intercept labels, the assigned value — using only vocabulary the lesson
+  itself teaches. A by-hand algebra path in a lesson that exists to
+  replace by-hand algebra undermines the method; hand steps appear only
+  where the lesson's own workflow includes them (e.g. rewriting to zero
+  form before graphing).
+- `max_attempts_before_reveal` (optional integer ≥ 1): overrides the
+  two-miss default. Rarely needed.
+- A retry check also **gates Continue** until it finalizes — a correct
+  answer or the solution reveal (the same way a `require_success` Desmos
+  block gates). Don't combine `allow_retry` with branch fields — retry
+  keeps the learner on the one block rather than routing them elsewhere.
+- **One-shot checks** (`allow_retry: false` or omitted) are for the
+  transfer and final-retrieval measurement items (§2d): one submission,
+  immediate explanation, first-try data preserved. They take no `hint` or
+  `solution`.
 
 **Video**:
 ```json

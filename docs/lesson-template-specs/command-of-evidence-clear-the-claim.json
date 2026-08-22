@@ -309,7 +309,7 @@
           "Most individual species used about the same percentage of maximal speed when escaping as when pursuing."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The graph counts species separately by activity but never pairs an escaping value with a pursuing value for the same species.",
         "explanation": "Right. Without linked individual-species data, you cannot compare each species' two behaviors. The other statements can be read from category counts."
       },
@@ -334,7 +334,7 @@
           "If the theory is correct and other factors are absent, government efficiency likely decreased in the later period."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Keep the conditional language and compare the theory's predicted direction with the observed direction.",
         "explanation": "Correct. The indicator moved opposite the theory's prediction for rising efficiency, so the conditional inference is that efficiency likely decreased."
       },
@@ -403,7 +403,7 @@
           "Capture the title; Locate the longest quotation; Explain the topic; Add background knowledge; Rank the choices by detail."
         ],
         "correct_index": 0,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Recall the five actions from claim to evidence match.",
         "explanation": "You have it. CLEAR turns an abstract evidence question into a predicted pattern and a short series of checks."
       },

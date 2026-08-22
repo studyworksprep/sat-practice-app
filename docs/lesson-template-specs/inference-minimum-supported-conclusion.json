@@ -264,7 +264,7 @@
           "all ceramic fragments made before 1750 came from the same workshop."
         ],
         "correct_index": 2,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Connect the opening of routes in the 1740s with the later increase in distant clay, but keep the conclusion cautious.",
         "explanation": "Correct. The timing and source change support a likely contribution from expanded trade. The passage does not say local clay disappeared or that ceramics alone caused the routes to open."
       },
@@ -283,7 +283,7 @@
           "Soundbite each important sentence, combine the relationships, predict the smallest supported conclusion, and prove the choice while rejecting overreach."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the four moves: soundbite, combine, predict, prove.",
         "explanation": "You have it. The correct inference comes from the whole text and makes only the smallest leap the evidence supports."
       },

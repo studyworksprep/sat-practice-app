@@ -226,7 +226,7 @@
           "Ground observers estimated 980 seals, making their method more accurate than the drone method."
         ],
         "correct_index": 1,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "The answer must compare both estimates and name the method closer to the 1,210 benchmark.",
         "explanation": "Correct. The second choice includes both estimates and shows that the drone's estimate was closer to the benchmark. The first only names the methods, and the fourth reverses the result."
       },
@@ -245,7 +245,7 @@
           "Read the student's goal, list every requirement, test the choices for goal-fit, and check the notes only if more than one choice still fits."
         ],
         "correct_index": 3,
-        "allow_retry": true,
+        "allow_retry": false,
         "hint": "Retrieve the order: goal, requirements, choices, notes if needed.",
         "explanation": "You have it. Let the goal define the answer first; use the notes as a tiebreaker only when goal-fit does not decide the question."
       },
