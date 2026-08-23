@@ -180,7 +180,12 @@ async function loadCandidateIds(supabase, filters) {
         .select('id')
         .eq('is_published', true)
         .eq('is_broken', false)
-        .is('deleted_at', null);
+        .is('deleted_at', null)
+        // Training sessions draw from the standard bank, matching
+        // the taxonomy counts on the training launcher. Opt-in
+        // import batches are reviewed via explicit surfaces
+        // (lesson-pack search), not mixed into filter results.
+        .eq('pool', 'standard');
 
       if (filters.domains.length)      query = query.in('domain_name', filters.domains);
       if (filters.skills.length)       query = query.in('skill_name',  filters.skills);

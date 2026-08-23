@@ -54,8 +54,12 @@ What's still pending under the decommission plan:
    `questions_v2`, `assignments_v2`, `assignment_students_v2`, the
    `practice_test_*_v2` cluster, plus the always-current tables
    (`attempts`, `practice_sessions`, `desmos_saved_states`,
-   `question_concept_tags`, `concept_tags`, `question_notes`,
-   `question_error_notes`, `student_notes`, `profiles`, etc.).
+   `question_concept_tags`, `concept_tags`, `question_batches`,
+   `question_notes`, `question_error_notes`, `student_notes`,
+   `profiles`, etc.). Note `questions_v2.pool`: filter-driven
+   question selectors must gate on `pool = 'standard'` — opt-in
+   import batches are student-invisible unless explicitly selected
+   (see docs/database.md "Question pools and import batches").
    Reading any name in `_legacy` — or any retired v1 table by name —
    is a violation. No `question_id_map` walks. No
    `resolveLegacyQuestionIds`-shaped translation. If you find old

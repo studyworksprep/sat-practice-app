@@ -2726,6 +2726,61 @@ export type Database = {
         }
         Relationships: []
       }
+      question_batches: {
+        Row: {
+          administration_date: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string
+          notes: string | null
+          pool: string
+          source: string
+        }
+        Insert: {
+          administration_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label: string
+          notes?: string | null
+          pool?: string
+          source: string
+        }
+        Update: {
+          administration_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string
+          notes?: string | null
+          pool?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_batches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       question_concept_tags: {
         Row: {
           created_at: string
@@ -3025,6 +3080,7 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           attempt_count: number
+          batch_id: string | null
           correct_answer: Json | null
           correct_count: number
           created_at: string
@@ -3045,6 +3101,7 @@ export type Database = {
           pattern_id: string | null
           pattern_tagged_at: string | null
           pattern_tagged_by: string | null
+          pool: string
           question_type: string
           rationale_html: string | null
           rationale_rendered: string | null
@@ -3067,6 +3124,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           attempt_count?: number
+          batch_id?: string | null
           correct_answer?: Json | null
           correct_count?: number
           created_at?: string
@@ -3087,6 +3145,7 @@ export type Database = {
           pattern_id?: string | null
           pattern_tagged_at?: string | null
           pattern_tagged_by?: string | null
+          pool?: string
           question_type: string
           rationale_html?: string | null
           rationale_rendered?: string | null
@@ -3109,6 +3168,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           attempt_count?: number
+          batch_id?: string | null
           correct_answer?: Json | null
           correct_count?: number
           created_at?: string
@@ -3129,6 +3189,7 @@ export type Database = {
           pattern_id?: string | null
           pattern_tagged_at?: string | null
           pattern_tagged_by?: string | null
+          pool?: string
           question_type?: string
           rationale_html?: string | null
           rationale_rendered?: string | null
@@ -3148,6 +3209,20 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "questions_v2_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "published_question_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_v2_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "question_batches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "questions_v2_pattern_id_fkey"
             columns: ["pattern_id"]
@@ -4473,6 +4548,15 @@ export type Database = {
           last_name?: string | null
           role?: string | null
           tutor_name?: string | null
+        }
+        Relationships: []
+      }
+      published_question_batches: {
+        Row: {
+          administration_date: string | null
+          id: string | null
+          label: string | null
+          question_count: number | null
         }
         Relationships: []
       }

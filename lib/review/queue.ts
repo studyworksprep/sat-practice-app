@@ -303,6 +303,10 @@ export async function buildReviewSessionQuestionIds(
       .eq('is_published', true)
       .eq('is_broken', false)
       .is('deleted_at', null)
+      // Opt-in import batches are excluded from every auto-selector.
+      // (The question leg above stays unfiltered on purpose: it only
+      // resurfaces questions the student already attempted.)
+      .eq('pool', 'standard')
       .order('display_code', { ascending: true })
       .limit(50);
     const candidateIds = (candidates ?? [])

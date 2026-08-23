@@ -356,6 +356,15 @@
   color: var(--color-diff-med-fg);
 }
 
+.chip.on .skillChipCount { color: var(--color-app-accent-hover); }
+
+/* One-line explainer under the "Extra practice sets" chip row. */
+.extraSetsHint {
+  margin: var(--s1) 0 0;
+  font-size: 12px;
+  color: var(--fg3);
+}
+
 .chipDiffHard.on {
   background: var(--color-danger-bg);
   border-color: var(--color-danger);

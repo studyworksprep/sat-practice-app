@@ -711,6 +711,10 @@ async function findEasierCandidates(
     .eq('is_published', true)
     .eq('is_broken', false)
     .is('deleted_at', null)
+    // Opt-in import batches are excluded from every auto-selector —
+    // a detour must not pull in questions the student never opted
+    // into.
+    .eq('pool', 'standard')
     .not('difficulty', 'is', null)
     .lt('difficulty', anchor.difficulty)
     .order('difficulty', { ascending: true })

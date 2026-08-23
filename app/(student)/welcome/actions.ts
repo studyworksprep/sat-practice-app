@@ -108,6 +108,9 @@ export async function startDiagnosticAction(
     .eq('is_published', true)
     .eq('is_broken', false)
     .is('deleted_at', null)
+    // The diagnostic calibrates against the standard bank only —
+    // opt-in import batches are excluded from every auto-selector.
+    .eq('pool', 'standard')
     .limit(5000);
   if (qErr) return actionFail(`Could not load questions: ${qErr.message}`);
 

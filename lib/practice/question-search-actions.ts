@@ -105,7 +105,10 @@ export async function searchQuestions(
     )
     .eq('is_published', true)
     .eq('is_broken', false)
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    // Opt-in import batches stay out of quick-find; they're reached
+    // via the launcher's "Extra practice sets" section instead.
+    .eq('pool', 'standard');
 
   if (tagFilteredIds) query = query.in('id', tagFilteredIds);
   if (pattern) {

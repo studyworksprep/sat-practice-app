@@ -269,6 +269,11 @@ async function buildQuestionsPayload(
           .select('id')
           .eq('is_published', true)
           .eq('is_broken', false)
+          // Filter-driven generation draws from the standard bank
+          // only; opt-in import batches reach assignments through
+          // explicit picks (lesson packs), never through skill
+          // filters.
+          .eq('pool', 'standard')
           .eq('domain_name', sel.domain)
           .eq('skill_name', sel.skill);
 

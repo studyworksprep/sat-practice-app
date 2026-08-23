@@ -148,6 +148,8 @@ export async function startPlanTask(formData: FormData): Promise<void> {
         .eq('is_published', true)
         .eq('is_broken', false)
         .is('deleted_at', null)
+        // Opt-in import batches are excluded from every auto-selector.
+        .eq('pool', 'standard')
         .order('difficulty', { ascending: true, nullsFirst: false })
         .order('display_code', { ascending: true })
         .limit(500);

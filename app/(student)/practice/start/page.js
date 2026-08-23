@@ -114,6 +114,7 @@ async function SatLauncher({ user, supabase }) {
   const [
     { data: activeSession },
     { data: inProgressTestAttempt },
+    { data: extraBatchRows },
   ] = await Promise.all([
     // SAT practice launcher Resume card.
     supabase
@@ -135,6 +136,14 @@ async function SatLauncher({ user, supabase }) {
       .order('started_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    // Opt-in import batches with at least one live question — the
+    // "Extra practice sets" section. The rest of the filter card
+    // (taxonomy counts above) covers the standard pool only; these
+    // sets join the candidate pool per-session when selected.
+    supabase
+      .from('published_question_batches')
+      .select('id, label, administration_date, question_count')
+      .order('administration_date', { ascending: false, nullsFirst: false }),
   ]);
 
   const resumeInfo = activeSession
@@ -157,12 +166,19 @@ async function SatLauncher({ user, supabase }) {
       }
     : null;
 
+  const extraBatches = (extraBatchRows ?? []).map((b) => ({
+    id: b.id,
+    label: b.label,
+    count: b.question_count ?? 0,
+  }));
+
   return (
     <>
       <TestTypeTabs current="sat" />
       <StartInteractive
         domains={domains}
         scoreBands={scoreBands}
+        extraBatches={extraBatches}
         resumeInfo={resumeInfo}
         resumeTest={resumeTest}
         createSessionAction={createSession}
