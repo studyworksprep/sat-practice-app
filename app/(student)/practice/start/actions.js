@@ -41,6 +41,10 @@ const MAX_SESSION_SIZE = 50;
 // part (e.g. "random" before a simulated test drill).
 const ORDER_OPTIONS = new Set(['display_code', 'random', 'easy_first', 'hard_first']);
 
+// extra_batch values are spliced into a PostgREST or() filter, so
+// only well-formed UUIDs may pass — anything else is dropped.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // ──────────────────────────────────────────────────────────────
 // countAvailable — returns the number of questions that would
 // match the current filter selection. Used by the start page's
@@ -178,6 +182,7 @@ export async function createSession(_prev, formData) {
         difficulties:   filters.difficulties,
         score_bands:    filters.scoreBands,
         skills:         filters.skills,
+        extra_batches:  filters.extraBatches,
         unansweredOnly: filters.unansweredOnly,
         order:          filters.order,
         size:           filters.size,
@@ -211,7 +216,13 @@ function parseFilters(formData) {
     Math.max(Number.isFinite(rawSize) ? Math.floor(rawSize) : 10, 1),
     MAX_SESSION_SIZE,
   );
-  return { domains, skills, difficulties, scoreBands, unansweredOnly, order, size };
+  // Opt-in import batches ("Extra practice sets" on the launcher).
+  // Selecting one widens the candidate pool to include that batch;
+  // every other filter still applies to its questions.
+  const extraBatches = formData.getAll('extra_batch')
+    .map((v) => String(v).trim())
+    .filter((v) => UUID_RE.test(v));
+  return { domains, skills, difficulties, scoreBands, unansweredOnly, order, size, extraBatches };
 }
 
 async function loadCandidateIds(supabase, filters) {
@@ -223,6 +234,15 @@ async function loadCandidateIds(supabase, filters) {
         .eq('is_published', true)
         .eq('is_broken', false)
         .is('deleted_at', null);
+
+      // Pool gate. The default bank is pool='standard'; imported
+      // opt-in batches join the candidate set only when the student
+      // explicitly selected them on the launcher.
+      if (filters.extraBatches.length) {
+        query = query.or(`pool.eq.standard,batch_id.in.(${filters.extraBatches.join(',')})`);
+      } else {
+        query = query.eq('pool', 'standard');
+      }
 
       if (filters.domains.length)      query = query.in('domain_name', filters.domains);
       if (filters.skills.length)       query = query.in('skill_name',  filters.skills);
@@ -290,9 +310,13 @@ async function orderIds(supabase, ids, order) {
 
   if (order === 'easy_first' || order === 'hard_first') {
     const dir = order === 'easy_first' ? 1 : -1;
+    // Unknown difficulty sorts last in either direction — imported
+    // batches deliberately carry NULL difficulty, and an unknown
+    // question is not "easier than Easy".
+    const unknown = dir === 1 ? Infinity : -Infinity;
     return [...ids].sort((a, b) => {
-      const da = byId.get(a)?.difficulty ?? 0;
-      const db = byId.get(b)?.difficulty ?? 0;
+      const da = byId.get(a)?.difficulty ?? unknown;
+      const db = byId.get(b)?.difficulty ?? unknown;
       if (da !== db) return (da - db) * dir;
       // Tie-break by display_code for determinism.
       const ca = byId.get(a)?.display_code ?? '';

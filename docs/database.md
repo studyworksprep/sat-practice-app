@@ -217,6 +217,42 @@ plus a constant-time (`timingSafeEqual`) API-key check — since the
 proxy skips session auth for them. Either way, every call site is
 audit-greppable.
 
+## Question pools and import batches
+
+Since 2026-08-23 (`20260823140000_question_batches_and_pool.sql`) the
+question bank has two visibility pools:
+
+- `questions_v2.pool = 'standard'` — the default bank. All
+  pre-existing rows.
+- `pool = 'opt_in'` — externally sourced import batches (e.g. the
+  March 2026 SAT reconstruction set). Served to a student **only**
+  when they select the batch in the practice launcher's "Extra
+  practice sets" section, or through explicit by-id selection
+  (quick-find click-through, lesson packs, admin surfaces).
+
+`questions_v2.batch_id` → `question_batches`, which carries the
+batch's provenance (`source`, `label`, `administration_date`) for
+trend analysis across administrations. `published_question_batches`
+is the launcher's rollup view; `published_question_taxonomy` counts
+the standard pool only.
+
+**Invariant for new code: every filter-driven `questions_v2`
+selector (anything that picks questions by taxonomy/difficulty
+rather than by explicit id list) must gate on `pool = 'standard'`
+unless it deliberately implements batch opt-in.** Current gated
+sites: the practice launcher, quick-find search, the welcome
+diagnostic, Today drills, the review-queue skill leg, the
+mid-session difficulty detour, tutor assignment generation, and
+tutor training practice. Attempt-driven surfaces (weak-questions
+drill, review-queue question leg) are deliberately unfiltered — they
+only resurface questions the student already answered.
+
+Import mechanics: importers stamp `source` + `source_external_id`
+per question (now enforced unique where non-null, so a re-run
+conflicts instead of silently duplicating — upsert on that pair),
+point `batch_id` at the batch row, and copy the batch's `pool`. Promoting a batch into the standard bank means
+updating `question_batches.pool` **and** its questions' `pool`.
+
 ## Back-test helpers (historical)
 
 `scripts/can_view_backtest.mjs` compares the `can_view(target)`

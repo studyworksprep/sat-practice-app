@@ -32,6 +32,9 @@ export default async function TutorTrainingPracticePage() {
       .eq('is_published', true)
       .eq('is_broken', false)
       .is('deleted_at', null)
+      // Standard pool only — must agree with the training session
+      // generator in ./actions.js.
+      .eq('pool', 'standard')
       .not('domain_name', 'is', null)
       .range(from, to),
   );
