@@ -39,6 +39,11 @@ jobs:
       - name: Code hygiene (TS ratchet + retired terms)
         run: node scripts/check-code-hygiene.mjs
 
+      - name: Lesson specs (validator gate + item-quality lint report)
+        # Validator errors fail the build; lint findings are warnings
+        # only, tracked in docs/lesson-lint-punch-list-2026-08.md.
+        run: node scripts/check-lesson-specs.mjs
+
       - name: Authorization matrix freshness
         # Regenerates the matrix from code and fails if the committed
         # copy is stale — the matrix can never drift from the code.
