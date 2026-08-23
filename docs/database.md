@@ -225,7 +225,7 @@ question bank has two visibility pools:
 - `questions_v2.pool = 'standard'` — the default bank. All
   pre-existing rows.
 - `pool = 'opt_in'` — externally sourced import batches (e.g. the
-  March 2026 SAT reconstruction set). Served to a student **only**
+  May 2026 SAT reconstruction set). Served to a student **only**
   when they select the batch in the practice launcher's "Extra
   practice sets" section, or through explicit by-id selection
   (quick-find click-through, lesson packs, admin surfaces).
