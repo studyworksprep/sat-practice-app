@@ -1,0 +1,158 @@
+{
+ "7": {
+  "underline": [
+   "incorporating core samples from deep seabeds off the Louisiana coast, oil well data, archival information about oil boycotts, and video she took in New Orleans"
+  ],
+  "note": "Underline restored from PDF page (see answer-key.csv for page). Source screenshots draw multi-line underlines on the last display line only; span chosen to match the keyed answer semantics. Tutor review requested."
+ },
+ "63": {
+  "underline": [
+   "Little did I realize when in 1845 I wrote, while in the Morrison School, a composition on \"An Imaginary Voyage to New York and up the Hudson,\" that I was to see New York in reality."
+  ],
+  "note": "Underline restored from PDF page (see answer-key.csv for page). Source screenshots draw multi-line underlines on the last display line only; span chosen to match the keyed answer semantics. Tutor review requested."
+ },
+ "65": {
+  "underline": [
+   "The whoop showed up so frequently that some musicians and critics felt it had grown irritating."
+  ],
+  "note": "Underline restored from PDF page (see answer-key.csv for page). Source screenshots draw multi-line underlines on the last display line only; span chosen to match the keyed answer semantics. Tutor review requested."
+ },
+ "99": {
+  "underline": [
+   "While horizontal gene transfer is common among prokaryotes-single-celled organisms, such as the bacteria Enterococcus cecorum and Moraxella caviae-it has rarely been observed among eukaryotes (multicellular organisms)."
+  ],
+  "note": "Underline restored from PDF page (see answer-key.csv for page). Source screenshots draw multi-line underlines on the last display line only; span chosen to match the keyed answer semantics. Tutor review requested."
+ },
+ "114": {
+  "underline": [
+   "some studies have suggested that petal length may indicate nectar volume"
+  ],
+  "note": "Underline restored from PDF page (see answer-key.csv for page). Source screenshots draw multi-line underlines on the last display line only; span chosen to match the keyed answer semantics. Tutor review requested."
+ },
+ "115": {
+  "underline": [
+   "Little did I realize when in 1845 I wrote, while in the Morrison School, a composition on \"An Imaginary Voyage to New York and up the Hudson,\" that I was to see New York in reality."
+  ],
+  "note": "Underline restored from PDF page (see answer-key.csv for page). Source screenshots draw multi-line underlines on the last display line only; span chosen to match the keyed answer semantics. Tutor review requested."
+ },
+ "139": {
+  "underline": [
+   "there was not a predictable association between treatment effectiveness and fruit yield."
+  ],
+  "note": "Underline restored from PDF page (see answer-key.csv for page). Source screenshots draw multi-line underlines on the last display line only; span chosen to match the keyed answer semantics. Tutor review requested."
+ },
+ "148": {
+  "underline": [
+   "transparent columnar calcite",
+   "branching, opaque (and sometimes colorful) material, often with more frequent growth interruptions"
+  ],
+  "note": "Underline restored from PDF page (see answer-key.csv for page). Source screenshots draw multi-line underlines on the last display line only; span chosen to match the keyed answer semantics. Tutor review requested."
+ },
+ "149": {
+  "underline": [
+   "While horizontal gene transfer is common among prokaryotes-single-celled organisms, such as the bacteria Enterococcus cecorum and Moraxella caviae-it has rarely been observed among eukaryotes (multicellular organisms)."
+  ],
+  "note": "Underline restored from PDF page (see answer-key.csv for page). Source screenshots draw multi-line underlines on the last display line only; span chosen to match the keyed answer semantics. Tutor review requested."
+ },
+ "166": {
+  "append_options": [
+   {
+    "label": "D",
+    "ordinal": 4,
+    "content_html": "The number of tomato seeds that germinate is predicted to increase by 350 seeds for every additional 100 tomato seeds that are planted."
+   }
+  ],
+  "note": "Option D cut off in source capture; reconstructed as the standard mirror distractor of option B. Key (C) is fully visible and authentic. Tutor review requested."
+ },
+ "256": {
+  "append_options": [
+   {
+    "label": "D",
+    "ordinal": 4,
+    "content_html": "The number of tomato seeds that germinate is predicted to increase by 350 seeds for every additional 100 tomato seeds that are planted."
+   }
+  ],
+  "note": "Option D cut off in source capture; reconstructed as the standard mirror distractor of option B. Key (C) is fully visible and authentic. Tutor review requested."
+ },
+ "198": {
+  "options": [
+   {
+    "label": "A",
+    "ordinal": 1,
+    "content_html": "<table><tr><td>\\(x\\)</td><td>\\(y\\)</td></tr><tr><td>0</td><td>-25</td></tr><tr><td>1</td><td>-25</td></tr><tr><td>2</td><td>-25</td></tr></table>"
+   },
+   {
+    "label": "B",
+    "ordinal": 2,
+    "content_html": "<table><tr><td>\\(x\\)</td><td>\\(y\\)</td></tr><tr><td>0</td><td>0</td></tr><tr><td>1</td><td>0</td></tr><tr><td>2</td><td>0</td></tr></table>"
+   },
+   {
+    "label": "C",
+    "ordinal": 3,
+    "content_html": "<table><tr><td>\\(x\\)</td><td>\\(y\\)</td></tr><tr><td>0</td><td>24</td></tr><tr><td>1</td><td>24</td></tr><tr><td>2</td><td>24</td></tr></table>"
+   },
+   {
+    "label": "D",
+    "ordinal": 4,
+    "content_html": "<table><tr><td>\\(x\\)</td><td>\\(y\\)</td></tr><tr><td>0</td><td>25</td></tr><tr><td>1</td><td>25</td></tr><tr><td>2</td><td>25</td></tr></table>"
+   }
+  ],
+  "note": "Option tables A-C transcribed from the PDF page (C truncated mid-table, values pattern-forced); D cut off entirely and reconstructed as the boundary-value table — the unique satisfying choice, matching the A/B/C construction. Tutor review requested. Stem rewritten to drop the OCR-mangled option tables that leaked into it.",
+  "stem_html": "<p>\\[ y \\geq 25 \\] For which of the following tables are all the values of \\(x\\) and their corresponding values of \\(y\\) solutions to the given inequality?</p>"
+ },
+ "283": {
+  "options": [
+   {
+    "label": "A",
+    "ordinal": 1,
+    "content_html": "<table><tr><td>\\(x\\)</td><td>\\(y\\)</td></tr><tr><td>0</td><td>-12</td></tr><tr><td>1</td><td>-12</td></tr><tr><td>2</td><td>-12</td></tr></table>"
+   },
+   {
+    "label": "B",
+    "ordinal": 2,
+    "content_html": "<table><tr><td>\\(x\\)</td><td>\\(y\\)</td></tr><tr><td>0</td><td>0</td></tr><tr><td>1</td><td>0</td></tr><tr><td>2</td><td>0</td></tr></table>"
+   },
+   {
+    "label": "C",
+    "ordinal": 3,
+    "content_html": "<table><tr><td>\\(x\\)</td><td>\\(y\\)</td></tr><tr><td>0</td><td>11</td></tr><tr><td>1</td><td>11</td></tr><tr><td>2</td><td>11</td></tr></table>"
+   },
+   {
+    "label": "D",
+    "ordinal": 4,
+    "content_html": "<table><tr><td>\\(x\\)</td><td>\\(y\\)</td></tr><tr><td>0</td><td>12</td></tr><tr><td>1</td><td>12</td></tr><tr><td>2</td><td>12</td></tr></table>"
+   }
+  ],
+  "note": "Option tables A-C transcribed from the PDF page (C truncated mid-table, values pattern-forced); D cut off entirely and reconstructed as the boundary-value table — the unique satisfying choice, matching the A/B/C construction. Tutor review requested. Stem rewritten to drop the OCR-mangled option tables that leaked into it.",
+  "stem_html": "<p>\\[ y \\geq 12 \\] For which of the following tables are all the values of \\(x\\) and their corresponding values of \\(y\\) solutions to the given inequality?</p>"
+ },
+ "177": {
+  "correct_answer": {
+   "option_label": null,
+   "option_labels": null,
+   "text": "[\"18/17\", \"1.058\", \"1.059\"]",
+   "number": 1.0588235294117647,
+   "tolerance": 0
+  },
+  "note": "Key line blank in source. x/7 + 18 = 18(x/7) => x/7 = 18/17; page shows entered value 1.05882352941 (= 18/17). Accepted forms: 18/17 and 4-decimal truncation/rounding. Tutor review requested."
+ },
+ "209": {
+  "correct_answer": {
+   "option_label": null,
+   "option_labels": null,
+   "text": "[\"19/26\", \".7307\", \".7308\", \"0.7307\", \"0.7308\"]",
+   "number": 0.7307692307692307,
+   "tolerance": 0
+  },
+  "note": "Key line blank in source. Right triangle, hyp 26, leg 19 opposite x => sin x = 19/26; page shows entered value 0.730769230769. Tutor review requested."
+ },
+ "86": {
+  "skip": "source underline (\"It was almost six.\") contradicts the key (A: \"It describes the warm patch\") — one of them is wrong in the source; needs human adjudication before import"
+ },
+ "297": {
+  "skip": "keyed option C is truncated mid-table and option D is entirely absent from the source capture — cannot reconstruct faithfully"
+ },
+ "306": {
+  "skip": "options C and D (D is the key) are not visible in the source capture — cannot reconstruct"
+ }
+}

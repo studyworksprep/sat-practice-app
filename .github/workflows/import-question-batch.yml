@@ -1,0 +1,58 @@
+name: Import May 2026 question batch
+
+# Parse the May 2026 Mathpix export (content/import/may2026/) into
+# questions_v2 rows and — when apply=true — insert them into the
+# database as UNPUBLISHED, pool='opt_in' questions linked to the
+# "May 2026 SAT" batch row. See scripts/import-may2026-batch.mjs and
+# docs/database.md "Question pools and import batches".
+#
+# Idempotent: rows whose (source, source_external_id) already exist
+# are skipped, so re-running only adds what's missing. The dry run
+# builds the parse artifacts and fails on unresolved blocking flags
+# without touching the database — run it first and read the job log.
+#
+# Env (apply only):
+#   SUPABASE_URL                — project URL
+#   SUPABASE_SERVICE_ROLE_KEY   — service role (bypasses RLS)
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Apply (false = dry run: parse + validate only)"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+concurrency:
+  group: import-question-batch
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and validate parse artifacts
+        if: ${{ inputs.apply != 'true' }}
+        run: node scripts/import-may2026-batch.mjs
+
+      - name: Build and apply to database
+        if: ${{ inputs.apply == 'true' }}
+        run: node scripts/import-may2026-batch.mjs --apply
