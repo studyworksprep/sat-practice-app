@@ -26,6 +26,7 @@ authorization matrix to prove it's fresh.
 | `lesson-transfer-checks-proposal-2026-08.md` | Per-lesson transfer/retrieval check designations (plan step 1.7) — pending tutor confirmation, then input to the 1.5 one-shot pass |
 | `lesson-lint-punch-list-2026-08.md` | Item-quality lint findings per lesson (plan step 2.2) — the Phase 2 work queue; Status column hand-maintained |
 | `trap-catalog.md` | What students actually do wrong, per skill (plan step 2.6) — seeded from the corpus, candidate until tutors confirm; source for 2.3 distractor/hint drafting |
+| `authenticity-sheets.md` | Per-skill DSAT format profiles (plan step 2.7) — derived from the question bank with PT9–11 as the currency anchor; pending tutor verification; input to 2.4 authentic items |
 | `runbook.md` | Operational runbook (incidents, deploys, hotfix migrations, e2e) |
 | `database.md` | Schema operations + safe service-role usage |
 | `billing.md` | Subscription enforcement, the Stripe webhook contract, reconciliation |
