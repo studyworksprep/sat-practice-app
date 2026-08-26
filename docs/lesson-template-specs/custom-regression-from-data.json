@@ -412,7 +412,7 @@
         ],
         "correct_index": 1,
         "allow_retry": false,
-        "hint": "Translate \\(H(3)=18\\) as input 3, output 18. Isolate one constant in the relationship, then use the table variables and regression symbol.",
+        "hint": "Check all three parts against the taught translations: which way function notation orders the table row, what a definition line must look like, and where the regression symbol belongs.",
         "explanation": "Exactly. The data row is \\((3,18)\\), \\(v=6-u\\) is a definition, and \\(y_1\\sim u(x_1-1)^2+v\\) preserves the required vertex form."
       }
     },
@@ -470,7 +470,7 @@
         ],
         "correct_index": 0,
         "allow_retry": false,
-        "hint": "Return to the supplied form \\(H(t)=u(t-1)^2+v\\) and substitute \\(u=4\\), \\(v=2\\).",
+        "hint": "Return to the supplied form \\(H(t)=u(t-1)^2+v\\) and substitute the assignments from the regression panel — check which displayed value belongs to \\(u\\) and which to \\(v\\).",
         "explanation": "Right. The required function is \\(H(t)=4(t-1)^2+2\\), and \\(H(3)=4(2)^2+2=18\\)."
       }
     },
