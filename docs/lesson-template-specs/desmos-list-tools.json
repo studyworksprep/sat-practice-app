@@ -427,10 +427,10 @@
       "content": {
         "prompt": "What is the best approach to Desmos list functions on test day?",
         "choices": [
-          "Memorize every Desmos function that exists",
-          "Always search every submenu before typing",
+          "Memorize the complete catalog of Desmos functions before test day",
+          "Search each submenu of the Functions menu before typing anything",
           "Type familiar commands quickly and use the Functions menu when needed",
-          "Avoid functions and calculate every statistic by hand"
+          "Avoid the functions entirely and calculate each statistic by hand"
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -478,9 +478,9 @@
         "prompt": "A question gives six prices and asks for their sum after adding a $3 fee to each price. Which setup is most efficient?",
         "choices": [
           "Define list A, then enter \\(\\operatorname{total}(A+3)\\)",
-          "Enter \\(\\operatorname{join}(A,3)\\)",
-          "Enter \\(\\operatorname{median}(A)+3\\)",
-          "Add the six prices by hand and ignore the fee"
+          "Enter \\(\\operatorname{join}(A,3)\\) and read its total",
+          "Enter \\(\\operatorname{median}(A)+3\\) on a single line",
+          "Add the six prices by hand and then ignore the fee"
         ],
         "correct_index": 0,
         "allow_retry": true,

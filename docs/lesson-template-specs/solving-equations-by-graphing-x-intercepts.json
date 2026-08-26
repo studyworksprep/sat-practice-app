@@ -110,9 +110,9 @@
       "content": {
         "prompt": "Click the left x-intercept on the preset graph. Its label is \\((-5,0)\\). Which number is its x-coordinate?",
         "choices": [
-          "\\(0\\), because the point is on the x-axis",
-          "\\(5\\), because distance is positive",
-          "Both \\(-5\\) and \\(0\\)",
+          "\\(0\\), because the point sits right on the x-axis",
+          "\\(5\\), because distances are reported as positive",
+          "Both \\(-5\\) and \\(0\\) together",
           "\\(-5\\), the first number in the ordered pair"
         ],
         "correct_index": 3,
@@ -444,10 +444,10 @@
       "content": {
         "prompt": "A graph does not meet the x-axis in the current Desmos window. What should you do before reporting no real solution?",
         "choices": [
-          "Report no solution immediately.",
+          "Report that the equation has no real solution immediately.",
           "Zoom or pan once to check whether an intercept is outside the current window.",
-          "Use the y-intercept as the solution instead.",
-          "Assume the equation has exactly one solution."
+          "Use the y-intercept as the equation's solution instead.",
+          "Assume the equation has exactly one solution somewhere."
         ],
         "correct_index": 1,
         "allow_retry": true,

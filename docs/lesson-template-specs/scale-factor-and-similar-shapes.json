@@ -52,7 +52,7 @@
         "prompt": "Why is the area multiplier \\(s^2\\) instead of \\(s\\)?",
         "choices": [
           "Area uses two linear dimensions, and each dimension is multiplied by \\(s\\).",
-          "Every similar shape has exactly two sides.",
+          "Each similar shape is compared using two of its sides.",
           "Area is always the square of one side length, even for non-squares.",
           "The scale factor is added once for length and once for width."
         ],

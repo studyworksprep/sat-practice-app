@@ -27,7 +27,7 @@
         "choices": [
           "Set A, because its values are closer together",
           "Set B, because its values are spread farther from the mean",
-          "The sets must have equal standard deviations because both means are \\(10\\)",
+          "The sets have equal standard deviations, because both means are \\(10\\)",
           "There is not enough information unless every deviation is calculated"
         ],
         "correct_index": 1,
@@ -54,7 +54,7 @@
       "content": {
         "prompt": "A data set has a very small standard deviation. What does that tell you?",
         "choices": [
-          "Its mean must be small",
+          "Its mean has to be small as well",
           "It must contain very few values",
           "Most values are close to the mean",
           "Most values are negative"
@@ -200,9 +200,9 @@
         "prompt": "The data set is \\([3,4,5,6,20]\\). What happens to its standard deviation if \\(20\\) is replaced by \\(7\\)?",
         "choices": [
           "It decreases because the replacement moves toward the cluster",
-          "It increases because 7 is greater than 6",
+          "It increases, because \\(7\\) is greater than \\(6\\)",
           "It stays the same because the number of values is unchanged",
-          "It becomes zero"
+          "It drops to zero, because the outlier disappears"
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -478,10 +478,10 @@
       "content": {
         "prompt": "Why is \\(\\operatorname{stdev}(D)\\) larger than \\(\\operatorname{stdev}(C)\\)?",
         "choices": [
-          "Set D contains a larger mean",
+          "Set D's values produce a larger mean than set C's values do",
           "Replacing \\(12\\) with \\(20\\) moves one value farther from the cluster",
-          "Set D uses a different list letter",
-          "Every replacement increases standard deviation"
+          "Set D uses a different list letter in the calculator",
+          "Each replacement increases a set's standard deviation"
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -530,10 +530,10 @@
       "content": {
         "prompt": "A question replaces one data value and asks whether standard deviation increases or decreases. What should you examine first?",
         "choices": [
-          "Whether the new value is positive",
-          "Whether the number of values stayed the same",
+          "Whether the newly inserted value is positive or negative",
+          "Whether the total number of values stayed the same",
           "Whether the replacement moved toward or away from the set's center",
-          "Whether the mean is an integer"
+          "Whether the set's mean works out to a whole number"
         ],
         "correct_index": 2,
         "allow_retry": true,

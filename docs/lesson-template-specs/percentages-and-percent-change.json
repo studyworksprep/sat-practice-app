@@ -199,9 +199,9 @@
       "content": {
         "prompt": "A percent regression assigns \\(p=62.5\\) and reports RMSE \\(=1.4\\times10^{-13}\\). What does the RMSE tell you?",
         "choices": [
-          "The percent is \\(1.4\\times10^{-13}\\%\\).",
-          "The equation has thirteen solutions.",
-          "The setup must be wrong because the RMSE is not printed as exactly zero.",
+          "The percent answer itself is \\(1.4\\times10^{-13}\\%\\).",
+          "The equation being fitted has thirteen different solutions.",
+          "The setup is wrong because the RMSE is not printed as exactly zero.",
           "The two sides match extremely closely; the tiny value is numerical rounding."
         ],
         "correct_index": 3,
@@ -892,7 +892,7 @@
         "prompt": "Without looking back, which summary correctly describes the percent-and-regression strategy?",
         "choices": [
           "Translate the complete sentence, use New as the basis for every comparison, apply Old = New plus or minus p% of New, use an acceptable regression variable, and check the assignment and RMSE.",
-          "Translate only the percent phrase, use the value after of or than as the basis, apply New = Old plus p% of Old for every change, and accept the regression when the graph looks close.",
+          "Translate the percent phrase by itself, use the value after of or than as the basis, apply New = Old plus p% of Old for each change, and accept the regression when the graph looks close.",
           "Translate the complete sentence, use the value after of or than as the basis, apply New = Old plus or minus p% of Old, use an acceptable regression variable, and check the assignment and RMSE.",
           "Use the value before of or than as the basis, apply New = Old plus or minus p% of New, define the regression with lowercase x, and skip the RMSE check when the assignment looks right."
         ],

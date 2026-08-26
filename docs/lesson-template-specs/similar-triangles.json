@@ -54,10 +54,10 @@
       "content": {
         "prompt": "Which statement must be true when two triangles are similar?",
         "choices": [
-          "Every side in one triangle equals a side in the other triangle.",
+          "Each side in one triangle equals the matching side in the other triangle.",
           "Corresponding angles are equal, and corresponding side lengths share one scale factor.",
-          "The triangles face the same direction.",
-          "Both triangles have an area of \\(1\\)."
+          "The two triangles must face the same direction when drawn on the page.",
+          "Both triangles have an area of exactly \\(1\\) square unit."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -83,9 +83,9 @@
       "content": {
         "prompt": "Triangle \\(PQR\\) has \\(\\angle P=48^\\circ\\) and \\(\\angle Q=72^\\circ\\). Triangle \\(XYZ\\) has \\(\\angle X=60^\\circ\\) and \\(\\angle Y=48^\\circ\\). Why can you conclude the triangles are similar?",
         "choices": [
-          "They both contain a side labeled with a variable.",
-          "Their first-named vertices have equal angles.",
-          "All triangles are similar.",
+          "They both contain a side whose length is labeled with a variable.",
+          "Their first-named vertices, \\(P\\) and \\(X\\), have equal angles.",
+          "Triangles are similar to one another automatically.",
           "They have two matching angle pairs: \\(48^\\circ\\) and \\(60^\\circ\\)."
         ],
         "correct_index": 3,
@@ -334,9 +334,9 @@
       "content": {
         "prompt": "How many right triangles are present in the altitude-to-hypotenuse diagram?",
         "choices": [
-          "One: only \\(\\triangle ABC\\)",
-          "Two: only the two smaller triangles",
-          "Four: the altitude creates three new triangles",
+          "One: just the original large triangle \\(\\triangle ABC\\)",
+          "Two: just the smaller triangles on each side of the altitude",
+          "Four: the altitude creates three new triangles beside the original",
           "Three: \\(\\triangle ABC\\), \\(\\triangle ACD\\), and \\(\\triangle CBD\\)"
         ],
         "correct_index": 3,
@@ -364,7 +364,7 @@
         "prompt": "Why is \\(\\triangle ACD\\) similar to the large triangle \\(\\triangle ABC\\)?",
         "choices": [
           "They both have a right angle and share angle \\(A\\), so AA applies.",
-          "They share side \\(AC\\), so all their angles must match.",
+          "They share side \\(AC\\), so their angles have to match.",
           "Every altitude divides a triangle into congruent triangles.",
           "Their hypotenuses have equal lengths."
         ],

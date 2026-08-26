@@ -66,10 +66,10 @@
       "content": {
         "prompt": "Which question is the clearest match for standard regression from a table?",
         "choices": [
-          "Solve \\(4x+7=31\\) for \\(x\\).",
+          "Solve the single linear equation \\(4x+7=31\\), which needs no data table.",
           "A table lists years and account balances. Which exponential equation models the balances?",
-          "Factor \\(x^2-7x+12\\).",
-          "Find the slope of a line whose equation is already given."
+          "Factor the quadratic expression \\(x^2-7x+12\\) into two binomials.",
+          "Find the slope of a line whose complete equation is already printed in the question."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -218,9 +218,9 @@
       "content": {
         "prompt": "You entered four points and need a quadratic equation. What should you do next?",
         "choices": [
-          "Type \\(y=ax^2+bx+c\\) on a new line and solve for all three letters.",
-          "Choose Linear and change the displayed coefficients by hand.",
-          "Delete the table and plot each point separately.",
+          "Type \\(y=ax^2+bx+c\\) on a new line as a custom regression for all three letters.",
+          "Choose Linear from the regression options and adjust the coefficients by hand.",
+          "Delete the table and re-plot each of the four points separately.",
           "Click the Regression button beside the table, then select Quadratic from its dropdown."
         ],
         "correct_index": 3,
@@ -473,9 +473,9 @@
       "content": {
         "prompt": "Why add the reflected point before using standard quadratic regression?",
         "choices": [
-          "The table requires every point to have a negative x-coordinate.",
-          "A quadratic equation cannot contain its vertex.",
-          "Regression works only when two points share a y-coordinate.",
+          "The regression table requires each entered point to have a negative x-coordinate.",
+          "A standard quadratic equation is not allowed to contain its own vertex as a point.",
+          "Quadratic regression requires at least one pair of points that share a y-coordinate.",
           "The third point gives the table enough point data to consistently determine the three standard-form coefficients."
         ],
         "correct_index": 3,

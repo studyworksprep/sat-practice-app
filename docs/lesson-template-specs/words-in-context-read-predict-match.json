@@ -40,7 +40,12 @@
       "block_type": "check",
       "content": {
         "prompt": "Which sequence gives you the strongest approach to a Words in Context question?",
-        "choices": ["Read the whole text, connect its clues, predict a meaning, then match a choice.", "Read the blank's sentence, choose the most familiar word, then check the other sentences.", "Define every answer choice first, then read only until one of those words seems possible.", "Use the word that sounds most sophisticated, then invent a reason it could work."],
+        "choices": [
+          "Read the whole text, connect its clues, predict a meaning, then match a choice.",
+          "Read the blank's sentence, predict from the most familiar word, then check the other sentences.",
+          "Define every answer choice first, then read only until one of those words seems possible.",
+          "Use the word that sounds most sophisticated, then invent a reason it could work."
+        ],
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Your understanding of the text should guide the answer choices, not the other way around.",
@@ -246,7 +251,12 @@
       "block_type": "check",
       "content": {
         "prompt": "Because the finding came from a small preliminary sample, the researchers described their conclusion as _____ and planned a larger study. A student knows that 'conclusive' means final but does not know 'provisional.' What should the student do?",
-        "choices": ["Select 'conclusive' because a known word is safer than an unknown one.", "Eliminate 'provisional' immediately because its meaning is unfamiliar.", "Ignore the context and choose whichever word has the most positive feeling.", "Eliminate 'conclusive' because it conflicts with 'preliminary' and keep 'provisional' in play while testing the remaining clues."],
+        "choices": [
+          "Select 'conclusive' anyway, reasoning that a familiar word is a safer bet than an unknown one.",
+          "Eliminate 'provisional' immediately and permanently, because its meaning is unfamiliar to you.",
+          "Set the context aside entirely and choose whichever word carries the most positive feeling.",
+          "Eliminate 'conclusive' because it conflicts with 'preliminary' and keep 'provisional' in play while testing the remaining clues."
+        ],
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Use the visual eliminator on a choice only when the text gives you a reason that choice cannot fit.",

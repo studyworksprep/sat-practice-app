@@ -75,10 +75,10 @@
         "hint": "Look for missing constants inside one expression and wording that says two expressions match for every input.",
         "prompt": "Which problem is the best match for this regression strategy?",
         "choices": [
-          "Solve \\(x^2=25\\) and list every real solution.",
+          "Simplify the expression \\(x^2-25\\) and list every one of its factors.",
           "The expression \\(a(x+2)+b\\) is equivalent to \\(4x+11\\) for all \\(x\\). Find \\(a+b\\).",
-          "Find the slope of the line through two given points.",
-          "Estimate the mean of a data set."
+          "Find the equation of the line through two given points, or any equivalent form.",
+          "Estimate the mean of a small data set of measured values."
         ],
         "allow_retry": true,
         "explanation": "Correct. The letters \\(a\\) and \\(b\\) are missing constants, and the equivalence must hold for all \\(x\\).",
@@ -98,9 +98,9 @@
         "hint": "Which letter is allowed to vary while the missing constants stay fixed?",
         "prompt": "In the identity \\(p(t+4)+q(t-1)=5t+10\\), which letter should become a list in Desmos?",
         "choices": [
-          "\\(p\\), because it appears first",
-          "\\(q\\), because it is subtracted",
-          "Both \\(p\\) and \\(q\\)",
+          "\\(p\\), because it appears first in the identity",
+          "\\(q\\), because it is the subtracted constant",
+          "Both \\(p\\) and \\(q\\) at the same time",
           "\\(t\\), because it is the input variable"
         ],
         "allow_retry": true,
@@ -122,9 +122,9 @@
         "prompt": "Why do you enter \\(x_1=[2,3,4]\\) instead of letting Desmos choose one value of \\(x_1\\)?",
         "choices": [
           "Equivalent expressions must match at many input values, and one value may not determine every constant.",
-          "A list changes the missing constants into variables.",
-          "Regression cannot use positive numbers unless they are in a list.",
-          "The SAT requires the inputs 2, 3, and 4 specifically."
+          "A list changes the two equivalent expressions into one equation with a missing constant.",
+          "Regression cannot use positive input values unless they are supplied in a list.",
+          "The SAT requires the specific input values 2, 3, and 4 for this question type."
         ],
         "allow_retry": true,
         "explanation": "Right. Several input values force one set of constants to make the expressions agree repeatedly. The particular values are flexible as long as they are allowed.",
@@ -282,10 +282,10 @@
         "hint": "The error names the ordinary graphing variable x.",
         "prompt": "Desmos says “x may not be used as a regression parameter.” What should you check first?",
         "choices": [
-          "Whether the requested answer uses division",
+          "Whether the requested final answer involves division by a constant",
           "Whether every input x was changed to x₁ and x₁ was defined as a list",
-          "Whether the correct answer is choice A",
-          "Whether the constants were replaced by numbers"
+          "Whether the correct answer happens to be the first choice listed",
+          "Whether the missing constants were replaced by specific numbers"
         ],
         "allow_retry": true,
         "explanation": "Correct. Use \\(x_1\\) throughout the regression, then define \\(x_1\\) as a list. Keep the missing constants as letters for Desmos to find.",
@@ -467,10 +467,10 @@
         "hint": "Recall the five actions: regression symbol, rename x or y if needed, safe list, constant assignments, requested calculation.",
         "prompt": "Without looking back, which sequence correctly finds missing constants in equivalent expressions?",
         "choices": [
-          "Use =, let Desmos choose one x-value, and report the first constant shown.",
+          "Use =, let Desmos choose one input value on its own, and report the first constant assignment shown for the expression.",
           "Use ~, change x or y to a subscripted input, define a list of allowed inputs, read the constant assignments, and evaluate the requested expression.",
-          "Replace every letter with a list, graph both sides, and choose the highest point.",
-          "Use ~ with ordinary x, include every forbidden value, and round all constants to integers."
+          "Replace each letter, constants included, with its own list, graph both sides, and read the intersection.",
+          "Use ~ with the ordinary letter x, include the forbidden input values in the list, and round the constants to integers."
         ],
         "allow_retry": true,
         "explanation": "You have it. That sequence makes the expressions match at several valid inputs and then uses the stored constants to answer exactly what the SAT asks. Inputs other than x or y keep their original names.",

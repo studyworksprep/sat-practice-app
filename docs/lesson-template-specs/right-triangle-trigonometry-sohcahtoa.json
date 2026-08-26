@@ -344,9 +344,9 @@
       "content": {
         "prompt": "Which sequence is safest for a right-triangle trig question?",
         "choices": [
-          "Choose a trig function from the angle's size, then label the sides afterward.",
-          "Always use sine, enter the numbers, and replace the exact form with the first decimal.",
-          "Find the longest-looking side, assume the mode, and multiply every value.",
+          "Choose the trig function from the angle's printed size, label the three sides afterward to confirm, and round to a decimal early.",
+          "Start with sine each time, enter the given numbers directly, and replace the exact form with the first decimal that Desmos shows.",
+          "Find the longest-looking side in the drawing, assume the current angle mode is correct, and multiply the two given values together.",
           "Sketch and place the named vertices, mark the angles and sides, translate the sides into opposite/adjacent/hypotenuse, choose the ratio, solve, and keep the exact form."
         ],
         "correct_index": 3,
@@ -464,10 +464,10 @@
       "content": {
         "prompt": "Which setup correctly evaluates the sine of a \\(30^\\circ\\) angle?",
         "choices": [
-          "Type \\(\\sin(30)\\) while Desmos remains in Radians mode.",
+          "Type \\(\\sin(30)\\) while Desmos remains in its default Radians mode.",
           "Use Degrees mode and type \\(\\sin(30)\\), or use Radians mode and type \\(\\sin(\\pi/6)\\).",
-          "Use Degrees mode and type \\(\\sin(\\pi/6)\\).",
-          "Angle mode does not affect trig values."
+          "Use Degrees mode and type \\(\\sin(\\pi/6)\\) for the same angle.",
+          "Angle mode does not affect the values that trig functions return."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -506,7 +506,7 @@
       "content": {
         "prompt": "Two right triangles are similar, and acute angle \\(P\\) corresponds to acute angle \\(X\\). Which statement must be true?",
         "choices": [
-          "Every side in the first triangle equals a side in the second.",
+          "Each side length in the first triangle equals a side length in the second.",
           "\\(\\sin(P)\\) is multiplied by the triangles' scale factor to become \\(\\sin(X)\\).",
           "Only the hypotenuse ratio remains equal.",
           "\\(\\sin(P)=\\sin(X)\\), \\(\\cos(P)=\\cos(X)\\), and \\(\\tan(P)=\\tan(X)\\)."
@@ -527,10 +527,10 @@
       "content": {
         "prompt": "Every side of a right triangle is doubled to create a similar triangle. What happens to the tangent of a corresponding acute angle?",
         "choices": [
-          "It is doubled.",
-          "It is cut in half.",
+          "It is doubled, growing along with the two doubled side lengths.",
+          "It is cut in half, since the ratio now involves larger sides.",
           "It stays the same because both opposite and adjacent are doubled.",
-          "It becomes \\(90^\\circ\\)."
+          "It becomes \\(90^\\circ\\), matching the enlarged right angle."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -688,7 +688,7 @@
         "prompt": "Without looking back, which summary correctly connects SOHCAHTOA, angle mode, and similar triangles?",
         "choices": [
           "Sketch the named vertices; label sides from the right angle; select SOH, CAH, or TOA from the two relevant sides; convert every trig value to a decimal; match Desmos mode to the angle unit; and transfer unchanged ratios across corresponding angles.",
-          "Sketch the named vertices; label sides from the chosen acute angle; select SOH, CAH, or TOA from the two relevant sides; preserve the exact trig form; leave Desmos in Radians for every problem; and scale the ratios by the similar-triangle factor.",
+          "Sketch the named vertices; label sides from the chosen acute angle; select SOH, CAH, or TOA from the two relevant sides; preserve the exact trig form; leave Desmos in Radians no matter what the problem states; and scale the ratios by the similar-triangle factor.",
           "Sketch the named vertices; label sides from the chosen acute angle; select SOH, CAH, or TOA from the two relevant sides; preserve the exact trig form; match Desmos mode to the angle unit; and transfer unchanged ratios across corresponding angles.",
           "Label sides from the drawing's orientation; sketch the vertices afterward to confirm; select SOH, CAH, or TOA from the angle sizes; preserve the exact trig form; match Desmos mode to the angle unit; and transfer side lengths unchanged across similar triangles."
         ],
