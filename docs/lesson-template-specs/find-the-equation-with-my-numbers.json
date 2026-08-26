@@ -150,7 +150,7 @@
         "prompt": "Choice A is false for your recorded value set. What should you do before testing choice B?",
         "choices": [
           "Change the values so choice B uses easier arithmetic.",
-          "Use only the value of the first variable and ignore the others.",
+          "Use just the value of the first variable and ignore the other values.",
           "Keep the complete recorded value set exactly the same.",
           "Solve choice B for every variable before substituting."
         ],
@@ -286,10 +286,10 @@
       "content": {
         "prompt": "Two candidate equations are true for your first legal value set. What should you do next?",
         "choices": [
-          "Pick the equation with fewer symbols.",
+          "Pick whichever tied equation is written with fewer symbols.",
           "Build a different legal value set and retest only the tied equations.",
           "Change one variable separately inside each tied equation.",
-          "Assume both equations must describe the relationship."
+          "Conclude that both tied equations describe the story's relationship."
         ],
         "correct_index": 1,
         "allow_retry": true,

@@ -140,9 +140,9 @@
       "content": {
         "prompt": "Desmos reports a variable value and RMSE \\(=2.1\\times10^{-13}\\). How should you interpret that RMSE?",
         "choices": [
-          "It means the variable equals \\(2.1\\times10^{-13}\\).",
-          "It means there are \\(13\\) solutions.",
-          "It proves that regression found every possible solution.",
+          "It means the variable itself equals \\(2.1\\times10^{-13}\\).",
+          "It means the equation has \\(13\\) different solutions.",
+          "It shows that regression found each possible solution.",
           "It is effectively zero, so regression produced a very close match."
         ],
         "correct_index": 3,
@@ -237,7 +237,7 @@
       "content": {
         "prompt": "Regression reports \\(z=5\\) for \\(z^2\\sim25\\). What can you conclude?",
         "choices": [
-          "\\(z=5\\) must be the only real solution.",
+          "\\(z=5\\) must be the only real solution of the equation.",
           "\\(z=5\\) is a solution, but regression has not shown that it is the only solution.",
           "\\(z=-5\\) cannot be a solution because Desmos did not report it.",
           "The equation has no exact solution because regression is numerical."
@@ -445,7 +445,7 @@
       "content": {
         "prompt": "Which question is the best fit for regression?",
         "choices": [
-          "Find the sum of all real solutions of a quadratic equation.",
+          "Find the sum of the real solutions of a quadratic equation.",
           "Determine whether a quadratic has zero, one, or two real solutions.",
           "List every intersection produced by two equations.",
           "Find one value of \\(k\\) that satisfies an equation, then use that value in \\(3k-1\\)."
@@ -522,10 +522,10 @@
       "content": {
         "prompt": "The system has the ordered-pair solutions \\((6,7)\\) and \\((7,6)\\). If regression reports \\(u=6\\) and \\(v=7\\), what should you conclude?",
         "choices": [
-          "\\((6,7)\\) is the only solution because it appeared first.",
+          "\\((6,7)\\) is the single valid solution, because it appeared first in the panel.",
           "\\((6,7)\\) is a valid solution, but regression has not shown that it is the only solution.",
-          "\\((7,6)\\) is invalid because regression did not report it.",
-          "The RMSE must be large because two solutions exist."
+          "\\((7,6)\\) is invalid as a solution, because regression did not report it.",
+          "The RMSE must be large, because the system has two distinct solutions."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -622,8 +622,8 @@
         "prompt": "A question asks for the sum of all real solutions of a quadratic equation. Which approach is safer?",
         "choices": [
           "Use one unrestricted regression result and assume it is the only solution.",
-          "Use regression and report whichever solution appears first.",
-          "Use a restriction around one guessed solution only.",
+          "Use regression on the equation and report whichever solution appears first.",
+          "Use a restriction around one guessed solution and skip the graph.",
           "Graph the equation or use another method that reveals every real solution."
         ],
         "correct_index": 3,

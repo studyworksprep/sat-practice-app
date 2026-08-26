@@ -41,9 +41,9 @@
       "content": {
         "prompt": "Two answer choices work when \\(w=4\\). What should you do next?",
         "choices": [
-          "Choose the first matching answer.",
-          "Abandon My Numbers and solve every expression algebraically.",
-          "Average the two matching expressions.",
+          "Choose the first matching answer and move on to the next question.",
+          "Abandon My Numbers and solve each expression algebraically instead.",
+          "Average the two matching expressions and pick the closest choice.",
           "Choose a different legal value for \\(w\\) and test the remaining choices again."
         ],
         "correct_index": 3,
@@ -98,10 +98,10 @@
       "content": {
         "prompt": "Which question is the clearest candidate for My Numbers?",
         "choices": [
-          "Solve \\(2x+5=17\\) for \\(x\\).",
+          "Solve the single equation \\(2x+5=17\\), which already fixes the value of \\(x\\).",
           "A garden has width \\(w\\) and length \\(2w+3\\). Which expression represents its perimeter?",
-          "What is the slope of \\(y=4x-7\\)?",
-          "Which listed number is a solution of \\(x^2-5x+6=0\\)?"
+          "What is the slope of the line whose full equation \\(y=4x-7\\) is already given?",
+          "Which of the listed numbers is a solution of the equation \\(x^2-5x+6=0\\)?"
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -294,10 +294,10 @@
       "content": {
         "prompt": "You choose legal values and two answer choices match your result. Which conclusion is justified?",
         "choices": [
-          "Both choices must be correct.",
-          "The question has no correct answer.",
+          "Both matching choices must be correct answers.",
+          "The question itself has no correct answer.",
           "The chosen values created a coincidence; test another legal set.",
-          "The longer expression is probably correct."
+          "The longer of the two matching expressions is probably correct."
         ],
         "correct_index": 2,
         "allow_retry": true,
