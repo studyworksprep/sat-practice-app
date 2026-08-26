@@ -365,6 +365,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "If \\(k\\neq0\\), which expression is equivalent to \\(\\frac{k^2+3km}{k}\\)?",
+        "choices": [
+          "\\(k^2+3m\\)",
+          "\\(k+3m\\)",
+          "\\(k+3km\\)",
+          "\\(\\frac{k+3m}{k}\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Spot the open quantities and pick easy legal values for \\(k\\) and \\(m\\); test every choice with the same values.",
+        "explanation": "Correct. With easy legal values like \\(k=2, m=3\\): the original is \\(\\frac{4+18}{2}=11\\), and \\(k+3m=2+9=11\\) — the only match. The other choices give \\(13\\), \\(20\\), and \\(5.5\\) with those same values."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {

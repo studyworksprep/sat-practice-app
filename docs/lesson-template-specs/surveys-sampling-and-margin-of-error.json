@@ -385,6 +385,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "A parks department randomly selects \\(400\\) adults from the city's voter rolls and asks whether they support extending trail hours at the city's three largest parks. \\(58\\%\\) answer yes, with a margin of error of \\(4\\) percentage points. Which statement is best supported by these results?",
+        "choices": [
+          "Exactly \\(58\\%\\) of all adults living in the city support the extension.",
+          "It is plausible that between \\(54\\%\\) and \\(62\\%\\) of adults on the city's voter rolls support the extension.",
+          "The true level of support among the \\(400\\) respondents is between \\(54\\%\\) and \\(62\\%\\).",
+          "Support cannot be estimated, because just \\(400\\) of the city's adults were surveyed."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Keep the claim inside the sampled population and treat the interval as plausible, not guaranteed.",
+        "explanation": "Correct. \\(58-4=54\\) and \\(58+4=62\\), and the claim stays with adults on the voter rolls — the sampled population. Among the \\(400\\) respondents support is exactly \\(58\\%\\), so no interval applies to them, and a random sample of \\(400\\) does permit an estimate."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {

@@ -865,6 +865,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "The number \\(p\\) is \\(40\\%\\) greater than \\(65\\). What is the value of \\(p\\)?",
+        "choices": [
+          "\\(26\\)",
+          "\\(39\\)",
+          "\\(91\\)",
+          "\\(105\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Translate the complete sentence: New = Old plus \\(40\\%\\) of Old, with \\(65\\) as the basis.",
+        "explanation": "Correct. New \\(=\\) Old \\(+\\) \\(40\\%\\) of Old \\(=65+0.40(65)=91\\). The value \\(26\\) is only the change, \\(39\\) subtracts it, and \\(105\\) adds a raw \\(40\\) instead of \\(40\\%\\)."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

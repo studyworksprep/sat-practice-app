@@ -409,6 +409,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "For decades, the standard account held that the medieval city of Gerena declined because its river port silted up, cutting off trade. Archaeologist Nadia Boulos questioned this explanation after excavating the city's eastern quarter, where she found warehouses that were expanded, not abandoned, during the supposed decline. Boulos proposes instead that trade shifted overland, and that the city's fortunes fell later, when a new road bypassed Gerena entirely. Her account has prompted other researchers to re-examine sediment records from the port. Which choice best describes the overall structure of the text?",
+        "choices": [
+          "A discovery is announced, its authenticity is questioned, and the doubts are finally dismissed.",
+          "Two competing explanations are shown to be equally supported by the archaeological evidence.",
+          "A traditional explanation is presented, evidence against it is described, and an alternative account is offered.",
+          "A city's history is told in chronological order from its founding to its eventual abandonment."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Name the job first: trace what the text does first, second, and third, not what any one sentence says.",
+        "explanation": "Correct. The text opens with the standard account, presents excavation evidence that undermines it, and ends with Boulos's alternative and its reception. The passage does not dismiss doubts, treat the accounts as equal, or narrate the city's full history in order."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {

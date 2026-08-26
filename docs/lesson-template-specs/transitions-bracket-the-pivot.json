@@ -273,6 +273,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the early sculptures that made her reputation, Reiko Tanaka polished every bronze surface to a mirror finish, hiding all trace of the casting process. ______, her recent pieces leave the seams and rough mold marks visible, presenting them as part of the finished work. Which choice completes the text with the most logical transition?",
+        "choices": [
+          "By contrast,",
+          "For instance,",
+          "Similarly,",
+          "In other words,"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "hint": "Bracket the two ideas and shrink them: hides the process versus displays the process.",
+        "explanation": "Correct. The early practice hides the casting process and the recent practice displays it — opposite treatments, so the link is contrast. The other choices claim an example, a similarity, or a restatement that the two ideas do not have."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {

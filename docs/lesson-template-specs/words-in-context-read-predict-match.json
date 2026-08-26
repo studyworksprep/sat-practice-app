@@ -364,6 +364,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "The two botanists, who had never collaborated or even corresponded, reached the same conclusion by strikingly different routes: one relied on decades of field observation, the other on genomic analysis. That their independent methods ______ each other's findings gave the research community unusual confidence in a result once dismissed as speculative. Which choice completes the text with the most logical and precise word or phrase?",
+        "choices": [
+          "contradicted",
+          "corroborated",
+          "anticipated",
+          "publicized"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Predict first: the sentence says the independent agreement produced confidence.",
+        "explanation": "Correct. Two independent methods reaching the same conclusion confirm — corroborate — each other's findings, which explains the community's confidence. \"Contradicted\" reverses the logic, and the other choices miss the idea of mutual confirmation."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {

@@ -595,6 +595,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "For a linear function \\(h\\), \\(h(0)=12\\), and \\(h(x)\\) decreases by \\(3\\) for each increase of \\(1\\) in \\(x\\). Which equation defines \\(h\\)?",
+        "choices": [
+          "\\(h(x)=-3x+12\\)",
+          "\\(h(x)=3x+12\\)",
+          "\\(h(x)=12x-3\\)",
+          "\\(h(x)=-3(x+12)\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "hint": "Identify the input-output pair and the rate, then check both against each equation.",
+        "explanation": "Correct. The intercept is \\(h(0)=12\\) and the rate is \\(-3\\) per unit, so \\(h(x)=-3x+12\\). Entering the points \\((0,12)\\) and \\((1,9)\\) in a table and clicking Regression displays the same line."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

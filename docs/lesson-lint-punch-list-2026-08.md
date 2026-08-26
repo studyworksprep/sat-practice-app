@@ -26,6 +26,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 
 **As of 2026-08-26 (after 2.3 tranche 2):** 144 rows open, 139 fixed, 3 deferred with reasons. Closed so far: the 2.5 retrieval-check rebuilds; the Probability `equivalent_choices` defects; tranche 1 (mechanical classes + the Inference rebuild); and tranche 2 — full distractor rebuilds of the six lessons that were above the 50% per-lesson bar: CLEAR the Claim 86%→36%, Process and Pre-Answer RC 81%→13%, Rhetorical Synthesis 78%→33%, Good Cop / Bad Cop 74%→11%, Surveys 63%→13%, Desmos Sliders 57%→14%. `retrieval_nonsense_distractor` and `equivalent_choices` are at zero; `hint_gives_answer` and `meta_prompt` are down to one reasoned deferral each. The corpus is 36 specs / 600 checks. Corpus keyed-longest rate: **22.0%** (132/600) with the highest lesson at 47% — **both lint exit criteria (<30% corpus, no lesson >50%) are now met**. The remaining open rows are the long tail of scattered `keyed_longest` / `extreme_imbalance` / `key_term_echo` items plus the structural `check_run` / `text_run` / `missing_figure` classes (Phase 3 territory).
 
+**2.4 note (2026-08-26):** the corpus is now **634 checks** after one authentic-format item per lesson (34 authored `authentic_item` blocks; CLEAR and Sliders already had bank `question_link`s). The new items are lint-clean; `check_run` grew 21→35 because they sit adjacent to the final retrieval checks — those rows belong to the structural class. Baseline step numbers in the tables below predate the insertions; block ids remain the stable reference.
+
 ### Advanced Factoring: Non-Monic Trinomials and Cubes
 
 `advanced-factoring-non-monic-trinomials-and-cubes.json` — 6 findings; keyed-longest 4/19 (21%)

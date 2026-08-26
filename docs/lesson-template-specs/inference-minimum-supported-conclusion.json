@@ -272,6 +272,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Ecologist Priya Raman compared two wetlands that receive runoff from the same farming region. The first wetland drains through a broad stand of native reeds before reaching open water, while the second empties directly into its pond. Water sampled where each wetland meets open water showed nitrate levels three times higher at the second site than at the first, even though both received similar runoff after storms. Raman's team did not measure how nitrate affects the ponds' algae, but the site comparison suggests that ______ Which choice most logically completes the text?",
+        "choices": [
+          "native reeds are the most effective tool available for removing farm nitrate from wetlands.",
+          "the reed stand may have removed some of the nitrate before the runoff reached open water.",
+          "the elevated nitrate at the second site probably caused harmful algae to spread across its pond.",
+          "the second wetland once contained a reed stand of its own that farming runoff destroyed."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Combine the drainage difference with the nitrate difference, and go no further than that.",
+        "explanation": "Correct. The only difference described is the reed stand, and the nitrate gap points to it — hedged with \"may,\" matching the evidence. The first choice ranks methods never compared, the third adds an unmeasured algae result, and the fourth invents a backstory."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

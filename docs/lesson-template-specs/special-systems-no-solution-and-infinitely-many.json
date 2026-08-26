@@ -582,6 +582,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the system of equations \\(6x-9y=12\\) and \\(8x+ky=16\\), \\(k\\) is a constant. If the system has infinitely many solutions, what is the value of \\(k\\)?",
+        "choices": [
+          "\\(-12\\)",
+          "\\(-9\\)",
+          "\\(-\\frac{27}{4}\\)",
+          "\\(12\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "hint": "Infinitely many solutions means the same line — every standard-form term must scale by the same factor.",
+        "explanation": "Correct. \\(\\frac{8}{6}=\\frac{16}{12}=\\frac{4}{3}\\), so the second equation is the first scaled by \\(\\frac{4}{3}\\) and \\(k=-9\\cdot\\frac{4}{3}=-12\\). Copying \\(-9\\) skips the scaling, and \\(-\\frac{27}{4}\\) inverts the factor."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

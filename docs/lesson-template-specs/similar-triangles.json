@@ -572,6 +572,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Triangle \\(JKL\\) is similar to triangle \\(PQR\\), where \\(J\\), \\(K\\), and \\(L\\) correspond to \\(P\\), \\(Q\\), and \\(R\\), respectively. If \\(JK=8\\), \\(KL=12\\), and \\(PQ=20\\), what is the length of \\(QR\\)?",
+        "choices": [
+          "\\(4.8\\)",
+          "\\(20\\)",
+          "\\(24\\)",
+          "\\(30\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Match the sides by their letter references and keep one triangle order in the proportion.",
+        "explanation": "Correct. Correspondence gives \\(\\frac{QR}{KL}=\\frac{PQ}{JK}=\\frac{20}{8}\\), so \\(QR=12\\cdot\\frac{20}{8}=30\\), and \\(30>12\\) passes the size check. Adding the difference \\(20-8\\) gives \\(24\\), and \\(4.8\\) inverts the ratio."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

@@ -419,6 +419,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Reports of a rare shorebird feeding on the estuary's northern mudflats had reached ornithologist Ana Okafor repeatedly across two migration seasons. Determined to verify the sightings herself, ______ Which choice completes the text so that it conforms to the conventions of Standard English?",
+        "choices": [
+          "Okafor spent a week photographing the mudflats at dawn.",
+          "the mudflats were photographed at dawn for a week by Okafor.",
+          "a week of dawn photography on the mudflats followed.",
+          "the rare shorebird was finally photographed by Okafor at dawn."
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "hint": "The first verb is \"Determined.\" Who was determined to verify the sightings? Predict that noun.",
+        "explanation": "Correct. The opening modifier describes the person who was determined — Okafor — so her name must come immediately after the comma. The other choices put the mudflats, an event, or the bird in that position, attaching the determination to the wrong thing."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "check_15",
       "block_type": "check",
       "content": {

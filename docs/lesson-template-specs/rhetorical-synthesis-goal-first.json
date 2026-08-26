@@ -234,6 +234,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "While researching a topic, a student has taken the following notes: The Whitcomb Observatory opened in 1927 on Mount Adler. Its original 24-inch telescope was used to catalog variable stars for six decades. In 2019, the observatory added a fully robotic 1-meter telescope. The robotic telescope photographs the entire visible sky every three nights. Astronomers worldwide can request its images through a public archive. The student wants to emphasize how the observatory's newest instrument serves researchers beyond its own staff. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+        "choices": [
+          "The Whitcomb Observatory opened on Mount Adler in 1927 and cataloged variable stars with its original 24-inch telescope for six decades.",
+          "In 2019, the Whitcomb Observatory added a fully robotic 1-meter telescope to its facilities on Mount Adler.",
+          "The observatory's robotic telescope photographs the whole visible sky every three nights, and astronomers worldwide can request its images through a public archive.",
+          "Because its 24-inch telescope served the observatory's staff for six decades, the robotic telescope will likely serve researchers for even longer."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Two requirements: the newest instrument, and service to researchers outside the observatory.",
+        "explanation": "Correct. The goal needs the newest instrument and its reach beyond the staff — the sky survey plus the worldwide public archive does both jobs. The first choice is history, the second introduces the telescope without the outside-service half, and the fourth invents a prediction."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {
