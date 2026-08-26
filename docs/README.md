@@ -23,7 +23,7 @@ authorization matrix to prove it's fresh.
 | `bluebook-contributor-guide.md` | How to send Bluebook results — written for contributors, not engineers |
 | `foundations-and-question-patterns.md` | Curriculum model for section-wide foundation lessons + question-pattern lessons (adopted design + owner/instructor workstream) |
 | `lesson-improvement-plan-2026-08.md` | Phased plan for acting on the 2026-08-18 lesson review — AI-authored steps vs tutor-team tasks per phase, with a status ledger |
-| `lesson-transfer-checks-proposal-2026-08.md` | Per-lesson transfer/retrieval check designations (plan step 1.7) — pending tutor confirmation, then input to the 1.5 one-shot pass |
+| `lesson-transfer-checks-proposal-2026-08.md` | Per-lesson transfer/retrieval check designations (plan step 1.7) — confirmed 2026-08-22 and applied by the 1.5 pass; keep in step with `scripts/apply-one-shot-checks.mjs` |
 | `lesson-lint-punch-list-2026-08.md` | Item-quality lint findings per lesson (plan step 2.2) — the Phase 2 work queue; Status column hand-maintained |
 | `trap-catalog.md` | What students actually do wrong, per skill (plan step 2.6) — seeded from the corpus, candidate until tutors confirm; source for 2.3 distractor/hint drafting |
 | `authenticity-sheets.md` | Per-skill DSAT format profiles (plan step 2.7) — derived from the question bank with PT9–11 as the currency anchor; pending tutor verification; input to 2.4 authentic items |
@@ -52,6 +52,7 @@ authorization matrix to prove it's fresh.
 | `decommission-plan.md` | Legacy-tree decommission tracker (complete) |
 | `greenfield-build-plan.md` | Restart-from-scratch exploration; adopted ideas tracked in the upgrade plan |
 | `lesson-suite-review-2026-08-18.md` | Instructional-quality review of the 30 lesson specs (best-practice scorecard, system recommendations, per-lesson ratings, verified fix list) |
+| `bracket-pivot-draft-preserved-2026-08.md` | Snapshot of the in-app Bracket the Pivot draft replaced at the 2026-08-25 re-import — Phase 6 voice material |
 | `lesson-builder-feature-audit-2026-04-25.md` | Lesson-builder audit — **contains a known error** (see banner) |
 | `lesson-authoring-integration-contract-2026-04-25.md` | Lessonworks integration contract |
 | `history/authorization-matrix-2026-05-04.md` | Hand-written auth matrix (superseded by the generated one) |
