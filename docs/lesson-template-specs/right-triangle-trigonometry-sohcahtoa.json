@@ -278,7 +278,7 @@
         "correct_index": 0,
         "allow_retry": true,
         "solution": "Start from the equation for this triangle: \\(XZ=h\\) is the hypotenuse and \\(YZ=9\\) is opposite \\(\\angle X\\), so \\(\\sin(28^\\circ)=\\frac{9}{h}\\).\nThe unknown begins in the denominator, so multiply both sides by \\(h\\): \\(h\\sin(28^\\circ)=9\\).\nDivide both sides by \\(\\sin(28^\\circ)\\): \\(h=\\frac{9}{\\sin(28^\\circ)}\\).\nKeep it exact rather than converting to a decimal.\nSo the answer is choice A, \\(\\frac{9}{\\sin(28^\\circ)}\\).",
-        "hint": "Solve \\(\\sin(28^\\circ)=9/h\\) for h. The unknown begins in the denominator.",
+        "hint": "Label the sides from the \\(28^\\circ\\) angle: which role does the given \\(9\\) play, and which does the unknown play? Set up that ratio and watch where the unknown starts.",
         "explanation": "Correct. Multiplying by h and dividing by \\(\\sin(28^\\circ)\\) gives \\(XZ=9/\\sin(28^\\circ)\\)."
       },
       "calculator": {
@@ -581,7 +581,7 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "From angle A, BC is opposite and AC=10 is adjacent. Then use the scale factor DF/AC.",
+        "hint": "Two decisions: from angle \\(A\\), which ratio connects the labeled side to \\(BC\\)? And for the \\(ABC\\)-to-\\(DEF\\) direction, which triangle's side belongs on top of the scale factor?",
         "explanation": "Correct. \\(BC=10\\tan(38^\\circ)\\), and the scale factor from \\(ABC\\) to \\(DEF\\) is \\(25/10\\)."
       },
       "calculator": {
@@ -647,7 +647,7 @@
         ],
         "correct_index": 3,
         "allow_retry": false,
-        "hint": "Because J corresponds to M, angle M is 52°. In triangle MNP, NP is opposite angle M and MP=20 is adjacent.",
+        "hint": "Corresponding angles are equal in similar triangles — decide which angle of \\(MNP\\) matches \\(52^\\circ\\). Then name the roles of \\(NP\\) and \\(MP\\) from that angle before choosing a ratio.",
         "explanation": "Correct. \\(\\tan(52^\\circ)=NP/20\\), so the exact length is \\(NP=20\\tan(52^\\circ)\\). The trig-and-scale route simplifies to the same expression."
       },
       "calculator": {

@@ -294,7 +294,7 @@
         "correct_index": 3,
         "allow_retry": true,
         "solution": "Both terms are perfect cubes: \\(x^3=(x)^3\\) and \\(27=3^3\\), so \\(A=x\\) and \\(B=3\\).\nApply \\(A^3-B^3=(A-B)(A^2+AB+B^2)\\): the binomial keeps the original sign, giving \\(x-3\\).\nBuild the quadratic: \\(A^2=x^2\\), the middle term \\(AB=3x\\) takes the opposite sign of the original, here plus, and \\(B^2=9\\), giving \\(x^2+3x+9\\).\nTherefore \\(x^3-27=(x-3)(x^2+3x+9)\\); multiplying back makes the middle terms cancel.\nSo the answer is choice D, \\((x-3)(x^2+3x+9)\\).",
-        "hint": "Use \\(A^3-B^3=(A-B)(A^2+AB+B^2)\\) with \\(A=x\\) and \\(B=3\\).",
+        "hint": "Both terms are perfect cubes. Recall the difference-of-cubes identity exactly — the signs and the middle term are where the traps live — and multiply back to verify your pick.",
         "explanation": "Correct. The cube roots are \\(x\\) and \\(3\\), and the quadratic is \\(x^2+3x+9\\)."
       },
       "calculator": { "display": "hidden" }

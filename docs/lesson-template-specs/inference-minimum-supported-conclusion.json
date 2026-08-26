@@ -21,10 +21,10 @@
       "content": {
         "prompt": "Which choice most logically completes the description of the bee study?",
         "choices": [
-          "Species S must avoid every habitat warmer than \\(30^\\circ\\text{C}\\).",
+          "Species S gathered food at a noticeably lower rate than species R at each of the three temperatures tested in the study.",
           "Species R's food-gathering behavior was less affected by the highest tested temperature than species S's was.",
-          "High temperatures caused species R to gather more food than it needed.",
-          "Both species gathered food at identical rates under every condition."
+          "Species R increased its food gathering at \\(35^\\circ\\text{C}\\) to make up for species S's decline.",
+          "Neither species can gather food in habitats where temperatures regularly rise above \\(35^\\circ\\text{C}\\)."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -46,9 +46,9 @@
       "content": {
         "prompt": "Which statement best defines an SAT inference?",
         "choices": [
-          "Any explanation that seems reasonable based on what you know about the topic",
-          "A detail copied word for word from one sentence",
-          "A prediction about what will happen after the passage ends",
+          "Any explanation that seems reasonable when you combine the topic with your own background knowledge",
+          "A detail restated word for word from one sentence, supported by that sentence alone",
+          "A reasonable prediction about what will most likely happen after the passage ends",
           "A conclusion not stated directly but supported by the facts and relationships in the text"
         ],
         "correct_index": 3,
@@ -78,9 +78,9 @@
         "prompt": "Which soundbite best preserves the marsh sentence's meaning?",
         "choices": [
           "An early survey suggested shrinkage, but a longer satellite record found the marsh stable.",
-          "Every survey found that the marsh was rapidly shrinking.",
-          "Satellite measurements caused the marsh to stop shrinking.",
-          "The early survey measured a different marsh from the satellite study."
+          "Two independent surveys agreed that the marsh's total area was gradually shrinking.",
+          "After satellite monitoring began, the marsh gradually stopped losing area.",
+          "The early survey and the satellite study likely measured different parts of the marsh."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -102,8 +102,8 @@
       "content": {
         "prompt": "Which inference is best supported by the frog facts?",
         "choices": [
-          "Species B stopped laying eggs before the drought began.",
-          "The drought created new permanent ponds for both species.",
+          "Species B laid most of its eggs in permanent ponds even before the drought began.",
+          "During the drought, both species shifted their egg laying into the remaining permanent ponds.",
           "Fewer egg-laying sites remained available to species A than to species B during the drought.",
           "Species A can survive only in regions that never experience drought."
         ],
@@ -127,10 +127,10 @@
       "content": {
         "prompt": "In one study, twelve mulched trees retained more soil moisture than twelve nearby unmulched trees. Which inference matches the evidence's strength and scope?",
         "choices": [
-          "Mulch always prevents every tree from losing water.",
+          "Applying mulch prevents trees from losing soil moisture in every climate and season.",
           "In this study, the mulched trees retained more soil moisture than the unmulched trees.",
-          "The unmulched trees must have died soon after the study.",
-          "Mulch is the only factor that can affect soil moisture."
+          "The unmulched trees probably suffered lasting damage in the seasons after the study.",
+          "Differences in soil moisture between the two groups were caused entirely by the mulch."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -152,10 +152,10 @@
       "content": {
         "prompt": "Which choice most logically completes the rooftop text?",
         "choices": [
-          "larger rooftops always contain fewer insects than smaller rooftops do.",
-          "insects cause rooftop gardeners to plant a wider variety of flowers.",
+          "the number of insect species on a rooftop depends mainly on the rooftop's size rather than its plantings.",
+          "greater insect diversity led rooftop gardeners to plant a wider variety of flowering species.",
           "flowering-plant variety is associated with insect diversity on the surveyed rooftops even when rooftop size is considered.",
-          "every insect species in the city depends on rooftop flowers."
+          "every insect species found in the survey depends on flowering plants for its food supply."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -177,9 +177,9 @@
       "content": {
         "prompt": "A survey found that towers with ventilation slits had lower summer indoor temperatures than nearby towers without slits; the towers were similar in height and building material. Which conclusion best combines the facts?",
         "choices": [
-          "All historic towers were built from the same material.",
-          "Ventilation slits were used only in the hottest regions.",
-          "Lower temperatures caused builders to cut slits into the towers.",
+          "The surveyed towers were alike in height and in the materials used to build them.",
+          "Builders added ventilation slits mainly in regions with especially hot summers.",
+          "Cooler indoor temperatures led builders to cut additional slits into their towers.",
           "The presence of ventilation slits was associated with cooler summer interiors among the surveyed towers."
         ],
         "correct_index": 3,
@@ -203,9 +203,9 @@
         "prompt": "A survey found that commuters who read during train trips reported lower stress than commuters who did not. The survey did not assign people to read. Which inference is safest?",
         "choices": [
           "Reading during train trips was associated with lower reported stress in the survey.",
-          "Reading during a train trip always eliminates stress.",
-          "Lower stress caused every commuter in the first group to begin reading.",
-          "The survey proved that reading is more effective than every other stress-reduction method."
+          "Reading during a train trip eliminates commuting stress for every type of rider.",
+          "Feeling less stress is what led some commuters to take up reading during their trips.",
+          "The survey shows that reading is a more effective way to reduce stress than podcasts or music."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -227,10 +227,10 @@
       "content": {
         "prompt": "Which choice most logically completes the seed text?",
         "choices": [
-          "both species germinated at exactly the same rate at every temperature.",
+          "species X consistently germinated at higher rates than species Y across each of the three tested temperatures.",
           "between \\(15^\\circ\\text{C}\\) and \\(25^\\circ\\text{C}\\), germination increased much more for species Y than for species X.",
-          "species X cannot germinate at temperatures above \\(25^\\circ\\text{C}\\).",
-          "temperature was the only possible influence on either species' germination."
+          "germination rates for species X would likely decline at temperatures above \\(25^\\circ\\text{C}\\).",
+          "temperature was the only factor that influenced germination for either species."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -258,10 +258,10 @@
       "content": {
         "prompt": "Which choice most logically completes the ceramic text?",
         "choices": [
-          "the port city's residents stopped using local clay immediately after 1750.",
-          "ceramic production was the only reason the new trade routes opened.",
+          "local clay had become too scarce for the city's potters to keep using after 1750.",
+          "the new trade routes were opened chiefly so that potters could import distant clay.",
           "the new trade connections likely contributed to the increased use of clay from distant regions after 1750.",
-          "all ceramic fragments made before 1750 came from the same workshop."
+          "most fragments in layers dated before 1750 were made from clay found near the port city."
         ],
         "correct_index": 2,
         "allow_retry": false,

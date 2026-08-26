@@ -37,7 +37,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Look at the equation displayed beside the table. It should give \\(y=2\\) when \\(x=0\\).",
+        "hint": "Look at the equation displayed beside the table — Desmos already built it. To confirm, test the displayed equation against any one of the three points.",
         "explanation": "Right. Desmos displays \\(y=3x+2\\), which matches all three points. You entered the data; the Regression button built the equation."
       },
       "calculator": {

@@ -185,7 +185,7 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "The condition after 'given that' restricts Total to the 18 + 12 = 30 grade 10 students. Then find the art count within that row.",
+        "hint": "The condition after 'given that' makes the grade 10 row the Total — add up that whole row first. Then find the art count inside the same row.",
         "explanation": "Correct. The grade 10 row contains 30 students, and 18 of those students chose art, so the probability is \\(\\frac{18}{30}\\)."
       },
       "calculator": { "display": "hidden" }
@@ -227,7 +227,7 @@
       "id": "model_check",
       "block_type": "check",
       "content": {
-        "prompt": "Why is \\(\\frac{12}{20}\\) the correct setup for the probability of selecting a green plant, given that the plant selected is medium?",
+        "prompt": "The probability of selecting a green plant, given that the plant selected is medium, is set up as \\(\\frac{12}{20}\\). Which statement correctly identifies what the \\(20\\) and the \\(12\\) count?",
         "choices": [
           "There are 12 green plants in the whole table and 20 yellow plants.",
           "There are 20 plants in the whole table and 12 are medium.",

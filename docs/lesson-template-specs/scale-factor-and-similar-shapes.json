@@ -76,7 +76,7 @@
         "choices": [
           "\\(\\frac{2}{5}\\)",
           "\\(9\\)",
-          "\\(\\frac{6}{15}\\)",
+          "\\(\\frac{3}{2}\\)",
           "\\(\\frac{5}{2}\\)"
         ],
         "correct_index": 3,
@@ -358,7 +358,7 @@
         "prompt": "Corresponding sides of two similar figures are \\(4n\\) and \\(10n\\). What is the second-to-first area ratio?",
         "choices": [
           "\\(5:2\\)",
-          "\\(10:4\\)",
+          "\\(4:25\\)",
           "\\(125:8\\)",
           "\\(25:4\\)"
         ],

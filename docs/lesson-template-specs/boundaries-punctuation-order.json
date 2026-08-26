@@ -185,7 +185,7 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "Find the choice containing a comma followed by one of these words: for, and, nor, but, or, yet, so.",
+        "hint": "The full-stop category includes comma + FANBOYS. Recall the seven FANBOYS words, then check which choice pairs a comma with one of them.",
         "explanation": "Correct. <strong>, but</strong> is comma plus FANBOYS, so it can join two complete sentences."
       },
       "calculator": {
