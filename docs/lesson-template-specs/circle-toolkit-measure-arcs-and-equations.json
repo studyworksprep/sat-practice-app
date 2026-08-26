@@ -1,0 +1,751 @@
+{
+  "title": "Circle Toolkit: Measure, Arcs, and Equations",
+  "description": "Use radius-centered relationships to solve SAT circle questions involving circumference, area, arcs, angles, tangents, and equations, with Desmos as a graphing and checking tool.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 65ad0566-77fa-40b5-a9eb-ee6d546a064c (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_objective",
+      "html": "<h2>Most circle questions start with one of three clues</h2><p>A circle question usually gives you a <strong>radius</strong>, an <strong>angle or arc</strong>, or a <strong>center and equation</strong>. Your job is to turn that clue into the circle fact you need.</p><ol><li>Find the radius or center.</li><li>Decide whether the question is about the whole circle, a fraction of it, or its graph.</li><li>Use the matching formula, angle rule, or equation.</li></ol><blockquote><p><strong>Goal:</strong> Build every solution from the radius, the central angle, or the center.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "radius_exploration",
+      "html": "<h2>Start with the center</h2><p>The open graph shows a circle centered at \\((0,0)\\). Click the three marked points.</p><p>The segment from \\((0,0)\\) to \\((4,0)\\) is a radius. The segment from \\((-4,0)\\) to \\((4,0)\\) is a diameter.</p><blockquote><p><strong>Notice:</strong> A diameter crosses the center and contains two radii.</p></blockquote>",
+      "calculator": {
+        "mode": "preset",
+        "title": "Compare radius and diameter",
+        "display": "open",
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false,
+        "initial_expressions": [
+          {
+            "id": "starter_circle",
+            "latex": "x^2+y^2=16"
+          },
+          {
+            "id": "starter_center",
+            "latex": "(0,0)"
+          },
+          {
+            "id": "starter_right",
+            "latex": "(4,0)"
+          },
+          {
+            "id": "starter_left",
+            "latex": "(-4,0)"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_1",
+      "block_type": "check",
+      "content": {
+        "hint": "Measure from the center to one edge for the radius, then across the entire circle for the diameter.",
+        "prompt": "The circle reaches from \\((-4,0)\\) to \\((4,0)\\) through its center. What are its radius and diameter?",
+        "choices": [
+          "Radius \\(8\\); diameter \\(4\\)",
+          "Radius \\(2\\); diameter \\(4\\)",
+          "Radius \\(4\\); diameter \\(8\\)",
+          "Radius \\(4\\); diameter \\(16\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Right. The radius is \\(4\\), and the diameter is twice that length: \\(8\\).",
+        "correct_index": 2
+      },
+      "calculator": {
+        "mode": "preset",
+        "title": "Use the marked points",
+        "display": "open",
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false,
+        "initial_expressions": [
+          {
+            "id": "check_circle",
+            "latex": "x^2+y^2=16"
+          },
+          {
+            "id": "check_center",
+            "latex": "(0,0)"
+          },
+          {
+            "id": "check_right",
+            "latex": "(4,0)"
+          },
+          {
+            "id": "check_left",
+            "latex": "(-4,0)"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "text",
+      "id": "basic_circle_formulas",
+      "html": "<h2>Four facts to know cold</h2><p>Let \\(r\\) be the radius and \\(d\\) be the diameter.</p><ul><li><strong>Diameter:</strong> \\(d=2r\\)</li><li><strong>Radius:</strong> \\(r=\\frac d2\\)</li><li><strong>Circumference:</strong> \\(C=2\\pi r=\\pi d\\)</li><li><strong>Area:</strong> \\(A=\\pi r^2\\)</li></ul><p>Circumference measures distance <em>around</em> the circle. Area measures the space <em>inside</em> it.</p><blockquote><p><strong>Watch out:</strong> Only the area formula squares the radius.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_2",
+      "block_type": "check",
+      "content": {
+        "hint": "Use \\(C=\\pi d\\) when the diameter is already known.",
+        "prompt": "A circle has diameter \\(14\\). What is its circumference?",
+        "choices": [
+          "\\(14\\pi\\)",
+          "\\(7\\pi\\)",
+          "\\(28\\pi\\)",
+          "\\(49\\pi\\)"
+        ],
+        "solution": "The diameter is \\(14\\).\\nUse \\(C=\\pi d\\): \\(C=\\pi(14)=14\\pi\\).\\nSo the answer is choice A, \\(14\\pi\\).",
+        "allow_retry": true,
+        "explanation": "Correct. With diameter \\(14\\), \\(C=\\pi d=14\\pi\\).",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_3",
+      "block_type": "check",
+      "content": {
+        "hint": "Use the circumference to find the radius first. Then square that radius in the area formula.",
+        "prompt": "A circle has circumference \\(18\\pi\\). What is its area?",
+        "choices": [
+          "\\(18\\pi\\)",
+          "\\(36\\pi\\)",
+          "\\(81\\pi\\)",
+          "\\(324\\pi\\)"
+        ],
+        "solution": "Use \\(C=2\\pi r\\): \\(18\\pi=2\\pi r\\), so \\(r=9\\).\\nThen \\(A=\\pi r^2=\\pi(9)^2=81\\pi\\).\\nSo the answer is choice C, \\(81\\pi\\).",
+        "allow_retry": true,
+        "explanation": "Exactly. The radius is \\(9\\), so the area is \\(\\pi(9)^2=81\\pi\\).",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "arcs_transition",
+      "html": "<h2>An arc is a fraction of a circle</h2><p>An <strong>arc</strong> is part of the circle's circumference. Two different numbers can describe it:</p><ul><li><strong>Arc measure</strong> is an angle, written in degrees or radians.</li><li><strong>Arc length</strong> is a distance, written in units such as inches or centimeters.</li></ul><blockquote><p><strong>Do not mix them:</strong> \\(90^\\circ\\) is an arc measure; \\(6\\pi\\) centimeters can be an arc length.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "central_inscribed_rules",
+      "html": "<h2>Where is the angle's vertex?</h2><p>A <strong>central angle</strong> has its vertex at the center. Its degree measure equals the measure of its intercepted arc.</p><p>An <strong>inscribed angle</strong> has its vertex on the circle. Its measure is half the measure of its intercepted arc.</p><blockquote><p><strong>Angle rules:</strong> central angle \\(=\\) arc; inscribed angle \\(=\\frac12\\)(arc).</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_4",
+      "block_type": "check",
+      "content": {
+        "hint": "A central angle has its vertex at the center, so it matches its intercepted arc.",
+        "prompt": "A central angle intercepts an arc measuring \\(128^\\circ\\). What is the measure of the central angle?",
+        "choices": [
+          "\\(64^\\circ\\)",
+          "\\(128^\\circ\\)",
+          "\\(232^\\circ\\)",
+          "\\(256^\\circ\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Right. A central angle and its intercepted arc have the same degree measure: \\(128^\\circ\\).",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_5",
+      "block_type": "check",
+      "content": {
+        "hint": "The vertex is on the circle, so take half of the intercepted arc.",
+        "prompt": "An inscribed angle intercepts an arc measuring \\(150^\\circ\\). What is the angle's measure?",
+        "choices": [
+          "\\(300^\\circ\\)",
+          "\\(150^\\circ\\)",
+          "\\(30^\\circ\\)",
+          "\\(75^\\circ\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Correct. An inscribed angle is half its intercepted arc, so it measures \\(75^\\circ\\).",
+        "correct_index": 3
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "arc_length_process",
+      "html": "<h2>Arc length uses the same fraction as the angle</h2><p>If a central angle is \\(\\theta\\) degrees, the arc is \\(\\frac{\\theta}{360}\\) of the full circumference.</p><p>\\[\\frac{\\text{arc length}}{2\\pi r}=\\frac{\\theta}{360}\\]</p><p>Example: with radius \\(12\\) and central angle \\(60^\\circ\\),</p><p>\\[\\text{arc length}=\\frac{60}{360}(24\\pi)=4\\pi.\\]</p><blockquote><p><strong>Process:</strong> angle fraction \\(\\times\\) circumference.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_6",
+      "block_type": "check",
+      "content": {
+        "hint": "Find \\(72/360\\) of the circumference \\(20\\pi\\).",
+        "prompt": "A circle has radius \\(10\\). What is the length of the arc cut off by a \\(72^\\circ\\) central angle?",
+        "choices": [
+          "\\(2\\pi\\)",
+          "\\(4\\pi\\)",
+          "\\(5\\pi\\)",
+          "\\(8\\pi\\)"
+        ],
+        "solution": "The circumference is \\(2\\pi r=20\\pi\\).\\nThe angle fraction is \\(72/360=1/5\\).\\nThe arc length is \\((1/5)(20\\pi)=4\\pi\\).\\nSo the answer is choice B, \\(4\\pi\\).",
+        "allow_retry": true,
+        "explanation": "Exactly. The arc is one fifth of the circle, so its length is one fifth of \\(20\\pi\\), or \\(4\\pi\\).",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "major_minor_arcs",
+      "html": "<h2>Minor and major arcs complete the circle</h2><p>A <strong>minor arc</strong> is the shorter path between two endpoints. A <strong>major arc</strong> is the longer path.</p><ul><li>Their measures add to \\(360^\\circ\\).</li><li>Their lengths add to the circumference.</li></ul><p>If one arc has measure \\(100^\\circ\\), the other has measure \\(260^\\circ\\). Their lengths follow the ratio \\(100:260\\), which simplifies to \\(5:13\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_7",
+      "block_type": "check",
+      "content": {
+        "hint": "The minor and major arcs together make the full circumference.",
+        "prompt": "A minor arc has length \\(7\\pi\\), and the circle's circumference is \\(24\\pi\\). What is the length of the corresponding major arc?",
+        "choices": [
+          "\\(31\\pi\\)",
+          "\\(12\\pi\\)",
+          "\\(17\\pi\\)",
+          "\\(7\\pi\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Correct. The major arc is \\(24\\pi-7\\pi=17\\pi\\).",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "radians_connection",
+      "html": "<h2>Radians are another way to measure an angle</h2><p>A full turn is both \\(360^\\circ\\) and \\(2\\pi\\) radians. A half turn is \\(180^\\circ=\\pi\\) radians.</p><ul><li>Degrees to radians: multiply by \\(\\frac{\\pi}{180}\\).</li><li>Radians to degrees: multiply by \\(\\frac{180}{\\pi}\\).</li></ul><p>Radians also connect directly to arc length: when \\(\\theta\\) is in radians, \\(s=r\\theta\\).</p><blockquote><p><strong>Checkpoint:</strong> use \\(s=r\\theta\\) only when \\(\\theta\\) is in radians.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_8",
+      "block_type": "check",
+      "content": {
+        "hint": "Multiply by \\(180/\\pi\\), then cancel \\(\\pi\\).",
+        "prompt": "An angle measures \\(\\frac{5\\pi}{6}\\) radians. What is its measure in degrees?",
+        "choices": [
+          "\\(30^\\circ\\)",
+          "\\(75^\\circ\\)",
+          "\\(150^\\circ\\)",
+          "\\(300^\\circ\\)"
+        ],
+        "solution": "Multiply by \\(180/\\pi\\): \\((5\\pi/6)(180/\\pi)\\).\\nCancel \\(\\pi\\) and simplify: \\(5(30)=150\\).\\nSo the answer is choice C, \\(150^\\circ\\).",
+        "allow_retry": true,
+        "explanation": "Right. \\((5\\pi/6)(180/\\pi)=150^\\circ\\).",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "equal_radii_geometry",
+      "html": "<h2>Radii create useful triangles</h2><p>All radii of one circle have the same length. If points \\(A\\) and \\(B\\) lie on a circle with center \\(O\\), then \\(OA=OB\\).</p><p>That makes triangle \\(AOB\\) isosceles. Its two base angles are equal.</p><blockquote><p><strong>Circle clue:</strong> When a triangle includes the center and two points on the circle, mark the two radii equal.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_9",
+      "block_type": "check",
+      "content": {
+        "hint": "The two radii make an isosceles triangle. Subtract the central angle from 180, then split the remainder equally.",
+        "prompt": "Points \\(A\\) and \\(B\\) lie on a circle with center \\(O\\). If \\(\\angle AOB=84^\\circ\\), what is \\(\\angle ABO\\)?",
+        "choices": [
+          "\\(42^\\circ\\)",
+          "\\(48^\\circ\\)",
+          "\\(84^\\circ\\)",
+          "\\(96^\\circ\\)"
+        ],
+        "solution": "Because \\(OA=OB\\), the two base angles are equal.\\nThey total \\(180^\\circ-84^\\circ=96^\\circ\\).\\nEach base angle is \\(96^\\circ/2=48^\\circ\\).\\nSo the answer is choice B, \\(48^\\circ\\).",
+        "allow_retry": true,
+        "explanation": "Correct. The equal radii leave \\(96^\\circ\\) for two equal base angles, so each is \\(48^\\circ\\).",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "tangent_radius_rule",
+      "html": "<h2>A tangent meets a radius at a right angle</h2><p>A <strong>tangent line</strong> touches a circle at exactly one point. The radius drawn to that point is perpendicular to the tangent.</p><p>In coordinate questions:</p><ol><li>Find the slope from the center to the point of tangency.</li><li>Take the negative reciprocal to get the tangent's slope.</li></ol><blockquote><p><strong>Tangent rule:</strong> radius \\(\\perp\\) tangent at the point of tangency.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_10",
+      "block_type": "check",
+      "content": {
+        "hint": "First find the radius slope from (1,2) to (5,4). Then take its negative reciprocal.",
+        "prompt": "A circle has center \\((1,2)\\), and a tangent touches it at \\((5,4)\\). What is the tangent line's slope?",
+        "choices": [
+          "\\(-2\\)",
+          "\\(-\\frac12\\)",
+          "\\(\\frac12\\)",
+          "\\(2\\)"
+        ],
+        "solution": "The radius slope is \\((4-2)/(5-1)=2/4=1/2\\).\\nA perpendicular line has the negative reciprocal slope, \\(-2\\).\\nSo the answer is choice A, \\(-2\\).",
+        "allow_retry": true,
+        "explanation": "Exactly. The radius slope is \\(1/2\\), so the perpendicular tangent slope is \\(-2\\).",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "equal_tangent_segments",
+      "html": "<h2>Two tangents from one point are equal</h2><p>If two tangent segments start at the same point outside a circle, their lengths are equal.</p><p>So if point \\(P\\) has tangent segments \\(PA\\) and \\(PB\\), then \\(PA=PB\\). This often turns a perimeter problem into a short equation.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_11",
+      "block_type": "check",
+      "content": {
+        "hint": "Set the two tangent lengths equal, solve for x, and then return to the requested segment.",
+        "prompt": "From point \\(P\\), two tangent segments touch a circle at \\(A\\) and \\(B\\). If \\(PA=3x+1\\) and \\(PB=5x-7\\), what is \\(PA\\)?",
+        "choices": [
+          "\\(4\\)",
+          "\\(8\\)",
+          "\\(13\\)",
+          "\\(16\\)"
+        ],
+        "solution": "Tangent segments from the same outside point are equal, so \\(3x+1=5x-7\\).\\nSolving gives \\(x=4\\).\\nThen \\(PA=3(4)+1=13\\).\\nSo the answer is choice C, \\(13\\).",
+        "allow_retry": true,
+        "explanation": "Right. Equality gives \\(x=4\\), and the requested length is \\(PA=13\\).",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "equation_transition",
+      "html": "<h2>The circle equation stores the center and radius</h2><p>Coordinate-circle questions look algebraic, but the equation is a compact description of the same picture.</p><p>\\[(x-h)^2+(y-k)^2=r^2\\]</p><ul><li>center: \\((h,k)\\)</li><li>radius: \\(r\\)</li></ul><blockquote><p><strong>Read the structure:</strong> the signs inside the parentheses are opposite, and the right side is \\(r^2\\), not \\(r\\).</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_12",
+      "block_type": "check",
+      "content": {
+        "hint": "Rewrite x + 6 as x - (-6), and take the positive square root of 49.",
+        "prompt": "What are the center and radius of \\((x+6)^2+(y-1)^2=49\\)?",
+        "choices": [
+          "Center \\((6,-1)\\); radius \\(49\\)",
+          "Center \\((-6,1)\\); radius \\(49\\)",
+          "Center \\((6,-1)\\); radius \\(7\\)",
+          "Center \\((-6,1)\\); radius \\(7\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Correct. The center is \\((-6,1)\\), and \\(r^2=49\\) gives radius \\(7\\).",
+        "correct_index": 3
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "equation_graph_exploration",
+      "html": "<h2>Use Desmos to make the equation visible</h2><p>The graph of \\((x-3)^2+(y+2)^2=25\\) is open. The center should be \\((3,-2)\\), and the radius should be \\(5\\).</p><p>Trace the circle and confirm that its leftmost and rightmost x-values are \\(-2\\) and \\(8\\). Their midpoint is \\(3\\), and each is \\(5\\) units from the center.</p>",
+      "calculator": {
+        "mode": "preset",
+        "title": "Trace the circle",
+        "display": "open",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false,
+        "initial_expressions": [
+          {
+            "id": "equation_circle",
+            "latex": "(x-3)^2+(y+2)^2=25"
+          },
+          {
+            "id": "equation_center",
+            "latex": "(3,-2)"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_13",
+      "block_type": "check",
+      "content": {
+        "hint": "Start at the center (3,-2) and move one radius, 5 units, upward.",
+        "prompt": "For \\((x-3)^2+(y+2)^2=25\\), which point is the top of the circle?",
+        "choices": [
+          "\\((3,3)\\)",
+          "\\((3,7)\\)",
+          "\\((8,-2)\\)",
+          "\\((-2,-2)\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Right. Moving \\(5\\) units up from \\((3,-2)\\) gives \\((3,3)\\).",
+        "correct_index": 0
+      },
+      "calculator": {
+        "mode": "preset",
+        "title": "Find the top point",
+        "display": "open",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false,
+        "initial_expressions": [
+          {
+            "id": "top_circle",
+            "latex": "(x-3)^2+(y+2)^2=25"
+          },
+          {
+            "id": "top_center",
+            "latex": "(3,-2)"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "text",
+      "id": "desmos_workflow",
+      "html": "<h2>The Desmos circle workflow</h2><ol><li>Enter the equation exactly, including both squared groups.</li><li>Read the center and radius from standard form—or estimate them from the graph.</li><li>Add any point or line from the question on a new row.</li><li>Click intersections or compare the point with the circle.</li></ol><p>This can answer whether a point lies on or inside a circle, where a line meets it, whether it is tangent to an axis, and how a translation changes the graph.</p><blockquote><p><strong>Use both views:</strong> the equation gives exact structure; the graph gives visual evidence.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "desmos_interactive_1",
+      "block_type": "desmos_interactive",
+      "content": {
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "type": "desmos_interactive",
+        "title": "Graph a circle from its center and radius",
+        "feedback": {
+          "solution_html": "<p>The equation is \\((x-3)^2+(y+2)^2=25\\).</p>",
+          "targeted_hints": [
+            {
+              "trigger": "likely_parentheses_error",
+              "message_html": "<p>Put each coordinate shift in its own squared parentheses: \\((x-h)^2\\) and \\((y-k)^2\\).</p>"
+            },
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>Keep only the one circle equation.</p>"
+            }
+          ],
+          "retry_message_html": "<p>Check the reversed signs inside both parentheses and remember that the right side is the radius squared.</p>",
+          "attempt_based_hints": [
+            {
+              "message_html": "<p>Use \\((x-3)^2+(y+2)^2=25\\).</p>",
+              "min_attempts": 2
+            }
+          ],
+          "success_message_html": "<p>Nice. The graph confirms center \\((3,-2)\\) and radius \\(5\\).</p>",
+          "reveal_solution_after_attempts": 4
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "(x-3)^2+(y+2)^2=25",
+            "\\left(x-3\\right)^{2}+\\left(y+2\\right)^{2}=25"
+          ],
+          "state_rules": {
+            "max_expressions": 1,
+            "min_expressions": 1,
+            "require_visible_only": true
+          }
+        },
+        "progression": {
+          "require_success": true
+        },
+        "instructions_html": "<p>A circle has center \\((3,-2)\\) and radius \\(5\\). Enter its equation in standard form. Keep exactly one expression row, then submit.</p>",
+        "initial_expressions": []
+      }
+    },
+    {
+      "kind": "text",
+      "id": "center_point_to_equation",
+      "html": "<h2>If a point is given, use it to find \\(r^2\\)</h2><p>A circle has center \\((-2,4)\\) and passes through \\((1,8)\\).</p><p>The horizontal and vertical changes are \\(3\\) and \\(4\\), so</p><p>\\[r^2=3^2+4^2=25.\\]</p><p>The equation is \\((x+2)^2+(y-4)^2=25\\).</p><blockquote><p><strong>Shortcut:</strong> You usually need \\(r^2\\), so the squared-distance sum can go directly on the right side.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_14",
+      "block_type": "check",
+      "content": {
+        "hint": "The coordinate changes are 4 and 3. Add their squares for r², and keep the given center in standard form.",
+        "prompt": "A circle has center \\((5,-1)\\) and passes through \\((9,2)\\). Which equation represents the circle?",
+        "choices": [
+          "\\((x-5)^2+(y+1)^2=5\\)",
+          "\\((x+5)^2+(y-1)^2=25\\)",
+          "\\((x-5)^2+(y+1)^2=25\\)",
+          "\\((x-9)^2+(y-2)^2=25\\)"
+        ],
+        "solution": "From the center to the point, the changes are \\(9-5=4\\) and \\(2-(-1)=3\\).\\nThus \\(r^2=4^2+3^2=25\\).\\nCenter \\((5,-1)\\) gives \\((x-5)^2+(y+1)^2=25\\).\\nSo the answer is choice C.",
+        "allow_retry": true,
+        "explanation": "Correct. The center fixes the parentheses, and the squared distance to the given point is \\(16+9=25\\).",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "circle_transformations",
+      "html": "<h2>Translations change the center, not the radius</h2><p>For \\((x-h)^2+(y-k)^2=r^2\\):</p><ul><li>right \\(a\\): add \\(a\\) to \\(h\\);</li><li>left \\(a\\): subtract \\(a\\) from \\(h\\);</li><li>up \\(b\\): add \\(b\\) to \\(k\\);</li><li>down \\(b\\): subtract \\(b\\) from \\(k\\).</li></ul><p>If the radius is multiplied by a factor, square that factor on the right. Doubling \\(r\\) multiplies \\(r^2\\) by \\(4\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_15",
+      "block_type": "check",
+      "content": {
+        "hint": "First read the original center as (2,-5). Move that point right 4 and down 2; the radius stays the same.",
+        "prompt": "The circle \\((x-2)^2+(y+5)^2=9\\) is shifted right 4 units and down 2 units. Which equation represents the new circle?",
+        "choices": [
+          "\\((x-6)^2+(y+7)^2=9\\)",
+          "\\((x+2)^2+(y+3)^2=9\\)",
+          "\\((x-6)^2+(y+3)^2=9\\)",
+          "\\((x-2)^2+(y+5)^2=36\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Right. The new center is \\((6,-7)\\), so the equation is \\((x-6)^2+(y+7)^2=9\\).",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "nonstandard_equations",
+      "html": "<h2>When the equation is expanded</h2><p>An equation such as \\(x^2-6x+y^2+4y=12\\) is not in standard form.</p><p>You have two useful options:</p><ul><li><strong>Graph it directly in Desmos.</strong> You can read the circle's location and size without rewriting first.</li><li><strong>Complete the square</strong> to reveal exact center and radius: \\((x-3)^2+(y+2)^2=25\\).</li></ul><p>Desmos is often fastest for answer-choice, point, and intersection questions. Standard form is best when the question asks for an exact center, radius, or equation.</p>",
+      "calculator": {
+        "mode": "preset",
+        "title": "Graph the expanded equation",
+        "display": "open",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false,
+        "initial_expressions": [
+          {
+            "id": "expanded_circle",
+            "latex": "x^2-6x+y^2+4y=12"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "text",
+      "id": "point_location_process",
+      "html": "<h2>On, inside, or outside?</h2><p>For \\((x-h)^2+(y-k)^2=r^2\\), substitute the point into the left side.</p><ul><li>left side \\(<r^2\\): inside;</li><li>left side \\(=r^2\\): on the circle;</li><li>left side \\(>r^2\\): outside.</li></ul><p>You can also graph the point and circle together in Desmos.</p><blockquote><p><strong>Compare squared distances:</strong> no square root is needed.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_16",
+      "block_type": "check",
+      "content": {
+        "hint": "Substitute the point: compare (5 - 1)² + (1 + 2)² with 25.",
+        "prompt": "Relative to the circle \\((x-1)^2+(y+2)^2=25\\), where is the point \\((5,1)\\)?",
+        "choices": [
+          "Inside the circle",
+          "At the center",
+          "Outside the circle",
+          "On the circle"
+        ],
+        "solution": "Substitute \\((5,1)\\): \\((5-1)^2+(1+2)^2=4^2+3^2=25\\).\\nThe result equals \\(r^2\\), so the point lies on the circle.\\nSo the answer is choice D.",
+        "allow_retry": true,
+        "explanation": "Correct. The squared distance is \\(16+9=25\\), exactly matching \\(r^2\\).",
+        "correct_index": 3
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "tangent_to_axis",
+      "html": "<h2>Exactly one intersection means tangent</h2><p>If a circle meets the x-axis or y-axis at exactly one point, that axis is tangent to the circle.</p><p>For a circle centered at \\((h,k)\\):</p><ul><li>distance to the y-axis is \\(|h|\\);</li><li>distance to the x-axis is \\(|k|\\).</li></ul><p>The circle is tangent to an axis when that distance equals the radius. Graphing the circle in Desmos makes the one-point touch visible.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_17",
+      "block_type": "check",
+      "content": {
+        "hint": "Compare each center's horizontal distance from the y-axis with its radius.",
+        "prompt": "Which circle is tangent to the y-axis?",
+        "choices": [
+          "\\((x-4)^2+(y+1)^2=16\\)",
+          "\\((x-4)^2+(y+1)^2=9\\)",
+          "\\((x-2)^2+(y+1)^2=16\\)",
+          "\\(x^2+(y+1)^2=16\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Correct. The center is \\((4,-1)\\), four units from the y-axis, and the radius is \\(4\\).",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "diameter_midpoint",
+      "html": "<h2>The center is the midpoint of a diameter</h2><p>If \\(P\\) and \\(Q\\) are opposite endpoints of a diameter, the center is halfway between them.</p><p>If the center is \\((h,k)\\), one endpoint is \\((x_1,y_1)\\), and the other is \\((x_2,y_2)\\), then</p><p>\\[\\frac{x_1+x_2}{2}=h,\\qquad \\frac{y_1+y_2}{2}=k.\\]</p><p>You can also think of the center as a mirror point: move the same distance from the center in the opposite direction.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_18",
+      "block_type": "check",
+      "content": {
+        "hint": "From the center to (7,1), the move is right 5 and up 4. Reverse that move for the opposite endpoint.",
+        "prompt": "A circle has center \\((2,-3)\\). One endpoint of a diameter is \\((7,1)\\). What is the other endpoint?",
+        "choices": [
+          "\\((-3,-7)\\)",
+          "\\((-5,-4)\\)",
+          "\\((3,7)\\)",
+          "\\((-3,1)\\)"
+        ],
+        "solution": "From \\((2,-3)\\) to \\((7,1)\\), move right \\(5\\) and up \\(4\\).\\nReverse the move from the center: left \\(5\\) and down \\(4\\).\\nThe other endpoint is \\((2-5,-3-4)=(-3,-7)\\).\\nSo the answer is choice A.",
+        "allow_retry": true,
+        "explanation": "Right. The opposite endpoint is the reflection of \\((7,1)\\) across the center, giving \\((-3,-7)\\).",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_intro",
+      "html": "<h2>Put the clues together</h2><p>The next problem combines an axis-tangency clue with the standard equation. Decide what the tangency tells you before choosing the equation.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_19",
+      "block_type": "check",
+      "content": {
+        "prompt": "A circle has center \\((-3,4)\\), is tangent to the x-axis, and passes through point \\(P\\). Which statement must be true?",
+        "choices": [
+          "Its equation is \\((x+3)^2+(y-4)^2=16\\), and every point \\(P=(a,b)\\) on it makes the left side equal \\(16\\).",
+          "Its equation is \\((x-3)^2+(y+4)^2=4\\), and every point inside it makes the left side equal \\(4\\).",
+          "Its equation is \\((x+3)^2+(y-4)^2=4\\), because the center is four units from the y-axis.",
+          "Its equation is \\((x-3)^2+(y+4)^2=16\\), because the signs inside the groups match the center."
+        ],
+        "allow_retry": false,
+        "explanation": "The center is four units from the x-axis, so tangency makes the radius \\(4\\) and \\(r^2=16\\). Center \\((-3,4)\\) gives \\((x+3)^2+(y-4)^2=16\\), and points on the circle satisfy the equation exactly.",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_20",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which summary uses the circle toolkit correctly?",
+        "choices": [
+          "Start with diameter; square it for circumference; double central angles; copy center signs from the equation; graph after solving.",
+          "Find radius or center; choose the formula, angle rule, or equation; reverse center signs; read r²; graph added points or lines.",
+          "Start with area; use arc length as an angle; halve central angles; read the equation's right side as r; skip the graph.",
+          "Find circumference first; divide arc measures by 180; use equal radii for tangent slopes; change the center when the radius changes."
+        ],
+        "allow_retry": false,
+        "explanation": "Exactly. Start with the radius or center, choose the matching relationship, then use Desmos when a graph makes the evidence easier to see or test.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_complete_1",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You have a circle toolkit</h2><p>You can move between radius, diameter, circumference, and area; connect arcs to central and inscribed angles; use radians and tangent facts; read and build circle equations; and graph circles in Desmos to test points, lines, translations, and intersections.</p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}

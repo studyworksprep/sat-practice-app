@@ -24,7 +24,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 
 **265 findings** across 32 specs and 540 checks at the 2026-08-23 baseline. Corpus keyed-longest rate at baseline: **35.4%** (191/540); exit target is < 30% corpus-wide with no lesson above 50%.
 
-**As of 2026-08-26:** 209 rows open, 56 fixed (the step 2.5 retrieval-check rebuilds plus the three Probability from Tables `equivalent_choices` defects). Corpus keyed-longest rate: **31.1%** (168/540). `retrieval_nonsense_distractor` is fully cleared.
+**As of 2026-08-26:** 230 rows open, 56 fixed (the step 2.5 retrieval-check rebuilds plus the three Probability from Tables `equivalent_choices` defects). The corpus grew to **36 specs / 600 checks** with the reverse-drift export of the four spec-less production lessons — the two in-app drafts (Circle Toolkit, Initial Modifiers) are lint-clean, while the two older published lessons (Desmos Sliders, Equivalent-Expressions Regression) add 21 open findings, including the corpus's one remaining `retrieval_nonsense_distractor` (Sliders `check_7`, out of scope for the 2.5 pass, which predates these specs). Corpus keyed-longest rate: **30.3%** (182/600); over the original 32 specs it is 31.1% (168/540), down from the 35.4% baseline.
 
 ### Advanced Factoring: Non-Monic Trinomials and Cubes
 
@@ -49,6 +49,10 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 24 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractors B, C share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 22 | `guided_transfer_result` | `check_run` | 3 consecutive checks (steps 22–24). | open |
 | 4 | `opening_debrief` | `text_run` | 3 consecutive text blocks (steps 4–6). | open |
+
+### Circle Toolkit: Measure, Arcs, and Equations
+
+`circle-toolkit-measure-arcs-and-equations.json` — 0 findings; keyed-longest 1/20 (5%). Entered the corpus 2026-08-26 via the reverse-drift export from production (in-app draft); lint-clean.
 
 ### CLEAR the Claim: Command of Evidence
 
@@ -115,6 +119,24 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 2.3x the mean length of the distractors. | fixed (2026-08-26) |
 | 36 | `final_retrieval_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "standard". | fixed (2026-08-26) |
 | 36 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractor C shares no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
+
+### Find Missing Constants in Equivalent Expressions with Regression
+
+`find-missing-constants-in-equivalent-expressions-with-regression.json` — 11 findings; keyed-longest 5/18 (28%). Entered the corpus 2026-08-26 via the reverse-drift export from production (published lesson).
+
+| Step | Block | Rule | Finding | Status |
+|---|---|---|---|---|
+| 4 | `check_2` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
+| 4 | `check_2` | `key_term_echo` | Keyed choice is the only one containing the lesson term "equivalent". | open |
+| 6 | `check_3` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
+| 8 | `check_4` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
+| 8 | `check_4` | `key_term_echo` | Keyed choice is the only one containing the lesson term "equivalent expressions". | open |
+| 20 | `check_9` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
+| 27 | `check_13` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
+| 27 | `check_13` | `key_term_echo` | Keyed choice is the only one containing the lesson term "expression". | open |
+| 27 | `check_13` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
+| 26 | `check_12` | `check_run` | 7 consecutive checks (steps 26–32). | open |
+| 9 | `process_setup` | `text_run` | 3 consecutive text blocks (steps 9–11). | open |
 
 ### Find Missing Constants with Custom Regression
 
@@ -227,6 +249,10 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 23 | `independent_transfer_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 24 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | fixed (2026-08-26) |
 | 24 | `final_retrieval_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "smallest supported". | open |
+
+### Initial Modifiers: Match the Noun After the Comma
+
+`initial-modifiers-match-the-noun-after-the-comma.json` — 0 findings; keyed-longest 4/15 (27%). Entered the corpus 2026-08-26 via the reverse-drift export from production (in-app draft); lint-clean.
 
 ### Place Transition Words by Logic
 
@@ -458,6 +484,23 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 36 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
 | 14 | `slider_no_solution_explanation` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | open |
 | 18 | `multiple_constants_transition` | `text_run` | 3 consecutive text blocks (steps 18–20). | open |
+
+### Testing Equivalent Expressions with Desmos Sliders
+
+`testing-equivalent-expressions-with-desmos-sliders.json` — 10 findings; keyed-longest 4/7 (57%). Entered the corpus 2026-08-26 via the reverse-drift export from production (published lesson). Note: worst keyed-longest rate in the corpus after Inference — a 2.3 rewrite candidate.
+
+| Step | Block | Rule | Finding | Status |
+|---|---|---|---|---|
+| 8 | `check_3` | `keyed_longest` | Keyed choice is 2.2x the mean length of the distractors. | open |
+| 8 | `check_3` | `key_term_echo` | Keyed choice is the only one containing the lesson term "expressions". | open |
+| 10 | `check_4` | `hint_gives_answer` | Hint states "= 2", the keyed numeric answer. | open |
+| 12 | `check_5` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | open |
+| 12 | `check_5` | `key_term_echo` | Keyed choice is the only one containing the lesson term "sliders". | open |
+| 17 | `check_7` | `keyed_longest` | Keyed choice is 2.2x the mean length of the distractors. | open |
+| 17 | `check_7` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
+| 17 | `check_7` | `retrieval_nonsense_distractor` | Retrieval distractor D shares no content words with the keyed process — eliminable on sight. | open |
+| 14 | `branching_question_13_correct` | `text_run` | 3 consecutive text blocks (steps 14–16). | open |
+| 18 | `branching_question_14_correct` | `text_run` | 3 consecutive text blocks (steps 18–20). | open |
 
 ### Understand and Use Standard Deviation
 

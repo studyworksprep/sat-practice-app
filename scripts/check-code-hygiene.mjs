@@ -83,6 +83,9 @@ const EXEMPT_PHRASES = [
   // to say which project they mean; the pre-rebuild nav tab it collides
   // with is unrelated.
   'SAT Question Bank',
+  // College Board's official product name for the source of the question
+  // bank's items (docs/authenticity-sheets.md and the plan ledger cite it).
+  'Educator Question Bank',
 ];
 
 const ALLOWLIST_PREFIXES = [
