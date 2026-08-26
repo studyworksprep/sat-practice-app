@@ -22,10 +22,10 @@
       "content": {
         "prompt": "Which finding, if true, would most directly support the claim about street-tree shade?",
         "choices": [
-          "Residents said that streets with more trees looked more attractive.",
-          "Shaded sidewalks carried less pedestrian traffic than unshaded sidewalks did.",
+          "Residents of streets with more trees rated their neighborhoods as more attractive in a survey.",
+          "At midday, shaded sidewalk segments carried noticeably less foot traffic than unshaded segments.",
           "At matched locations measured at midday, shaded sidewalk surfaces averaged 12°F cooler than unshaded surfaces.",
-          "At shaded locations, sidewalk surfaces were cooler in the morning than at midday."
+          "At shaded locations, sidewalk surfaces measured substantially cooler in the early morning than at midday."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -54,9 +54,9 @@
         "prompt": "A question asks which finding would most directly weaken a researcher's conclusion. What is your job?",
         "choices": [
           "Find a result that makes the conclusion less likely or exposes a missing link.",
-          "Find any result from the same academic subject.",
-          "Find the result with the largest number in it.",
-          "Find a result that restates the conclusion more dramatically."
+          "Find a result that comes from the same field of research as the conclusion.",
+          "Find the result that reports the largest and most precise measurements.",
+          "Find a result that restates the conclusion in stronger, more dramatic language."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -78,9 +78,9 @@
       "content": {
         "prompt": "Which prediction best matches the Compound R claim?",
         "choices": [
-          "The Compound R worms should consume more food, whether or not they grow faster.",
-          "The no-Compound-R worms should be older than the Compound R worms.",
-          "Both groups should grow at exactly the same rate.",
+          "The Compound R worms should consume noticeably more food than the other worms, whether or not they also grow faster.",
+          "The worms receiving no Compound R should be older on average than the Compound R worms.",
+          "Both groups of worms should grow at approximately the same rate under comparable conditions.",
           "Under comparable conditions, the Compound R worms should show a higher growth rate than the no-Compound-R worms."
         ],
         "correct_index": 3,
@@ -153,10 +153,10 @@
       "content": {
         "prompt": "A study concludes that a training program improves identification accuracy. Which finding most directly supports that conclusion?",
         "choices": [
-          "The trained group completed the task faster than it had completed a different task.",
+          "The trained group completed the identification task faster than it had completed a different task earlier in the study.",
           "The trained group identified 84% of targets correctly, compared with 61% for the untrained control group.",
-          "Most participants said that the training videos were interesting.",
-          "The untrained group completed more total trials than the trained group."
+          "Most participants in the trained group described the training videos as interesting and useful.",
+          "The untrained control group completed more total practice trials than the trained group did."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -191,9 +191,9 @@
         "prompt": "What does the blue bar labeled 12 at medium light specifically mean?",
         "choices": [
           "Seedlings receiving the mineral supplement under medium light averaged 12 centimeters after 14 days.",
-          "Twelve seedlings received the standard solution under medium light.",
-          "Medium light lasted 12 days for the mineral-supplement group.",
-          "All seedlings under medium light grew exactly 12 centimeters."
+          "Twelve of the seedlings in the study received the standard solution under medium light.",
+          "The medium-light group's growing period lasted 12 days instead of the full 14.",
+          "Every seedling grown under the medium-light condition reached a final height of exactly 12 centimeters."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -209,9 +209,9 @@
       "content": {
         "prompt": "To support the claim that the supplement increased growth at every light level, what pattern must the graph show?",
         "choices": [
-          "The supplement group must be tallest under high light.",
-          "Both groups must increase whenever light increases.",
-          "The standard group must average at least 4 centimeters in every condition.",
+          "The supplement group should reach its tallest average under the high-light condition.",
+          "Both solution groups should grow taller whenever the light level increases.",
+          "The standard-solution group should average at least 4 centimeters under every light condition.",
           "Within low, medium, and high light, the supplement average must exceed the standard-solution average."
         ],
         "correct_index": 3,
@@ -228,10 +228,10 @@
       "content": {
         "prompt": "Which choice best describes graph data that support the researchers' claim?",
         "choices": [
-          "The mineral-supplement group averaged 18 centimeters under high light.",
-          "The standard-solution group averaged more under high light than under low light.",
+          "The mineral-supplement group reached its highest average, 18 centimeters, under the high-light condition.",
+          "The standard-solution group averaged more under high light (12 centimeters) than under low light (4 centimeters).",
           "The mineral-supplement average exceeded the standard-solution average under low light (5 versus 4), medium light (12 versus 8), and high light (18 versus 12).",
-          "The mineral-supplement group under medium light averaged the same height as the standard-solution group under high light."
+          "The mineral-supplement group under medium light averaged exactly the same height, 12 centimeters, as the standard-solution group growing under high light."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -278,10 +278,10 @@
       "content": {
         "prompt": "A new claim says the supplement's advantage grew as light increased. Which evidence best supports that claim?",
         "choices": [
-          "The standard-solution averages rose from 4 to 8 to 12 centimeters.",
-          "The supplement averages were 5, 12, and 18 centimeters.",
+          "The standard-solution averages rose steadily from 4 centimeters to 8 to 12 as the light level increased.",
+          "The supplement averages increased from 5 to 12 to 18 centimeters as light increased.",
           "The supplement-standard gaps were 1 centimeter in low light, 4 in medium light, and 6 in high light.",
-          "The medium-light supplement average equaled the high-light standard average."
+          "The medium-light supplement average, 12 centimeters, equaled the high-light standard-solution average."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -303,9 +303,9 @@
       "content": {
         "prompt": "A graph shows how many lizard species fall into each speed range while escaping and how many fall into each range while pursuing prey, but it does not identify individual species. Which conclusion is not supported?",
         "choices": [
-          "At least one species was recorded in the 90%–100% range while pursuing prey.",
-          "More escaping species fell in the 90%–100% range than in the 60%–69% range.",
-          "Multiple species escaped at less than 90% of maximal speed.",
+          "At least one of the lizard species was recorded in the 90%–100% range of maximal speed while it pursued prey.",
+          "More escaping species fell in the 90%–100% speed range than fell in the 60%–69% speed range.",
+          "Multiple lizard species escaped from predators at speeds below 90% of their maximal sprint speed.",
           "Most individual species used about the same percentage of maximal speed when escaping as when pursuing."
         ],
         "correct_index": 3,
@@ -326,11 +326,11 @@
       "id": "hard_bridge_check",
       "block_type": "check",
       "content": {
-        "prompt": "Given the theory and data on the previous slide, which conclusion is best supported?",
+        "prompt": "A theory predicts that if government efficiency rises, the share of expansion linked to investment should also rise. Between the earlier and later periods, that share fell from 38% to 26%. Which conclusion is best supported?",
         "choices": [
-          "Investment definitely caused all expansion in both periods.",
-          "Government efficiency must have increased because 26% is a positive value.",
-          "The data provide no information relevant to the theory.",
+          "The data confirm that investment caused the expansion observed in both periods.",
+          "Government efficiency rose in the later period, since a 26% share is still a positive value.",
+          "The data have no bearing on the theory, because the theory concerns government efficiency rather than investment levels.",
           "If the theory is correct and other factors are absent, government efficiency likely decreased in the later period."
         ],
         "correct_index": 3,

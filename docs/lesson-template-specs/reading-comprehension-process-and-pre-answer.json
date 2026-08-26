@@ -22,9 +22,9 @@
         "prompt": "Which choice best states the main idea of the text?",
         "choices": [
           "Natural moonlight is the only reliable guide for every migrating bird.",
-          "City lights cause migrating birds to reach resting places sooner.",
+          "Exposure to city lights causes migrating birds to reach their resting places sooner than usual.",
           "Artificial city light can disrupt nighttime bird migration and cost birds extra energy.",
-          "Scientists cannot study bird migration in brightly lit cities."
+          "Scientists cannot reliably study bird migration in brightly lit modern cities."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -71,9 +71,9 @@
       "content": {
         "prompt": "A passage is introduced as an excerpt in which a gardener sees her restored greenhouse for the first time after a storm. What should you do with that information?",
         "choices": [
-          "Ignore it because only words inside the passage can matter.",
-          "Assume the gardener dislikes every change made to the greenhouse.",
-          "Read the answer choices before the passage to see whether the introduction is useful.",
+          "Set it aside completely, since information printed outside the passage itself is not supposed to matter.",
+          "Assume from the situation that the gardener dislikes every change the storm made to the greenhouse.",
+          "Read the answer choices before the passage to decide whether the introduction is worth using.",
           "Use it as context for the gardener's reactions while still checking every claim against the passage."
         ],
         "correct_index": 3,
@@ -128,9 +128,9 @@
         "prompt": "Which sound bite best preserves the dense sentence's meaning?",
         "choices": [
           "Both studies proved that the island's fox population was rapidly declining.",
-          "The later researchers studied a different species from the one in the early surveys.",
+          "The later researchers were studying a different fox species from the one in the early surveys.",
           "Early evidence suggested a decline, but a longer later study found the fox population stable.",
-          "Tracking foxes caused the island's population to become stable."
+          "The new tracking program caused the island's fox population to become stable."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -183,10 +183,10 @@
       "content": {
         "prompt": "Which conclusion about the moth study is best supported by the text?",
         "choices": [
-          "The moths were unable to detect yellow flowers after sunset.",
-          "Yellow flowers produced less nectar in every trial.",
+          "The moths were physically unable to detect the yellow flowers once the sun had set.",
+          "The yellow flowers produced less nectar than the white flowers throughout the study.",
           "Flower color was associated with different visit rates after sunset but not during the daytime trials.",
-          "Moths of all species visit white flowers more often at every time of day."
+          "Moths of this species visit white flowers more often than yellow flowers at any hour of the day or night."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -208,10 +208,10 @@
       "content": {
         "prompt": "A passage states that a desert plant opens its pores only at night. You know that daytime deserts can be hot and dry. How should you use that knowledge?",
         "choices": [
-          "Treat anything generally true about deserts as proof of the correct answer.",
+          "Treat anything generally true about deserts as adequate proof of the correct answer.",
           "Use it to understand why nighttime opening may matter, but require the passage to support the answer.",
-          "Replace the passage's explanation with whatever you already know about plants.",
-          "Ignore the passage whenever its facts differ from what you expected."
+          "Replace the passage's stated explanation with whatever you already happen to know about desert plants.",
+          "Set the passage aside whenever its facts differ from what you expected to read."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -239,9 +239,9 @@
       "content": {
         "prompt": "A passage says that crickets near busy roads begin calling later than crickets in quiet fields. Which is the most useful answer target for a main-idea question?",
         "choices": [
-          "Crickets are insects that produce sounds.",
-          "Roads are harmful to every animal living nearby.",
-          "Quiet fields contain more crickets than cities do.",
+          "Crickets are insects that produce loud calling sounds.",
+          "Living near roads is harmful to every animal.",
+          "Quiet fields contain larger cricket populations than roadside areas do.",
           "Being near busy roads may delay when crickets begin calling."
         ],
         "correct_index": 3,
@@ -271,9 +271,9 @@
         "prompt": "Which answer choice matches the pre-answer and the museum passage?",
         "choices": [
           "Original artifacts are always more valuable to visitors than replicas are.",
-          "Museums mainly use replicas to reduce the cost of gallery admission.",
+          "Museums mainly display replicas in order to reduce the cost of gallery admission.",
           "Context about a replica can improve what visitors learn about the original object.",
-          "Visitors remember objects best when museums provide no written explanation."
+          "Visitors remember museum objects best when no written explanation competes for their attention."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -320,10 +320,10 @@
       "content": {
         "prompt": "Which pre-answer precisely answers the detail question?",
         "choices": [
-          "Pale coatings will permanently lower the air temperature of every city.",
+          "The pale coating will permanently lower air temperatures in cities that adopt it.",
           "The coated playground surfaces were cooler, but the measured air temperatures were about the same.",
-          "The city removed all asphalt from its playgrounds before taking measurements.",
-          "The uncoated asphalt was cooler than the coated surfaces at midday."
+          "The city had removed the original asphalt from its playgrounds before taking any of the midday measurements.",
+          "The uncoated asphalt surfaces measured cooler than the coated surfaces at midday."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -347,8 +347,8 @@
         "choices": [
           "Shade was associated with less water loss from ponds during the heat wave.",
           "The heat wave caused shaded ponds to lose more water than unshaded ponds.",
-          "Every pond without shade dried up completely during the heat wave.",
-          "Researchers added shade only after all the pond water had evaporated."
+          "The ponds without shade dried up completely during the weeks of the heat wave.",
+          "Researchers added the shade structures after most of the pond water had evaporated."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -370,10 +370,10 @@
       "content": {
         "prompt": "Which choice best states the main idea?",
         "choices": [
-          "Young reef fish can recognize predators only after seeing older fish react.",
-          "Pollution causes every predator near a reef to release stronger chemical cues.",
+          "Young reef fish learn to recognize predators mainly by watching how older fish react.",
+          "Pollution causes predators near reefs to release stronger chemical cues into the water.",
           "A modest level of pollution may weaken young reef fish's response to chemical signs of predators.",
-          "Fish raised in clean water are unable to detect chemical cues from predators."
+          "Fish raised in completely clean water were the group unable to detect the predators' chemical cues."
         ],
         "correct_index": 2,
         "allow_retry": false,
@@ -397,7 +397,7 @@
         "choices": [
           "It challenges Patel's argument by showing that official records contain more detail.",
           "It explains why the transit strike permanently ended food delivery in the city.",
-          "It introduces a historian who disagrees with Patel about neighborhood newsletters.",
+          "It introduces a second historian who disagrees with Patel about the value of neighborhood newsletters.",
           "It provides a specific example of the local detail that a neighborhood newsletter can preserve."
         ],
         "correct_index": 3,

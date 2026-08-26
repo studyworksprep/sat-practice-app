@@ -52,7 +52,7 @@
           "\\(2ab+3\\)",
           "\\(2ab+3a\\)",
           "\\(2ab\\)",
-          "\\(ab+3a\\)"
+          "\\(2ab+a+3\\)"
         ],
         "explanation": "\\(2ab+3a = 2(2)(3)+3(2) = 12+6 = 18\\), matching the original. The choice \\(2ab+3\\) forgot to distribute the \\(a\\) to the \\(3\\), so it only reached \\(15\\).",
         "correct_index": 1
@@ -98,10 +98,10 @@
       "content": {
         "prompt": "You test the choices using \\(a=1\\) and \\(b=1\\). Two different choices both equal the original. What should you do?",
         "choices": [
-          "Pick either one — they must both be equivalent",
-          "Conclude that none of the choices are equivalent",
+          "Pick whichever of the two matched expressions looks simpler — both must be equivalent",
+          "Conclude that none of the four expressions is actually equivalent to the original",
           "Re-test with other values like \\(a=2, b=3\\), since \\(0\\) and \\(1\\) often make different expressions match",
-          "Set both variables to \\(0\\) and try again"
+          "Set both variables to \\(0\\) instead and see whether the same two choices still match"
         ],
         "explanation": "A tie at \\(1\\) (or \\(0\\)) usually means the test values were too friendly. Switch to different, non-trivial numbers and the imposter will break away from the original.",
         "correct_index": 2
@@ -197,9 +197,9 @@
         "prompt": "The question uses variables \\(x\\) and \\(y\\), but Desmos won't create sliders for them. What's the fix?",
         "choices": [
           "Replace \\(x\\) and \\(y\\) with capital \\(X\\) and \\(Y\\) everywhere, then add sliders",
-          "Give up — the slider method can't handle \\(x\\) and \\(y\\)",
-          "Set \\(x=0\\) and \\(y=0\\) and compare",
-          "Use one shared slider for both \\(x\\) and \\(y\\)"
+          "Give up on using sliders, since the method cannot handle questions written with \\(x\\) and \\(y\\)",
+          "Set \\(x=0\\) and \\(y=0\\), compare the values once, and keep whichever choice matches",
+          "Create one shared slider and use its value for both \\(x\\) and \\(y\\) in every choice"
         ],
         "explanation": "Capital \\(X\\) and \\(Y\\) act like normal variables in Desmos, so they get sliders. Swap them in the original and in every choice, then test as usual.",
         "correct_index": 0
@@ -262,10 +262,10 @@
       "content": {
         "prompt": "Recall the routine. Before you start typing answer choices, what must you do so Desmos gives fair, trustworthy results?",
         "choices": [
-          "Set every variable's slider to \\(0\\)",
-          "Set every variable to \\(1\\)",
+          "Set every variable's slider to \\(0\\) so the arithmetic stays as simple as possible",
+          "Set each variable to \\(1\\), since multiplying by \\(1\\) cannot change an expression's value",
           "Give each variable a slider and set them to different values other than \\(0\\) or \\(1\\)",
-          "Test just one of the variables and ignore the rest"
+          "Give a slider to just one of the variables and leave the other letters fixed at their defaults"
         ],
         "correct_index": 2,
         "rejoin_at_block_id": "branching_question_14_rejoin",

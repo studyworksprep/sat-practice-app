@@ -11,7 +11,7 @@
     {
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Try the goal before seeing any notes</h2><p>In a practice item, the student wants to <strong>introduce community archivist Elena Ruiz and emphasize her leadership during an archive's expansion</strong>.</p><p>Which choice sounds as though it could do that job?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Elena Ruiz, a community archivist, directed the archive's expansion into three neighborhood branches.</li><li>The archive's first neighborhood branch opened in 1998.</li><li>Ruiz cataloged oral histories donated by local residents.</li><li>Three neighborhood branches preserve photographs and recorded interviews.</li></ol><blockquote><p><strong>Do not ask whether each choice is true yet.</strong> Ask which choice fulfills the stated goal.</p></blockquote>",
+      "html": "<h2>Try the goal before seeing any notes</h2><p>In a practice item, the student wants to <strong>introduce community archivist Elena Ruiz and emphasize her leadership during an archive's expansion</strong>.</p><p>Which choice sounds as though it could do that job?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Elena Ruiz, a community archivist, directed the archive's expansion into three neighborhood branches.</li><li>The archive's first neighborhood branch opened its doors to the public in 1998.</li><li>Community archivist Elena Ruiz cataloged the oral histories donated by local residents.</li><li>The archive's three neighborhood branches preserve photographs and recorded interviews.</li></ol><blockquote><p><strong>Do not ask whether each choice is true yet.</strong> Ask which choice fulfills the stated goal.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -22,9 +22,9 @@
         "prompt": "Which choice best introduces Elena Ruiz and emphasizes her leadership during the expansion?",
         "choices": [
           "Elena Ruiz, a community archivist, directed the archive's expansion into three neighborhood branches.",
-          "The archive's first neighborhood branch opened in 1998.",
-          "Ruiz cataloged oral histories donated by local residents.",
-          "Three neighborhood branches preserve photographs and recorded interviews."
+          "The archive's first neighborhood branch opened its doors to the public in 1998.",
+          "Community archivist Elena Ruiz cataloged the oral histories donated by local residents.",
+          "The archive's three neighborhood branches preserve photographs and recorded interviews."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -83,9 +83,9 @@
       "content": {
         "prompt": "A student wants to illustrate the claim that some desert plants conserve water. What should the answer contain?",
         "choices": [
-          "A broad definition of a desert",
-          "A list of several unrelated plant researchers",
-          "A question about why rainfall varies",
+          "A broad definition of what makes a region count as a desert",
+          "A list of the researchers who have studied desert plant species",
+          "An open question inviting readers to consider why rainfall varies among deserts",
           "A specific example of a desert plant feature that reduces water loss"
         ],
         "correct_index": 3,
@@ -116,7 +116,7 @@
         "choices": [
           "The museum opened in a renovated train station in 2016.",
           "Visitors can turn a wheel to change the colors projected on a wall.",
-          "The exhibit, called Light in Motion, contains twelve suspended glass panels.",
+          "The exhibit, called Light in Motion, contains twelve suspended panels of colored hand-blown glass.",
           "Light in Motion is a new exhibit whose projected colors change when visitors turn a wheel."
         ],
         "correct_index": 3,
@@ -139,10 +139,10 @@
       "content": {
         "prompt": "Why is 'The packaging is grown by binding agricultural waste with fungal roots, and it can break down in home compost' the best answer?",
         "choices": [
-          "It is the longest choice and includes the most details.",
+          "It is the longest of the four choices and includes the greatest number of details.",
           "It explains how the material is made and gives an environmental advantage.",
-          "It mentions the year when testing began.",
-          "It summarizes every likely note about the packaging."
+          "It mentions the year in which the design team began testing prototypes.",
+          "It summarizes every note the student collected about the packaging."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -164,10 +164,10 @@
       "content": {
         "prompt": "The student wants to compare the migration routes of two whale populations. Which choice has the right structure?",
         "choices": [
-          "Researchers attached satellite tags to several whales.",
-          "The eastern population traveled mostly near the coast.",
+          "Researchers attached satellite tracking tags to several whales from each population.",
+          "The eastern population traveled mostly in shallow waters near the coastline.",
           "The eastern population followed the coast, whereas the western population crossed deeper offshore waters.",
-          "Both populations began migrating during the same month."
+          "Both whale populations began their spring migrations during exactly the same month of the year."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -185,7 +185,7 @@
     {
       "kind": "text",
       "id": "fact_check_example",
-      "html": "<h2>Rare case: two choices support the goal</h2><p><strong>Notes:</strong></p><ul><li>Researchers observed native bee visits in twelve community gardens.</li><li>Gardens with at least five flowering plant species averaged 18 bee visits per hour.</li><li>Gardens with one or two flowering plant species averaged 7 bee visits per hour.</li><li>The researchers did not change the gardens' plant diversity.</li></ul><p><strong>Goal:</strong> Support the claim that gardens with greater flowering-plant diversity attracted more native bee visits.</p><p>Two choices may seem useful:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Gardens with at least five flowering species averaged 18 native bee visits per hour, compared with 7 for gardens with one or two species.</li><li>Adding flowering species caused native bee visits to rise from 7 to 18 per hour.</li></ol><p>Both point toward the claim, so now the notes matter.</p>",
+      "html": "<h2>Rare case: two choices support the goal</h2><p><strong>Notes:</strong></p><ul><li>Researchers observed native bee visits in twelve community gardens.</li><li>Gardens with at least five flowering plant species averaged 18 bee visits per hour.</li><li>Gardens with one or two flowering plant species averaged 7 bee visits per hour.</li><li>The researchers did not change the gardens' plant diversity.</li></ul><p><strong>Goal:</strong> Support the claim that gardens with greater flowering-plant diversity attracted more native bee visits.</p><p>Two choices may seem useful:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Gardens with at least five flowering species averaged 18 native bee visits per hour, compared with 7 for gardens with one or two species.</li><li>Adding more flowering plant species to a garden caused native bee visits to rise from 7 to 18 per hour.</li></ol><p>Both point toward the claim, so now the notes matter.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -196,9 +196,9 @@
         "prompt": "Which choice accurately supports the claim without going beyond the notes?",
         "choices": [
           "Gardens with at least five flowering species averaged 18 native bee visits per hour, compared with 7 for gardens with one or two species.",
-          "Adding flowering species caused native bee visits to rise from 7 to 18 per hour.",
-          "All twelve gardens received exactly the same number of bee visits.",
-          "The researchers proved that native bees prefer every type of flowering plant."
+          "Adding more flowering plant species to a garden caused native bee visits to rise from 7 to 18 per hour.",
+          "All twelve of the surveyed community gardens received about the same number of native bee visits per hour.",
+          "The gardens with one or two flowering species attracted almost no native bee visits during the observation period."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -210,7 +210,7 @@
     {
       "kind": "text",
       "id": "independent_transfer",
-      "html": "<h2>Independent transfer</h2><p>Use the full process on this new item. Begin with the goal below, make a requirement list, and only then use the notes if you need them.</p><p><strong>Goal:</strong> The student wants to <strong>compare two methods for estimating a seal colony's size and indicate which method produced the more accurate estimate</strong>.</p><p><strong>Notes:</strong></p><ul><li>A research team estimated the colony with aerial images from a drone and with observers counting from the ground.</li><li>The drone estimate was 1,240 seals.</li><li>The ground estimate was 980 seals.</li><li>A later image audit used as a benchmark counted 1,210 seals.</li></ul><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The research team used both a drone and ground observers to study a seal colony.</li><li>The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.</li><li>A later image audit counted 1,210 seals in the colony.</li><li>Ground observers estimated 980 seals, making their method more accurate than the drone method.</li></ol>",
+      "html": "<h2>Independent transfer</h2><p>Use the full process on this new item. Begin with the goal below, make a requirement list, and only then use the notes if you need them.</p><p><strong>Goal:</strong> The student wants to <strong>compare two methods for estimating a seal colony's size and indicate which method produced the more accurate estimate</strong>.</p><p><strong>Notes:</strong></p><ul><li>A research team estimated the colony with aerial images from a drone and with observers counting from the ground.</li><li>The drone estimate was 1,240 seals.</li><li>The ground estimate was 980 seals.</li><li>A later image audit used as a benchmark counted 1,210 seals.</li></ul><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The research team used both a drone and ground observers to study a seal colony.</li><li>The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.</li><li>A later audit of the aerial images counted 1,210 seals living in the colony.</li><li>Ground observers counted 980 seals, which makes their ground-based method more accurate than the drone method.</li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -222,8 +222,8 @@
         "choices": [
           "The research team used both a drone and ground observers to study a seal colony.",
           "The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.",
-          "A later image audit counted 1,210 seals in the colony.",
-          "Ground observers estimated 980 seals, making their method more accurate than the drone method."
+          "A later audit of the aerial images counted 1,210 seals living in the colony.",
+          "Ground observers counted 980 seals, which makes their ground-based method more accurate than the drone method."
         ],
         "correct_index": 1,
         "allow_retry": false,
