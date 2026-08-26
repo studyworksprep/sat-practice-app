@@ -460,10 +460,10 @@
       "content": {
         "prompt": "Which approach works when a special right triangle is hidden inside an SAT geometry question?",
         "choices": [
-          "Copy the known side into \\(k\\), multiply every missing side by \\(\\sqrt{2}\\), and keep the first radical produced.",
-          "Wait for printed acute angles, use the Pythagorean theorem whenever a radical appears, and round every result to a decimal.",
+          "Use a keyword, setup, or ratio to name the family; copy the known side into \\(k\\); build the requested sides; and check that each answer keeps a radical.",
+          "Label each side's role before naming the family; solve for \\(k\\) with the Pythagorean theorem; build the requested sides; and round each result to a decimal.",
           "Use a keyword, setup, or ratio to name the family; label each side's role; solve for \\(k\\); build the requested sides; and check their size order.",
-          "Call the shortest side the hypotenuse, use \\(1:1:2\\) for \\(45\\)-\\(45\\)-\\(90\\), and use \\(1:2:\\sqrt{3}\\) in any order for \\(30\\)-\\(60\\)-\\(90\\)."
+          "Use a keyword, setup, or ratio to name the family; label the shortest side as the hypotenuse; solve for \\(k\\); build the requested sides in any ratio order."
         ],
         "correct_index": 2,
         "allow_retry": false,

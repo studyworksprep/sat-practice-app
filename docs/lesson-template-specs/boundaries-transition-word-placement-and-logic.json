@@ -424,9 +424,9 @@
         "prompt": "Without looking back, which process solves the transition-placement question type?",
         "choices": [
           "Label A–B–C; attach the transition to B or C; move an end transition within its clause if helpful; test A–B or B–C logic; check whether though is truly a transition.",
-          "Choose the transition closest to the blank; a transition always points forward.",
-          "Eliminate every choice that puts a transition at the end of a sentence.",
-          "Ignore the clause before the blank and choose whichever punctuation creates the longest pause."
+          "Label A–B–C; attach the transition to A or B; move an end transition into the next clause; test A–C logic; check whether though is truly a transition.",
+          "Label A–B–C; test A–B or B–C logic before attaching the transition; leave an end transition where it stands; treat though as a transition whenever it starts a clause.",
+          "Attach the transition to whichever clause is longest; label A–B–C afterward to confirm; test both A–B and B–C and keep whichever choice fits either."
         ],
         "correct_index": 0,
         "allow_retry": false,

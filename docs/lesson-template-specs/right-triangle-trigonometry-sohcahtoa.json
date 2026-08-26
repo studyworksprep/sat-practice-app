@@ -666,10 +666,10 @@
       "content": {
         "prompt": "Without looking back, which summary correctly connects SOHCAHTOA, angle mode, and similar triangles?",
         "choices": [
-          "Choose sine for every triangle, leave Desmos in Radians mode, and multiply trig values by the scale factor.",
-          "Name sides from the right angle only, convert every angle to degrees, and assume similar triangles have equal side lengths.",
+          "Sketch the named vertices; label sides from the right angle; select SOH, CAH, or TOA from the two relevant sides; convert every trig value to a decimal; match Desmos mode to the angle unit; and transfer unchanged ratios across corresponding angles.",
+          "Sketch the named vertices; label sides from the chosen acute angle; select SOH, CAH, or TOA from the two relevant sides; preserve the exact trig form; leave Desmos in Radians for every problem; and scale the ratios by the similar-triangle factor.",
           "Sketch the named vertices; label sides from the chosen acute angle; select SOH, CAH, or TOA from the two relevant sides; preserve the exact trig form; match Desmos mode to the angle unit; and transfer unchanged ratios across corresponding angles.",
-          "Use the drawing's orientation to name sides, switch modes after calculating, and scale angles along with side lengths."
+          "Label sides from the drawing's orientation; sketch the vertices afterward to confirm; select SOH, CAH, or TOA from the angle sizes; preserve the exact trig form; match Desmos mode to the angle unit; and transfer side lengths unchanged across similar triangles."
         ],
         "correct_index": 2,
         "allow_retry": false,

@@ -588,9 +588,9 @@
       "content": {
         "prompt": "Without looking back, which summary is correct?",
         "choices": [
-          "Parentheses create lists, and join adds corresponding values",
-          "List arithmetic only changes the first value in a list",
-          "repeat is the main SAT list tool, while mean and total are unsupported",
+          "Square brackets create lists; join transforms elements; arithmetic combines lists; mean, median, and total summarize data",
+          "Parentheses create lists; arithmetic transforms elements; join summarizes data; mean, median, and total combine lists",
+          "Square brackets create lists; arithmetic transforms only the first element; join combines lists; total is the only summary function",
           "Square brackets create lists; arithmetic transforms elements; join combines lists; mean, median, and total summarize data"
         ],
         "correct_index": 3,

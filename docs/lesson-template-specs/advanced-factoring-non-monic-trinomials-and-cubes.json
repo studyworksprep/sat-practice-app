@@ -471,9 +471,9 @@
       "content": {
         "prompt": "Which statement best captures the reasoning used throughout this lesson?",
         "choices": [
-          "A non-monic trinomial requires one memorized sequence, while cube formulas cannot be reconstructed.",
-          "The middle coefficient determines all four binomial terms without any trials.",
-          "Every two-term polynomial is either a difference of squares or a sum of cubes.",
+          "Multiply back first, use the middle term to pick both outer terms, and constrain the factors only when the trial fails.",
+          "Constrain possible factors with the middle term, use outer-product cancellation or addition, and multiply back to verify.",
+          "Constrain possible factors with the outer terms and skip the middle products, since multiplying back will catch any error.",
           "Constrain possible factors with the outer terms, use middle-product cancellation or addition, and multiply back to verify."
         ],
         "correct_index": 3,

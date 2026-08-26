@@ -22,7 +22,9 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 
 ## Summary
 
-**265 findings** across 32 specs and 540 checks. Corpus keyed-longest rate: **35.4%** (191/540); exit target is < 30% corpus-wide with no lesson above 50%.
+**265 findings** across 32 specs and 540 checks at the 2026-08-23 baseline. Corpus keyed-longest rate at baseline: **35.4%** (191/540); exit target is < 30% corpus-wide with no lesson above 50%.
+
+**As of 2026-08-26:** 230 rows open, 56 fixed (the step 2.5 retrieval-check rebuilds plus the three Probability from Tables `equivalent_choices` defects). The corpus grew to **36 specs / 600 checks** with the reverse-drift export of the four spec-less production lessons — the two in-app drafts (Circle Toolkit, Initial Modifiers) are lint-clean, while the two older published lessons (Desmos Sliders, Equivalent-Expressions Regression) add 21 open findings, including the corpus's one remaining `retrieval_nonsense_distractor` (Sliders `check_7`, out of scope for the 2.5 pass, which predates these specs). Corpus keyed-longest rate: **30.3%** (182/600); over the original 32 specs it is 31.1% (168/540), down from the 35.4% baseline.
 
 ### Advanced Factoring: Non-Monic Trinomials and Cubes
 
@@ -32,9 +34,9 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 |---|---|---|---|---|
 | 8 | `cross_products_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | open |
 | 25 | `difference_of_cubes_check` | `hint_gives_answer` | Hint states "= 3", the keyed numeric answer. | open |
-| 38 | `retrieval_check` | `keyed_longest` | Keyed choice is 1.4x the mean length of the distractors. | open |
-| 38 | `retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 38 | `retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractors A, C share no content words with the keyed process — eliminable on sight. | open |
+| 38 | `retrieval_check` | `keyed_longest` | Keyed choice is 1.4x the mean length of the distractors. | fixed (2026-08-26) |
+| 38 | `retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
+| 38 | `retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractors A, C share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 34 | `mixed_transfer_non_monic_one` | `check_run` | 3 consecutive checks (steps 34–36). | open |
 
 ### Bracket the Pivot: Choose Precise SAT Transitions
@@ -43,10 +45,14 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 
 | Step | Block | Rule | Finding | Status |
 |---|---|---|---|---|
-| 24 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "bracket". | open |
-| 24 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractors B, C share no content words with the keyed process — eliminable on sight. | open |
+| 24 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "bracket". | fixed (2026-08-26) |
+| 24 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractors B, C share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 22 | `guided_transfer_result` | `check_run` | 3 consecutive checks (steps 22–24). | open |
 | 4 | `opening_debrief` | `text_run` | 3 consecutive text blocks (steps 4–6). | open |
+
+### Circle Toolkit: Measure, Arcs, and Equations
+
+`circle-toolkit-measure-arcs-and-equations.json` — 0 findings; keyed-longest 1/20 (5%). Entered the corpus 2026-08-26 via the reverse-drift export from production (in-app draft); lint-clean.
 
 ### CLEAR the Claim: Command of Evidence
 
@@ -65,9 +71,9 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 26 | `aggregation_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | open |
 | 28 | `hard_bridge_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
 | 28 | `hard_bridge_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 37 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "evidence". | open |
+| 37 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "evidence". | fixed (2026-08-26) |
 | 28 | `hard_bridge_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | open |
-| 37 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractors B, C share no content words with the keyed process — eliminable on sight. | open |
+| 37 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractors B, C share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 18 | `specific_bar_check` | `check_run` | 3 consecutive checks (steps 18–20). | open |
 | 15 | `data_passage_first` | `text_run` | 3 consecutive text blocks (steps 15–17). | open |
 | 29 | `reject_traps` | `text_run` | 3 consecutive text blocks (steps 29–31). | open |
@@ -78,10 +84,10 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 
 | Step | Block | Rule | Finding | Status |
 |---|---|---|---|---|
-| 36 | `final_retrieval` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | open |
-| 36 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "greatest". | open |
+| 36 | `final_retrieval` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | fixed (2026-08-26) |
+| 36 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "greatest". | fixed (2026-08-26) |
 | 3 | `group_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | open |
-| 36 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractor D shares no content words with the keyed process — eliminable on sight. | open |
+| 36 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractor D shares no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 34 | `independent_transfer_two` | `check_run` | 3 consecutive checks (steps 34–36). | open |
 
 ### Factor Polynomials: Trinomials and Difference of Squares
@@ -92,7 +98,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 |---|---|---|---|---|
 | 13 | `middle_constant_relationship_check` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
 | 38 | `method_selection_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "difference". | open |
-| 44 | `retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractors A, B, D share no content words with the keyed process — eliminable on sight. | open |
+| 44 | `retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractors A, B, D share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 40 | `transfer_one` | `check_run` | 3 consecutive checks (steps 40–42). | open |
 | 4 | `gcf_identification_diagnostic_correct` | `text_run` | 3 consecutive text blocks (steps 4–6). | open |
 | 8 | `gcf_division_diagnostic_correct` | `text_run` | 5 consecutive text blocks (steps 8–12). | open |
@@ -110,9 +116,27 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 29 | `third_point_reason_check` | `keyed_longest` | Keyed choice is 2.0x the mean length of the distractors. | open |
 | 29 | `third_point_reason_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "standard". | open |
 | 29 | `third_point_reason_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 2.3x the mean length of the distractors. | open |
-| 36 | `final_retrieval_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "standard". | open |
-| 36 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractor C shares no content words with the keyed process — eliminable on sight. | open |
+| 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 2.3x the mean length of the distractors. | fixed (2026-08-26) |
+| 36 | `final_retrieval_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "standard". | fixed (2026-08-26) |
+| 36 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractor C shares no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
+
+### Find Missing Constants in Equivalent Expressions with Regression
+
+`find-missing-constants-in-equivalent-expressions-with-regression.json` — 11 findings; keyed-longest 5/18 (28%). Entered the corpus 2026-08-26 via the reverse-drift export from production (published lesson).
+
+| Step | Block | Rule | Finding | Status |
+|---|---|---|---|---|
+| 4 | `check_2` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
+| 4 | `check_2` | `key_term_echo` | Keyed choice is the only one containing the lesson term "equivalent". | open |
+| 6 | `check_3` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
+| 8 | `check_4` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
+| 8 | `check_4` | `key_term_echo` | Keyed choice is the only one containing the lesson term "equivalent expressions". | open |
+| 20 | `check_9` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
+| 27 | `check_13` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
+| 27 | `check_13` | `key_term_echo` | Keyed choice is the only one containing the lesson term "expression". | open |
+| 27 | `check_13` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
+| 26 | `check_12` | `check_run` | 7 consecutive checks (steps 26–32). | open |
+| 9 | `process_setup` | `text_run` | 3 consecutive text blocks (steps 9–11). | open |
 
 ### Find Missing Constants with Custom Regression
 
@@ -127,8 +151,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 30 | `troubleshooting_check` | `keyed_longest` | Keyed choice is 2.9x the mean length of the distractors. | open |
 | 32 | `transfer_setup_check` | `hint_gives_answer` | Hint states "= 18", the keyed numeric answer. | open |
 | 35 | `transfer_equation_check` | `hint_gives_answer` | Hint states "= 4", the keyed numeric answer. | open |
-| 37 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
-| 37 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractors A, C share no content words with the keyed process — eliminable on sight. | open |
+| 37 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | fixed (2026-08-26) |
+| 37 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractors A, C share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 1 | `lesson_prerequisite` | `text_run` | 4 consecutive text blocks (steps 1–4). | open |
 
 ### Find Probability from Tables: Favorable over Total
@@ -139,10 +163,10 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 |---|---|---|---|---|
 | 16 | `denominator_trap_check` | `hint_gives_answer` | Hint states "= 30", the keyed numeric answer. | open |
 | 20 | `model_check` | `meta_prompt` | Prompt asks why an answer is correct/wrong — the key is given away as the premise. | open |
-| 22 | `reverse_direction_check` | `equivalent_choices` | Choices B and C are equivalent. | open |
-| 31 | `transfer_given_probability_check` | `equivalent_choices` | Choices A and C are equivalent. | open |
-| 32 | `transfer_no_given_check` | `equivalent_choices` | Choices A and B are equivalent. | open |
-| 33 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "favorable over". | open |
+| 22 | `reverse_direction_check` | `equivalent_choices` | Choices B and C are equivalent. | fixed (2026-08-26) |
+| 31 | `transfer_given_probability_check` | `equivalent_choices` | Choices A and C are equivalent. | fixed (2026-08-26) |
+| 32 | `transfer_no_given_check` | `equivalent_choices` | Choices A and B are equivalent. | fixed (2026-08-26) |
+| 33 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "favorable over". | fixed (2026-08-26) |
 | 30 | `transfer_total_check` | `check_run` | 4 consecutive checks (steps 30–33). | open |
 | 27 | `single_event_scope` | `text_run` | 3 consecutive text blocks (steps 27–29). | open |
 
@@ -154,8 +178,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 |---|---|---|---|---|
 | 16 | `same_values_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 30 | `collision_action_check` | `keyed_longest` | Keyed choice is 1.4x the mean length of the distractors. | open |
-| 39 | `final_retrieval` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | open |
-| 39 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractors A, B, C share no content words with the keyed process — eliminable on sight. | open |
+| 39 | `final_retrieval` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | fixed (2026-08-26) |
+| 39 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractors A, B, C share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 11 | `dependent_values` | `text_run` | 3 consecutive text blocks (steps 11–13). | open |
 
 ### Functions and Function Notation on the SAT
@@ -169,7 +193,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 18 | `solve_function_equation_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 20 | `notation_decision_check` | `keyed_longest` | Keyed choice is 1.4x the mean length of the distractors. | open |
 | 35 | `common_mistakes_check` | `keyed_longest` | Keyed choice is 2.0x the mean length of the distractors. | open |
-| 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 2.4x the mean length of the distractors. | open |
+| 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 2.4x the mean length of the distractors. | fixed (2026-08-26) |
 | 36 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 15 | `point_graph_equivalence` | `text_run` | 3 consecutive text blocks (steps 15–17). | open |
 
@@ -196,8 +220,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 34 | `transportation_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 37 | `final_question_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | open |
 | 37 | `final_question_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 38 | `final_wrong_choice_check` | `keyed_longest` | Keyed choice is 2.3x the mean length of the distractors. | open |
-| 38 | `final_wrong_choice_check` | `retrieval_nonsense_distractor` | Retrieval distractors B, C, D share no content words with the keyed process — eliminable on sight. | open |
+| 38 | `final_wrong_choice_check` | `keyed_longest` | Keyed choice is 2.3x the mean length of the distractors. | fixed (2026-08-26) |
+| 38 | `final_wrong_choice_check` | `retrieval_nonsense_distractor` | Retrieval distractors B, C, D share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 9 | `city_maps_example` | `text_run` | 3 consecutive text blocks (steps 9–11). | open |
 
 ### Inference Questions: Make the Smallest Supported Leap
@@ -223,8 +247,12 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 20 | `data_variation_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 23 | `independent_transfer_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | open |
 | 23 | `independent_transfer_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 24 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
+| 24 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | fixed (2026-08-26) |
 | 24 | `final_retrieval_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "smallest supported". | open |
+
+### Initial Modifiers: Match the Noun After the Comma
+
+`initial-modifiers-match-the-noun-after-the-comma.json` — 0 findings; keyed-longest 4/15 (27%). Entered the corpus 2026-08-26 via the reverse-drift export from production (in-app draft); lint-clean.
 
 ### Place Transition Words by Logic
 
@@ -238,8 +266,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 11 | `backward_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 31 | `though_elimination_check` | `keyed_longest` | Keyed choice is 2.1x the mean length of the distractors. | open |
 | 31 | `though_elimination_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 35 | `final_retrieval` | `keyed_longest` | Keyed choice is 2.0x the mean length of the distractors. | open |
-| 35 | `final_retrieval` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
+| 35 | `final_retrieval` | `keyed_longest` | Keyed choice is 2.0x the mean length of the distractors. | fixed (2026-08-26) |
+| 35 | `final_retrieval` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
 | 33 | `transfer_before_full_stop` | `check_run` | 3 consecutive checks (steps 33–35). | open |
 
 ### Process and Pre-Answer Reading Comprehension Questions
@@ -254,8 +282,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 29 | `detail_variation_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 31 | `keyword_trap_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 33 | `independent_transfer_one_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 36 | `final_retrieval` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 36 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractor D shares no content words with the keyed process — eliminable on sight. | open |
+| 36 | `final_retrieval` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
+| 36 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractor D shares no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 
 ### Rates in Two-Variable Equations: Read the Units
 
@@ -266,9 +294,9 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 5 | `unit_chain_check` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
 | 12 | `whole_equation_check` | `keyed_longest` | Keyed choice is 2.3x the mean length of the distractors. | open |
 | 14 | `coefficient_interpretation_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | open |
-| 23 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
+| 23 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | fixed (2026-08-26) |
 | 23 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 23 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractor C shares no content words with the keyed process — eliminable on sight. | open |
+| 23 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractor C shares no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 14 | `coefficient_interpretation_check` | `check_run` | 3 consecutive checks (steps 14–16). | open |
 
 ### Reason Through SAT Survey Questions
@@ -297,8 +325,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 22 | `right_altitude_observation_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | open |
 | 22 | `right_altitude_observation_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 24 | `right_altitude_aa_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | open |
-| 36 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
+| 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | fixed (2026-08-26) |
+| 36 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
 | 3 | `angle_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | open |
 | 4 | `similar_definition` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | open |
 | 10 | `correspondence_process` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | open |
@@ -318,7 +346,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 16 | `comparison_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | open |
 | 19 | `fact_check_example_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
 | 19 | `fact_check_example_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 22 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | open |
+| 22 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | fixed (2026-08-26) |
 
 ### Right Triangle Trigonometry with SOHCAHTOA
 
@@ -334,7 +362,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 33 | `similar_length_contrast_check` | `keyed_longest` | Keyed choice is 3.7x the mean length of the distractors. | open |
 | 36 | `combined_setup_check` | `hint_gives_answer` | Hint states "= 10", the keyed numeric answer. | open |
 | 39 | `independent_transfer_check` | `hint_gives_answer` | Hint states "= 20", the keyed numeric answer. | open |
-| 40 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 2.1x the mean length of the distractors. | open |
+| 40 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 2.1x the mean length of the distractors. | fixed (2026-08-26) |
 | 40 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 21 | `common_mistakes` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | open |
 
@@ -346,8 +374,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 |---|---|---|---|---|
 | 7 | `x_intercept_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | open |
 | 27 | `viewport_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | open |
-| 40 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | open |
-| 40 | `final_retrieval_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "x-intercept". | open |
+| 40 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | fixed (2026-08-26) |
+| 40 | `final_retrieval_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "x-intercept". | fixed (2026-08-26) |
 | 21 | `solution_count_transition` | `text_run` | 4 consecutive text blocks (steps 21–24). | open |
 
 ### Solve Equations with Regression in Desmos
@@ -361,7 +389,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 31 | `method_choice_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 34 | `transfer_result_check` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
 | 40 | `practice_method_choice` | `key_term_echo` | Keyed choice is the only one containing the lesson term "equation". | open |
-| 41 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
+| 41 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | fixed (2026-08-26) |
 | 36 | `practice_single_equation` | `check_run` | 6 consecutive checks (steps 36–41). | open |
 | 6 | `four_step_process` | `text_run` | 4 consecutive text blocks (steps 6–9). | open |
 
@@ -372,7 +400,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | Step | Block | Rule | Finding | Status |
 |---|---|---|---|---|
 | 12 | `rmse_check` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
-| 41 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | open |
+| 41 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | fixed (2026-08-26) |
 | 41 | `final_retrieval_check` | `extreme_imbalance` | 3 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 27 | `mathematical_sentence_principle` | `text_run` | 5 consecutive text blocks (steps 27–31). | open |
 
@@ -386,7 +414,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 14 | `fanboys_check` | `hint_gives_answer` | Hint contains the keyed choice text. | open |
 | 17 | `duplicate_choice_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 28 | `single_dash_check` | `keyed_longest` | Keyed choice is 1.4x the mean length of the distractors. | open |
-| 44 | `final_retrieval` | `keyed_longest` | Keyed choice is 1.4x the mean length of the distractors. | open |
+| 44 | `final_retrieval` | `keyed_longest` | Keyed choice is 1.4x the mean length of the distractors. | fixed (2026-08-26) |
 | 44 | `final_retrieval` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 39 | `practice_full_stop` | `check_run` | 6 consecutive checks (steps 39–44). | open |
 | 23 | `colon_model` | `text_run` | 3 consecutive text blocks (steps 23–25). | open |
@@ -401,7 +429,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 21 | `both_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 27 | `full_gate_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | open |
 | 33 | `tense_trap_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 38 | `retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
+| 38 | `retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | fixed (2026-08-26) |
 | 36 | `independent_transfer_check` | `check_run` | 3 consecutive checks (steps 36–38). | open |
 | 4 | `name_the_pattern` | `text_run` | 3 consecutive text blocks (steps 4–6). | open |
 
@@ -415,7 +443,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 11 | `first_system_solution_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 23 | `nonlinear_points_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 26 | `transfer_answer_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 27 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
+| 27 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | fixed (2026-08-26) |
 
 ### Solve Words in Context with Read, Predict, Match
 
@@ -425,9 +453,9 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 |---|---|---|---|---|
 | 5 | `process_order_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "predict". | open |
 | 26 | `unfamiliar_choice_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
-| 37 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "predict". | open |
-| 37 | `final_retrieval` | `extreme_imbalance` | 3 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 37 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractors B, D share no content words with the keyed process — eliminable on sight. | open |
+| 37 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "predict". | fixed (2026-08-26) |
+| 37 | `final_retrieval` | `extreme_imbalance` | 3 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
+| 37 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractors B, D share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 34 | `transfer_one_check` | `check_run` | 4 consecutive checks (steps 34–37). | open |
 
 ### Special Right Triangles: Recognize, Scale, Solve
@@ -436,8 +464,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 
 | Step | Block | Rule | Finding | Status |
 |---|---|---|---|---|
-| 34 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
-| 34 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractor B shares no content words with the keyed process — eliminable on sight. | open |
+| 34 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
+| 34 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractor B shares no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 21 | `thirty_sixty_variable_hypotenuse_check` | `check_run` | 3 consecutive checks (steps 21–23). | open |
 | 29 | `equilateral_perimeter_check` | `check_run` | 6 consecutive checks (steps 29–34). | open |
 
@@ -452,10 +480,27 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 17 | `slider_method_choice_check` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
 | 31 | `proportion_no_solution_check` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
 | 31 | `proportion_no_solution_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "no solution". | open |
-| 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | open |
-| 36 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
+| 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | fixed (2026-08-26) |
+| 36 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
 | 14 | `slider_no_solution_explanation` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | open |
 | 18 | `multiple_constants_transition` | `text_run` | 3 consecutive text blocks (steps 18–20). | open |
+
+### Testing Equivalent Expressions with Desmos Sliders
+
+`testing-equivalent-expressions-with-desmos-sliders.json` — 10 findings; keyed-longest 4/7 (57%). Entered the corpus 2026-08-26 via the reverse-drift export from production (published lesson). Note: worst keyed-longest rate in the corpus after Inference — a 2.3 rewrite candidate.
+
+| Step | Block | Rule | Finding | Status |
+|---|---|---|---|---|
+| 8 | `check_3` | `keyed_longest` | Keyed choice is 2.2x the mean length of the distractors. | open |
+| 8 | `check_3` | `key_term_echo` | Keyed choice is the only one containing the lesson term "expressions". | open |
+| 10 | `check_4` | `hint_gives_answer` | Hint states "= 2", the keyed numeric answer. | open |
+| 12 | `check_5` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | open |
+| 12 | `check_5` | `key_term_echo` | Keyed choice is the only one containing the lesson term "sliders". | open |
+| 17 | `check_7` | `keyed_longest` | Keyed choice is 2.2x the mean length of the distractors. | open |
+| 17 | `check_7` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
+| 17 | `check_7` | `retrieval_nonsense_distractor` | Retrieval distractor D shares no content words with the keyed process — eliminable on sight. | open |
+| 14 | `branching_question_13_correct` | `text_run` | 3 consecutive text blocks (steps 14–16). | open |
+| 18 | `branching_question_14_correct` | `text_run` | 3 consecutive text blocks (steps 18–20). | open |
 
 ### Understand and Use Standard Deviation
 
@@ -468,7 +513,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 15 | `replacing_value_check` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
 | 27 | `outlier_result_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | open |
 | 29 | `prediction_process_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | open |
-| 34 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | open |
+| 34 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | fixed (2026-08-26) |
 | 3 | `spread_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | open |
 | 29 | `prediction_process_check` | `check_run` | 6 consecutive checks (steps 29–34). | open |
 
@@ -481,7 +526,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 27 | `menu_speed_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | open |
 | 27 | `menu_speed_check` | `extreme_imbalance` | 3 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 31 | `process_check` | `keyed_longest` | Keyed choice is 1.4x the mean length of the distractors. | open |
-| 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 2.0x the mean length of the distractors. | open |
+| 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 2.0x the mean length of the distractors. | fixed (2026-08-26) |
 | 23 | `mean_check` | `check_run` | 3 consecutive checks (steps 23–25). | open |
 | 31 | `process_check` | `check_run` | 6 consecutive checks (steps 31–36). | open |
 
@@ -494,8 +539,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 5 | `collision_response_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | open |
 | 11 | `recognition_check` | `keyed_longest` | Keyed choice is 2.5x the mean length of the distractors. | open |
 | 31 | `collision_check` | `keyed_longest` | Keyed choice is 1.8x the mean length of the distractors. | open |
-| 38 | `final_retrieval` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | open |
-| 38 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractor C shares no content words with the keyed process — eliminable on sight. | open |
+| 38 | `final_retrieval` | `keyed_longest` | Keyed choice is 1.6x the mean length of the distractors. | fixed (2026-08-26) |
+| 38 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractor C shares no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 8 | `name_strategy` | `text_run` | 3 consecutive text blocks (steps 8–10). | open |
 | 12 | `variables_equations_cue` | `text_run` | 5 consecutive text blocks (steps 12–16). | open |
 
@@ -508,7 +553,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 5 | `area_meaning_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | open |
 | 7 | `ratio_direction_check` | `equivalent_choices` | Choices A and C are equivalent. | open |
 | 30 | `arbitrary_ratio_check` | `equivalent_choices` | Choices A and B are equivalent. | open |
-| 43 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | open |
+| 43 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | fixed (2026-08-26) |
 | 3 | `area_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | open |
-| 43 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractors A, D share no content words with the keyed process — eliminable on sight. | open |
+| 43 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractors A, D share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 36 | `practice_linear_to_area` | `check_run` | 8 consecutive checks (steps 36–43). | open |

@@ -368,7 +368,12 @@
       "block_type": "check",
       "content": {
         "prompt": "Without looking back, which process best solves a Words in Context question?",
-        "choices": ["Read only the blank's sentence, choose a familiar word, and ignore choices you cannot define.", "Study the answer choices first, select the word with the most positive feeling, and reread only if necessary.", "Read the entire text, connect its logic and clues, predict a perfectly fitting meaning, then match and verify a choice.", "Translate every unfamiliar choice into a root before deciding what the passage is saying."],
+        "choices": [
+          "Read the blank's sentence only, connect its clues, predict a roughly fitting meaning, then keep the first familiar choice.",
+          "Read the choices first, connect each to the text's topic, predict which sounds best, then verify by rereading the blank's sentence.",
+          "Read the entire text, connect its logic and clues, predict a perfectly fitting meaning, then match and verify a choice.",
+          "Read the entire text, predict a meaning before connecting the logic and clues, then match a choice without verifying it."
+        ],
         "correct_index": 2,
         "allow_retry": false,
         "hint": "Retrieve the four moves: read, connect, predict, match.",

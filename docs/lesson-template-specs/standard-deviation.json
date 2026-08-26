@@ -643,9 +643,9 @@
       "content": {
         "prompt": "Without looking back, which summary is correct?",
         "choices": [
-          "Standard deviation measures the size of the mean; adding any value increases it",
-          "Standard deviation measures the number of values; removing any value decreases it",
-          "Standard deviation is always largest for the set with the largest numbers",
+          "Standard deviation measures spread from the mean; farther values decrease spread, and Desmos stdev can calculate it",
+          "Standard deviation measures spread from the median; values above the mean increase spread, and Desmos total can calculate it",
+          "Standard deviation measures the gap between the largest and smallest values; adding any value increases it, and Desmos mean calculates it",
           "Standard deviation measures spread from the mean; farther values increase spread, and Desmos stdev can calculate it"
         ],
         "correct_index": 3,

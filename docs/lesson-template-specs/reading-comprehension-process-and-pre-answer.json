@@ -414,10 +414,10 @@
       "content": {
         "prompt": "Without looking back, which routine should you use on a reading comprehension question?",
         "choices": [
-          "Read the choices first, borrow their vocabulary, and then skim the passage for a match.",
+          "Read the choices, name the job, borrow the meaning from the closest choice, then prove your target from the choices.",
           "Read the context, name the job, build the meaning, form an answer target, then prove the choice from the text.",
-          "Read the passage once without pausing, select a familiar claim, and use the question only to break a tie.",
-          "Ignore introductions, summarize only the longest sentence, and choose the most detailed answer."
+          "Read the context, build the meaning, name the job last, form an answer target from a familiar claim, then select without proving.",
+          "Name the job, form an answer target, read the context only if two choices tie, then prove the choice from the text."
         ],
         "correct_index": 1,
         "allow_retry": false,

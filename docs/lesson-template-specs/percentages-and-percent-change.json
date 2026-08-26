@@ -870,10 +870,10 @@
       "content": {
         "prompt": "Without looking back, which summary correctly describes the percent-and-regression strategy?",
         "choices": [
-          "Use New as the percent base, use plus for every change, and define the same variable on every line.",
-          "Convert every percent to a whole number, use lowercase x for every regression, and ignore RMSE.",
+          "Translate the complete sentence, use New as the basis for every comparison, apply Old = New plus or minus p% of New, use an acceptable regression variable, and check the assignment and RMSE.",
+          "Translate only the percent phrase, use the value after of or than as the basis, apply New = Old plus p% of Old for every change, and accept the regression when the graph looks close.",
           "Translate the complete sentence, use the value after of or than as the basis, apply New = Old plus or minus p% of Old, use an acceptable regression variable, and check the assignment and RMSE.",
-          "Use regression only for known percents and switch the positions of New and Old when the wording says less than."
+          "Use the value before of or than as the basis, apply New = Old plus or minus p% of New, define the regression with lowercase x, and skip the RMSE check when the assignment looks right."
         ],
         "correct_index": 2,
         "allow_retry": false,

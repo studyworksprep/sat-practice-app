@@ -1,0 +1,453 @@
+{
+  "title": "Initial Modifiers: Match the Noun After the Comma",
+  "description": "Identify an opening modifier, predict the noun phrase it describes or compares, and choose the answer that places that noun phrase immediately after the comma.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 7040ee67-9287-4aaa-9ef0-89de44f5a597 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "opening_exploration",
+      "html": "<h2>Which noun belongs after the comma?</h2><p>Start with the opening words below. Do not untangle every answer choice yet. Ask one question: <strong>what was built to survive saltwater and strong winds?</strong></p><blockquote><p>Built to survive saltwater and strong winds, _____</p></blockquote><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>engineers tested the new footbridge before opening it to pedestrians.</li><li>the new footbridge was tested by engineers before it opened to pedestrians.</li><li>saltwater and strong winds led engineers to test the new footbridge.</li><li>the durability of the new footbridge was tested by engineers.</li></ol><p>Look only at the first noun phrase after the comma in each choice: <em>engineers</em>, <em>the new footbridge</em>, <em>saltwater and strong winds</em>, or <em>the durability of the new footbridge</em>.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_1",
+      "block_type": "check",
+      "content": {
+        "hint": "Ask what was built: the engineers, the footbridge, the weather, or the durability?",
+        "prompt": "Built to survive saltwater and strong winds, _____. Which choice places the thing that was built immediately after the comma?",
+        "choices": [
+          "engineers tested the new footbridge before opening it to pedestrians.",
+          "the new footbridge was tested by engineers before it opened to pedestrians.",
+          "saltwater and strong winds led engineers to test the new footbridge.",
+          "the durability of the new footbridge was tested by engineers."
+        ],
+        "solution": "The opening words say that something was built to survive harsh conditions.\nThe passage's built object is the new footbridge.\nPlace that noun phrase directly after the comma: \"the new footbridge was tested...\"\nSo choice B has the logical placement.",
+        "allow_retry": true,
+        "explanation": "Exactly. The new footbridge was built, so that noun phrase belongs directly after the comma.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "modifier_definition",
+      "html": "<h2>The opening phrase points to a noun</h2><p><strong>Built to survive saltwater and strong winds</strong> is a modifier: a word group that describes something else in the sentence. Here, it describes the new footbridge.</p><p>An opening modifier is not the sentence's main clause. It sets up an action, state, or description and then reaches across the comma for the noun phrase it belongs to.</p><blockquote><p><strong>Key idea:</strong> The noun phrase immediately after the comma must be the person or thing the opening modifier logically describes.</p></blockquote><p>If the wrong noun appears there, the modifier <em>dangles</em>: the sentence accidentally claims that the wrong item did the action or had the description.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_2",
+      "block_type": "check",
+      "content": {
+        "hint": "Which item could be covered in barbs and then cling to a sock?",
+        "prompt": "Covered in tiny barbs, _____ clung to the hiker's sock. Which noun phrase can the opening modifier logically describe?",
+        "choices": [
+          "the trail",
+          "the hiker",
+          "the seed",
+          "the fabric"
+        ],
+        "solution": "The modifier says that something is covered in tiny barbs.\nA seed can have barbs that let it cling to fabric.\nPlace \"the seed\" immediately after the comma.\nSo choice C is the logical noun phrase.",
+        "allow_retry": true,
+        "explanation": "Right. The seed is covered in barbs, so it must come immediately after the modifier.",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "recognize_the_format",
+      "html": "<h2>Recognize the question before you solve it</h2><p>These Form, Structure, and Sense questions have a distinctive look:</p><ul><li>The sentence begins with a descriptive phrase and usually reaches a comma before the blank.</li><li>All four choices are long.</li><li>The choices recycle many of the same nouns, verbs, and details.</li><li>The main difference is the order in which those pieces appear.</li></ul><p>That repeated wording is useful evidence. The test is often checking <strong>which noun comes first</strong>, not asking you to compare four completely different ideas.</p><blockquote><p><strong>Recognition cue:</strong> Opening phrase + comma + long, scrambled choices = check the first noun phrase.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_3",
+      "block_type": "check",
+      "content": {
+        "hint": "Look for the format in which word order, especially the first noun after a comma, can decide the answer.",
+        "prompt": "Which answer set most strongly signals an initial-modifier placement question?",
+        "choices": [
+          "Four long choices that reuse the same details in different orders",
+          "Four transition words that create different logical relationships",
+          "Four punctuation marks inserted into the same short sentence",
+          "Four verb forms that differ mainly in tense and number"
+        ],
+        "solution": "Initial-modifier questions often offer long choices built from the same sentence parts.\nThose repeated parts appear in different orders so that different nouns land after the opening comma.\nThat makes choice A the recognition cue.",
+        "allow_retry": true,
+        "explanation": "Yes. The long, overlapping choices signal that placement and word order are likely doing the real work.",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "find_the_first_verb",
+      "html": "<h2>Use the modifier's first verb as a clue</h2><p>When the opening phrase feels dense, find its first verb. It is often:</p><ul><li>an <strong>-ing</strong> form: <em>forming</em>, <em>using</em>, <em>analyzing</em>;</li><li>a past-participle form: <em>built</em>, <em>covered</em>, <em>designed</em>, <em>known</em>.</li></ul><p>That verb usually tells you what relationship to look for. The needed noun phrase is doing the action, inhabiting the state, or receiving the description.</p><p>In <strong>Working from satellite images</strong>, ask who was working. In <strong>Designed for cold climates</strong>, ask what was designed.</p><blockquote><p><strong>First-verb question:</strong> Who or what is doing this, experiencing this, or being described this way?</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_4",
+      "block_type": "check",
+      "content": {
+        "hint": "The first verb is \"Using.\" Ask who used the pollen evidence.",
+        "prompt": "Using pollen trapped in layers of lake sediment, _____. Which choice places the users of the pollen evidence after the comma?",
+        "choices": [
+          "the region's ancient climate was reconstructed from the evidence by researchers",
+          "lake sediment preserved a record that researchers used to reconstruct the climate",
+          "a reconstruction of the region's ancient climate became possible for researchers",
+          "researchers reconstructed the region's ancient climate"
+        ],
+        "solution": "The modifier begins with \"Using,\" so its subject must be the user of the pollen evidence.\nResearchers can use evidence; a climate, sediment, or reconstruction cannot do that action here.\nPlace \"researchers\" immediately after the comma.\nSo choice D has the correct placement.",
+        "allow_retry": true,
+        "explanation": "Correct. Researchers used the pollen evidence, so \"researchers\" must begin the main clause.",
+        "correct_index": 3
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "repeatable_process",
+      "html": "<h2>The Modifier Match process</h2><ol><li><strong>Spot:</strong> Notice the opening phrase, comma, and long choices with rearranged wording.</li><li><strong>Find:</strong> Locate the modifier's first verb.</li><li><strong>Ask:</strong> Who or what does that action, has that state, or receives that description?</li><li><strong>Predict:</strong> Name the exact noun phrase from the passage before comparing every choice.</li><li><strong>Place:</strong> Choose the answer that puts that noun phrase first after the comma.</li></ol><blockquote><p><strong>Short version:</strong> Find the verb. Predict the noun. Check the first position.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "worked_action_example",
+      "html": "<h2>Work one from verb to noun</h2><p>The passage identifies marine biologist Lina Okafor as the person who spent years cataloging sounds recorded near a reef.</p><blockquote><p>Cataloging more than two thousand underwater recordings, _____ identified a repeating call made only at dusk.</p></blockquote><ol><li><strong>Find:</strong> The first verb is <em>Cataloging</em>.</li><li><strong>Ask:</strong> Who cataloged the recordings?</li><li><strong>Predict:</strong> <em>marine biologist Lina Okafor</em>.</li><li><strong>Place:</strong> That exact noun phrase must begin the main clause.</li></ol><p>A choice beginning with <em>the recordings</em>, <em>a repeating call</em>, or <em>the reef</em> would attach the modifier to the wrong item.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_5",
+      "block_type": "check",
+      "content": {
+        "hint": "Who performed the action \"Tracking\"? Put that person first after the comma.",
+        "prompt": "The passage explains that ecologist Mateo Ruiz tracked individual tortoises with lightweight radio tags. Tracking the tortoises across three dry seasons, _____. Which choice completes the text?",
+        "choices": [
+          "ecologist Mateo Ruiz documented several unexpected migrations",
+          "several unexpected migrations were documented by ecologist Mateo Ruiz",
+          "lightweight radio tags allowed several migrations to be documented by ecologist Mateo Ruiz",
+          "the tortoises' unexpected migrations appeared in data collected by ecologist Mateo Ruiz"
+        ],
+        "solution": "The modifier begins with the action \"Tracking the tortoises.\"\nThe passage says that ecologist Mateo Ruiz performed that action.\nPredict \"ecologist Mateo Ruiz\" and place it immediately after the comma.\nSo choice A is correctly ordered.",
+        "allow_retry": true,
+        "explanation": "Exactly. Mateo Ruiz tracked the tortoises, so his name must come directly after the modifier.",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "past_and_state_modifiers",
+      "html": "<h2>The verb may describe a state instead of an action</h2><p>The same placement rule works when the modifier starts with a past-participle form.</p><ul><li><strong>Founded in 1921</strong> describes the institution that was founded.</li><li><strong>Known for its mirrored dome</strong> describes the building that has that reputation.</li><li><strong>Hidden beneath volcanic rock</strong> describes the object or feature that is hidden.</li></ul><p>Do not force every modifier into the question \"Who did it?\" Sometimes the better question is \"What has this description?\"</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_6",
+      "block_type": "check",
+      "content": {
+        "hint": "Ask what is known for having the mirrored dome.",
+        "prompt": "Known for a mirrored dome that reflects the surrounding desert, _____. Which choice completes the text?",
+        "choices": [
+          "visitors photograph the Al Noor Observatory at sunset",
+          "the surrounding desert appears in photographs of the Al Noor Observatory",
+          "the Al Noor Observatory attracts photographers at sunset",
+          "sunset is when photographers visit the Al Noor Observatory"
+        ],
+        "solution": "The opening modifier describes something known for a mirrored dome.\nThat description belongs to the Al Noor Observatory.\nPlace \"the Al Noor Observatory\" immediately after the comma.\nSo choice C is correctly ordered.",
+        "allow_retry": true,
+        "explanation": "Right. The observatory is known for the dome, so the observatory must begin the main clause.",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "modifier_without_verb",
+      "html": "<h2>Sometimes the modifier has no verb</h2><p>An opening modifier can simply rename or characterize a noun:</p><blockquote><p>A coming-of-age story and a critique of colonial rule, _____</p></blockquote><p>This opener has no action verb to find. Ask instead: <strong>what is both a coming-of-age story and a critique?</strong> The answer must be the novel named in the passage, so that novel's noun phrase belongs after the comma.</p><p>The tool stays the same: predict what the modifier describes, then check the first position.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_7",
+      "block_type": "check",
+      "content": {
+        "hint": "The opening phrase renames something. What is both the map and the flood record?",
+        "prompt": "The passage explains that a seventeenth-century manuscript served as both an early map of the river and a record of seasonal floods. An early map of the river and a record of seasonal floods, _____. Which choice completes the text?",
+        "choices": [
+          "a cartographer copied the seventeenth-century manuscript for the royal archive",
+          "the seventeenth-century manuscript helped researchers reconstruct the region's history",
+          "seasonal floods were recorded by the manuscript's unknown cartographer",
+          "the royal archive preserved the manuscript for later researchers"
+        ],
+        "solution": "The modifier contains no verb; it gives two descriptions of the same item.\nThe passage says the seventeenth-century manuscript served as both the map and the flood record.\nPlace \"the seventeenth-century manuscript\" immediately after the comma.\nSo choice B is correctly ordered.",
+        "allow_retry": true,
+        "explanation": "Correct. The manuscript is both things named by the opening modifier, so its noun phrase must come next.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "property_comparison",
+      "html": "<h2>Variation: the modifier points to a property</h2><p>Some opening modifiers compare one thing's <strong>property</strong> with the same property of another thing:</p><blockquote><p>Unlike <strong>that</strong> of a conventional violin, <strong>an electric violin's body</strong> is often solid.</p></blockquote><p>Here, <em>that</em> stands for <em>the body</em>. The sentence must compare body with body, not a body with an entire violin. That is why the noun phrase after the comma uses the possessive form <em>an electric violin's</em> and names the matching property <em>body</em>.</p><blockquote><p><strong>Property test:</strong> When the modifier says <em>that of</em>, identify what <em>that</em> replaces. Put the matching property—not merely the whole item—after the comma.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_8",
+      "block_type": "check",
+      "content": {
+        "hint": "What does \"that\" replace? The sentence must compare a gasoline car's engine with an electric car's engine.",
+        "prompt": "Compared with that of a gasoline car, _____. Which choice correctly compares one engine with another engine?",
+        "choices": [
+          "an electric car is quiet because its engine produces little vibration",
+          "an electric car's engine operates with very little noise",
+          "drivers often notice the low noise produced by an electric car's engine",
+          "the quiet operation of an electric car surprises many drivers"
+        ],
+        "solution": "In \"that of a gasoline car,\" the word \"that\" stands for the engine.\nThe noun phrase after the comma must therefore name the matching engine.\n\"An electric car's engine\" compares engine with engine and uses the needed possessive form.\nSo choice B is correct.",
+        "allow_retry": true,
+        "explanation": "Correct. \"An electric car's engine\" creates a logical engine-to-engine comparison.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "property_prediction_tip",
+      "html": "<h2>Let the passage supply the exact phrase</h2><p>You do not need to invent the target noun. It is always available in the passage's facts.</p><p>If the passage discusses the <em>atomic arrangement</em> of two glasses and the modifier begins <strong>Compared with that of...</strong>, predict a phrase such as <em>the second glass's atomic arrangement</em>. If the passage discusses two prizes' <em>cash awards</em>, predict the second prize's <em>cash award</em>.</p><p>The possessive form is useful because it lets the sentence put the matching property first: <em>the cell's coating</em>, <em>the novel's structure</em>, <em>the animal's response</em>.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_9",
+      "block_type": "check",
+      "content": {
+        "hint": "Replace \"that\" with the property named in the passage, then name whose version of that property is being compared.",
+        "prompt": "The passage compares the heat tolerance of a desert moss with the heat tolerance of a woodland moss. The sentence begins, \"Unlike that of the woodland moss, _____.\" Which phrase should you predict for the first position?",
+        "choices": [
+          "researchers studying the desert moss",
+          "the desert habitat",
+          "the desert moss's heat tolerance",
+          "high temperatures"
+        ],
+        "solution": "The word \"that\" replaces \"heat tolerance.\"\nThe comparison is between the woodland moss's heat tolerance and the desert moss's heat tolerance.\nPredict \"the desert moss's heat tolerance\" for the first position.\nSo choice C is correct.",
+        "allow_retry": true,
+        "explanation": "Exactly. The modifier compares heat tolerance with heat tolerance, so the possessive noun phrase belongs after the comma.",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "one_position_tip",
+      "html": "<h2>Use the strongest difference first</h2><p>In the six Modifier-tagged question-bank examples reviewed for this lesson, every item had exactly one choice that placed the target noun phrase immediately after the opening modifier. The other choices began with a related but illogical noun, a placeholder such as <em>there</em>, or a property that did not match the comparison.</p><blockquote><p><strong>Time-saving tip:</strong> Once one choice puts your predicted noun phrase in the first position and the other three do not, that placement usually decides the item.</p></blockquote><p>Still read the completed sentence once to confirm that it is grammatical and logical. But do not spend equal time untangling every later phrase when the first position has already separated the choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_10",
+      "block_type": "check",
+      "content": {
+        "hint": "Placement is the primary test here, but a quick full-sentence confirmation protects against a genuine second problem.",
+        "prompt": "You predict that \"the research team\" must follow an opening modifier. Only one answer choice begins with that phrase. What is the best next step?",
+        "choices": [
+          "Read that completed sentence once for logic and grammar, then select it if it works.",
+          "Set aside the first position and compare the final word of each choice instead.",
+          "Reject the choice because the predicted phrase appears too early in the sentence.",
+          "Assume another choice may work and search for an unrelated punctuation difference."
+        ],
+        "solution": "Your prediction identifies the noun phrase that the modifier needs.\nOnly one choice places that phrase immediately after the comma, so it has passed the main test.\nRead the completed sentence once to make sure it remains grammatical and logical.\nThat is the efficient action described in choice A.",
+        "allow_retry": true,
+        "explanation": "Yes. Use the decisive placement clue, then confirm the whole sentence once rather than re-solving all four choices from scratch.",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "guided_mixed_example",
+      "html": "<h2>Guide yourself through a dense choice set</h2><p>The passage says that historian Amara Bell examined shipping records to trace the movement of ceramic bowls between islands.</p><blockquote><p>Examining cargo lists from more than forty voyages, _____ showed that the bowls traveled through several intermediate ports.</p></blockquote><p>Run the process:</p><ol><li><strong>First verb:</strong> <em>Examining</em>.</li><li><strong>Question:</strong> Who examined the cargo lists?</li><li><strong>Prediction:</strong> <em>historian Amara Bell</em>.</li><li><strong>Placement:</strong> Keep only the choice that begins with that noun phrase.</li></ol><p>The shipping records, voyages, bowls, and ports all belong to the topic, but none of them performed the examining.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_11",
+      "block_type": "check",
+      "content": {
+        "hint": "The first verb is \"Comparing.\" Who compared the cracks across the images?",
+        "prompt": "The passage says that engineer Priya Nwosu trained a computer model on thousands of bridge photographs. Comparing hairline cracks across the collection, _____. Which choice completes the text?",
+        "choices": [
+          "hairline cracks were classified by the computer model that Priya Nwosu trained",
+          "thousands of bridge photographs allowed a computer model to classify hairline cracks",
+          "the computer model's classifications helped Priya Nwosu study hairline cracks",
+          "engineer Priya Nwosu identified patterns that inspectors had overlooked"
+        ],
+        "solution": "The opening modifier says that someone was comparing hairline cracks.\nThe passage identifies engineer Priya Nwosu as the person doing that work.\nPlace her name immediately after the comma.\nSo choice D is correctly ordered.",
+        "allow_retry": true,
+        "explanation": "Correct. Priya Nwosu performed the comparison, so her noun phrase must begin the main clause.",
+        "correct_index": 3
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_intro",
+      "html": "<h2>Now solve without the steps supplied</h2><p>For each new item, predict the first noun phrase before you compare the full choices. The set includes an action modifier, a state modifier, and a property comparison.</p><blockquote><p><strong>Retrieve:</strong> Find the verb. Predict the noun. Check the first position.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_12",
+      "block_type": "check",
+      "content": {
+        "prompt": "The passage explains that astronomer Keiko Tan used old photographic plates to measure a star's changing brightness. Comparing plates taken decades apart, _____. Which choice completes the text?",
+        "choices": [
+          "a gradual change in the star's brightness appeared on the photographic plates",
+          "the old photographic plates preserved evidence of a gradual change in brightness",
+          "astronomer Keiko Tan detected a gradual change in the star's brightness",
+          "the star's gradual change in brightness was detected from old photographic plates"
+        ],
+        "allow_retry": false,
+        "explanation": "Keiko Tan compared the plates, so her name must immediately follow the opening modifier.",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_13",
+      "block_type": "check",
+      "content": {
+        "prompt": "Hidden beneath several meters of basalt, _____. Which choice completes the text?",
+        "choices": [
+          "geologists mapped a network of ancient lava tubes",
+          "a network of ancient lava tubes remained intact for thousands of years",
+          "several meters of basalt protected lava tubes that geologists later mapped",
+          "the mapping revealed lava tubes that basalt had protected"
+        ],
+        "allow_retry": false,
+        "explanation": "The lava-tube network is hidden beneath basalt, so that noun phrase belongs directly after the comma.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_property_transition",
+      "html": "<h2>Finish with the property variation</h2><p>The next item uses <em>that of</em>. Decide what property <em>that</em> replaces, then put the matching possessive noun phrase in the first position.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_14",
+      "block_type": "check",
+      "content": {
+        "prompt": "The passage compares the density of a polar bear's fur with the density of a brown bear's fur. Unlike that of the brown bear, _____. Which choice completes the text?",
+        "choices": [
+          "the polar bear's fur has an especially dense underlayer",
+          "the polar bear remains warm because its fur has a dense underlayer",
+          "a dense underlayer helps the polar bear retain heat",
+          "researchers found an especially dense underlayer in the polar bear's fur"
+        ],
+        "allow_retry": false,
+        "explanation": "Here, \"that\" stands for fur. \"The polar bear's fur\" creates the required fur-to-fur comparison.",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_15",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which process most efficiently solves an initial-modifier word-order question?",
+        "choices": [
+          "Read the choices first, compare punctuation, and identify the modifier's subject last.",
+          "Choose the shortest option, then check agreement without finding the modifier's subject.",
+          "Find a repeated noun, move it to the end, and ignore what the modifier describes.",
+          "Find the modifier's first verb, predict its target, and put that target directly past the comma."
+        ],
+        "allow_retry": false,
+        "explanation": "That's the Modifier Match process: use the first verb to predict the target noun phrase, then let first-position word order separate the choices.",
+        "correct_index": 3
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_complete_1",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can match an opening modifier to its noun</h2><p>You can recognize the long, scrambled choice format; use the modifier's first verb to predict the person, thing, or property it describes; handle <em>that of</em> comparisons with a possessive noun phrase; and select the one answer that places the target immediately after the comma.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

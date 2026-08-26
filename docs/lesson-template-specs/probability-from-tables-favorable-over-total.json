@@ -256,7 +256,7 @@
         "choices": [
           "\\(\\frac{6}{24}\\)",
           "\\(\\frac{6}{10}\\)",
-          "\\(\\frac{24}{40}\\)",
+          "\\(\\frac{6}{40}\\)",
           "\\(\\frac{18}{24}\\)"
         ],
         "correct_index": 0,
@@ -364,7 +364,7 @@
         "choices": [
           "\\(\\frac{39}{65}\\)",
           "\\(\\frac{39}{60}\\)",
-          "\\(\\frac{60}{100}\\)",
+          "\\(\\frac{39}{100}\\)",
           "\\(\\frac{26}{65}\\)"
         ],
         "correct_index": 0,
@@ -381,8 +381,8 @@
       "content": {
         "prompt": "Using the museum table, one visitor is selected from all 100 visitors. What is the probability the visitor chose history?",
         "choices": [
-          "\\(\\frac{14}{35}\\)",
-          "\\(\\frac{26}{65}\\)",
+          "\\(\\frac{14}{100}\\)",
+          "\\(\\frac{26}{100}\\)",
           "\\(\\frac{60}{100}\\)",
           "\\(\\frac{40}{100}\\)"
         ],
@@ -400,10 +400,10 @@
       "content": {
         "prompt": "Without looking back, which process correctly solves a one-event SAT table probability question?",
         "choices": [
-          "Find the largest number in the table, divide by the smallest number, and use given as Favorable.",
+          "Identify Favorable first, use the condition after 'given that' to restrict it, find Total inside it, and write Favorable over Total.",
           "Identify Total first, use the condition after 'given that' to restrict it, find Favorable inside it, and write Favorable over Total.",
-          "Always use the grand total, even when the question says given, and add the row and column probabilities.",
-          "Find Favorable first, treat it as the denominator, and combine categories with and/or."
+          "Identify Total first, keep it at the grand total when the question says 'given that,' find Favorable anywhere in the table, and write Favorable over Total.",
+          "Identify Total first, use the condition after 'given that' to restrict Favorable instead, and write Total over Favorable."
         ],
         "correct_index": 1,
         "allow_retry": false,

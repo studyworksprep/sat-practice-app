@@ -410,10 +410,10 @@
       "content": {
         "prompt": "Without looking back, which routine correctly factors out a GCF?",
         "choices": [
-          "Use the largest coefficient as the GCF; copy every variable outside; add the remaining terms.",
+          "Find the largest coefficient in any term and the exponents from the leading term; combine them; divide every term; multiply back to verify.",
           "Find the greatest shared coefficient and smallest exponent of each shared variable; combine them; divide every term; multiply back to verify.",
-          "Use the smallest coefficient; use the largest variable exponents; divide only the first term.",
-          "Count the terms; choose that number as the GCF; distribute to check."
+          "Find the greatest shared coefficient and smallest exponent of each shared variable; combine them; divide the first term; add the rest unchanged.",
+          "Find the greatest shared coefficient and smallest exponent of each shared variable; combine them; multiply every term; divide back to verify."
         ],
         "correct_index": 1,
         "allow_retry": false,

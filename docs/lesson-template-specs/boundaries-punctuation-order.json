@@ -613,9 +613,9 @@
       "content": {
         "prompt": "Without looking back, which routine should guide a Boundaries question from beginning to end?",
         "choices": [
-          "Read every answer aloud, choose the smoothest pause, and check grammar only if two sound alike.",
-          "Test commas first, then dashes, then colons, and use a semicolon only in a list.",
-          "Find the shortest answer, check whether it uses familiar punctuation, and eliminate the longest answer.",
+          "Check for a serial-semicolon list; test commas first, then dash, then colon, then full stops; stop when one answer is uniquely supported.",
+          "Test full stops, then colon, then dash, then comma; check for a serial-semicolon list only when two answers remain supported.",
+          "Check for a serial-semicolon list; test full stops, then colon, then dash; eliminate every comma answer without testing it.",
           "Check for a serial-semicolon list; test full stops, then colon, then dash, then comma; stop when one answer is uniquely supported."
         ],
         "correct_index": 3,

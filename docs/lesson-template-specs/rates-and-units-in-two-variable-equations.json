@@ -299,9 +299,9 @@
       "content": {
         "prompt": "Without looking back, which statement gives the most reliable way to interpret a contextual term in a two-variable linear equation?",
         "choices": [
-          "The coefficient is always the rate, the variable is always time, and the term is always money.",
-          "The variable and the full term always represent the same quantity.",
-          "Ignore the variable definitions and choose the interpretation that uses the largest number.",
+          "Label each factor's units, treat the coefficient as the rate and the variable as time, read the product as the grand total, and read the sum as a subtotal.",
+          "Pair each rate with the largest quantity in the equation, label the units afterward to confirm, and read every term as a grand total.",
+          "Label each variable's units only, read the variable and its full term as the same quantity, and read the sum as a subtotal.",
           "Label each factor's units, pair a rate with its matching quantity, read the product as a subtotal, and read the sum as the grand total."
         ],
         "correct_index": 3,

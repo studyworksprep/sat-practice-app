@@ -639,10 +639,10 @@
       "content": {
         "prompt": "Without looking back, which summary gives the correct regression strategy?",
         "choices": [
-          "Always use lowercase x, replace every equals sign with ~, and treat the first result as the only solution.",
-          "Use two regressions for a system, ignore RMSE, and define the same variable on several lines.",
+          "Use lowercase x as the variable, replace one equals sign with ~, read the assignment and RMSE, and treat the assigned value as the only solution the equation has.",
+          "Use an acceptable variable, replace every equals sign with ~, skip the RMSE when the assignment looks reasonable, and restrict the range on every problem.",
           "Use an acceptable variable, replace one equals sign with ~, read the assignment and RMSE, restrict the range only when useful, and switch methods when every solution matters.",
-          "Use regression only to count solutions, then erase the assigned values before later calculations."
+          "Use an acceptable variable, replace one equals sign with ~, read the assignment and RMSE, and keep regression as the method even when the question asks for every solution."
         ],
         "correct_index": 2,
         "allow_retry": false,

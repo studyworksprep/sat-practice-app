@@ -587,9 +587,9 @@
       "content": {
         "prompt": "Without looking back, which summary correctly connects the graph and algebra for special systems?",
         "choices": [
-          "No solution means different slopes; infinitely many means equal slopes only; proportions are unnecessary.",
-          "No solution means equal y-intercepts; infinitely many means different y-intercepts; sliders work best for several unknowns.",
-          "No solution and infinitely many solutions both require all three standard-form terms to be proportional.",
+          "No solution means equal slopes and equal intercepts; infinitely many means equal slopes and unequal intercepts; one unknown can be explored with a slider, while several unknowns call for equations or proportions.",
+          "No solution means unequal slopes; infinitely many means equal slopes and equal intercepts; several unknowns can be explored with sliders, while one unknown calls for equations or proportions.",
+          "No solution requires all three standard-form terms to be proportional; infinitely many requires proportional slopes only; one unknown calls for equations, while several unknowns call for a slider.",
           "No solution means equal slopes and unequal intercepts; infinitely many means equal slopes and equal intercepts; one unknown can be explored with a slider, while several unknowns call for equations or proportions."
         ],
         "correct_index": 3,
