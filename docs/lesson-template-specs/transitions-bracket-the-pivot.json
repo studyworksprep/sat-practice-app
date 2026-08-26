@@ -278,9 +278,9 @@
       "content": {
         "prompt": "Which routine best handles both ordinary transition questions and local-signal questions?",
         "choices": [
-          "Start with the choices, label each positive or negative, and select the strongest signal.",
-          "Use repeated topic words for addition and different topic words for contrast.",
-          "Read only after the blank, insert each choice aloud, and keep the smoothest sentence.",
+          "Paraphrase choices first, bracket the ideas they suggest, predict a link, and skip local signals.",
+          "Bracket exact ideas, predict their link before shrinking them, and label each choice positive or negative.",
+          "Bracket the sentence after the blank only, shrink it, predict its tone, and keep the smoothest paraphrase.",
           "Bracket exact ideas, shrink them, predict their link, paraphrase choices, and check local signals."
         ],
         "correct_index": 3,

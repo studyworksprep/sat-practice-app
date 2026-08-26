@@ -463,10 +463,10 @@
       "content": {
         "prompt": "Which statement is always a sound first step when you are asked to factor a polynomial completely?",
         "choices": [
-          "Assume the expression is a difference of squares.",
-          "List factor pairs of the final constant.",
+          "Check whether the expression is a difference of squares.",
+          "List factor pairs of the constant term.",
           "Check whether every term shares a GCF.",
-          "Write two binomials immediately."
+          "Split the middle term before anything else."
         ],
         "correct_index": 2,
         "allow_retry": false,

@@ -277,9 +277,9 @@
       "content": {
         "prompt": "Without looking back, which process should you use when a question asks which choice most logically completes the text?",
         "choices": [
-          "Choose the answer that seems most interesting, then find one sentence that mentions its topic.",
-          "Summarize only the final sentence and ignore earlier facts unless two choices tie.",
-          "Use background knowledge to predict what probably happened after the passage ends.",
+          "Soundbite each important sentence, combine the relationships, predict the most interesting conclusion, and choose the choice that reaches furthest.",
+          "Combine the relationships first, soundbite the sentences that support them, predict a conclusion, and keep any choice the text does not contradict.",
+          "Soundbite each important sentence, predict a conclusion from the strongest single soundbite, and prove the choice while rejecting overreach.",
           "Soundbite each important sentence, combine the relationships, predict the smallest supported conclusion, and prove the choice while rejecting overreach."
         ],
         "correct_index": 3,

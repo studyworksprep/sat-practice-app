@@ -557,10 +557,10 @@
       "content": {
         "prompt": "Without looking back, which summary correctly connects measurements of similar shapes?",
         "choices": [
-          "Use \\(s\\) for all measurements because similar shapes preserve every ratio.",
-          "Use \\(s^2\\) for perimeter and \\(s^3\\) for surface area.",
+          "Use \\(s\\) for lengths and perimeters, \\(s^3\\) for areas and surface areas, and \\(s^2\\) for volumes; use roots to work backward.",
+          "Use \\(s^2\\) for lengths and perimeters, \\(s^3\\) for areas and surface areas, and \\(s\\) for volumes; use powers to work backward.",
           "Use \\(s\\) for lengths and perimeters, \\(s^2\\) for areas and surface areas, and \\(s^3\\) for volumes; use roots to work backward.",
-          "Use the area ratio directly as the volume ratio whenever the shapes are similar."
+          "Use \\(s\\) for lengths, areas, and volumes alike, since similar shapes preserve every ratio; use roots to work backward."
         ],
         "correct_index": 2,
         "allow_retry": false,

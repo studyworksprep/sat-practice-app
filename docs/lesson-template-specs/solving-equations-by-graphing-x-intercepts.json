@@ -684,10 +684,10 @@
       "content": {
         "prompt": "Without looking back, which sequence correctly solves an equation with x-intercepts?",
         "choices": [
-          "Graph the original left side; use its y-intercept; report the second coordinate.",
-          "Replace every variable with zero; graph the constants; report the highest point.",
+          "Get zero on one side; graph the other side; find the y-intercept; report its second coordinate with the original variable; check precision.",
+          "Graph both sides without moving anything; find every x-intercept of either graph; report the values; check precision and restrictions.",
           "Get zero on one side; graph the other side; find every x-intercept; report the values with the original variable; check precision and restrictions.",
-          "Graph both sides separately; report every point that appears on either graph."
+          "Get zero on one side; graph the zero side; find every x-intercept; report the values with a new variable; skip restrictions when the graph looks complete."
         ],
         "correct_index": 2,
         "allow_retry": false,

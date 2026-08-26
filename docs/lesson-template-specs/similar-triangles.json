@@ -578,9 +578,9 @@
         "prompt": "Without looking back, which process works for both ordinary similar triangles and the right-triangle altitude configuration?",
         "choices": [
           "Establish similarity from matching angles; match sides by angle references or side rank; keep one triangle order in the proportion; solve and check the size.",
-          "Match whichever sides are nearest on the page; reverse one ratio; solve without checking.",
-          "Assume every pair of triangles is similar; square each side length; add the results.",
-          "Rotate every triangle on paper; match only the horizontal sides; use area ratios for missing lengths."
+          "Establish similarity from matching side lengths; match sides by their position on the page; keep one triangle order in the proportion; solve and check the size.",
+          "Establish similarity from matching angles; match sides by angle references or side rank; alternate the triangle order across the proportion; solve without a size check.",
+          "Match sides by angle references before establishing similarity; keep one triangle order; use the ratio of areas for missing lengths; check the size."
         ],
         "correct_index": 0,
         "allow_retry": false,

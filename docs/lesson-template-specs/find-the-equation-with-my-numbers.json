@@ -390,9 +390,9 @@
       "content": {
         "prompt": "Without looking back, which description captures the complete Find the Equation strategy?",
         "choices": [
-          "Translate every word into algebra, simplify only the first equation, and stop when it looks familiar.",
-          "Choose values after reading each equation, allowing every choice to use a different example.",
-          "Pick 0 or 1 for every variable, then choose every equation that works for those values.",
+          "Read the equations first; build one legal value set from the story; test only the two closest choices; rebuild if both fail.",
+          "Ignore the story; build and record one legal value set from the equations; test every choice with it; accept the first that works.",
+          "Ignore the equations; build a new legal value set for each choice; test each choice with its own values; retest if choices tie.",
           "Ignore the equations; build and record one legal value set from the story; test every choice with it; rebuild and retest if choices tie."
         ],
         "correct_index": 3,

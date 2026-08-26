@@ -370,9 +370,9 @@
       "content": {
         "prompt": "Without looking back, which sequence correctly uses My Numbers?",
         "choices": [
-          "Choose values for every symbol independently; simplify one answer choice; stop if it works.",
-          "Choose the smallest values shown in the answers; substitute them into the question; average the results.",
-          "Solve every variable algebraically; replace the final value with an easier number; select the closest choice.",
+          "Spot open quantities; choose easy legal values; follow every relationship; test each choice with its own fresh values; keep the first choice that matches.",
+          "Choose easy values before spotting the open quantities; skip any relationship that slows you down; answer the question; test all choices with the same values.",
+          "Spot open quantities; choose the values shown in the answer choices; follow every relationship; answer the question; retest only the longest choice if several match.",
           "Spot open quantities; choose easy legal values; follow every relationship; answer the question; test all choices with the same values; retest if several match."
         ],
         "correct_index": 3,

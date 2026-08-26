@@ -390,10 +390,10 @@
       "content": {
         "prompt": "Without looking back, which summary correctly describes the SAT survey process?",
         "choices": [
-          "Trust the largest sample, apply its exact result to similar groups, and treat the margin-of-error interval as guaranteed.",
+          "Identify the population, audit selection for bias, extend the claim to any similar population, and use plus/minus margin of error as a guaranteed range.",
           "Identify the population, audit selection for bias, limit the claim to that population, and use plus/minus margin of error as a plausible—not guaranteed—range.",
-          "Ignore the selection method, calculate the population size, and subtract nonrespondents from the margin of error.",
-          "Apply every random sample to the whole country and reduce margin of error by rewriting the survey question."
+          "Audit selection for bias only when the sample is small, identify the population afterward, and subtract the margin of error from the reported result.",
+          "Identify the population, trust any large sample regardless of selection, limit the claim to that population, and drop the plus/minus range once the sample is big enough."
         ],
         "correct_index": 1,
         "allow_retry": false,

@@ -615,10 +615,10 @@
       "content": {
         "prompt": "Without looking back, which summary correctly interprets function notation and the missing-constant workflow?",
         "choices": [
-          "\\(f(a)=b\\) means \\((b,a)\\); use ~ for every function definition.",
-          "A function may give one input several outputs; \\(f(3)\\) means f times 3.",
+          "\\(f(a)=b\\) means \\((b,a)\\); evaluate a fixed input by substitution or graph reading; solve \\(f(x)=b\\) for outputs; define the function with ~ and enter a missing-constant condition with =.",
+          "\\(f(a)=b\\) means \\((a,b)\\); solve a fixed input with ~; evaluate \\(f(x)=b\\) by graph reading only; define both the function and the missing-constant condition with =.",
           "\\(f(a)=b\\) means \\((a,b)\\); evaluate a fixed input by substitution or graph reading; solve \\(f(x)=b\\) for inputs; define the function with = and enter a missing-constant condition with ~.",
-          "Every function equation has exactly one solution, so one graph intersection is always enough."
+          "\\(f(a)=b\\) means \\((a,b)\\); evaluate a fixed input by solving \\(f(x)=b\\); a function equation has exactly one solution, so one graph intersection is always enough."
         ],
         "correct_index": 2,
         "allow_retry": false,

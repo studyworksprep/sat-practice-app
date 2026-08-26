@@ -600,9 +600,9 @@
       "content": {
         "prompt": "Without looking back, which summary gives the complete standard-regression strategy?",
         "choices": [
-          "Guess an equation, type it in Desmos, and change coefficients until the graph looks close.",
-          "Enter outputs only, click Linear, and use the result for every dataset.",
-          "Solve each pair separately, then average the equations.",
+          "Identify input-output points, enter them in a table, click Regression, keep the Linear model for every dataset, and translate the displayed equation back to the problem.",
+          "Identify input-output points, type a guessed equation, adjust its coefficients until the graph passes near the table's points, and report the closest version.",
+          "Enter the outputs in a table, click Regression, choose the appropriate standard model, and keep the displayed \\(y_1\\) and \\(x_1\\) letters in the final answer.",
           "Identify input-output points, enter them in a table, click Regression, choose the appropriate standard model, and translate the displayed equation back to the problem."
         ],
         "correct_index": 3,

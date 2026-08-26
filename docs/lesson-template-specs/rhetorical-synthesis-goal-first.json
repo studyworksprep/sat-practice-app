@@ -239,9 +239,9 @@
       "content": {
         "prompt": "Without looking back, which process should you use on a Rhetorical Synthesis question?",
         "choices": [
-          "Read every note, write a full summary, and choose the answer with the most facts.",
-          "Read the notes first, then choose the shortest accurate answer.",
-          "Scan for repeated words from the notes and ignore the student's stated purpose.",
+          "Read the notes first, list every fact they contain, test the choices for note-fit, and check the student's goal only if more than one choice still fits.",
+          "Read the student's goal, test the choices for goal-fit before listing requirements, and pick the shortest choice that mentions the notes.",
+          "Read the student's goal, list every requirement, check the notes for repeated words, and test the choices against those words instead of the goal.",
           "Read the student's goal, list every requirement, test the choices for goal-fit, and check the notes only if more than one choice still fits."
         ],
         "correct_index": 3,

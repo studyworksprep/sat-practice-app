@@ -650,10 +650,10 @@
       "content": {
         "prompt": "Without looking back, which process correctly solves a system of equations with Desmos?",
         "choices": [
-          "Simplify both equations by hand; graph one equation; use its intercept as the solution.",
+          "Use x and y as the coordinate variables; simplify both equations by hand before entering them; click the first intersection; report its x-coordinate.",
           "Use x and y as the coordinate variables; enter both complete equations; click every intersection; translate variables if needed; answer the requested quantity.",
-          "Replace y with zero in both equations; enter the remaining expressions; report every x-intercept.",
-          "Add the equations together; graph the sum; report the graph's highest point."
+          "Use x and y as the coordinate variables; enter both complete equations; click every x-intercept; translate variables if needed; answer the requested quantity.",
+          "Enter both complete equations with the problem's original letters; click every intersection; answer with the coordinates Desmos lists first."
         ],
         "correct_index": 1,
         "allow_retry": false,

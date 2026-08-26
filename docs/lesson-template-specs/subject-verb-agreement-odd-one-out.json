@@ -442,9 +442,9 @@
       "content": {
         "prompt": "Without looking back, which process correctly uses the subject–verb odd-one-out trick?",
         "choices": [
-          "Find the closest noun, choose the verb that matches it, and confirm by reading aloud.",
-          "Choose whichever answer sounds most formal, then check its tense.",
-          "Look for an -s ending and choose it whenever the sentence contains a singular noun.",
+          "Test every choice after he and they; continue only if the split is two to two; choose the answer that sounds correct after they.",
+          "Test every choice after the closest noun; continue only if each fits exactly one; choose the answer that matches the noun's number.",
+          "Test every choice after he and they; continue whenever at least one choice fits both; choose the answer that differs.",
           "Test every choice after he and they; continue only if each fits exactly one and the split is three to one; choose the answer that differs."
         ],
         "correct_index": 3,

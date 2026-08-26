@@ -398,9 +398,9 @@
         "prompt": "Without looking back, which sequence correctly describes CLEAR?",
         "choices": [
           "Capture the task word; Lock onto the claim; Expect the evidence; Audit the source and choices; Reject failed matches.",
-          "Copy every number; Look for repeated words; Estimate the topic; Accept a true statement; Reread only if stuck.",
-          "Choose a graph point; Label it; Eliminate the shortest choice; Assume correlation; Reverse the question.",
-          "Capture the title; Locate the longest quotation; Explain the topic; Add background knowledge; Rank the choices by detail."
+          "Capture the claim; Lock onto the task word; Expect the evidence; Audit the source and choices; Reject failed matches.",
+          "Capture the task word; Lock onto the claim; Expect the answer choices; Audit the evidence; Reject any choice that quotes the source.",
+          "Capture the task word; Lock onto the claim; Expect the evidence; Audit only the source; Accept the first supported match."
         ],
         "correct_index": 0,
         "allow_retry": false,

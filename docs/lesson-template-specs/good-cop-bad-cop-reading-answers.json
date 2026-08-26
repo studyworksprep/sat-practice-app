@@ -466,9 +466,9 @@
         "prompt": "What forces you to cross out the claim that noise was the only cause of the decline in visits?",
         "choices": [
           "The researchers did not determine the cause, so the choice adds both certainty and the word only.",
-          "The passage does not mention dolphins.",
-          "The nearby reef did not become louder.",
-          "The distant reef changed more than the nearby reef."
+          "The passage proves construction, not noise, caused the decline, so the choice names the wrong cause.",
+          "The researchers ruled out noise as a cause, so the choice contradicts what they determined.",
+          "The claim describes only the nearby reef, so it does not answer a question about both reefs."
         ],
         "correct_index": 0,
         "allow_retry": false,

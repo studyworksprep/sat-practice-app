@@ -486,9 +486,9 @@
       "content": {
         "prompt": "Without looking back, which summary gives the correct custom-regression strategy?",
         "choices": [
-          "Use the table's standard Regression button, then rename its coefficients to match the question.",
-          "Keep the original function letters in the table and connect every statement with equals signs.",
-          "Type several possible equations and choose the one whose graph looks closest.",
+          "Enter input-output points, rewrite extra relationships as regressions, substitute \\(y_1\\) and \\(x_1\\) into every definition, and fit the required form using \\(=\\).",
+          "Fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\) before entering the points, then rewrite the fitted equation to match any extra relationships.",
+          "Enter input-output points and fit the required form with \\(y_1\\sim\\), leaving extra relationships and other function rules out of Desmos.",
           "Enter input-output points, rewrite extra relationships as definitions, substitute other function rules, and fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\)."
         ],
         "correct_index": 3,
