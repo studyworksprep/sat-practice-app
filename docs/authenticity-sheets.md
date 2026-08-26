@@ -12,11 +12,14 @@
 > Exemplars are cited by `display_code` — open them in the app; item
 > text is College Board's and is not reproduced here.
 >
-> **Tutor verification pass (what only you can check):** (1) do the
-> recent-test profiles match what students face this season — any
-> format drift since PT11? (2) are the flagged weighting divergences
-> real signals or small-sample noise? (3) curation — which formats do
-> we drill? Regenerate after College Board updates the bank:
+> **Verification closed 2026-08-26 (plan step 2.7): owner blanket
+> confirmation.** The sheets are accepted as the operating reference
+> as computed — no format drift flagged since PT11, the weighting
+> divergences stand as reported, and drill curation follows the
+> per-skill templates below. This was a blanket sign-off, not a
+> sheet-by-sheet tutor pass; if a tutor observes drift on a newer
+> form, amend the affected sheet and note it here. Regenerate after
+> College Board updates the bank:
 > `scripts/authenticity-sheets-queries.sql` + the assembler.
 
 ## How to use these in 2.4
@@ -27,6 +30,18 @@ inside the skill's **p25–p75 length band**, uses the skill's **choice
 shape** (length and numeric mix), and matches the **hard-item
 profile** when it's a transfer item. Exemplar codes give two real
 items per difficulty band to imitate structurally.
+
+**Owner decisions, 2026-08-26:**
+
+- **Text Structure and Purpose** (no mapped lesson) is hosted by
+  `reading-comprehension-process-and-pre-answer`, whose "name the
+  job" step already teaches function questions: its 2.4 authentic
+  item uses a verbatim TS&P function stem ("function of the
+  underlined sentence/portion"). TS&P remains a Phase 4
+  dedicated-lesson candidate.
+- **MC-only until 1.6:** every 2.4 authentic math item ships as
+  multiple-choice. When 1.6 (numeric entry) lands, add SPR-format
+  variants starting with the SPR-heavy skills (≥25% SPR share).
 
 ## Headline findings
 
