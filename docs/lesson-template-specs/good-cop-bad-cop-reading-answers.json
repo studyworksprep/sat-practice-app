@@ -15,10 +15,10 @@
       "content": {
         "prompt": "What should you have in mind before using Good Cop / Bad Cop on the answer choices?",
         "choices": [
-          "A guess based on the most familiar words in the choices",
+          "A first guess formed by reading the answer choices before the passage",
           "A list of outside facts you know about the passage's topic",
           "A text-based answer target formed after reading the question and passage",
-          "A decision to choose whichever answer gives the most detail"
+          "A decision to choose whichever answer choice gives the most specific detail"
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -42,13 +42,13 @@
         "choices": [
           "Clearing fallen branches may have exposed some dormant seeds to conditions that helped them sprout.",
           "Light and warmer soil caused every buried seed in the forest plot to germinate.",
-          "The sprouts proved that fallen branches had prevented all plant growth in the plot.",
-          "Ito found that workers cleared the branches for the purpose of making dormant seeds sprout."
+          "The sprouts showed that fallen branches had been blocking plant growth across the entire plot.",
+          "Ito found that the workers cleared the branches deliberately so that the dormant seeds would sprout."
         ],
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Keep the clearing, the possible explanation, and the limit to some seeds. Cross out any added certainty or purpose.",
-        "explanation": "Right. Choice A keeps the passage's cautious language and limited result. B changes some seeds into every seed. C makes a much broader claim about all plant growth. D invents the workers' purpose."
+        "explanation": "Right. Choice A keeps the passage's cautious language and limited result. B changes some seeds into every seed. C turns one observation into a much broader claim about the whole plot's plant growth. D invents the workers' purpose."
       },
       "calculator": { "display": "hidden" }
     },
@@ -65,9 +65,9 @@
       "content": {
         "prompt": "How should you use Good Cop and Bad Cop?",
         "choices": [
-          "Use Good Cop on all four choices first, then make a second trip through the list with Bad Cop.",
+          "Use Good Cop on the whole list of choices first, then make a second trip through the list with Bad Cop.",
           "Use Good Cop to find familiar words and Bad Cop to choose the longest answer.",
-          "Use Bad Cop only after you have already selected a final answer.",
+          "Save Bad Cop until after you have already selected your final answer.",
           "For each choice, notice what fits, notice what fails, and then keep it or cross it out."
         ],
         "correct_index": 3,
@@ -127,10 +127,10 @@
       "content": {
         "prompt": "Which part of Choice A forces you to cross it out?",
         "choices": [
-          "The words early maps",
-          "The statement that markets were omitted",
+          "The phrase early maps, which the passage itself uses in its first sentence",
+          "The statement that markets were omitted from the early maps",
           "The claim that cartographers wanted to hide all commercial activity",
-          "The fact that the choice discusses maps"
+          "The fact that the choice discusses maps rather than diaries or tax lists"
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -178,9 +178,9 @@
         "prompt": "What function does the second sentence serve?",
         "choices": [
           "It gives a specific example of the kind of neighborhood memory that a mural can preserve.",
-          "It states that highway construction demolished some businesses.",
-          "It proves that all city murals were created to oppose highways.",
-          "It introduces a researcher who disagrees with Velez."
+          "It states, accurately, that highway construction demolished some neighborhood businesses.",
+          "It proves that city murals were created mainly to oppose highway construction projects.",
+          "It introduces a second researcher whose findings disagree with Velez's argument."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -210,8 +210,8 @@
         "choices": [
           "The loss of winter fruit caused every lizard on Island B to become inactive.",
           "The islands differed in both winter fruit availability and the lizards' winter activity.",
-          "Lizards of this species can remain active only when they eat fruit every day.",
-          "Island A was warmer than Island B during every month of the study."
+          "Lizards of this species stay active in winter wherever fruit remains available through the season.",
+          "Island A probably had warmer weather than Island B throughout the study period."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -227,10 +227,10 @@
       "content": {
         "prompt": "What is the main problem with the claim that the loss of fruit caused every Island B lizard to become inactive?",
         "choices": [
-          "It uses the word winter.",
-          "It discusses the lizards' activity.",
+          "It describes winter conditions on Island B, which the passage mentions just briefly.",
+          "It draws a conclusion about the lizards' activity levels, which the researchers did not observe directly.",
           "It turns two observed differences into a proven cause and changes the group result into every lizard.",
-          "It mentions Island B rather than Island A."
+          "It focuses on Island B alone, so it fails to compare the two islands that the study describes."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -258,9 +258,9 @@
       "content": {
         "prompt": "Which choice survives both Good Cop and Bad Cop?",
         "choices": [
-          "The tests proved that insulation alone determines the temperature of every roof.",
+          "The tests showed that insulation alone determines how warm each building becomes inside.",
           "Coated roofs were cooler at midday, so the coating lowered indoor temperature in every tested building.",
-          "The team found that building features had no effect on the indoor results.",
+          "The team found that the buildings' design features had no effect on the indoor results.",
           "Reflective coating can cool roof surfaces, but its effect indoors may vary with building features."
         ],
         "correct_index": 3,
@@ -278,9 +278,9 @@
         "prompt": "Why must Choice B be crossed out even though its first half is correct?",
         "choices": [
           "It says the coating lowered indoor temperature in every tested building, but the indoor results varied.",
-          "It uses the word roofs instead of surfaces.",
-          "It mentions indoor temperature, which the passage never discusses.",
-          "It says the roofs were cooler at midday, which reverses the result."
+          "It says roofs when the passage measures the temperature of the buildings' roof surfaces.",
+          "It mentions indoor temperature, a result that the passage itself never actually reports.",
+          "It says the coated roofs were cooler at midday, a comparison that reverses the study's actual reported result."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -302,10 +302,10 @@
       "content": {
         "prompt": "Your answer target does not fit any choice exactly, and every choice seems to have a problem. What should you do?",
         "choices": [
-          "Choose the answer that sounds most academic.",
+          "Choose the answer written in the most academic and technical-sounding language.",
           "Return to the question and passage, repair the answer target, and then test the choices again.",
-          "Choose the answer with the fewest words.",
-          "Ignore the answer target and use outside knowledge to pick a reasonable statement."
+          "Choose the shortest answer, since concise choices are less likely to contain errors.",
+          "Set the answer target aside and use your outside knowledge to pick the most reasonable statement."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -328,9 +328,9 @@
         "prompt": "Which choice is completely supported and answers the question?",
         "choices": [
           "The coating permanently destroyed the bees' ability to navigate to any feeder.",
-          "Bees use only polarized light and no other information to navigate.",
+          "Bees rely on polarized light more than on any other information when they navigate.",
           "Blocking polarized-light patterns was connected with slower navigation in the laboratory test.",
-          "The bees' longer travel time proved that they used more energy to reach the feeder."
+          "The bees' longer travel time proved that they used considerably more energy to reach the feeder."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -346,9 +346,9 @@
       "content": {
         "prompt": "What exact part makes the energy answer wrong?",
         "choices": [
-          "It refers to the bees.",
-          "It mentions the feeder.",
-          "It says the travel time was longer.",
+          "It refers to the bees reaching the feeder, which the laboratory test did not track.",
+          "It mentions the feeder and the laboratory's special coating, which the passage says nothing about.",
+          "It says the bees' travel time was longer, a detail that reverses the reported result.",
           "It says the longer time proved greater energy use, which the researchers did not measure."
         ],
         "correct_index": 3,
@@ -390,10 +390,10 @@
       "content": {
         "prompt": "Why is the claim that Devon is angry at the editors unsupported?",
         "choices": [
-          "The claim is about the wrong character.",
+          "The claim is about the wrong people, describing the editors' feelings instead of Devon's own reaction.",
           "The text shows hesitation about speaking, but it gives no sign that Devon blames or resents the editors.",
-          "The editors never discuss the poem.",
-          "The text directly says Devon is pleased."
+          "The editors never actually discuss the poem or its imagery within Devon's hearing at the next table.",
+          "The text directly states that Devon is pleased with the editors' praise, which rules out anger completely."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -415,10 +415,10 @@
       "content": {
         "prompt": "What function does the second sentence serve?",
         "choices": [
-          "It rejects Sen's argument by proving that average commute times are always accurate.",
+          "It rejects Sen's argument by demonstrating that average commute times measure transportation access reliably.",
           "It argues that trains are less predictable than buses in every neighborhood.",
           "It illustrates how equal average commute times can hide meaningful differences in transportation access.",
-          "It introduces a second economist whose view is unrelated to Sen's claim."
+          "It introduces a second economist whose research findings are unrelated to Sen's claim."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -446,9 +446,9 @@
       "content": {
         "prompt": "Which conclusion is best supported?",
         "choices": [
-          "Construction noise permanently drove every dolphin away from the nearby reef.",
-          "The distant reef became louder and received fewer dolphin visits during construction.",
-          "The researchers proved that noise was the only cause of the decline in dolphin visits.",
+          "Construction noise permanently drove the dolphins away from the reef near the building site.",
+          "The reef distant from the construction site became louder and received fewer dolphin visits.",
+          "The researchers proved that construction noise was the only cause of the decline in dolphin visits.",
           "During construction, the nearby reef became louder and received fewer dolphin visits, while the distant reef changed little."
         ],
         "correct_index": 3,

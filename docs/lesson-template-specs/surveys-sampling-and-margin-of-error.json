@@ -22,7 +22,7 @@
         "prompt": "Which plan is best designed to estimate the opinion of all students at the school?",
         "choices": [
           "Ask the first 100 students who enter the library.",
-          "Post an optional poll on the school's social media account.",
+          "Post an optional poll on the school's social media account and count the replies.",
           "Randomly select students from the complete school enrollment list.",
           "Ask every member of the student council."
         ],
@@ -47,8 +47,8 @@
         "prompt": "A random sample of 250 students is surveyed, and 64% of that sample supports a new schedule. Which statement is known from the survey data?",
         "choices": [
           "Exactly 64% of the sampled students support the schedule.",
-          "Exactly 64% of every student at the school supports the schedule.",
-          "Every group of 250 students at the school would produce 64%.",
+          "Exactly 64% of the school's entire student body supports the schedule.",
+          "Any other group of 250 students at the school would also produce 64%.",
           "The unsurveyed students must have the same opinions as the sample."
         ],
         "correct_index": 0,
@@ -77,7 +77,7 @@
       "content": {
         "prompt": "A city wants to estimate the opinions of all adult residents. Which method is most clearly biased?",
         "choices": [
-          "Randomly select adults from a complete city resident list.",
+          "Randomly select adults from a complete city resident list and survey each selected adult.",
           "Randomly select adults from each neighborhood in proportion to neighborhood size.",
           "Randomly select addresses across the city and select one adult from each chosen household.",
           "Invite visitors to the city website to choose whether to complete the survey."
@@ -102,10 +102,10 @@
       "content": {
         "prompt": "A company randomly selects customers for a satisfaction survey, but dissatisfied customers are much more likely to respond than satisfied customers. What is the main concern?",
         "choices": [
-          "The target population is too large to survey.",
+          "The target population of customers is too large for any survey to estimate.",
           "Nonresponse may bias the results because respondents differ from nonrespondents.",
-          "Random selection makes every response untrustworthy.",
-          "The company must survey every customer before making any estimate."
+          "The random selection itself failed, so none of the collected responses can be trusted.",
+          "The company must survey each of its customers before making any estimate."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -127,7 +127,7 @@
       "content": {
         "prompt": "A district randomly selects 300 students from a complete list of all eleventh-grade students in the district. What is the largest population to which the results can be generalized?",
         "choices": [
-          "All high school students in the state",
+          "All high school students across the entire state",
           "All students in the district",
           "All eleventh-grade students in the district",
           "Only the 300 students who responded"
@@ -153,9 +153,9 @@
         "prompt": "A random sample of registered voters in County M finds that 48% support a proposal. Which statement is best supported?",
         "choices": [
           "The data suggest that about 48% of registered voters in County M support the proposal.",
-          "Exactly 48% of all County M residents support the proposal.",
+          "Exactly 48% of County M's full resident population supports the proposal.",
           "About 48% of registered voters throughout the country support the proposal.",
-          "Every future sample from County M will contain exactly 48% support."
+          "Each future sample drawn from County M's voters will again contain exactly 48% support."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -178,7 +178,7 @@
         "prompt": "A well-designed random sample finds that 84% of sampled households use a recycling service. Which conclusion is not supported?",
         "choices": [
           "The sample statistic is 84%.",
-          "The population proportion is likely near 84%.",
+          "The population proportion is likely to be somewhere near 84%.",
           "The true population proportion may differ from 84%.",
           "Exactly 84% of all households use the recycling service."
         ],
@@ -233,10 +233,10 @@
       "content": {
         "prompt": "A survey reports 62% with a margin of error of 4 percentage points. Which interpretation is most accurate?",
         "choices": [
-          "Exactly 62% of the population has the measured opinion.",
-          "The true population value must be between 58% and 66%.",
+          "The survey shows that exactly 62% of the population holds the measured opinion.",
+          "The true population value must fall somewhere between 58% and 66%.",
           "Values from 58% to 66% are plausible, but the true population value could be outside that range.",
-          "Any value from 4% to 62% is equally likely."
+          "Any population value from 4% to 62% is equally likely to be correct."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -283,7 +283,7 @@
       "content": {
         "prompt": "An online poll collects 10,000 voluntary responses. Which statement is most accurate?",
         "choices": [
-          "The large sample guarantees that the poll represents the target population.",
+          "The very large sample guarantees that the poll accurately represents the target population.",
           "The poll has no uncertainty because more than 1,000 people responded.",
           "A margin of error would automatically correct any voluntary-response bias.",
           "The large sample does not remove bias caused by allowing respondents to select themselves."
@@ -308,9 +308,9 @@
       "content": {
         "prompt": "Which conclusion best matches the district survey?",
         "choices": [
-          "Exactly 54% of every student in the district supports the tutoring period.",
+          "Exactly 54% of the district's entire student body supports the tutoring period.",
           "It is plausible that 51% to 57% of the district's eleventh-grade students support the tutoring period.",
-          "At least 51% of all students in the state support the tutoring period.",
+          "At least 51% of high school students statewide support the tutoring period.",
           "The true support among district eleventh graders cannot be outside 51% to 57%."
         ],
         "correct_index": 1,
@@ -333,7 +333,7 @@
       "content": {
         "prompt": "A university randomly samples 250 students from a complete list of its first-year students. What is the largest population to which the results can be generalized?",
         "choices": [
-          "All university students in the country",
+          "All university students throughout the country",
           "All students at that university",
           "All first-year students at that university",
           "Only the 250 sampled first-year students"
@@ -355,7 +355,7 @@
           "The data suggest that about 38% of households in the town compost food waste.",
           "Exactly 38% of households in the town compost food waste.",
           "About 38% of households in the state compost food waste.",
-          "Composting food waste causes households to participate in surveys."
+          "Composting food waste causes households to participate more readily in town surveys."
         ],
         "correct_index": 0,
         "allow_retry": false,
