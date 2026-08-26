@@ -428,6 +428,27 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Marine biologist Tomás Herrera studied kelp forests along a rocky coastline. In areas where sea urchin populations had grown unchecked, kelp cover declined sharply, while areas patrolled by sea otters kept dense kelp canopies. Herrera notes, however, that otters are not the whole story: at two sites with few otters, strong wave action appeared to limit urchin grazing and preserve the kelp. He concludes that several different mechanisms can keep urchin populations in check, with similar benefits for the forest. Which choice best states the main idea of the text?",
+        "choices": [
+          "Kelp cover declined most sharply at the sites where sea otters patrolled the coastline.",
+          "Kelp forests can be protected from urchin grazing by more than one mechanism, not by otters alone.",
+          "Sea otters are the only reliable protection that kelp forests have against urchin grazing.",
+          "Herrera found that strong wave action attracted sea otters to the two sites with the densest kelp."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "The main idea must cover both the otter sites and the wave-action sites.",
+        "explanation": "Correct. The passage reports two different checks on urchin grazing — otter predation and wave action — and concludes that several mechanisms can protect the forest. The first choice reverses the results, the third overstates the otters, and the fourth invents a connection."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
       "kind": "text",
       "id": "remember_the_process",
       "html": "<h2>Say the process without looking back</h2><p>Before continuing, say what Good Cop and Bad Cop ask about each choice.</p><p>Then name the four things you check when a choice looks possible. Do not look back. Say them in your own words before continuing.</p><p>Now use the process on one final question without help.</p>",

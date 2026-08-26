@@ -437,6 +437,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "In 1911, a university expedition crossed the high plateau collecting alpine plants. The collection of field notebooks, sketches, and pressed specimens assembled by the expedition's two botanists ______ now housed in the university's herbarium, where conservators recently began digitizing it. Which choice completes the text so that it conforms to the conventions of Standard English?",
+        "choices": [
+          "are",
+          "is",
+          "were",
+          "have been"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Run the frames: which choices fit after 'they,' and which fits after 'he'? Check the split.",
+        "explanation": "Correct. The subject is the singular \"collection\" — the notebooks, sketches, specimens, and botanists are all inside interrupting phrases. In the frames, \"is\" fits \"he\" while \"are,\" \"were,\" and \"have been\" fit \"they\": a three-to-one split, so the odd one out wins."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "retrieval_check",
       "block_type": "check",
       "content": {

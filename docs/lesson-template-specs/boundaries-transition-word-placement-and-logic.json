@@ -418,6 +418,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "City records from 1998 describe the harborfront mural as the largest and most expensive public artwork ever commissioned by the town council. The mural was expected to take a single summer to ______ delays in sourcing weather-resistant pigments stretched the project across three years. Which choice completes the text so that it conforms to the conventions of Standard English?",
+        "choices": [
+          "complete, however,",
+          "complete. However,",
+          "complete however,",
+          "complete, however"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Label A and B: two complete sentences with the transition attached to the second.",
+        "explanation": "Correct. \"The mural was expected… to complete\" and \"delays… stretched the project\" are both independent clauses, so \"However\" needs a full stop before it and a comma after. A comma before \"however\" splices the sentences no matter what follows it."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {

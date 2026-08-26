@@ -583,6 +583,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "The mean of the data set \\(11, 14, 19, 22, 24\\) is \\(18\\). A new data set is created by increasing each value by \\(6\\). What is the mean of the new data set?",
+        "choices": [
+          "\\(18\\)",
+          "\\(19.2\\)",
+          "\\(24\\)",
+          "\\(30\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "List arithmetic transforms every element — what does that do to the mean?",
+        "explanation": "Correct. Adding \\(6\\) to every element shifts the mean by exactly \\(6\\): \\(18+6=24\\). In Desmos, mean\\(([11,14,19,22,24]+6)\\) confirms it; \\(19.2\\) comes from adding \\(6\\) to only one value."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

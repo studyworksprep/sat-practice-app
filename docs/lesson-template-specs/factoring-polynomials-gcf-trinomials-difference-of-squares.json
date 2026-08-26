@@ -458,6 +458,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression is equivalent to \\(2x^2-12x+18\\)?",
+        "choices": [
+          "\\(2(x+3)^2\\)",
+          "\\(2(x-3)(x+3)\\)",
+          "\\((2x-6)^2\\)",
+          "\\(2(x-3)^2\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Check for a GCF first, then decide which pattern the remaining trinomial fits.",
+        "explanation": "Correct. Pull the GCF first: \\(2(x^2-6x+9)\\). The trinomial is a perfect square, so the result is \\(2(x-3)^2\\). The sign, the misplaced GCF, and the difference-of-squares shape each expand to something else."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "retrieval_check",
       "block_type": "check",
       "content": {

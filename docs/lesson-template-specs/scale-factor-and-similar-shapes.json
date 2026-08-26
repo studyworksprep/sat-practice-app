@@ -552,6 +552,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Rectangle A has an area of \\(24\\) square centimeters. Each side of rectangle B is \\(3\\) times the length of the corresponding side of rectangle A. What is the area, in square centimeters, of rectangle B?",
+        "choices": [
+          "\\(8\\)",
+          "\\(72\\)",
+          "\\(216\\)",
+          "\\(648\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Area is two-dimensional — which power of the linear scale factor does it use?",
+        "explanation": "Correct. Area scales by \\(s^2\\): \\(24\\cdot3^2=216\\). Multiplying by \\(3\\) once treats area like a length, and \\(3^3\\) belongs to volume."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

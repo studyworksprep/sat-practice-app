@@ -395,6 +395,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "A summer program enrolled \\(80\\) students: \\(35\\) in photography, of whom \\(21\\) are high school students, and \\(45\\) in ceramics, of whom \\(27\\) are high school students. If one of the \\(48\\) high school students in the program is selected at random, what is the probability that the student is enrolled in ceramics?",
+        "choices": [
+          "\\(\\frac{21}{48}\\)",
+          "\\(\\frac{27}{80}\\)",
+          "\\(\\frac{27}{48}\\)",
+          "\\(\\frac{27}{45}\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Identify the Total first: the selection is from the high school students only.",
+        "explanation": "Correct. The condition restricts Total to the \\(48\\) high school students, and \\(27\\) of them are in ceramics, so \\(\\frac{27}{48}\\). The grand total \\(80\\) is no longer available, and \\(\\frac{27}{45}\\) reverses the condition."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {

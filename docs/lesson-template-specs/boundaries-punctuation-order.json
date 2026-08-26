@@ -608,6 +608,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Photographer Dario Nkemelu spent four consecutive winters aboard trawlers, documenting the harbor's aging fishing fleet. The resulting collection pairs stark images of iced-over decks with the crews' own ______ caption comes from an interview the photographer recorded between voyages. Which choice completes the text so that it conforms to the conventions of Standard English?",
+        "choices": [
+          "words. Every",
+          "words, every",
+          "words every",
+          "words; and every"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "hint": "Both sides of the blank are complete sentences. Run the order: full stop first.",
+        "explanation": "Correct. \"The resulting collection pairs… words\" and \"Every caption comes…\" are both independent clauses, so a full stop works. A comma alone splices them, no punctuation fuses them, and a semicolon plus \"and\" mixes two joining strategies."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {

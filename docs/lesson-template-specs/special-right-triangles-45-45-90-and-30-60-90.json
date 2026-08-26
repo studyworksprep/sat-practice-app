@@ -455,6 +455,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "The hypotenuse of a \\(45\\)-\\(45\\)-\\(90\\) triangle has a length of \\(14\\) centimeters. What is the length, in centimeters, of one leg of the triangle?",
+        "choices": [
+          "\\(7\\)",
+          "\\(7\\sqrt{2}\\)",
+          "\\(7\\sqrt{3}\\)",
+          "\\(14\\sqrt{2}\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "The known side is the hypotenuse — label its role before touching \\(k\\).",
+        "explanation": "Correct. In the \\(k:k:k\\sqrt{2}\\) family, the hypotenuse is \\(k\\sqrt{2}=14\\), so \\(k=\\frac{14}{\\sqrt{2}}=7\\sqrt{2}\\). Multiplying instead gives \\(14\\sqrt{2}\\), and \\(\\sqrt{3}\\) belongs to the \\(30\\)-\\(60\\)-\\(90\\) family."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

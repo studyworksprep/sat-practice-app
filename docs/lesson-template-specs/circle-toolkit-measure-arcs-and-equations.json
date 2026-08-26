@@ -720,6 +720,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "A circle in the xy-plane has the equation \\(x^2+(y-4)^2=25\\). Which of the following points lies on the circle?",
+        "choices": [
+          "\\((0,4)\\)",
+          "\\((0,9)\\)",
+          "\\((5,9)\\)",
+          "\\((25,4)\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Substitute each point, or graph the equation and the points together and look for the one-point touch.",
+        "explanation": "Correct. \\(0^2+(9-4)^2=25=r^2\\), so \\((0,9)\\) lies on the circle — the top point, \\(5\\) above the center \\((0,4)\\). The center itself gives \\(0\\), \\((5,9)\\) gives \\(50\\), and \\((25,4)\\) misreads \\(r^2=25\\) as \\(r=25\\)."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "check_20",
       "block_type": "check",
       "content": {

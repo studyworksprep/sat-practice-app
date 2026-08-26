@@ -610,6 +610,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "The function \\(f\\) is defined by \\(f(x)=2x^2-5x+1\\). What is the value of \\(f(3)\\)?",
+        "choices": [
+          "\\(3\\)",
+          "\\(4\\)",
+          "\\(22\\)",
+          "\\(34\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "\\(f(3)\\) means the output when the input is \\(3\\) — substitute it for every \\(x\\).",
+        "explanation": "Correct. \\(f(3)=2(3)^2-5(3)+1=18-15+1=4\\). Dropping the \\(+1\\) gives \\(3\\), squaring \\(2x\\) instead of \\(x\\) gives \\(22\\), and adding \\(15\\) instead of subtracting gives \\(34\\)."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

@@ -638,6 +638,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Data set A consists of the values \\(42, 44, 45, 47\\), and data set B consists of the values \\(30, 40, 50, 60\\). Which statement correctly compares the standard deviations of the two data sets?",
+        "choices": [
+          "The standard deviation of data set A is less than the standard deviation of data set B.",
+          "The standard deviation of data set A is greater than the standard deviation of data set B.",
+          "The standard deviations are equal because both data sets contain four values.",
+          "The standard deviations cannot be compared without knowing each data set's median."
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "hint": "Reason about spread from each mean before calculating anything.",
+        "explanation": "Correct. Set A's values cluster within a few units of their mean, while set B's sit \\(10\\) or more away, so B has the larger spread. Equal counts do not make spreads equal, and Desmos stdev confirms: about \\(2.1\\) versus \\(12.9\\)."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

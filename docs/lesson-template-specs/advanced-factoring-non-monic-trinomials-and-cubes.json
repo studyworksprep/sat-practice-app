@@ -466,6 +466,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression is equivalent to \\(6x^2+7x-20\\)?",
+        "choices": [
+          "\\((2x-5)(3x+4)\\)",
+          "\\((2x+5)(3x-4)\\)",
+          "\\((2x+4)(3x-5)\\)",
+          "\\((6x+5)(x-4)\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Constrain the factors with the outer terms, then check the cross-products against the middle term.",
+        "explanation": "Correct. \\((2x+5)(3x-4)=6x^2-8x+15x-20=6x^2+7x-20\\). The other pairings produce middle terms of \\(-7x\\), \\(+2x\\), and \\(-19x\\) — multiplying back exposes each one."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "retrieval_check",
       "block_type": "check",
       "content": {

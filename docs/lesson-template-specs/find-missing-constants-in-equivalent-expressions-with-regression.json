@@ -554,6 +554,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "The expression \\(a(x-2)+b(x+1)\\) is equivalent to \\(5x-7\\) for all values of \\(x\\). What is the value of \\(a\\)?",
+        "choices": [
+          "\\(1\\)",
+          "\\(4\\)",
+          "\\(5\\)",
+          "\\(-7\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Set up the regression with \\(x_1\\) and \\(\\sim\\), give \\(x_1\\) a list of allowed values, and read the assignment for \\(a\\) — not \\(b\\).",
+        "explanation": "Correct. Matching the identity gives \\(a+b=5\\) and \\(-2a+b=-7\\), so \\(a=4\\) (and \\(b=1\\)). In Desmos, \\(a(x_1-2)+b(x_1+1)\\sim5x_1-7\\) with \\(x_1=[1,2,3]\\) assigns the same values; \\(1\\) is \\(b\\), the wrong quantity."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "lesson_complete_1",
       "block_type": "lesson_complete",
       "content": {

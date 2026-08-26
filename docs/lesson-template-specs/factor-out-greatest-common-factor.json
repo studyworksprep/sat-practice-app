@@ -405,6 +405,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression is equivalent to \\(18x^3y+12x^2y^2\\)?",
+        "choices": [
+          "\\(6xy(3x^2+2y)\\)",
+          "\\(6x^2y^2(3x+2)\\)",
+          "\\(6x^2y(3x+2y)\\)",
+          "\\(6x^2y(3x+2y^2)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Build the GCF from the greatest shared coefficient and the smallest exponent of each shared variable.",
+        "explanation": "Correct. The GCF is \\(6x^2y\\); dividing each term gives \\(3x+2y\\), and multiplying back restores the original. Each other choice expands to a wrong first or second term - multiplying back catches all three."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {

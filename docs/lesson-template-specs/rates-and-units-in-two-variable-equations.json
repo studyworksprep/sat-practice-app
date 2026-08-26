@@ -294,6 +294,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "The equation \\(W=14+2.5t\\) models the weight \\(W\\), in kilograms, of a pumpkin \\(t\\) weeks after it was first measured. Which of the following is the best interpretation of \\(2.5\\) in this context?",
+        "choices": [
+          "The pumpkin's weight increased by \\(2.5\\) kilograms per week.",
+          "The pumpkin weighed \\(2.5\\) kilograms when it was first measured.",
+          "The pumpkin's weight increased by \\(2.5\\) kilograms over the whole period.",
+          "The pumpkin's final weight was \\(2.5\\) kilograms at the end of the observation."
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "hint": "Label the units in the term \\(2.5t\\): what per what, times what?",
+        "explanation": "Correct. In \\(2.5t\\), the units are kilograms per week times weeks, so \\(2.5\\) is the weekly rate of weight gain. The starting weight is the \\(14\\), and the equation gives no final or whole-period total."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {

@@ -385,6 +385,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "A cafe sells drip coffee for \\(2.75\\) dollars per cup and cold brew for \\(4.25\\) dollars per cup. On a morning when the cafe sold \\(c\\) cups of drip coffee and \\(b\\) cups of cold brew, it collected \\(163\\) dollars. Which equation represents this situation?",
+        "choices": [
+          "\\(2.75c+4.25b=163\\)",
+          "\\(4.25c+2.75b=163\\)",
+          "\\((2.75+4.25)(c+b)=163\\)",
+          "\\(c+b=163\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "hint": "Pair each price with its own count before combining anything.",
+        "explanation": "Correct. Each drip cup contributes \\(2.75\\) dollars and each cold brew \\(4.25\\), so the total is \\(2.75c+4.25b=163\\). Swapping the prices attaches each rate to the wrong count, and merging them charges every cup the combined price."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {
