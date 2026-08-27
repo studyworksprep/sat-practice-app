@@ -47,8 +47,10 @@ function getEmbedUrl(url: string | undefined): string | null {
   if (!url || typeof url !== 'string') return null;
   let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   if (m) return `https://www.youtube-nocookie.com/embed/${m[1]}`;
-  m = url.match(/vimeo\.com\/(\d+)/);
-  if (m) return `https://player.vimeo.com/video/${m[1]}`;
+  // Unlisted Vimeo links carry a privacy hash after the id; the
+  // embed player needs it as ?h= or it rejects the video.
+  m = url.match(/vimeo\.com\/(\d+)(?:\/([0-9a-zA-Z]+))?/);
+  if (m) return `https://player.vimeo.com/video/${m[1]}${m[2] ? `?h=${m[2]}` : ''}`;
   return null;
 }
 

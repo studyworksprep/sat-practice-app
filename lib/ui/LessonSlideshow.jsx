@@ -863,8 +863,11 @@ function getEmbedUrl(url) {
   if (!url) return null;
   let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   if (m) return `https://www.youtube-nocookie.com/embed/${m[1]}`;
-  m = url.match(/vimeo\.com\/(\d+)/);
-  if (m) return `https://player.vimeo.com/video/${m[1]}`;
+  // An unlisted Vimeo link carries a privacy hash after the id
+  // (vimeo.com/123456789/abcd1234); the player rejects the embed
+  // without it, so it must ride along as ?h=.
+  m = url.match(/vimeo\.com\/(\d+)(?:\/([0-9a-zA-Z]+))?/);
+  if (m) return `https://player.vimeo.com/video/${m[1]}${m[2] ? `?h=${m[2]}` : ''}`;
   return null;
 }
 

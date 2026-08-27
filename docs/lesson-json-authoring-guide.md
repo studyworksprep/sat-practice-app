@@ -422,6 +422,15 @@ the first try:
   "content": { "url": "https://www.youtube.com/watch?v=VIDEO_ID", "caption": "Optional" } }
 ```
 - YouTube and Vimeo URLs auto-embed; other URLs render as a link.
+- Unlisted videos work: an unlisted YouTube link embeds as is, and an
+  unlisted Vimeo link must keep its privacy hash
+  (`vimeo.com/123456789/abcd1234` — paste the full link; the runtime
+  passes the hash to the player).
+- **Intro-video convention:** when a lesson has a tutor-recorded intro,
+  it is a 60–90 second video as **block 1** — face + whiteboard: name
+  the move, the test-day payoff, and one caution. Give it a one-line
+  `caption` naming the move. Never invent a URL; leave the block out
+  until the recording exists.
 
 **Complete-lesson block** — the terminal block that ends the lesson:
 ```json
