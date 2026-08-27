@@ -77,9 +77,9 @@
       "content": {
         "prompt": "Why does \\((2x+1)(x+3)\\) work for \\(2x^2+7x+3\\)?",
         "choices": [
-          "Its leading terms add to \\(2x^2\\).",
-          "Its constants add to \\(3\\).",
-          "Its cross-products multiply to \\(7x\\).",
+          "Its leading terms add together to give the required \\(2x^2\\).",
+          "Its constant terms add together to give the required \\(3\\).",
+          "Its cross-products multiply together to give \\(7x\\).",
           "Its cross-products are \\(6x\\) and \\(x\\), which add to \\(7x\\)."
         ],
         "correct_index": 3,

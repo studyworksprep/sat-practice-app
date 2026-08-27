@@ -129,7 +129,7 @@
         "prompt": "Why are semicolons appropriate in this sentence? The speakers were Ana Ruiz, a chemist; Marcus Lee, an engineer; and Priya Shah, a physician.",
         "choices": [
           "Every word between semicolons is a complete sentence.",
-          "A semicolon must appear before every occurrence of and.",
+          "A semicolon is required before each occurrence of the word and.",
           "The semicolons separate list items that already contain commas.",
           "The semicolons surround information that can be removed."
         ],
@@ -217,7 +217,7 @@
         "choices": [
           "Eliminate both because they pass or fail the same complete-sentence test.",
           "Keep only the semicolon because it is stronger than a period.",
-          "Keep only the period because a semicolon cannot separate sentences.",
+          "Keep the period instead, because a semicolon does not truly separate sentences.",
           "Choose whichever mark creates the longer pause when read aloud."
         ],
         "correct_index": 0,
@@ -355,10 +355,10 @@
       "content": {
         "prompt": "Which sentence follows the single-dash pattern?",
         "choices": [
-          "The field team—reached one conclusion.",
+          "The field team—reached one conclusion about the ancient valley.",
           "The field team reached one conclusion—the valley had once held a lake.",
-          "The field team reached—one conclusion about the valley.",
-          "—The field team reached one conclusion about the valley."
+          "The field team reached—one conclusion about the ancient valley.",
+          "—The field team reached one conclusion about the ancient valley."
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -636,7 +636,7 @@
         "choices": [
           "Check for a serial-semicolon list; test commas first, then dash, then colon, then full stops; stop when one answer is uniquely supported.",
           "Test full stops, then colon, then dash, then comma; check for a serial-semicolon list only when two answers remain supported.",
-          "Check for a serial-semicolon list; test full stops, then colon, then dash; eliminate every comma answer without testing it.",
+          "Check for a serial-semicolon list; test full stops, then colon, then dash; eliminate the comma answers without testing them.",
           "Check for a serial-semicolon list; test full stops, then colon, then dash, then comma; stop when one answer is uniquely supported."
         ],
         "correct_index": 3,

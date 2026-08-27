@@ -46,10 +46,10 @@
       "content": {
         "prompt": "A printer produces 18 pages per minute for 7 minutes. Which calculation has the correct units and value?",
         "choices": [
-          "\\(18+7=25\\) pages",
+          "\\(18+7=25\\) pages, adding the rate to the time",
           "\\(18\\,\\frac{\\text{pages}}{\\text{minute}}\\times7\\,\\text{minutes}=126\\,\\text{pages}\\)",
           "\\(18\\,\\frac{\\text{pages}}{\\text{minute}}\\div7\\,\\text{minutes}\\approx2.57\\,\\text{pages}\\)",
-          "\\(18\\times7=126\\) minutes"
+          "\\(18\\times7=126\\) minutes, multiplying into time units"
         ],
         "correct_index": 1,
         "allow_retry": true,
@@ -142,9 +142,9 @@
         "prompt": "What does the complete equation \\(4.80s+7.25l=612.50\\) state?",
         "choices": [
           "The revenue from small cartons plus the revenue from large cartons is \\(\\$612.50\\).",
-          "Exactly 612.50 cartons were sold.",
-          "Each carton costs \\(\\$612.50\\).",
-          "The large-carton revenue is always \\(\\$612.50\\)."
+          "Exactly \\(612.50\\) cartons of the two sizes were sold in total.",
+          "Each individual carton, small or large, costs \\(\\$612.50\\).",
+          "The revenue from the large cartons alone comes to \\(\\$612.50\\)."
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -167,9 +167,9 @@
         "prompt": "At a game booth, green tokens are worth 11 points each and gold tokens are worth 16 points each. If \\(c\\) and \\(d\\) count the two token types, what does 16 represent in \\(11c+16d=430\\)?",
         "choices": [
           "The number of points each gold token is worth",
-          "The number of gold tokens won",
-          "The total points from gold tokens",
-          "The combined number of tokens"
+          "The number of gold tokens the player won",
+          "The total points earned from gold tokens",
+          "The combined number of tokens of both types"
         ],
         "correct_index": 0,
         "allow_retry": true,
@@ -322,7 +322,7 @@
         "choices": [
           "Label each factor's units, treat the coefficient as the rate and the variable as time, read the product as the grand total, and read the sum as a subtotal.",
           "Pair each rate with the largest quantity in the equation, label the units afterward to confirm, and read every term as a grand total.",
-          "Label each variable's units only, read the variable and its full term as the same quantity, and read the sum as a subtotal.",
+          "Label each variable's units by themselves, read the variable and its full term as the same quantity, and read the sum as a subtotal.",
           "Label each factor's units, pair a rate with its matching quantity, read the product as a subtotal, and read the sum as the grand total."
         ],
         "correct_index": 3,

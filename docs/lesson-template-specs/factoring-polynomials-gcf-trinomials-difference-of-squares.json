@@ -64,9 +64,9 @@
         "prompt": "When \\((x+p)(x+q)\\) is expanded, how do \\(p\\) and \\(q\\) create the middle coefficient and constant?",
         "choices": [
           "The middle coefficient is \\(pq\\), and the constant is \\(p+q\\).",
-          "Both are created by \\(p+q\\).",
+          "Both the middle coefficient and the constant come from \\(p+q\\).",
           "The middle coefficient is \\(p+q\\), and the constant is \\(pq\\).",
-          "Both are created by \\(pq\\)."
+          "Both the middle coefficient and the constant come from \\(pq\\)."
         ],
         "correct_index": 2,
         "allow_retry": true,
@@ -376,7 +376,7 @@
         "prompt": "After factoring out the GCF from \\(5x^3-45x\\), what pattern remains?",
         "choices": [
           "A prime trinomial",
-          "A sum of squares",
+          "A sum of squares, which factors like a difference",
           "A monic trinomial",
           "A difference of squares"
         ],

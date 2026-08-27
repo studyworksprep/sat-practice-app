@@ -40,8 +40,8 @@
       "content": {
         "prompt": "What did the graphs of \\(y=2x+1\\) and \\(y=2x-3\\) show?",
         "choices": [
-          "The lines intersect once at \\((0,1)\\).",
-          "The lines overlap at every point.",
+          "The lines intersect exactly once at the point \\((0,1)\\).",
+          "The lines overlap each other at every point shown.",
           "The lines stay the same distance apart and never intersect.",
           "The lines intersect twice outside the visible window."
         ],
@@ -122,8 +122,8 @@
       "content": {
         "prompt": "Why does the system \\(2x+y=6\\) and \\(4x+2y=12\\) have infinitely many solutions?",
         "choices": [
-          "The lines are parallel and never touch.",
-          "The lines have the same y-intercept but different slopes.",
+          "The two lines are parallel to each other and therefore cannot touch.",
+          "The two lines share a y-intercept while keeping different slopes.",
           "Each line contains infinitely many points, even though the lines are different.",
           "Both equations create the same line, so every point on that line satisfies both equations."
         ],
@@ -330,9 +330,9 @@
       "content": {
         "prompt": "Which situation is the best fit for the slider approach?",
         "choices": [
-          "Three constants are missing, and the question asks for their sum.",
-          "No constants are missing, and the system has one intersection.",
-          "Two constants are missing from different equations.",
+          "Three constants are missing at once, and the question asks for their sum.",
+          "No constants are missing, and the system has a single intersection point.",
+          "Two different constants are missing, one from each of the two equations.",
           "One constant is missing, and the question asks which value creates parallel or overlapping lines."
         ],
         "correct_index": 3,
@@ -523,9 +523,9 @@
         "prompt": "What kind of system is \\(6x+9y=12\\) and \\(10x+15y=25\\)?",
         "choices": [
           "No solution, because the variable coefficients share a ratio but the constants do not",
-          "Infinitely many solutions, because \\(\\frac{10}{6}=\\frac{15}{9}\\)",
-          "One solution, because all three constants are different",
-          "Two solutions, because each equation contains two variables"
+          "Infinitely many solutions, because \\(\\frac{10}{6}=\\frac{15}{9}\\) exactly",
+          "One solution, because the three constant ratios differ from one another",
+          "Two solutions, because each equation has its own ratio of coefficients"
         ],
         "correct_index": 0,
         "allow_retry": true,
