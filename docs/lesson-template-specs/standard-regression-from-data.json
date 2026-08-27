@@ -234,7 +234,7 @@
     {
       "kind": "text",
       "id": "standard_model_forms",
-      "html": "<h2>The three models the SAT needs</h2><p>The dropdown lists several model types. SAT data is essentially always one of these three, so after you enter the points, choose the equation type the question reasonably calls for:</p><ul><li><strong>Linear:</strong> \\(y=mx+b\\) — points follow a line or outputs change by a constant amount.</li><li><strong>Quadratic:</strong> \\(y=ax^2+bx+c\\) — points follow a parabola.</li><li><strong>Exponential:</strong> \\(y=a\\cdot b^x\\) — outputs repeatedly multiply by the same factor or change by the same percent over equal input intervals.</li></ul><p>You do not need to calculate the coefficients. Selecting the appropriate standard model tells Desmos which form to fit.</p>"
+      "html": "<h2>The three models the SAT needs</h2><p>The dropdown lists several model types. These three are the only ones we know the SAT requires, so after you enter the points, choose the equation type the question reasonably calls for:</p><ul><li><strong>Linear:</strong> \\(y=mx+b\\) — points follow a line or outputs change by a constant amount.</li><li><strong>Quadratic:</strong> \\(y=ax^2+bx+c\\) — points follow a parabola.</li><li><strong>Exponential:</strong> \\(y=a\\cdot b^x\\) — outputs repeatedly multiply by the same factor or change by the same percent over equal input intervals.</li></ul><p>You do not need to calculate the coefficients. Selecting the appropriate standard model tells Desmos which form to fit.</p>"
     },
     {
       "kind": "raw_block",
@@ -547,7 +547,7 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Use only the linear, standard quadratic, or exponential form supplied by the Regression dropdown.",
-        "explanation": "Exactly. \\(y=a\\cdot b^x\\) is one of the three models this lesson teaches. The logarithmic and power models sit outside its scope — the SAT does not ask for them — while the vertex form is a required written form, which is what Custom Regression is for."
+        "explanation": "Exactly. \\(y=a\\cdot b^x\\) is one of the three models this lesson teaches. Logarithmic and power fits are not required by any SAT question we know of, while the vertex form is a required written form, which is what Custom Regression is for."
       }
     },
     {
