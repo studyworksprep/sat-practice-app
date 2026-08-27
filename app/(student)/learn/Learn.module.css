@@ -220,6 +220,14 @@
   background: var(--color-app-accent);
 }
 
+.lessonDuration {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--fg2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .lessonDescription {
   font-size: 13px;
   color: var(--fg2);
@@ -300,6 +308,12 @@
 .viewerByline {
   font-size: 13px;
   color: var(--fg2);
+}
+
+.viewerDuration {
+  font-size: 13px;
+  color: var(--fg2);
+  white-space: nowrap;
 }
 
 .viewerTopics {

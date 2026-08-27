@@ -89,7 +89,12 @@
     {
       "kind": "text",
       "id": "what_rmse_means",
-      "html": "<h2>What does RMSE mean?</h2><p><strong>RMSE</strong> stands for <strong>root mean square error</strong>. You do not need to calculate it. In this lesson, use it as a quick measure of how closely the two sides of the regression match.</p><ul><li><strong>RMSE = 0:</strong> the two sides match exactly.</li><li><strong>A tiny RMSE</strong>, such as \\(2.1\\times10^{-13}\\): the sides match extremely closely, with only numerical rounding.</li><li><strong>A noticeably larger RMSE:</strong> inspect the setup before trusting the result.</li></ul><blockquote><p><strong>What to look for:</strong> after reading the assigned variable value, confirm that RMSE is zero or extremely close to zero.</p></blockquote>"
+      "html": "<h2>What does RMSE mean?</h2><p><strong>RMSE</strong> stands for <strong>root mean square error</strong>. You do not need to calculate it. In this lesson, use it as a quick measure of how closely the two sides of the regression match.</p><ul><li><strong>RMSE = 0:</strong> the two sides match exactly.</li><li><strong>A tiny RMSE</strong>, such as \\(2.1\\times10^{-13}\\): the sides match extremely closely, with only numerical rounding.</li><li><strong>A noticeably larger RMSE:</strong> inspect the setup before trusting the result.</li></ul><blockquote><p><strong>What to look for:</strong> after reading the assigned variable value, confirm that RMSE is zero or extremely close to zero.</p></blockquote>",
+      "figure": {
+        "src": "/images/desmos-regression-readout-rmse.svg",
+        "alt": "Desmos regression readout for a one-equation regression: REGRESSION PARAMETERS gives the assigned value, and STATISTICS gives RMSE",
+        "caption": "Read the assigned value, then check RMSE."
+      }
     },
     {
       "kind": "text",
@@ -173,7 +178,13 @@
             "min_expressions": 1,
             "max_expressions": 1,
             "require_visible_only": true
-          }
+          },
+          "expected_parameters": [
+            {
+              "name": "q",
+              "value": 7
+            }
+          ]
         },
         "feedback": {
           "success_message_html": "<p>Nice. Desmos can now adjust \\(q\\) until the two sides match.</p>",
@@ -185,11 +196,26 @@
             }
           ],
           "reveal_solution_after_attempts": 3,
-          "solution_html": "<p>The required entry is <strong>5q+7~42</strong>.</p>"
+          "solution_html": "<p>The required entry is <strong>5q+7~42</strong>.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Desmos is not assigning \\(q\\) yet. Use <strong>~</strong> rather than <strong>=</strong> so it fits the constant.</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos assigned a different value. Re-check the equation you entered against \\(5q+7=42\\).</p>"
+            }
+          ]
         },
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-regression-readout-rmse.svg",
+        "alt": "Desmos regression readout for a one-equation regression: REGRESSION PARAMETERS gives the assigned value, and STATISTICS gives RMSE",
+        "caption": "Read the assigned value, then check RMSE."
       }
     },
     {

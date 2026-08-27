@@ -422,6 +422,15 @@ the first try:
   "content": { "url": "https://www.youtube.com/watch?v=VIDEO_ID", "caption": "Optional" } }
 ```
 - YouTube and Vimeo URLs auto-embed; other URLs render as a link.
+- Unlisted videos work: an unlisted YouTube link embeds as is, and an
+  unlisted Vimeo link must keep its privacy hash
+  (`vimeo.com/123456789/abcd1234` — paste the full link; the runtime
+  passes the hash to the player).
+- **Intro-video convention:** when a lesson has a tutor-recorded intro,
+  it is a 60–90 second video as **block 1** — face + whiteboard: name
+  the move, the test-day payoff, and one caution. Give it a one-line
+  `caption` naming the move. Never invent a URL; leave the block out
+  until the recording exists.
 
 **Complete-lesson block** — the terminal block that ends the lesson:
 ```json
@@ -491,7 +500,8 @@ Required: `instructions_html`, `initial_expressions` (array, may be `[]`),
   `likely_parentheses_error`, `too_many_expressions`,
   `too_few_expressions`, `missing_required_slider`, `slider_not_moved`,
   `slider_still_default`, `missing_second_expression`,
-  `expressions_not_comparable`.
+  `expressions_not_comparable`, `missing_table`, `table_rows_mismatch`,
+  `missing_regression`, `missing_parameter`, `parameter_mismatch`.
 - `feedback.attempt_based_hints` — array of `{ "min_attempts": N,
   "message_html": "<p>...</p>" }` (`min_attempts` ≥ 1): escalating nudges
   once the learner has failed at least N attempts.
@@ -504,6 +514,8 @@ Required: `instructions_html`, `initial_expressions` (array, may be `[]`),
   `require_slider_creation`, `require_slider_movement`,
   `slider_initial_values` (map of name → number), and
   `forbid_default_slider_values_on_submit`.
+- **Regression-workflow rules** (see §3g) — `state_rules.require_table`,
+  `state_rules.require_regression`, and `validation.expected_parameters`.
 - `goal.roles` — array labeling the expected expressions (e.g.
   `["original", "candidate"]` in the graph-comparison workflow). Rarely
   needed by hand; the convenience kinds set it for you.
@@ -689,6 +701,105 @@ For equation-solving lessons, make these points explicit when relevant:
 - A crossing and a touch both create x-intercepts; no contact with the axis
   means no real solution in the displayed relationship. Encourage one zoom
   or pan check before concluding that no intercept exists.
+
+### 3f. Pinned figure — keep a diagram visible across slides
+
+An inline `<img>` disappears when the learner advances. When later blocks
+refer back to it (“in the diagram…”), add a top-level `figure` object to
+**every referring block spec**. The slideshow renders it persistently in
+the side pane (stacked above the calculator when both are visible; inline
+above the block on narrow screens), and the importer copies it into the
+compiled block's content.
+
+```json
+{
+  "kind": "raw_block",
+  "id": "angle_observation_check",
+  "figure": {
+    "src": "/images/similar-triangles-angle-correspondence.svg",
+    "alt": "Two differently oriented right triangles; matching angles are marked in matching colors",
+    "caption": "Match the colored angle marks."
+  },
+  "block_type": "check",
+  "content": { "…": "…" }
+}
+```
+
+- `src` (**required**): app-local path under `public/images`, or an
+  absolute HTTPS URL.
+- `alt` (**required**): what a screen reader announces instead of the
+  image. On a check slide, describe what is *visible* without stating the
+  keyed relationship — an alt that says “area is multiplied by 9” answers
+  the check for the learner.
+- `caption`: optional, shown under the image.
+- Keep the introducing block's inline `<img>` as it is; pin the figure on
+  the *later* blocks that reference it. The linter's `missing_figure` rule
+  accepts either an inline `<img>` or a `figure` on the slide.
+
+### 3g. Gating a Desmos regression or table workflow
+
+A `desmos_interactive` block can check the *workflow* a regression lesson
+teaches: that the learner entered the data as a table, fitted it with a
+`~` model, and that Desmos assigned the constant the problem asks for.
+
+```json
+{
+  "kind": "raw_block",
+  "id": "first_custom_exploration",
+  "block_type": "desmos_interactive",
+  "content": {
+    "id": "first_custom_exploration",
+    "title": "Explore a missing constant",
+    "instructions_html": "<p>Enter the two points in a table, then type \\(y_1\\sim a(x_1-2)^2+5\\).</p>",
+    "initial_expressions": [],
+    "goal": { "kind": "enter_expression", "required_count": 1 },
+    "validation": {
+      "mode": "state",
+      "state_rules": {
+        "require_table": { "columns": ["x_1", "y_1"], "rows": [[2, 5], [4, 17]] },
+        "require_regression": true
+      },
+      "expected_parameters": [{ "name": "a", "value": 3 }]
+    },
+    "feedback": { "…": "…" },
+    "progression": { "require_success": true }
+  }
+}
+```
+
+- `state_rules.require_table` — `true` for "any table with data", or an
+  object: `rows` (arrays of numbers, matched **order-insensitively** —
+  the same points in a different order produce the same fit — and
+  ignoring the blank row Desmos always keeps at the bottom), optional
+  `columns` (the header names the regression must reference, normally
+  `x_1`/`y_1`), optional `tolerance`.
+- `state_rules.require_regression` — `true` requires at least one row
+  using `~` rather than `=`.
+- `validation.expected_parameters` — `[{ name, value, tolerance }]`,
+  compared against the constants **Desmos actually fitted** (default
+  tolerance `0.01`). Tables do not count toward `min_expressions` /
+  `max_expressions`.
+
+Three rules for authoring these, learned the hard way:
+
+1. **Only name a constant Desmos itself solves for.** When a definition
+   row supplies one (`a=10-b`), Desmos reports only the free constant —
+   name `b`, not `a`. The lesson's check can still ask for both.
+2. **Never gate on a value the fit does not pin down.** If the system
+   has two valid roots (`u+v=13` with `u²+v²=85` gives 6 *and* 7), which
+   one the solver lands on is not a fact about the learner's work —
+   gate on the table and the regression only.
+3. **When the learner uses Desmos's own Regression button**, the model
+   form and constant names are Desmos's, not the lesson's. Gate on
+   `require_table` + `require_regression` and leave
+   `expected_parameters` off.
+
+Because `require_success` blocks Continue, always pair a gate with
+`feedback.reveal_solution_after_attempts` (3 is the house default) and a
+`solution_html` that walks the calculator steps — the same
+never-hard-stuck contract as the retry checks in §2e. Write the
+`solution_html` in the lesson's own workflow vocabulary, not as by-hand
+algebra.
 
 ---
 

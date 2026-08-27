@@ -113,6 +113,11 @@
         "editable": true,
         "resettable": true,
         "lock_viewport": false
+      },
+      "figure": {
+        "src": "/images/desmos-graph-visibility-toggle.svg",
+        "alt": "The colored circle at the left of a Desmos expression row, which hides and shows that graph",
+        "caption": "Click the colored circle to hide or show a graph."
       }
     },
     {

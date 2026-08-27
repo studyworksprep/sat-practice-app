@@ -9,6 +9,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { estimateLessonMinutes, formatLessonDuration } from '@/lib/lesson/duration.mjs';
 import { Card } from '@/lib/ui/Card';
 import { LearnFilter } from './LearnFilter';
 import s from './Learn.module.css';
@@ -64,11 +65,12 @@ export default async function StudentLearnPage({ searchParams }) {
     });
   }
 
-  // Authors and progress, fetched only for the rows we'll actually
-  // render. Both lookups are batched via .in().
-  const [authorMap, progressMap] = await Promise.all([
+  // Authors, progress, and duration estimates, fetched only for the
+  // rows we'll actually render. All lookups are batched via .in().
+  const [authorMap, progressMap, durationMap] = await Promise.all([
     fetchAuthorMap(supabase, lessons),
     fetchProgressMap(supabase, user.id, lessonIds),
+    fetchDurationMap(supabase, lessonIds),
   ]);
 
   const domains = Array.from(new Set(
@@ -80,6 +82,7 @@ export default async function StudentLearnPage({ searchParams }) {
     author_name: authorMap.get(l.author_id) ?? null,
     topics: topicsByLesson.get(l.id) ?? [],
     progress: progressMap.get(l.id) ?? null,
+    duration: durationMap.get(l.id) ?? null,
   }));
 
   const filtered = enriched.filter((l) => {
@@ -146,6 +149,9 @@ export default async function StudentLearnPage({ searchParams }) {
                         {lesson.progress === 'completed' ? 'Completed' : 'In progress'}
                       </span>
                     )}
+                    {lesson.duration && (
+                      <span className={s.lessonDuration}>{lesson.duration}</span>
+                    )}
                   </div>
                   {lesson.description && (
                     <p className={s.lessonDescription}>{lesson.description}</p>
@@ -184,6 +190,37 @@ async function fetchAuthorMap(supabase, lessons) {
     // No 'Unknown' sentinel — a missing name means no byline at all.
     const name = [a.first_name, a.last_name].filter(Boolean).join(' ');
     if (name) map.set(a.id, name);
+  }
+  return map;
+}
+
+// Duration estimates come from the block mix (rule-of-thumb minutes
+// per block type; no stored column). Chunked well below PostgREST's
+// 1000-row response cap — at ~40 blocks per lesson, 20 lessons per
+// request stays safely under it; a truncated response would silently
+// understate every estimate in the tail.
+async function fetchDurationMap(supabase, lessonIds) {
+  const map = new Map();
+  if (lessonIds.length === 0) return map;
+  const chunks = [];
+  for (let i = 0; i < lessonIds.length; i += 20) {
+    chunks.push(lessonIds.slice(i, i + 20));
+  }
+  const results = await Promise.all(chunks.map((ids) => (
+    supabase
+      .from('lesson_blocks')
+      .select('lesson_id, block_type')
+      .in('lesson_id', ids)
+  )));
+  const typesByLesson = new Map();
+  for (const result of results) {
+    for (const row of result.data ?? []) {
+      if (!typesByLesson.has(row.lesson_id)) typesByLesson.set(row.lesson_id, []);
+      typesByLesson.get(row.lesson_id).push(row.block_type);
+    }
+  }
+  for (const [lessonId, types] of typesByLesson) {
+    map.set(lessonId, formatLessonDuration(estimateLessonMinutes(types)));
   }
   return map;
 }

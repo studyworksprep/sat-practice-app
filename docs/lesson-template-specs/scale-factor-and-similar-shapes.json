@@ -21,6 +21,11 @@
     {
       "kind": "raw_block",
       "id": "area_observation_check",
+      "figure": {
+        "src": "/images/scale-factor-area-squares.svg",
+        "alt": "A square with side 2 and a similar square with side 6, drawn on the same unit grid",
+        "caption": "Compare the two squares."
+      },
       "block_type": "check",
       "content": {
         "prompt": "In the diagram, how do the corresponding side lengths and areas compare?",
@@ -205,6 +210,11 @@
     {
       "kind": "raw_block",
       "id": "volume_observation_check",
+      "figure": {
+        "src": "/images/scale-factor-volume-cubes.svg",
+        "alt": "A cube with edge 1 and a similar cube with edge 2, built from unit cubes",
+        "caption": "Compare the two cubes."
+      },
       "block_type": "check",
       "content": {
         "prompt": "In the cube diagram, each edge is multiplied by \\(2\\). What happens to the volume?",

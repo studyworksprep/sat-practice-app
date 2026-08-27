@@ -50,6 +50,7 @@ import {
   parseDesmosInteractiveContent,
   validateDesmosSubmission,
 } from '@/lib/lesson/desmos-interactive.mjs';
+import { normalizeLessonFigure } from '@/lib/lesson/figure.mjs';
 import {
   buildBlockIndexMap,
   resolveAnswerNavigation,
@@ -158,6 +159,13 @@ export function LessonSlideshow({
   const calculatorStorageKey = `${calculatorStoragePrefix}:${calculatorPresentation.scope}${
     calculatorPresentation.seed_version ? `:${calculatorPresentation.seed_version}` : ''
   }`;
+  // Pinned figure (plan 3.1): a block's content.figure renders in the
+  // side pane for as long as that block is on screen, so a diagram
+  // referenced across several slides stays visible on each of them.
+  const currentFigure = useMemo(
+    () => normalizeLessonFigure(currentBlock),
+    [currentBlock],
+  );
 
   const progressPct =
     blocks.length > 0
@@ -423,8 +431,11 @@ export function LessonSlideshow({
         </div>
       )}
 
-      <div className={`${s.workspace} ${calculatorOpen ? '' : s.workspaceSingle}`}>
+      <div className={`${s.workspace} ${calculatorOpen || currentFigure ? '' : s.workspaceSingle}`}>
       <div className={s.lessonColumn} ref={lessonColumnRef}>
+      {/* Narrow screens have no side pane, so the pinned figure renders
+          inline above the block instead; CSS swaps the two at 800px. */}
+      {currentFigure && <LessonFigure figure={currentFigure} className={s.figureInline} />}
       {showResumeNotice && (
         <div className={s.resumeNotice} role="status">
           <span>Picking up where you left off.</span>
@@ -584,6 +595,10 @@ export function LessonSlideshow({
               v={(debugByBlock[currentBlock.id]?.reasons || []).join(', ') || '—'}
             />
             <DebugRow
+              k="parameters"
+              v={debugByBlock[currentBlock.id]?.parameters || '—'}
+            />
+            <DebugRow
               k="next_block"
               v={
                 debugByBlock[currentBlock.id]?.nextBlockId ||
@@ -715,14 +730,30 @@ export function LessonSlideshow({
       )}
       </div>
       </div>
-      {calculatorPresentation.display !== 'hidden' && (
-        <LessonCalculatorPane
-          open={calculatorOpen}
-          presentation={calculatorPresentation}
-          storageKey={calculatorStorageKey}
-          onClose={() => setCalculatorOpenOverride({ blockId: currentBlock?.id, open: false })}
-          onCalcReady={setLessonCalculator}
-        />
+      {/* Side pane: pinned figure and/or the calculator. The wrapper
+          stays mounted (hidden) while the calculator is merely closed
+          so the Desmos instance survives the toggle. When both are
+          visible they stack; CSS drops their individual stickiness in
+          that case so the two never scroll over each other. */}
+      {(calculatorPresentation.display !== 'hidden' || currentFigure) && (
+        <div
+          className={`${s.sidePane} ${
+            calculatorOpen || currentFigure ? '' : s.sidePaneHidden
+          } ${calculatorOpen && currentFigure ? s.sidePaneStacked : ''}`}
+        >
+          {currentFigure && (
+            <LessonFigure figure={currentFigure} className={s.figurePane} />
+          )}
+          {calculatorPresentation.display !== 'hidden' && (
+            <LessonCalculatorPane
+              open={calculatorOpen}
+              presentation={calculatorPresentation}
+              storageKey={calculatorStorageKey}
+              onClose={() => setCalculatorOpenOverride({ blockId: currentBlock?.id, open: false })}
+              onCalcReady={setLessonCalculator}
+            />
+          )}
+        </div>
       )}
       </div>
     </div>
@@ -730,6 +761,23 @@ export function LessonSlideshow({
 }
 
 // ─── Block renderers ─────────────────────────────────────────────
+
+// Pinned figure card. Rendered twice per block that carries one — in
+// the side pane (desktop) and inline above the block (narrow screens);
+// CSS shows exactly one of the two.
+function LessonFigure({ figure, className }) {
+  return (
+    <figure className={`${s.figureCard} ${className || ''}`}>
+      {/* Plain <img>: lesson figures are mostly local SVGs, which
+          next/image can't optimize, and src may be a remote URL. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className={s.figureImg} src={figure.src} alt={figure.alt} />
+      {figure.caption && (
+        <figcaption className={s.figureCaption}>{figure.caption}</figcaption>
+      )}
+    </figure>
+  );
+}
 
 function TextBlock({ block, isRead, onRead }) {
   useEffect(() => {
@@ -819,8 +867,11 @@ function getEmbedUrl(url) {
   if (!url) return null;
   let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   if (m) return `https://www.youtube-nocookie.com/embed/${m[1]}`;
-  m = url.match(/vimeo\.com\/(\d+)/);
-  if (m) return `https://player.vimeo.com/video/${m[1]}`;
+  // An unlisted Vimeo link carries a privacy hash after the id
+  // (vimeo.com/123456789/abcd1234); the player rejects the embed
+  // without it, so it must ride along as ?h=.
+  m = url.match(/vimeo\.com\/(\d+)(?:\/([0-9a-zA-Z]+))?/);
+  if (m) return `https://player.vimeo.com/video/${m[1]}${m[2] ? `?h=${m[2]}` : ''}`;
   return null;
 }
 
@@ -1053,20 +1104,32 @@ function DesmosInteractiveBlock({
     }
   }, [block.content]);
 
+  // Tables and fitted regression constants ride along with the plain
+  // expression rows: `regressionParameters` (what Desmos solved for)
+  // lives only on the state list, and table rows carry their cells in
+  // `columns` instead of a `latex` of their own — so unlike the
+  // expression rows, tables are kept even though they have no latex.
   function extractStudentExpressions(calculator) {
     const expressionList = calculator?.getExpressions?.() || [];
     const stateList = calculator?.getState?.()?.expressions?.list || [];
     const byId = new Map(stateList.map((row) => [row.id, row]));
 
     return expressionList
-      .map((expr) => ({
-        latex: expr?.latex || byId.get(expr?.id)?.latex || '',
-        hidden: Boolean(expr?.hidden ?? byId.get(expr?.id)?.hidden),
-        type: expr?.type || byId.get(expr?.id)?.type || 'expression',
-        sliderBounds:
-          expr?.sliderBounds || byId.get(expr?.id)?.sliderBounds || null,
-      }))
-      .filter((expr) => expr.latex);
+      .map((expr) => {
+        const stateRow = byId.get(expr?.id);
+        const type = expr?.type || stateRow?.type || 'expression';
+        if (type === 'table') {
+          return { type, latex: '', columns: expr?.columns || stateRow?.columns || [] };
+        }
+        return {
+          latex: expr?.latex || stateRow?.latex || '',
+          hidden: Boolean(expr?.hidden ?? stateRow?.hidden),
+          type,
+          sliderBounds: expr?.sliderBounds || stateRow?.sliderBounds || null,
+          regressionParameters: stateRow?.regressionParameters || null,
+        };
+      })
+      .filter((expr) => expr.latex || expr.type === 'table');
   }
 
   function toEvaluableExpression(raw) {
@@ -1153,6 +1216,9 @@ function DesmosInteractiveBlock({
         nextBlockId: branchTarget || content.rejoin_at_block_id || null,
         expressionCount: entered.length,
         sliders: [...new Set(sliderNames)],
+        parameters: (result.parameterReport || [])
+          .map((row) => `${row.name}=${row.actual ?? '—'} (want ${row.expected})`)
+          .join(', '),
       });
     }
   }

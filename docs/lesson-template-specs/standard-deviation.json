@@ -21,6 +21,11 @@
     {
       "kind": "raw_block",
       "id": "spread_observation_check",
+      "figure": {
+        "src": "/images/standard-deviation-spread.svg",
+        "alt": "Two dot plots with mean 10: Set A is clustered at 8 through 12, while Set B is spread from 2 through 18",
+        "caption": "Sets A and B."
+      },
       "block_type": "check",
       "content": {
         "prompt": "Which set in the diagram should have the larger standard deviation?",

@@ -116,6 +116,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-percent-of-control.svg",
+        "alt": "A Desmos row reading 35% of 80 = 28 with the word \"of\" highlighted as the part Desmos inserted automatically, above a second row reading 0.35 times 80 = 28",
+        "caption": "Typing % makes Desmos add \"of\" for you."
       }
     },
     {
@@ -190,7 +195,12 @@
     {
       "kind": "text",
       "id": "rmse_meaning",
-      "html": "<h2>Check RMSE before trusting the result</h2><p><strong>RMSE</strong> measures how closely the two sides of a regression match. You do not need to calculate it.</p><ul><li><strong>RMSE = 0:</strong> the match is exact.</li><li><strong>A tiny RMSE</strong>, such as \\(1.4\\times10^{-13}\\): the match is extremely close, with only numerical rounding.</li><li><strong>A noticeably larger RMSE:</strong> inspect your translation before trusting the assigned value.</li></ul><blockquote><p><strong>Key idea:</strong> Always read both the assigned variable value and the RMSE.</p></blockquote>"
+      "html": "<h2>Check RMSE before trusting the result</h2><p><strong>RMSE</strong> measures how closely the two sides of a regression match. You do not need to calculate it.</p><ul><li><strong>RMSE = 0:</strong> the match is exact.</li><li><strong>A tiny RMSE</strong>, such as \\(1.4\\times10^{-13}\\): the match is extremely close, with only numerical rounding.</li><li><strong>A noticeably larger RMSE:</strong> inspect your translation before trusting the assigned value.</li></ul><blockquote><p><strong>Key idea:</strong> Always read both the assigned variable value and the RMSE.</p></blockquote>",
+      "figure": {
+        "src": "/images/desmos-regression-readout-rmse.svg",
+        "alt": "Desmos regression readout for a one-equation regression: REGRESSION PARAMETERS gives the assigned value, and STATISTICS gives RMSE",
+        "caption": "Read the assigned value, then check RMSE."
+      }
     },
     {
       "kind": "raw_block",
