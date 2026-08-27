@@ -28,6 +28,8 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 
 **2.4 note (2026-08-26):** the corpus is now **634 checks** after one authentic-format item per lesson (34 authored `authentic_item` blocks; CLEAR and Sliders already had bank `question_link`s). The new items are lint-clean; `check_run` grew 21→35 because they sit adjacent to the final retrieval checks — those rows belong to the structural class. Baseline step numbers in the tables below predate the insertions; block ids remain the stable reference.
 
+**3.1 note (2026-08-27):** the pinned-figure pass closed the `missing_figure` class — 8 rows fixed by attaching block-level `figure` objects (which the linter now recognizes as satisfying a figure reference), and the 2 remaining flags reclassified as false positives with per-row reasons (generic "don't trust the picture" advice; the student's own Desmos graph). The lint report's `missing_figure` count is now 2, both deferred.
+
 **PUNCH LIST CLOSED 2026-08-26:** after the long-tail sweep, every row is `fixed` (229) or `deferred` with a reason (57). Item-quality classes: `keyed_longest` **0**, `equivalent_choices` **0**, `retrieval_nonsense_distractor` **0**; `hint_gives_answer`, `meta_prompt`, `extreme_imbalance`, and `key_term_echo` each survive only as reasoned deferrals (test-value hints, taught wrong-choice debriefs, the lessons' own taxonomy labels). Structural classes (`check_run` 35, `text_run` 21, `missing_figure` 10) are class-deferred to Phase 3, where pacing rework and the 3.1 pinned-figure pass are already scheduled. Final corpus: **keyed-longest 19.4%** (123/634, target <30%), highest lesson **44%** (target ≤50%), every lesson ≥1 authentic-format item. **All Phase 2 exit criteria are met.**
 
 ### Advanced Factoring: Non-Monic Trinomials and Cubes
@@ -90,7 +92,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 |---|---|---|---|---|
 | 36 | `final_retrieval` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | fixed (2026-08-26) |
 | 36 | `final_retrieval` | `key_term_echo` | Keyed choice is the only one containing the lesson term "greatest". | fixed (2026-08-26) |
-| 3 | `group_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: figure persistence is plan step 3.1 (pinned figure), already scheduled in Phase 3 (2026-08-26) |
+| 3 | `group_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | fixed (2026-08-27, 3.1: pinned `figure` on the slide) |
 | 36 | `final_retrieval` | `retrieval_nonsense_distractor` | Retrieval distractor D shares no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 34 | `independent_transfer_two` | `check_run` | 3 consecutive checks (steps 34–36). | deferred: intentional end-of-lesson practice/transfer/retrieval sequences; pacing rework is Phase 3 (2026-08-26) |
 
@@ -331,11 +333,11 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 24 | `right_altitude_aa_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
 | 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | fixed (2026-08-26) |
 | 36 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
-| 3 | `angle_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: figure persistence is plan step 3.1 (pinned figure), already scheduled in Phase 3 (2026-08-26) |
-| 4 | `similar_definition` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: figure persistence is plan step 3.1 (pinned figure), already scheduled in Phase 3 (2026-08-26) |
-| 10 | `correspondence_process` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: figure persistence is plan step 3.1 (pinned figure), already scheduled in Phase 3 (2026-08-26) |
-| 12 | `side_size_shortcut` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: figure persistence is plan step 3.1 (pinned figure), already scheduled in Phase 3 (2026-08-26) |
-| 13 | `side_rank_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: figure persistence is plan step 3.1 (pinned figure), already scheduled in Phase 3 (2026-08-26) |
+| 3 | `angle_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | fixed (2026-08-27, 3.1: pinned `figure` on the slide) |
+| 4 | `similar_definition` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | fixed (2026-08-27, 3.1: pinned `figure` on the slide) |
+| 10 | `correspondence_process` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | fixed (2026-08-27, 3.1: pinned `figure` on the slide) |
+| 12 | `side_size_shortcut` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | fixed (2026-08-27, 3.1: pinned `figure` on the slide) |
+| 13 | `side_rank_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | fixed (2026-08-27, 3.1: pinned `figure` on the slide) |
 | 34 | `leg_setup_check` | `check_run` | 3 consecutive checks (steps 34–36). | deferred: intentional end-of-lesson practice/transfer/retrieval sequences; pacing rework is Phase 3 (2026-08-26) |
 
 ### Rhetorical Synthesis: Let the Goal Lead
@@ -368,7 +370,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 39 | `independent_transfer_check` | `hint_gives_answer` | Hint states "= 20", the keyed numeric answer. | fixed (2026-08-26) |
 | 40 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 2.1x the mean length of the distractors. | fixed (2026-08-26) |
 | 40 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
-| 21 | `common_mistakes` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: figure persistence is plan step 3.1 (pinned figure), already scheduled in Phase 3 (2026-08-26) |
+| 21 | `common_mistakes` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: "the picture's orientation" is generic test-day advice about any problem's sketch, not a reference to a lesson figure (2026-08-27) |
 
 ### Solve Equations by Graphing: Find the x-Intercepts
 
@@ -486,7 +488,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 31 | `proportion_no_solution_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "no solution". | deferred: the choices are the lesson's answer taxonomy and the keyed category is literally named 'no solution' (2026-08-26) |
 | 36 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | fixed (2026-08-26) |
 | 36 | `final_retrieval_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
-| 14 | `slider_no_solution_explanation` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: figure persistence is plan step 3.1 (pinned figure), already scheduled in Phase 3 (2026-08-26) |
+| 14 | `slider_no_solution_explanation` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: "the picture" is the student's own Desmos graph from the slider workflow, already on screen in the calculator pane (2026-08-27) |
 | 18 | `multiple_constants_transition` | `text_run` | 3 consecutive text blocks (steps 18–20). | deferred: consecutive teaching slides; structure/pacing rework is Phase 3 (2026-08-26) |
 
 ### Testing Equivalent Expressions with Desmos Sliders
@@ -518,7 +520,7 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 27 | `outlier_result_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | fixed (2026-08-26) |
 | 29 | `prediction_process_check` | `keyed_longest` | Keyed choice is 1.9x the mean length of the distractors. | fixed (2026-08-26) |
 | 34 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | fixed (2026-08-26) |
-| 3 | `spread_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: figure persistence is plan step 3.1 (pinned figure), already scheduled in Phase 3 (2026-08-26) |
+| 3 | `spread_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | fixed (2026-08-27, 3.1: pinned `figure` on the slide) |
 | 29 | `prediction_process_check` | `check_run` | 6 consecutive checks (steps 29–34). | deferred: intentional end-of-lesson practice/transfer/retrieval sequences; pacing rework is Phase 3 (2026-08-26) |
 
 ### Use Desmos Lists and List Tools
@@ -558,6 +560,6 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 | 7 | `ratio_direction_check` | `equivalent_choices` | Choices A and C are equivalent. | fixed (2026-08-26) |
 | 30 | `arbitrary_ratio_check` | `equivalent_choices` | Choices A and B are equivalent. | fixed (2026-08-26) |
 | 43 | `final_retrieval_check` | `keyed_longest` | Keyed choice is 1.7x the mean length of the distractors. | fixed (2026-08-26) |
-| 3 | `area_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | deferred: figure persistence is plan step 3.1 (pinned figure), already scheduled in Phase 3 (2026-08-26) |
+| 3 | `area_observation_check` | `missing_figure` | Prose references a diagram/figure/previous slide, but this slide has no <img> of its own. | fixed (2026-08-27, 3.1: pinned `figure` on the slide) |
 | 43 | `final_retrieval_check` | `retrieval_nonsense_distractor` | Retrieval distractors A, D share no content words with the keyed process — eliminable on sight. | fixed (2026-08-26) |
 | 36 | `practice_linear_to_area` | `check_run` | 8 consecutive checks (steps 36–43). | deferred: intentional end-of-lesson practice/transfer/retrieval sequences; pacing rework is Phase 3 (2026-08-26) |

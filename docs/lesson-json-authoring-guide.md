@@ -690,6 +690,40 @@ For equation-solving lessons, make these points explicit when relevant:
   means no real solution in the displayed relationship. Encourage one zoom
   or pan check before concluding that no intercept exists.
 
+### 3f. Pinned figure — keep a diagram visible across slides
+
+An inline `<img>` disappears when the learner advances. When later blocks
+refer back to it (“in the diagram…”), add a top-level `figure` object to
+**every referring block spec**. The slideshow renders it persistently in
+the side pane (stacked above the calculator when both are visible; inline
+above the block on narrow screens), and the importer copies it into the
+compiled block's content.
+
+```json
+{
+  "kind": "raw_block",
+  "id": "angle_observation_check",
+  "figure": {
+    "src": "/images/similar-triangles-angle-correspondence.svg",
+    "alt": "Two differently oriented right triangles; matching angles are marked in matching colors",
+    "caption": "Match the colored angle marks."
+  },
+  "block_type": "check",
+  "content": { "…": "…" }
+}
+```
+
+- `src` (**required**): app-local path under `public/images`, or an
+  absolute HTTPS URL.
+- `alt` (**required**): what a screen reader announces instead of the
+  image. On a check slide, describe what is *visible* without stating the
+  keyed relationship — an alt that says “area is multiplied by 9” answers
+  the check for the learner.
+- `caption`: optional, shown under the image.
+- Keep the introducing block's inline `<img>` as it is; pin the figure on
+  the *later* blocks that reference it. The linter's `missing_figure` rule
+  accepts either an inline `<img>` or a `figure` on the slide.
+
 ---
 
 ## 4. Math formatting

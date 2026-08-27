@@ -21,6 +21,11 @@
     {
       "kind": "raw_block",
       "id": "angle_observation_check",
+      "figure": {
+        "src": "/images/similar-triangles-angle-correspondence.svg",
+        "alt": "Two differently oriented right triangles; matching angles are marked in matching colors",
+        "caption": "Match the colored angle marks."
+      },
       "block_type": "check",
       "content": {
         "prompt": "In the diagram, which vertex corresponds to vertex \\(B\\)?",
@@ -42,6 +47,11 @@
     {
       "kind": "text",
       "id": "similar_definition",
+      "figure": {
+        "src": "/images/similar-triangles-angle-correspondence.svg",
+        "alt": "Two differently oriented right triangles with matching angle colors: A matches D, B matches F, and C matches E",
+        "caption": "The two triangles from the opening diagram."
+      },
       "html": "<h2>What similar triangles guarantee</h2><p>Two triangles are <strong>similar</strong> when they have the same shape, even if their sizes or orientations differ.</p><ul><li>Every pair of <strong>corresponding angles is equal</strong>.</li><li>Every pair of <strong>corresponding sides has the same scale factor</strong>, so corresponding side lengths are proportional.</li></ul><p>In the diagram, the angle matches are \\(A\\leftrightarrow D\\), \\(B\\leftrightarrow F\\), and \\(C\\leftrightarrow E\\). Therefore the matching sides are \\(AB\\leftrightarrow DF\\), \\(BC\\leftrightarrow FE\\), and \\(AC\\leftrightarrow DE\\).</p><blockquote><p><strong>Key idea:</strong> Corresponding sides connect corresponding angles.</p></blockquote>",
       "calculator": {
         "display": "hidden"
@@ -129,6 +139,11 @@
     {
       "kind": "text",
       "id": "correspondence_process",
+      "figure": {
+        "src": "/images/similar-triangles-angle-correspondence.svg",
+        "alt": "Two differently oriented right triangles with matching angle colors: A matches D, B matches F, and C matches E",
+        "caption": "The two triangles from the opening diagram."
+      },
       "html": "<h2>Match vertices before writing a proportion</h2><p>Use the angles as anchors.</p><ol><li>Match equal angles.</li><li>Write the vertex correspondence in the same order.</li><li>Pair sides that connect matching vertices.</li><li>Only then write a proportion.</li></ol><p>From the first diagram:</p><p>\\[A\\leftrightarrow D,\\qquad B\\leftrightarrow F,\\qquad C\\leftrightarrow E\\]</p><p>so</p><p>\\[\\triangle ABC\\sim\\triangle DFE.\\]</p><p>The order is useful: the first letters match, the second letters match, and the third letters match.</p><blockquote><p><strong>Corresponding sides:</strong> \\(AB\\leftrightarrow DF\\), \\(BC\\leftrightarrow FE\\), and \\(AC\\leftrightarrow DE\\).</p></blockquote>",
       "calculator": {
         "display": "hidden"
@@ -158,6 +173,11 @@
     {
       "kind": "text",
       "id": "side_size_shortcut",
+      "figure": {
+        "src": "/images/similar-triangles-angle-correspondence.svg",
+        "alt": "Two differently oriented right triangles with matching angle colors: A matches D, B matches F, and C matches E",
+        "caption": "The two triangles from the opening diagram."
+      },
       "html": "<h2>Use side size as a visual cross-check</h2><p>SAT geometry drawings are often roughly to scale. In similar triangles, the smallest side matches the smallest side, the medium side matches the medium side, and the largest side matches the largest side.</p><p>Why? Equal angles sit opposite corresponding sides. The largest angle is opposite the largest side, and the smallest angle is opposite the smallest side.</p><p>In the first diagram, the hypotenuses \\(BC\\) and \\(FE\\) are both the largest sides. The shortest sides \\(AC\\) and \\(DE\\) also match.</p><blockquote><p><strong>Use size as a check, not proof:</strong> Angle labels and angle relationships decide the true correspondence. A sketch can be misleading or marked “not drawn to scale.”</p></blockquote>",
       "calculator": {
         "display": "hidden"
@@ -166,6 +186,11 @@
     {
       "kind": "raw_block",
       "id": "side_rank_check",
+      "figure": {
+        "src": "/images/similar-triangles-angle-correspondence.svg",
+        "alt": "Two differently oriented right triangles with matching angle colors: A matches D, B matches F, and C matches E",
+        "caption": "The two triangles from the opening diagram."
+      },
       "block_type": "check",
       "content": {
         "prompt": "In the first diagram, which pair contains the largest side of each triangle?",

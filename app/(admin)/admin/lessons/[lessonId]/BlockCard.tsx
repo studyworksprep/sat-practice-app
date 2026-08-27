@@ -23,6 +23,7 @@ import { RichTextEditor } from './RichTextEditor';
 import { QuestionPicker } from './QuestionPicker';
 import { DesmosEditor } from './DesmosEditor';
 import { CalculatorPresentationEditor } from './CalculatorPresentationEditor';
+import { FigureEditor } from './FigureEditor';
 import { blockMetaFor } from './block-meta';
 
 type Issue = { severity?: string; message?: string; path?: string };
@@ -111,6 +112,12 @@ export function BlockCard({
               {block.block_type !== 'desmos_interactive' && block.block_type !== 'lesson_complete' ? (
                 <CalculatorPresentationEditor
                   blockId={block.id || `block-${index + 1}`}
+                  content={block.content ?? {}}
+                  onChange={onChangeContent}
+                />
+              ) : null}
+              {block.block_type !== 'lesson_complete' ? (
+                <FigureEditor
                   content={block.content ?? {}}
                   onChange={onChangeContent}
                 />

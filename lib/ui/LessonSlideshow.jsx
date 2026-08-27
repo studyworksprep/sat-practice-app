@@ -50,6 +50,7 @@ import {
   parseDesmosInteractiveContent,
   validateDesmosSubmission,
 } from '@/lib/lesson/desmos-interactive.mjs';
+import { normalizeLessonFigure } from '@/lib/lesson/figure.mjs';
 import {
   buildBlockIndexMap,
   resolveAnswerNavigation,
@@ -158,6 +159,13 @@ export function LessonSlideshow({
   const calculatorStorageKey = `${calculatorStoragePrefix}:${calculatorPresentation.scope}${
     calculatorPresentation.seed_version ? `:${calculatorPresentation.seed_version}` : ''
   }`;
+  // Pinned figure (plan 3.1): a block's content.figure renders in the
+  // side pane for as long as that block is on screen, so a diagram
+  // referenced across several slides stays visible on each of them.
+  const currentFigure = useMemo(
+    () => normalizeLessonFigure(currentBlock),
+    [currentBlock],
+  );
 
   const progressPct =
     blocks.length > 0
@@ -423,8 +431,11 @@ export function LessonSlideshow({
         </div>
       )}
 
-      <div className={`${s.workspace} ${calculatorOpen ? '' : s.workspaceSingle}`}>
+      <div className={`${s.workspace} ${calculatorOpen || currentFigure ? '' : s.workspaceSingle}`}>
       <div className={s.lessonColumn} ref={lessonColumnRef}>
+      {/* Narrow screens have no side pane, so the pinned figure renders
+          inline above the block instead; CSS swaps the two at 800px. */}
+      {currentFigure && <LessonFigure figure={currentFigure} className={s.figureInline} />}
       {showResumeNotice && (
         <div className={s.resumeNotice} role="status">
           <span>Picking up where you left off.</span>
@@ -715,14 +726,30 @@ export function LessonSlideshow({
       )}
       </div>
       </div>
-      {calculatorPresentation.display !== 'hidden' && (
-        <LessonCalculatorPane
-          open={calculatorOpen}
-          presentation={calculatorPresentation}
-          storageKey={calculatorStorageKey}
-          onClose={() => setCalculatorOpenOverride({ blockId: currentBlock?.id, open: false })}
-          onCalcReady={setLessonCalculator}
-        />
+      {/* Side pane: pinned figure and/or the calculator. The wrapper
+          stays mounted (hidden) while the calculator is merely closed
+          so the Desmos instance survives the toggle. When both are
+          visible they stack; CSS drops their individual stickiness in
+          that case so the two never scroll over each other. */}
+      {(calculatorPresentation.display !== 'hidden' || currentFigure) && (
+        <div
+          className={`${s.sidePane} ${
+            calculatorOpen || currentFigure ? '' : s.sidePaneHidden
+          } ${calculatorOpen && currentFigure ? s.sidePaneStacked : ''}`}
+        >
+          {currentFigure && (
+            <LessonFigure figure={currentFigure} className={s.figurePane} />
+          )}
+          {calculatorPresentation.display !== 'hidden' && (
+            <LessonCalculatorPane
+              open={calculatorOpen}
+              presentation={calculatorPresentation}
+              storageKey={calculatorStorageKey}
+              onClose={() => setCalculatorOpenOverride({ blockId: currentBlock?.id, open: false })}
+              onCalcReady={setLessonCalculator}
+            />
+          )}
+        </div>
       )}
       </div>
     </div>
@@ -730,6 +757,23 @@ export function LessonSlideshow({
 }
 
 // ─── Block renderers ─────────────────────────────────────────────
+
+// Pinned figure card. Rendered twice per block that carries one — in
+// the side pane (desktop) and inline above the block (narrow screens);
+// CSS shows exactly one of the two.
+function LessonFigure({ figure, className }) {
+  return (
+    <figure className={`${s.figureCard} ${className || ''}`}>
+      {/* Plain <img>: lesson figures are mostly local SVGs, which
+          next/image can't optimize, and src may be a remote URL. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className={s.figureImg} src={figure.src} alt={figure.alt} />
+      {figure.caption && (
+        <figcaption className={s.figureCaption}>{figure.caption}</figcaption>
+      )}
+    </figure>
+  );
+}
 
 function TextBlock({ block, isRead, onRead }) {
   useEffect(() => {

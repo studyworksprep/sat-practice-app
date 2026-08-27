@@ -17,6 +17,11 @@
     {
       "kind": "raw_block",
       "id": "group_observation_check",
+      "figure": {
+        "src": "/images/gcf-identical-groups.svg",
+        "alt": "Six x tiles and nine unit tiles split into three identical groups, each containing two x tiles and three unit tiles",
+        "caption": "The tile groups for 6x + 9."
+      },
       "block_type": "check",
       "content": {
         "prompt": "Which product represents the three identical groups in the diagram?",
