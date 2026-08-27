@@ -234,7 +234,7 @@
     {
       "kind": "text",
       "id": "standard_model_forms",
-      "html": "<h2>The three standard models</h2><p>After you enter the points, choose the equation type the question reasonably calls for:</p><ul><li><strong>Linear:</strong> \\(y=mx+b\\) — points follow a line or outputs change by a constant amount.</li><li><strong>Quadratic:</strong> \\(y=ax^2+bx+c\\) — points follow a parabola.</li><li><strong>Exponential:</strong> \\(y=a\\cdot b^x\\) — outputs repeatedly multiply by the same factor or change by the same percent over equal input intervals.</li></ul><p>You do not need to calculate the coefficients. Selecting the appropriate standard model tells Desmos which form to fit.</p>"
+      "html": "<h2>The three models the SAT needs</h2><p>The dropdown lists several model types. SAT data is essentially always one of these three, so after you enter the points, choose the equation type the question reasonably calls for:</p><ul><li><strong>Linear:</strong> \\(y=mx+b\\) — points follow a line or outputs change by a constant amount.</li><li><strong>Quadratic:</strong> \\(y=ax^2+bx+c\\) — points follow a parabola.</li><li><strong>Exponential:</strong> \\(y=a\\cdot b^x\\) — outputs repeatedly multiply by the same factor or change by the same percent over equal input intervals.</li></ul><p>You do not need to calculate the coefficients. Selecting the appropriate standard model tells Desmos which form to fit.</p>"
     },
     {
       "kind": "raw_block",
@@ -530,7 +530,7 @@
     {
       "kind": "text",
       "id": "standard_vs_custom_boundary",
-      "html": "<h2>Know the boundary of this tool</h2><p>Use the Regression button directly when the equation you need is, or reasonably could be, one of these exact standard forms:</p><p>\\(y=mx+b\\), \\(y=ax^2+bx+c\\), or \\(y=a\\cdot b^x\\).</p><p>If the question requires a special version of an equation or a different model type, the standard dropdown is not the right workflow. That requires <strong>Custom Regression</strong>, which belongs in a different lesson.</p><blockquote><p><strong>For this lesson:</strong> select a provided standard form; do not type a custom model.</p></blockquote>"
+      "html": "<h2>Know the boundary of this tool</h2><p>Use the Regression button directly when the equation you need is, or reasonably could be, one of these exact standard forms:</p><p>\\(y=mx+b\\), \\(y=ax^2+bx+c\\), or \\(y=a\\cdot b^x\\).</p><p>The boundary is the <strong>form</strong>, not the model type. When the question requires a specific written form — a vertex form such as \\(y=a(x-h)^2+k\\), or a template whose constants you have to report — selecting a dropdown model will not produce it. That requires <strong>Custom Regression</strong>, which belongs in a different lesson.</p><blockquote><p><strong>For this lesson:</strong> select a provided standard form; do not type a custom model.</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -547,7 +547,7 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Use only the linear, standard quadratic, or exponential form supplied by the Regression dropdown.",
-        "explanation": "Exactly. \\(y=a\\cdot b^x\\) is one of the standard models in this lesson. The other requests need a different workflow or custom form."
+        "explanation": "Exactly. \\(y=a\\cdot b^x\\) is one of the three models this lesson teaches. The logarithmic and power models sit outside its scope — the SAT does not ask for them — while the vertex form is a required written form, which is what Custom Regression is for."
       }
     },
     {
