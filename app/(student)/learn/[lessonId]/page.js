@@ -10,6 +10,7 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { estimateLessonMinutes, formatLessonDuration } from '@/lib/lesson/duration.mjs';
 import { LessonViewerInteractive } from './LessonViewerInteractive';
 import s from '../Learn.module.css';
 
@@ -60,6 +61,7 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
 
   const blocks = blocksResult.data ?? [];
   const topics = topicsResult.data ?? [];
+  const duration = formatLessonDuration(estimateLessonMinutes(blocks));
   let progress = progressResult.data ?? null;
 
   // First visit — create the row server-side so the runtime has a
@@ -111,6 +113,9 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
           <p className={s.viewerDescription}>{lesson.description}</p>
         )}
         <div className={s.viewerMeta}>
+          {/* Estimated from the block mix at read time. The
+              "N of M in <unit>" position waits on Phase 5 ordering. */}
+          {duration && <span className={s.viewerDuration}>{duration}</span>}
           {authorName && <span className={s.viewerByline}>by {authorName}</span>}
           {topics.length > 0 && (
             <div className={s.viewerTopics}>
