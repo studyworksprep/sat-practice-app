@@ -72,6 +72,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-standard-regression-button-guide.svg",
+        "alt": "A Desmos table with an arrow pointing to the Regression button beside it, shown as a fitted line with four scatterplot dots",
+        "caption": "The Regression button sits beside the table values."
       }
     },
     {
@@ -346,6 +351,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-standard-regression-button-guide.svg",
+        "alt": "A Desmos table with an arrow pointing to the Regression button beside it, shown as a fitted line with four scatterplot dots",
+        "caption": "The Regression button sits beside the table values."
       }
     },
     {
@@ -483,6 +493,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-standard-regression-button-guide.svg",
+        "alt": "A Desmos table with an arrow pointing to the Regression button beside it, shown as a fitted line with four scatterplot dots",
+        "caption": "The Regression button sits beside the table values."
       }
     },
     {
@@ -703,6 +718,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-standard-regression-button-guide.svg",
+        "alt": "A Desmos table with an arrow pointing to the Regression button beside it, shown as a fitted line with four scatterplot dots",
+        "caption": "The Regression button sits beside the table values."
       }
     },
     {
@@ -793,6 +813,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-standard-regression-button-guide.svg",
+        "alt": "A Desmos table with an arrow pointing to the Regression button beside it, shown as a fitted line with four scatterplot dots",
+        "caption": "The Regression button sits beside the table values."
       }
     },
     {

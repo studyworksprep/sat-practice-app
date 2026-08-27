@@ -95,6 +95,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-regression-readout-table.svg",
+        "alt": "Desmos regression readout: a REGRESSION PARAMETERS section giving the assigned constant, and a STATISTICS section giving R squared and r",
+        "caption": "Read the assigned constant under REGRESSION PARAMETERS."
       }
     },
     {
@@ -288,6 +293,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-regression-readout-table.svg",
+        "alt": "Desmos regression readout: a REGRESSION PARAMETERS section giving the assigned constant, and a STATISTICS section giving R squared and r",
+        "caption": "Read the assigned constant under REGRESSION PARAMETERS."
       }
     },
     {
@@ -462,6 +472,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-regression-readout-table.svg",
+        "alt": "Desmos regression readout: a REGRESSION PARAMETERS section giving the assigned constant, and a STATISTICS section giving R squared and r",
+        "caption": "Read the assigned constant under REGRESSION PARAMETERS."
       }
     },
     {
@@ -591,6 +606,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-regression-readout-table.svg",
+        "alt": "Desmos regression readout: a REGRESSION PARAMETERS section giving the assigned constant, and a STATISTICS section giving R squared and r",
+        "caption": "Read the assigned constant under REGRESSION PARAMETERS."
       }
     },
     {
@@ -733,6 +753,11 @@
         "progression": {
           "require_success": true
         }
+      },
+      "figure": {
+        "src": "/images/desmos-regression-readout-table.svg",
+        "alt": "Desmos regression readout: a REGRESSION PARAMETERS section giving the assigned constant, and a STATISTICS section giving R squared and r",
+        "caption": "Read the assigned constant under REGRESSION PARAMETERS."
       }
     },
     {
