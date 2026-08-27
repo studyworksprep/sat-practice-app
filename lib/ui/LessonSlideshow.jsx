@@ -595,6 +595,10 @@ export function LessonSlideshow({
               v={(debugByBlock[currentBlock.id]?.reasons || []).join(', ') || '—'}
             />
             <DebugRow
+              k="parameters"
+              v={debugByBlock[currentBlock.id]?.parameters || '—'}
+            />
+            <DebugRow
               k="next_block"
               v={
                 debugByBlock[currentBlock.id]?.nextBlockId ||
@@ -1100,20 +1104,32 @@ function DesmosInteractiveBlock({
     }
   }, [block.content]);
 
+  // Tables and fitted regression constants ride along with the plain
+  // expression rows: `regressionParameters` (what Desmos solved for)
+  // lives only on the state list, and table rows carry their cells in
+  // `columns` instead of a `latex` of their own — so unlike the
+  // expression rows, tables are kept even though they have no latex.
   function extractStudentExpressions(calculator) {
     const expressionList = calculator?.getExpressions?.() || [];
     const stateList = calculator?.getState?.()?.expressions?.list || [];
     const byId = new Map(stateList.map((row) => [row.id, row]));
 
     return expressionList
-      .map((expr) => ({
-        latex: expr?.latex || byId.get(expr?.id)?.latex || '',
-        hidden: Boolean(expr?.hidden ?? byId.get(expr?.id)?.hidden),
-        type: expr?.type || byId.get(expr?.id)?.type || 'expression',
-        sliderBounds:
-          expr?.sliderBounds || byId.get(expr?.id)?.sliderBounds || null,
-      }))
-      .filter((expr) => expr.latex);
+      .map((expr) => {
+        const stateRow = byId.get(expr?.id);
+        const type = expr?.type || stateRow?.type || 'expression';
+        if (type === 'table') {
+          return { type, latex: '', columns: expr?.columns || stateRow?.columns || [] };
+        }
+        return {
+          latex: expr?.latex || stateRow?.latex || '',
+          hidden: Boolean(expr?.hidden ?? stateRow?.hidden),
+          type,
+          sliderBounds: expr?.sliderBounds || stateRow?.sliderBounds || null,
+          regressionParameters: stateRow?.regressionParameters || null,
+        };
+      })
+      .filter((expr) => expr.latex || expr.type === 'table');
   }
 
   function toEvaluableExpression(raw) {
@@ -1200,6 +1216,9 @@ function DesmosInteractiveBlock({
         nextBlockId: branchTarget || content.rejoin_at_block_id || null,
         expressionCount: entered.length,
         sliders: [...new Set(sliderNames)],
+        parameters: (result.parameterReport || [])
+          .map((row) => `${row.name}=${row.actual ?? '—'} (want ${row.expected})`)
+          .join(', '),
       });
     }
   }

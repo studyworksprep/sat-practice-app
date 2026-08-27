@@ -520,7 +520,13 @@
             "min_expressions": 2,
             "max_expressions": 2,
             "require_visible_only": true
-          }
+          },
+          "expected_parameters": [
+            {
+              "name": "c",
+              "value": 3
+            }
+          ]
         },
         "feedback": {
           "success_message_html": "<p>Well built. The definition uses =, the condition uses ~, and Desmos can assign the missing constant c.</p>",
@@ -533,6 +539,14 @@
             {
               "trigger": "too_many_expressions",
               "message_html": "<p>Keep exactly two rows: the definition and the regression.</p>"
+            },
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Desmos is not assigning \\(c\\) yet. The second row must use <strong>~</strong>: \\(r(c)\\sim31\\).</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos assigned a different value. Check the definition \\(r(x)=cx^2+4\\).</p>"
             }
           ],
           "attempt_based_hints": [

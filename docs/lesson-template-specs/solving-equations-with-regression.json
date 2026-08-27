@@ -173,7 +173,13 @@
             "min_expressions": 1,
             "max_expressions": 1,
             "require_visible_only": true
-          }
+          },
+          "expected_parameters": [
+            {
+              "name": "q",
+              "value": 7
+            }
+          ]
         },
         "feedback": {
           "success_message_html": "<p>Nice. Desmos can now adjust \\(q\\) until the two sides match.</p>",
@@ -185,7 +191,17 @@
             }
           ],
           "reveal_solution_after_attempts": 3,
-          "solution_html": "<p>The required entry is <strong>5q+7~42</strong>.</p>"
+          "solution_html": "<p>The required entry is <strong>5q+7~42</strong>.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Desmos is not assigning \\(q\\) yet. Use <strong>~</strong> rather than <strong>=</strong> so it fits the constant.</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos assigned a different value. Re-check the equation you entered against \\(5q+7=42\\).</p>"
+            }
+          ]
         },
         "progression": {
           "require_success": true

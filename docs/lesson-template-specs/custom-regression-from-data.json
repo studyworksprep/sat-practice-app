@@ -24,16 +24,77 @@
       "html": "<h2>What stays the same—and what changes</h2><p>You still begin by finding input-output pairs from a table, graph, or word problem. You still enter those points in a Desmos table.</p><p>The change comes after the table is filled:</p><ul><li><strong>Standard regression:</strong> click the Regression button and choose a supplied model.</li><li><strong>Custom regression:</strong> type the required equation yourself, connect it to the table with \\(x_1\\) and \\(y_1\\), and replace the equals sign with \\(\\sim\\).</li></ul>"
     },
     {
-      "kind": "text",
+      "kind": "raw_block",
       "id": "first_custom_exploration",
-      "html": "<h2>Explore a missing constant</h2><p>A function has the required form</p><p>\\[q(t)=a(t-2)^2+5\\]</p><p>and its graph contains \\((2,5)\\) and \\((4,17)\\).</p><p>In the open calculator, select <strong>Add Item (+) → Table</strong> and enter those two points. Then add a new expression and type:</p><p>\\[y_1\\sim a(x_1-2)^2+5\\]</p><blockquote><p><strong>Explore first:</strong> read the value Desmos assigns to \\(a\\). Do not use the table's Regression button.</p></blockquote>",
-      "calculator": {
-        "display": "open",
-        "mode": "scratch",
-        "title": "Fit the required vertex form",
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "first_custom_exploration",
+        "title": "Explore a missing constant",
+        "instructions_html": "<p>A function has the required form</p><p>\\[q(t)=a(t-2)^2+5\\]</p><p>and its graph contains \\((2,5)\\) and \\((4,17)\\).</p><p>In this activity’s calculator, select <strong>Add Item (+) → Table</strong> and enter those two points. Then add a new expression and type:</p><p>\\[y_1\\sim a(x_1-2)^2+5\\]</p><blockquote><p><strong>Explore first:</strong> read the value Desmos assigns to \\(a\\). Do not use the table's Regression button.</p></blockquote>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "state",
+          "state_rules": {
+            "require_table": {
+              "columns": [
+                "x_1",
+                "y_1"
+              ],
+              "rows": [
+                [
+                  2,
+                  5
+                ],
+                [
+                  4,
+                  17
+                ]
+              ]
+            },
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "a",
+              "value": 3
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>Desmos assigns <strong>a = 3</strong>. That is the value the custom regression found.</p>",
+          "retry_message_html": "<p>Not yet. Check the table rows, the regression row, and the model against the problem, then submit again.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_table",
+              "message_html": "<p>Add the two given points first: <strong>Add Item (+) → Table</strong>.</p>"
+            },
+            {
+              "trigger": "table_rows_mismatch",
+              "message_html": "<p>The table does not hold the required rows yet. Re-check each value against the problem.</p>"
+            },
+            {
+              "trigger": "missing_regression",
+              "message_html": "<p>Add a row with <strong>~</strong> in place of <strong>=</strong>: \\(y_1\\sim a(x_1-2)^2+5\\).</p>"
+            },
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Desmos is not assigning \\(a\\) yet. The regression must use the table's own column names, \\(x_1\\) and \\(y_1\\).</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos assigned a different value. Check that the model matches the required form \\(a(t-2)^2+5\\).</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Table: \\((2,5)\\) and \\((4,17)\\). Regression row: \\(y_1\\sim a(x_1-2)^2+5\\). Desmos assigns <strong>a = 3</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
       }
     },
     {
@@ -160,16 +221,73 @@
       }
     },
     {
-      "kind": "text",
+      "kind": "raw_block",
       "id": "guided_definition_problem",
-      "html": "<h2>Guided practice: use a coefficient relationship</h2><p>A function has the form</p><p>\\[r(t)=at^2+bt+4\\]</p><p>The question tells you that \\(a+b=10\\) and \\(r(2)=34\\).</p><p>Reset the scratch calculator and follow these steps:</p><ol><li>Enter the point \\((2,34)\\) in a table.</li><li>Enter the definition \\(a=10-b\\).</li><li>Enter the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\).</li></ol><p>Desmos adjusts the remaining free constant \\(b\\); the definition then supplies \\(a\\).</p>",
-      "calculator": {
-        "display": "open",
-        "mode": "scratch",
-        "title": "Combine a definition and regression",
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "guided_definition_problem",
+        "title": "Guided practice: use a coefficient relationship",
+        "instructions_html": "<p>A function has the form</p><p>\\[r(t)=at^2+bt+4\\]</p><p>The question tells you that \\(a+b=10\\) and \\(r(2)=34\\).</p><p>This activity opens its own blank calculator. Follow these steps:</p><ol><li>Enter the point \\((2,34)\\) in a table.</li><li>Enter the definition \\(a=10-b\\).</li><li>Enter the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\).</li></ol><p>Desmos adjusts the remaining free constant \\(b\\); the definition then supplies \\(a\\).</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "state",
+          "state_rules": {
+            "require_table": {
+              "columns": [
+                "x_1",
+                "y_1"
+              ],
+              "rows": [
+                [
+                  2,
+                  34
+                ]
+              ]
+            },
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "b",
+              "value": 5
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>Desmos assigns <strong>b = 5</strong>, and the definition gives <strong>a = 5</strong>.</p>",
+          "retry_message_html": "<p>Not yet. Check the table rows, the regression row, and the model against the problem, then submit again.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_table",
+              "message_html": "<p>Enter the point \\((2,34)\\) in a table first.</p>"
+            },
+            {
+              "trigger": "table_rows_mismatch",
+              "message_html": "<p>The table does not hold the required rows yet. Re-check each value against the problem.</p>"
+            },
+            {
+              "trigger": "missing_regression",
+              "message_html": "<p>Enter the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\) with <strong>~</strong>.</p>"
+            },
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Add the definition \\(a=10-b\\) so only one constant is left for Desmos to fit.</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos assigned a different value for \\(b\\). Check the definition row and the model.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Table: \\((2,34)\\). Definition: \\(a=10-b\\). Regression: \\(y_1\\sim ax_1^2+bx_1+4\\). Desmos assigns <strong>b = 5</strong>, so <strong>a = 5</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
       }
     },
     {
@@ -269,16 +387,81 @@
       }
     },
     {
-      "kind": "text",
+      "kind": "raw_block",
       "id": "guided_function_constant",
-      "html": "<h2>Find a constant after substitution</h2><p>The table contains points from \\(g\\). The problem gives:</p><p>\\[f(x)=x^2+5\\qquad\\text{and}\\qquad g(x)=f(x)-c\\]</p><p>It also states \\(g(0)=-3\\), \\(g(2)=1\\), and \\(g(3)=6\\).</p><p>Reset the calculator. Enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table. Substitute the rule for \\(f\\), then enter:</p><p>\\[y_1\\sim x_1^2+5-c\\]</p><p>Read the value Desmos assigns to \\(c\\).</p>",
-      "calculator": {
-        "display": "open",
-        "mode": "scratch",
-        "title": "Regress after substituting f",
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "guided_function_constant",
+        "title": "Find a constant after substitution",
+        "instructions_html": "<p>The table contains points from \\(g\\). The problem gives:</p><p>\\[f(x)=x^2+5\\qquad\\text{and}\\qquad g(x)=f(x)-c\\]</p><p>It also states \\(g(0)=-3\\), \\(g(2)=1\\), and \\(g(3)=6\\).</p><p>In this activity’s blank calculator, enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table. Substitute the rule for \\(f\\), then enter:</p><p>\\[y_1\\sim x_1^2+5-c\\]</p><p>Read the value Desmos assigns to \\(c\\).</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "state",
+          "state_rules": {
+            "require_table": {
+              "columns": [
+                "x_1",
+                "y_1"
+              ],
+              "rows": [
+                [
+                  0,
+                  -3
+                ],
+                [
+                  2,
+                  1
+                ],
+                [
+                  3,
+                  6
+                ]
+              ]
+            },
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "c",
+              "value": 8
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>Desmos assigns <strong>c = 8</strong>.</p>",
+          "retry_message_html": "<p>Not yet. Check the table rows, the regression row, and the model against the problem, then submit again.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_table",
+              "message_html": "<p>Enter the three points from \\(g\\) in a table first.</p>"
+            },
+            {
+              "trigger": "table_rows_mismatch",
+              "message_html": "<p>The table does not hold the required rows yet. Re-check each value against the problem.</p>"
+            },
+            {
+              "trigger": "missing_regression",
+              "message_html": "<p>Substitute the rule for \\(f\\), then enter \\(y_1\\sim x_1^2+5-c\\) with <strong>~</strong>.</p>"
+            },
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Desmos is not assigning \\(c\\) yet. Check that the regression uses \\(x_1\\) and \\(y_1\\).</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos assigned a different value. Check the substituted rule \\(x_1^2+5-c\\).</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Table: \\((0,-3)\\), \\((2,1)\\), \\((3,6)\\). Regression: \\(y_1\\sim x_1^2+5-c\\). Desmos assigns <strong>c = 8</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
       }
     },
     {
@@ -332,16 +515,82 @@
       }
     },
     {
-      "kind": "text",
+      "kind": "raw_block",
       "id": "special_exponential_task",
-      "html": "<h2>Fit a growth rate directly</h2><p>A sample follows \\(N(t)=A(1+r)^t\\), where \\(A=200\\). The data are:</p><p>\\[(0,200),\\ (1,220),\\ (2,242)\\]</p><p>Reset the calculator. Enter the points in a table, define \\(A=200\\), and enter \\(y_1\\sim A(1+r)^{x_1}\\).</p><p>Desmos reports \\(r\\) as a decimal. Translate it to a percent if the question asks for a percent growth rate.</p>",
-      "calculator": {
-        "display": "open",
-        "mode": "scratch",
-        "title": "Fit the missing growth rate",
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "special_exponential_task",
+        "title": "Fit a growth rate directly",
+        "instructions_html": "<p>A sample follows \\(N(t)=A(1+r)^t\\), where \\(A=200\\). The data are:</p><p>\\[(0,200),\\ (1,220),\\ (2,242)\\]</p><p>In this activity’s blank calculator, enter the points in a table, define \\(A=200\\), and enter \\(y_1\\sim A(1+r)^{x_1}\\).</p><p>Desmos reports \\(r\\) as a decimal. Translate it to a percent if the question asks for a percent growth rate.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "state",
+          "state_rules": {
+            "require_table": {
+              "columns": [
+                "x_1",
+                "y_1"
+              ],
+              "rows": [
+                [
+                  0,
+                  200
+                ],
+                [
+                  1,
+                  220
+                ],
+                [
+                  2,
+                  242
+                ]
+              ]
+            },
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "r",
+              "value": 0.1,
+              "tolerance": 0.005
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>Desmos assigns <strong>r = 0.1</strong> — a <strong>10%</strong> growth rate.</p>",
+          "retry_message_html": "<p>Not yet. Check the table rows, the regression row, and the model against the problem, then submit again.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_table",
+              "message_html": "<p>Enter \\((0,200)\\), \\((1,220)\\), and \\((2,242)\\) in a table first.</p>"
+            },
+            {
+              "trigger": "table_rows_mismatch",
+              "message_html": "<p>The table does not hold the required rows yet. Re-check each value against the problem.</p>"
+            },
+            {
+              "trigger": "missing_regression",
+              "message_html": "<p>Enter \\(y_1\\sim A(1+r)^{x_1}\\) with <strong>~</strong>.</p>"
+            },
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Define \\(A=200\\) so \\(r\\) is the only constant left to fit.</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos assigned a different growth rate. Check that \\(A=200\\) is defined and the exponent is \\(x_1\\).</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Table: \\((0,200)\\), \\((1,220)\\), \\((2,242)\\). Definition: \\(A=200\\). Regression: \\(y_1\\sim A(1+r)^{x_1}\\). Desmos assigns <strong>r = 0.1</strong>, which is \\(10\\%\\).</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
       }
     },
     {
@@ -417,16 +666,73 @@
       }
     },
     {
-      "kind": "text",
+      "kind": "raw_block",
       "id": "transfer_calculator_task",
-      "html": "<h2>Run the transfer regression</h2><p>Reset the scratch calculator and carry out the setup:</p><ol><li>Add a table row for \\((3,18)\\).</li><li>Enter \\(v=6-u\\).</li><li>Enter \\(y_1\\sim u(x_1-1)^2+v\\).</li></ol><p>Read the assigned value of \\(u\\), then use the definition to read or calculate \\(v\\).</p><blockquote><p><strong>Before you continue:</strong> substitute both values into the original form and verify that \\(H(3)=18\\).</p></blockquote>",
-      "calculator": {
-        "display": "open",
-        "mode": "scratch",
-        "title": "Find u and v",
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "transfer_calculator_task",
+        "title": "Run the transfer regression",
+        "instructions_html": "<p>This activity opens its own blank calculator. Carry out the setup:</p><ol><li>Add a table row for \\((3,18)\\).</li><li>Enter \\(v=6-u\\).</li><li>Enter \\(y_1\\sim u(x_1-1)^2+v\\).</li></ol><p>Read the assigned value of \\(u\\), then use the definition to read or calculate \\(v\\).</p><blockquote><p><strong>Before you continue:</strong> substitute both values into the original form and verify that \\(H(3)=18\\).</p></blockquote>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "state",
+          "state_rules": {
+            "require_table": {
+              "columns": [
+                "x_1",
+                "y_1"
+              ],
+              "rows": [
+                [
+                  3,
+                  18
+                ]
+              ]
+            },
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "u",
+              "value": 4
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>Desmos assigns <strong>u = 4</strong>, and the definition gives <strong>v = 2</strong>.</p>",
+          "retry_message_html": "<p>Not yet. Check the table rows, the regression row, and the model against the problem, then submit again.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_table",
+              "message_html": "<p>Add the row \\((3,18)\\) to a table first.</p>"
+            },
+            {
+              "trigger": "table_rows_mismatch",
+              "message_html": "<p>The table does not hold the required rows yet. Re-check each value against the problem.</p>"
+            },
+            {
+              "trigger": "missing_regression",
+              "message_html": "<p>Enter \\(y_1\\sim u(x_1-1)^2+v\\) with <strong>~</strong>.</p>"
+            },
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Add the definition \\(v=6-u\\) so only \\(u\\) is left for Desmos to fit.</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos assigned a different value for \\(u\\). Check the definition row and the model form.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Table: \\((3,18)\\). Definition: \\(v=6-u\\). Regression: \\(y_1\\sim u(x_1-1)^2+v\\). Desmos assigns <strong>u = 4</strong>, so <strong>v = 2</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
       }
     },
     {
