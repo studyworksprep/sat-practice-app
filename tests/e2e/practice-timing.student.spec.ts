@@ -40,7 +40,19 @@ test('practice session records per-question time and review shows the timing ban
   const mcqOption = page.locator('input[type=radio]').first();
   const sprInput = page.locator('#spr-input');
   if (await mcqOption.count()) {
-    await mcqOption.check();
+    // Click the LABEL, not the radio. The radio is visually hidden —
+    // QuestionRenderer.module.css `.radio` is the clipped 1x1 sr-only
+    // pattern — so the element at its own centre is its <label>, and
+    // `.check()` has to rely on Playwright's label-forwarding
+    // tolerance plus wherever the 1x1 box lands. That held locally but
+    // failed consistently in CI ("label intercepts pointer events" /
+    // "element is outside of the viewport"), which is the kind of
+    // environment-dependence a test should not carry. The label is a
+    // normal, full-size element and is what a student actually clicks.
+    // `force` is deliberately NOT used: it would skip actionability
+    // and keep passing even if the option became genuinely unclickable.
+    await page.locator('label:has(input[type=radio])').first().click();
+    await expect(mcqOption).toBeChecked();
   } else {
     // SPR question — any parseable answer records an attempt
     // (correctness doesn't matter for timing).
