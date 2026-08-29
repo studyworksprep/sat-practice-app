@@ -23,6 +23,14 @@
 export const MAX_PAGE_SIZE = 500;
 export const DEFAULT_PAGE_SIZE = 25;
 
+// Window size for `fetchAll`. Matches PostgREST's default max_rows, so
+// a correctly-sized server fills each window exactly; a server capped
+// lower simply returns short windows, which `fetchAll` handles.
+export const FETCH_ALL_PAGE_SIZE = 1000;
+// Backstop so a runaway table surfaces as an error rather than an
+// unbounded read that exhausts memory.
+export const MAX_FETCH_ALL_ROWS = 100_000;
+
 // Structural view of a PostgREST query builder — just the pieces this
 // helper touches. Keeps the helper decoupled from postgrest-js's deep
 // generic signatures while still flowing the row type through to
@@ -40,6 +48,21 @@ export interface PaginateOptions {
   page?: number | string;
   pageSize?: number | string;
   order?: { column: string; ascending?: boolean };
+}
+
+export interface OrderSpec {
+  column: string;
+  ascending?: boolean;
+}
+
+export interface FetchAllOptions {
+  // Deterministic sort key. Must be unique across rows — pass the full
+  // composite key when no single column is unique, otherwise equal keys
+  // can land in a different order on each request and windows will skip
+  // and repeat rows.
+  order: OrderSpec | OrderSpec[];
+  pageSize?: number;
+  maxRows?: number;
 }
 
 export interface Page<T> {
@@ -93,6 +116,69 @@ export async function paginate<T>(
     total !== null ? from + items.length < total : items.length === pageSize;
 
   return { items, page, pageSize, total, hasMore };
+}
+
+/**
+ * Read *every* row matching a query, in deterministic order, without
+ * tripping PostgREST's row cap.
+ *
+ * `paginate` serves one page of a list UI; this serves the other need —
+ * a whole-table read the caller then aggregates (per-lesson block
+ * counts, per-lesson efficacy rollups). A bare `.select()` looks like it
+ * already does this, but it silently stops at db-max-rows, and because
+ * that truncation is unordered it drops whole groups off the tail
+ * instead of trimming every group evenly. An aggregate built on the
+ * short read then reports a confident zero rather than an error.
+ *
+ * `buildQuery` must return a *fresh* builder on each call: postgrest-js
+ * builders are single-use, so a window cannot be re-ranged after it has
+ * been awaited.
+ *
+ * Windows are requested at `pageSize` but advanced by the number of rows
+ * actually returned, so a server configured with a lower max_rows just
+ * yields smaller windows instead of a short read.
+ */
+export async function fetchAll<T>(
+  buildQuery: () => PageQuery<T>,
+  opts: FetchAllOptions,
+): Promise<T[]> {
+  const order = Array.isArray(opts.order) ? opts.order : [opts.order];
+  if (order.length === 0) {
+    throw new Error('fetchAll requires at least one order column');
+  }
+  const pageSize = clampFetchAllPageSize(opts.pageSize);
+  const maxRows = opts.maxRows ?? MAX_FETCH_ALL_ROWS;
+
+  const rows: T[] = [];
+  let from = 0;
+  for (;;) {
+    let query = buildQuery();
+    for (const spec of order) {
+      query = query.order(spec.column, { ascending: spec.ascending ?? true });
+    }
+    const { data, error } = await query.range(from, from + pageSize - 1);
+    if (error) throw error;
+
+    const batch = data ?? [];
+    if (batch.length === 0) break;
+    // Appended one at a time rather than spread: a window wide enough
+    // to blow the argument limit would throw on `push(...batch)`.
+    for (const row of batch) rows.push(row);
+    from += batch.length;
+
+    if (rows.length > maxRows) {
+      throw new Error(
+        `fetchAll exceeded maxRows (${maxRows}); narrow the query or raise the limit`,
+      );
+    }
+  }
+  return rows;
+}
+
+function clampFetchAllPageSize(raw: unknown): number {
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 1) return FETCH_ALL_PAGE_SIZE;
+  return Math.floor(n);
 }
 
 /**
