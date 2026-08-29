@@ -16,6 +16,7 @@ import { requireUser } from '@/lib/api/auth';
 import { Button } from '@/lib/ui/Button';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { formatDate } from '@/lib/formatters';
+import { fetchAll } from '@/lib/api/paginate';
 import { filterLessonCatalog, getLessonCatalogFacets } from '@/lib/lesson/catalog';
 import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
 import { LessonCatalogFilterBar } from '@/lib/ui/LessonCatalogFilters';
@@ -49,24 +50,33 @@ export default async function AdminLessonsPage({ searchParams }) {
     redirect('/');
   }
 
-  const [lessons, { data: blockCounts }, { data: efficacyRows }] = await Promise.all([
+  // Both of these are whole-table reads feeding a per-lesson tally, so
+  // they go through `fetchAll`: a bare `.select()` stops at PostgREST's
+  // row cap, and an unordered truncation drops whole lessons off the
+  // tail — which the Blocks column then renders as a confident "0"
+  // rather than as a failure.
+  const [lessons, blockRows, efficacyRows] = await Promise.all([
     loadLessonCatalog(supabase, { limit: 500 }),
-    supabase
-      .from('lesson_blocks')
-      .select('lesson_id'),
+    fetchAll(
+      () => supabase.from('lesson_blocks').select('id, lesson_id'),
+      { order: { column: 'id' } },
+    ),
     // §3.5 content efficacy — per (lesson, skill) pre/post accuracy
     // around lesson completion, materialized by
     // refresh_feature_efficacy(). Sparse until lessons + completions
     // accumulate; rows simply show "—" until then.
-    supabase
-      .from('feature_efficacy')
-      .select('lesson_id, skill_code, pre_attempts, pre_correct, post_attempts, post_correct, students, refreshed_at'),
+    fetchAll(
+      () => supabase
+        .from('feature_efficacy')
+        .select('lesson_id, skill_code, pre_attempts, pre_correct, post_attempts, post_correct, students, refreshed_at'),
+      { order: [{ column: 'lesson_id' }, { column: 'skill_code' }] },
+    ),
   ]);
   const visibleLessons = filterLessonCatalog(lessons, catalogFilters);
   const catalogFacets = getLessonCatalogFacets(lessons);
 
   const countByLesson = {};
-  for (const row of blockCounts ?? []) {
+  for (const row of blockRows) {
     countByLesson[row.lesson_id] = (countByLesson[row.lesson_id] ?? 0) + 1;
   }
 
@@ -75,7 +85,7 @@ export default async function AdminLessonsPage({ searchParams }) {
   // the cell tooltip.
   const efficacyByLesson = {};
   let efficacyRefreshedAt = null;
-  for (const r of efficacyRows ?? []) {
+  for (const r of efficacyRows) {
     const e = efficacyByLesson[r.lesson_id]
       ?? (efficacyByLesson[r.lesson_id] = {
         preAttempts: 0, preCorrect: 0, postAttempts: 0, postCorrect: 0,
