@@ -14,9 +14,13 @@
 'use server';
 
 import { after } from 'next/server';
+import { redirect } from 'next/navigation';
 
 import { requireUser } from '@/lib/api/auth';
+import { actionFail, ApiError } from '@/lib/api/response';
+import { rateLimit } from '@/lib/api/rateLimit';
 import { applyCheckAttempt } from '@/lib/lesson/runtime-progress.mjs';
+import { selectLessonPracticeQuestionIds } from '@/lib/lesson/practice-drill';
 import { enqueueLessonRetrieval } from '@/lib/review/queue';
 
 async function loadOrCreateProgress(supabase, lessonId, userId) {
@@ -138,4 +142,57 @@ export async function markLessonComplete(lessonId) {
     }
   });
   return loadProgress(supabase, lessonId, user.id);
+}
+
+// Practice at the end (plan 5.2). Starts a practice session over the
+// lesson's own pattern/skill and redirects into the runner — the same
+// practice_sessions shape the Review page's drills create, so the
+// runner and its completion flow need no special case.
+//
+// mode is 'practice', not 'review': a review session bounces back to
+// /review on completion, which would strand a student who arrived
+// from a lesson.
+// Bound with lessonId, then invoked by useActionState as
+// (prevState, formData); neither is needed, so neither is declared.
+export async function createLessonPracticeDrill(lessonId) {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase } = ctx;
+
+  const rl = await rateLimit(`lesson-practice:${user.id}`, {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) {
+    return actionFail('Too many practice sessions started. Please wait a moment.');
+  }
+
+  const questionIds = await selectLessonPracticeQuestionIds(
+    supabase, user.id, lessonId,
+  );
+  if (questionIds.length === 0) {
+    return actionFail('No practice questions are available for this lesson yet.');
+  }
+
+  const { data: session, error } = await supabase
+    .from('practice_sessions')
+    .insert({
+      user_id: user.id,
+      test_type: 'sat',
+      mode: 'practice',
+      question_ids: questionIds,
+      current_position: 0,
+      filter_criteria: { kind: 'lesson_practice', lesson_id: lessonId, size: questionIds.length },
+    })
+    .select('id')
+    .single();
+  if (error || !session) {
+    return actionFail(`Failed to start practice: ${error?.message ?? 'unknown'}`);
+  }
+  redirect(`/practice/s/${session.id}/0`);
 }

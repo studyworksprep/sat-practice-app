@@ -774,6 +774,39 @@
   background: var(--color-app-accent-hover);
 }
 
+/* Plan 5.2 — the completion banner's two CTAs sit on one row: practice
+   the lesson's skill now (primary), or go back to the catalog. */
+.completeCtaRow {
+  margin-top: var(--s2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+}
+
+/* The row already carries the top margin for both children. */
+.completeCtaRow .completeCta {
+  margin-top: 0;
+}
+
+/* Secondary next to the practice button: same size, quieter weight. */
+.completeCtaSecondary {
+  background: transparent;
+  color: var(--color-app-accent);
+  border-color: var(--color-app-accent);
+}
+
+.completeCtaSecondary:hover {
+  background: var(--color-app-accent-soft, rgba(16, 42, 67, 0.06));
+}
+
+.completePracticeError {
+  flex-basis: 100%;
+  color: var(--color-diff-hard-fg, #b4453f);
+  font-size: 13px;
+}
+
 .completeCta:focus-visible {
   outline: none;
   box-shadow: var(--shadow-ring-accent);

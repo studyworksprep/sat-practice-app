@@ -30,6 +30,7 @@ import {
 } from './schedule';
 import type { ReviewItemType, ReviewScheduleState } from './schedule';
 import type { TypedSupabaseClient } from '@/lib/supabase/server';
+import { rankLeastRecentlyAttempted } from '@/lib/practice/rank-by-attempt.mjs';
 
 const QUEUE_CONFLICT_KEY = 'student_id,item_type,item_ref';
 
@@ -410,21 +411,14 @@ async function appendSkillMicroDrill(
   if (candidateIds.length === 0) return;
 
   // Least-recently-attempted first (never-attempted counts as oldest).
+  // Shared with the end-of-lesson drill (plan 5.2) so both surfaces
+  // order the same way.
   const { data: attempts } = await supabase
     .from('attempts')
     .select('question_id, created_at')
     .eq('user_id', userId)
-    .in('question_id', candidateIds)
-    .order('created_at', { ascending: false });
-  const lastAttemptAt = new Map<string, string>();
-  for (const a of attempts ?? []) {
-    if (!lastAttemptAt.has(a.question_id)) {
-      lastAttemptAt.set(a.question_id, a.created_at);
-    }
-  }
-  const ranked = [...candidateIds].sort((a, b) =>
-    (lastAttemptAt.get(a) ?? '').localeCompare(lastAttemptAt.get(b) ?? ''),
-  );
+    .in('question_id', candidateIds);
+  const ranked = rankLeastRecentlyAttempted(candidateIds, attempts ?? []);
   for (const id of ranked.slice(0, count)) {
     if (chosen.length >= size) break;
     chosen.push(id);
