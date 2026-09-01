@@ -13,7 +13,21 @@ import { useActionState } from 'react';
 
 import s from '@/lib/ui/LessonSlideshow.module.css';
 
-export function LessonPracticeButton({ action, label = 'Practice this now →' }) {
+// The action only ever returns on failure — the success path redirects
+// into the runner and never resolves to a state.
+type PracticeState = { ok: boolean; error?: string } | null;
+type PracticeAction = (
+  prev: PracticeState,
+  formData: FormData,
+) => Promise<PracticeState>;
+
+export function LessonPracticeButton({
+  action,
+  label = 'Practice this now →',
+}: {
+  action: PracticeAction;
+  label?: string;
+}) {
   const [state, submitAction, isPending] = useActionState(action, null);
   return (
     <>
