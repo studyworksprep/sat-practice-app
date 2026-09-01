@@ -352,3 +352,12 @@
   border-radius: 6px;
   padding: 8px 12px;
 }
+
+.saved {
+  font-size: 13px;
+  color: var(--color-diff-easy-fg, #166534);
+  background: var(--color-success-bg, rgba(91, 168, 118, 0.14));
+  border: 1px solid var(--color-success, #5ba876);
+  border-radius: 6px;
+  padding: 8px 12px;
+}

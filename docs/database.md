@@ -1,6 +1,8 @@
 # Studyworks database operations
 
-> **Status: Living document.** Last verified against code: 2026-07-12.
+> **Status: Living document.** Last verified against code: 2026-07-12
+> (question-bank write policies re-verified against production
+> 2026-09-01).
 
 Short runbook for anything that touches the Supabase database.
 
@@ -188,6 +190,35 @@ activates the owner-chosen live-derived sponsored policy: roster
 removal revokes access immediately. Resolver errors fall back to the
 legacy verdict. Rollback is `update feature_flags set value='off'
 where key='entitlements_gate'` (propagates within the 30s cache).
+
+## Who may write the question bank
+
+`questions_v2` write policies, as of 2026-09-01:
+
+| Policy | Command | Predicate |
+| --- | --- | --- |
+| `questions_v2_admin_all` | ALL | `is_admin()` — `app_metadata.role = 'admin'` |
+| `questions_v2_manager_update` | UPDATE | `is_manager()` — role in (`manager`, `admin`) |
+| `questions_v2_select_all` | SELECT | any authenticated user |
+| `demo_readonly_*` | INSERT/UPDATE/DELETE | restrictive; `not is_demo()` |
+
+So managers may **correct** existing questions but not create or
+delete them; creating and deleting stays admin-only.
+
+`questions_v2_manager_update`
+(`20260901120000_questions_v2_manager_update_policy.sql`) closes a
+gap that made the Broken panel's "Save corrections" a silent no-op
+for managers: the app gated the action on
+`requireRole(['manager', 'admin'])` while the DB granted writes only
+to `is_admin()`, so a manager's UPDATE matched no policy and hit
+zero rows. **Postgres does not raise on that, and PostgREST returns
+204 with `error: null`** — the Server Action saw success and told
+the manager the correction was saved.
+
+The general lesson, for any app-layer role gate that fronts a write:
+`.update()` alone cannot tell "wrote the row" from "RLS filtered it
+away". Chain `.select('id')` and fail when the result is empty —
+`lib/practice/broken-actions.js` does this on both of its writes.
 
 ## Safe service-role usage
 
