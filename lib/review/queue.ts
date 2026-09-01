@@ -22,7 +22,9 @@
 // must never break the answer/rating that triggered it.
 
 import {
+  LESSON_RETRIEVAL_DELAY_DAYS,
   isDue,
+  lessonRetrievalDueIso,
   masteryToResult,
   nextSchedule,
 } from './schedule';
@@ -37,6 +39,11 @@ const SKILL_MICRO_DRILL_COUNT = 3;
 /** At most this many due skills fold into one review session — the
  *  rest wait their turn so a session stays a session, not a test. */
 const MAX_SKILLS_PER_SESSION = 2;
+/** A due lesson_check contributes the same micro-drill size as a
+ *  skill, over the lesson's own skill. */
+const LESSON_MICRO_DRILL_COUNT = 3;
+/** At most this many due lessons fold into one session. */
+const MAX_LESSONS_PER_SESSION = 2;
 
 export interface ReviewQueueItem {
   id: string;
@@ -170,6 +177,37 @@ export async function removeQueueItem(
 }
 
 /**
+ * Delayed retrieval after a finished lesson (plan 5.3): enqueue the
+ * lesson to come back in ~2 days.
+ *
+ * Intake is upsert-ignore-duplicates against the
+ * (student_id, item_type, item_ref) key, so re-completing a lesson
+ * neither stacks rows nor pushes an existing due date outward — the
+ * first completion owns the schedule, and every later review advances
+ * it through the normal nextSchedule path.
+ *
+ * Best-effort like the rest of this module: the caller wraps it so a
+ * queue write can never fail the completion that triggered it.
+ */
+export async function enqueueLessonRetrieval(
+  supabase: TypedSupabaseClient,
+  userId: string,
+  lessonId: string,
+  nowIso: string,
+): Promise<void> {
+  await supabase.from('review_queue').upsert(
+    {
+      student_id: userId,
+      item_type: 'lesson_check',
+      item_ref: lessonId,
+      due_at: lessonRetrievalDueIso(nowIso),
+      interval_days: LESSON_RETRIEVAL_DELAY_DAYS,
+    },
+    { onConflict: QUEUE_CONFLICT_KEY, ignoreDuplicates: true },
+  );
+}
+
+/**
  * Reconcile skill-level review items against the coverage function
  * (§1.3): every 'decayed' unit gets a skill item (due immediately on
  * first sighting), and items whose unit has recovered are removed.
@@ -239,6 +277,7 @@ export interface DueSummary {
   questions: number;
   skills: number;
   flashcards: number;
+  lessons: number;
   total: number;
 }
 
@@ -246,7 +285,8 @@ export function summarizeDue(items: readonly ReviewQueueItem[]): DueSummary {
   const questions = items.filter((i) => i.itemType === 'question').length;
   const skills = items.filter((i) => i.itemType === 'skill').length;
   const flashcards = items.filter((i) => i.itemType === 'flashcard').length;
-  return { questions, skills, flashcards, total: items.length };
+  const lessons = items.filter((i) => i.itemType === 'lesson_check').length;
+  return { questions, skills, flashcards, lessons, total: items.length };
 }
 
 /**
@@ -296,48 +336,100 @@ export async function buildReviewSessionQuestionIds(
     .map((i) => i.itemRef);
   for (const skillCode of skillCodes) {
     if (chosen.length >= size) break;
-    const { data: candidates } = await supabase
-      .from('questions_v2')
-      .select('id')
-      .eq('skill_code', skillCode)
-      .eq('is_published', true)
-      .eq('is_broken', false)
-      .is('deleted_at', null)
-      // Opt-in import batches are excluded from every auto-selector.
-      // (The question leg above stays unfiltered on purpose: it only
-      // resurfaces questions the student already attempted.)
-      .eq('pool', 'standard')
-      .order('display_code', { ascending: true })
-      .limit(50);
-    const candidateIds = (candidates ?? [])
-      .map((r) => r.id)
-      .filter((id) => !seen.has(id));
-    if (candidateIds.length === 0) continue;
+    await appendSkillMicroDrill(
+      supabase, userId, skillCode, SKILL_MICRO_DRILL_COUNT, size, chosen, seen,
+    );
+  }
 
-    // Least-recently-attempted first (never-attempted counts as oldest).
-    const { data: attempts } = await supabase
-      .from('attempts')
-      .select('question_id, created_at')
-      .eq('user_id', userId)
-      .in('question_id', candidateIds)
-      .order('created_at', { ascending: false });
-    const lastAttemptAt = new Map<string, string>();
-    for (const a of attempts ?? []) {
-      if (!lastAttemptAt.has(a.question_id)) {
-        lastAttemptAt.set(a.question_id, a.created_at);
+  // Lesson retrieval (plan 5.3): a due lesson resolves to a micro-drill
+  // over the skill it teaches, so the two-days-later pass is real SAT
+  // questions rather than a re-read of the lesson. A lesson with no
+  // lesson_topics skill_code contributes nothing and simply waits — it
+  // stays queued rather than being dropped, so tagging it later makes
+  // the item live without re-completing the lesson.
+  const lessonIds = dueItems
+    .filter((i) => i.itemType === 'lesson_check')
+    .slice(0, MAX_LESSONS_PER_SESSION)
+    .map((i) => i.itemRef);
+  if (lessonIds.length > 0 && chosen.length < size) {
+    const { data: topics } = await supabase
+      .from('lesson_topics')
+      .select('lesson_id, skill_code')
+      .in('lesson_id', lessonIds);
+    const skillByLesson = new Map<string, string>();
+    for (const t of topics ?? []) {
+      if (t.skill_code && !skillByLesson.has(t.lesson_id)) {
+        skillByLesson.set(t.lesson_id, t.skill_code);
       }
     }
-    const ranked = [...candidateIds].sort((a, b) =>
-      (lastAttemptAt.get(a) ?? '').localeCompare(lastAttemptAt.get(b) ?? ''),
-    );
-    for (const id of ranked.slice(0, SKILL_MICRO_DRILL_COUNT)) {
+    for (const lessonId of lessonIds) {
       if (chosen.length >= size) break;
-      chosen.push(id);
-      seen.add(id);
+      const skillCode = skillByLesson.get(lessonId);
+      if (!skillCode) continue;
+      await appendSkillMicroDrill(
+        supabase, userId, skillCode, LESSON_MICRO_DRILL_COUNT, size, chosen, seen,
+      );
     }
   }
 
   return chosen;
+}
+
+/**
+ * Append up to `count` least-recently-attempted questions from one
+ * skill onto `chosen`, skipping anything already `seen` and stopping
+ * at the session `size`. Shared by the skill and lesson_check legs —
+ * a lesson's retrieval drill and a decayed skill's refresher want the
+ * same selection, only a different reason for running.
+ */
+async function appendSkillMicroDrill(
+  supabase: TypedSupabaseClient,
+  userId: string,
+  skillCode: string,
+  count: number,
+  size: number,
+  chosen: string[],
+  seen: Set<string>,
+): Promise<void> {
+  const { data: candidates } = await supabase
+    .from('questions_v2')
+    .select('id')
+    .eq('skill_code', skillCode)
+    .eq('is_published', true)
+    .eq('is_broken', false)
+    .is('deleted_at', null)
+    // Opt-in import batches are excluded from every auto-selector.
+    // (The question leg stays unfiltered on purpose: it only
+    // resurfaces questions the student already attempted.)
+    .eq('pool', 'standard')
+    .order('display_code', { ascending: true })
+    .limit(50);
+  const candidateIds = (candidates ?? [])
+    .map((r) => r.id)
+    .filter((id) => !seen.has(id));
+  if (candidateIds.length === 0) return;
+
+  // Least-recently-attempted first (never-attempted counts as oldest).
+  const { data: attempts } = await supabase
+    .from('attempts')
+    .select('question_id, created_at')
+    .eq('user_id', userId)
+    .in('question_id', candidateIds)
+    .order('created_at', { ascending: false });
+  const lastAttemptAt = new Map<string, string>();
+  for (const a of attempts ?? []) {
+    if (!lastAttemptAt.has(a.question_id)) {
+      lastAttemptAt.set(a.question_id, a.created_at);
+    }
+  }
+  const ranked = [...candidateIds].sort((a, b) =>
+    (lastAttemptAt.get(a) ?? '').localeCompare(lastAttemptAt.get(b) ?? ''),
+  );
+  for (const id of ranked.slice(0, count)) {
+    if (chosen.length >= size) break;
+    chosen.push(id);
+    seen.add(id);
+  }
 }
 
 export { isDue };

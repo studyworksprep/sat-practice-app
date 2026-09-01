@@ -13,8 +13,11 @@
 
 'use server';
 
+import { after } from 'next/server';
+
 import { requireUser } from '@/lib/api/auth';
 import { applyCheckAttempt } from '@/lib/lesson/runtime-progress.mjs';
+import { enqueueLessonRetrieval } from '@/lib/review/queue';
 
 async function loadOrCreateProgress(supabase, lessonId, userId) {
   const { data: existing } = await supabase
@@ -119,8 +122,20 @@ export async function submitDesmosResult(lessonId, blockId, correct, options = {
 export async function markLessonComplete(lessonId) {
   const { user, supabase } = await requireUser();
   await loadOrCreateProgress(supabase, lessonId, user.id);
+  const completedAt = new Date().toISOString();
   await applyUpdates(supabase, lessonId, user.id, {
-    completed_at: new Date().toISOString(),
+    completed_at: completedAt,
+  });
+  // Delayed retrieval (plan 5.3): the lesson comes back in ~2 days as
+  // a micro-drill on its skill. Deferred and swallowed — the same
+  // best-effort contract the rest of the review-queue intake uses, so
+  // queue bookkeeping can never fail the completion that triggered it.
+  after(async () => {
+    try {
+      await enqueueLessonRetrieval(supabase, user.id, lessonId, completedAt);
+    } catch {
+      // Queue intake is best-effort; the completion already landed.
+    }
   });
   return loadProgress(supabase, lessonId, user.id);
 }
