@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_objective",
-      "html": "<h2>Turn matching angles into useful proportions</h2><p>SAT questions do not always say that two triangles are <strong>similar</strong>. You may have to notice the matching angles, decide which sides correspond, and build a proportion yourself.</p><p>You will also learn a special right-triangle diagram in which one altitude creates three similar triangles.</p><blockquote><p><strong>Goal:</strong> Use angle matches—and a small/medium/large side check—to pair corresponding sides and solve missing-length problems.</p></blockquote>",
+      "html": "<h2>Turn matching angles into useful proportions</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Match the angles, then rank the sides.</p><p><strong>Why it pays:</strong> You stop mentally rotating triangles — which is where the errors come from — and the proportion writes itself.</p><p><strong>One caution:</strong> Size ranking is a cross-check, not proof. The angles decide the correspondence, especially when a drawing is labeled \"not drawn to scale.\"</p></div><p>SAT questions do not always say that two triangles are <strong>similar</strong>. You may have to notice the matching angles, decide which sides correspond, and build a proportion yourself.</p><p>You will also learn a special right-triangle diagram in which one altitude creates three similar triangles.</p><blockquote><p><strong>Goal:</strong> Use angle matches—and a small/medium/large side check—to pair corresponding sides and solve missing-length problems.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }

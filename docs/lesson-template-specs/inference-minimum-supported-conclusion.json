@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Inference is a careful connection, not a guess</h2><p>SAT Inference questions ask you to complete a text with a logical conclusion. The answer may not be stated word for word, but every important part of it must come from the passage.</p><p>By the end of this lesson, you can compress each sentence into a soundbite, combine the relationships, predict the smallest supported conclusion, and reject choices that go beyond the evidence.</p><blockquote><p><strong>Core rule:</strong> Connect the dots the text gives you. Do not add new dots.</p></blockquote>",
+      "html": "<h2>Inference is a careful connection, not a guess</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Soundbite each sentence, combine them, take the smallest step.</p><p><strong>Why it pays:</strong> It stops you reaching for the interesting conclusion, which is almost always the wrong one.</p><p><strong>One caution:</strong> If you find yourself defending a choice with something you know rather than something the text says, it's the wrong choice — however obviously true it feels.</p></div><p>SAT Inference questions ask you to complete a text with a logical conclusion. The answer may not be stated word for word, but every important part of it must come from the passage.</p><p>By the end of this lesson, you can compress each sentence into a soundbite, combine the relationships, predict the smallest supported conclusion, and reject choices that go beyond the evidence.</p><blockquote><p><strong>Core rule:</strong> Connect the dots the text gives you. Do not add new dots.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {

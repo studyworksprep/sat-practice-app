@@ -56,7 +56,7 @@
     {
       "kind": "text",
       "id": "percent_symbol_meaning",
-      "html": "<h2>What a percent means</h2><p><strong>Percent</strong> means <strong>per 100</strong>. The symbol \\(\\%\\) divides a number by \\(100\\).</p><p>For example, \\(35\\%=\\frac{35}{100}=0.35\\). A variable works the same way: \\(p\\%=\\frac{p}{100}\\).</p><p>This meaning is why a percent can be used directly inside a Desmos calculation or regression.</p>"
+      "html": "<h2>What a percent means</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Translate the sentence, then let regression solve it — Desmos writes \"of\" for you as soon as you type a percent sign.</p><p><strong>Why it pays:</strong> Percent-change wording is where people invert the base. Typing the sentence nearly verbatim keeps the base where the sentence put it.</p><p><strong>One caution:</strong> The value after \"than\" is the old value, and it's the basis for the comparison. Get that backwards and every step after it is wrong.</p></div><p><strong>Percent</strong> means <strong>per 100</strong>. The symbol \\(\\%\\) divides a number by \\(100\\).</p><p>For example, \\(35\\%=\\frac{35}{100}=0.35\\). A variable works the same way: \\(p\\%=\\frac{p}{100}\\).</p><p>This meaning is why a percent can be used directly inside a Desmos calculation or regression.</p>"
     },
     {
       "kind": "raw_block",

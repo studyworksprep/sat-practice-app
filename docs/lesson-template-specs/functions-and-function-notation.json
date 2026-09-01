@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Read function notation as information</h2><p>Function notation can look unfamiliar, but SAT questions use it to communicate a few concrete ideas:</p><ul><li>an input produces an output;</li><li>an input-output pair is a point on a graph;</li><li>an equation such as \\(f(x)=7\\) can be solved for the input; and</li><li>a function condition can determine a missing constant.</li></ul><blockquote><p><strong>Your goal:</strong> Translate the notation first, then use the graph or Desmos setup that matches the question.</p></blockquote>",
+      "html": "<h2>Read function notation as information</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Translate the notation into a point before you do anything else.</p><p><strong>Why it pays:</strong> \\(f(3)=6\\) stops being notation to decode and becomes a point you can use, graph, or solve from.</p><p><strong>One caution:</strong> When a condition determines a missing constant, check the stated condition against your answer — a fit can return one of two values, and only one satisfies the problem.</p></div><p>Function notation can look unfamiliar, but SAT questions use it to communicate a few concrete ideas:</p><ul><li>an input produces an output;</li><li>an input-output pair is a point on a graph;</li><li>an equation such as \\(f(x)=7\\) can be solved for the input; and</li><li>a function condition can determine a missing constant.</li></ul><blockquote><p><strong>Your goal:</strong> Translate the notation first, then use the graph or Desmos setup that matches the question.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }

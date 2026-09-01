@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Every term tells a unit story</h2><p>Many SAT questions in Linear Equations in Two Variables describe two groups contributing to one total: two products, two activities, two regions, or two time periods.</p><p>The arithmetic is usually simple. The real test is whether you can explain what each number, variable, and product means.</p><blockquote><p><strong>Your goal:</strong> Use units to read a coefficient, a variable, a full term, and the total in an equation such as \\(ax+by=T\\).</p></blockquote>",
+      "html": "<h2>Every term tells a unit story</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Every number carries a unit, so read the units to read the meaning.</p><p><strong>Why it pays:</strong> The arithmetic here is trivial. What's actually tested is whether you can say what a coefficient, a product, or the total <em>means</em> — and units answer that directly.</p><p><strong>One caution:</strong> The coefficient isn't always the rate. Check what the variable counts first, because \\(9r\\) means something different depending on whether \\(r\\) is hours or trips.</p></div><p>Many SAT questions in Linear Equations in Two Variables describe two groups contributing to one total: two products, two activities, two regions, or two time periods.</p><p>The arithmetic is usually simple. The real test is whether you can explain what each number, variable, and product means.</p><blockquote><p><strong>Your goal:</strong> Use units to read a coefficient, a variable, a full term, and the total in an equation such as \\(ax+by=T\\).</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {

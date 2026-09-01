@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>The question tells you what to build</h2><p>Rhetorical Synthesis questions show a set of research notes, then ask how a student should use them. The notes look important, but the student's goal is the real decision-maker.</p><p>By the end of this lesson, you can turn that goal into a short requirement list, use it to eliminate choices, and check the notes only when two choices still fit.</p><blockquote><p><strong>Core move:</strong> Start with \"The student wants to...\" - not with the notes.</p></blockquote>",
+      "html": "<h2>The question tells you what to build</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Turn the goal into a requirement list, then eliminate.</p><p><strong>Why it pays:</strong> Most choices are perfectly true statements drawn from the notes, so \"is this true?\" separates nothing. Goal-fit separates everything.</p><p><strong>One caution:</strong> When the goal has two parts joined by \"and,\" treat it as a contract. A choice that nails one half and drops the other is out.</p></div><p>Rhetorical Synthesis questions show a set of research notes, then ask how a student should use them. The notes look important, but the student's goal is the real decision-maker.</p><p>By the end of this lesson, you can turn that goal into a short requirement list, use it to eliminate choices, and check the notes only when two choices still fit.</p><blockquote><p><strong>Core move:</strong> Start with \"The student wants to...\" - not with the notes.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {

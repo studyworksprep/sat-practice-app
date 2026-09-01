@@ -6,7 +6,7 @@
     {
       "kind": "text",
       "id": "text_1",
-      "html": "<h2>Match it, don't expand it</h2><p>Some SAT questions hand you a messy expression with two or more variables — like \\(3a(2a-b)+b(a+5)\\) — and ask which answer choice is <em>equivalent</em>. You could expand everything by hand and risk a sign slip. Or you could let Desmos do the checking.</p><p>By the end of this lesson you'll be able to give each variable a slider, plug in random numbers, and quickly find the one answer choice that matches — even when the variables are \\(x\\) and \\(y\\).</p>"
+      "html": "<h2>Match it, don't expand it</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Give every variable a slider, then test numbers instead of expanding.</p><p><strong>Why it pays:</strong> Multi-variable \"which is equivalent\" questions stop being sign-error minefields — you check the answer rather than derive it.</p><p><strong>One caution:</strong> At the default slider values, several wrong choices can agree with the original by coincidence. Move the sliders and test a second set before you commit.</p></div><p>Some SAT questions hand you a messy expression with two or more variables — like \\(3a(2a-b)+b(a+5)\\) — and ask which answer choice is <em>equivalent</em>. You could expand everything by hand and risk a sign slip. Or you could let Desmos do the checking.</p><p>By the end of this lesson you'll be able to give each variable a slider, plug in random numbers, and quickly find the one answer choice that matches — even when the variables are \\(x\\) and \\(y\\).</p>"
     },
     {
       "kind": "text",

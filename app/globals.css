@@ -282,6 +282,27 @@ a{
   color: var(--color-app-accent, #102a43);
 }
 
+/* Lesson intro card: the three-beat opener a lesson leads with — the
+   move, the test-day payoff, one caution. It is the text form of the
+   tutor intro video (plan 3.6); when a recording lands, the `video`
+   block sits above it and this card stays as the read-it version.
+   Deliberately quieter than the accent blockquote above, which is
+   reserved for a single key idea, so an opener carrying both does not
+   read as two competing callouts. */
+.lesson-prose .lesson-intro{
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--color-app-accent, #102a43);
+  border-radius: 8px;
+  background: var(--surface, #f9fafb);
+}
+.lesson-prose .lesson-intro > p{ margin: 0 0 6px; }
+.lesson-prose .lesson-intro > p:last-child{ margin-bottom: 0; }
+.lesson-prose .lesson-intro > p > strong:first-child{
+  color: var(--color-app-accent, #102a43);
+}
+
 .prose img{
   max-width: 100%;
   height: auto;

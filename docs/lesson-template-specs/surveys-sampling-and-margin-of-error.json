@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Four decisions solve survey questions</h2><p>SAT survey questions rarely require complicated calculations. They ask whether a sample is trustworthy, how far its results can be generalized, and what uncertainty remains.</p><p>By the end of this lesson, you will be able to:</p><ol><li>identify the target population and sample,</li><li>separate well-designed random samples from biased samples,</li><li>choose a conclusion with the correct scope and certainty, and</li><li>turn a margin of error into a plausible range.</li></ol>",
+      "html": "<h2>Four decisions solve survey questions</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Check the sample, then limit the conclusion to the population it came from.</p><p><strong>Why it pays:</strong> These questions look statistical but are almost entirely about scope — who was asked, and who you're therefore allowed to talk about.</p><p><strong>One caution:</strong> Margin of error measures sampling uncertainty only. It does not certify the survey was unbiased, and it doesn't guarantee the true value.</p></div><p>SAT survey questions rarely require complicated calculations. They ask whether a sample is trustworthy, how far its results can be generalized, and what uncertainty remains.</p><p>By the end of this lesson, you will be able to:</p><ol><li>identify the target population and sample,</li><li>separate well-designed random samples from biased samples,</li><li>choose a conclusion with the correct scope and certainty, and</li><li>turn a margin of error into a plausible range.</li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
