@@ -20,7 +20,13 @@ Rules (all heuristic warnings, never build failures):
 on the slide), `retrieval_nonsense_distractor`, `check_run` /
 `text_run` (3+ consecutive), `spr_candidate` (a one-shot check whose
 every choice is a bare number — the SAT asks these as a typed answer;
-added with plan 1.6).
+added with plan 1.6), `retired_tail` (an explanation carrying a "Next,
+you will…" preview of the next slide) and `retired_closer` (the stock
+retrieval stem "Without looking back, which…") — both house-voice
+cadences the guide retires, added with plan 6.3. The report also prints
+each lesson's same-word explanation-opener rate ("Correct." / "Right."
+/ "Exactly."), which is a stat, not a warning: the fix is variety across
+a lesson, not a change to any one check.
 
 ## Summary
 
@@ -31,6 +37,16 @@ added with plan 1.6).
 **2.4 note (2026-08-26):** the corpus is now **634 checks** after one authentic-format item per lesson (34 authored `authentic_item` blocks; CLEAR and Sliders already had bank `question_link`s). The new items are lint-clean; `check_run` grew 21→35 because they sit adjacent to the final retrieval checks — those rows belong to the structural class. Baseline step numbers in the tables below predate the insertions; block ids remain the stable reference.
 
 **3.1 note (2026-08-27):** the pinned-figure pass closed the `missing_figure` class — 8 rows fixed by attaching block-level `figure` objects (which the linter now recognizes as satisfying a figure reference), and the 2 remaining flags reclassified as false positives with per-row reasons (generic "don't trust the picture" advice; the student's own Desmos graph). The lint report's `missing_figure` count is now 2, both deferred.
+
+**6.3 note (2026-09-03):** the house-voice rules opened **40** rows —
+`retired_closer` 28 (every lesson whose retrieval check uses the stock
+"Without looking back, which…" stem) and `retired_tail` 12 (six of them
+in Solve Equations by Graphing). All 40 have a proposed replacement in
+`lesson-voice-rewrites-2026-09.md` and close when that proposal is
+applied on tutor approval; none is fixed individually here. The
+same-word explanation-opener rate is **93.9%** corpus-wide (587/625),
+reported per lesson and scheduled as its own voice pass (6.2b) rather
+than listed as rows.
 
 **1.6 note (2026-09-03):** numeric-entry checks landed (`input:
 "numeric"`, graded by the bank's own SPR grader). The new
