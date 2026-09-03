@@ -52,7 +52,7 @@ Turn the user's topic and rundown into a finished lesson-template JSON file in `
 
 1. Create one importable JSON object and save it under `docs/lesson-template-specs/` using a descriptive kebab-case filename, unless the user specifies another destination.
 2. Follow the block kinds and schemas in the current guide and importer exactly.
-3. Make the content original, mathematically correct, SAT-authentic, direct, and conversational.
+3. Make the content original, mathematically correct, SAT-authentic, direct, and conversational — and in the house voice (authoring guide §2c): open with the test-day payoff in one line, name the move and reuse the name, treat the SAT as the opponent who set the traps, vary how explanations open (never the same affirmation on every check, never a "Next, you will…" tail), write the retrieval prompt in the lesson's own words rather than the stock "Without looking back, which sequence…", and end hard — the SAT-format item is the last activity and `lesson_complete` is a two-line sign-off, not a recap.
 4. For a substantial strategy lesson, generally target 15–25 purposeful short blocks, but never pad a lesson to meet a quota.
 5. Use plausible misconception-based distractors, correct zero-based answer indices, targeted retry hints, and explanations that reinforce the underlying idea. Where the SAT would ask for a typed value — a measurement check whose answer is one computed number — author a numeric-entry check (`input: "numeric"`, `answer`, optional `accept`/`tolerance`) instead of four numbers; see the authoring guide §3b.
 6. Use Desmos only when it advances the objective. Make its expected expressions, test values, feedback, and progression rules internally consistent.

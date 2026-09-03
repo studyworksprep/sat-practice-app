@@ -131,6 +131,63 @@ modeled.
   The image must have useful alt text; the surrounding prose must still make
   the action understandable if the image does not load.
 
+#### House voice — how a Studyworks lesson sounds
+
+The 2026-08 review's verdict on the suite: it reads like a very good, very
+careful teacher who is being recorded. What's missing isn't jokes; it's
+*stakes, a point of view, and a name for the move*. Six rules, cheapest
+first (plan Phase 6):
+
+1. **Open with the payoff, in one line.** Not "In this lesson you will…"
+   but the test-day reason: *"This turns a two-minute factoring problem
+   into a 20-second graph read."* The intro card (§3a) carries the move,
+   the payoff, and one caution; the opener's body then sets up the first
+   activity. It does not repeat the card and it does not list an agenda —
+   cut "By the end of this lesson, you will be able to…".
+2. **Name the move, and use the name.** A student remembers "Good Cop /
+   Bad Cop" and "My Numbers"; a tutor references them in session. Every
+   lesson gets a handle, and the handle is reused in hints, explanations,
+   and solutions until it is vocabulary. Names must be words tutors
+   actually say — the tutor team chooses them (plan 6.5); proposals live in
+   `lesson-voice-rewrites-2026-09.md`.
+3. **Let the SAT be a character.** Frame distractors as traps the test
+   set: *"The SAT is betting you'll grab the grand total. Don't."* The
+   trap catalog says which trap each item carries — say so out loud. It is
+   motivating, and it is the truth about how items are built.
+4. **Break the cadence.** Do not open every explanation with the same
+   word — at 2026-09-03, 92% of the corpus's explanations began "Correct."
+   / "Right." / "Exactly.", and the linter reports each lesson's rate.
+   Sometimes a one-word "Yes." and a fresh example; sometimes "here's the
+   mistake most people make"; sometimes straight to the idea. Never the
+   "**Next, you will…**" tail — a check explains the answer, it does not
+   preview the next slide (`lint_retired_tail`). Never the stock retrieval
+   stem "Without looking back, which sequence…" — write the retrieval
+   prompt in the lesson's own voice (`lint_retired_closer`).
+5. **End hard.** The last thing a learner does is the "you vs. the SAT"
+   item, not a "You can…" recap. The `lesson_complete` block is a two-line
+   sign-off in voice (§3b), never a summary card.
+6. **Use the material's own drama.** Real-unit contexts beat
+   "Set A = [2,3,4,5]"; the R&W passages are already good stories, and one
+   line about why a passage is fun gives them texture.
+
+The register, in two rewrites of real lines (from the review):
+
+> **Was (Desmos List Tools, block 1):** Look for questions that give
+> several data values and ask you to transform, combine, or summarize
+> them. Instead of retyping every calculation, store the values in a
+> **list** and let one command act on the entire list.
+>
+> **In voice:** Some SAT data questions hand you nine numbers and ask what
+> happens to the mean if every value goes up by 4. You could retype nine
+> numbers. Or you could type `A+4`. This lesson is the "or."
+
+> **Was (x-Intercepts, block 3 explanation):** Right. The graph meets the
+> horizontal axis at (2,0) and (3,0). **Next, you will name the horizontal
+> axis and explain why the second coordinate is zero.**
+>
+> **In voice:** Right — (2,0) and (3,0). Hold onto those two numbers:
+> they're about to become the answer to an equation you haven't seen yet.
+
 ### 2d. Design SAT-authentic knowledge checks
 
 Use checks to strengthen retrieval and diagnose a specific misconception,
@@ -524,6 +581,10 @@ the first try:
 - `html` (closing message) and optional `button_label` (default "Complete
   Lesson"). At runtime it shows the message and a button that finishes the
   lesson — no Continue button, and it's not treated as a dead end.
+- **Write it as a two-line sign-off in the lesson's voice, not a recap.**
+  "You can now…" followed by the block list is the summary card the house
+  voice retires (§2c): the learner just proved it on the SAT-format item.
+  Name the move once, say when to reach for it, stop.
 - **At most one per lesson, and it must be the very last block.** Optional
   — omit it for lessons that just end on their last content block.
 

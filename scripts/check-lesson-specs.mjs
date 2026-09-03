@@ -30,6 +30,8 @@ let hardFailures = 0;
 let totalWarnings = 0;
 let totalChecks = 0;
 let totalNumeric = 0;
+let totalExplanations = 0;
+let totalAffirmations = 0;
 let totalKeyedLongest = 0;
 const byCode = new Map();
 let worstLesson = { title: null, rate: 0 };
@@ -57,13 +59,15 @@ for (const file of files) {
   totalWarnings += warnings.length;
   totalChecks += stats.checkCount;
   totalNumeric += stats.numericCheckCount;
+  totalExplanations += stats.explanationCount;
+  totalAffirmations += stats.affirmationOpeners;
   totalKeyedLongest += stats.keyedLongestCount;
   if (stats.keyedLongestRate > worstLesson.rate) {
     worstLesson = { title: parsed.spec.title || file, rate: stats.keyedLongestRate };
   }
   for (const w of warnings) byCode.set(w.code, (byCode.get(w.code) || 0) + 1);
 
-  const label = `${parsed.spec.title || file} — ${warnings.length} lint warning${warnings.length === 1 ? '' : 's'}, keyed-longest ${stats.keyedLongestCount}/${stats.checkCount}`;
+  const label = `${parsed.spec.title || file} — ${warnings.length} lint warning${warnings.length === 1 ? '' : 's'}, keyed-longest ${stats.keyedLongestCount}/${stats.checkCount}, same-word explanation openers ${(100 * stats.affirmationOpenerRate).toFixed(0)}%`;
   console.log(warnings.length > 0 ? `⚠ ${label}` : `✓ ${label}`);
   for (const w of warnings) {
     console.log(`    [${w.code}] step ${w.step} (${w.blockId}): ${w.message}`);
@@ -73,6 +77,7 @@ for (const file of files) {
 console.log('');
 console.log(`Corpus: ${files.length} specs, ${totalChecks + totalNumeric} checks (${totalNumeric} numeric entry), ${totalWarnings} lint warnings.`);
 console.log(`Keyed-longest rate: ${(100 * totalKeyedLongest / Math.max(1, totalChecks)).toFixed(1)}% (${totalKeyedLongest}/${totalChecks}); target < 30% corpus-wide, no lesson above 50%.`);
+console.log(`Explanations opening "Correct/Right/Exactly/Yes": ${(100 * totalAffirmations / Math.max(1, totalExplanations)).toFixed(1)}% (${totalAffirmations}/${totalExplanations}); house voice (guide §2c) wants this varied, not uniform.`);
 if (worstLesson.title) {
   console.log(`Highest lesson keyed-longest rate: ${worstLesson.title} at ${(100 * worstLesson.rate).toFixed(0)}%.`);
 }

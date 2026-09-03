@@ -52,7 +52,7 @@ Use this order for a full strategy lesson; combine steps only when the content i
 7. Vary one feature at a time — a different variable, exact versus decimal answers, one/two/no solutions, restrictions, or a requested intermediate quantity.
 8. Check each important variation after it has been taught or explored.
 9. Require transfer: a fresh problem without telling the learner every step or which answer is correct.
-10. End with retrieval — recall the process or decision rule without looking back — then a concise summary.
+10. End hard. A retrieval check — recall the process or decision rule from memory, in a prompt written in the lesson's own voice (NEVER the stock "Without looking back, which sequence…") — then the SAT-format item as the LAST activity, then a two-line lesson_complete sign-off. No summary card.
 
 This order matters: a check must NEVER depend on information that appears only after it. A learner answers from a guided exploration, a definition already provided, or a process already modeled. Open the lesson with a short motivating introduction: what the student will be able to DO by the end, and why it pays off on test day.
 
@@ -64,6 +64,15 @@ This order matters: a check must NEVER depend on information that appears only a
 - Plain English before formal notation. Technical vocabulary only when the learner needs the term, defined immediately.
 - No unnecessary precision or scope: no function notation, proof language, or new representations unless they help perform the tool being taught.
 - Explain why a step works, right next to the step it justifies.
+
+## House voice
+
+The lesson has a point of view. It is not a careful teacher being recorded.
+- Open with the payoff in one line — the test-day reason this move exists ("This turns a two-minute factoring problem into a 20-second graph read"), never "In this lesson you will…" or "By the end of this lesson…". When the brief includes an intro card or video, the opener's body sets up the first activity instead of repeating them.
+- Name the move (a short handle a tutor would actually say — "Total First", "Zero, Graph, Click") and reuse the name in hints, explanations, and solutions until it is vocabulary.
+- Let the SAT be a character: frame distractors as traps the test set ("The SAT is betting you'll grab the grand total. Don't."). Say which trap an item carries.
+- Break the cadence. Do not open every explanation with the same word. Sometimes a one-word "Yes." and a fresh example; sometimes "here's the mistake most people make"; sometimes straight to the idea. Never end an explanation with a "Next, you will…" preview of the following slide.
+- Use the material's own drama: real-unit contexts over "Set A = [2,3,4,5]"; one line about why a passage is interesting.
 
 ## Knowledge checks: SAT-authentic and diagnostic
 
@@ -79,7 +88,7 @@ Every check must satisfy all of these rules:
 
 For central ideas, prefer retry checks (allow_retry: true) with a targeted hint, a worked solution, and a confirming explanation:
 - The hint helps the learner inspect the relevant evidence or redo ONE step without giving away the answer — "Subtract \\(4x\\) from both sides and look at the left side", never "Try again" or "Remember the rule".
-- The explanation connects the answer to the underlying idea — never a bare "Correct."
+- The explanation connects the answer to the underlying idea — never a bare "Correct.", and never the same opening word on every explanation (see House voice).
 - The solution is the full worked path revealed after the learner misses twice (the runtime then unlocks Continue instead of looping them): every step from the given problem to the keyed answer, written to be read after failure — plain steps separated by newlines, no "Correct!" tone, no reference to what the learner picked. Without a solution the runtime falls back to the explanation, which rarely walks the steps — author the solution.
 - The solution demonstrates the LESSON'S technique, never a general math solution: in a Desmos-method lesson the steps are the calculator workflow (what to enter, what Desmos assigns/displays/returns), and the confirmation stays in the tool's terms (RMSE readout, intercept labels, assigned values) using only vocabulary the lesson teaches. Hand algebra appears only where the lesson's own workflow includes it (e.g. rewriting to zero form before graphing).
 - Transfer checks and the final retrieval check are MEASUREMENT items: set allow_retry: false on them (one submission, immediate explanation) so their first-try data is meaningful. They need no hint or solution.
@@ -106,7 +115,7 @@ Segment the process and keep one main action per block; prompt generation before
 
 Unless the brief says otherwise: a 10-20 minute lesson, typically 15-40 short blocks, including at least one learner-controlled exploration, checks after each major idea and important variation, one independent Desmos task when graphing is part of the tool, a transfer problem, a final retrieval check, and a lesson_complete closer. Depth beats coverage: fewer ideas taken through the full sequence are better than more ideas merely explained. Never pad to reach a count.
 
-Tone: clear, encouraging, plainly worded, for a high-school student. Short sentences, concrete numbers over abstraction.
+Tone: clear, encouraging, plainly worded, for a high-school student. Short sentences, concrete numbers over abstraction — and a point of view: the lesson names its move, says why it pays on test day, and treats the SAT as the opponent who set the traps.
 
 Lesson brief:
 ${LESSON_INFO_PLACEHOLDER}`;
@@ -128,7 +137,7 @@ Blocks render to the learner top-to-bottom, one slide at a time, in array order.
 - \`text\` — { kind: "text", html }: one teaching idea in clean HTML.
 - \`raw_block\` — { kind: "raw_block", block_type, content } for these block types:
   - \`check\`: content { prompt, choices (2-5 strings, plain text or inline LaTeX), correct_index (0-based), explanation }. Optional retry gate: add { allow_retry: true, hint, solution } — a wrong answer shows the hint and a Try Again button WITHOUT revealing the answer; after 2 misses the runtime reveals the solution (a full worked path, newline-separated steps; falls back to explanation) and unlocks Continue. Optional max_attempts_before_reveal (integer ≥ 1) overrides the 2-miss default. Transfer and final-retrieval checks set allow_retry: false. Optional branch fields (see Branching). Never combine allow_retry with branch fields. NUMERIC-ENTRY variant — the SAT's student-produced response, used when the answer is one computed number: content { prompt, input: "numeric", answer (a whole number, decimal, or a/b fraction exactly as a student would type it — no units, no LaTeX, no %), optional accept (other typeable forms, e.g. a reduced fraction), optional tolerance (number ≥ 0, only for answers that must be rounded), explanation, plus the same optional retry fields } and NO choices/correct_index. Prefer it for transfer/retrieval measurement checks whose answer is a single value; keep multiple choice where the distractors are the teaching, and for ratios, percents, and expressions.
-  - \`lesson_complete\`: content { html, button_label } — the closing block. Exactly one, as the very last block.
+  - \`lesson_complete\`: content { html, button_label } — the closing block. Exactly one, as the very last block. Two lines in the lesson's voice — name the move once, say when to reach for it, stop. Never a "You can now…" recap of the block list.
   - \`desmos_interactive\`: content is the full validated-calculator schema — { title, instructions_html, initial_expressions (may be []), goal: { type: "enter_expression" | "multi_expression" }, validation: { mode: "equivalent", expected: ["y=2x+1"], test_values: [-2,0,2] } for a checked activity or { mode: "state", state_rules: {...} } for open work, feedback: { success_message_html, retry_message_html, optional targeted_hints, attempt_based_hints, reveal_solution_after_attempts + solution_html }, progression: { require_success } }. Prefer \`desmos_enter_expression\` below unless you need this level of control. To gate a REGRESSION workflow, use mode "state" with state_rules.require_table ({ columns: ["x_1","y_1"], rows: [[2,5],[4,17]] } — rows match order-insensitively) and state_rules.require_regression: true, plus validation.expected_parameters: [{ name, value, tolerance? }] compared against the constants Desmos actually fits. Only name a constant Desmos solves for — when a definition row supplies one (a=10-b), Desmos reports the free constant (b) only; omit expected_parameters entirely when the fit has more than one valid root or when the learner uses Desmos's own Regression button (its model form and constant names are Desmos's, not yours). Any block with require_success MUST also carry reveal_solution_after_attempts (use 3) and solution_html so nobody is hard-stuck.
 - \`desmos_enter_expression\` — { kind, title, instructions_html, expression, expected_expression?, test_values? (3-6 x-values that distinguish right from plausible-wrong answers), require_success?, initial_expressions? }: the learner must produce one expression, numerically validated. This is the vehicle for gated transfer tasks.
 - \`branching_question\` — { kind, question_html, choices: [{ id, text }, …], correct_choice_id, correct_html, incorrect_html, rejoin_html, explanation_html? }: the standard remediation loop. The learner answers, sees only the feedback for their path, and both paths merge at the rejoin block automatically. Prefer this over manual branch fields.
