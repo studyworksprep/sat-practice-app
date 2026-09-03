@@ -483,13 +483,8 @@
       "block_type": "check",
       "content": {
         "prompt": "Independent practice 1 of 5: The expression \\(p(t+2)+q(t-1)\\) is equivalent to \\(5t+7\\) for all \\(t\\). What is \\(p-q\\)?",
-        "choices": [
-          "\\(1\\)",
-          "\\(2\\)",
-          "\\(3\\)",
-          "\\(5\\)"
-        ],
-        "correct_index": 2
+        "input": "numeric",
+        "answer": "3"
       }
     },
     {
@@ -498,13 +493,8 @@
       "block_type": "check",
       "content": {
         "prompt": "Independent practice 2 of 5: The expression \\(a(y-3)+b\\) is equivalent to \\(4y+2\\) for all \\(y\\). What is \\(a+b\\)?",
-        "choices": [
-          "\\(18\\)",
-          "\\(14\\)",
-          "\\(10\\)",
-          "\\(6\\)"
-        ],
-        "correct_index": 0
+        "input": "numeric",
+        "answer": "18"
       }
     },
     {
@@ -543,13 +533,8 @@
       "block_type": "check",
       "content": {
         "prompt": "Independent practice 5 of 5: The expression \\(z^2+az+b\\) is equivalent to \\((z+4)(z-3)\\) for all \\(z\\). What is \\(ab\\)?",
-        "choices": [
-          "\\(12\\)",
-          "\\(-11\\)",
-          "\\(1\\)",
-          "\\(-12\\)"
-        ],
-        "correct_index": 3
+        "input": "numeric",
+        "answer": "-12"
       }
     },
     {
@@ -558,13 +543,8 @@
       "block_type": "check",
       "content": {
         "prompt": "The expression \\(a(x-2)+b(x+1)\\) is equivalent to \\(5x-7\\) for all values of \\(x\\). What is the value of \\(a\\)?",
-        "choices": [
-          "\\(1\\)",
-          "\\(4\\)",
-          "\\(5\\)",
-          "\\(-7\\)"
-        ],
-        "correct_index": 1,
+        "input": "numeric",
+        "answer": "4",
         "allow_retry": false,
         "hint": "Set up the regression with \\(x_1\\) and \\(\\sim\\), give \\(x_1\\) a list of allowed values, and read the assignment for \\(a\\) — not \\(b\\).",
         "explanation": "Correct. Matching the identity gives \\(a+b=5\\) and \\(-2a+b=-7\\), so \\(a=4\\) (and \\(b=1\\)). In Desmos, \\(a(x_1-2)+b(x_1+1)\\sim5x_1-7\\) with \\(x_1=[1,2,3]\\) assigns the same values; \\(1\\) is \\(b\\), the wrong quantity."

@@ -44,7 +44,7 @@ export const BLOCK_META: Record<LessonBlockType, BlockMeta> = {
   check: {
     type: 'check',
     label: 'Interactive question',
-    blurb: 'A multiple-choice check answered inside the lesson.',
+    blurb: 'A check answered inside the lesson — multiple choice or a typed number.',
     icon: '✅',
   },
   question_link: {

@@ -29,6 +29,7 @@ const files = fs.readdirSync(SPEC_DIR).filter((f) => f.endsWith('.json')).sort()
 let hardFailures = 0;
 let totalWarnings = 0;
 let totalChecks = 0;
+let totalNumeric = 0;
 let totalKeyedLongest = 0;
 const byCode = new Map();
 let worstLesson = { title: null, rate: 0 };
@@ -55,6 +56,7 @@ for (const file of files) {
   const { warnings, stats } = lintLessonBlocks(compiled.blocks, { title: parsed.spec.title });
   totalWarnings += warnings.length;
   totalChecks += stats.checkCount;
+  totalNumeric += stats.numericCheckCount;
   totalKeyedLongest += stats.keyedLongestCount;
   if (stats.keyedLongestRate > worstLesson.rate) {
     worstLesson = { title: parsed.spec.title || file, rate: stats.keyedLongestRate };
@@ -69,7 +71,7 @@ for (const file of files) {
 }
 
 console.log('');
-console.log(`Corpus: ${files.length} specs, ${totalChecks} checks, ${totalWarnings} lint warnings.`);
+console.log(`Corpus: ${files.length} specs, ${totalChecks + totalNumeric} checks (${totalNumeric} numeric entry), ${totalWarnings} lint warnings.`);
 console.log(`Keyed-longest rate: ${(100 * totalKeyedLongest / Math.max(1, totalChecks)).toFixed(1)}% (${totalKeyedLongest}/${totalChecks}); target < 30% corpus-wide, no lesson above 50%.`);
 if (worstLesson.title) {
   console.log(`Highest lesson keyed-longest rate: ${worstLesson.title} at ${(100 * worstLesson.rate).toFixed(0)}%.`);

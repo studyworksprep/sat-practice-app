@@ -18,7 +18,9 @@ Rules (all heuristic warnings, never build failures):
 `hint_gives_answer`, `meta_prompt` ("Why is … correct/wrong"),
 `equivalent_choices`, `missing_figure` (figure reference, no `<img>`
 on the slide), `retrieval_nonsense_distractor`, `check_run` /
-`text_run` (3+ consecutive).
+`text_run` (3+ consecutive), `spr_candidate` (a one-shot check whose
+every choice is a bare number — the SAT asks these as a typed answer;
+added with plan 1.6).
 
 ## Summary
 
@@ -29,6 +31,17 @@ on the slide), `retrieval_nonsense_distractor`, `check_run` /
 **2.4 note (2026-08-26):** the corpus is now **634 checks** after one authentic-format item per lesson (34 authored `authentic_item` blocks; CLEAR and Sliders already had bank `question_link`s). The new items are lint-clean; `check_run` grew 21→35 because they sit adjacent to the final retrieval checks — those rows belong to the structural class. Baseline step numbers in the tables below predate the insertions; block ids remain the stable reference.
 
 **3.1 note (2026-08-27):** the pinned-figure pass closed the `missing_figure` class — 8 rows fixed by attaching block-level `figure` objects (which the linter now recognizes as satisfying a figure reference), and the 2 remaining flags reclassified as false positives with per-row reasons (generic "don't trust the picture" advice; the student's own Desmos graph). The lint report's `missing_figure` count is now 2, both deferred.
+
+**1.6 note (2026-09-03):** numeric-entry checks landed (`input:
+"numeric"`, graded by the bank's own SPR grader). The new
+`spr_candidate` rule flagged **23** one-shot all-numeric checks across
+13 lessons; all 23 were converted to numeric entry in the same change
+(every math `authentic_item` among them), so the rule reports **0**.
+The two one-shot checks whose answers are ratios (Scale Factor
+`practice_volume_to_area`, `practice_area_to_volume`) are excluded by
+design — a ratio is not a student-produced-response answer — and stay
+multiple choice. The corpus is now 611 multiple-choice + 23
+numeric-entry checks; keyed-longest is measured over the 611.
 
 **PUNCH LIST CLOSED 2026-08-26:** after the long-tail sweep, every row is `fixed` (229) or `deferred` with a reason (57). Item-quality classes: `keyed_longest` **0**, `equivalent_choices` **0**, `retrieval_nonsense_distractor` **0**; `hint_gives_answer`, `meta_prompt`, `extreme_imbalance`, and `key_term_echo` each survive only as reasoned deferrals (test-value hints, taught wrong-choice debriefs, the lessons' own taxonomy labels). Structural classes (`check_run` 35, `text_run` 21, `missing_figure` 10) are class-deferred to Phase 3, where pacing rework and the 3.1 pinned-figure pass are already scheduled. Final corpus: **keyed-longest 19.4%** (123/634, target <30%), highest lesson **44%** (target ≤50%), every lesson ≥1 authentic-format item. **All Phase 2 exit criteria are met.**
 

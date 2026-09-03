@@ -39,9 +39,14 @@ items per difficulty band to imitate structurally.
   item uses a verbatim TS&P function stem ("function of the
   underlined sentence/portion"). TS&P remains a Phase 4
   dedicated-lesson candidate.
-- **MC-only until 1.6:** every 2.4 authentic math item ships as
-  multiple-choice. When 1.6 (numeric entry) lands, add SPR-format
-  variants starting with the SPR-heavy skills (≥25% SPR share).
+- **MC-only until 1.6** — *lifted 2026-09-03:* 1.6 landed. Checks take
+  `input: "numeric"` (a typed answer graded by the bank's own SPR
+  grader), and the one-shot measurement checks whose answer is a single
+  number were converted in the same change — 23 checks across 13
+  lessons, every math `authentic_item` among them. SPR-format variants
+  for the remaining SPR-heavy skills (≥25% SPR share) are a content
+  follow-up; the linter's `lint_spr_candidate` rule flags any new
+  one-shot all-numeric check as a candidate.
 
 ## Headline findings
 

@@ -27,6 +27,7 @@ import { gradeActMcq } from '@/lib/practice/load-act-question';
 import { recordQuestionOutcome } from '@/lib/review/queue';
 import { recommendLessonsForSkills } from '@/lib/lesson/recommend';
 import { loadDetourPreference } from '@/lib/practice/detour-preference.mjs';
+import { gradeSprAnswer } from '@/lib/practice/spr-grade.mjs';
 import type { ActionResult, QuestionType } from '@/lib/types';
 
 type SubmitAnswerResult = ActionResult<{
@@ -1004,120 +1005,7 @@ function gradeMcqAnswer(selectedId: string, correct: unknown): boolean {
 }
 
 // ──────────────────────────────────────────────────────────────
-// SPR grading helpers
+// SPR grading lives in lib/practice/spr-grade.mjs (shared with the
+// practice-test grader and the lesson runtime's numeric checks).
 // ──────────────────────────────────────────────────────────────
-//
-// SPR (student-produced response) answers are compared in two ways,
-// in order:
-//
-//   1) Text comparison. `correct_text` may be a plain string or a
-//      JSON array of acceptable answers (e.g. "12.5", "25/2", "0.5").
-//      The student's response is normalized (lowercased,
-//      whitespace-collapsed, trimmed) and compared against each
-//      acceptable form.
-//
-//   2) Numeric comparison. If text comparison fails and both the
-//      student's response and `correct_number` parse as floats, they
-//      are compared with `numeric_tolerance` (defaulting to 0).
-//
-// This matches the existing grading logic in the legacy submit-module
-// route handler.
 
-function normalizeText(s: unknown): string {
-  return (s ?? '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
-}
-
-// Strict numeric parser for SPR grading. Unlike parseFloat, this
-// rejects trailing garbage — parseFloat("23/60") returns 23, which
-// used to make "23/90" collide with "23/60" in the numeric fallback
-// below. Fraction strings like "a/b" are evaluated as a/b when both
-// sides are pure numbers; anything else that isn't a valid Number
-// returns NaN.
-function toStrictNumber(s: unknown): number {
-  const str = (s ?? '').toString().trim();
-  if (!str) return NaN;
-  const frac = str.match(/^(-?\d*\.?\d+)\/(-?\d*\.?\d+)$/);
-  if (frac) {
-    const num = Number(frac[1]);
-    const den = Number(frac[2]);
-    if (Number.isFinite(num) && Number.isFinite(den) && den !== 0) {
-      return num / den;
-    }
-    return NaN;
-  }
-  const n = Number(str);
-  return Number.isFinite(n) ? n : NaN;
-}
-
-// SPR grading against v2's object-shaped correct_answer:
-//   { text: "[\"1/14\", \".0714\"]",   // JSON-encoded array of strings
-//     number: 0.0714,                   // numeric value
-//     tolerance: null }                 // numeric match tolerance
-// Also accepts the legacy shapes (plain string, plain array,
-// plain number) for any row that still surfaces them.
-//
-// Match logic:
-//   1. Collect acceptable strings from .text (JSON-parse if it's
-//      an array, else treat as a single-value string).
-//   2. Text-normalize (lowercase, whitespace-collapse) both sides
-//      and compare.
-//   3. If text match fails and both sides parse as floats,
-//      compare numerically, respecting tolerance if present.
-function gradeSprAnswer(responseText: string, correct: unknown): boolean {
-  if (correct == null) return false;
-
-  const acceptableTexts: string[] = [];
-  let numericTarget: number | null = null;
-  let tolerance = 0;
-
-  if (typeof correct === 'string') {
-    acceptableTexts.push(correct);
-  } else if (Array.isArray(correct)) {
-    for (const v of correct) acceptableTexts.push(String(v));
-  } else if (typeof correct === 'object') {
-    const obj = correct as {
-      text?: unknown;
-      number?: unknown;
-      tolerance?: unknown;
-    };
-    if (typeof obj.text === 'string' && obj.text) {
-      try {
-        const parsed = JSON.parse(obj.text);
-        if (Array.isArray(parsed)) {
-          for (const v of parsed) acceptableTexts.push(String(v));
-        } else {
-          acceptableTexts.push(obj.text);
-        }
-      } catch {
-        acceptableTexts.push(obj.text);
-      }
-    }
-    if (typeof obj.number === 'number') {
-      numericTarget = obj.number;
-      acceptableTexts.push(String(obj.number));
-    }
-    if (typeof obj.tolerance === 'number') tolerance = obj.tolerance;
-  } else if (typeof correct === 'number') {
-    numericTarget = correct;
-    acceptableTexts.push(String(correct));
-  }
-
-  if (acceptableTexts.length === 0 && numericTarget == null) return false;
-
-  const normalized = normalizeText(responseText);
-  if (acceptableTexts.some((a) => normalizeText(a) === normalized)) return true;
-
-  const responseNum = toStrictNumber(responseText);
-  if (Number.isFinite(responseNum)) {
-    if (numericTarget != null && Math.abs(responseNum - numericTarget) <= tolerance) {
-      return true;
-    }
-    for (const entry of acceptableTexts) {
-      const entryNum = toStrictNumber(entry);
-      if (Number.isFinite(entryNum) && Math.abs(responseNum - entryNum) <= tolerance) {
-        return true;
-      }
-    }
-  }
-  return false;
-}

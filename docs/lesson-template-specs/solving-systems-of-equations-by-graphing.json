@@ -649,13 +649,8 @@
       "block_type": "check",
       "content": {
         "prompt": "In the system of equations \\(3x+2y=19\\) and \\(y=2x-1\\), what is the value of \\(x\\)?",
-        "choices": [
-          "\\(3\\)",
-          "\\(5\\)",
-          "\\(7\\)",
-          "\\(21\\)"
-        ],
-        "correct_index": 0,
+        "input": "numeric",
+        "answer": "3",
         "allow_retry": false,
         "hint": "Enter both complete equations, click the intersection, and report the coordinate the question names.",
         "explanation": "Correct. Graphing both equations shows the intersection \\((3,5)\\). The question asks for \\(x\\), so the answer is \\(3\\) — reporting \\(5\\) answers with the wrong coordinate."
