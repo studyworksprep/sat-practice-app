@@ -24,6 +24,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   flagQuestionBroken,
   saveQuestionCorrections,
@@ -172,24 +173,40 @@ function BrokenModal({
   setIsBroken,
   onClose,
 }) {
-  const [stemHtml, setStemHtml]           = useState(raw?.stemHtml ?? '');
-  const [stimulusHtml, setStimulusHtml]   = useState(raw?.stimulusHtml ?? '');
-  const [rationaleHtml, setRationaleHtml] = useState(raw?.rationaleHtml ?? '');
-  const [optionEdits, setOptionEdits]     = useState(() => {
-    const init = {};
-    for (const opt of raw?.options ?? []) init[opt.label] = opt.contentHtml;
-    return init;
-  });
-  const [tax, setTax] = useState({
-    difficulty: taxonomy?.difficulty != null ? String(taxonomy.difficulty) : '',
-    scoreBand:  taxonomy?.scoreBand  != null ? String(taxonomy.scoreBand)  : '',
-    domainCode: taxonomy?.domainCode ?? '',
-    domainName: taxonomy?.domainName ?? '',
-    skillCode:  taxonomy?.skillCode ?? '',
-    skillName:  taxonomy?.skillName ?? '',
-  });
+  const router = useRouter();
+
+  // { message, signature } — a save confirmation plus the form
+  // contents it described. Shown only while the form still matches
+  // that signature, so editing a field afterwards retires the
+  // banner on its own (see savedMessage below).
+  const [saved, setSaved] = useState(null);
+
+  // What the DB currently holds, in the modal's own shape. Every
+  // diff on save is taken against this, and it advances on a
+  // successful save — so a second save sends only what changed
+  // since the first, and correctly reports "no changes" when
+  // nothing did.
+  const [baseline, setBaseline] = useState(() => formStateFrom(raw, taxonomy));
+
+  const [stemHtml, setStemHtml]           = useState(baseline.stemHtml);
+  const [stimulusHtml, setStimulusHtml]   = useState(baseline.stimulusHtml);
+  const [rationaleHtml, setRationaleHtml] = useState(baseline.rationaleHtml);
+  const [optionEdits, setOptionEdits]     = useState(baseline.options);
+  const [tax, setTax]                     = useState(baseline.tax);
   const [flagBroken, setFlagBroken] = useState(isBroken);
   const [renderedView, setRenderedView] = useState(rendered);
+
+  // The confirmation retires the moment the manager edits anything
+  // again — a stale success line sitting over unsaved edits is
+  // exactly the confusion the banner exists to remove. flagBroken is
+  // deliberately out of the signature: the header's quick toggle
+  // moves it programmatically and posts its own confirmation, which
+  // a signature change would wipe immediately. The checkbox below
+  // clears `saved` itself instead.
+  const formSignature = JSON.stringify([
+    stemHtml, stimulusHtml, rationaleHtml, optionEdits, tax,
+  ]);
+  const savedMessage = saved?.signature === formSignature ? saved.message : null;
 
   const renderedOptionByLabel = new Map(
     (renderedView?.options ?? []).map((o) => [o.label, o.contentHtmlRendered]),
@@ -197,49 +214,60 @@ function BrokenModal({
 
   function handleQuickToggle() {
     setError(null);
+    setSaved(null);
     startTransition(async () => {
       const res = await flagQuestionBroken({ questionId, isBroken: !isBroken });
       if (!res?.ok) {
         setError(res?.error ?? 'Failed to update.');
         return;
       }
-      setIsBroken(res.data?.isBroken ?? !isBroken);
-      setFlagBroken(res.data?.isBroken ?? !isBroken);
+      const next = res.data?.isBroken ?? !isBroken;
+      setIsBroken(next);
+      setFlagBroken(next);
+      setSaved({
+        message: next ? 'Flagged broken.' : 'Broken flag cleared.',
+        signature: formSignature,
+      });
+      router.refresh();
     });
   }
 
   function handleSave() {
     setError(null);
+    setSaved(null);
+
     const optionsPatch = {};
-    for (const opt of raw?.options ?? []) {
-      const next = optionEdits[opt.label] ?? '';
-      if (next !== opt.contentHtml) optionsPatch[opt.label] = next;
+    for (const [label, value] of Object.entries(optionEdits)) {
+      if (value !== baseline.options[label]) optionsPatch[label] = value;
     }
     const taxonomyPatch = {};
-    if (tax.difficulty !== (taxonomy?.difficulty != null ? String(taxonomy.difficulty) : '')) {
+    if (tax.difficulty !== baseline.tax.difficulty) {
       taxonomyPatch.difficulty = tax.difficulty === '' ? null : Number(tax.difficulty);
     }
-    if (tax.scoreBand !== (taxonomy?.scoreBand != null ? String(taxonomy.scoreBand) : '')) {
+    if (tax.scoreBand !== baseline.tax.scoreBand) {
       taxonomyPatch.scoreBand = tax.scoreBand === '' ? null : Number(tax.scoreBand);
     }
-    if (tax.domainCode !== (taxonomy?.domainCode ?? '')) {
+    if (tax.domainCode !== baseline.tax.domainCode
+      || tax.domainName !== baseline.tax.domainName) {
       taxonomyPatch.domainCode = tax.domainCode;
       taxonomyPatch.domainName = tax.domainName;
     }
-    if (tax.skillCode !== (taxonomy?.skillCode ?? '')) {
+    if (tax.skillCode !== baseline.tax.skillCode
+      || tax.skillName !== baseline.tax.skillName) {
       taxonomyPatch.skillCode = tax.skillCode;
       taxonomyPatch.skillName = tax.skillName;
     }
 
     const args = { questionId };
-    if (stemHtml !== (raw?.stemHtml ?? '')) args.stemHtml = stemHtml;
-    if (stimulusHtml !== (raw?.stimulusHtml ?? '')) args.stimulusHtml = stimulusHtml;
-    if (rationaleHtml !== (raw?.rationaleHtml ?? '')) args.rationaleHtml = rationaleHtml;
+    if (stemHtml !== baseline.stemHtml) args.stemHtml = stemHtml;
+    if (stimulusHtml !== baseline.stimulusHtml) args.stimulusHtml = stimulusHtml;
+    if (rationaleHtml !== baseline.rationaleHtml) args.rationaleHtml = rationaleHtml;
     if (Object.keys(optionsPatch).length > 0) args.options = optionsPatch;
     if (Object.keys(taxonomyPatch).length > 0) args.taxonomy = taxonomyPatch;
     if (flagBroken !== isBroken) args.isBroken = flagBroken;
 
-    if (Object.keys(args).length === 1) {
+    const changed = Object.keys(args).filter((k) => k !== 'questionId');
+    if (changed.length === 0) {
       setError('No changes to save.');
       return;
     }
@@ -255,6 +283,21 @@ function BrokenModal({
         setFlagBroken(res.data.isBroken);
       }
       if (res.data?.rendered) setRenderedView(res.data.rendered);
+      // The write landed (the action fails when it touches no row),
+      // so the edited values are now the stored values.
+      setBaseline({
+        stemHtml,
+        stimulusHtml,
+        rationaleHtml,
+        options: { ...optionEdits },
+        tax: { ...tax },
+      });
+      setSaved({
+        message: `Saved to the question bank — ${describeSaved(changed)}.`,
+        signature: formSignature,
+      });
+      // Pull the corrected content into the page underneath.
+      router.refresh();
     });
   }
 
@@ -399,7 +442,7 @@ function BrokenModal({
             <input
               type="checkbox"
               checked={flagBroken}
-              onChange={(e) => setFlagBroken(e.target.checked)}
+              onChange={(e) => { setFlagBroken(e.target.checked); setSaved(null); }}
             />
             <span>Mark this question as broken</span>
           </label>
@@ -407,6 +450,9 @@ function BrokenModal({
 
         <div className={s.footer}>
           {error && <div className={s.error}>{error}</div>}
+          {savedMessage && !error && (
+            <div className={s.saved} role="status">{savedMessage}</div>
+          )}
           <div className={s.footerActions}>
             <button type="button" className={s.btnSecondary} onClick={onClose}>
               Cancel
@@ -424,6 +470,46 @@ function BrokenModal({
       </div>
     </div>
   );
+}
+
+/**
+ * The stored question, in the shape the modal's form fields use.
+ * Seeds the inputs and serves as the diff baseline on save.
+ */
+function formStateFrom(raw, taxonomy) {
+  const options = {};
+  for (const opt of raw?.options ?? []) options[opt.label] = opt.contentHtml;
+  return {
+    stemHtml: raw?.stemHtml ?? '',
+    stimulusHtml: raw?.stimulusHtml ?? '',
+    rationaleHtml: raw?.rationaleHtml ?? '',
+    options,
+    tax: {
+      difficulty: taxonomy?.difficulty != null ? String(taxonomy.difficulty) : '',
+      scoreBand:  taxonomy?.scoreBand  != null ? String(taxonomy.scoreBand)  : '',
+      domainCode: taxonomy?.domainCode ?? '',
+      domainName: taxonomy?.domainName ?? '',
+      skillCode:  taxonomy?.skillCode ?? '',
+      skillName:  taxonomy?.skillName ?? '',
+    },
+  };
+}
+
+const SAVED_FIELD_LABELS = {
+  stemHtml: 'stem',
+  stimulusHtml: 'stimulus',
+  rationaleHtml: 'rationale',
+  options: 'answer options',
+  taxonomy: 'taxonomy',
+  isBroken: 'broken flag',
+};
+
+/** "stem and taxonomy updated" — names what actually went to the DB. */
+function describeSaved(changedKeys) {
+  const names = changedKeys.map((k) => SAVED_FIELD_LABELS[k] ?? k);
+  if (names.length === 1) return `${names[0]} updated`;
+  const last = names.pop();
+  return `${names.join(', ')} and ${last} updated`;
 }
 
 /**
