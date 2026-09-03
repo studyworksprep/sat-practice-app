@@ -465,7 +465,7 @@
       "block_type": "check",
       "content": {
         "hint": "Recall the five actions: regression symbol, rename x or y if needed, safe list, constant assignments, requested calculation.",
-        "prompt": "Without looking back, which sequence correctly finds missing constants in equivalent expressions?",
+        "prompt": "From memory — the expression is equivalent \"for all values of x\" and two constants are missing. What's the Desmos routine, in order?",
         "choices": [
           "Use =, let Desmos choose one input value on its own, and report the first constant assignment shown for the expression.",
           "Use ~, change x or y to a subscripted input, define a list of allowed inputs, read the constant assignments, and evaluate the requested expression.",
@@ -558,7 +558,7 @@
       "id": "lesson_complete_1",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can find missing constants with regression</h2><p>You can recognize an equivalent-expression identity, rename x or y when needed, create a safe input list, diagnose common Desmos errors, read the missing constants, and calculate the requested combination.</p>",
+        "html": "<h2>Define the input, then regress</h2><p>Rename the input to \\(x_1\\), give it a list of allowed values, swap \\(=\\) for \\(\\sim\\), and read the constants. If Desmos starts assigning a value to your input, you forgot the list — that's the tell.</p>",
         "button_label": "Complete Lesson"
       }
     }

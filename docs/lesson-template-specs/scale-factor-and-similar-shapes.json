@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_objective",
-      "html": "<h2>One scale factor, three different powers</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Everything hangs off one linear scale factor.</p><p><strong>Why it pays:</strong> Any single measurement gets you to any other, in both directions — lengths, perimeters, areas, surface areas, volumes.</p><p><strong>One caution:</strong> Never cube an area ratio. Go back to the linear scale factor first, then raise it.</p></div><p>When two shapes are <strong>similar</strong>, every corresponding linear measurement changes by the same scale factor. Areas and volumes do not change by that same number.</p><p>In this lesson, you will use the linear scale factor to move among lengths, perimeters, areas, surface areas, and volumes—and work backward from area or volume ratios when needed.</p><p>For example, when the linear scale factor is \\(2\\), lengths and perimeters multiply by \\(2\\), areas and surface areas multiply by \\(4\\), and volumes multiply by \\(8\\).</p><blockquote><p><strong>Goal:</strong> Decide whether a problem uses \\(s\\), \\(s^2\\), or \\(s^3\\), then apply that relationship in either direction.</p></blockquote>",
+      "html": "<h2>One scale factor, three different powers</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Everything hangs off one linear scale factor.</p><p><strong>Why it pays:</strong> Any single measurement gets you to any other, in both directions — lengths, perimeters, areas, surface areas, volumes.</p><p><strong>One caution:</strong> Never cube an area ratio. Go back to the linear scale factor first, then raise it.</p></div><p>When two shapes are <strong>similar</strong>, every length changes by one scale factor — and areas and volumes don't change by that same number. Scale factor \\(2\\): lengths and perimeters double, areas quadruple, volumes multiply by \\(8\\).</p><p>That's the whole lesson: one linear factor, raised to the power the question needs, in either direction.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -562,6 +562,24 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two similar solids, surface areas in the ratio \\(4:49\\), and the question wants volumes. Without looking back: what's the rule, and what's the trap?",
+        "choices": [
+          "Use \\(s\\) for lengths and perimeters, \\(s^3\\) for areas and surface areas, and \\(s^2\\) for volumes; use roots to work backward.",
+          "Use \\(s^2\\) for lengths and perimeters, \\(s^3\\) for areas and surface areas, and \\(s\\) for volumes; use powers to work backward.",
+          "Use \\(s\\) for lengths and perimeters, \\(s^2\\) for areas and surface areas, and \\(s^3\\) for volumes; use roots to work backward.",
+          "Use \\(s\\) for lengths, areas, and volumes alike, since similar shapes preserve every ratio; use roots to work backward."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Match one, two, and three dimensions with the first, second, and third powers of the linear scale factor.",
+        "explanation": "You have it. Length and perimeter are linear, area and surface area are two-dimensional, and volume is three-dimensional. For a linear factor of \\(2\\), those multipliers are \\(2\\), \\(4\\), and \\(8\\). Moving backward requires the matching root."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -578,28 +596,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which summary correctly connects measurements of similar shapes?",
-        "choices": [
-          "Use \\(s\\) for lengths and perimeters, \\(s^3\\) for areas and surface areas, and \\(s^2\\) for volumes; use roots to work backward.",
-          "Use \\(s^2\\) for lengths and perimeters, \\(s^3\\) for areas and surface areas, and \\(s\\) for volumes; use powers to work backward.",
-          "Use \\(s\\) for lengths and perimeters, \\(s^2\\) for areas and surface areas, and \\(s^3\\) for volumes; use roots to work backward.",
-          "Use \\(s\\) for lengths, areas, and volumes alike, since similar shapes preserve every ratio; use roots to work backward."
-        ],
-        "correct_index": 2,
-        "allow_retry": false,
-        "hint": "Match one, two, and three dimensions with the first, second, and third powers of the linear scale factor.",
-        "explanation": "You have it. Length and perimeter are linear, area and surface area are two-dimensional, and volume is three-dimensional. For a linear factor of \\(2\\), those multipliers are \\(2\\), \\(4\\), and \\(8\\). Moving backward requires the matching root."
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can move flexibly among scale relationships</h2><p>You can use a linear scale factor to find new areas, surface areas, and volumes; recover a linear factor from area or volume ratios; bridge between area and volume; and simplify arbitrary variables with convenient positive values.</p>",
+        "html": "<h2>One linear factor, three powers</h2><p>Lengths by \\(s\\), areas by \\(s^2\\), volumes by \\(s^3\\) — and roots to go backward. Never cube an area ratio: get back to the linear factor first, then raise it.</p>",
         "button_label": "Complete Lesson"
       }
     }

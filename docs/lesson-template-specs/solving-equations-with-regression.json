@@ -36,7 +36,7 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Substitute each choice into \\(3n+4\\). Which one produces \\(19\\)?",
-        "explanation": "Right. Desmos assigns \\(n=5\\), and \\(3(5)+4=19\\). <strong>Next, you will learn what the ~ symbol told Desmos to do.</strong>"
+        "explanation": "Right. Desmos assigns \\(n=5\\), and \\(3(5)+4=19\\)."
       },
       "calculator": {
         "display": "open",
@@ -336,7 +336,7 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Substitute each pair into both equations. A system solution must make both equations true.",
-        "explanation": "Correct. \\(6+3=9\\) and \\(6-3=3\\), so \\((6,3)\\) satisfies the entire system. <strong>Next, you will learn the special form Desmos needs for the supporting equation.</strong>"
+        "explanation": "Correct. \\(6+3=9\\) and \\(6-3=3\\), so \\((6,3)\\) satisfies the entire system."
       }
     },
     {
@@ -387,7 +387,7 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Look for exactly one line with a variable alone on the left and exactly one line using ~.",
-        "explanation": "Exactly. \\(p=14-q\\) is a definition, and \\(p^2+q^2\\sim106\\) is the single regression. <strong>Next, you will practice deciding which equation should get each job.</strong>"
+        "explanation": "Exactly. \\(p=14-q\\) is a definition, and \\(p^2+q^2\\sim106\\) is the single regression."
       }
     },
     {
@@ -660,6 +660,24 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Say it back: how do you solve an equation with \\(\\sim\\), what do you read in the panel, and when is regression the wrong tool?",
+        "choices": [
+          "Use lowercase x as the variable, replace one equals sign with ~, read the assignment and RMSE, and treat the assigned value as the only solution the equation has.",
+          "Use an acceptable variable, replace every equals sign with ~, skip the RMSE when the assignment looks reasonable, and restrict the range on every problem.",
+          "Use an acceptable variable, replace one equals sign with ~, read the assignment and RMSE, restrict the range only when useful, and switch methods when every solution matters.",
+          "Use an acceptable variable, replace one equals sign with ~, read the assignment and RMSE, and keep regression as the method even when the question asks for every solution."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Recall the variable rule, the one-regression rule, and the difference between finding one solution and finding all solutions.",
+        "explanation": "You have it. Regression is a fast one-solution tool, especially when you will reuse the assigned value, but it is not a complete solution-counting method."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -676,28 +694,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which summary gives the correct regression strategy?",
-        "choices": [
-          "Use lowercase x as the variable, replace one equals sign with ~, read the assignment and RMSE, and treat the assigned value as the only solution the equation has.",
-          "Use an acceptable variable, replace every equals sign with ~, skip the RMSE when the assignment looks reasonable, and restrict the range on every problem.",
-          "Use an acceptable variable, replace one equals sign with ~, read the assignment and RMSE, restrict the range only when useful, and switch methods when every solution matters.",
-          "Use an acceptable variable, replace one equals sign with ~, read the assignment and RMSE, and keep regression as the method even when the question asks for every solution."
-        ],
-        "correct_index": 2,
-        "allow_retry": false,
-        "hint": "Recall the variable rule, the one-regression rule, and the difference between finding one solution and finding all solutions.",
-        "explanation": "You have it. Regression is a fast one-solution tool, especially when you will reuse the assigned value, but it is not a complete solution-counting method."
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can solve with regression</h2><p>You can enter a one-variable equation, build a system with definitions plus one regression, interpret RMSE, guide the search with a restriction, and choose graphing when a question needs every solution.</p>",
+        "html": "<h2>One equals sign becomes a tilde</h2><p>Swap \\(=\\) for \\(\\sim\\), use a variable Desmos can adjust, and read the assignment. One assigned value is one solution — when the question asks how many solutions exist, switch to graphing.</p>",
         "button_label": "Complete Lesson"
       }
     }

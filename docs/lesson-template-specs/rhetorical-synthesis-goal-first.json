@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>The question tells you what to build</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Turn the goal into a requirement list, then eliminate.</p><p><strong>Why it pays:</strong> Most choices are perfectly true statements drawn from the notes, so \"is this true?\" separates nothing. Goal-fit separates everything.</p><p><strong>One caution:</strong> When the goal has two parts joined by \"and,\" treat it as a contract. A choice that nails one half and drops the other is out.</p></div><p>Rhetorical Synthesis questions show a set of research notes, then ask how a student should use them. The notes look important, but the student's goal is the real decision-maker.</p><p>By the end of this lesson, you can turn that goal into a short requirement list, use it to eliminate choices, and check the notes only when two choices still fit.</p><blockquote><p><strong>Core move:</strong> Start with \"The student wants to...\" - not with the notes.</p></blockquote>",
+      "html": "<h2>The question tells you what to build</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Turn the goal into a requirement list, then eliminate.</p><p><strong>Why it pays:</strong> Most choices are perfectly true statements drawn from the notes, so \"is this true?\" separates nothing. Goal-fit separates everything.</p><p><strong>One caution:</strong> When the goal has two parts joined by \"and,\" treat it as a contract. A choice that nails one half and drops the other is out.</p></div><p>The notes look like the task. They aren't — the student's stated goal is the decision-maker, and most choices are perfectly true statements from the notes that fail it. Start with the goal and no notes at all.</p><blockquote><p><strong>Core move:</strong> Start with \"The student wants to...\" — not with the notes.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -234,6 +234,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Notes, a goal, four choices. From memory, what's the order of operations — and when, if ever, do you read the notes?",
+        "choices": [
+          "Read the notes first, list every fact they contain, test the choices for note-fit, and check the student's goal only if more than one choice still fits.",
+          "Read the student's goal, test the choices for goal-fit before listing requirements, and pick the shortest choice that mentions the notes.",
+          "Read the student's goal, list every requirement, check the notes for repeated words, and test the choices against those words instead of the goal.",
+          "Read the student's goal, list every requirement, test the choices for goal-fit, and check the notes only if more than one choice still fits."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Retrieve the order: goal, requirements, choices, notes if needed.",
+        "explanation": "You have it. Let the goal define the answer first; use the notes as a tiebreaker only when goal-fit does not decide the question."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -255,35 +274,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which process should you use on a Rhetorical Synthesis question?",
-        "choices": [
-          "Read the notes first, list every fact they contain, test the choices for note-fit, and check the student's goal only if more than one choice still fits.",
-          "Read the student's goal, test the choices for goal-fit before listing requirements, and pick the shortest choice that mentions the notes.",
-          "Read the student's goal, list every requirement, check the notes for repeated words, and test the choices against those words instead of the goal.",
-          "Read the student's goal, list every requirement, test the choices for goal-fit, and check the notes only if more than one choice still fits."
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Retrieve the order: goal, requirements, choices, notes if needed.",
-        "explanation": "You have it. Let the goal define the answer first; use the notes as a tiebreaker only when goal-fit does not decide the question."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "summary",
-      "html": "<h2>The strategy in one glance</h2><ol><li>Skip to \"The student wants to...\"</li><li>Turn the action, focus, and every part joined by <strong>and</strong> into requirements.</li><li>Choose the answer that fulfills all requirements; accurate but off-focus summaries are still wrong.</li><li>If two choices truly fit, use the notes to verify numbers, relationships, and the strength of each claim.</li></ol><blockquote><p><strong>Let the goal lead.</strong> In most questions, it gives you enough information to identify the answer without reading the notes first.</p></blockquote>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can synthesize with purpose</h2><p>You can use the student's goal to find the relevant answer quickly, honor every requirement in a multi-part goal, and consult the notes only when a genuine fact check is necessary.</p>",
+        "html": "<h2>The goal is a contract</h2><p>Turn \"the student wants to…\" into a requirement list, then eliminate. A goal joined by \"and\" has two halves; a choice that nails one and drops the other is out. The notes only break a tie.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }

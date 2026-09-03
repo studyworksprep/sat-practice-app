@@ -36,7 +36,7 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Read the value displayed for p below the regression. You can also compare 75 with 90: the percent should be below 100.",
-        "explanation": "Right. Desmos assigns \\(p\\approx83.3\\), so \\(75\\) is about \\(83.3\\%\\) of \\(90\\). <strong>Next, you will unpack the percent notation that made this entry work.</strong>"
+        "explanation": "Right. Desmos assigns \\(p\\approx83.3\\), so \\(75\\) is about \\(83.3\\%\\) of \\(90\\)."
       },
       "calculator": {
         "display": "open",
@@ -875,6 +875,24 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "\"\\(p\\) is 40% greater than 65.\" Without looking back: how do you translate that, what goes after \"than\", and what do you check in the Desmos readout?",
+        "choices": [
+          "Translate the complete sentence, use New as the basis for every comparison, apply Old = New plus or minus p% of New, use an acceptable regression variable, and check the assignment and RMSE.",
+          "Translate the percent phrase by itself, use the value after of or than as the basis, apply New = Old plus p% of Old for each change, and accept the regression when the graph looks close.",
+          "Translate the complete sentence, use the value after of or than as the basis, apply New = Old plus or minus p% of Old, use an acceptable regression variable, and check the assignment and RMSE.",
+          "Use the value before of or than as the basis, apply New = Old plus or minus p% of New, define the regression with lowercase x, and skip the RMSE check when the assignment looks right."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Recall the sentence translation, Old as the comparison base, the plus-or-minus template, and the regression checks.",
+        "explanation": "You have it. The words identify the equation, Old supplies the percent base, the direction selects plus or minus, and regression finds the unknown while RMSE helps you check the match."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -891,28 +909,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which summary correctly describes the percent-and-regression strategy?",
-        "choices": [
-          "Translate the complete sentence, use New as the basis for every comparison, apply Old = New plus or minus p% of New, use an acceptable regression variable, and check the assignment and RMSE.",
-          "Translate the percent phrase by itself, use the value after of or than as the basis, apply New = Old plus p% of Old for each change, and accept the regression when the graph looks close.",
-          "Translate the complete sentence, use the value after of or than as the basis, apply New = Old plus or minus p% of Old, use an acceptable regression variable, and check the assignment and RMSE.",
-          "Use the value before of or than as the basis, apply New = Old plus or minus p% of New, define the regression with lowercase x, and skip the RMSE check when the assignment looks right."
-        ],
-        "correct_index": 2,
-        "allow_retry": false,
-        "hint": "Recall the sentence translation, Old as the comparison base, the plus-or-minus template, and the regression checks.",
-        "explanation": "You have it. The words identify the equation, Old supplies the percent base, the direction selects plus or minus, and regression finds the unknown while RMSE helps you check the match."
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can translate and solve percent problems</h2><p>You can convert percents and decimals, use Desmos % of notation, solve unknown-percent equations with regression, apply the percent-change template, identify the basis after of or than, and connect definitions to one regression in a multi-step problem.</p><p><strong>Read the complete mathematical sentence, translate each phrase, and check the result against the original meaning.</strong></p>",
+        "html": "<h2>Translate the sentence; let regression do the rest</h2><p>Type the percent sentence almost word for word — Desmos writes \"of\" the moment you type % — and the base stays where the sentence put it. The value after \"than\" is the old value. Get that backwards and every step after it is wrong.</p>",
         "button_label": "Complete Lesson"
       }
     }

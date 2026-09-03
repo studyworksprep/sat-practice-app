@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Words in Context are sentence-completion questions</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Read, predict, then match — decide what the blank must mean before seeing any word.</p><p><strong>Why it pays:</strong> The choices are all real words that fit the grammar. Only a prediction separates them.</p><p><strong>One caution:</strong> The blank's sentence tells you where the answer goes, but the whole text tells you what it means. If nothing matches your prediction, make a second pass rather than settling.</p></div><p>A Words in Context question asks which word or phrase most logically and precisely completes a short text. The blank is usually inside one sentence, but the evidence can appear anywhere in the text.</p><p>By the end of this lesson, you will be able to:</p><ul><li>read the entire text and trace its logic,</li><li>predict your own word or phrase before studying the choices,</li><li>test whether an answer fits the sentence perfectly, and</li><li>use elimination and word knowledge when a prediction is difficult.</li></ul>",
+      "html": "<h2>Words in Context are sentence-completion questions</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Read, predict, then match — decide what the blank must mean before seeing any word.</p><p><strong>Why it pays:</strong> The choices are all real words that fit the grammar. Only a prediction separates them.</p><p><strong>One caution:</strong> The blank's sentence tells you where the answer goes, but the whole text tells you what it means. If nothing matches your prediction, make a second pass rather than settling.</p></div><p>Every choice in a Words in Context question is a real word that fits the grammar. Nothing separates them except a prediction you make before you see them — from the whole text, not just the sentence with the blank.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -374,6 +374,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Cover the screen. A Words in Context blank. What do you do before you read the choices, and what do you do if none of them fits your prediction?",
+        "choices": [
+          "Read the blank's sentence only, connect its clues, predict a roughly fitting meaning, then keep the first familiar choice.",
+          "Read the choices first, connect each to the text's topic, predict which sounds best, then verify by rereading the blank's sentence.",
+          "Read the entire text, connect its logic and clues, predict a perfectly fitting meaning, then match and verify a choice.",
+          "Read the entire text, predict a meaning before connecting the logic and clues, then match a choice without verifying it."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Retrieve the four moves: read, connect, predict, match.",
+        "explanation": "You have it. The text determines the meaning; your prediction creates a target; and the final reread proves that the selected answer fits."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -395,29 +414,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which process best solves a Words in Context question?",
-        "choices": [
-          "Read the blank's sentence only, connect its clues, predict a roughly fitting meaning, then keep the first familiar choice.",
-          "Read the choices first, connect each to the text's topic, predict which sounds best, then verify by rereading the blank's sentence.",
-          "Read the entire text, connect its logic and clues, predict a perfectly fitting meaning, then match and verify a choice.",
-          "Read the entire text, predict a meaning before connecting the logic and clues, then match a choice without verifying it."
-        ],
-        "correct_index": 2,
-        "allow_retry": false,
-        "hint": "Retrieve the four moves: read, connect, predict, match.",
-        "explanation": "You have it. The text determines the meaning; your prediction creates a target; and the final reread proves that the selected answer fits."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can solve Words in Context questions</h2><p>You can read the full text, trace its logical connections, predict the missing meaning, test subject–verb–object fit, and match the best-supported choice. When vocabulary is difficult, you can rely first on known meanings, then on recognizable pieces, and only last on a word's feeling.</p>",
+        "html": "<h2>Read, predict, match</h2><p>Decide what the blank must mean before you see a single word, then match. The blank's sentence tells you where the answer goes; the whole text tells you what it means. If nothing matches your prediction, make a second pass rather than settling.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }

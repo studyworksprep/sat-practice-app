@@ -803,6 +803,20 @@
   color: var(--fg2);
 }
 
+/* Plan 6.4 — the moments worth naming (clean run, streak, traps
+   walked past). Quiet list under the score line; at most two items. */
+.completeHighlights {
+  list-style: none;
+  margin: var(--s2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--color-app-accent);
+  font-weight: 600;
+}
+
 .completeStruggled {
   margin: 0;
   font-size: var(--body-sm-size);

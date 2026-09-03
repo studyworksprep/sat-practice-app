@@ -294,6 +294,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "\"What does \\(9r\\) represent?\" From memory: how do you read a term like that, and what do you check before you answer?",
+        "choices": [
+          "Label each factor's units, treat the coefficient as the rate and the variable as time, read the product as the grand total, and read the sum as a subtotal.",
+          "Pair each rate with the largest quantity in the equation, label the units afterward to confirm, and read every term as a grand total.",
+          "Label each variable's units by themselves, read the variable and its full term as the same quantity, and read the sum as a subtotal.",
+          "Label each factor's units, pair a rate with its matching quantity, read the product as a subtotal, and read the sum as the grand total."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Recall the Label–Pair–Product–Whole process and the fact that either factor can carry the rate.",
+        "explanation": "You have it. Unit labels reveal whether the coefficient or variable is the rate, what the complete term totals, and how the terms combine."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -315,29 +334,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which statement gives the most reliable way to interpret a contextual term in a two-variable linear equation?",
-        "choices": [
-          "Label each factor's units, treat the coefficient as the rate and the variable as time, read the product as the grand total, and read the sum as a subtotal.",
-          "Pair each rate with the largest quantity in the equation, label the units afterward to confirm, and read every term as a grand total.",
-          "Label each variable's units by themselves, read the variable and its full term as the same quantity, and read the sum as a subtotal.",
-          "Label each factor's units, pair a rate with its matching quantity, read the product as a subtotal, and read the sum as the grand total."
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Recall the Label–Pair–Product–Whole process and the fact that either factor can carry the rate.",
-        "explanation": "You have it. Unit labels reveal whether the coefficient or variable is the rate, what the complete term totals, and how the terms combine."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can read rate equations by units</h2><p>You can recognize rates, match them with quantities, and interpret the coefficient, variable, full term, and equation total without confusing their roles.</p><p>You also know that a variable can represent a rate and that interval units must match before you multiply.</p><blockquote><p><strong>Final reminder:</strong> Rate × matching quantity = subtotal; subtotal + subtotal = total.</p></blockquote>",
+        "html": "<h2>Units tell you what a term means</h2><p>Rate × the quantity it matches = a subtotal; subtotal + subtotal = the total. When a question asks what a coefficient means, check what the variable counts first — \\(9r\\) is a different sentence depending on whether \\(r\\) is hours or trips.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }

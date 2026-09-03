@@ -419,6 +419,26 @@
     },
     {
       "kind": "raw_block",
+      "id": "check_15",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which process most efficiently solves an initial-modifier word-order question?",
+        "choices": [
+          "Read the choices first, compare punctuation, and identify the modifier's subject last.",
+          "Choose the shortest option, then check agreement without finding the modifier's subject.",
+          "Find a repeated noun, move it to the end, and ignore what the modifier describes.",
+          "Find the modifier's first verb, predict its target, and put that target directly past the comma."
+        ],
+        "allow_retry": false,
+        "explanation": "That's the Modifier Match process: use the first verb to predict the target noun phrase, then let first-position word order separate the choices.",
+        "correct_index": 3
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -440,30 +460,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "check_15",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which process most efficiently solves an initial-modifier word-order question?",
-        "choices": [
-          "Read the choices first, compare punctuation, and identify the modifier's subject last.",
-          "Choose the shortest option, then check agreement without finding the modifier's subject.",
-          "Find a repeated noun, move it to the end, and ignore what the modifier describes.",
-          "Find the modifier's first verb, predict its target, and put that target directly past the comma."
-        ],
-        "allow_retry": false,
-        "explanation": "That's the Modifier Match process: use the first verb to predict the target noun phrase, then let first-position word order separate the choices.",
-        "correct_index": 3
-      },
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_complete_1",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can match an opening modifier to its noun</h2><p>You can recognize the long, scrambled choice format; use the modifier's first verb to predict the person, thing, or property it describes; handle <em>that of</em> comparisons with a possessive noun phrase; and select the one answer that places the target immediately after the comma.</p>",
+        "html": "<h2>Ask what the phrase describes</h2><p>The opening phrase reaches across the comma for its noun. Ask what it describes before you read a single choice — read them first and several of them start to sound fine.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": {

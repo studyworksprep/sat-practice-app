@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_objective",
-      "html": "<h2>Turn points into an equation</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Points in a table, then the Regression button.</p><p><strong>Why it pays:</strong> You generate the answer instead of testing four choices, and it works the same for linear, quadratic, and exponential.</p><p><strong>One caution:</strong> The order of the pair is the whole game. \"After 2 hours there were 180 bacteria\" is \\((2, 180)\\), never \\((180, 2)\\).</p></div><p>Some SAT questions give you data and ask for an equation that matches it. The data may appear in a table, on a graph, or inside a word problem.</p><p>In this lesson, you will use one repeatable tool: <strong>identify input-output points, enter them in a Desmos table, and use the Regression button to produce a standard equation</strong>.</p><blockquote><p><strong>Goal:</strong> Use this tool for a line, a quadratic, or an exponential model without typing the equation yourself.</p></blockquote>",
+      "html": "<h2>Turn points into an equation</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Points in a table, then the Regression button.</p><p><strong>Why it pays:</strong> You generate the answer instead of testing four choices, and it works the same for linear, quadratic, and exponential.</p><p><strong>One caution:</strong> The order of the pair is the whole game. \"After 2 hours there were 180 bacteria\" is \\((2, 180)\\), never \\((180, 2)\\).</p></div><p>Some SAT questions give you data — a table, a graph, a sentence — and four equations. You could test all four. Or you could type the points into a table and press one button, and Desmos hands you the equation.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -879,6 +879,24 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A word problem describes an exponential situation and the choices are four equations. Cover the screen: what's the table-and-button routine, in order?",
+        "choices": [
+          "Identify input-output points, enter them in a table, click Regression, keep the Linear model for every dataset, and translate the displayed equation back to the problem.",
+          "Identify input-output points, type a guessed equation, adjust its coefficients until the graph passes near the table's points, and report the closest version.",
+          "Enter the outputs in a table, click Regression, choose the appropriate standard model, and keep the displayed \\(y_1\\) and \\(x_1\\) letters in the final answer.",
+          "Identify input-output points, enter them in a table, click Regression, choose the appropriate standard model, and translate the displayed equation back to the problem."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Recall the four actions: points, table, Regression button, model type. Then remember to use the problem's variable names.",
+        "explanation": "You have it. That sequence handles points from tables, graphs, and word problems while letting the standard Regression tool build the equation."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -900,28 +918,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which summary gives the complete standard-regression strategy?",
-        "choices": [
-          "Identify input-output points, enter them in a table, click Regression, keep the Linear model for every dataset, and translate the displayed equation back to the problem.",
-          "Identify input-output points, type a guessed equation, adjust its coefficients until the graph passes near the table's points, and report the closest version.",
-          "Enter the outputs in a table, click Regression, choose the appropriate standard model, and keep the displayed \\(y_1\\) and \\(x_1\\) letters in the final answer.",
-          "Identify input-output points, enter them in a table, click Regression, choose the appropriate standard model, and translate the displayed equation back to the problem."
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Recall the four actions: points, table, Regression button, model type. Then remember to use the problem's variable names.",
-        "explanation": "You have it. That sequence handles points from tables, graphs, and word problems while letting the standard Regression tool build the equation."
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can turn data into a standard equation</h2><p>You can identify input-output points, fit a linear, quadratic, or exponential model with the Desmos Regression button, translate function notation, and use symmetry when a quadratic question states only a vertex and one point.</p>",
+        "html": "<h2>Points in a table, then the Regression button</h2><p>Turn the data into input-output pairs, enter them, press Regression, and translate the equation back to the problem. The order of each pair is the whole game: \"after 2 hours there were 180 bacteria\" is \\((2,180)\\), never \\((180,2)\\).</p>",
         "button_label": "Complete Lesson"
       }
     }

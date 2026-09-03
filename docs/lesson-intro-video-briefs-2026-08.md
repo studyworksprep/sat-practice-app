@@ -24,6 +24,8 @@ before any teaching. Face plus whiteboard. Three beats, in order:
 
 1. **Name the move.** Say the name the lesson uses, in the words a tutor
    says in session. The name is the thing students carry out of the video.
+   The approved handles (2026-09-03) are the **Names** table in
+   `lesson-voice-rewrites-2026-09.md` — say that name on camera.
 2. **The test-day payoff.** What this buys them in the two minutes they
    get per question — time saved, a trap dodged, an algebra step skipped.
 3. **One caution.** Exactly one. The failure that actually happens, not a

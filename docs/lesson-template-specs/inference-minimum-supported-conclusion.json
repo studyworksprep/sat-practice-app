@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Inference is a careful connection, not a guess</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Soundbite each sentence, combine them, take the smallest step.</p><p><strong>Why it pays:</strong> It stops you reaching for the interesting conclusion, which is almost always the wrong one.</p><p><strong>One caution:</strong> If you find yourself defending a choice with something you know rather than something the text says, it's the wrong choice — however obviously true it feels.</p></div><p>SAT Inference questions ask you to complete a text with a logical conclusion. The answer may not be stated word for word, but every important part of it must come from the passage.</p><p>By the end of this lesson, you can compress each sentence into a soundbite, combine the relationships, predict the smallest supported conclusion, and reject choices that go beyond the evidence.</p><blockquote><p><strong>Core rule:</strong> Connect the dots the text gives you. Do not add new dots.</p></blockquote>",
+      "html": "<h2>Inference is a careful connection, not a guess</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Soundbite each sentence, combine them, take the smallest step.</p><p><strong>Why it pays:</strong> It stops you reaching for the interesting conclusion, which is almost always the wrong one.</p><p><strong>One caution:</strong> If you find yourself defending a choice with something you know rather than something the text says, it's the wrong choice — however obviously true it feels.</p></div><p>Inference questions end a text with a blank and four conclusions. The interesting one is almost always wrong — it adds a dot the passage never gave you. The right one is the smallest step the sentences already support.</p><blockquote><p><strong>Core rule:</strong> Connect the dots the text gives you. Do not add new dots.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -272,6 +272,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "\"Which choice most logically completes the text?\" — from memory, what do you do before you look at the four choices?",
+        "choices": [
+          "Soundbite each important sentence, combine the relationships, predict the most interesting conclusion, and choose the choice that reaches furthest.",
+          "Combine the relationships first, soundbite the sentences that support them, predict a conclusion, and keep any choice the text does not contradict.",
+          "Soundbite each important sentence, predict a conclusion from the strongest single soundbite, and prove the choice while rejecting overreach.",
+          "Soundbite each important sentence, combine the relationships, predict the smallest supported conclusion, and prove the choice while rejecting overreach."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Retrieve the four moves: soundbite, combine, predict, prove.",
+        "explanation": "You have it. The correct inference comes from the whole text and makes only the smallest leap the evidence supports."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -293,29 +312,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which process should you use when a question asks which choice most logically completes the text?",
-        "choices": [
-          "Soundbite each important sentence, combine the relationships, predict the most interesting conclusion, and choose the choice that reaches furthest.",
-          "Combine the relationships first, soundbite the sentences that support them, predict a conclusion, and keep any choice the text does not contradict.",
-          "Soundbite each important sentence, predict a conclusion from the strongest single soundbite, and prove the choice while rejecting overreach.",
-          "Soundbite each important sentence, combine the relationships, predict the smallest supported conclusion, and prove the choice while rejecting overreach."
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Retrieve the four moves: soundbite, combine, predict, prove.",
-        "explanation": "You have it. The correct inference comes from the whole text and makes only the smallest leap the evidence supports."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can infer without guessing</h2><p>You can recognize the \"most logically completes\" question pattern, turn dense sentences into useful soundbites, combine facts across the passage, and predict the smallest supported conclusion.</p><p>You can also reject choices that rely on one sentence, reverse a relationship, invent a cause, use outside knowledge, or make a claim stronger than the evidence allows.</p><blockquote><p><strong>Final reminder:</strong> Connect the text's dots - and stop there.</p></blockquote>",
+        "html": "<h2>Take the smallest supported step</h2><p>Soundbite each sentence, combine them, and stop at the conclusion the text already earns. If you're defending a choice with something you know instead of something the text says, it's the wrong choice.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }

@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>A fast order for every Boundaries question</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> One fixed order, every question: full stop, colon, dash, comma.</p><p><strong>Why it pays:</strong> You stop reading four choices and asking which sounds best — sound is exactly what the test exploits — and you get a routine that runs the same way under time pressure.</p><p><strong>One caution:</strong> When two choices do the identical job, neither can be right. Cross them both off before you think any harder.</p></div><p>Boundaries questions ask you to choose punctuation between parts of a sentence. Instead of reading every answer and choosing what sounds best, use the same order every time:</p><ol><li><strong>Full stop:</strong> semicolon, period, or comma plus FANBOYS</li><li><strong>Colon</strong></li><li><strong>Dash</strong></li><li><strong>Comma</strong></li></ol><p>By the end of this lesson, you will be able to test those four categories in order and stop as soon as one answer is uniquely correct.</p>",
+      "html": "<h2>A fast order for every Boundaries question</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> One fixed order, every question: full stop, colon, dash, comma.</p><p><strong>Why it pays:</strong> You stop reading four choices and asking which sounds best — sound is exactly what the test exploits — and you get a routine that runs the same way under time pressure.</p><p><strong>One caution:</strong> When two choices do the identical job, neither can be right. Cross them both off before you think any harder.</p></div><p>Boundaries questions are the fastest points in Reading and Writing — if you test the punctuation in a fixed order instead of asking which choice sounds right. Sound is exactly what the test exploits.</p><ol><li><strong>Full stop:</strong> semicolon, period, or comma plus FANBOYS</li><li><strong>Colon</strong></li><li><strong>Dash</strong></li><li><strong>Comma</strong></li></ol><p>You stop the moment one answer is the only one that works. First, see how the test dresses these up.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -33,7 +33,7 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Return to the four-category order. Which category comes before colon, dash, and comma?",
-        "explanation": "Right. A semicolon is a <strong>full-stop candidate</strong>, so test it before the colon, dash, or comma. Next, you will learn the easiest way to perform that test."
+        "explanation": "Right. A semicolon is a <strong>full-stop candidate</strong>, so test it before the colon, dash, or comma."
       },
       "calculator": {
         "display": "hidden"
@@ -608,6 +608,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Cover the screen. A Boundaries question is in front of you and the clock is running — in order, what do you test?",
+        "choices": [
+          "Check for a serial-semicolon list; test commas first, then dash, then colon, then full stops; stop when one answer is uniquely supported.",
+          "Test full stops, then colon, then dash, then comma; check for a serial-semicolon list only when two answers remain supported.",
+          "Check for a serial-semicolon list; test full stops, then colon, then dash; eliminate the comma answers without testing them.",
+          "Check for a serial-semicolon list; test full stops, then colon, then dash, then comma; stop when one answer is uniquely supported."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Remember both the special semicolon check and the four-category order. Commas belong at the end.",
+        "explanation": "Exactly. Check the serial-semicolon possibility, then use <strong>full stop, colon, dash, comma</strong>. The order saves time and keeps later traps from influencing a decision you have already proved."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -629,31 +650,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which routine should guide a Boundaries question from beginning to end?",
-        "choices": [
-          "Check for a serial-semicolon list; test commas first, then dash, then colon, then full stops; stop when one answer is uniquely supported.",
-          "Test full stops, then colon, then dash, then comma; check for a serial-semicolon list only when two answers remain supported.",
-          "Check for a serial-semicolon list; test full stops, then colon, then dash; eliminate the comma answers without testing them.",
-          "Check for a serial-semicolon list; test full stops, then colon, then dash, then comma; stop when one answer is uniquely supported."
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Remember both the special semicolon check and the four-category order. Commas belong at the end.",
-        "explanation": "Exactly. Check the serial-semicolon possibility, then use <strong>full stop, colon, dash, comma</strong>. The order saves time and keeps later traps from influencing a decision you have already proved."
-      },
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You have a Boundaries routine</h2><p>You can test full stops, colons, dashes, and commas in a fast order; recognize a serial-semicolon list; and avoid commas that split essential parts of a sentence.</p>",
+        "html": "<h2>Sound is the trap. Order is the move.</h2><p>Full stop, colon, dash, comma — the same four tests in the same order, and two choices that do the identical job are both out. That's the whole routine, and it runs the same way with two minutes left.</p>",
         "button_label": "Complete Lesson"
       }
     }

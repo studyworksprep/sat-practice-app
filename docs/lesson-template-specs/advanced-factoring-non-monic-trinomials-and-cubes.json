@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Extend factoring beyond the basic patterns</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Organized trial and error, checked by the middle term — the outside and inside products have to add to it.</p><p><strong>Why it pays:</strong> A leading coefficient other than \\(1\\) stops being a wall.</p><p><strong>One caution:</strong> Before you grind, ask whether the question actually needs a factored form. If it asks for solutions, graphing may be faster.</p></div><p>You already know that factoring reverses multiplication. In this lesson, you will use that same idea to:</p><ol><li>factor trinomials such as \\(6x^2+11x+3\\), whose leading coefficient is not \\(1\\);</li><li>recognize when a non-monic trinomial is prime over the integers;</li><li>derive and use the sum- and difference-of-cubes identities;</li><li>combine GCF, trinomial, square, and cube methods in complete factorizations.</li></ol><blockquote><p><strong>No new trinomial trick:</strong> non-monic factoring will be organized trial and error. Every trial comes from the multiplication you are trying to reverse.</p></blockquote>",
+      "html": "<h2>Extend factoring beyond the basic patterns</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Organized trial and error, checked by the middle term — the outside and inside products have to add to it.</p><p><strong>Why it pays:</strong> A leading coefficient other than \\(1\\) stops being a wall.</p><p><strong>One caution:</strong> Before you grind, ask whether the question actually needs a factored form. If it asks for solutions, graphing may be faster.</p></div><p>A leading coefficient that isn't \\(1\\) stops most people cold: \\(6x^2+11x+3\\) doesn't split by the sum-and-product habit. It still factors — by organized trial, checked by one number.</p><blockquote><p><strong>No new trick:</strong> every trial comes from the multiplication you're reversing, and the middle term tells you whether it worked.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -466,6 +466,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which statement best captures the reasoning used throughout this lesson?",
+        "choices": [
+          "Multiply back first, use the middle term to pick both outer terms, and constrain the factors only when the trial fails.",
+          "Constrain possible factors with the middle term, use outer-product cancellation or addition, and multiply back to verify.",
+          "Constrain possible factors with the outer terms and skip the middle products, since multiplying back will catch any error.",
+          "Constrain possible factors with the outer terms, use middle-product cancellation or addition, and multiply back to verify."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Retrieve the shared idea behind both cross-product trials and the cube derivations.",
+        "explanation": "Exactly. Both topics reverse multiplication: the outer terms constrain the factors, and the middle products determine whether the structure works."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -487,29 +506,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which statement best captures the reasoning used throughout this lesson?",
-        "choices": [
-          "Multiply back first, use the middle term to pick both outer terms, and constrain the factors only when the trial fails.",
-          "Constrain possible factors with the middle term, use outer-product cancellation or addition, and multiply back to verify.",
-          "Constrain possible factors with the outer terms and skip the middle products, since multiplying back will catch any error.",
-          "Constrain possible factors with the outer terms, use middle-product cancellation or addition, and multiply back to verify."
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Retrieve the shared idea behind both cross-product trials and the cube derivations.",
-        "explanation": "Exactly. Both topics reverse multiplication: the outer terms constrain the factors, and the middle products determine whether the structure works."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can factor advanced polynomial forms</h2><p>You can organize non-monic trials from factor pairs, use cross-products to accept or reject an arrangement, prove when no integer factorization exists, derive the cube identities from cancellation, and combine those methods with GCF and difference of squares.</p>",
+        "html": "<h2>The middle term decides it</h2><p>Non-monic trinomial, cube, or a mix of both — the outside-inside products have to add to the middle term, and the cube identities come back from cancellation whenever you forget them. Before you grind, ask whether the question wanted a factored form at all.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }

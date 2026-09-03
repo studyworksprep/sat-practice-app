@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Let the graphs solve the system</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Type both equations exactly as written and click where they cross.</p><p><strong>Why it pays:</strong> A multi-step algebra problem becomes two lines of typing — and it can't go wrong the way a sign slip in elimination can.</p><p><strong>One caution:</strong> After you click the intersection, read the question again. It often wants \\(x+y\\), or just \\(y\\), not the point you just clicked.</p></div><p>For essentially every SAT system, use graphing as your default instead of starting with elimination or substitution. You can enter both equations in Desmos and let their graphs show where both equations are true.</p><p>In this lesson, you will learn to graph equations without simplifying them, read an intersection, rename variables for Desmos, answer the quantity requested, and find every solution when a nonlinear equation creates more than one intersection.</p><blockquote><p><strong>Start by exploring.</strong> On the next screen, click the point where the two lines meet.</p></blockquote>",
+      "html": "<h2>Let the graphs solve the system</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Type both equations exactly as written and click where they cross.</p><p><strong>Why it pays:</strong> A multi-step algebra problem becomes two lines of typing — and it can't go wrong the way a sign slip in elimination can.</p><p><strong>One caution:</strong> After you click the intersection, read the question again. It often wants \\(x+y\\), or just \\(y\\), not the point you just clicked.</p></div><p>For essentially every SAT system, graphing is the default: type both equations exactly as written and click where they cross. No elimination, no substitution, and no sign slip to make.</p><blockquote><p><strong>Start by exploring.</strong> On the next screen, click the point where the two lines meet.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }
@@ -48,7 +48,7 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Click the one point that lies on both lines, then read the complete ordered pair.",
-        "explanation": "Right. The two lines meet at \\((2,5)\\). Next, you will connect that shared point to the meaning of an equation."
+        "explanation": "Right. The two lines meet at \\((2,5)\\)."
       },
       "calculator": {
         "display": "open",
@@ -645,6 +645,24 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A system with \\(t\\) and \\(u\\) instead of \\(x\\) and \\(y\\), and the question wants \\(t+u\\). From memory: the Desmos routine, in order.",
+        "choices": [
+          "Use x and y as the coordinate variables; simplify both equations by hand before entering them; click the first intersection; report its x-coordinate.",
+          "Use x and y as the coordinate variables; enter both complete equations; click every intersection; translate variables if needed; answer the requested quantity.",
+          "Use x and y as the coordinate variables; enter both complete equations; click every x-intercept; translate variables if needed; answer the requested quantity.",
+          "Enter both complete equations with the problem's original letters; click every intersection; answer with the coordinates Desmos lists first."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Recall the action sequence: variables, enter both, intersections, translate, answer.",
+        "explanation": "You have it. Entering both equations directly makes every shared point visible, and the final steps ensure you report exactly what the question asks."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -661,28 +679,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which process correctly solves a system of equations with Desmos?",
-        "choices": [
-          "Use x and y as the coordinate variables; simplify both equations by hand before entering them; click the first intersection; report its x-coordinate.",
-          "Use x and y as the coordinate variables; enter both complete equations; click every intersection; translate variables if needed; answer the requested quantity.",
-          "Use x and y as the coordinate variables; enter both complete equations; click every x-intercept; translate variables if needed; answer the requested quantity.",
-          "Enter both complete equations with the problem's original letters; click every intersection; answer with the coordinates Desmos lists first."
-        ],
-        "correct_index": 1,
-        "allow_retry": false,
-        "hint": "Recall the action sequence: variables, enter both, intersections, translate, answer.",
-        "explanation": "You have it. Entering both equations directly makes every shared point visible, and the final steps ensure you report exactly what the question asks."
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can solve systems by graphing</h2><p>You can enter two equations without simplifying them, use each intersection as a solution, rename variables for Desmos, and report a requested variable or expression.</p><p>You can also find multiple solutions when a nonlinear graph creates multiple intersections. Special systems with no intersection or overlapping graphs belong in the next lesson.</p>",
+        "html": "<h2>Type both, click the crossing</h2><p>Enter the equations as written — no simplifying — and every intersection is a solution. Then read the question again: it usually wants \\(x+y\\), or just \\(y\\), not the point you clicked.</p>",
         "button_label": "Complete Lesson"
       }
     }

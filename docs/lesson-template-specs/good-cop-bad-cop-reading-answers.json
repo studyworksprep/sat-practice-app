@@ -503,7 +503,7 @@
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>One choice, two questions</h2><p>For each answer, Good Cop asks what matches your answer target. Bad Cop asks what is wrong, unsupported, or not answering the question. Cross out a choice when any important part fails, and keep it only when its whole meaning works.</p><p>Remember to check the exact job, the right people or things and what they did, the strength and limits of the statement, and any added idea the passage does not earn.</p><p>On easier questions, elimination will usually get you there quickly. On harder questions, using both sides helps you separate two choices that initially look possible.</p>",
+        "html": "<h2>One choice, two questions</h2><p>Good Cop asks what matches your target; Bad Cop hunts for the one word that makes it wrong. Keep a choice only when its whole meaning works — and don't cross out \"all\" or \"never\" on sight. Compare the strength of the choice to the strength of the text.</p>",
         "button_label": "Complete Lesson"
       }
     }

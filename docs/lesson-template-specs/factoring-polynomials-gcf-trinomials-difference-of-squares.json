@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Turn expanded polynomials back into products</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Factoring is multiplication run backwards.</p><p><strong>Why it pays:</strong> Two patterns cover most of what the SAT asks, and knowing <em>why</em> they work means you can rebuild them under pressure instead of recalling a rule.</p><p><strong>One caution:</strong> Not everything factors. When no integer pair works, \"prime\" is a real answer — don't invent a pair because the directions said to factor.</p></div><p>Factoring rewrites a polynomial as a multiplication problem. You will learn why two important factoring patterns work, then decide which pattern to use without being told.</p><p>This lesson begins with a short GCF diagnostic. If you need the details, the lesson will pause to rebuild that foundation. Otherwise, you can move ahead quickly.</p><blockquote><p><strong>Scope:</strong> We will factor trinomials whose \\(x^2\\)-coefficient is \\(1\\). Trinomials such as \\(2x^2+7x+3\\) require a later method.</p></blockquote>",
+      "html": "<h2>Turn expanded polynomials back into products</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Factoring is multiplication run backwards.</p><p><strong>Why it pays:</strong> Two patterns cover most of what the SAT asks, and knowing <em>why</em> they work means you can rebuild them under pressure instead of recalling a rule.</p><p><strong>One caution:</strong> Not everything factors. When no integer pair works, \"prime\" is a real answer — don't invent a pair because the directions said to factor.</p></div><p>Factoring is multiplication run backwards — which is why two patterns cover most of what the SAT asks, and why you can rebuild either one under pressure instead of recalling a rule.</p><p>A short GCF check comes first; if it's shaky, the lesson pauses to rebuild it. Otherwise you'll move fast.</p><blockquote><p><strong>Scope:</strong> We will factor trinomials whose \\(x^2\\)-coefficient is \\(1\\). Trinomials such as \\(2x^2+7x+3\\) require a later method.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -458,6 +458,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which statement is always a sound first step when you are asked to factor a polynomial completely?",
+        "choices": [
+          "Check whether the expression is a difference of squares.",
+          "List factor pairs of the constant term.",
+          "Check whether every term shares a GCF.",
+          "Split the middle term before anything else."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "This step comes before choosing any pattern.",
+        "explanation": "Correct. Removing the full GCF simplifies the expression and may reveal the next factoring pattern."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -479,29 +498,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which statement is always a sound first step when you are asked to factor a polynomial completely?",
-        "choices": [
-          "Check whether the expression is a difference of squares.",
-          "List factor pairs of the constant term.",
-          "Check whether every term shares a GCF.",
-          "Split the middle term before anything else."
-        ],
-        "correct_index": 2,
-        "allow_retry": false,
-        "hint": "This step comes before choosing any pattern.",
-        "explanation": "Correct. Removing the full GCF simplifies the expression and may reveal the next factoring pattern."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_complete",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>Factoring is multiplication in reverse</h2><p>You can now explain where the sum-product relationship and the difference-of-squares pattern come from, search factor pairs systematically, remove a GCF, and continue until an expression is factored completely.</p><p>That understanding gives you a way to rebuild a forgotten pattern: distribute the proposed factors and see whether they return the original polynomial.</p>",
+        "html": "<h2>Run the multiplication backwards</h2><p>Sum-and-product for trinomials, difference of squares on sight, GCF first every time — and when no integer pair works, \"prime\" is a real answer. Distribute your factors to check; the original polynomial should come back.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }

@@ -66,6 +66,7 @@ import {
   shouldCompleteDesmosResult,
   shouldCompleteOnContinue,
   summarizeCheckAttempts,
+  completionHighlights,
 } from '@/lib/lesson/runtime-progress.mjs';
 import {
   formatNumericCheckAnswer,
@@ -695,6 +696,13 @@ export function LessonSlideshow({
                 {checkTally.answered === 1 ? 'check' : 'checks'} right on the
                 first try.
               </p>
+              {completionHighlights(checkTally).length > 0 && (
+                <ul className={s.completeHighlights}>
+                  {completionHighlights(checkTally).map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              )}
               {checkTally.struggledBlocks.length > 0 && (
                 <p className={s.completeStruggled}>
                   Worth another look:{' '}
