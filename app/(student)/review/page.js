@@ -219,8 +219,9 @@ export default async function StudentReviewPage() {
 
       {/* ---------- Due for review (§3.1 spaced repetition) ---------- */}
       {/* The SRS queue's daily surface: questions you missed coming
-          back on schedule, plus micro-drills for skills the coverage
-          model says are slipping. Flashcard dues are listed for
+          back on schedule, micro-drills for skills the coverage model
+          says are slipping, and (plan 5.3) a retrieval pass on lessons
+          finished ~2 days ago. Flashcard dues are listed for
           awareness but reviewed in their own flip flow. */}
       <DueReviewCard summary={dueSummary} />
 
@@ -343,13 +344,16 @@ export default async function StudentReviewPage() {
 // ──────────────────────────────────────────────────────────────
 
 function DueReviewCard({ summary }) {
-  const drillable = summary.questions + summary.skills;
+  const drillable = summary.questions + summary.skills + summary.lessons;
   const parts = [];
   if (summary.questions > 0) {
     parts.push(`${summary.questions} question${summary.questions === 1 ? '' : 's'}`);
   }
   if (summary.skills > 0) {
     parts.push(`${summary.skills} slipping skill${summary.skills === 1 ? '' : 's'}`);
+  }
+  if (summary.lessons > 0) {
+    parts.push(`${summary.lessons} finished lesson${summary.lessons === 1 ? '' : 's'}`);
   }
   if (summary.flashcards > 0) {
     parts.push(`${summary.flashcards} flashcard${summary.flashcards === 1 ? '' : 's'}`);
@@ -363,9 +367,9 @@ function DueReviewCard({ summary }) {
             <span>Due for review</span>
           </div>
           <div className={s.cardHint}>
-            Spaced repetition: what you missed comes back right when
-            you&apos;re about to forget it. Do today&apos;s reviews and
-            they space further out.
+            Spaced repetition: what you missed — and what you just
+            learned — comes back right when you&apos;re about to forget
+            it. Do today&apos;s reviews and they space further out.
           </div>
         </div>
         <span className={s.cardTag}>
@@ -376,9 +380,9 @@ function DueReviewCard({ summary }) {
         <div className={s.empty}>
           <div className={s.emptyTitle}>All caught up.</div>
           <div className={s.emptyBody}>
-            Nothing is due right now. Missed questions and slipping
-            skills queue themselves up here automatically as you
-            practice.
+            Nothing is due right now. Missed questions, slipping
+            skills, and lessons you just finished queue themselves up
+            here automatically as you practice.
           </div>
         </div>
       ) : (

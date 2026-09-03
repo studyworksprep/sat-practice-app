@@ -10,7 +10,17 @@
 // 1:1 onto review_queue (interval_days, ease, lapses, last_result,
 // due_at, last_reviewed_at).
 
-export type ReviewItemType = 'question' | 'skill' | 'flashcard' | 'vocab';
+// 'lesson_check' (plan 5.3) is delayed retrieval after a finished
+// lesson; item_ref is a lessons uuid. It is deliberately NOT 'skill':
+// syncDecayedSkillReviews deletes skill rows whose unit is no longer
+// decayed, which would sweep a lesson's retrieval item before it came
+// due. See the 20260901120000 migration.
+export type ReviewItemType =
+  | 'question'
+  | 'skill'
+  | 'flashcard'
+  | 'vocab'
+  | 'lesson_check';
 
 /** The three outcomes a review can have:
  *  again — missed it (a lapse; interval resets to the floor)
@@ -45,6 +55,22 @@ const LAPSE_EASE_PENALTY = 0.2;
 const EASY_EASE_BONUS = 0.1;
 
 const DAY_MS = 86_400_000;
+
+/** Plan 5.3: how long after finishing a lesson its retrieval pass
+ *  comes due. Short on purpose — the point is to catch the lesson
+ *  before it decays, not to space it out like a mature item. */
+export const LESSON_RETRIEVAL_DELAY_DAYS = 2;
+
+/**
+ * Due date for a just-finished lesson's retrieval pass. Pure: `nowIso`
+ * is an input like everywhere else in this module, so the intake in
+ * queue.ts stays a thin write.
+ */
+export function lessonRetrievalDueIso(nowIso: string): string {
+  return new Date(
+    new Date(nowIso).getTime() + LESSON_RETRIEVAL_DELAY_DAYS * DAY_MS,
+  ).toISOString();
+}
 
 function clampEase(e: number): number {
   return Math.max(MIN_EASE, Math.min(MAX_EASE, e));

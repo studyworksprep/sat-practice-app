@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Turn variables into numbers you control</h2><p>Some SAT questions describe a whole family of possible situations. The variables do not have one required value, so trying to solve for every variable can create unnecessary algebra.</p><p><strong>My Numbers</strong> replaces those open variables with easy values that obey the problem's rules. You solve your concrete version, then find the answer choice that gives the same result.</p><blockquote><p><strong>The values are your choice, but they must follow every condition in the question.</strong></p></blockquote>",
+      "html": "<h2>Turn variables into numbers you control</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Pick your own easy numbers, solve the concrete version, then test the choices.</p><p><strong>Why it pays:</strong> The algebra you were about to do disappears. You trade it for arithmetic you can trust.</p><p><strong>One caution:</strong> If the problem ties two variables together, you only get to choose one of them. The other is calculated, never picked.</p></div><p>Some SAT questions describe a whole family of possible situations. The variables do not have one required value, so trying to solve for every variable can create unnecessary algebra.</p><p><strong>My Numbers</strong> replaces those open variables with easy values that obey the problem's rules. You solve your concrete version, then find the answer choice that gives the same result.</p><blockquote><p><strong>The values are your choice, but they must follow every condition in the question.</strong></p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {

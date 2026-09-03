@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Let the story choose the equation</h2><p>In a <strong>Find the Equation</strong> question, a word problem defines variable quantities and the answer choices are equations.</p><p>You do not need to translate the entire story into algebra. Instead, use the <strong>My Numbers</strong> strategy you already know: build one easy, realistic situation, then see which equation tells the truth about it.</p><blockquote><p><strong>Recognition cue:</strong> The choices are equations, and the variables represent quantities from a word problem.</p></blockquote>",
+      "html": "<h2>Let the story choose the equation</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Build one honest situation from the story, then test the choices.</p><p><strong>Why it pays:</strong> You skip the translation step where most of the errors live. You never have to write the equation, only recognize it.</p><p><strong>One caution:</strong> Build your numbers <em>before</em> you look at the equations. Reading the choices first quietly bends your numbers toward one of them.</p></div><p>In a <strong>Find the Equation</strong> question, a word problem defines variable quantities and the answer choices are equations.</p><p>You do not need to translate the entire story into algebra. Instead, use the <strong>My Numbers</strong> strategy you already know: build one easy, realistic situation, then see which equation tells the truth about it.</p><blockquote><p><strong>Recognition cue:</strong> The choices are equations, and the variables represent quantities from a word problem.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {

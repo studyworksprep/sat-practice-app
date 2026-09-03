@@ -46,7 +46,7 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
       .order('sort_order'),
     supabase
       .from('lesson_topics')
-      .select('domain_name, skill_code')
+      .select('domain_name, skill_code, pattern_id')
       .eq('lesson_id', lessonId),
     supabase
       .from('lesson_progress')
@@ -62,6 +62,13 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
   const blocks = blocksResult.data ?? [];
   const topics = topicsResult.data ?? [];
   const duration = formatLessonDuration(estimateLessonMinutes(blocks));
+
+  // Plan 5.2 — offer "Practice this now" only when the lesson resolves
+  // to a pattern/skill that actually has published questions. Checked
+  // here rather than in the client so a student never sees a button
+  // whose only possible outcome is an error. Cheap: one count query,
+  // and it is skipped entirely for an untagged lesson.
+  const canPractice = await lessonHasPracticeQuestions(supabase, topics);
   let progress = progressResult.data ?? null;
 
   // First visit — create the row server-side so the runtime has a
@@ -135,8 +142,35 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
         initialCompletedBlockIds={progress?.completed_blocks ?? []}
         initialCheckAnswers={progress?.check_answers ?? {}}
         initialIsComplete={!!progress?.completed_at}
+        canPractice={canPractice}
         debug={debug}
       />
     </main>
   );
+}
+
+// Plan 5.2 — does this lesson's pattern/skill have anything to drill?
+// Pattern first, skill as the fallback, matching the selection in
+// lib/lesson/practice-drill.ts. A head-count query: we only need to
+// know whether the pool is non-empty.
+async function lessonHasPracticeQuestions(supabase, topics) {
+  const patternId = topics.find((t) => t.pattern_id)?.pattern_id ?? null;
+  const skillCode = topics.find((t) => t.skill_code)?.skill_code ?? null;
+  if (!patternId && !skillCode) return false;
+
+  let query = supabase
+    .from('questions_v2')
+    .select('id', { count: 'exact', head: true })
+    .eq('is_published', true)
+    .eq('is_broken', false)
+    .is('deleted_at', null)
+    .eq('pool', 'standard');
+  query = patternId
+    ? query.eq('pattern_id', patternId)
+    : query.eq('skill_code', skillCode);
+
+  const { count, error } = await query;
+  // A failed check hides the CTA rather than offering a drill that
+  // might not start.
+  return !error && (count ?? 0) > 0;
 }

@@ -90,6 +90,11 @@ export function LessonSlideshow({
   // leaves these unset so a read-only playthrough has no exit ramp.
   completionHref = null,
   completionLabel = 'Back to lessons',
+  // Plan 5.2 — an optional node rendered as the completion banner's
+  // primary CTA (the "Practice this now" drill). Passed in rather than
+  // built here so this shared runtime stays free of server actions;
+  // when it is absent the banner is exactly what it was.
+  completionPrimary = null,
 }) {
   const [currentIndex, setCurrentIndex] = useState(() =>
     resolveResumeIndex({
@@ -721,10 +726,18 @@ export function LessonSlideshow({
               </details>
             </>
           )}
-          {completionHref && (
-            <a href={completionHref} className={s.completeCta}>
-              {completionLabel}
-            </a>
+          {(completionPrimary || completionHref) && (
+            <div className={s.completeCtaRow}>
+              {completionPrimary}
+              {completionHref && (
+                <a
+                  href={completionHref}
+                  className={`${s.completeCta}${completionPrimary ? ` ${s.completeCtaSecondary}` : ''}`}
+                >
+                  {completionLabel}
+                </a>
+              )}
+            </div>
           )}
         </div>
       )}

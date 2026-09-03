@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_objective",
-      "html": "<h2>Let Desmos work with a whole list at once</h2><p>Look for questions that give several data values and ask you to transform, combine, or summarize them. Instead of retyping every calculation, store the values in a <strong>list</strong> and let one command act on the entire list.</p><blockquote><p><strong>Goal:</strong> Create a named list, use arithmetic on all its values, combine lists with <strong>join</strong>, and find <strong>mean</strong>, <strong>median</strong>, and <strong>total</strong>.</p></blockquote>",
+      "html": "<h2>Let Desmos work with a whole list at once</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Store the values once and operate on the whole list.</p><p><strong>Why it pays:</strong> Add a constant to every value, combine two groups, or take a mean without retyping anything.</p><p><strong>One caution:</strong> The Bluebook calculator is not the full Desmos — <strong>repeat</strong> isn't there. Stick to what the testing calculator actually has.</p></div><p>Look for questions that give several data values and ask you to transform, combine, or summarize them. Instead of retyping every calculation, store the values in a <strong>list</strong> and let one command act on the entire list.</p><blockquote><p><strong>Goal:</strong> Create a named list, use arithmetic on all its values, combine lists with <strong>join</strong>, and find <strong>mean</strong>, <strong>median</strong>, and <strong>total</strong>.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {

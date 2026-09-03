@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_objective",
-      "html": "<h2>Turn points into an equation</h2><p>Some SAT questions give you data and ask for an equation that matches it. The data may appear in a table, on a graph, or inside a word problem.</p><p>In this lesson, you will use one repeatable tool: <strong>identify input-output points, enter them in a Desmos table, and use the Regression button to produce a standard equation</strong>.</p><blockquote><p><strong>Goal:</strong> Use this tool for a line, a quadratic, or an exponential model without typing the equation yourself.</p></blockquote>",
+      "html": "<h2>Turn points into an equation</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Points in a table, then the Regression button.</p><p><strong>Why it pays:</strong> You generate the answer instead of testing four choices, and it works the same for linear, quadratic, and exponential.</p><p><strong>One caution:</strong> The order of the pair is the whole game. \"After 2 hours there were 180 bacteria\" is \\((2, 180)\\), never \\((180, 2)\\).</p></div><p>Some SAT questions give you data and ask for an equation that matches it. The data may appear in a table, on a graph, or inside a word problem.</p><p>In this lesson, you will use one repeatable tool: <strong>identify input-output points, enter them in a Desmos table, and use the Regression button to produce a standard equation</strong>.</p><blockquote><p><strong>Goal:</strong> Use this tool for a line, a quadratic, or an exponential model without typing the equation yourself.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }

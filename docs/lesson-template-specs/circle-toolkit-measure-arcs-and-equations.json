@@ -6,7 +6,7 @@
     {
       "kind": "text",
       "id": "lesson_objective",
-      "html": "<h2>Most circle questions start with one of three clues</h2><p>A circle question usually gives you a <strong>radius</strong>, an <strong>angle or arc</strong>, or a <strong>center and equation</strong>. Your job is to turn that clue into the circle fact you need.</p><ol><li>Find the radius or center.</li><li>Decide whether the question is about the whole circle, a fraction of it, or its graph.</li><li>Use the matching formula, angle rule, or equation.</li></ol><blockquote><p><strong>Goal:</strong> Build every solution from the radius, the central angle, or the center.</p></blockquote>",
+      "html": "<h2>Most circle questions start with one of three clues</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> One measurement opens every circle question: the radius or the center.</p><p><strong>Why it pays:</strong> Circumference, area, arc, tangent, equation — a scattered-looking topic collapses into one opening step.</p><p><strong>One caution:</strong> Only the area formula squares the radius. That's the swap the test is counting on.</p></div><p>A circle question usually gives you a <strong>radius</strong>, an <strong>angle or arc</strong>, or a <strong>center and equation</strong>. Your job is to turn that clue into the circle fact you need.</p><ol><li>Find the radius or center.</li><li>Decide whether the question is about the whole circle, a fraction of it, or its graph.</li><li>Use the matching formula, angle rule, or equation.</li></ol><blockquote><p><strong>Goal:</strong> Build every solution from the radius, the central angle, or the center.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }

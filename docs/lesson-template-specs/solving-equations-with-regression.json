@@ -56,7 +56,7 @@
     {
       "kind": "text",
       "id": "what_regression_does",
-      "html": "<h2>What regression means</h2><p>In Desmos, the <strong>regression symbol</strong> is <strong>~</strong>. It asks the calculator to adjust an unknown value until the two sides match as closely as possible.</p><p><strong>Your action:</strong> replace the equation's equals sign with <strong>~</strong>. For example, enter <strong>3n+4~19</strong> instead of \\(3n+4=19\\).</p><p>The value Desmos assigns to \\(n\\) is a numerical solution of the equation.</p>"
+      "html": "<h2>What regression means</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> One equals sign becomes a tilde, and Desmos hands you the value.</p><p><strong>Why it pays:</strong> It solves equations you'd otherwise have to rearrange, and it extends to small systems once you add a definition line.</p><p><strong>One caution:</strong> One assigned value is one solution, not every solution. When the question asks how many solutions exist, switch to graphing.</p></div><p>In Desmos, the <strong>regression symbol</strong> is <strong>~</strong>. It asks the calculator to adjust an unknown value until the two sides match as closely as possible.</p><p><strong>Your action:</strong> replace the equation's equals sign with <strong>~</strong>. For example, enter <strong>3n+4~19</strong> instead of \\(3n+4=19\\).</p><p>The value Desmos assigns to \\(n\\) is a numerical solution of the equation.</p>"
     },
     {
       "kind": "text",

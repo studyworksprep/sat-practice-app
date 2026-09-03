@@ -6,6 +6,16 @@
 > drawn from its own confirmed traps). The AI half of 3.6; the recording
 > is the tutor team's. Update a brief when its lesson changes; tick the
 > **Recorded** column when a video lands.
+>
+> **Recording no longer gates Phase 3 (2026-09-01).** Every brief below
+> has also shipped as a text **intro card** on its lesson (plan step
+> 3.9), carrying these same three beats in the same order, so the suite
+> is not waiting on the queue. The "≥ 10 intro videos live" criterion
+> moved to the Phase 6 exit; record in the tier order below at whatever
+> pace the team has. A video does not retire its card — the `video`
+> block goes in as block 1 above the card, which stays as the read-it
+> version. When a lesson's card and its brief drift, the card is the
+> live copy: reconcile the brief to it before recording.
 
 ## The convention (plan 3.5)
 

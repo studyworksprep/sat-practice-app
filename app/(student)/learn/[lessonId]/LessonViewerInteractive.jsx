@@ -8,7 +8,9 @@
 'use client';
 
 import { LessonSlideshow } from '@/lib/ui/LessonSlideshow';
+import { LessonPracticeButton } from './LessonPracticeButton';
 import {
+  createLessonPracticeDrill,
   markBlockComplete,
   submitCheckAnswer,
   submitDesmosResult,
@@ -21,8 +23,17 @@ export function LessonViewerInteractive({
   initialCompletedBlockIds,
   initialCheckAnswers,
   initialIsComplete,
+  canPractice = false,
   debug,
 }) {
+  // Plan 5.2 — only offered when the lesson resolves to a pattern or
+  // skill with published questions; the page checks that server-side so
+  // a student is never shown a button that can only fail.
+  const practiceCta = canPractice ? (
+    <LessonPracticeButton
+      action={createLessonPracticeDrill.bind(null, lessonId)}
+    />
+  ) : null;
   return (
     <LessonSlideshow
       blocks={blocks}
@@ -42,6 +53,7 @@ export function LessonViewerInteractive({
       calculatorStoragePrefix={`lesson-desmos:${lessonId}`}
       completionHref="/learn"
       completionLabel="Back to Learn"
+      completionPrimary={practiceCta}
     />
   );
 }

@@ -327,6 +327,43 @@ viewer. Preserve the answer order used by any following check. Reserve the
 class for actual candidate answers; processes, examples, and ordinary
 instructional lists should keep normal `ul` or `ol` formatting.
 
+#### Intro card — the three beats a lesson opens with
+
+A lesson's orienting block leads with a **`lesson-intro` card**: the move
+in the words a tutor says in session, the test-day payoff, and exactly one
+caution. It carries the same three beats, in the same order, as the intro
+video convention in §3b — so a lesson opens the way it would be introduced
+out loud whether or not a recording exists yet.
+
+```html
+<div class="lesson-intro">
+  <p><strong>The move:</strong> Total first. Decide what group you're drawing from before you count anything favorable.</p>
+  <p><strong>Why it pays:</strong> Nearly every wrong answer on these items is a right count over the wrong total, so fixing the denominator first removes the trap the test is actually setting.</p>
+  <p><strong>One caution:</strong> "Given that" restricts your total — and it can name either a row or a column, so read which category it's actually naming.</p>
+</div>
+```
+
+- **Three `p` elements, in that order, with those bold labels.** The shared
+  lesson stylesheet supplies the card appearance; do not add inline styles.
+- **Exactly one caution** — the failure that actually happens, not a list of
+  everything that can go wrong. Draw it from the lesson's own confirmed
+  traps (`docs/trap-catalog.md`), not from general advice.
+- **Place it on the block that orients the lesson**, immediately after that
+  block's `<h2>`. That is block 1 in most lessons, with two exceptions: when
+  block 1 is a prerequisite gate, the card goes after the prerequisite
+  Callout so the gate stays first; when block 1 is a cold-open exploration
+  whose discovery *is* the move, the card goes on the first teaching block
+  after that exploration's check, because naming the move above the hook
+  spoils it.
+- **Don't restate the block's own `<h2>` or goal Callout.** The card is the
+  tutor's framing; the Callout is the formal objective. When the two land on
+  the same words, reword the card.
+- **Don't point at a figure the slide doesn't carry** ("the diagram", "the
+  picture"). `lint_missing_figure` catches it.
+- A recorded intro video does **not** replace the card. The `video` block
+  goes in above it as block 1, and the card stays as the read-it version for
+  learners who don't watch.
+
 ### 3b. `raw_block` — full control over any block type
 
 `raw_block` writes a block verbatim. Use it for knowledge-check questions,
@@ -430,7 +467,9 @@ the first try:
   it is a 60–90 second video as **block 1** — face + whiteboard: name
   the move, the test-day payoff, and one caution. Give it a one-line
   `caption` naming the move. Never invent a URL; leave the block out
-  until the recording exists.
+  until the recording exists. Until then the lesson's three
+  beats live in its intro card (§3a), which stays in place once the video
+  lands.
 
 **Complete-lesson block** — the terminal block that ends the lesson:
 ```json

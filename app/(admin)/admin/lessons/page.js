@@ -19,6 +19,7 @@ import { formatDate } from '@/lib/formatters';
 import { fetchAll } from '@/lib/api/paginate';
 import { filterLessonCatalog, getLessonCatalogFacets } from '@/lib/lesson/catalog';
 import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
+import { summarizeLessonEfficacy } from '@/lib/lesson/progress-report.mjs';
 import { LessonCatalogFilterBar } from '@/lib/ui/LessonCatalogFilters';
 import { LessonScopeChips } from '@/lib/ui/LessonScopeChips';
 import { createLesson } from './actions';
@@ -55,7 +56,7 @@ export default async function AdminLessonsPage({ searchParams }) {
   // row cap, and an unordered truncation drops whole lessons off the
   // tail — which the Blocks column then renders as a confident "0"
   // rather than as a failure.
-  const [lessons, blockRows, efficacyRows] = await Promise.all([
+  const [lessons, blockRows, efficacyRows, progressRows] = await Promise.all([
     loadLessonCatalog(supabase, { limit: 500 }),
     fetchAll(
       () => supabase.from('lesson_blocks').select('id, lesson_id'),
@@ -70,6 +71,15 @@ export default async function AdminLessonsPage({ searchParams }) {
         .from('feature_efficacy')
         .select('lesson_id, skill_code, pre_attempts, pre_correct, post_attempts, post_correct, students, refreshed_at'),
       { order: [{ column: 'lesson_id' }, { column: 'skill_code' }] },
+    ),
+    // Plan 5.5 — in-lesson check performance from the Phase 1 attempt
+    // history. Distinct from feature_efficacy above: that measures
+    // practice accuracy BEFORE vs AFTER the lesson, this measures the
+    // lesson's own checks, which is what tells a hard item from a
+    // broken one. Whole-table read for the same reason as the others.
+    fetchAll(
+      () => supabase.from('lesson_progress').select('lesson_id, check_answers'),
+      { order: { column: 'lesson_id' } },
     ),
   ]);
   const visibleLessons = filterLessonCatalog(lessons, catalogFilters);
@@ -102,6 +112,16 @@ export default async function AdminLessonsPage({ searchParams }) {
     if (!efficacyRefreshedAt || (r.refreshed_at && r.refreshed_at > efficacyRefreshedAt)) {
       efficacyRefreshedAt = r.refreshed_at;
     }
+  }
+
+  // In-lesson check performance per lesson (plan 5.5).
+  const progressByLesson = {};
+  for (const row of progressRows) {
+    (progressByLesson[row.lesson_id] ??= []).push(row);
+  }
+  const checkStatsByLesson = {};
+  for (const [lessonId, rows] of Object.entries(progressByLesson)) {
+    checkStatsByLesson[lessonId] = summarizeLessonEfficacy(rows);
   }
 
   const authorIds = [...new Set(lessons.map((l) => l.author_id).filter(Boolean))];
@@ -256,6 +276,7 @@ export default async function AdminLessonsPage({ searchParams }) {
                 <Th>Visibility</Th>
                 <Th style={{ textAlign: 'right' }}>Blocks</Th>
                 <Th>Efficacy</Th>
+                <Th>In-lesson</Th>
                 <Th>Updated</Th>
                 <Th style={{ width: 220 }}>Actions</Th>
               </tr>
@@ -282,6 +303,9 @@ export default async function AdminLessonsPage({ searchParams }) {
                   </Td>
                   <Td>
                     <EfficacyCell entry={efficacyByLesson[l.id]} />
+                  </Td>
+                  <Td>
+                    <InLessonCell stats={checkStatsByLesson[l.id]} />
                   </Td>
                   <Td style={{ color: 'var(--fg3)', fontSize: 12 }}>
                     {formatDate(l.updated_at) || '—'}
@@ -330,6 +354,69 @@ function EfficacyCell({ entry }) {
       </strong>
       <span style={{ color: 'var(--fg3)', fontSize: 12 }}>
         {' '}· {entry.students} student{entry.students === 1 ? '' : 's'}
+      </span>
+    </span>
+  );
+}
+
+// Plan 5.5 — first-try accuracy and average attempts across the
+// lesson's own checks. The bands come from the plan's measurement
+// targets: transfer items should land in 55-80% first-try; above 90%
+// the item is too easy, below 40% the teaching before it needs work.
+// A mean attempt count above 2.5 is the "not just hard, broken" flag.
+//
+// Only entries written since Phase 1.1 carry a first-try signal, so a
+// lesson whose answers all predate it reads "legacy" rather than a
+// confident 100% — most of the current corpus is in exactly that
+// state, and flagging it as "too easy" would be a false alarm.
+const MIN_TRACKED_FOR_BANDS = 10;
+
+function InLessonCell({ stats }) {
+  if (!stats || stats.answered === 0) {
+    return <span style={{ color: 'var(--fg3)' }}>—</span>;
+  }
+  if (stats.tracked === 0) {
+    return (
+      <span
+        style={{ color: 'var(--fg3)', fontSize: 12, whiteSpace: 'nowrap' }}
+        title={`${stats.answered} answers, none with first-try tracking (all predate the Phase 1 attempt history). Nothing to measure yet.`}
+      >
+        {stats.answered} legacy
+      </span>
+    );
+  }
+  const rate = Math.round(stats.firstTryRate * 100);
+  const thin = stats.tracked < MIN_TRACKED_FOR_BANDS;
+  const tooEasy = !thin && rate > 90;
+  const tooHard = !thin && rate < 40;
+  const grinding = !thin && stats.avgAttempts > 2.5;
+  const flagged = tooEasy || tooHard || grinding;
+  const color = thin
+    ? 'var(--fg2)'
+    : flagged
+      ? 'var(--color-diff-hard-fg)'
+      : 'var(--color-diff-easy-fg)';
+  const notes = [
+    `${stats.firstTryCorrect}/${stats.tracked} tracked checks correct on the first try`,
+    `${stats.students} student${stats.students === 1 ? '' : 's'} with answers`,
+    `${stats.struggled} struggled (3+ tries or still wrong)`,
+    stats.tracked < stats.answered
+      && `${stats.answered - stats.tracked} older answers excluded (no first-try signal)`,
+    thin && `fewer than ${MIN_TRACKED_FOR_BANDS} tracked checks — too thin to flag`,
+    tooEasy && 'above 90% first-try — the item may be too easy',
+    tooHard && 'below 40% first-try — the teaching before it may need work',
+    grinding && 'mean attempts above 2.5 — check whether the item is broken',
+  ].filter(Boolean);
+  return (
+    <span
+      title={notes.join('\n')}
+      style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}
+    >
+      <strong style={{ color }}>{rate}%</strong>
+      <span style={{ color: 'var(--fg3)', fontSize: 12 }}>
+        {' '}· {stats.avgAttempts} {stats.avgAttempts === 1 ? 'try' : 'tries'}
+        {' '}· n={stats.tracked}
+        {flagged ? ' ⚠' : ''}
       </span>
     </span>
   );
