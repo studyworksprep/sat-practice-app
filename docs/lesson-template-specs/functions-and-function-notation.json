@@ -619,6 +619,24 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Cover the screen. What does \\(f(a)=b\\) tell you, how do you evaluate and solve with it, and how do you find a missing constant in Desmos?",
+        "choices": [
+          "\\(f(a)=b\\) means \\((b,a)\\); evaluate a fixed input by substitution or graph reading; solve \\(f(x)=b\\) for outputs; define the function with ~ and enter a missing-constant condition with =.",
+          "\\(f(a)=b\\) means \\((a,b)\\); solve a fixed input with ~; evaluate \\(f(x)=b\\) by graph reading alone; define both the function and the missing-constant condition with =.",
+          "\\(f(a)=b\\) means \\((a,b)\\); evaluate a fixed input by substitution or graph reading; solve \\(f(x)=b\\) for inputs; define the function with = and enter a missing-constant condition with ~.",
+          "\\(f(a)=b\\) means \\((a,b)\\); evaluate a fixed input by solving \\(f(x)=b\\); a function equation has exactly one solution, so one graph intersection is always enough."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Recall input-output order, the difference between evaluation and solving, and the two Desmos symbols.",
+        "explanation": "You have it. That sequence translates the notation correctly and preserves the safest Desmos setup for missing constants."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -635,28 +653,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which summary correctly interprets function notation and the missing-constant workflow?",
-        "choices": [
-          "\\(f(a)=b\\) means \\((b,a)\\); evaluate a fixed input by substitution or graph reading; solve \\(f(x)=b\\) for outputs; define the function with ~ and enter a missing-constant condition with =.",
-          "\\(f(a)=b\\) means \\((a,b)\\); solve a fixed input with ~; evaluate \\(f(x)=b\\) by graph reading alone; define both the function and the missing-constant condition with =.",
-          "\\(f(a)=b\\) means \\((a,b)\\); evaluate a fixed input by substitution or graph reading; solve \\(f(x)=b\\) for inputs; define the function with = and enter a missing-constant condition with ~.",
-          "\\(f(a)=b\\) means \\((a,b)\\); evaluate a fixed input by solving \\(f(x)=b\\); a function equation has exactly one solution, so one graph intersection is always enough."
-        ],
-        "correct_index": 2,
-        "allow_retry": false,
-        "hint": "Recall input-output order, the difference between evaluation and solving, and the two Desmos symbols.",
-        "explanation": "You have it. That sequence translates the notation correctly and preserves the safest Desmos setup for missing constants."
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can read and use function notation</h2><p>You can identify a function, interpret its inputs and outputs, translate function statements into points and graphs, evaluate function values, and solve equations such as \\(f(x)=7\\).</p><p>You can also define a function exactly as given and use a regression condition to find a missing constant safely in Desmos.</p>",
+        "html": "<h2>Read the notation as a point</h2><p>\\(f(3)=6\\) is the point \\((3,6)\\) — something you can plot, substitute, or solve from. When a condition determines a missing constant, check it against your answer: a fit can return two values, and the problem accepts one.</p>",
         "button_label": "Complete Lesson"
       }
     }

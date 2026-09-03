@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Probability is Favorable over Total</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Total first. Decide what group you're drawing from before you count anything favorable.</p><p><strong>Why it pays:</strong> Nearly every wrong answer on these items is a right count over the wrong total, so fixing the denominator first removes the trap the test is actually setting.</p><p><strong>One caution:</strong> \"Given that\" restricts your total — and it can name either a row or a column, so read which category it's actually naming.</p></div><p>Most SAT probability questions do not ask you to count complicated arrangements. Instead, they give you a table of categorized people or objects.</p><p>By the end of this lesson, you will be able to:</p><ol><li>identify the correct <strong>Total</strong>,</li><li>read the condition after <strong>given that</strong> as a restriction on that Total,</li><li>find the <strong>Favorable</strong> outcomes inside the restricted group, and</li><li>write the probability as Favorable over Total.</li></ol><p>This lesson covers one event at a time. It does not introduce combined probability with <strong>and</strong> or <strong>or</strong>.</p>",
+      "html": "<h2>Probability is Favorable over Total</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Total first. Decide what group you're drawing from before you count anything favorable.</p><p><strong>Why it pays:</strong> Nearly every wrong answer on these items is a right count over the wrong total, so fixing the denominator first removes the trap the test is actually setting.</p><p><strong>One caution:</strong> \"Given that\" restricts your total — and it can name either a row or a column, so read which category it's actually naming.</p></div><p>Most SAT probability questions don't ask you to count arrangements. They give you a table and bet that you'll count the favorable outcomes before you've decided what you're drawing from. Nearly every wrong answer is a right count over the wrong total.</p><p>So: Total first. One event at a time — no <strong>and</strong>, no <strong>or</strong> in this lesson.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -387,6 +387,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "A two-way table and the words \"given that.\" No scrolling back — what do you do first, and then what?",
+        "choices": [
+          "Identify Favorable first, use the condition after 'given that' to restrict it, find Total inside it, and write Favorable over Total.",
+          "Identify Total first, use the condition after 'given that' to restrict it, find Favorable inside it, and write Favorable over Total.",
+          "Identify Total first, keep it at the grand total when the question says 'given that,' find Favorable anywhere in the table, and write Favorable over Total.",
+          "Identify Total first, use the condition after 'given that' to restrict Favorable instead, and write Total over Favorable."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Retrieve the order: Total, the condition after 'given that,' Favorable inside the restricted group, fraction.",
+        "explanation": "You have it. Starting with Total prevents denominator traps, and treating the condition after 'given that' as a restriction keeps both numbers inside the same subset."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -404,29 +423,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which process correctly solves a one-event SAT table probability question?",
-        "choices": [
-          "Identify Favorable first, use the condition after 'given that' to restrict it, find Total inside it, and write Favorable over Total.",
-          "Identify Total first, use the condition after 'given that' to restrict it, find Favorable inside it, and write Favorable over Total.",
-          "Identify Total first, keep it at the grand total when the question says 'given that,' find Favorable anywhere in the table, and write Favorable over Total.",
-          "Identify Total first, use the condition after 'given that' to restrict Favorable instead, and write Total over Favorable."
-        ],
-        "correct_index": 1,
-        "allow_retry": false,
-        "hint": "Retrieve the order: Total, the condition after 'given that,' Favorable inside the restricted group, fraction.",
-        "explanation": "You have it. Starting with Total prevents denominator traps, and treating the condition after 'given that' as a restriction keeps both numbers inside the same subset."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can solve SAT probability tables</h2><p>You can identify the correct row, column, or grand Total; use the condition after <em>given that</em> to restrict the selection; find Favorable outcomes inside that group; and write a valid Favorable-over-Total probability.</p>",
+        "html": "<h2>Total first</h2><p>Decide the group you're drawing from before you count anything favorable — \"given that\" restricts the total, and it can name a row or a column. Favorable over Total, in that order.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }

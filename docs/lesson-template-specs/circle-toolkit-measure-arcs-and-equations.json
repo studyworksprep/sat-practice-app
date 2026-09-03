@@ -720,6 +720,26 @@
     },
     {
       "kind": "raw_block",
+      "id": "check_20",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which summary uses the circle toolkit correctly?",
+        "choices": [
+          "Start with diameter; square it for circumference; double central angles; copy center signs from the equation; graph after solving.",
+          "Find radius or center; choose the formula, angle rule, or equation; reverse center signs; read r²; graph added points or lines.",
+          "Start with area; use arc length as an angle; halve central angles; read the equation's right side as r; skip the graph.",
+          "Find circumference first; divide arc measures by 180; use equal radii for tangent slopes; change the center when the radius changes."
+        ],
+        "allow_retry": false,
+        "explanation": "Exactly. Start with the radius or center, choose the matching relationship, then use Desmos when a graph makes the evidence easier to see or test.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -741,30 +761,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "check_20",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which summary uses the circle toolkit correctly?",
-        "choices": [
-          "Start with diameter; square it for circumference; double central angles; copy center signs from the equation; graph after solving.",
-          "Find radius or center; choose the formula, angle rule, or equation; reverse center signs; read r²; graph added points or lines.",
-          "Start with area; use arc length as an angle; halve central angles; read the equation's right side as r; skip the graph.",
-          "Find circumference first; divide arc measures by 180; use equal radii for tangent slopes; change the center when the radius changes."
-        ],
-        "allow_retry": false,
-        "explanation": "Exactly. Start with the radius or center, choose the matching relationship, then use Desmos when a graph makes the evidence easier to see or test.",
-        "correct_index": 1
-      },
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_complete_1",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You have a circle toolkit</h2><p>You can move between radius, diameter, circumference, and area; connect arcs to central and inscribed angles; use radians and tangent facts; read and build circle equations; and graph circles in Desmos to test points, lines, translations, and intersections.</p>",
+        "html": "<h2>Everything hangs off the radius</h2><p>Circumference, area, arc, tangent, equation — find the radius or the center first and the rest is one formula away. Only the area formula squares it; that's the swap the test is counting on.</p>",
         "button_label": "Complete Lesson"
       }
     }

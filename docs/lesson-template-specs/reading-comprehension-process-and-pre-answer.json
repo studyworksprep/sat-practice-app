@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Take control before the choices do</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Name the question's job, build a usable read, then say the answer in your own words.</p><p><strong>Why it pays:</strong> Four polished choices are designed to look reasonable one at a time. Arriving with a target means you're matching instead of being persuaded.</p><p><strong>One caution:</strong> Your target is a rough idea in your own words. Don't polish it into something that sounds like an answer choice — that's how you talk yourself into one.</p></div><p>SAT reading passages are short, but they can still overload you with names, claims, and details. This lesson gives you one repeatable process for main-idea, detail, function, and inference questions.</p><p>By the end, you will be able to identify your job, build a usable understanding of the passage, form an answer target in your own words, and prove which choice matches the text.</p><blockquote><p><strong>Core habit:</strong> Think before you look at the answer choices.</p></blockquote>",
+      "html": "<h2>Take control before the choices do</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Name the question's job, build a usable read, then say the answer in your own words.</p><p><strong>Why it pays:</strong> Four polished choices are designed to look reasonable one at a time. Arriving with a target means you're matching instead of being persuaded.</p><p><strong>One caution:</strong> Your target is a rough idea in your own words. Don't polish it into something that sounds like an answer choice — that's how you talk yourself into one.</p></div><p>Four polished choices are built to look reasonable one at a time. Arrive with your own rough answer and you're matching instead of being persuaded — that's the whole difference on main-idea, detail, function, and inference questions.</p><blockquote><p><strong>Core habit:</strong> Think before you look at the answer choices.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -409,6 +409,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Your tutor asks you to teach the reading routine in twenty seconds. Which version is right?",
+        "choices": [
+          "Read the choices, name the job, borrow the meaning from the closest choice, then prove your target from the choices.",
+          "Read the context, name the job, build the meaning, form an answer target, then prove the choice from the text.",
+          "Read the context, build the meaning, name the job last, form an answer target from a familiar claim, then select without proving.",
+          "Name the job, form an answer target, read the context only if two choices tie, then prove the choice from the text."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Retrieve all five steps in order, especially the point at which you first view the choices.",
+        "explanation": "Exactly. Context and task come first, then usable passage meaning and your own answer target. Only then do you reveal and prove a choice."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -430,29 +449,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which routine should you use on a reading comprehension question?",
-        "choices": [
-          "Read the choices, name the job, borrow the meaning from the closest choice, then prove your target from the choices.",
-          "Read the context, name the job, build the meaning, form an answer target, then prove the choice from the text.",
-          "Read the context, build the meaning, name the job last, form an answer target from a familiar claim, then select without proving.",
-          "Name the job, form an answer target, read the context only if two choices tie, then prove the choice from the text."
-        ],
-        "correct_index": 1,
-        "allow_retry": false,
-        "hint": "Retrieve all five steps in order, especially the point at which you first view the choices.",
-        "explanation": "Exactly. Context and task come first, then usable passage meaning and your own answer target. Only then do you reveal and prove a choice."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You control the reading process</h2><p>You can read the context, name the job, build usable meaning, form a flexible answer target, and prove a choice from the text.</p><p>You also know the line between a warranted inference and a guess: connect the dots the passage gives you, but do not add new dots.</p><p><strong>Next lesson:</strong> Good Cop / Bad Cop will make the final proof-and-eliminate step more precise.</p>",
+        "html": "<h2>Think before the choices can</h2><p>Name the job, build a usable read, say the answer in your own words, then prove the match from the text. Keep your target rough — polish it into something that sounds like a choice and you'll talk yourself into one. Good Cop / Bad Cop sharpens the last step.</p>",
         "button_label": "Complete Lesson"
       }
     }

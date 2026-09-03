@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>A faster way to solve subject–verb agreement</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Test each choice after <strong>he</strong> and after <strong>they</strong>. The odd one out is the answer.</p><p><strong>Why it pays:</strong> You answer without finding the subject or untangling the sentence — which is exactly where the test hides its interrupting phrases.</p><p><strong>One caution:</strong> This is a shortcut with a gate. If the four choices differ in tense rather than in singular versus plural, close it and read the sentence.</p></div><p>Some SAT verb questions can be solved without finding the subject or untangling the sentence.</p><p>You will learn to test each answer after <strong>he</strong> and <strong>they</strong>. When exactly one answer is singular and the other three are plural—or exactly one is plural and the other three are singular—the different answer is correct.</p><blockquote><p><strong>The safety rule matters:</strong> use the trick only when every answer fits exactly one of <strong>he</strong> or <strong>they</strong>.</p></blockquote>",
+      "html": "<h2>A faster way to solve subject–verb agreement</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Test each choice after <strong>he</strong> and after <strong>they</strong>. The odd one out is the answer.</p><p><strong>Why it pays:</strong> You answer without finding the subject or untangling the sentence — which is exactly where the test hides its interrupting phrases.</p><p><strong>One caution:</strong> This is a shortcut with a gate. If the four choices differ in tense rather than in singular versus plural, close it and read the sentence.</p></div><p>Some verb questions never make you find the subject. Put each choice after <strong>he</strong> and after <strong>they</strong>: when three choices go one way and one goes the other, the odd one out is the answer — and the interrupting phrase the test buried in the sentence never mattered.</p><blockquote><p><strong>The safety rule matters:</strong> use the trick only when every answer fits exactly one of <strong>he</strong> or <strong>they</strong>.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -437,6 +437,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A verb question with four choices. From memory: how do you run the odd-one-out test, and what has to be true before you're allowed to?",
+        "choices": [
+          "Test every choice after he and they; continue only if the split is two to two; choose the answer that sounds correct after they.",
+          "Test every choice after the closest noun; continue only if each fits exactly one; choose the answer that matches the noun's number.",
+          "Test every choice after he and they; continue whenever at least one choice fits both; choose the answer that differs.",
+          "Test every choice after he and they; continue only if each fits exactly one and the split is three to one; choose the answer that differs."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Retrieve the testing frames, the safety gate, and the final action.",
+        "explanation": "You have it: <strong>he or they, exactly one, three to one, choose the different answer</strong>."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -458,35 +477,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which process correctly uses the subject–verb odd-one-out trick?",
-        "choices": [
-          "Test every choice after he and they; continue only if the split is two to two; choose the answer that sounds correct after they.",
-          "Test every choice after the closest noun; continue only if each fits exactly one; choose the answer that matches the noun's number.",
-          "Test every choice after he and they; continue whenever at least one choice fits both; choose the answer that differs.",
-          "Test every choice after he and they; continue only if each fits exactly one and the split is three to one; choose the answer that differs."
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Retrieve the testing frames, the safety gate, and the final action.",
-        "explanation": "You have it: <strong>he or they, exactly one, three to one, choose the different answer</strong>."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "summary",
-      "html": "<h2>The shortcut in one glance</h2><ol><li>Confirm all four choices are complete verb choices.</li><li>Test every choice after <strong>he</strong> and <strong>they</strong>.</li><li>Continue only when each choice fits exactly one frame and the split is three to one.</li><li>Choose the singular or plural odd one out.</li></ol><blockquote><p><strong>Walk away when the gate fails.</strong> A choice that fits both, fits neither, or creates a two-to-two split means this is not the shortcut's question type.</p></blockquote>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can spot the pattern</h2><p>You can use the he-or-they test to solve eligible subject–verb agreement questions quickly—and recognize when a different verb strategy is required.</p>",
+        "html": "<h2>The odd one out — when the gate is open</h2><p>He or they, three to one, done. If the four choices differ in tense instead of number, the gate is closed: read the sentence the long way.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }

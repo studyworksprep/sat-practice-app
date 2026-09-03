@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_objective",
-      "html": "<h2>Let Desmos work with a whole list at once</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Store the values once and operate on the whole list.</p><p><strong>Why it pays:</strong> Add a constant to every value, combine two groups, or take a mean without retyping anything.</p><p><strong>One caution:</strong> The Bluebook calculator is not the full Desmos — <strong>repeat</strong> isn't there. Stick to what the testing calculator actually has.</p></div><p>Look for questions that give several data values and ask you to transform, combine, or summarize them. Instead of retyping every calculation, store the values in a <strong>list</strong> and let one command act on the entire list.</p><blockquote><p><strong>Goal:</strong> Create a named list, use arithmetic on all its values, combine lists with <strong>join</strong>, and find <strong>mean</strong>, <strong>median</strong>, and <strong>total</strong>.</p></blockquote>",
+      "html": "<h2>Let Desmos work with a whole list at once</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Store the values once and operate on the whole list.</p><p><strong>Why it pays:</strong> Add a constant to every value, combine two groups, or take a mean without retyping anything.</p><p><strong>One caution:</strong> The Bluebook calculator is not the full Desmos — <strong>repeat</strong> isn't there. Stick to what the testing calculator actually has.</p></div><p>Some SAT data questions hand you nine numbers and ask what happens to the mean if every value goes up by 4. You could retype nine numbers. Or you could type <strong>A+4</strong>. This lesson is the \"or.\"</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -578,6 +578,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "No notes: what do square brackets, list arithmetic, join, and mean / median / total each do in Desmos?",
+        "choices": [
+          "Square brackets create lists; join transforms elements; arithmetic combines lists; mean, median, and total summarize data",
+          "Parentheses create lists; arithmetic transforms elements; join summarizes data; mean, median, and total combine lists",
+          "Square brackets create lists; arithmetic transforms only the first element; join combines lists; total is the only summary function",
+          "Square brackets create lists; arithmetic transforms elements; join combines lists; mean, median, and total summarize data"
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Recall the brackets, the difference between arithmetic and join, and the three statistics functions.",
+        "explanation": "You have it. Define lists with square brackets, reuse their names, transform elements with arithmetic, combine groups with join, and summarize with mean, median, or total."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -594,29 +613,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which summary is correct?",
-        "choices": [
-          "Square brackets create lists; join transforms elements; arithmetic combines lists; mean, median, and total summarize data",
-          "Parentheses create lists; arithmetic transforms elements; join summarizes data; mean, median, and total combine lists",
-          "Square brackets create lists; arithmetic transforms only the first element; join combines lists; total is the only summary function",
-          "Square brackets create lists; arithmetic transforms elements; join combines lists; mean, median, and total summarize data"
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Recall the brackets, the difference between arithmetic and join, and the three statistics functions.",
-        "explanation": "You have it. Define lists with square brackets, reuse their names, transform elements with arithmetic, combine groups with join, and summarize with mean, median, or total."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can use Desmos list tools efficiently</h2><p>You can define a named list, apply arithmetic to every value, distinguish pairwise arithmetic from joining, combine data with join, and calculate mean, median, and total. You also know when to use the Functions menu and which unsupported function to avoid.</p>",
+        "html": "<h2>Store it once, operate on all of it</h2><p>Name the list, and one command — <strong>A+2</strong>, <strong>join</strong>, <strong>mean</strong>, <strong>median</strong>, <strong>total</strong> — does the whole set's work. The Bluebook calculator isn't full Desmos: stick to what the testing calculator actually has.</p>",
         "button_label": "Complete Lesson"
       }
     }

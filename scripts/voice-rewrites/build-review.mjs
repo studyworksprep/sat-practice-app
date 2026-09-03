@@ -15,7 +15,16 @@ import { pathToFileURL } from 'node:url';
 
 const ROOT = process.cwd();
 const HERE = path.dirname(new URL(import.meta.url).pathname);
-const { LESSONS, DECISIONS, TAILS } = await import(pathToFileURL(path.join(HERE, 'proposals.mjs')).href);
+const { LESSONS, DECISIONS, TAILS, APPLIED_ON = null } = await import(pathToFileURL(path.join(HERE, 'proposals.mjs')).href);
+// Once the proposals are applied, the specs ARE the proposal and the "Was"
+// column would read back the new text. The markdown doc is frozen at
+// application (edit it by hand); the review page is still regenerated so
+// its status can be stamped. --rewrite-doc overrides the freeze.
+if (APPLIED_ON && !process.argv.includes('--force')) {
+  console.error(`proposals were applied on ${APPLIED_ON}: both outputs read "Was" from the live specs, which now carry the proposals. Refusing to regenerate — the doc is the frozen record and the review page was stamped at application. Use --force to override.`);
+  process.exit(1);
+}
+const WRITE_DOC = true;
 const OUT_HTML = process.argv[2] ? path.resolve(process.argv[2]) : path.join(os.tmpdir(), 'voice-review.html');
 const { parseLessonTemplateSpecText, compileLessonTemplateSpec } =
   await import(pathToFileURL(path.join(ROOT, 'lib/lesson/template-import.mjs')).href);
@@ -151,7 +160,7 @@ for (const [slug, step, id, sentence] of TAILS) {
   md.push(`| ${t} | ${step} | \`${id}\` | ${sentence} |`);
 }
 md.push('');
-fs.writeFileSync(path.join(ROOT, 'docs/lesson-voice-rewrites-2026-09.md'), md.join('\n'));
+if (WRITE_DOC) fs.writeFileSync(path.join(ROOT, 'docs/lesson-voice-rewrites-2026-09.md'), md.join('\n'));
 
 // ── html ──────────────────────────────────────────────────────────
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -278,10 +287,12 @@ const html = `<title>Lesson Voice Rewrites</title>
 </style>
 <div class="wrap">
   <header class="page">
-    <p class="kicker">Lesson improvement plan · Phase 6.2 · for tutor approval</p>
+    <p class="kicker">Lesson improvement plan · Phase 6.2 · ${APPLIED_ON ? `approved and applied ${esc(APPLIED_ON)}` : 'for tutor approval'}</p>
     <h1>Every lesson's handle, opener, closer, and retrieval line — was, and proposed</h1>
     <p class="lede">The 2026-08 review's verdict on the suite was that it reads like a very careful teacher being recorded. What's missing isn't jokes; it's stakes, a point of view, and a name for the move. This page proposes that name and the two or three lines per lesson where voice does the most work. Nothing on it is in a lesson yet.</p>
-    <p class="respond"><strong>How to respond:</strong> comment on this page, or edit <code class="mono">docs/lesson-voice-rewrites-2026-09.md</code>. For each lesson: approve, change the wording, or keep. Names are yours to choose — a handle has to be words a tutor actually says in session.</p>
+    ${APPLIED_ON
+      ? `<p class="respond"><strong>Approved ${esc(APPLIED_ON)}</strong> by the owner, all as proposed, and applied to the specs the same day by <code class="mono">scripts/voice-rewrites/apply.mjs</code>. The "Was" column below is the text that was replaced; the names are now the lessons' handles. Production lessons pick this up at the next re-import.</p>`
+      : `<p class="respond"><strong>How to respond:</strong> comment on this page, or edit <code class="mono">docs/lesson-voice-rewrites-2026-09.md</code>. For each lesson: approve, change the wording, or keep. Names are yours to choose — a handle has to be words a tutor actually says in session.</p>`}
   </header>
 
   <h2 class="section">Four decisions that apply to every lesson</h2>
@@ -309,4 +320,4 @@ const html = `<title>Lesson Voice Rewrites</title>
 fs.writeFileSync(OUT_HTML, html);
 
 console.log(`lessons ${lessons.length}; openers proposed ${lessons.filter((l) => l.opener).length}; closers proposed ${lessons.filter((l) => l.closer).length}; retrieval stems ${proposalCount} (stock in corpus ${stockCount}); tails ${TAILS.length}`);
-console.log('md bytes', fs.statSync(path.join(ROOT, 'docs/lesson-voice-rewrites-2026-09.md')).size, '| html', OUT_HTML, fs.statSync(OUT_HTML).size, 'bytes');
+console.log(WRITE_DOC ? `md bytes ${fs.statSync(path.join(ROOT, 'docs/lesson-voice-rewrites-2026-09.md')).size}` : 'md frozen (APPLIED_ON set)', '| html', OUT_HTML, fs.statSync(OUT_HTML).size, 'bytes');

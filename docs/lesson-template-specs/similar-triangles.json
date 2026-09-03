@@ -587,26 +587,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "authentic_item",
-      "block_type": "check",
-      "content": {
-        "prompt": "Triangle \\(JKL\\) is similar to triangle \\(PQR\\), where \\(J\\), \\(K\\), and \\(L\\) correspond to \\(P\\), \\(Q\\), and \\(R\\), respectively. If \\(JK=8\\), \\(KL=12\\), and \\(PQ=20\\), what is the length of \\(QR\\)?",
-        "input": "numeric",
-        "answer": "30",
-        "allow_retry": false,
-        "hint": "Match the sides by their letter references and keep one triangle order in the proportion.",
-        "explanation": "Correct. Correspondence gives \\(\\frac{QR}{KL}=\\frac{PQ}{JK}=\\frac{20}{8}\\), so \\(QR=12\\cdot\\frac{20}{8}=30\\), and \\(30>12\\) passes the size check. Adding the difference \\(20-8\\) gives \\(24\\), and \\(4.8\\) inverts the ratio."
-      },
-      "calculator": {
-        "display": "open"
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {
-        "prompt": "Without looking back, which process works for both ordinary similar triangles and the right-triangle altitude configuration?",
+        "prompt": "Two triangles share two angles and you need a missing side. From memory: how do you pair the sides, and what stops you from mentally rotating the triangles?",
         "choices": [
           "Establish similarity from matching angles; match sides by angle references or side rank; keep one triangle order in the proportion; solve and check the size.",
           "Establish similarity from matching side lengths; match sides by their position on the page; keep one triangle order in the proportion; solve and check the size.",
@@ -624,10 +608,26 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Triangle \\(JKL\\) is similar to triangle \\(PQR\\), where \\(J\\), \\(K\\), and \\(L\\) correspond to \\(P\\), \\(Q\\), and \\(R\\), respectively. If \\(JK=8\\), \\(KL=12\\), and \\(PQ=20\\), what is the length of \\(QR\\)?",
+        "input": "numeric",
+        "answer": "30",
+        "allow_retry": false,
+        "hint": "Match the sides by their letter references and keep one triangle order in the proportion.",
+        "explanation": "Correct. Correspondence gives \\(\\frac{QR}{KL}=\\frac{PQ}{JK}=\\frac{20}{8}\\), so \\(QR=12\\cdot\\frac{20}{8}=30\\), and \\(30>12\\) passes the size check. Adding the difference \\(20-8\\) gives \\(24\\), and \\(4.8\\) inverts the ratio."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can use similar triangles without rotating them</h2><p>You can recognize AA similarity even when the question does not name it, match sides from corresponding angles, keep proportions consistent, and use small/medium/large positions across the three triangles formed by a right-triangle altitude.</p>",
+        "html": "<h2>Match the angles, rank the sides</h2><p>Equal angles say which vertices correspond; smallest side to smallest, largest to largest — and the proportion writes itself without rotating anything. The ranking is a cross-check: when the figure says \"not drawn to scale,\" the angles decide.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": {

@@ -455,6 +455,25 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which approach works when a special right triangle is hidden inside an SAT geometry question?",
+        "choices": [
+          "Use a keyword, setup, or ratio to name the family; copy the known side into \\(k\\); build the requested sides; and check that each answer keeps a radical.",
+          "Label each side's role before naming the family; solve for \\(k\\) with the Pythagorean theorem; build the requested sides; and round each result to a decimal.",
+          "Use a keyword, setup, or ratio to name the family; label each side's role; solve for \\(k\\); build the requested sides; and check their size order.",
+          "Use a keyword, setup, or ratio to name the family; label the shortest side as the hypotenuse; solve for \\(k\\); build the requested sides in any ratio order."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Retrieve the five-part move: Clue, Role, k, Build, Check.",
+        "explanation": "You have it. Recognition chooses the ratio, the side role tells you how to recover \\(k\\), and one size check catches most reversals."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -476,29 +495,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which approach works when a special right triangle is hidden inside an SAT geometry question?",
-        "choices": [
-          "Use a keyword, setup, or ratio to name the family; copy the known side into \\(k\\); build the requested sides; and check that each answer keeps a radical.",
-          "Label each side's role before naming the family; solve for \\(k\\) with the Pythagorean theorem; build the requested sides; and round each result to a decimal.",
-          "Use a keyword, setup, or ratio to name the family; label each side's role; solve for \\(k\\); build the requested sides; and check their size order.",
-          "Use a keyword, setup, or ratio to name the family; label the shortest side as the hypotenuse; solve for \\(k\\); build the requested sides in any ratio order."
-        ],
-        "correct_index": 2,
-        "allow_retry": false,
-        "hint": "Retrieve the five-part move: Clue, Role, k, Build, Check.",
-        "explanation": "You have it. Recognition chooses the ratio, the side role tells you how to recover \\(k\\), and one size check catches most reversals."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can spot the hidden shortcut</h2><p>You can recognize \\(45\\)-\\(45\\)-\\(90\\) and \\(30\\)-\\(60\\)-\\(90\\) triangles from ratios, keywords, square diagonals, perpendicular radii, and equilateral altitudes. You can also start from any numeric or variable side, solve for \\(k\\), and build every remaining side exactly.</p>",
+        "html": "<h2>See the triangle before the angles appear</h2><p>A square's diagonal, half an equilateral triangle, \"isosceles right\" — none of them print \\(45\\) or \\(30\\), and one side gives you all three. The ratio is fixed; the size isn't. Find \\(k\\) before you write any side down.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }

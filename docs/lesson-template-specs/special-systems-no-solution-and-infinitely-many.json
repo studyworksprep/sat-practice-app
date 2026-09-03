@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>When a system does not have one intersection</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Same slope decides it. Parallel lines never meet; identical lines overlap everywhere.</p><p><strong>Why it pays:</strong> A question that looks like it needs heavy algebra to find a mystery constant collapses to matching one slope.</p><p><strong>One caution:</strong> The slider is for <em>seeing</em> it, not for answering. At \\(A=1.9\\) and \\(A=2\\) the lines look identical on screen — estimate with the slider, then confirm with the slope.</p></div><p>In the previous lesson, you solved systems by graphing both equations and clicking their intersections. This lesson focuses on two special results:</p><ul><li><strong>No solution:</strong> the graphs never intersect.</li><li><strong>Infinitely many solutions:</strong> the two equations graph as the same line.</li></ul><p>On the SAT, a question often tells you which result a system must have and asks you to find one or more missing constants.</p><blockquote><p><strong>Your goal:</strong> Create the requested graph using a slider when one constant is missing, or use slope and proportions when several constants are missing.</p></blockquote>",
+      "html": "<h2>When a system does not have one intersection</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Same slope decides it. Parallel lines never meet; identical lines overlap everywhere.</p><p><strong>Why it pays:</strong> A question that looks like it needs heavy algebra to find a mystery constant collapses to matching one slope.</p><p><strong>One caution:</strong> The slider is for <em>seeing</em> it, not for answering. At \\(A=1.9\\) and \\(A=2\\) the lines look identical on screen — estimate with the slider, then confirm with the slope.</p></div><p>In the previous lesson, you solved systems by graphing both equations and clicking their intersections. This lesson focuses on two special results:</p><ul><li><strong>No solution:</strong> the graphs never intersect.</li><li><strong>Infinitely many solutions:</strong> the two equations graph as the same line.</li></ul><p>On the SAT, a question often tells you which result a system must have and asks you to find one or more missing constants. It looks like heavy algebra. It collapses to matching one slope — and a slider will show you why before the algebra does.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -582,6 +582,24 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "\"The system has infinitely many solutions. What is \\(k\\)?\" — no scrolling back: what does that sentence tell you about the two lines, and how do you get \\(k\\)?",
+        "choices": [
+          "No solution means equal slopes and equal intercepts; infinitely many means equal slopes and unequal intercepts; one unknown can be explored with a slider, while several unknowns call for equations or proportions.",
+          "No solution means unequal slopes; infinitely many means equal slopes and equal intercepts; several unknowns can be explored with sliders, while one unknown calls for equations or proportions.",
+          "No solution requires all three standard-form terms to be proportional; infinitely many requires proportional slopes only; one unknown calls for equations, while several unknowns call for a slider.",
+          "No solution means equal slopes and unequal intercepts; infinitely many means equal slopes and equal intercepts; one unknown can be explored with a slider, while several unknowns call for equations or proportions."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Recall the two pictures and the method choice based on the number of missing constants.",
+        "explanation": "You have it. The graph identifies the required relationship, and slope-intercept form or proportions makes that relationship exact."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -598,28 +616,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which summary correctly connects the graph and algebra for special systems?",
-        "choices": [
-          "No solution means equal slopes and equal intercepts; infinitely many means equal slopes and unequal intercepts; one unknown can be explored with a slider, while several unknowns call for equations or proportions.",
-          "No solution means unequal slopes; infinitely many means equal slopes and equal intercepts; several unknowns can be explored with sliders, while one unknown calls for equations or proportions.",
-          "No solution requires all three standard-form terms to be proportional; infinitely many requires proportional slopes only; one unknown calls for equations, while several unknowns call for a slider.",
-          "No solution means equal slopes and unequal intercepts; infinitely many means equal slopes and equal intercepts; one unknown can be explored with a slider, while several unknowns call for equations or proportions."
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Recall the two pictures and the method choice based on the number of missing constants.",
-        "explanation": "You have it. The graph identifies the required relationship, and slope-intercept form or proportions makes that relationship exact."
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can build special systems</h2><p>You can recognize parallel and overlapping lines, use a slider when one constant is missing, and impose exact slope and intercept conditions when several constants are missing.</p><p>You can also use proportional standard-form coefficients to create equivalent lines, diagnose parallel lines, and answer a requested coefficient ratio directly.</p>",
+        "html": "<h2>Same slope decides it</h2><p>Parallel lines never meet; identical lines overlap everywhere — so the question is only ever about slope, and then intercept. The slider is for seeing it, not answering: at \\(A=1.9\\) and \\(A=2\\) the lines look identical. Confirm with the slope or the ratio.</p>",
         "button_label": "Complete Lesson"
       }
     }

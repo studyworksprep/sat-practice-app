@@ -12,6 +12,10 @@
 //              stock "Without looking back, which…" check (choices unchanged)
 //   notes      free text (ending order, blocks to drop, anything tutors decide)
 
+// Set when the owner approved and apply.mjs ran; the builder refuses to
+// regenerate after this (both outputs read "Was" from the live specs).
+export const APPLIED_ON = '2026-09-03';
+
 export const DECISIONS = [
   {
     id: 'end-hard',

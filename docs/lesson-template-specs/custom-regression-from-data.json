@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_prerequisite",
-      "html": "<h2>Complete the standard-regression lesson first</h2><blockquote><p><strong>Prerequisite:</strong> Do not begin this lesson until you have completed <em>Find a Standard Regression Equation from Data</em>.</p></blockquote><div class=\"lesson-intro\"><p><strong>The move:</strong> Type the equation form the question requires, and let Desmos fill in the constant.</p><p><strong>Why it pays:</strong> This is the power move for \"the graph passes through these points and has this form\" — no system-solving by hand.</p><p><strong>One caution:</strong> Desmos only assigns the constants it has freedom to fit. If a definition supplies one of them, that one comes from your definition, not from the readout.</p></div><p>This lesson assumes you already know how to:</p><ul><li>turn information from a table, graph, or word problem into input-output points;</li><li>enter those points in a Desmos table; and</li><li>use the Regression button to fit a standard linear, quadratic, or exponential model.</li></ul><p>Here, you will build on that workflow by typing a custom model and incorporating additional information about its constants.</p>",
+      "html": "<h2>Complete the standard-regression lesson first</h2><blockquote><p><strong>Prerequisite:</strong> Do not begin this lesson until you have completed <em>Find a Standard Regression Equation from Data</em>.</p></blockquote><div class=\"lesson-intro\"><p><strong>The move:</strong> Type the equation form the question requires, and let Desmos fill in the constant.</p><p><strong>Why it pays:</strong> This is the power move for \"the graph passes through these points and has this form\" — no system-solving by hand.</p><p><strong>One caution:</strong> Desmos only assigns the constants it has freedom to fit. If a definition supplies one of them, that one comes from your definition, not from the readout.</p></div><p>This lesson assumes you already know how to:</p><ul><li>turn information from a table, graph, or word problem into input-output points;</li><li>enter those points in a Desmos table; and</li><li>use the Regression button to fit a standard linear, quadratic, or exponential model.</li></ul><p>This time the question tells you the equation's form and hides a constant in it. You'll type the form and let Desmos fill the constant — starting with a case the Regression button can't do.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -812,6 +812,24 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A question gives you three points and says the function has the form \\(y=ab^x\\). No scrolling back — what's the Desmos routine, first line to last?",
+        "choices": [
+          "Enter input-output points, rewrite extra relationships as regressions, substitute \\(y_1\\) and \\(x_1\\) into every definition, and fit the required form using \\(=\\).",
+          "Fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\) before entering the points, then rewrite the fitted equation to match any extra relationships.",
+          "Enter input-output points and fit the required form with \\(y_1\\sim\\), leaving extra relationships and other function rules out of Desmos.",
+          "Enter input-output points, rewrite extra relationships as definitions, substitute other function rules, and fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\)."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Recall the essential translations: points into the table, relationships into definitions, other functions into formulas, and the required model into \\(y_1\\sim\\) an expression in \\(x_1\\).",
+        "explanation": "You have it. That workflow preserves the equation form the question requires while giving Desmos every data point and coefficient relationship it needs."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -828,28 +846,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which summary gives the correct custom-regression strategy?",
-        "choices": [
-          "Enter input-output points, rewrite extra relationships as regressions, substitute \\(y_1\\) and \\(x_1\\) into every definition, and fit the required form using \\(=\\).",
-          "Fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\) before entering the points, then rewrite the fitted equation to match any extra relationships.",
-          "Enter input-output points and fit the required form with \\(y_1\\sim\\), leaving extra relationships and other function rules out of Desmos.",
-          "Enter input-output points, rewrite extra relationships as definitions, substitute other function rules, and fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\)."
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Recall the essential translations: points into the table, relationships into definitions, other functions into formulas, and the required model into \\(y_1\\sim\\) an expression in \\(x_1\\).",
-        "explanation": "You have it. That workflow preserves the equation form the question requires while giving Desmos every data point and coefficient relationship it needs."
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can fit a custom equation</h2><p>You can connect table data to a required equation form, use definitions for relationships among missing constants, substitute multiple function rules, and interpret the constants Desmos assigns.</p>",
+        "html": "<h2>Type the form; Desmos finds the constant</h2><p>Points in a table, the required form with \\(\\sim\\), extra facts as definition lines — and read only the constants Desmos actually solved for. A constant you defined yourself never shows in the readout.</p>",
         "button_label": "Complete Lesson"
       }
     }

@@ -643,6 +643,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "From memory: what does standard deviation measure, what makes it bigger, and how do you ask Desmos for it?",
+        "choices": [
+          "Standard deviation measures spread from the mean; farther values decrease spread, and Desmos stdev can calculate it",
+          "Standard deviation measures spread from the median; values above the mean increase spread, and Desmos total can calculate it",
+          "Standard deviation measures the gap between the largest and smallest values; adding any value increases it, and Desmos mean calculates it",
+          "Standard deviation measures spread from the mean; farther values increase spread, and Desmos stdev can calculate it"
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Recall the plain-English meaning and the Desmos function name.",
+        "explanation": "You have it. Standard deviation describes spread around the mean. Reason about whether values move toward or away from the center, and use stdev in Desmos when you need the numerical value."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "authentic_item",
       "block_type": "check",
       "content": {
@@ -664,31 +685,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Without looking back, which summary is correct?",
-        "choices": [
-          "Standard deviation measures spread from the mean; farther values decrease spread, and Desmos stdev can calculate it",
-          "Standard deviation measures spread from the median; values above the mean increase spread, and Desmos total can calculate it",
-          "Standard deviation measures the gap between the largest and smallest values; adding any value increases it, and Desmos mean calculates it",
-          "Standard deviation measures spread from the mean; farther values increase spread, and Desmos stdev can calculate it"
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Recall the plain-English meaning and the Desmos function name.",
-        "explanation": "You have it. Standard deviation describes spread around the mean. Reason about whether values move toward or away from the center, and use stdev in Desmos when you need the numerical value."
-      },
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can interpret and calculate standard deviation</h2><p>You can compare spread without a formula, predict how changing values affects the spread, distinguish a new value from a whole-set shift, and use direct or named-list stdev entries in Desmos.</p>",
+        "html": "<h2>Read the spread; don't compute it</h2><p>Standard deviation is how far values typically sit from their own center — compare it by eye, and when a value moves, ask whether it moved away from the middle or toward it. A bigger mean does not mean a bigger spread.</p>",
         "button_label": "Complete Lesson"
       }
     }

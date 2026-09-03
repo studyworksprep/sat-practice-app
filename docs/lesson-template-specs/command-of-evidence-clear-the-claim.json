@@ -6,7 +6,7 @@
     {
       "kind": "text",
       "id": "lesson_goal",
-      "html": "<h2>Evidence is a match, not a scavenger hunt</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Predict the evidence the claim needs before reading the choices.</p><p><strong>Why it pays:</strong> You arrive with a target, so four plausible quotations sort themselves instead of competing for your attention.</p><p><strong>One caution:</strong> With a graph, read the labels first. A bar's height means nothing until you know what the axis is counting.</p></div><p>Command of Evidence questions give you a claim and ask which quotation, finding, table entry, or graph pattern best supports, illustrates, or weakens it.</p><p>This lesson adds a specialized evidence routine to the reading process you already know. You will learn to predict the needed evidence <em>before</em> the choices start competing for your attention.</p><blockquote><p><strong>Goal:</strong> Choose evidence that is accurate, aimed at the exact claim, moving in the requested direction, and strong enough for the claim's scope.</p></blockquote>",
+      "html": "<h2>Evidence is a match, not a scavenger hunt</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Predict the evidence the claim needs before reading the choices.</p><p><strong>Why it pays:</strong> You arrive with a target, so four plausible quotations sort themselves instead of competing for your attention.</p><p><strong>One caution:</strong> With a graph, read the labels first. A bar's height means nothing until you know what the axis is counting.</p></div><p>Command of Evidence questions hand you a claim and four quotations, findings, or graph patterns that all sound like support. Three of them are true statements that don't support the claim — the SAT's favorite kind of wrong.</p><p>CLEAR makes you predict the evidence before the choices start competing for your attention. Start with a claim and no choices at all.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -379,23 +379,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "authentic_quant_question",
-      "block_type": "question_link",
-      "content": { "question_id": "80df19d8-611c-47f8-9a20-49078658f64e" },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "authentic_quant_debrief",
-      "html": "<h2>Debrief the baseline comparison</h2><p>Random distribution predicts only about 15% of plants in vegetation patches. For each of the five species, the observed percentage in patches is substantially higher.</p><p>That repeated overrepresentation is the useful pattern: it supports an early advantage from growing near other plants. A choice naming the species with the largest count may be true, but it does not compare observations with the random baseline and therefore does not prove the claim.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
       "id": "final_retrieval",
       "block_type": "check",
       "content": {
-        "prompt": "Without looking back, which sequence correctly describes CLEAR?",
+        "prompt": "Spell it out from memory: what does each letter of CLEAR tell you to do, in order?",
         "choices": [
           "Capture the task word; Lock onto the claim; Expect the evidence; Audit the source and choices; Reject failed matches.",
           "Capture the claim; Lock onto the task word; Expect the evidence; Audit the source and choices; Reject failed matches.",
@@ -411,10 +398,23 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_quant_question",
+      "block_type": "question_link",
+      "content": { "question_id": "80df19d8-611c-47f8-9a20-49078658f64e" },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "authentic_quant_debrief",
+      "html": "<h2>Debrief the baseline comparison</h2><p>Random distribution predicts only about 15% of plants in vegetation patches. For each of the five species, the observed percentage in patches is substantially higher.</p><p>That repeated overrepresentation is the useful pattern: it supports an early advantage from growing near other plants. A choice naming the species with the largest count may be true, but it does not compare observations with the random baseline and therefore does not prove the claim.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>Make the evidence prove its value</h2><p>You can now control the task direction, predict the evidence a claim needs, read visuals outside-in, eliminate data contradictions safely, and distinguish a true statement from useful evidence.</p>",
+        "html": "<h2>Evidence is a match, not a hunt</h2><p>Predict what the claim needs, then let the four choices audition for it. A true statement that doesn't do the claim's job is the trap — CLEAR is how you keep saying no to it.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }

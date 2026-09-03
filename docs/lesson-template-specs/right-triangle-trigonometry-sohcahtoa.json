@@ -661,27 +661,10 @@
     },
     {
       "kind": "raw_block",
-      "id": "authentic_item",
-      "block_type": "check",
-      "content": {
-        "prompt": "In right triangle \\(DEF\\), the measure of angle \\(F\\) is \\(90^\\circ\\), \\(DF=9\\), and \\(EF=12\\). What is the value of \\(\\tan D\\)?",
-        "input": "numeric",
-        "answer": "4/3",
-        "tolerance": 0.001,
-        "allow_retry": false,
-        "hint": "Sketch the named vertices, then label the sides from angle \\(D\\) — not from the right angle.",
-        "explanation": "Correct. From \\(\\angle D\\), the opposite side is \\(EF=12\\) and the adjacent side is \\(DF=9\\), so \\(\\tan D=\\frac{12}{9}=\\frac{4}{3}\\). \\(\\frac{3}{4}\\) labels the sides from the wrong angle, and the ratios with \\(5\\) use the hypotenuse \\(15\\), which tangent never does."
-      },
-      "calculator": {
-        "display": "open"
-      }
-    },
-    {
-      "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
       "content": {
-        "prompt": "Without looking back, which summary correctly connects SOHCAHTOA, angle mode, and similar triangles?",
+        "prompt": "Triangle \\(DEF\\), right angle at \\(F\\), and the question asks for \\(\\tan D\\). No looking back: what do you draw, what do you label, and what do you check before computing?",
         "choices": [
           "Sketch the named vertices; label sides from the right angle; select SOH, CAH, or TOA from the two relevant sides; convert every trig value to a decimal; match Desmos mode to the angle unit; and transfer unchanged ratios across corresponding angles.",
           "Sketch the named vertices; label sides from the chosen acute angle; select SOH, CAH, or TOA from the two relevant sides; preserve the exact trig form; leave Desmos in Radians no matter what the problem states; and scale the ratios by the similar-triangle factor.",
@@ -699,10 +682,27 @@
     },
     {
       "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "In right triangle \\(DEF\\), the measure of angle \\(F\\) is \\(90^\\circ\\), \\(DF=9\\), and \\(EF=12\\). What is the value of \\(\\tan D\\)?",
+        "input": "numeric",
+        "answer": "4/3",
+        "tolerance": 0.001,
+        "allow_retry": false,
+        "hint": "Sketch the named vertices, then label the sides from angle \\(D\\) — not from the right angle.",
+        "explanation": "Correct. From \\(\\angle D\\), the opposite side is \\(EF=12\\) and the adjacent side is \\(DF=9\\), so \\(\\tan D=\\frac{12}{9}=\\frac{4}{3}\\). \\(\\frac{3}{4}\\) labels the sides from the wrong angle, and the ratios with \\(5\\) use the hypotenuse \\(15\\), which tangent never does."
+      },
+      "calculator": {
+        "display": "open"
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can solve SAT right triangles with trig</h2><p>You can turn named points and sides into your own labeled sketch, identify opposite, adjacent, and hypotenuse from the given acute angle, choose and solve a sine, cosine, or tangent equation in exact form, convert between radians and degrees, set Desmos to the correct angle mode, and carry unchanged trig ratios across similar triangles.</p>",
+        "html": "<h2>Sketch it; label from the angle you're using</h2><p>The SAT names vertices, not \"opposite\" and \"adjacent\" — your sketch does that translating, and then sine, cosine, or tangent is a mechanical pick. Adjacent is never the hypotenuse, and the calculator is in degrees before you press anything.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": {
