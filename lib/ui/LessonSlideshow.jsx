@@ -67,6 +67,11 @@ import {
   shouldCompleteOnContinue,
   summarizeCheckAttempts,
 } from '@/lib/lesson/runtime-progress.mjs';
+import {
+  formatNumericCheckAnswer,
+  gradeNumericCheck,
+  isNumericCheck,
+} from '@/lib/lesson/numeric-check.mjs';
 
 // Above this many blocks the per-step segments get too thin to read, so
 // the progress meter falls back to a continuous bar.
@@ -904,6 +909,11 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
   const allowRetry = Boolean(content.allow_retry);
   const hintHtml = content.hint || 'Not quite — take another look and try again.';
   const maxAttempts = maxAttemptsBeforeReveal(content);
+  // Numeric-entry checks (plan 1.6) take a typed answer instead of a
+  // choice. `selected` then holds the typed string — same persistence,
+  // same restore, same retry / escalation path; only the answer
+  // surface and the grading differ.
+  const numeric = isNumericCheck(content);
 
   const [selected, setSelected] = useState(
     () => resolveCheckRestoreState(previousAnswer, allowRetry, maxAttempts).selected,
@@ -932,6 +942,12 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
   // Set after a wrong attempt in retry mode: show the hint and keep the
   // choices live. Cleared the moment the learner changes their pick.
   const [showHint, setShowHint] = useState(false);
+  // How the finalized answer graded. For choices this is redundant with
+  // selected === correctIdx; for a typed answer it is the only record,
+  // so both modes read it. Restored from the persisted entry.
+  const [answeredCorrect, setAnsweredCorrect] = useState(
+    () => (previousAnswer ? Boolean(previousAnswer.correct) : null),
+  );
 
   function handleSelect(i) {
     if (revealed) return;
@@ -939,9 +955,20 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
     if (showHint) setShowHint(false);
   }
 
+  function handleType(value) {
+    if (revealed) return;
+    setSelected(value);
+    if (showHint) setShowHint(false);
+  }
+
+  const hasAnswer = numeric ? String(selected ?? '').trim() !== '' : selected !== null;
+
   function handleSubmit() {
-    if (selected === null) return;
-    const isCorrect = selected === correctIdx;
+    if (!hasAnswer) return;
+    const isCorrect = numeric
+      ? gradeNumericCheck(content, selected)
+      : selected === correctIdx;
+    setAnsweredCorrect(isCorrect);
     if (allowRetry && !isCorrect) {
       const nextMisses = misses + 1;
       setMisses(nextMisses);
@@ -964,18 +991,50 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
   }
 
   const stateClass = revealed
-    ? selected === correctIdx
+    ? answeredCorrect
       ? s.checkCardCorrect
       : s.checkCardWrong
     : showHint
       ? s.checkCardWrong
       : '';
+  const inputId = `check-${block.id}-answer`;
 
   return (
     <div className={`${s.card} ${s.checkCard} ${stateClass}`}>
       <div className={s.kicker}>Knowledge Check</div>
       <MathText as="p" className={s.checkPrompt}>{content.prompt}</MathText>
 
+      {numeric ? (
+        <div className={s.numericWrap}>
+          <label htmlFor={inputId} className={s.numericLabel}>Your answer</label>
+          <input
+            id={inputId}
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            spellCheck={false}
+            value={selected ?? ''}
+            onChange={(e) => handleType(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubmit();
+              }
+            }}
+            disabled={revealed}
+            placeholder="Type your answer"
+            className={`${s.numericInput} ${
+              revealed
+                ? answeredCorrect ? s.numericInputCorrect : s.numericInputWrong
+                : showHint ? s.numericInputWrong : ''
+            }`}
+          />
+          <p className={s.numericHint}>
+            Enter a number or fraction (e.g. <code>12.5</code> or <code>25/2</code>).
+            Don&apos;t include units.
+          </p>
+        </div>
+      ) : (
       <div className={s.choiceList}>
         {choices.map((choice, i) => {
           const isCorrectChoice = i === correctIdx;
@@ -1015,12 +1074,13 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
           );
         })}
       </div>
+      )}
 
       {!revealed && (
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={selected === null}
+          disabled={!hasAnswer}
           className={`${s.primaryBtn} ${s.checkSubmit}`}
         >
           {showHint ? 'Try Again' : 'Check Answer'}
@@ -1030,6 +1090,19 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
       {showHint && !revealed && (
         <div className={s.hint} role="status" aria-live="polite">
           <strong>Try again.</strong> <MathText as="span">{hintHtml}</MathText>
+        </div>
+      )}
+
+      {numeric && revealed && (
+        <div
+          className={`${s.numericResult} ${answeredCorrect ? s.numericResultCorrect : s.numericResultWrong}`}
+          role="status"
+        >
+          {answeredCorrect ? (
+            <>✓ Correct</>
+          ) : (
+            <>✗ The correct answer was <strong>{formatNumericCheckAnswer(content)}</strong></>
+          )}
         </div>
       )}
 

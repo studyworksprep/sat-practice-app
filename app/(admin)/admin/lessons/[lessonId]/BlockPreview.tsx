@@ -29,6 +29,10 @@ type Block = {
     prompt?: string;
     choices?: string[];
     correct_index?: number;
+    input?: string;
+    answer?: string | number;
+    accept?: Array<string | number>;
+    tolerance?: number;
     explanation?: string;
     allow_retry?: boolean;
     hint?: string;
@@ -125,6 +129,12 @@ function CheckPreview({ block }: { block: Block }) {
   const correctIndex = block.content?.correct_index ?? 0;
   const allowRetry = Boolean(block.content?.allow_retry);
   const hint = block.content?.hint ?? '';
+  // Numeric-entry check (plan 1.6): no choices, a typed answer.
+  const numeric = block.content?.input === 'numeric';
+  const accepted = [block.content?.answer, ...(block.content?.accept ?? [])]
+    .map((v) => (v == null ? '' : String(v).trim()))
+    .filter(Boolean);
+  const tolerance = block.content?.tolerance;
   return (
     <div style={S.check}>
       {prompt ? (
@@ -132,6 +142,19 @@ function CheckPreview({ block }: { block: Block }) {
       ) : (
         <div style={S.prompt}><em style={S.placeholder}>No prompt yet</em></div>
       )}
+      {numeric ? (
+        <div style={S.choice}>
+          <span style={S.choiceLetter}>#</span>
+          {accepted.length > 0 ? (
+            <span>
+              Typed answer: <strong>{accepted.join(' or ')}</strong>
+              {typeof tolerance === 'number' && tolerance > 0 ? ` (± ${tolerance})` : ''}
+            </span>
+          ) : (
+            <em style={S.placeholder}>No answer yet</em>
+          )}
+        </div>
+      ) : (
       <ul style={S.choiceList}>
         {choices.map((choice, i) => {
           const correct = i === correctIndex;
@@ -149,6 +172,7 @@ function CheckPreview({ block }: { block: Block }) {
           </li>
         ) : null}
       </ul>
+      )}
       {allowRetry ? (
         <div style={S.metaRow}>
           ↻ Retry until correct{hint ? (

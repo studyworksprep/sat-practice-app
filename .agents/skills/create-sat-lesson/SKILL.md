@@ -54,7 +54,7 @@ Turn the user's topic and rundown into a finished lesson-template JSON file in `
 2. Follow the block kinds and schemas in the current guide and importer exactly.
 3. Make the content original, mathematically correct, SAT-authentic, direct, and conversational.
 4. For a substantial strategy lesson, generally target 15–25 purposeful short blocks, but never pad a lesson to meet a quota.
-5. Use plausible misconception-based distractors, correct zero-based answer indices, targeted retry hints, and explanations that reinforce the underlying idea.
+5. Use plausible misconception-based distractors, correct zero-based answer indices, targeted retry hints, and explanations that reinforce the underlying idea. Where the SAT would ask for a typed value — a measurement check whose answer is one computed number — author a numeric-entry check (`input: "numeric"`, `answer`, optional `accept`/`tolerance`) instead of four numbers; see the authoring guide §3b.
 6. Use Desmos only when it advances the objective. Make its expected expressions, test values, feedback, and progression rules internally consistent.
 7. Never invent question-bank UUIDs, external assets, citations, or product capabilities. Omit `question_link` blocks unless real question IDs were supplied or verified.
 8. Keep block IDs unique, references resolvable, branches rejoined where appropriate, and `lesson_complete` last when present.

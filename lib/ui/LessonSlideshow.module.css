@@ -457,6 +457,86 @@
   margin-top: var(--s3);
 }
 
+/* Numeric-entry checks (plan 1.6): the typed-answer surface. Mirrors
+   the practice runner's SPR input so a lesson check and a bank
+   question feel like the same control. */
+.numericWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.numericLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+  margin: 0;
+}
+
+.numericInput {
+  padding: var(--s3) var(--s4);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  max-width: 260px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  background: transparent;
+  color: inherit;
+  transition:
+    border-color var(--dur-fast) var(--ease-std),
+    background var(--dur-fast) var(--ease-std);
+}
+
+.numericInput:focus-visible {
+  outline: none;
+  border-color: var(--color-app-accent);
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.numericInput:disabled {
+  cursor: default;
+}
+
+.numericInputCorrect {
+  background: var(--color-success-bg);
+  border-color: var(--tile-success-fg);
+}
+
+.numericInputWrong {
+  background: var(--color-danger-bg);
+  border-color: var(--tile-danger-fg);
+}
+
+.numericHint {
+  color: var(--fg3);
+  font-size: 12px;
+  margin: 0;
+}
+
+.numericHint code {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+}
+
+/* The graded result line — a typed answer has no choice row to carry
+   the ✓ / ✗, so this says how it graded and, when wrong, what was
+   keyed (the runner's "The correct answer was" line). */
+.numericResult {
+  margin-top: var(--s3);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.numericResultCorrect {
+  color: var(--tile-success-fg);
+}
+
+.numericResultWrong {
+  color: var(--tile-danger-fg);
+}
+
 .explanation {
   margin-top: var(--s3);
   padding: 12px var(--s4);

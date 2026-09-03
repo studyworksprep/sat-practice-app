@@ -163,6 +163,14 @@ Every check should satisfy all of these rules:
   choices move, update `correct_index` so it still points to the correct one.
 - Use four choices when imitating a normal SAT multiple-choice item, unless
   the learning purpose clearly calls for fewer.
+- **Match the SAT's answer format.** About a quarter of SAT math items are
+  student-produced responses. A measurement check whose answer is a single
+  computed value should be a numeric-entry check (`input: "numeric"`, §3b)
+  rather than four numbers with one correct — as multiple choice, its
+  distractors carry no diagnostic information and the format itself is
+  inauthentic. Multiple choice stays right where the wrong answers *are*
+  the teaching. The linter flags one-shot all-numeric checks as
+  candidates (`lint_spr_candidate`).
 
 **Do not use proofs, written justifications, or other constructed-response
 work as prompts or distractors.** The SAT does not ask students to submit a
@@ -396,6 +404,43 @@ video, and advanced Desmos. Shape:
   **Continue**. For a simple linear question, that's all you need. To send
   correct and incorrect answers down different paths, add branch fields —
   see **§5 Branching**.
+
+**Numeric-entry checks (typed answer)** — the SAT's student-produced
+response. Set `input: "numeric"` and give the answer the way a student
+would type it; there are no `choices`:
+```json
+{
+  "kind": "raw_block",
+  "block_type": "check",
+  "content": {
+    "prompt": "The function \\(f\\) is defined by \\(f(x)=2x^2-5x+1\\). What is the value of \\(f(3)\\)?",
+    "input": "numeric",
+    "answer": "4",
+    "explanation": "Substituting gives \\(2(9)-15+1=4\\)."
+  }
+}
+```
+- `answer` (required): a whole number, a decimal, or an `a/b` fraction — no
+  units, no LaTeX, no percent sign. Fractions and decimals grade as
+  equivalent automatically (`"25/2"` accepts `12.5`), through the same
+  grader the question bank uses for its own SPR items.
+- `accept` (optional array of strings): other typeable forms that should
+  count — a reduced fraction (`"answer": "27/48", "accept": ["9/16"]`), a
+  repeating decimal's four-place forms.
+- `tolerance` (optional number ≥ 0): numeric slack for answers that must be
+  rounded. `"answer": "4/3", "tolerance": 0.001` takes `1.333` and `1.3333`.
+  Leave it off for exact answers.
+- Everything else is unchanged: `allow_retry`, `hint`, `solution`,
+  `explanation`, branch fields, one-shot status. A wrong typed answer shows
+  the hint and **Try Again** exactly like a wrong choice; the reveal shows
+  the keyed answer.
+- **When to use it:** when the SAT would ask the question as a typed value —
+  one computed number, where distractors would do no diagnostic work. Keep
+  multiple choice where the wrong answers *are* the teaching (a retry check
+  whose distractors are named traps), for ratios, percents, and expressions,
+  and for anything a student could not type as a number.
+- A check is one shape or the other. `input: "numeric"` with `choices` is a
+  validation error.
 
 **Retry-until-correct checks** — add `allow_retry` to keep the learner on
 the question until they get it right, instead of revealing the answer on
@@ -903,7 +948,9 @@ Rules for manual branching:
   you set an `id` on a block, keep it unique within the spec.
 - **`correct_index` is 0-based.** Across a lesson, vary it among the valid
   choice positions; do not make every correct answer choice A.
-- **`choices` need at least 2 entries.**
+- **`choices` need at least 2 entries** on a multiple-choice check, and
+  `correct_index` must point inside them. A numeric-entry check
+  (`input: "numeric"`) has `answer` instead and no `choices`.
 - **Don't invent `question_id`s.** Only use `question_link` with real bank
   UUIDs you were given.
 - **Valid `block_type` values:** `text`, `video`, `check`, `question_link`,
