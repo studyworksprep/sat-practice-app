@@ -683,13 +683,8 @@
       "block_type": "check",
       "content": {
         "prompt": "What is the positive solution to the equation \\(x^2-3x-28=0\\)?",
-        "choices": [
-          "\\(-4\\)",
-          "\\(4\\)",
-          "\\(7\\)",
-          "\\(28\\)"
-        ],
-        "correct_index": 2,
+        "input": "numeric",
+        "answer": "7",
         "allow_retry": false,
         "hint": "Zero is already on one side — graph the other side and read every x-intercept before answering.",
         "explanation": "Correct. Graphing \\(y=x^2-3x-28\\) shows x-intercepts at \\(-4\\) and \\(7\\); the question asks for the positive solution, so the answer is \\(7\\). \\(-4\\) is the other solution, not the requested one."

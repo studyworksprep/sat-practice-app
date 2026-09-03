@@ -665,13 +665,9 @@
       "block_type": "check",
       "content": {
         "prompt": "In right triangle \\(DEF\\), the measure of angle \\(F\\) is \\(90^\\circ\\), \\(DF=9\\), and \\(EF=12\\). What is the value of \\(\\tan D\\)?",
-        "choices": [
-          "\\(\\frac{3}{5}\\)",
-          "\\(\\frac{3}{4}\\)",
-          "\\(\\frac{4}{5}\\)",
-          "\\(\\frac{4}{3}\\)"
-        ],
-        "correct_index": 3,
+        "input": "numeric",
+        "answer": "4/3",
+        "tolerance": 0.001,
         "allow_retry": false,
         "hint": "Sketch the named vertices, then label the sides from angle \\(D\\) — not from the right angle.",
         "explanation": "Correct. From \\(\\angle D\\), the opposite side is \\(EF=12\\) and the adjacent side is \\(DF=9\\), so \\(\\tan D=\\frac{12}{9}=\\frac{4}{3}\\). \\(\\frac{3}{4}\\) labels the sides from the wrong angle, and the ratios with \\(5\\) use the hypotenuse \\(15\\), which tangent never does."

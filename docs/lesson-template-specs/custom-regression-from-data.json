@@ -816,13 +816,8 @@
       "block_type": "check",
       "content": {
         "prompt": "For the function \\(g\\), \\(g(t)=a\\cdot3^t\\), where \\(a\\) is a constant. If \\(g(2)=45\\), what is the value of \\(g(1)\\)?",
-        "choices": [
-          "\\(5\\)",
-          "\\(15\\)",
-          "\\(45\\)",
-          "\\(135\\)"
-        ],
-        "correct_index": 1,
+        "input": "numeric",
+        "answer": "15",
         "allow_retry": false,
         "hint": "Find the constant first, then answer the quantity the question actually asks for.",
         "explanation": "Correct. \\(g(2)=9a=45\\) gives \\(a=5\\), so \\(g(1)=5\\cdot3=15\\). Reporting \\(5\\) answers the wrong quantity — that is \\(a\\) — and \\(135\\) is \\(g(3)\\). In Desmos, \\(a\\cdot3^{x_1}\\sim\\) with the point \\((2,45)\\) assigns the same constant."

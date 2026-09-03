@@ -573,13 +573,8 @@
       "block_type": "check",
       "content": {
         "prompt": "If \\((k+1)x+my=8\\) and \\(9x+12y=24\\) have infinitely many solutions, what is \\(k+m\\)?",
-        "choices": [
-          "\\(5\\)",
-          "\\(6\\)",
-          "\\(7\\)",
-          "\\(8\\)"
-        ],
-        "correct_index": 1,
+        "input": "numeric",
+        "answer": "6",
         "allow_retry": false,
         "hint": "The constant 8 is multiplied by 3 to become 24. Apply that factor to both variable coefficients.",
         "explanation": "Correct. Multiplying the first equation by \\(3\\) gives the second: \\(3(k+1)=9\\), so \\(k=2\\), and \\(3m=12\\), so \\(m=4\\). Therefore, \\(k+m=6\\)."
@@ -591,13 +586,8 @@
       "block_type": "check",
       "content": {
         "prompt": "In the system of equations \\(6x-9y=12\\) and \\(8x+ky=16\\), \\(k\\) is a constant. If the system has infinitely many solutions, what is the value of \\(k\\)?",
-        "choices": [
-          "\\(-12\\)",
-          "\\(-9\\)",
-          "\\(-\\frac{27}{4}\\)",
-          "\\(12\\)"
-        ],
-        "correct_index": 0,
+        "input": "numeric",
+        "answer": "-12",
         "allow_retry": false,
         "hint": "Infinitely many solutions means the same line — every standard-form term must scale by the same factor.",
         "explanation": "Correct. \\(\\frac{8}{6}=\\frac{16}{12}=\\frac{4}{3}\\), so the second equation is the first scaled by \\(\\frac{4}{3}\\) and \\(k=-9\\cdot\\frac{4}{3}=-12\\). Copying \\(-9\\) skips the scaling, and \\(-\\frac{27}{4}\\) inverts the factor."

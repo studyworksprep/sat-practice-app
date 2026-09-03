@@ -361,13 +361,9 @@
       "block_type": "check",
       "content": {
         "prompt": "One visitor represented in the museum table is selected at random. What is the probability of selecting a visitor who chose the science tour, given that the visitor selected is an adult?",
-        "choices": [
-          "\\(\\frac{39}{65}\\)",
-          "\\(\\frac{39}{60}\\)",
-          "\\(\\frac{39}{100}\\)",
-          "\\(\\frac{26}{65}\\)"
-        ],
-        "correct_index": 0,
+        "input": "numeric",
+        "answer": "39/65",
+        "accept": ["3/5"],
         "allow_retry": false,
         "hint": "The adult Total is 65. Find the science count within the adult row.",
         "explanation": "Right. Of the 65 adult visitors, 39 chose the science tour, so the probability is \\(\\frac{39}{65}\\)."
@@ -380,13 +376,9 @@
       "block_type": "check",
       "content": {
         "prompt": "Using the museum table, one visitor is selected from all 100 visitors. What is the probability the visitor chose history?",
-        "choices": [
-          "\\(\\frac{14}{100}\\)",
-          "\\(\\frac{26}{100}\\)",
-          "\\(\\frac{60}{100}\\)",
-          "\\(\\frac{40}{100}\\)"
-        ],
-        "correct_index": 3,
+        "input": "numeric",
+        "answer": "40/100",
+        "accept": ["2/5"],
         "allow_retry": false,
         "hint": "There is no age restriction. Use all 100 visitors for Total and the full history column for Favorable.",
         "explanation": "Correct. All 100 visitors are possible, and 14 + 26 = 40 chose history, so the probability is \\(\\frac{40}{100}\\)."
@@ -399,13 +391,9 @@
       "block_type": "check",
       "content": {
         "prompt": "A summer program enrolled \\(80\\) students: \\(35\\) in photography, of whom \\(21\\) are high school students, and \\(45\\) in ceramics, of whom \\(27\\) are high school students. If one of the \\(48\\) high school students in the program is selected at random, what is the probability that the student is enrolled in ceramics?",
-        "choices": [
-          "\\(\\frac{21}{48}\\)",
-          "\\(\\frac{27}{80}\\)",
-          "\\(\\frac{27}{48}\\)",
-          "\\(\\frac{27}{45}\\)"
-        ],
-        "correct_index": 2,
+        "input": "numeric",
+        "answer": "27/48",
+        "accept": ["9/16"],
         "allow_retry": false,
         "hint": "Identify the Total first: the selection is from the high school students only.",
         "explanation": "Correct. The condition restricts Total to the \\(48\\) high school students, and \\(27\\) of them are in ceramics, so \\(\\frac{27}{48}\\). The grand total \\(80\\) is no longer available, and \\(\\frac{27}{45}\\) reverses the condition."

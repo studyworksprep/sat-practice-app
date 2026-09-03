@@ -664,13 +664,8 @@
       "block_type": "check",
       "content": {
         "prompt": "If \\(\\sqrt{2w+15}=w\\), what is the value of \\(w\\)?",
-        "choices": [
-          "\\(-3\\)",
-          "\\(3\\)",
-          "\\(5\\)",
-          "\\(15\\)"
-        ],
-        "correct_index": 2,
+        "input": "numeric",
+        "answer": "5",
         "allow_retry": false,
         "hint": "Use an acceptable variable and one \\(\\sim\\); check what the assigned value must satisfy.",
         "explanation": "Correct. Regression on \\(\\sqrt{2W+15}\\sim W\\) assigns \\(W=5\\), and \\(\\sqrt{25}=5\\) checks. Squaring by hand also produces \\(-3\\), but a square root cannot equal a negative number, so \\(-3\\) fails the original equation."
