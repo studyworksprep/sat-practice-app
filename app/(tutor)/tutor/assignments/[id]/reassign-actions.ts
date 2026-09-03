@@ -10,6 +10,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { lessonCompletionByStudent } from '@/lib/lesson/assignment-completion';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import type { ActionResult } from '@/lib/types';
@@ -79,11 +80,22 @@ export async function reassignAssignment(
     return actionFail(`Could not copy the assignment: ${insertErr?.message ?? 'unknown'}`);
   }
 
+  // Same rule as creation: a student who already finished this lesson
+  // is complete on arrival (see lib/lesson/assignment-completion.ts).
+  let alreadyDone = new Map<string, string>();
+  if (source.assignment_type === 'lesson' && source.lesson_id) {
+    try {
+      alreadyDone = await lessonCompletionByStudent(supabase, source.lesson_id, studentIds);
+    } catch {
+      alreadyDone = new Map();
+    }
+  }
   const { error: junctionErr } = await supabase.from('assignment_students_v2').insert(
     studentIds.map((sid) => ({
       assignment_id: copy.id,
       student_id: sid,
       test_type: source.test_type ?? 'sat',
+      completed_at: alreadyDone.get(sid) ?? null,
     })),
   );
   if (junctionErr) {

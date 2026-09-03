@@ -456,12 +456,18 @@ function AssignmentRow({ row, nowMs, archived = false }) {
   const isSingle = row.studentCount === 1;
   const single = row.single;
 
-  // Click target picks up the report when we have one. Group rows
-  // and incomplete single-student rows fall back to the detail
-  // page (which carries the per-student progress + question set).
+  // Click target picks up the report when we have one: the session
+  // report for practice types, the per-student lesson report (the
+  // per-check table) for a finished lesson. Group rows and incomplete
+  // single-student rows fall back to the detail page (which carries
+  // the per-student progress + question set).
   let href = `/tutor/assignments/${row.id}`;
-  if (isSingle && single?.completedAt && single.reportSessionId) {
-    href = `/tutor/sessions/${single.reportSessionId}`;
+  if (isSingle && single?.completedAt) {
+    if (single.reportSessionId) {
+      href = `/tutor/sessions/${single.reportSessionId}`;
+    } else if (row.assignment_type === 'lesson') {
+      href = `/tutor/assignments/${row.id}/students/${single.studentId}`;
+    }
   }
 
   // Progress percent: for single-student questions-type, base on
