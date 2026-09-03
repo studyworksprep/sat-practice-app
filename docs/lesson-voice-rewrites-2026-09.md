@@ -1,13 +1,19 @@
 # Lesson Voice Rewrites — 2026-09
 
-> **Status: Living — plan step 6.2, for tutor approval.** Drafted
-> 2026-09-03 from the house voice guide (authoring guide §2c) against the
-> shipped specs. Every "Was" below is the live spec text at drafting
-> time; every "Proposed" is the replacement the AI would apply **on
-> approval** — nothing here is in a spec yet. Reply on the review page
-> or edit this file: approve, change the wording, or say keep. Names are
-> the tutor team's call (plan 6.5): a name must be words a tutor actually
-> says in session.
+> **Status: Living — plan step 6.2, approved 2026-09-03 (owner, all as
+> proposed) and applied the same day** by `scripts/voice-rewrites/apply.mjs`
+> from `scripts/voice-rewrites/proposals.mjs`. Drafted 2026-09-03 from the
+> house voice guide (authoring guide §2c). Every "Was" below is the spec
+> text that was replaced; every "Proposed" is now live in the spec. This
+> file is frozen at application — the builder refuses to regenerate it.
+> Two things went beyond the letter of the proposal, under the approved
+> end-hard decision: CLEAR, described below as already ending on a bank
+> question, in fact ended on its retrieval check, so its retrieval check
+> now precedes the bank question and its debrief; and Circle Toolkit's
+> `check_20` and Initial Modifiers' `check_15` are retrieval recitals with
+> non-stock stems, so they were reordered like the rest. The names are
+> decided (plan 6.5); weaving them into hints and explanations is the
+> 6.2b pass.
 
 ## The four decisions that apply to every lesson
 

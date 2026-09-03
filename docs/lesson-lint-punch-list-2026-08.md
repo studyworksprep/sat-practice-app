@@ -46,7 +46,9 @@ in Solve Equations by Graphing). All 40 have a proposed replacement in
 applied on tutor approval; none is fixed individually here. The
 same-word explanation-opener rate is **93.9%** corpus-wide (587/625),
 reported per lesson and scheduled as its own voice pass (6.2b) rather
-than listed as rows.
+than listed as rows. **Closed 2026-09-03:** all 40 rows closed by the
+6.2 application (owner approval, all as proposed); `retired_closer` and
+`retired_tail` report 0.
 
 **1.6 note (2026-09-03):** numeric-entry checks landed (`input:
 "numeric"`, graded by the bank's own SPR grader). The new

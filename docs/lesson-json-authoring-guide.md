@@ -148,8 +148,9 @@ first (plan Phase 6):
    Bad Cop" and "My Numbers"; a tutor references them in session. Every
    lesson gets a handle, and the handle is reused in hints, explanations,
    and solutions until it is vocabulary. Names must be words tutors
-   actually say — the tutor team chooses them (plan 6.5); proposals live in
-   `lesson-voice-rewrites-2026-09.md`.
+   actually say — the tutor team chooses them (plan 6.5). The approved
+   handles (2026-09-03) are the **Names** table in
+   `lesson-voice-rewrites-2026-09.md`; use them.
 3. **Let the SAT be a character.** Frame distractors as traps the test
    set: *"The SAT is betting you'll grab the grand total. Don't."* The
    trap catalog says which trap each item carries — say so out loud. It is

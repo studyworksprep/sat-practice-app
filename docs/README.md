@@ -28,7 +28,7 @@ authorization matrix to prove it's fresh.
 | `trap-catalog.md` | What students actually do wrong, per skill (plan step 2.6) — seeded from the corpus, candidate until tutors confirm; source for 2.3 distractor/hint drafting |
 | `authenticity-sheets.md` | Per-skill DSAT format profiles (plan step 2.7) — derived from the question bank with PT9–11 as the currency anchor; pending tutor verification; input to 2.4 authentic items |
 | `lesson-intro-video-briefs-2026-08.md` | One 60–90 s intro-video brief per lesson (plan step 3.6) — the move, the payoff, one caution; the recording queue for the tutor team |
-| `lesson-voice-rewrites-2026-09.md` | Per-lesson voice proposals (plan step 6.2) — a handle for the move, opener, closer, and retrieval stem, was vs. proposed; **awaiting tutor approval**, applied to specs only on approval |
+| `lesson-voice-rewrites-2026-09.md` | Per-lesson voice rewrites (plan step 6.2) — a handle for the move, opener, closer, and retrieval stem, was vs. proposed; **approved and applied 2026-09-03**, frozen as the record of what was replaced |
 | `runbook.md` | Operational runbook (incidents, deploys, hotfix migrations, e2e) |
 | `database.md` | Schema operations + safe service-role usage |
 | `billing.md` | Subscription enforcement, the Stripe webhook contract, reconciliation |
