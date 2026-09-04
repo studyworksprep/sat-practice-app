@@ -21,6 +21,7 @@ import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { applyCheckAttempt } from '@/lib/lesson/runtime-progress.mjs';
 import { selectLessonPracticeQuestionIds } from '@/lib/lesson/practice-drill';
+import { markLessonAssignmentsComplete } from '@/lib/lesson/assignment-completion';
 import { enqueueLessonRetrieval } from '@/lib/review/queue';
 
 async function loadOrCreateProgress(supabase, lessonId, userId) {
@@ -130,6 +131,15 @@ export async function markLessonComplete(lessonId) {
   await applyUpdates(supabase, lessonId, user.id, {
     completed_at: completedAt,
   });
+  // Any open assignment of this lesson is now complete too. Awaited
+  // rather than deferred so the student's assignments page reflects it
+  // on their very next navigation; wrapped so a stamping failure can
+  // never undo or block the completion that just landed.
+  try {
+    await markLessonAssignmentsComplete(supabase, user.id, lessonId, completedAt);
+  } catch (err) {
+    console.error('lesson assignment completion stamp failed', lessonId, err);
+  }
   // Delayed retrieval (plan 5.3): the lesson comes back in ~2 days as
   // a micro-drill on its skill. Deferred and swallowed — the same
   // best-effort contract the rest of the review-queue intake uses, so

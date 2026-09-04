@@ -28,6 +28,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { lessonCompletionByStudent } from '@/lib/lesson/assignment-completion';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
@@ -181,10 +182,23 @@ export async function createAssignment(
     );
   }
 
+  // A student who has already finished this lesson is complete on
+  // arrival, stamped with the lesson's own completion time — not shown
+  // a lesson they have done as "Not started". Best-effort: an unknown
+  // completion state falls back to the pre-existing behavior.
+  let alreadyDone = new Map<string, string>();
+  if (assignmentType === 'lesson' && typePayload.row.lesson_id) {
+    try {
+      alreadyDone = await lessonCompletionByStudent(supabase, typePayload.row.lesson_id, studentIds);
+    } catch {
+      alreadyDone = new Map();
+    }
+  }
   const junctionRows = studentIds.map((sid) => ({
     assignment_id: assignment.id,
     student_id: sid,
     test_type: 'sat',
+    completed_at: alreadyDone.get(sid) ?? null,
   }));
   const { error: studentsErr } = await supabase
     .from('assignment_students_v2')
