@@ -300,36 +300,32 @@ export async function loadQuestion(
       });
   }
 
-  // Assignment sessions and review drills act like a fresh attempt:
-  // historical attempts on these question ids from other sessions
-  // don't pre-seed the answer state and don't count toward this
-  // session's "answered N of M" progress. Without this, a student
-  // who'd already done one of the questions in a prior practice
-  // session would land on the question pre-filled (with feedback /
-  // Reveal unlocked) and the navigator would mark it complete before
-  // they'd touched it in this session.
+  // Every student session acts like a fresh attempt: historical
+  // attempts on these question ids from other sessions don't pre-seed
+  // the answer state and don't count toward this session's
+  // "answered N of M" progress. Without this, a student who'd already
+  // done one of the questions in a prior session would land on the
+  // question pre-filled (with feedback / Reveal unlocked) and the
+  // navigator would mark it complete before they'd touched it.
   //
-  // Review drills (mode='review' — the Weak Questions Drill, skill
-  // drills, ACT category drills) especially need this: the queue is
-  // built entirely from questions the student has already gotten
-  // wrong, so EVERY question carries a prior attempt. With the old
-  // history-aware scope those drills loaded every question pre-filled
-  // with the previous (usually wrong) answer and Reveal already
-  // unlocked — the student never got to re-attempt anything.
+  // This used to apply only to assignment sessions and review drills
+  // (mode='review'); plain solo practice (mode='practice' without an
+  // assignment_id) stayed "history-aware" so the runner could show
+  // "you got this right last time". In practice that read as a bug:
+  // a student who re-ran a filter they'd used before got every
+  // question pre-answered with their old (often wrong) choice, the
+  // rationale already revealed, and a session that counted itself
+  // complete with nothing answered — see the 2026-09-05 reports.
+  // The submit side records a new attempt per session window
+  // (session-actions.ts: `sessionFloor`), the session review already
+  // scopes to created_at (build-session-review.js), and the ACT path
+  // has always used the session window for the pre-fill lookup, so
+  // this brings the SAT load side into agreement with all of them.
   //
-  // Regular practice (mode='practice' without an assignment_id) and
-  // training stay history-aware so the "you got this right last
-  // time" affordance keeps working there. The submit-side already
-  // uses the same created_at gate to avoid double-recording, so this
-  // just brings the load-side into agreement with it — a re-attempt
-  // in the drill records a new attempt that feeds back into the
-  // weak-queue scoring next time.
-  const isAssignmentSession =
-    !!session.filter_criteria
-    && typeof session.filter_criteria === 'object'
-    && !!(session.filter_criteria as Record<string, unknown>).assignment_id;
-  const isReviewSession = sessionMode === 'review';
-  const isFreshAttemptSession = isAssignmentSession || isReviewSession;
+  // Tutor training (mode='training') keeps the all-time scope: the
+  // training runner is a tutor-facing walkthrough, not a graded
+  // re-attempt, and re-seeing prior answers there is the intent.
+  const isFreshAttemptSession = sessionMode !== 'training';
   const sessionCreatedAt = session.created_at ?? '1970-01-01T00:00:00Z';
 
   // Fork on the session's test_type. SAT reads questions_v2 + attempts;
@@ -338,16 +334,12 @@ export async function loadQuestion(
   // below + the QuestionPayload return shape are unchanged.
   const isAct = session.test_type === 'act';
   const since = isFreshAttemptSession ? sessionCreatedAt : null;
-  // ACT practice sessions get a stricter lastAttempt scope than
-  // the question-map data does: a fresh session shouldn't
-  // pre-fill the runner with an answer the student submitted in
-  // a different surface (Error Log → review, an earlier
-  // solo-practice session, etc.). Map colors keep their existing
-  // global scope so a question previously answered correctly
-  // still shows green on the question map — the student just
-  // doesn't see their old radio pre-selected on the question
-  // itself. SAT path keeps its existing semantics.
-  const sinceForLastAttempt = isAct ? sessionCreatedAt : since;
+  // The pre-fill lookup is always scoped to the session window —
+  // even in training, a runner should never open a question with a
+  // prior-session answer already selected. Training keeps `since`
+  // null only for the question-map data, so previously answered
+  // questions still tint green / red on the tutor's map.
+  const sinceForLastAttempt = sessionCreatedAt;
   const markedSet = new Set<number>(
     Array.isArray(session.marked_positions) ? session.marked_positions : [],
   );
@@ -401,10 +393,8 @@ export async function loadQuestion(
       .select('question_id, is_correct, created_at')
       .eq('user_id', userId)
       .in('question_id', questionIds);
-    if (since) {
-      lastAttemptQuery.gte('created_at', since);
-      sessionAttemptsQuery.gte('created_at', since);
-    }
+    lastAttemptQuery.gte('created_at', sinceForLastAttempt);
+    if (since) sessionAttemptsQuery.gte('created_at', since);
 
     const [
       { data: question },
