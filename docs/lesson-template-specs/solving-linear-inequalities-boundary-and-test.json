@@ -1,0 +1,275 @@
+{
+  "title": "Solve Linear Inequalities: Boundary and Test",
+  "description": "Solve linear inequalities in one variable and test values or ordered pairs in inequalities with two variables.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_objective",
+      "html": "<h2>Keep one flipped sign from costing you the point</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Boundary and Test.</p><p><strong>Why it pays:</strong> You can solve a one-variable inequality and judge a two-variable solution with the same reliable idea.</p><p><strong>One caution:</strong> Reverse the inequality only when you multiply or divide both sides by a negative number.</p></div><p>The SAT is betting that you will treat every inequality exactly like an equation. Start by catching the one step where that habit fails.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "opening_exploration",
+      "html": "<h2>Compare two true statements</h2><p>Start with \\(2&lt;5\\). Now multiply both numbers by \\(-1\\):</p><p>\\[-2\\quad\\text{and}\\quad-5\\]</p><p>On a number line, \\(-2\\) is to the right of \\(-5\\), so the new true statement is \\(-2&gt;-5\\).</p><p>The numbers switched sides of zero, and their order reversed.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "opening_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "If \\(3&lt;7\\), which statement is true after both sides are multiplied by \\(-2\\)?",
+        "choices": [
+          "\\(-6&lt;-14\\)",
+          "\\(-6&gt;-14\\)",
+          "\\(6&gt;14\\)",
+          "\\(-6=-14\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Locate \\(-6\\) and \\(-14\\) on a number line. The number farther right is greater.",
+        "explanation": "The order reverses: \\(-6&gt;-14\\). Multiplication by a negative reflects both values across zero.",
+        "solution": "Multiply: \\(3(-2)=-6\\) and \\(7(-2)=-14\\). Since \\(-6\\) is greater than \\(-14\\), the true comparison is \\(-6&gt;-14\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "name_the_rule",
+      "html": "<h2>The flip has one trigger</h2><p>You may add or subtract the same value on both sides without changing the inequality sign. You may also multiply or divide by a positive value without changing it.</p><p>But multiplying or dividing both sides by a <strong>negative</strong> reverses the order, so the inequality sign must reverse too.</p><blockquote><p><strong>Negative multiply or divide? Flip the sign.</strong> No negative multiply or divide? Keep it.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "flip_trigger_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "During which step must the inequality sign reverse?",
+        "choices": [
+          "Subtracting 8 from both sides",
+          "Dividing both sides by 4",
+          "Adding \\(-3\\) to both sides",
+          "Dividing both sides by \\(-5\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Look for multiplication or division whose factor is negative.",
+        "explanation": "Dividing by \\(-5\\) triggers the flip. Adding a negative number is still addition, so it does not.",
+        "solution": "Only choice D divides both sides by a negative number. That operation reverses the order of the values and therefore reverses the inequality."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "one_variable_process",
+      "html": "<h2>Boundary and Test: one variable</h2><ol><li><strong>Isolate:</strong> Use equation moves to get the variable alone.</li><li><strong>Flip:</strong> Reverse the sign only if you multiply or divide by a negative.</li><li><strong>Test:</strong> Substitute one easy value from your claimed solution to confirm the original inequality is true.</li></ol><p>The equality value is the <strong>boundary</strong>. A strict sign, \\(&lt;\\) or \\(&gt;\\), excludes it. A sign with equality, \\(\\leq\\) or \\(\\geq\\), includes it.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "worked_one_variable",
+      "html": "<h2>Model the move</h2><p>Solve \\(-3x+7\\geq22\\).</p><ol><li>Subtract 7: \\(-3x\\geq15\\).</li><li>Divide by \\(-3\\) and flip: \\(x\\leq-5\\).</li><li>Test \\(x=-6\\): \\(-3(-6)+7=25\\), and \\(25\\geq22\\) is true.</li></ol><p>The boundary \\(-5\\) is included because the original sign includes equality.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "guided_one_variable_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is the solution to \\(5-2x&lt;17\\)?",
+        "choices": [
+          "\\(x&lt;-6\\)",
+          "\\(x&gt;-6\\)",
+          "\\(x&lt;6\\)",
+          "\\(x&gt;6\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Subtract 5, then divide by \\(-2\\). That last step has the flip trigger.",
+        "explanation": "Subtracting gives \\(-2x&lt;12\\). Divide by \\(-2\\), reverse the sign, and get \\(x&gt;-6\\).",
+        "solution": "\\(5-2x&lt;17\\Rightarrow-2x&lt;12\\Rightarrow x&gt;-6\\). A check such as \\(x=0\\) makes the original statement \\(5&lt;17\\), which is true."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "boundary_language",
+      "html": "<h2>Translate the boundary, not just the verb</h2><p>Context problems often hide the inequality in a limit.</p><ul><li><strong>At least</strong>, <strong>no less than</strong>, and <strong>minimum</strong> point to \\(\\geq\\).</li><li><strong>At most</strong>, <strong>no more than</strong>, and <strong>maximum</strong> point to \\(\\leq\\).</li><li><strong>More than</strong> and <strong>fewer than</strong> are strict: \\(&gt;\\) and \\(&lt;\\).</li></ul><p>Always ask whether the boundary value itself is allowed. That question is safer than memorizing words alone.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "context_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A theater charges $12 per ticket plus a one-time $8 fee. Priya can spend no more than $80. If \\(t\\) is the number of tickets, which inequality models the situation?",
+        "choices": [
+          "\\(12t+8\\geq80\\)",
+          "\\(12(t+8)\\leq80\\)",
+          "\\(12t+8\\leq80\\)",
+          "\\(8t+12&lt;80\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The $12 charge repeats for each ticket; the $8 fee happens once. Can the total equal $80?",
+        "explanation": "\\(12t+8\\leq80\\). The SAT's traps either reverse “no more than” or put the one-time fee inside the repeated charge.",
+        "solution": "Tickets cost \\(12t\\), and the fee adds 8, so the total is \\(12t+8\\). No more than $80 means the total may equal 80 but cannot exceed it: \\(12t+8\\leq80\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "context_solution_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Using \\(12t+8\\leq80\\), what is the greatest possible number of tickets Priya can buy?",
+        "input": "numeric",
+        "answer": "6",
+        "allow_retry": true,
+        "hint": "Subtract 8 and divide by 12. Then remember that a ticket count must be a whole number.",
+        "explanation": "The inequality gives \\(t\\leq6\\), so 6 is the greatest possible whole-number ticket count.",
+        "solution": "\\(12t+8\\leq80\\Rightarrow12t\\leq72\\Rightarrow t\\leq6\\). Therefore, the greatest possible number is 6."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "two_variable_meaning",
+      "html": "<h2>With two variables, a solution is a pair</h2><p>An ordered pair solves a two-variable inequality when substituting <strong>both</strong> coordinates makes the statement true.</p><p>For \\(2x+y&lt;7\\), test \\((2,1)\\):</p><p>\\[2(2)+1&lt;7\\quad\\Rightarrow\\quad5&lt;7\\]</p><p>That is true, so \\((2,1)\\) is a solution. There are usually many solution pairs, not one final pair to find.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "pair_substitution_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which ordered pair is a solution to \\(3x-2y\\geq4\\)?",
+        "choices": [
+          "\\((0,1)\\)",
+          "\\((1,2)\\)",
+          "\\((2,1)\\)",
+          "\\((-1,-1)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Substitute each x-coordinate for \\(x\\) and its matching y-coordinate for \\(y\\). Look for a result at least 4.",
+        "explanation": "For \\((2,1)\\), \\(3(2)-2(1)=4\\), and equality is allowed by \\(\\geq\\).",
+        "solution": "The left sides are \\(-2,-1,4,-1\\), respectively. Only 4 is greater than or equal to 4, so \\((2,1)\\) works."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "two_variable_process",
+      "html": "<h2>Boundary and Test: two variables</h2><ol><li><strong>Substitute:</strong> Put each coordinate into its matching variable.</li><li><strong>Simplify:</strong> Compute the entire left and right sides.</li><li><strong>Compare:</strong> Decide whether the resulting statement is true.</li></ol><p>If a question gives a table, every row it claims as a solution must pass. One false row eliminates the table.</p><blockquote><p><strong>Do not swap the coordinates:</strong> \\((x,y)\\) means x first, y second.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "all_rows_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A table lists \\((-1,2)\\), \\((0,3)\\), and \\((2,5)\\). Do all three pairs satisfy \\(y\\geq x+3\\)?",
+        "choices": [
+          "Yes, because every row satisfies the inequality.",
+          "No, because only \\((-1,2)\\) fails.",
+          "No, because only \\((0,3)\\) fails.",
+          "No, because only \\((2,5)\\) fails."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Check the rows one at a time: compare each y-value with its x-value plus 3.",
+        "explanation": "All three land on the boundary: \\(2=-1+3\\), \\(3=0+3\\), and \\(5=2+3\\). The \\(\\geq\\) sign includes equality.",
+        "solution": "Substitution produces \\(2\\geq2\\), \\(3\\geq3\\), and \\(5\\geq5\\). Every statement is true, so every row is a solution."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "graph_boundary",
+      "html": "<h2>The boundary line separates yes from no</h2><p>Replace the inequality sign with \\(=\\) to find the boundary line. For \\(y&gt;2x-1\\), the boundary is \\(y=2x-1\\).</p><ul><li>Use a dashed boundary for \\(&lt;\\) or \\(&gt;\\) because points on the line are excluded.</li><li>Use a solid boundary for \\(\\leq\\) or \\(\\geq\\) because points on the line are included.</li></ul><p>Then test a point not on the line. If it makes the inequality true, its side of the line is the solution region.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "graph_feature_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which description matches the graph of \\(y&lt;-x+4\\)?",
+        "choices": [
+          "A solid boundary with the region above it shaded",
+          "A dashed boundary with the region below it shaded",
+          "A dashed boundary with the region above it shaded",
+          "A solid boundary with the region below it shaded"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "First decide whether equality is included. Then test \\((0,0)\\): is \\(0&lt;4\\) true?",
+        "explanation": "The strict sign makes the boundary dashed. Since \\((0,0)\\) satisfies the inequality and lies below the line, shade below.",
+        "solution": "The boundary \\(y=-x+4\\) is dashed because \\(&lt;\\) excludes equality. The test point \\((0,0)\\) gives \\(0&lt;4\\), so shade the side containing the origin: below the line."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "common_traps",
+      "html": "<h2>Three traps the SAT keeps ready</h2><ul><li><strong>Automatic flip:</strong> Flipping after subtraction. The trigger is a negative multiplication or division, not the sight of a minus sign.</li><li><strong>Boundary dropped:</strong> Treating \\(\\leq\\) like \\(&lt;\\), or \\(\\geq\\) like \\(&gt;\\).</li><li><strong>One row is enough:</strong> Checking only one pair in a table that claims every pair works.</li></ul><p>Boundary and Test catches all three: track the operation, ask whether equality counts, and test every claimed solution.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "one_variable_transfer",
+      "block_type": "check",
+      "content": {
+        "prompt": "Solve \\(7-4(2x-1)&gt;27\\). What is the greatest integer value of \\(x\\) that satisfies the inequality?",
+        "input": "numeric",
+        "answer": "-3",
+        "allow_retry": false,
+        "hint": "Simplify first, then isolate \\(x\\). Watch for the negative coefficient on \\(x\\).",
+        "explanation": "The inequality simplifies to \\(11-8x&gt;27\\), then \\(-8x&gt;16\\), so \\(x&lt;-2\\). The greatest integer below \\(-2\\) is \\(-3\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "two_variable_transfer",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which ordered pair does <strong>not</strong> satisfy \\(2x+3y\\leq12\\)?",
+        "choices": [
+          "\\((0,4)\\)",
+          "\\((3,2)\\)",
+          "\\((6,0)\\)",
+          "\\((2,3)\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Compute \\(2x+3y\\) for every pair. The question asks for the one result greater than 12.",
+        "explanation": "\\((2,3)\\) gives \\(2(2)+3(3)=13\\), which is not at most 12. Each other pair gives exactly 12."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The Boundary and Test move has to survive test day. Which routine keeps both one- and two-variable inequalities honest?",
+        "choices": [
+          "Flip whenever a minus sign appears; for a pair, check only its x-coordinate.",
+          "Solve like an equation and always keep the sign; for a table, test the first row only.",
+          "Isolate and flip only after negative multiplication or division; then test a claimed value or every claimed pair in the original inequality.",
+          "Move every term to the left and replace every inequality sign with an equals sign."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Recall the single trigger for a flip and what a claimed solution must make true.",
+        "explanation": "That is Boundary and Test: protect the sign during isolation, then substitute into the original statement. For a table, every claimed pair must pass."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "A delivery service charges a one-time fee of $18 plus $6 for each package. A customer can spend at most $75. What is the greatest number of packages the customer can send?",
+        "input": "numeric",
+        "answer": "9",
+        "allow_retry": false,
+        "hint": "Model the total as \\(18+6p\\leq75\\), solve, and respect that \\(p\\) is a whole-number count.",
+        "explanation": "\\(18+6p\\leq75\\) gives \\(p\\leq9.5\\). Packages come in whole numbers, so the greatest possible count is 9—not the decimal boundary."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_complete",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Guard the boundary.</h2><p>Flip on the negative. Test what the SAT claims.</p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}
+
