@@ -18,9 +18,13 @@
 //      one (text blocks always have it, checks when the spec gives
 //      them an id, Desmos templates), else a normalised fingerprint
 //      of the block's own text (a check's prompt, a Desmos title, a
-//      text block's html).
-// Matching is one-to-one in lesson order, so two identical checks
-// still map to two distinct rows. Anything unmatched is a new row;
+//      text block's html), or
+//   3. failing both, the same text. Compiler-generated positional ids
+//      (text_7, raw_12) never count as a stable key: an insertion
+//      above such a block renumbers it without changing the block.
+// Each tier runs over the whole list before the next, and matching is
+// one-to-one in lesson order, so two identical checks still map to two
+// distinct rows. Anything unmatched is a new row;
 // stored rows nothing claimed are deleted.
 
 import type { TypedSupabaseClient } from '@/lib/supabase/server';
@@ -55,6 +59,38 @@ export interface BlockReconcilePlan {
   reusedCount: number;
 }
 
+function textFingerprint(type: string, content: Record<string, unknown>): string {
+  switch (type) {
+    case 'check':
+      return normalizeText(content.prompt);
+    case 'desmos_interactive':
+      return normalizeText(content.title) || normalizeText(content.instructions_html);
+    case 'text':
+      return normalizeText(content.html);
+    case 'video':
+      return normalizeText(content.url ?? content.src);
+    case 'question_link':
+      return normalizeText(content.question_id);
+    default:
+      return '';
+  }
+}
+
+/** The text-only key: what a block says, ignoring any id. Used as the
+ *  second matching tier so a block whose generated id shifted (the
+ *  compiler numbers id-less text blocks by position: text_7 → text_8
+ *  after an insertion above it) is still recognised by its content. */
+export function textBlockKey(block: {
+  block_type?: string | null;
+  content?: Record<string, unknown> | null;
+}): string | null {
+  const type = block?.block_type ? String(block.block_type) : '';
+  if (!type) return null;
+  if (type === 'lesson_complete') return `${type}|singleton`;
+  const fingerprint = textFingerprint(type, block?.content ?? {});
+  return fingerprint ? `${type}|text:${fingerprint}` : null;
+}
+
 function normalizeText(value: unknown): string {
   if (value == null) return '';
   return String(value)
@@ -64,8 +100,20 @@ function normalizeText(value: unknown): string {
     .toLowerCase();
 }
 
-/** The key two blocks must share to be treated as the same block.
- *  Null when the block has nothing stable to key on. */
+/** Ids the spec compiler mints by position when the author gave none
+ *  (`text_7`, `raw_12`, `graph_workflow_3_step2`, plus `_2` collision
+ *  suffixes). They shift whenever a block is inserted above, so they
+ *  identify a position, not a block, and must not outrank the text. */
+const GENERATED_ID =
+  /^(?:text|raw|desmos_enter|graph_workflow|slider_workflow|branching_question)_\d+(?:_[a-z0-9]+)*$/i;
+
+export function isGeneratedContentId(id: unknown): boolean {
+  return id != null && GENERATED_ID.test(String(id).trim());
+}
+
+/** The key two blocks must share to be treated as the same block:
+ *  an author-set content.id, else the block's own text. Null when the
+ *  block has nothing stable to key on. */
 export function stableBlockKey(block: {
   block_type?: string | null;
   content?: Record<string, unknown> | null;
@@ -74,33 +122,10 @@ export function stableBlockKey(block: {
   if (!type) return null;
   const content = block?.content ?? {};
   const contentId = content.id;
-  if (contentId != null && String(contentId).trim() !== '') {
+  if (contentId != null && String(contentId).trim() !== '' && !isGeneratedContentId(contentId)) {
     return `${type}|id:${String(contentId).trim()}`;
   }
-  let fingerprint = '';
-  switch (type) {
-    case 'check':
-      fingerprint = normalizeText(content.prompt);
-      break;
-    case 'desmos_interactive':
-      fingerprint = normalizeText(content.title) || normalizeText(content.instructions_html);
-      break;
-    case 'text':
-      fingerprint = normalizeText(content.html);
-      break;
-    case 'video':
-      fingerprint = normalizeText(content.url ?? content.src);
-      break;
-    case 'question_link':
-      fingerprint = normalizeText(content.question_id);
-      break;
-    case 'lesson_complete':
-      // A lesson has at most one terminal block; it is the same one.
-      return `${type}|singleton`;
-    default:
-      fingerprint = '';
-  }
-  return fingerprint ? `${type}|text:${fingerprint}` : null;
+  return textBlockKey(block);
 }
 
 export function reconcileBlockRows(
@@ -111,35 +136,63 @@ export function reconcileBlockRows(
     (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0),
   );
   const byId = new Map<string, StoredBlockRow>();
-  const byKey = new Map<string, StoredBlockRow[]>();
+  const byStableKey = new Map<string, StoredBlockRow[]>();
+  const byTextKey = new Map<string, StoredBlockRow[]>();
+  const enqueue = (map: Map<string, StoredBlockRow[]>, key: string | null, row: StoredBlockRow) => {
+    if (!key) return;
+    const queue = map.get(key) ?? [];
+    queue.push(row);
+    map.set(key, queue);
+  };
   for (const row of existing) {
     byId.set(String(row.id), row);
-    const key = stableBlockKey(row);
-    if (!key) continue;
-    const queue = byKey.get(key) ?? [];
-    queue.push(row);
-    byKey.set(key, queue);
+    enqueue(byStableKey, stableBlockKey(row), row);
+    enqueue(byTextKey, textBlockKey(row), row);
   }
 
   const used = new Set<string>();
-  const rows: PlannedBlockRow[] = (nextBlocks ?? []).map((block, index) => {
-    let match: StoredBlockRow | null = null;
+  const claimFrom = (map: Map<string, StoredBlockRow[]>, key: string | null): StoredBlockRow | null => {
+    const queue = key ? map.get(key) : undefined;
+    while (queue && queue.length > 0) {
+      const candidate = queue.shift() as StoredBlockRow;
+      if (!used.has(String(candidate.id))) return candidate;
+    }
+    return null;
+  };
+
+  // Three tiers, each run over the whole list before the next so a
+  // strong match is never pre-empted by a weaker one further up:
+  //   1. the incoming block carries a stored uuid;
+  //   2. stable key (content.id when set, else text);
+  //   3. text alone, for blocks whose generated content.id shifted.
+  const incoming = nextBlocks ?? [];
+  const matches: Array<StoredBlockRow | null> = incoming.map(() => null);
+  incoming.forEach((block, i) => {
     const directId = block?.id != null ? String(block.id) : '';
     if (directId && byId.has(directId) && !used.has(directId)) {
-      match = byId.get(directId) ?? null;
+      matches[i] = byId.get(directId) ?? null;
+      used.add(directId);
     }
-    if (!match) {
-      const key = stableBlockKey(block);
-      const queue = key ? byKey.get(key) : undefined;
-      while (queue && queue.length > 0) {
-        const candidate = queue.shift() as StoredBlockRow;
-        if (!used.has(String(candidate.id))) {
-          match = candidate;
-          break;
-        }
-      }
+  });
+  incoming.forEach((block, i) => {
+    if (matches[i]) return;
+    const match = claimFrom(byStableKey, stableBlockKey(block));
+    if (match) {
+      matches[i] = match;
+      used.add(String(match.id));
     }
-    if (match) used.add(String(match.id));
+  });
+  incoming.forEach((block, i) => {
+    if (matches[i]) return;
+    const match = claimFrom(byTextKey, textBlockKey(block));
+    if (match) {
+      matches[i] = match;
+      used.add(String(match.id));
+    }
+  });
+
+  const rows: PlannedBlockRow[] = incoming.map((block, index) => {
+    const match = matches[index];
     return {
       id: match ? String(match.id) : null,
       sort_order: index,
