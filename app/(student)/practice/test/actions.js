@@ -13,7 +13,10 @@
 //     side) and ties it to practice_test_item_attempts_v2.
 //     Idempotent per (module_attempt, item): changing an answer
 //     updates the existing attempts row rather than stacking new
-//     rows.
+//     rows. First-touch creation goes through claimItemAttempt
+//     (lib/practice-test/claim-item-attempt.ts), whose on-conflict
+//     link insert stops a concurrent time-ping beacon and this
+//     action from each creating their own attempts row.
 //
 //   toggleMarkForReview — toggles marked_for_review on the
 //     practice_test_item_attempts_v2 row. Creates the row if the
@@ -45,6 +48,7 @@ import {
   resolveRoute,
 } from '@/lib/practice-test/adaptive-routing';
 import { recomputeAttemptScores } from '@/lib/practice-test/recompute-scores';
+import { claimItemAttempt } from '@/lib/practice-test/claim-item-attempt';
 
 const GRACE_SECONDS = 15;
 
@@ -259,16 +263,17 @@ export async function recordItemAnswer(_prev, formData) {
     attemptPatch.source = 'practice_test';
   }
 
-  if (existingItem) {
-    // Time accumulates via the increment_attempt_time RPC — a
-    // visibilitychange beacon and this save can land concurrently,
-    // and the old read-then-write pattern lost one of the two
-    // deltas when they raced. The answer-field patch is a plain
-    // update; the two writes are independent, so run them together.
+  // Apply this save to an attempts row that already exists for the
+  // item. Time accumulates via the increment_attempt_time RPC — a
+  // visibilitychange beacon and this save can land concurrently,
+  // and the old read-then-write pattern lost one of the two deltas
+  // when they raced. The answer-field patch is a plain update; the
+  // two writes are independent, so run them together.
+  const applyToExisting = async (attemptId) => {
     await Promise.all([
       timeDelta > 0
         ? supabase.rpc('increment_attempt_time', {
-            p_attempt_id: existingItem.attempt_id,
+            p_attempt_id: attemptId,
             p_delta_ms: timeDelta,
           })
         : Promise.resolve(),
@@ -276,19 +281,27 @@ export async function recordItemAnswer(_prev, formData) {
         ? supabase
             .from('attempts')
             .update(attemptPatch)
-            .eq('id', existingItem.attempt_id)
+            .eq('id', attemptId)
         : Promise.resolve(),
     ]);
+  };
+
+  if (existingItem) {
+    await applyToExisting(existingItem.attempt_id);
     return { ok: true, isCorrect: hasAnswer ? isCorrect : null, itemAttemptId: existingItem.id };
   }
 
   // No existing item row yet. Either a fresh answer or a time-only
   // save on a question the student hasn't touched — in both cases
-  // we insert an attempts row + item-attempt link. Placeholder
+  // we create an attempts row + item-attempt link. Placeholder
   // fields for the time-only case match the mark-for-review path.
-  const { data: attemptRow, error: attemptInsertErr } = await supabase
-    .from('attempts')
-    .insert({
+  // The claim can lose to a concurrent first touch (typically the
+  // time-ping beacon); then it hands back the winner's row and this
+  // save is applied there, exactly as if the lookup had found it.
+  const claim = await claimItemAttempt(supabase, {
+    moduleAttemptId,
+    moduleItemId,
+    attempt: {
       ...attemptPatch,
       user_id: user.id,
       question_id: moduleItem.question.id,
@@ -299,23 +312,12 @@ export async function recordItemAnswer(_prev, formData) {
         source: 'practice_test',
       }),
       ...(timeDelta > 0 ? { time_spent_ms: timeDelta } : {}),
-    })
-    .select('id')
-    .single();
-  if (attemptInsertErr || !attemptRow) return actionFail(`Record failed: ${attemptInsertErr?.message}`);
+    },
+  });
+  if (!claim.ok) return actionFail(`Record failed: ${claim.error}`);
+  if (!claim.created) await applyToExisting(claim.attemptId);
 
-  const { data: itemRow, error: itemInsertErr } = await supabase
-    .from('practice_test_item_attempts_v2')
-    .insert({
-      practice_test_module_attempt_id: moduleAttemptId,
-      practice_test_module_item_id: moduleItemId,
-      attempt_id: attemptRow.id,
-    })
-    .select('id')
-    .single();
-  if (itemInsertErr || !itemRow) return actionFail(`Record failed: ${itemInsertErr?.message}`);
-
-  return { ok: true, isCorrect: hasAnswer ? isCorrect : null, itemAttemptId: itemRow.id };
+  return { ok: true, isCorrect: hasAnswer ? isCorrect : null, itemAttemptId: claim.itemAttemptId };
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -361,7 +363,7 @@ export async function toggleMarkForReview(_prev, formData) {
     return { ok: true, marked: next };
   }
 
-  // No item row yet (student hasn't answered) — insert a placeholder
+  // No item row yet (student hasn't answered) — create a placeholder
   // attempts row so we can link. The placeholder is an unanswered
   // attempt (response_text = null, is_correct = false). It gets
   // replaced when the student actually answers via recordItemAnswer.
@@ -372,31 +374,31 @@ export async function toggleMarkForReview(_prev, formData) {
     .maybeSingle();
   if (!moduleItem) return actionFail('Question not found');
 
-  const { data: attemptRow } = await supabase
-    .from('attempts')
-    .insert({
+  const claim = await claimItemAttempt(supabase, {
+    moduleAttemptId,
+    moduleItemId,
+    markedForReview: true,
+    attempt: {
       user_id: user.id,
       question_id: moduleItem.question_id,
       is_correct: false,
       selected_option_id: null,
       response_text: null,
       source: 'practice_test',
-    })
-    .select('id')
-    .single();
-  if (!attemptRow) return actionFail('Could not create flag placeholder');
+    },
+  });
+  if (!claim.ok) return actionFail(`Could not create flag placeholder: ${claim.error}`);
+  if (claim.created) return { ok: true, marked: true, itemAttemptId: claim.itemAttemptId };
 
-  const { data: itemRow } = await supabase
+  // A concurrent first touch (answer save / time-ping) created the
+  // row between our lookup and our insert. Toggle it, same as the
+  // existing-row branch above would have.
+  const next = !claim.markedForReview;
+  await supabase
     .from('practice_test_item_attempts_v2')
-    .insert({
-      practice_test_module_attempt_id: moduleAttemptId,
-      practice_test_module_item_id: moduleItemId,
-      attempt_id: attemptRow.id,
-      marked_for_review: true,
-    })
-    .select('id')
-    .single();
-  return { ok: true, marked: true, itemAttemptId: itemRow?.id };
+    .update({ marked_for_review: next })
+    .eq('id', claim.itemAttemptId);
+  return { ok: true, marked: next, itemAttemptId: claim.itemAttemptId };
 }
 
 // ──────────────────────────────────────────────────────────────
