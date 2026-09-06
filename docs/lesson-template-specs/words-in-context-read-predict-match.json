@@ -26,6 +26,7 @@
         "hint": "Recurring measurements and repeated ratios show that the designs follow a pattern rather than lacking one.",
         "explanation": "Right. The evidence makes the designs seem less arbitrary, or less random. The clue is in the previous sentence, so reading only the sentence with the blank would miss it."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>Although early critics described Mara Okafor's installations as chaotic, later researchers found recurring measurements and repeated ratios in nearly every piece. Those discoveries made the designs seem far less <strong>_____</strong> than they first appeared.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -322,6 +323,7 @@
         "hint": "Match the prediction 'greatly expanded or changed the understanding.' Then reread the completed sentence.",
         "explanation": "Right. The international evidence broadened historians' understanding. The other verbs do not express the supported relationship between the records and historians' understanding."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>Historians once treated the harbor logs as minor records of local trade. Yet the logs documented shipments from ports across three continents and revealed commercial relationships absent from official treaties. The records therefore _____ historians' understanding of the city's international influence.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {

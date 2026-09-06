@@ -17,7 +17,9 @@ Rules (all heuristic warnings, never build failures):
 (all/every/only/must/never/always/proved cluster in distractors),
 `hint_gives_answer`, `meta_prompt` ("Why is … correct/wrong"),
 `equivalent_choices`, `missing_figure` (figure reference, no `<img>`
-on the slide), `retrieval_nonsense_distractor`, `check_run` /
+on the slide), `missing_context` (a check prompt naming a passage /
+sentence / table / previous block with no pinned `context` on the
+slide; added with the 3.1 pinned-context pass, 2026-09-06), `retrieval_nonsense_distractor`, `check_run` /
 `text_run` (3+ consecutive), `spr_candidate` (a one-shot check whose
 every choice is a bare number — the SAT asks these as a typed answer;
 added with plan 1.6), `retired_tail` (an explanation carrying a "Next,
@@ -35,6 +37,8 @@ a lesson, not a change to any one check.
 **As of 2026-08-26 (after 2.3 tranche 2):** 144 rows open, 139 fixed, 3 deferred with reasons. Closed so far: the 2.5 retrieval-check rebuilds; the Probability `equivalent_choices` defects; tranche 1 (mechanical classes + the Inference rebuild); and tranche 2 — full distractor rebuilds of the six lessons that were above the 50% per-lesson bar: CLEAR the Claim 86%→36%, Process and Pre-Answer RC 81%→13%, Rhetorical Synthesis 78%→33%, Good Cop / Bad Cop 74%→11%, Surveys 63%→13%, Desmos Sliders 57%→14%. `retrieval_nonsense_distractor` and `equivalent_choices` are at zero; `hint_gives_answer` and `meta_prompt` are down to one reasoned deferral each. The corpus is 36 specs / 600 checks. Corpus keyed-longest rate: **22.0%** (132/600) with the highest lesson at 47% — **both lint exit criteria (<30% corpus, no lesson >50%) are now met**. The remaining open rows are the long tail of scattered `keyed_longest` / `extreme_imbalance` / `key_term_echo` items plus the structural `check_run` / `text_run` / `missing_figure` classes (Phase 3 territory).
 
 **2.4 note (2026-08-26):** the corpus is now **634 checks** after one authentic-format item per lesson (34 authored `authentic_item` blocks; CLEAR and Sliders already had bank `question_link`s). The new items are lint-clean; `check_run` grew 21→35 because they sit adjacent to the final retrieval checks — those rows belong to the structural class. Baseline step numbers in the tables below predate the insertions; block ids remain the stable reference.
+
+**3.1 pinned-context note (2026-09-06):** the text twin of the pinned figure. A new `missing_context` rule flags check prompts that point at a passage, sentence, or table the learner saw on an earlier slide; at introduction it found 37 checks across 12 lessons. 33 were fixed by attaching block-level `context` objects carrying the introducing slide's `<blockquote>` / `<table>`; one (`similar-triangles` `right_altitude_transfer_check`) was reworded because the prompt already stated the proportion; 4 are deferred as false positives with per-row reasons below (a hypothetical "the sentence" in a process question; three Custom Regression prompts where "the table" is the Desmos table the learner would build, not a specific one). The report's `missing_context` count is now 4, all deferred.
 
 **3.1 note (2026-08-27):** the pinned-figure pass closed the `missing_figure` class — 8 rows fixed by attaching block-level `figure` objects (which the linter now recognizes as satisfying a figure reference), and the 2 remaining flags reclassified as false positives with per-row reasons (generic "don't trust the picture" advice; the student's own Desmos graph). The lint report's `missing_figure` count is now 2, both deferred.
 
@@ -181,6 +185,9 @@ numeric-entry checks; keyed-longest is measured over the 611.
 
 | Step | Block | Rule | Finding | Status |
 |---|---|---|---|---|
+| 12 | `regression_symbol_check` | `missing_context` | Prompt refers to a passage, sentence, or table that is not on this slide. | deferred: "the table" is the generic Desmos data table the learner builds, not a specific table shown earlier (2026-09-06) |
+| 20 | `function_mapping_check` | `missing_context` | Prompt refers to a passage, sentence, or table that is not on this slide. | deferred: generic Desmos table, as above (2026-09-06) |
+| 22 | `multiple_function_check` | `missing_context` | Prompt refers to a passage, sentence, or table that is not on this slide. | deferred: generic Desmos table, as above (2026-09-06) |
 | 7 | `custom_recognition_check` | `keyed_longest` | Keyed choice is 1.5x the mean length of the distractors. | fixed (2026-08-26) |
 | 7 | `custom_recognition_check` | `key_term_echo` | Keyed choice is the only one containing the lesson term "missing". | fixed (2026-08-26) |
 | 18 | `definition_reasoning_check` | `keyed_longest` | Keyed choice is 2.4x the mean length of the distractors. | fixed (2026-08-26) |
@@ -447,6 +454,7 @@ numeric-entry checks; keyed-longest is measured over the 611.
 
 | Step | Block | Rule | Finding | Status |
 |---|---|---|---|---|
+| 17 | `duplicate_choice_check` | `missing_context` | Prompt refers to a passage, sentence, or table that is not on this slide. | deferred: "The sentence is not a list" describes a hypothetical item in a process question; there is no specific sentence to pin (2026-09-06) |
 | 11 | `serial_semicolon_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |
 | 14 | `fanboys_check` | `hint_gives_answer` | Hint contains the keyed choice text. | fixed (2026-08-26) |
 | 17 | `duplicate_choice_check` | `extreme_imbalance` | 2 distractors carry extreme words (all/every/only/must/never/always/proved); the key carries none. | fixed (2026-08-26) |

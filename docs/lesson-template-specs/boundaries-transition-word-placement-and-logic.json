@@ -193,6 +193,7 @@
         "hint": "Ask which event is the result of the telescope being under repair.",
         "explanation": "Exactly. B is a result of A, so therefore belongs to B and must appear before the full stop between B and C."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p><strong>A:</strong> The observatory's main telescope was under repair. <strong>B:</strong> Astronomers used a smaller backup telescope ___ <strong>C:</strong> The backup instrument had been installed in 2018.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {

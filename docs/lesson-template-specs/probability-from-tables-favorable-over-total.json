@@ -31,6 +31,7 @@
         "hint": "The Total contains every outcome that could be selected. The selection is from all shirts.",
         "explanation": "Correct. Any of the 50 shirts could be selected, so 50 is the Total. The blue count will become the Favorable number."
       },
+      "context": {"label": "Table", "html": "<table><caption>Shirts by size and color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Red</th><th scope=\"col\">Blue</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Total</th><td>30</td><td>20</td><td>50</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -56,6 +57,7 @@
         "hint": "Favorable counts the shirts that match blue. Total counts every shirt that could be selected.",
         "explanation": "Right. There are 20 blue shirts among 50 possible shirts, so the probability is \\(\\frac{20}{50}\\)."
       },
+      "context": {"label": "Table", "html": "<table><caption>Shirts by size and color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Red</th><th scope=\"col\">Blue</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Total</th><td>30</td><td>20</td><td>50</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -112,6 +114,7 @@
         "hint": "Read across the Large row, down the Blue column, and then check the bottom-right corner.",
         "explanation": "Exactly. The Large row totals 30, the Blue column totals 20, and the bottom-right grand total is 50."
       },
+      "context": {"label": "Table", "html": "<table><caption>Shirts by size and color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Red</th><th scope=\"col\">Blue</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Total</th><td>30</td><td>20</td><td>50</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -137,6 +140,7 @@
         "hint": "Treat 'given that it is hardcover' as a description of every outcome still allowed in the Total.",
         "explanation": "Correct. The given condition restricts the Total to 16 + 24 = 40 hardcover books."
       },
+      "context": {"label": "Table", "html": "<table><caption>Library books by format and genre</caption><thead><tr><th scope=\"col\">Format</th><th scope=\"col\">Nonfiction</th><th scope=\"col\">Fiction</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Hardcover</th><td>16</td><td>24</td><td>40</td></tr><tr><th scope=\"row\">Paperback</th><td>20</td><td>30</td><td>50</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>54</td><td>90</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -163,6 +167,7 @@
         "hint": "The Total is all 40 hardcover books. Favorable is the fiction count within hardcover.",
         "explanation": "Right. Within the 40 hardcover books, 24 are fiction, so the probability is \\(\\frac{24}{40}=\\frac{3}{5}\\)."
       },
+      "context": {"label": "Table", "html": "<table><caption>Library books by format and genre</caption><thead><tr><th scope=\"col\">Format</th><th scope=\"col\">Nonfiction</th><th scope=\"col\">Fiction</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Hardcover</th><td>16</td><td>24</td><td>40</td></tr><tr><th scope=\"row\">Paperback</th><td>20</td><td>30</td><td>50</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>54</td><td>90</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -188,6 +193,7 @@
         "hint": "The condition after 'given that' makes the grade 10 row the Total — add up that whole row first. Then find the art count inside the same row.",
         "explanation": "Correct. The grade 10 row contains 30 students, and 18 of those students chose art, so the probability is \\(\\frac{18}{30}\\)."
       },
+      "context": {"label": "Table", "html": "<table><caption>Students by grade and arts choice</caption><thead><tr><th scope=\"col\">Grade</th><th scope=\"col\">Art</th><th scope=\"col\">Music</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Grade 10</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Grade 11</th><td>14</td><td>26</td><td>40</td></tr><tr><th scope=\"row\">Total</th><td>32</td><td>38</td><td>70</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -264,6 +270,7 @@
         "hint": "The condition after 'given that' makes all 24 bus riders the Total. Find teachers within the bus column.",
         "explanation": "Right. Of the 24 bus riders, 6 are teachers, so the probability is \\(\\frac{6}{24}=\\frac{1}{4}\\)."
       },
+      "context": {"label": "Table", "html": "<table><caption>Commuters by role and transportation</caption><thead><tr><th scope=\"col\">Role</th><th scope=\"col\">Bus</th><th scope=\"col\">Bike</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Student</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Teacher</th><td>6</td><td>4</td><td>10</td></tr><tr><th scope=\"row\">Total</th><td>24</td><td>16</td><td>40</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -290,6 +297,7 @@
         "hint": "First add 16 + 9 for the afternoon Total. Then place the 9 geometry students over that Total.",
         "explanation": "Correct. The afternoon Total is 25, and 9 of those students are in geometry, so the probability is \\(\\frac{9}{25}\\)."
       },
+      "context": {"label": "Table", "html": "<table><caption>Students by session and class</caption><thead><tr><th scope=\"col\">Session</th><th scope=\"col\">Algebra</th><th scope=\"col\">Geometry</th></tr></thead><tbody><tr><th scope=\"row\">Afternoon</th><td>16</td><td>9</td></tr><tr><th scope=\"row\">Evening</th><td>14</td><td>11</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -353,6 +361,7 @@
         "hint": "Treat the condition 'given that the visitor selected is an adult' as the description of every outcome allowed in the Total.",
         "explanation": "Correct. The condition after 'given that' restricts the selection to all 65 adult visitors. Science determines Favorable inside that row."
       },
+      "context": {"label": "Table", "html": "<table><caption>Museum visitors by age group and tour</caption><thead><tr><th scope=\"col\">Age group</th><th scope=\"col\">History</th><th scope=\"col\">Science</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Youth</th><td>14</td><td>21</td><td>35</td></tr><tr><th scope=\"row\">Adult</th><td>26</td><td>39</td><td>65</td></tr><tr><th scope=\"row\">Total</th><td>40</td><td>60</td><td>100</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -368,6 +377,7 @@
         "hint": "The adult Total is 65. Find the science count within the adult row.",
         "explanation": "Right. Of the 65 adult visitors, 39 chose the science tour, so the probability is \\(\\frac{39}{65}\\)."
       },
+      "context": {"label": "Table", "html": "<table><caption>Museum visitors by age group and tour</caption><thead><tr><th scope=\"col\">Age group</th><th scope=\"col\">History</th><th scope=\"col\">Science</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Youth</th><td>14</td><td>21</td><td>35</td></tr><tr><th scope=\"row\">Adult</th><td>26</td><td>39</td><td>65</td></tr><tr><th scope=\"row\">Total</th><td>40</td><td>60</td><td>100</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -383,6 +393,7 @@
         "hint": "There is no age restriction. Use all 100 visitors for Total and the full history column for Favorable.",
         "explanation": "Correct. All 100 visitors are possible, and 14 + 26 = 40 chose history, so the probability is \\(\\frac{40}{100}\\)."
       },
+      "context": {"label": "Table", "html": "<table><caption>Museum visitors by age group and tour</caption><thead><tr><th scope=\"col\">Age group</th><th scope=\"col\">History</th><th scope=\"col\">Science</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Youth</th><td>14</td><td>21</td><td>35</td></tr><tr><th scope=\"row\">Adult</th><td>26</td><td>39</td><td>65</td></tr><tr><th scope=\"row\">Total</th><td>40</td><td>60</td><td>100</td></tr></tbody></table>"},
       "calculator": { "display": "hidden" }
     },
     {

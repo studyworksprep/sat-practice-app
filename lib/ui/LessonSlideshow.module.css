@@ -150,6 +150,27 @@
   text-align: center;
 }
 
+/* Pinned context (passage / sentence / table) shares the figure card
+   chrome. Long passages scroll inside the card rather than pushing
+   the calculator off screen. */
+.contextCard {
+  gap: var(--s2);
+}
+
+.contextBody {
+  max-height: 60vh;
+  overflow-y: auto;
+  font-size: 15px;
+}
+
+.contextBody blockquote {
+  margin: 0;
+}
+
+.contextBody table {
+  width: 100%;
+}
+
 /* The inline copy exists for narrow screens only — on desktop the
    side pane owns the figure. */
 .figureInline {

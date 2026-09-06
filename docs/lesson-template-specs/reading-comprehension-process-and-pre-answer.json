@@ -31,6 +31,7 @@
         "hint": "Include the passage's central problem and its stated result without adding a new claim.",
         "explanation": "Right. The passage says that artificial city light can pull migrating birds off route, causing them to spend additional energy."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>Many migrating birds travel at night, using natural light to help orient themselves. In brightly lit cities, however, artificial light can draw birds away from their routes, forcing them to use additional energy before they reach a resting place.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -137,6 +138,7 @@
         "hint": "Keep both viewpoints and the contrast between them. Do not turn a study method into a cause.",
         "explanation": "Correct. The sound bite keeps the early claim, the later result, and the contrast while dropping unneeded detail."
       },
+      "context": {"label": "Sentence", "html": "<blockquote><p>Although early surveys suggested that the island's fox population was declining, a later study that tracked individual foxes for three years found that the population had remained stable.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -193,6 +195,7 @@
         "hint": "Keep the contrast between the nighttime and daytime results, but do not add a mechanism or universal claim.",
         "explanation": "Correct. The passage supports a difference after sunset and no difference during the daytime trials. It does not explain why."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>Biologist Erika Chen recorded visits by one moth species to white and yellow flowers. After sunset, the moths visited white flowers more often, but during daytime trials, visits to the two colors were equally frequent.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -280,6 +283,7 @@
         "hint": "Look for the same meaning, not repeated vocabulary alone, and confirm it against the passage.",
         "explanation": "Right. The third choice restates the study's result without adding a claim the passage never made."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>Museums sometimes display replicas when an original object is too fragile to exhibit. In a study of one history gallery, visitors who saw a replica alongside a short explanation of how it was made recalled more about the original object than visitors who saw the replica without that context.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -405,6 +409,7 @@
         "hint": "Connect the example in sentence 2 to the general claim in sentence 1.",
         "explanation": "Right. The newsletter's record of the delivery network is concrete evidence for Patel's broader point."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>Historian Mina Patel argues that neighborhood newsletters can preserve details omitted from official city records. For example, a 1978 newsletter from one neighborhood lists the names of residents who organized an informal food-delivery network during a transit strike.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {

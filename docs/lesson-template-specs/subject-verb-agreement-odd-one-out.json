@@ -325,6 +325,7 @@
         "hint": "Three choices fit after they. Find the one that fits after he.",
         "explanation": "Correct. <strong>Reveals</strong> is the singular odd one out. The nearby plural nouns never needed to enter your decision."
       },
+      "context": {"label": "Sentence", "html": "<blockquote><p>The collection of maps, together with several handwritten field journals, ___ how rapidly the coastline changed.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -350,6 +351,7 @@
         "hint": "The first three fit after he. Which one fits only after they?",
         "explanation": "Right. <strong>Support</strong> is the plural odd one out, so it is correct."
       },
+      "context": {"label": "Sentence", "html": "<blockquote><p>New measurements of the distant stars, despite the limits of the original instruments, ___ the research team's conclusion.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -414,6 +416,7 @@
         "hint": "Classify every complete phrase with he and they. Three fit they; one fits he.",
         "explanation": "Correct. <strong>Has inspired</strong> is the singular odd one out. Once the three-to-one split appeared, the sentence could not distract you."
       },
+      "context": {"label": "Sentence", "html": "<blockquote><p>The influence of the two architects, visible in the building's curved walls and open courtyards, ___ later designers throughout the region.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {

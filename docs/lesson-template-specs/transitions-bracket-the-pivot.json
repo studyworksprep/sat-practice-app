@@ -31,6 +31,7 @@
         "hint": "Pair the word rarely with a phrase that compares the usual alternative by frequency.",
         "explanation": "Yes. More often completes the scale already opened by rarely: rarely X; more often Y. The second sentence gives the usual alternative, not a result, example, or despite-that outcome."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>Modern restoration projects are rarely designed merely to freeze a building at one historical moment. _____ they adapt old structures for new uses while preserving important features.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -68,6 +69,7 @@
         "hint": "Find the property of the new coating that gives manufacturers a reason to choose it.",
         "explanation": "Right. Greater corrosion resistance explains the adoption. The price creates a complication, but it is not the reason signaled by therefore."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>The new coating was expensive to produce, but it resisted corrosion twice as long as the standard coating. Therefore, manufacturers adopted it for ships exposed to saltwater.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {

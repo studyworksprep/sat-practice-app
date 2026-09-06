@@ -24,6 +24,7 @@ import { QuestionPicker } from './QuestionPicker';
 import { DesmosEditor } from './DesmosEditor';
 import { CalculatorPresentationEditor } from './CalculatorPresentationEditor';
 import { FigureEditor } from './FigureEditor';
+import { ContextEditor } from './ContextEditor';
 import { blockMetaFor } from './block-meta';
 
 type Issue = { severity?: string; message?: string; path?: string };
@@ -118,6 +119,12 @@ export function BlockCard({
               ) : null}
               {block.block_type !== 'lesson_complete' ? (
                 <FigureEditor
+                  content={block.content ?? {}}
+                  onChange={onChangeContent}
+                />
+              ) : null}
+              {block.block_type !== 'lesson_complete' ? (
+                <ContextEditor
                   content={block.content ?? {}}
                   onChange={onChangeContent}
                 />

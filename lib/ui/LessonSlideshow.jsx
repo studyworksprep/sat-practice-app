@@ -51,6 +51,7 @@ import {
   validateDesmosSubmission,
 } from '@/lib/lesson/desmos-interactive.mjs';
 import { normalizeLessonFigure } from '@/lib/lesson/figure.mjs';
+import { normalizeLessonContext } from '@/lib/lesson/context.mjs';
 import {
   buildBlockIndexMap,
   resolveAnswerNavigation,
@@ -177,6 +178,14 @@ export function LessonSlideshow({
     () => normalizeLessonFigure(currentBlock),
     [currentBlock],
   );
+  // Pinned context: the text twin of the figure. A passage, sentence,
+  // or table the block refers to stays beside it, so a check never
+  // points at material that scrolled off with the previous slide.
+  const currentContext = useMemo(
+    () => normalizeLessonContext(currentBlock),
+    [currentBlock],
+  );
+  const hasPinned = Boolean(currentFigure || currentContext);
 
   const progressPct =
     blocks.length > 0
@@ -442,11 +451,13 @@ export function LessonSlideshow({
         </div>
       )}
 
-      <div className={`${s.workspace} ${calculatorOpen || currentFigure ? '' : s.workspaceSingle}`}>
+      <div className={`${s.workspace} ${calculatorOpen || hasPinned ? '' : s.workspaceSingle}`}>
       <div className={s.lessonColumn} ref={lessonColumnRef}>
-      {/* Narrow screens have no side pane, so the pinned figure renders
-          inline above the block instead; CSS swaps the two at 800px. */}
+      {/* Narrow screens have no side pane, so the pinned figure and
+          context render inline above the block instead; CSS swaps the
+          two at 800px. */}
       {currentFigure && <LessonFigure figure={currentFigure} className={s.figureInline} />}
+      {currentContext && <LessonContext context={currentContext} className={s.figureInline} />}
       {showResumeNotice && (
         <div className={s.resumeNotice} role="status">
           <span>Picking up where you left off.</span>
@@ -761,14 +772,17 @@ export function LessonSlideshow({
           so the Desmos instance survives the toggle. When both are
           visible they stack; CSS drops their individual stickiness in
           that case so the two never scroll over each other. */}
-      {(calculatorPresentation.display !== 'hidden' || currentFigure) && (
+      {(calculatorPresentation.display !== 'hidden' || hasPinned) && (
         <div
           className={`${s.sidePane} ${
-            calculatorOpen || currentFigure ? '' : s.sidePaneHidden
-          } ${calculatorOpen && currentFigure ? s.sidePaneStacked : ''}`}
+            calculatorOpen || hasPinned ? '' : s.sidePaneHidden
+          } ${(calculatorOpen && hasPinned) || (currentFigure && currentContext) ? s.sidePaneStacked : ''}`}
         >
           {currentFigure && (
             <LessonFigure figure={currentFigure} className={s.figurePane} />
+          )}
+          {currentContext && (
+            <LessonContext context={currentContext} className={s.figurePane} />
           )}
           {calculatorPresentation.display !== 'hidden' && (
             <LessonCalculatorPane
@@ -802,6 +816,25 @@ function LessonFigure({ figure, className }) {
         <figcaption className={s.figureCaption}>{figure.caption}</figcaption>
       )}
     </figure>
+  );
+}
+
+// Pinned context card: a passage, sentence, or table kept beside the
+// block. Same two-render arrangement as the figure (side pane on
+// desktop, inline above the block on narrow screens). The html goes
+// through HtmlBlock, so it is sanitized and typeset like a text block.
+function LessonContext({ context, className }) {
+  return (
+    <aside
+      className={`${s.figureCard} ${s.contextCard} ${className || ''}`}
+      aria-label={context.label || 'Reference text'}
+    >
+      {context.label && <div className={s.kicker}>{context.label}</div>}
+      <HtmlBlock
+        className={`prose lesson-prose ${s.prosePane} ${s.contextBody}`}
+        html={context.html}
+      />
+    </aside>
   );
 }
 

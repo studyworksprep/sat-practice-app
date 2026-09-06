@@ -187,6 +187,7 @@
         "hint": "Choice B states a true detail, but the question asks why the author included that detail.",
         "explanation": "Correct. Choice A explains the sentence's job. Choice B is true, but it only repeats the detail instead of explaining its function. C and D add ideas that are not in the text."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>Researcher Omar Velez argues that city murals can preserve neighborhood memories that official records overlook. For example, one mural lists businesses that were demolished to build a highway.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -425,6 +426,7 @@
         "hint": "Connect the two-neighborhood example to Sen's claim about what an average can hide.",
         "explanation": "Correct. C explains what the example does. A reverses the author's purpose, B changes the comparison and broadens it, and D invents a new person."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>Economist Priya Sen argues that average travel time alone can hide unequal access to public transportation. Two neighborhoods may have the same average commute, for instance, even if residents of one have frequent trains while residents of the other must rely on a single unpredictable bus route.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {

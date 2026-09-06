@@ -41,6 +41,7 @@ type Block = {
     instructions_html?: string;
     validation?: { mode?: string };
     button_label?: string;
+    context?: { html?: string; label?: string };
   };
 };
 
@@ -59,6 +60,32 @@ function getEmbedUrl(url: string | undefined): string | null {
 }
 
 export function BlockPreview({ block }: { block: Block }) {
+  return (
+    <>
+      <ContextPreview block={block} />
+      <BlockBodyPreview block={block} />
+    </>
+  );
+}
+
+// Pinned context (the slideshow keeps it beside the block). Shown
+// above the body here so the card reads top-to-bottom the way the
+// narrow-screen learner view does.
+function ContextPreview({ block }: { block: Block }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const context = block.content?.context;
+  const html = typeof context?.html === 'string' ? context.html : '';
+  useMathTypeset(ref, html);
+  if (!html.trim()) return null;
+  return (
+    <div ref={ref} style={S.context}>
+      <div style={S.contextLabel}>{context?.label || 'Pinned context'}</div>
+      <SafeHtml as="div" html={html} className="prose lesson-prose" />
+    </div>
+  );
+}
+
+function BlockBodyPreview({ block }: { block: Block }) {
   const type = block?.block_type;
   if (type === 'text') return <TextPreview block={block} />;
   if (type === 'video') return <VideoPreview block={block} />;
@@ -346,6 +373,24 @@ const S: Record<string, React.CSSProperties> = {
   code: { fontSize: 12, color: 'var(--fg2)' },
   metaRow: { marginTop: 6, fontSize: 12, color: 'var(--fg3)' },
   questionStem: { marginTop: 4, fontSize: 14, color: 'var(--fg1)', maxHeight: 200, overflow: 'auto' },
+
+  context: {
+    marginBottom: 12,
+    padding: '10px 12px',
+    border: '1px solid var(--border)',
+    borderLeft: '3px solid var(--color-app-accent)',
+    borderRadius: 'var(--radius-md)',
+    background: 'var(--card)',
+    fontSize: 14,
+  },
+  contextLabel: {
+    fontSize: 10,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+    color: 'var(--color-app-accent)',
+    marginBottom: 6,
+  },
 
   empty: { color: 'var(--fg3)', fontStyle: 'italic', fontSize: 13 },
   placeholder: { color: 'var(--fg3)', fontStyle: 'italic' },

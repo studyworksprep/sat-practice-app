@@ -31,6 +31,7 @@
         "hint": "Use the contrast at \\(35^\\circ\\text{C}\\), but do not add a cause or make a claim about every possible habitat.",
         "explanation": "Correct. Species R stayed near its earlier rate while species S declined, so R's behavior was less affected by the highest tested temperature."
       },
+      "context": {"label": "Study", "html": "<p>In a practice study, two bee species gathered food at similar rates at \\(20^\\circ\\text{C}\\) and \\(30^\\circ\\text{C}\\). At \\(35^\\circ\\text{C}\\), species R continued gathering food at about the same rate, but species S gathered food much less often.</p>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -87,6 +88,7 @@
         "hint": "Keep both findings and the contrast between them. Do not turn a measurement into a cause.",
         "explanation": "Correct. The soundbite preserves the early claim, the later result, and the contrast while dropping unneeded detail."
       },
+      "context": {"label": "Sentence", "html": "<blockquote><p>Although an early survey suggested that the marsh was shrinking, satellite measurements collected over fifteen years showed that its total area had remained stable.</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -162,6 +164,7 @@
         "hint": "Keep both soundbites: plant variety relates to insect diversity, and rooftop size does not erase that relationship.",
         "explanation": "Correct. The third choice combines both findings and uses the cautious phrase 'is associated with' rather than inventing a cause."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>Ecologists surveyed insect species on twenty city rooftops. Rooftops planted with a wider variety of flowering plants had more insect species than rooftops with only one or two plant types. The pattern remained even after the researchers accounted for differences in rooftop size, suggesting that ___</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -237,6 +240,7 @@
         "hint": "Compare the change from 47 to 49 with the change from 32 to 61.",
         "explanation": "Correct. Species X increased by only 2 percentage points, while species Y increased by 29 points over the same temperature interval."
       },
+      "context": {"label": "Passage", "html": "<p>Researchers measured the percentage of seeds that germinated after ten days at three temperatures:</p><ul><li><strong>Species X:</strong> \\(12\\%\\) at \\(5^\\circ\\text{C}\\), \\(47\\%\\) at \\(15^\\circ\\text{C}\\), and \\(49\\%\\) at \\(25^\\circ\\text{C}\\).</li><li><strong>Species Y:</strong> \\(10\\%\\) at \\(5^\\circ\\text{C}\\), \\(32\\%\\) at \\(15^\\circ\\text{C}\\), and \\(61\\%\\) at \\(25^\\circ\\text{C}\\).</li></ul><p>The researchers concluded that ___</p>"},
       "calculator": { "display": "hidden" }
     },
     {
@@ -268,6 +272,7 @@
         "hint": "Connect the opening of routes in the 1740s with the later increase in distant clay, but keep the conclusion cautious.",
         "explanation": "Correct. The timing and source change support a likely contribution from expanded trade. The passage does not say local clay disappeared or that ceramics alone caused the routes to open."
       },
+      "context": {"label": "Passage", "html": "<blockquote><p>A historian analyzed ceramic fragments from a port city. In layers dated before 1750, most fragments were made from local clay. In layers dated after 1750, a growing share of fragments came from clay sources in distant regions. Shipping records indicate that new trade routes connecting the port to those regions opened during the 1740s. Taken together, the evidence suggests that ___</p></blockquote>"},
       "calculator": { "display": "hidden" }
     },
     {

@@ -569,7 +569,7 @@
       "id": "right_altitude_transfer_check",
       "block_type": "check",
       "content": {
-        "prompt": "Solve the proportion from the previous block: \\(18/x=x/8\\). What is the positive length \\(x\\)?",
+        "prompt": "Solve the proportion \\(18/x=x/8\\). What is the positive length \\(x\\)?",
         "input": "numeric",
         "answer": "12",
         "allow_retry": false,

@@ -35,6 +35,7 @@
         "hint": "Return to the four-category order. Which category comes before colon, dash, and comma?",
         "explanation": "Right. A semicolon is a <strong>full-stop candidate</strong>, so test it before the colon, dash, or comma."
       },
+      "context": {"label": "Sentence", "html": "<blockquote><p>The museum displayed one object from the expedition ___ a compass recovered from the wreck.</p></blockquote><p>The choices offer a semicolon, a colon, a dash, and a comma.</p>"},
       "calculator": {
         "display": "hidden"
       }

@@ -220,6 +220,7 @@
         "hint": "Solve \\(\\tan(35^\\circ)=x/12\\) for x without converting the trig value to a decimal.",
         "explanation": "Right. Multiplying both sides by \\(12\\) gives the exact result \\(BC=12\\tan(35^\\circ)\\)."
       },
+      "context": {"label": "Triangle", "html": "<p>In right triangle \\(ABC\\), \\(\\angle C=90^\\circ\\), \\(\\angle A=35^\\circ\\), \\(AC=12\\), and \\(BC=x\\).</p>"},
       "calculator": {
         "display": "open",
         "mode": "scratch",

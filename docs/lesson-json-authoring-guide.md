@@ -133,6 +133,13 @@ appears only after the check. A learner should be able to answer from a
 guided exploration, a definition already provided, or a process already
 modeled.
 
+The slideshow shows **one block per slide**, so "already provided" is not
+enough on its own: a passage, sentence, or table introduced two slides
+back is off screen by the time the check appears. A check that refers to
+it ("the museum passage", "Which choice completes the sentence?") must pin
+that material on its own slide with a block-level `context` (§3f), or
+restate it in the prompt. `lint_missing_context` flags the gap.
+
 ### 2c. Write for learning, not for a textbook
 
 - Use direct, conversational language: “Click both intercepts” is better
@@ -509,7 +516,9 @@ out loud whether or not a recording exists yet.
   tutor's framing; the Callout is the formal objective. When the two land on
   the same words, reword the card.
 - **Don't point at a figure the slide doesn't carry** ("the diagram", "the
-  picture"). `lint_missing_figure` catches it.
+  picture"). `lint_missing_figure` catches it. The same goes for text:
+  "the passage", "the table", "the sentence" need a pinned `context` (§3f)
+  or the material in the prompt — `lint_missing_context` catches it.
 - A recorded intro video does **not** replace the card. The `video` block
   goes in above it as block 1, and the card stays as the read-it version for
   learners who don't watch.
@@ -950,7 +959,7 @@ For equation-solving lessons, make these points explicit when relevant:
   means no real solution in the displayed relationship. Encourage one zoom
   or pan check before concluding that no intercept exists.
 
-### 3f. Pinned figure — keep a diagram visible across slides
+### 3f. Pinned figure and pinned context — keep a diagram or passage visible across slides
 
 An inline `<img>` disappears when the learner advances. When later blocks
 refer back to it (“in the diagram…”), add a top-level `figure` object to
@@ -983,6 +992,46 @@ compiled block's content.
 - Keep the introducing block's inline `<img>` as it is; pin the figure on
   the *later* blocks that reference it. The linter's `missing_figure` rule
   accepts either an inline `<img>` or a `figure` on the slide.
+
+#### Pinned context — a passage, sentence, or table
+
+Text disappears exactly the way an image does. When a check asks about
+"the passage", "the museum table", or says "Which choice completes the
+sentence?", the learner is looking at a slide that no longer shows it.
+Add a top-level `context` object to **every referring block spec** — most
+often the `check` — carrying the same HTML the introducing slide used. The
+slideshow renders it in the side pane beside the block (stacked with a
+pinned figure, above the calculator; inline above the block on narrow
+screens), and the importer copies it into the compiled block's content.
+
+```json
+{
+  "kind": "raw_block",
+  "id": "choices_matching_check",
+  "context": {
+    "label": "Passage",
+    "html": "<blockquote><p>Museums sometimes display replicas when an original object is too fragile to exhibit. …</p></blockquote>"
+  },
+  "block_type": "check",
+  "content": { "…": "…" }
+}
+```
+
+- `html` (**required**): the same HTML a `text` block accepts — usually the
+  `<blockquote>` or `<table>` copied verbatim from the slide that introduced
+  it, so the learner sees exactly what they read before.
+- `label`: optional kicker shown above it — `Passage`, `Sentence`, `Table`,
+  `Study`, `Triangle`.
+- Pin on the *referring* slides, not the introducing one; the introducing
+  text block keeps its inline copy. Several consecutive checks about one
+  table each carry the same `context`.
+- Pin the material only. Do not pin the introducing slide's question stem,
+  sentence contributions, or model answer — a check slide should not
+  re-show scaffolding that the check is testing.
+- The linter's `missing_context` rule fires on a check prompt that names a
+  passage / text / sentence / table / previous block with no `context` on
+  the slide, unless the prompt evidently carries the material itself (a
+  fill-in blank, "The passage explains that…", a hypothetical "a passage").
 
 ### 3g. Gating a Desmos regression or table workflow
 
