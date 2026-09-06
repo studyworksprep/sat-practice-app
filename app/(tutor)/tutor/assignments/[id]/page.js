@@ -15,7 +15,7 @@ import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate, isPastDueDate } from '@/lib/formatters';
-import { buildLessonCheckRollup, tallyFirstTry } from '@/lib/lesson/progress-report.mjs';
+import { buildLessonCheckRollup, resolveLessonProgress, tallyFirstTry } from '@/lib/lesson/progress-report.mjs';
 import { addAssignmentMembers, submitAssignmentOnBehalf } from './actions';
 import { reassignAssignment } from './reassign-actions';
 import { AddMembersPicker } from './AddMembersPicker';
@@ -214,15 +214,21 @@ export default async function TutorAssignmentDetailPage({ params }) {
   const lessonCheckRollup = isLesson
     ? buildLessonCheckRollup(lessonBlocks, lessonProgressRows)
     : [];
+  // Resolved against the current blocks so progress recorded on an
+  // earlier version of the lesson (stale block ids) is not counted.
   const lessonStatsByStudent = new Map(
-    lessonProgressRows.map((row) => [
-      row.student_id,
-      {
-        completedBlocks: (row.completed_blocks ?? []).length,
-        completedAt: row.completed_at,
-        ...tallyFirstTry(lessonBlocks, row.check_answers),
-      },
-    ]),
+    lessonProgressRows.map((row) => {
+      const resolved = resolveLessonProgress(lessonBlocks, row);
+      return [
+        row.student_id,
+        {
+          completedBlocks: resolved.completedBlockIds.length,
+          completedAt: row.completed_at,
+          hasStaleProgress: resolved.hasStale,
+          ...tallyFirstTry(lessonBlocks, resolved.checkAnswers),
+        },
+      ];
+    }),
   );
   const totalLessonBlocks = lessonBlocks.length;
 

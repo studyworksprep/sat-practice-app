@@ -1,6 +1,22 @@
 # Lesson JSON Authoring Guide (Import From JSON)
 
-> **Status: Living document.** Last verified: 2026-07-27 (AI generator convergence — this spec format is now also the AI generation contract). Verify against `lib/lesson/lesson-validation` when in doubt.
+> **Status: Living document.** Last verified: 2026-09-06 against
+> `lib/lesson/lesson-validation.mjs`, `lib/lesson/lesson-lint.mjs` and the
+> improvement plan's ledger (`lesson-improvement-plan-2026-08.md`): the
+> Phase 1 check mechanics (§2d, §3b), the Phase 2 item-quality rules the
+> linter enforces (§2d, §2e), the Phase 3 medium conventions (§3a intro
+> card, §3b video, §3e figures, §3f, §3g) and the Phase 6 house voice
+> (§2c) are all in this document. The spec format is also the AI
+> generation contract (`lib/admin/lessonGenPrompt.ts`).
+
+> **Re-importing a lesson students have started (2026-09-06).** Import
+> in *replace* mode keeps a block's database id when the new block is
+> recognisably the same one: the same `id` on the block (or in
+> `content.id`), or, for blocks without an id, the same prompt / title /
+> html text. Student progress is keyed on those ids, so give every
+> `check` and `desmos_interactive` block a stable `id` and keep it across
+> revisions — rewording a check that has no `id` gives it a new identity
+> and drops students' recorded answers on it (§6).
 
 This document tells you exactly how to produce a JSON "LessonTemplateSpec"
 that the Studyworks admin **Lessons → Import from JSON** page accepts and
@@ -43,6 +59,13 @@ Produce **one JSON object** and nothing else:
 
 - `title` and `description` are recommended (missing → warning, not error).
 - `blocks` is required and must be a non-empty array.
+- **The spec carries no skill or pattern tag.** A lesson's scope
+  (section, domain, `skill_code`, pattern) is set after import in the
+  admin editor's Topics panel (`lesson_topics`), and the platform depends
+  on it: the end-of-lesson "Practice this now" drill and the two-day
+  retrieval item both resolve through the lesson's skill or pattern, so
+  an untagged lesson shows no practice button and never comes back for
+  review. Tag every lesson before publishing it (§8).
 - Blocks render to the learner **top-to-bottom, one slide at a time**, in
   array order. A straight sequence is the default; questions can branch to
   per-answer paths and merge back (see §5).
@@ -117,6 +140,10 @@ modeled.
 - Address the learner as “you” and use short paragraphs and sentences.
 - Introduce one new idea per slide. Break long explanations into a sequence
   of explanation, action, and check blocks.
+- Alternate the block kinds. Three or more text blocks in a row is a
+  lecture; three or more checks in a row is a quiz. The linter reports
+  both runs (`lint_text_run`, `lint_check_run`) — put an explanation,
+  exploration or worked example between them.
 - When one sentence, formula, tip, warning, or transition is the detail the
   learner must not miss, isolate it in one **Callout** box (see §3a) instead
   of relying on bold text inside a longer paragraph.
@@ -230,6 +257,59 @@ Every check should satisfy all of these rules:
   the teaching. The linter flags one-shot all-numeric checks as
   candidates (`lint_spr_candidate`).
 
+**Draw every distractor from a real error.** The trap catalog
+(`docs/trap-catalog.md`, plan 2.6) lists, per lesson and as cross-lesson
+families, the mistakes students actually make on each move, anchored to
+the checks that already encode them. Each wrong choice should be one
+named trap, and the explanation or solution should say which (§2c rule 3).
+A distractor that does not correspond to a catalog trap is either a new
+trap worth adding to the catalog or filler that should go.
+
+**The rules the linter measures.** `lib/lesson/lesson-lint.mjs` runs on
+every spec in CI (`scripts/check-lesson-specs.mjs`) and per spec on demand
+(§8). Its findings are warnings, not errors, but the corpus target is a
+keyed-longest rate under 30% with no lesson above 50%, and every finding
+below is a real cue a test-wise student uses. Write to these from the
+start rather than fixing them from the report:
+
+- **No length cue** (`lint_keyed_longest`). A keyed choice of 30+
+  characters must not be 1.4× or more the mean length of its distractors.
+  If the right answer needs the words, give the wrong answers the same
+  number of words.
+- **No key-term echo** (`lint_key_term_echo`). The keyed choice must not
+  be the only one containing a term from the lesson's title. Either every
+  choice uses the lesson's vocabulary or none does.
+- **No absolutes as a tell** (`lint_extreme_imbalance`). If two or more
+  distractors carry *all / every / only / must / never / always / proved*
+  and the key carries none, the item is answerable by hedging. Spread the
+  absolutes or remove them.
+- **The hint never states the answer** (`lint_hint_gives_answer`): not the
+  keyed choice's text, and for a numeric answer never "= 12" (see §2e).
+- **No meta prompts** (`lint_meta_prompt`). "Why is C correct?" gives the
+  key away as the premise. Ask the question the SAT would ask; put the
+  "why" in the explanation.
+- **No two equivalent choices** (`lint_equivalent_choices`): not the same
+  text, and not the same value in two forms (`0.5` and `1/2`, or a
+  distractor numerically equal to the key).
+- **Retrieval distractors must be plausible mis-orderings**
+  (`lint_retrieval_nonsense_distractor`). On the final retrieval check,
+  every wrong sequence should reuse the process's own content words —
+  two steps swapped, a step omitted, a step from the wrong tool — so it
+  cannot be eliminated on sight. A distractor that shares no content
+  words with the keyed process tests nothing.
+
+**Every lesson carries at least one item at genuine DSAT format and
+length** (plan 2.4): the transfer check, or a dedicated "you vs. the SAT"
+item just before the sign-off (§2c rule 5). Its stem wording, length,
+and choice shape come from the authenticity sheets
+(`docs/authenticity-sheets.md`) — per R&W question type and per math
+skill, derived from the question bank and anchored on Practice Tests
+9–11: the stem templates the test actually uses, stem-length
+percentiles, choice formats (Boundaries choices as punctuation chunks,
+Words in Context and Inference stems of 2–4 sentences, math stems in the
+shapes "Which expression is equivalent…" / "best interpretation of…").
+Do not author these from memory; open the sheet for the skill.
+
 **Do not use proofs, written justifications, or other constructed-response
 work as prompts or distractors.** The SAT does not ask students to submit a
 proof or written solution, so options such as “the question asks for a
@@ -272,7 +352,11 @@ connect the answer to the underlying idea.
 ```
 
 Avoid hints such as “Try again” or “Remember the rule” when a more targeted
-nudge is possible. Avoid success messages that only say “Correct.”
+nudge is possible. A hint names the step to redo or the evidence to look
+at; it never contains the keyed choice's text and never states a numeric
+answer (`= 12`) — the linter flags both (`lint_hint_gives_answer`). Avoid
+success messages that only say “Correct.”, and do not open every
+explanation with the same word (§2c rule 4).
 
 ### 2f. Use evidence-aligned learning mechanics intentionally
 
@@ -834,6 +918,24 @@ Do not assume a struggling learner knows Desmos interface conventions.
 Explain a control immediately before the first task that requires it. When
 helpful, add an annotated app-local image and a one-action practice block.
 
+Interface figures already drawn in the house style live under
+`public/images/` — reference them with `<img>` or pin them with `figure`
+(§3f) on the slide that needs them; do not screenshot Desmos:
+
+| File | Shows | Use on |
+|---|---|---|
+| `desmos-regression-readout-table.svg` | the readout for a **table** regression: PARAMETERS plus R² and r | custom-regression gates (§3g) |
+| `desmos-regression-readout-rmse.svg` | the readout for a **table-free** regression (`5q+7~42`): PARAMETERS plus RMSE | lessons that teach RMSE as the confirmation |
+| `desmos-standard-regression-button-guide.svg` | the Regression button on a table | the first slide that tells the learner to look for it |
+| `desmos-percent-of-control.svg` | the `%` → `of` auto-insert | percent lessons, the slide that first types a percent |
+| `desmos-graph-visibility-toggle.svg` | the coloured circle that hides a graph | any slide that says "click the circle" |
+| `desmos-angle-mode-settings.svg` | the degrees / radians setting | trig lessons |
+
+The two readouts are not interchangeable: a regression fitted **from a
+table** reports R² and r; one typed **without a table** reports RMSE. Show
+the one the lesson's own workflow produces, and write the confirmation
+step in those terms.
+
 For equation-solving lessons, make these points explicit when relevant:
 
 - Desmos can graph a bare expression such as `x^2-5x+6`; do not require
@@ -1006,8 +1108,15 @@ Rules for manual branching:
 
 ## 6. Hard rules and gotchas
 
-- **ids are optional.** The importer generates unique ids automatically. If
-  you set an `id` on a block, keep it unique within the spec.
+- **ids: optional for the compiler, required in practice for checks.** The
+  importer generates unique ids automatically when a block has none. But a
+  block's `id` (kept as `content.id`) is what lets a re-import recognise the
+  block and keep its database id — and student progress is keyed on that
+  database id. Give every `check` and `desmos_interactive` block a short
+  stable `id` (`practice_volume_to_area`, `angle_observation_check`), keep
+  it unique within the spec, and never change it in a revision unless the
+  block really is a different item. Text blocks may rely on the generated
+  id; the importer matches them on their html.
 - **`correct_index` is 0-based.** Across a lesson, vary it among the valid
   choice positions; do not make every correct answer choice A.
 - **`choices` need at least 2 entries** on a multiple-choice check, and
@@ -1203,20 +1312,38 @@ sequence without every possible variation:
    - the final retrieval check asks for the core process or decision rule.
 4. Audit every answer choice for SAT authenticity. Remove proof, written-work,
    or other non-SAT response formats. Make each distractor traceable to a
-   plausible mathematical or procedural error.
-5. Verify all math delimiters render and every image loads with useful alt
+   plausible mathematical or procedural error — a trap in
+   `docs/trap-catalog.md`.
+5. Run the linter before importing and clear what it reports:
+
+   ```
+   node .agents/skills/create-sat-lesson/scripts/lint-lesson-spec.mjs path/to/lesson.json
+   ```
+
+   It prints the §2d findings (length cue, key-term echo, absolutes,
+   hint gives answer, meta prompt, equivalent choices, retrieval
+   distractors, figure references, block runs, retired cadences) and the
+   lesson's keyed-longest and same-word-opener rates. Specs committed under
+   `docs/lesson-template-specs/` are linted in CI by
+   `scripts/check-lesson-specs.mjs`; findings are warnings there, validator
+   errors fail the build.
+6. Tag the lesson's scope in the editor's Topics panel (section, domain,
+   `skill_code`, pattern where one exists). The practice button on the
+   completion banner and the two-day retrieval item both depend on it
+   (§1).
+7. Verify all math delimiters render and every image loads with useful alt
    text. Check that no accidental function notation, terminology, or concept
    falls outside the lesson's stated objective.
-6. Exercise every calculator block exactly as a learner would:
+8. Exercise every calculator block exactly as a learner would:
    - preset expressions and hidden/visible states are correct;
    - scratch and interactive blocks open ready for typing;
    - no answer the learner should generate is already entered;
    - Reset restores the intended starting graph;
    - a required interactive block accepts equivalent correct input, rejects
      a realistic wrong input, and gates Continue until success.
-7. Preview at a normal laptop width and a narrow/mobile width. Confirm the
+9. Preview at a normal laptop width and a narrow/mobile width. Confirm the
    lesson and calculator remain usable, the keypad is reachable, images fit,
    and important instructions are not hidden below a clipped panel.
-8. Read the entire lesson aloud once. Shorten formal or repetitive sentences,
+10. Read the entire lesson aloud once. Shorten formal or repetitive sentences,
    define unfamiliar words, and make every instruction state a visible action
    and a purpose.

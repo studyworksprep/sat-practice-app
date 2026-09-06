@@ -12,6 +12,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
+import { persistReconciledBlocks, reconcileBlockRows } from '@/lib/lesson/block-identity';
 import { validateLessonBlocks } from '@/lib/lesson/lesson-validation.mjs';
 
 const VALID_STATUSES = new Set(['draft', 'published', 'archived']);
@@ -127,30 +128,30 @@ export async function saveLessonBlocks(_prev, formData) {
     );
   }
 
-  const rows = parsed.map((b, i) => ({
-    lesson_id: lessonId,
-    sort_order: typeof b.sort_order === 'number' ? b.sort_order : i,
-    block_type: b.block_type,
-    content: b.content || {},
-  }));
-
-  // Same delete + insert flow as the legacy PUT route. The blocks
-  // table has a FK from progress.completed_blocks (uuid[]) but
-  // those are array refs, not FKs, so wiping rows here doesn't
-  // cascade. Stale completion arrays are accepted as the cost of
-  // letting admins iterate on lesson content.
-  const { error: deleteErr } = await ctx.supabase
+  // Student progress (lesson_progress.completed_blocks / check_answers)
+  // is keyed on lesson_blocks.id, so a save must keep the uuid of every
+  // block that still exists. The editor round-trips stored ids on the
+  // blocks it loaded; anything else is matched on its stable key (see
+  // lib/lesson/block-identity.ts). The previous clear + insert flow
+  // minted fresh ids on every save and orphaned all progress on the
+  // lesson.
+  const ordered = [...parsed]
+    .map((b, i) => ({ b, order: typeof b.sort_order === 'number' ? b.sort_order : i, i }))
+    .sort((x, y) => x.order - y.order || x.i - y.i)
+    .map((x) => x.b);
+  const { data: existingRows, error: loadErr } = await ctx.supabase
     .from('lesson_blocks')
-    .delete()
-    .eq('lesson_id', lessonId);
-  if (deleteErr) return actionFail(`Failed to clear blocks: ${deleteErr.message}`);
-
-  if (rows.length > 0) {
-    const { error: insertErr } = await ctx.supabase
-      .from('lesson_blocks')
-      .insert(rows);
-    if (insertErr) return actionFail(`Failed to insert blocks: ${insertErr.message}`);
-  }
+    .select('id, block_type, content, sort_order')
+    .eq('lesson_id', lessonId)
+    .order('sort_order');
+  if (loadErr) return actionFail(`Failed to load existing blocks: ${loadErr.message}`);
+  const plan = reconcileBlockRows(
+    existingRows ?? [],
+    ordered.map((b) => ({ id: b.id, block_type: b.block_type, content: b.content || {} })),
+  );
+  const persistErr = await persistReconciledBlocks(ctx.supabase, lessonId, plan);
+  if (persistErr) return actionFail(persistErr);
+  const rows = plan.rows;
 
   await ctx.supabase
     .from('lessons')

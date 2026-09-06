@@ -16,6 +16,7 @@ import {
   compileLessonTemplateSpec,
   parseLessonTemplateSpecText,
 } from '@/lib/lesson/template-import.mjs';
+import { persistReconciledBlocks, reconcileBlockRows } from '@/lib/lesson/block-identity';
 import { validateLessonBlocks } from '@/lib/lesson/lesson-validation.mjs';
 
 export async function importBlocksIntoLesson(_prev, formData) {
@@ -42,7 +43,7 @@ export async function importBlocksIntoLesson(_prev, formData) {
   // content ids so appended blocks don't collide).
   const { data: existingRows, error: loadErr } = await ctx.supabase
     .from('lesson_blocks')
-    .select('block_type, content, sort_order')
+    .select('id, block_type, content, sort_order')
     .eq('lesson_id', lessonId)
     .order('sort_order');
   if (loadErr) return actionFail(`Failed to load existing blocks: ${loadErr.message}`);
@@ -62,7 +63,7 @@ export async function importBlocksIntoLesson(_prev, formData) {
 
   const combined =
     mode === 'append'
-      ? [...existing.map((r) => ({ block_type: r.block_type, content: r.content })), ...compiled.blocks]
+      ? [...existing.map((r) => ({ id: r.id, block_type: r.block_type, content: r.content })), ...compiled.blocks]
       : compiled.blocks;
 
   const validation = validateLessonBlocks(
@@ -74,22 +75,17 @@ export async function importBlocksIntoLesson(_prev, formData) {
     );
   }
 
-  const { error: deleteErr } = await ctx.supabase
-    .from('lesson_blocks')
-    .delete()
-    .eq('lesson_id', lessonId);
-  if (deleteErr) return actionFail(`Failed to clear blocks: ${deleteErr.message}`);
-
-  const rows = combined.map((b, i) => ({
-    lesson_id: lessonId,
-    sort_order: i,
-    block_type: b.block_type,
-    content: b.content || {},
-  }));
-  if (rows.length > 0) {
-    const { error: insertErr } = await ctx.supabase.from('lesson_blocks').insert(rows);
-    if (insertErr) return actionFail(`Failed to insert blocks: ${insertErr.message}`);
-  }
+  // Keep stored block uuids wherever the incoming block is recognisably
+  // the same one (content.id, else the block's own text), so student
+  // progress keyed on those uuids survives the import. Replace mode
+  // used to clear the lesson and mint fresh ids for every block —
+  // that orphaned every student's progress on each re-import.
+  const plan = reconcileBlockRows(
+    existing.map((r) => ({ id: r.id, block_type: r.block_type, content: r.content, sort_order: r.sort_order })),
+    combined.map((b) => ({ id: b.id, block_type: b.block_type, content: b.content || {} })),
+  );
+  const persistErr = await persistReconciledBlocks(ctx.supabase, lessonId, plan);
+  if (persistErr) return actionFail(persistErr);
 
   await ctx.supabase
     .from('lessons')

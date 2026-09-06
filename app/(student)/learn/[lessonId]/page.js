@@ -11,6 +11,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { estimateLessonMinutes, formatLessonDuration } from '@/lib/lesson/duration.mjs';
+import { resolveLessonProgress } from '@/lib/lesson/progress-report.mjs';
 import { LessonViewerInteractive } from './LessonViewerInteractive';
 import s from '../Learn.module.css';
 
@@ -89,6 +90,11 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
     progress = created ?? null;
   }
 
+  // Only progress that points at blocks this lesson still has. Stale
+  // ids (from a save that replaced the blocks) would otherwise inflate
+  // the progress bar while marking no step as done.
+  const resolvedProgress = resolveLessonProgress(blocks, progress);
+
   // Author name — one extra round-trip, but the lessons table
   // doesn't denormalize this and the legacy /api/lessons/[id]
   // route does the same lookup. null (not 'Unknown') when the
@@ -136,11 +142,18 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
         </div>
       </header>
 
+      {resolvedProgress.hasStale && !progress?.completed_at && (
+        <p className={s.emptyText} role="status">
+          This lesson was updated since you last worked on it, so your earlier
+          progress can&apos;t be restored and it starts from the beginning.
+        </p>
+      )}
+
       <LessonViewerInteractive
         lessonId={lessonId}
         blocks={blocks}
-        initialCompletedBlockIds={progress?.completed_blocks ?? []}
-        initialCheckAnswers={progress?.check_answers ?? {}}
+        initialCompletedBlockIds={resolvedProgress.completedBlockIds}
+        initialCheckAnswers={resolvedProgress.checkAnswers}
         initialIsComplete={!!progress?.completed_at}
         canPractice={canPractice}
         debug={debug}
