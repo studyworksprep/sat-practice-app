@@ -115,6 +115,7 @@ export function LessonStudentReport({
   totalBlocks,
   completedBlocksCount,
   completedAt,
+  staleProgress = null,
 }: {
   title: string;
   studentName: string | null;
@@ -124,6 +125,10 @@ export function LessonStudentReport({
   totalBlocks: number;
   completedBlocksCount: number;
   completedAt: string | null;
+  /** Progress recorded against blocks the lesson no longer has —
+   *  excluded from every number above; surfaced so "0 / 22" on a
+   *  student who did the work reads as a versioning gap, not idleness. */
+  staleProgress?: { completed: number; answers: number } | null;
 }) {
   const answered = rows.filter((r) => r.attempted);
   const firstTryCorrect = answered.filter((r) => r.firstTryCorrect).length;
@@ -150,6 +155,16 @@ export function LessonStudentReport({
           </p>
         )}
       </header>
+
+      {staleProgress && (
+        <p className={s.cardHint} role="status">
+          This lesson was updated after the student last worked on it.
+          {' '}
+          {staleProgress.completed} step{staleProgress.completed === 1 ? '' : 's'} and{' '}
+          {staleProgress.answers} check answer{staleProgress.answers === 1 ? '' : 's'} recorded on the
+          earlier version can&apos;t be matched to the current steps and are not counted below.
+        </p>
+      )}
 
       <div className={s.statsStrip}>
         <div className={s.statTile}>

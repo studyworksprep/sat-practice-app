@@ -200,6 +200,27 @@ second one stayed unlinked — 185 such orphan twins accrued between May
 and August 2026 and still exist (they inflate per-question attempt
 counts by one each; cleanup is a separate decision).
 
+**Lesson blocks keep their ids across saves (2026-09-06).** Student
+progress (`lesson_progress.completed_blocks`, the keys of
+`check_answers`) is keyed on `lesson_blocks.id`. Both block writers —
+Admin → Import (replace and append) and the lesson editor's Save — now
+go through `reconcileBlockRows` / `persistReconciledBlocks`
+(`lib/lesson/block-identity.ts`): a stored row's uuid is reused when the
+incoming block carries it or shares its stable key (`content.id`, else a
+fingerprint of the block's own text — a check's prompt, a Desmos title,
+a text block's html; the single `lesson_complete` block always matches),
+unmatched incoming blocks are inserted, unclaimed stored rows deleted.
+The importer now also persists an author-given spec `id` as `content.id`
+on raw check blocks. Before this every save cleared the lesson and
+minted fresh uuids; the 2026-09-03 re-import of all 36 lessons left 33
+of 34 progress rows in production pointing at ids that no longer exist,
+and the old block rows are gone (no snapshot), so that history cannot be
+remapped. Readers cope: `resolveLessonProgress`
+(`lib/lesson/progress-report.mjs`) intersects a progress row with the
+lesson's current block ids, and the per-student report, the assignment
+roster and the student viewer count only what resolves, telling the
+reader when stale entries were dropped.
+
 **Hardest/easiest ranking (`question_accuracy_ranking`, 2026-08-19).**
 `/admin/performance` ranks questions via
 `public.question_accuracy_ranking(min_students)` — first-attempt

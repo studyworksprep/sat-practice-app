@@ -24,7 +24,7 @@ import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentReport } from '@/lib/practice/AssignmentReport';
-import { buildLessonCheckRows } from '@/lib/lesson/progress-report.mjs';
+import { buildLessonCheckRows, resolveLessonProgress } from '@/lib/lesson/progress-report.mjs';
 import { LessonStudentReport } from '../../LessonProgressSections';
 
 export const dynamic = 'force-dynamic';
@@ -119,16 +119,21 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
         .maybeSingle(),
     ]);
     const blocks = lessonBlocks ?? [];
+    // Progress is keyed on block ids; entries pointing at blocks the
+    // lesson no longer has (a re-save before 2026-09-06 replaced every
+    // id) are excluded from the numbers and reported as stale.
+    const resolved = resolveLessonProgress(blocks, lessonProgress);
     return (
       <LessonStudentReport
         title={assignment.title ?? assignment.lesson?.title ?? 'Lesson'}
         studentName={ownerName}
         studentHref={ownerHomeHref}
         backHref={`/tutor/assignments/${assignmentId}`}
-        rows={buildLessonCheckRows(blocks, lessonProgress?.check_answers)}
+        rows={buildLessonCheckRows(blocks, resolved.checkAnswers)}
         totalBlocks={blocks.length}
-        completedBlocksCount={(lessonProgress?.completed_blocks ?? []).length}
-        completedAt={lessonProgress?.completed_at ?? junction.completed_at ?? null}
+        completedBlocksCount={resolved.completedBlockIds.length}
+        completedAt={resolved.completedAt ?? junction.completed_at ?? null}
+        staleProgress={resolved.hasStale ? resolved.stale : null}
       />
     );
   }

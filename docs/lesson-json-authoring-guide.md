@@ -2,6 +2,15 @@
 
 > **Status: Living document.** Last verified: 2026-07-27 (AI generator convergence — this spec format is now also the AI generation contract). Verify against `lib/lesson/lesson-validation` when in doubt.
 
+> **Re-importing a lesson students have started (2026-09-06).** Import
+> in *replace* mode keeps a block's database id when the new block is
+> recognisably the same one: the same `id` on the block (or in
+> `content.id`), or, for blocks without an id, the same prompt / title /
+> html text. Student progress is keyed on those ids, so give every
+> `check` and `desmos_interactive` block a stable `id` and keep it across
+> revisions — rewording a check that has no `id` gives it a new identity
+> and drops students' recorded answers on it.
+
 This document tells you exactly how to produce a JSON "LessonTemplateSpec"
 that the Studyworks admin **Lessons → Import from JSON** page accepts and
 compiles into a fully functional lesson. Follow it literally.
