@@ -21,6 +21,7 @@
 
 import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/api/auth';
+import { claimItemAttempt } from '@/lib/practice-test/claim-item-attempt';
 
 export const dynamic = 'force-dynamic';
 
@@ -95,9 +96,11 @@ export async function POST(req) {
     return NextResponse.json({ ok: true });
   }
 
-  // No existing item — insert a placeholder attempts row + the
+  // No existing item — create a placeholder attempts row + the
   // item-attempt link, matching the time-only branch in the
-  // Server Action.
+  // Server Action. The claim is on-conflict safe: if the answer
+  // save beat this beacon to the first touch, the beacon's delta
+  // is accumulated onto the winner's row instead.
   const { data: moduleItem } = await supabase
     .from('practice_test_module_items_v2')
     .select('question_id')
@@ -105,9 +108,10 @@ export async function POST(req) {
     .maybeSingle();
   if (!moduleItem) return NextResponse.json({ ok: false, error: 'item not found' }, { status: 404 });
 
-  const { data: attemptRow } = await supabase
-    .from('attempts')
-    .insert({
+  const claim = await claimItemAttempt(supabase, {
+    moduleAttemptId,
+    moduleItemId,
+    attempt: {
       user_id: user.id,
       question_id: moduleItem.question_id,
       is_correct: false,
@@ -115,18 +119,15 @@ export async function POST(req) {
       response_text: null,
       source: 'practice_test',
       time_spent_ms: timeDelta,
-    })
-    .select('id')
-    .single();
-  if (!attemptRow) return NextResponse.json({ ok: false, error: 'attempt insert failed' }, { status: 500 });
-
-  await supabase
-    .from('practice_test_item_attempts_v2')
-    .insert({
-      practice_test_module_attempt_id: moduleAttemptId,
-      practice_test_module_item_id: moduleItemId,
-      attempt_id: attemptRow.id,
+    },
+  });
+  if (!claim.ok) return NextResponse.json({ ok: false, error: 'attempt insert failed' }, { status: 500 });
+  if (!claim.created) {
+    await supabase.rpc('increment_attempt_time', {
+      p_attempt_id: claim.attemptId,
+      p_delta_ms: timeDelta,
     });
+  }
 
   return NextResponse.json({ ok: true });
 }

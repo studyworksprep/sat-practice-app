@@ -2,7 +2,7 @@
 
 > **Status: Living document.** Last verified against code: 2026-07-12
 > (question-bank write policies re-verified against production
-> 2026-09-01).
+> 2026-09-01; attempt-stat read paths re-verified 2026-09-06).
 
 Short runbook for anything that touches the Supabase database.
 
@@ -169,6 +169,36 @@ teachers see bank-wide aggregates their roster-scoped row access
 doesn't grant, the same deliberate exposure as `item_stats`. Internal
 helper `public.question_stats_cut(uuid, uuid[])` has execute revoked
 from every app role.
+Since 2026-09-06 every attempts scan inside both functions requires a
+`profiles` row for the attempt's user, so an auth user with no profile
+(a test account) no longer feeds the bank-wide cut, the discrimination
+coefficient, or the skill baselines. Staff attempts (tutor training,
+tutors' own practice) still count in the `all` cut.
+
+**Student stat tiles count every attempt source (2026-09-06).** The
+tutor student detail page, the student dashboard and the shared
+`/stats` view read `student_practice_stats`,
+`get_student_dashboard_stats` and `get_student_extended_stats`. All
+three used to filter on `attempts.source = 'practice'`, which dropped
+every practice-test attempt (in-app and Bluebook-uploaded) — 46% of
+student rows in production — while the weekly trend chart on the same
+page (`get_roster_weekly_trend`) counted everything. They now count
+every row, matching `get_question_stats`: a blank test response
+(placeholder row, `is_correct = false`) counts as an incorrect attempt,
+test-scoring style. The admin landing tile "Practice attempts" keeps
+its practice-only filter deliberately.
+
+**Practice-test first touch is on-conflict safe (2026-09-06).** The
+answer save, the mark-for-review toggle and the time-ping beacon all
+create the per-question `attempts` row + `practice_test_item_attempts_v2`
+link through `claimItemAttempt` (`lib/practice-test/claim-item-attempt.ts`).
+The link insert is `ON CONFLICT DO NOTHING` on the table's unique
+(module attempt, item) pair; a loser deletes the `attempts` row it just
+created and applies its write to the winner's row. Before this, two
+first touches in the same instant each left an `attempts` row and the
+second one stayed unlinked — 185 such orphan twins accrued between May
+and August 2026 and still exist (they inflate per-question attempt
+counts by one each; cleanup is a separate decision).
 
 **Hardest/easiest ranking (`question_accuracy_ranking`, 2026-08-19).**
 `/admin/performance` ranks questions via
