@@ -6,6 +6,7 @@ import { Inter, Playfair_Display } from 'next/font/google';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
 import { desmosCalculatorSrc } from '../lib/config/desmos';
+import { siteUrl, siteName, siteTitle, siteDescription } from '../lib/config/site';
 
 // Self-hosted Google Fonts via next/font. The bundler downloads them
 // at build time, scopes the @font-face to a hashed class on <html>,
@@ -28,9 +29,49 @@ const playfair = Playfair_Display({
   display: 'swap',
 });
 
+// Site-wide metadata defaults. Every public page overrides title,
+// description, canonical and og:url with its own values (via
+// publicPageMetadata); what lives here is the fallback any page
+// inherits when it says nothing — which, for the signed-in surface,
+// is most of them.
+//
+// Deliberately NOT set here:
+//   - title.template. Existing pages already suffix their own titles
+//     ('Help — Studyworks', 'Reset your password — Studyworks'), so a
+//     template would render 'Help — Studyworks — Studyworks'.
+//   - alternates.canonical / openGraph.url. A layout-level value is
+//     inherited verbatim by every descendant, which would declare
+//     that /subscribe and /features/teachers are both the homepage.
+//     Canonical is per-route by nature; see lib/config/site.ts.
+//
+// metadataBase is what lets the relative og:image emitted by
+// app/opengraph-image.tsx resolve to an absolute URL — link previews
+// (Slack, iMessage, Teams) reject relative image URLs outright.
 export const metadata = {
-  title: 'Studyworks',
-  description: 'Practice SAT questions with Supabase + Next.js',
+  metadataBase: new URL(siteUrl),
+  title: siteTitle,
+  description: siteDescription,
+  applicationName: siteName,
+  // Read by content classifiers and app stores; cheap, and the whole
+  // point of this pass is that a filter can tell what this site is.
+  category: 'education',
+  openGraph: {
+    type: 'website',
+    siteName,
+    locale: 'en_US',
+    title: siteTitle,
+    description: siteDescription,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteTitle,
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+  },
 };
 
 // No maximumScale cap (§6.3): pinch-zoom is an accessibility

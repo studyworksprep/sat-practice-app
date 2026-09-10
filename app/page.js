@@ -16,8 +16,15 @@ import { headers } from 'next/headers';
 import { requireUser } from '@/lib/api/auth';
 import { maybeSendWelcomeEmail } from '@/lib/email/maybeSendWelcomeEmail';
 import { HomeClient } from './HomeClient';
+import { publicPageMetadata, siteTitle, siteDescription } from '@/lib/config/site';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata = publicPageMetadata({
+  path: '/',
+  title: siteTitle,
+  description: siteDescription,
+});
 
 export default async function NextTreeRoot(props) {
   const searchParams = await props.searchParams;

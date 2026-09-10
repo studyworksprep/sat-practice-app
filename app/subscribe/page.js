@@ -9,8 +9,17 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { userHasAccess } from '@/lib/subscription';
 import { SubscribeClient } from './SubscribeClient';
+import { publicPageMetadata } from '@/lib/config/site';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata = publicPageMetadata({
+  path: '/subscribe',
+  title: 'Plans & pricing — Studyworks',
+  description:
+    'Studyworks plans for students and tutors. Students working with a ' +
+    'Studyworks Prep tutor get full access at no cost.',
+});
 
 export default async function SubscribePage(props) {
   const searchParams = (await props.searchParams) ?? {};

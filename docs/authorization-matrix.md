@@ -64,7 +64,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/users/codes/actions.js` | `createTeacherCode`, `revokeTeacherCode`, `inviteStudent`, `revokeStudentInvite` | requireRole[admin] |
 | `app/(student)/assignments/[id]/actions.js` | `startAssignmentPractice` | requireUser + rateLimit |
 | `app/(student)/dashboard/actions.js` | `updateTargetScore` | requireUser |
-| `app/(student)/learn/[lessonId]/actions.js` | `markBlockComplete`, `submitCheckAnswer`, `submitDesmosResult`, `markLessonComplete` | requireUser |
+| `app/(student)/learn/[lessonId]/actions.js` | `markBlockComplete`, `submitCheckAnswer`, `submitDesmosResult`, `markLessonComplete`, `createLessonPracticeDrill` | requireUser + rateLimit |
 | `app/(student)/notes/actions.ts` | `createNote`, `updateNote`, `deleteNote`, `upsertNoteForQuestion` | requireUser |
 | `app/(student)/practice/start/actions.js` | `countAvailable`, `createSession`, `countAvailableAct`, `createActSession` | requireUser + rateLimit |
 | `app/(student)/practice/test/actions.js` | `startTestAttempt`, `recordItemAnswer`, `toggleMarkForReview`, `pauseTestModule`, `resumeTestModule`, `finishModule` | requireUser + rateLimit |
