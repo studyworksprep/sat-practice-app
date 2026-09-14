@@ -21,3 +21,6 @@ playwright/.cache/
 # macOS + local agent config
 .DS_Store
 .claude/
+
+# Local SAT import source files and production comparison snapshots.
+content/import/pilot/
