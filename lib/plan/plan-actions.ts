@@ -13,10 +13,12 @@
 
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
-import { generatePlan } from './generate-plan';
-import { mapSkillRow } from './plan-inputs';
+import { generatePlan, LOW_EVIDENCE_ATTEMPTS } from './generate-plan';
+import { applyEvidencePriors, mapSkillRow } from './plan-inputs';
+import { deriveMode, parseIntakeRow } from './intake';
 import { runRepaceForStudent, writeDraftPlan } from './repace-runner';
-import type { SkillState } from './generate-plan';
+import type { PlanMode, PlanPhase, SkillState } from './generate-plan';
+import type { PlanComposition } from './plan-inputs';
 import type { ActionResult } from '@/lib/types';
 
 type GenerateStudyPlanResult = ActionResult<{
@@ -24,6 +26,8 @@ type GenerateStudyPlanResult = ActionResult<{
   weeks: number;
   taskCount: number;
   rationale: string;
+  mode: PlanMode;
+  phases: PlanPhase[];
 }>;
 
 export interface GenerateStudyPlanArgs {
@@ -35,6 +39,18 @@ export interface GenerateStudyPlanArgs {
   /** Baseline scaled score; if omitted, the current predicted band total is used. */
   startingScore?: number | null;
   testType?: 'sat' | 'act';
+  /** Composition (docs/student-onboarding-and-plan-redesign-2026-09.md
+   *  §5). The wizard passes everything from the intake. A tutor's form
+   *  passes nothing: the student's intake row (if any) is used, else the
+   *  mode is inferred from evidence — targeted once any skill has real
+   *  attempts, foundations for a blank slate. */
+  mode?: PlanMode;
+  prepLevel?: string | null;
+  intent?: string | null;
+  studyDays?: number[] | null;
+  targets?: string[] | null;
+  fullTests?: boolean;
+  selfRating?: Record<string, number> | null;
 }
 
 export async function generateStudyPlan(
@@ -70,10 +86,46 @@ export async function generateStudyPlan(
     p_test_type: testType,
   });
   if (inErr) return actionFail(`Could not load skill data: ${inErr.message}`);
-  const skills: SkillState[] = (rows ?? []).map(mapSkillRow);
-  if (skills.length === 0) {
+  const rawSkills: SkillState[] = (rows ?? []).map(mapSkillRow);
+  if (rawSkills.length === 0) {
     return actionFail('No curriculum is defined for this test type yet.');
   }
+
+  // Composition: explicit args win; otherwise the student's intake row;
+  // otherwise infer from evidence.
+  let mode = args.mode ?? null;
+  let prepLevel = args.prepLevel ?? null;
+  let intent = args.intent ?? null;
+  let composition: Omit<PlanComposition, 'mode'> = {
+    studyDays: args.studyDays ?? null,
+    targets: args.targets ?? null,
+    fullTests: args.fullTests ?? true,
+    selfRating: args.selfRating ?? null,
+  };
+  if (!mode) {
+    const { data: intakeRow } = await supabase
+      .from('student_intake')
+      .select('prep_level, intent, targets, weekly_hours, study_days, self_rating, full_tests, completed_at, skipped_at')
+      .eq('student_id', studentId)
+      .maybeSingle();
+    const intake = parseIntakeRow(intakeRow);
+    if (intake.prepLevel && intake.intent) {
+      mode = deriveMode(intake.prepLevel, intake.intent);
+      prepLevel = intake.prepLevel;
+      intent = intake.intent;
+      composition = {
+        studyDays: intake.studyDays,
+        targets: intake.targets.map((t) => t.skillCode),
+        fullTests: intake.fullTests,
+        selfRating: intake.selfRating as Record<string, number> | null,
+      };
+    } else {
+      mode = rawSkills.some((s) => s.attemptsCount >= LOW_EVIDENCE_ATTEMPTS)
+        ? 'targeted'
+        : 'foundations';
+    }
+  }
+  const skills = applyEvidencePriors(rawSkills, composition);
 
   // Baseline: use the provided score, else the current predicted band total.
   let startingScore = args.startingScore ?? null;
@@ -94,6 +146,10 @@ export async function generateStudyPlan(
     weeklyHours: args.weeklyHours,
     testType,
     skills,
+    mode,
+    studyDays: composition.studyDays,
+    targets: composition.targets,
+    fullTests: composition.fullTests,
   });
 
   const written = await writeDraftPlan(
@@ -106,6 +162,12 @@ export async function generateStudyPlan(
       startingScore,
       testDate: args.testDate,
       weeklyHours: args.weeklyHours,
+      mode: draft.mode,
+      prepLevel,
+      intent,
+      rationale: draft.rationale,
+      phases: draft.phases,
+      composition,
     },
     draft.tasks,
   );
@@ -117,6 +179,8 @@ export async function generateStudyPlan(
     weeks: draft.weeks,
     taskCount: draft.tasks.length,
     rationale: draft.rationale,
+    mode: draft.mode,
+    phases: draft.phases,
   };
 }
 

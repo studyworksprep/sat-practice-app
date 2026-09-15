@@ -35,7 +35,7 @@ export default async function HelpIndexPage({ searchParams }) {
       <div className={s.eyebrow}>Help</div>
       <h1 className={s.h1}>Learn how to use Studyworks</h1>
       <p className={s.lead}>
-        Guides for every tab in the top nav, plus a self-study routine and tips
+        Guides for every part of the app, plus a self-study routine and tips
         for getting the most out of the platform. Skim the list and read whichever
         articles answer your current question.
       </p>

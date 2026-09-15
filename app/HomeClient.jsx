@@ -15,8 +15,6 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/browser';
 import s from './Home.module.css';
 
-const CURRENT_YEAR = new Date().getFullYear();
-const GRAD_YEARS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR + i);
 
 // If Supabase falls back to the Site URL when the redirect_to it
 // was given isn't on the project allowlist, the magic-link session
@@ -77,9 +75,6 @@ export function HomeClient({ emailConfirmed }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [userType, setUserType] = useState('');
-  const [highSchool, setHighSchool] = useState('');
-  const [graduationYear, setGraduationYear] = useState('');
-  const [targetSatScore, setTargetSatScore] = useState('');
   const [teacherCode, setTeacherCode] = useState('');
   const [signupMsg, setSignupMsg] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -168,9 +163,6 @@ export function HomeClient({ emailConfirmed }) {
           lastName,
           userType,
           ...(userType === 'student' && {
-            highSchool: highSchool || undefined,
-            graduationYear: graduationYear ? Number(graduationYear) : undefined,
-            targetSatScore: targetSatScore ? Number(targetSatScore) : undefined,
             teacherCode: teacherCode || undefined,
           }),
           ...(userType === 'teacher' && { teacherCode }),
@@ -413,42 +405,6 @@ export function HomeClient({ emailConfirmed }) {
 
               {userType === 'student' && (
                 <>
-                  <div className={s.field}>
-                    <label className={s.label}>High school</label>
-                    <input
-                      className={s.input}
-                      value={highSchool}
-                      onChange={(e) => setHighSchool(e.target.value)}
-                    />
-                  </div>
-                  <div className={s.fieldRow}>
-                    <div className={s.field}>
-                      <label className={s.label}>Graduation year</label>
-                      <select
-                        className={s.input}
-                        value={graduationYear}
-                        onChange={(e) => setGraduationYear(e.target.value)}
-                      >
-                        <option value="">Select</option>
-                        {GRAD_YEARS.map((y) => (
-                          <option key={y} value={y}>{y}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className={s.field}>
-                      <label className={s.label}>Target SAT score</label>
-                      <input
-                        className={s.input}
-                        type="number"
-                        min="400"
-                        max="1600"
-                        step="10"
-                        placeholder="e.g. 1400"
-                        value={targetSatScore}
-                        onChange={(e) => setTargetSatScore(e.target.value)}
-                      />
-                    </div>
-                  </div>
                   <div className={s.field}>
                     <label className={s.label}>
                       Invitation or teacher code (if you received one)

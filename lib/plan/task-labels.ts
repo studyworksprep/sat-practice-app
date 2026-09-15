@@ -79,7 +79,12 @@ export type DrillWhyCode =
   | 'low_evidence'
   | 'near_threshold'
   | 'mixed'
-  | 'shaky';
+  | 'shaky'
+  // Phase-composer codes (docs/student-onboarding-and-plan-redesign-2026-09.md §5.3).
+  | 'coverage'        // coverage phase: part of walking every topic in order
+  | 'targets'         // self-directed plan: a skill the student chose
+  | 'self_rated_low'  // intake self-assessment rated this domain uncomfortable
+  | 'prior_weak';     // a reported test showed this domain as weak (Phase 3)
 
 const DRILL_WHY_COPY: Record<DrillWhyCode, (attempts: number) => string> = {
   not_started: () => 'Not started yet — build a base',
@@ -91,6 +96,10 @@ const DRILL_WHY_COPY: Record<DrillWhyCode, (attempts: number) => string> = {
   near_threshold: () => 'Nearly there — a few clean reps will lock it in',
   mixed: () => 'Mixed results so far — worth another pass',
   shaky: () => 'Often missed — worth slowing down on these',
+  coverage: () => 'Part of covering every topic in order',
+  targets: () => 'One of the skills you chose to work on',
+  self_rated_low: () => 'You rated this area as uncomfortable — a good place to start',
+  prior_weak: () => 'A test you entered showed this area as weak',
 };
 
 export function isDrillWhyCode(v: unknown): v is DrillWhyCode {

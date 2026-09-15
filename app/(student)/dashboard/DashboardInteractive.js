@@ -72,7 +72,7 @@ export function DashboardInteractive({
 
   return (
     <main className={s.main}>
-      <HelpDashboardBanner accountCreatedAt={accountCreatedAt} />
+      <HelpDashboardBanner accountCreatedAt={accountCreatedAt} hasActivePlan={hasActivePlan} />
 
       {/* ---------- Banner ---------- */}
       <section className={s.banner}>
@@ -118,8 +118,8 @@ export function DashboardInteractive({
           <div>
             <div className={s.planCalloutTitle}>You don&apos;t have a study plan yet</div>
             <div className={s.planCalloutBody}>
-              Three steps — target, quick diagnostic, plan — and the app
-              opens each day to exactly what to do next.
+              A few quick questions about where you are and when you can
+              study, and the app opens each day to exactly what to do next.
             </div>
           </div>
           <Link href="/welcome" className={s.btnPrimary}>

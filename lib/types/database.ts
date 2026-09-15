@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -2726,6 +2726,84 @@ export type Database = {
         }
         Relationships: []
       }
+      question_batch_access: {
+        Row: {
+          batch_id: string
+          created_at: string
+          granted_by: string | null
+          user_id: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          granted_by?: string | null
+          user_id: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          granted_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_batch_access_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "published_question_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "question_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       question_batches: {
         Row: {
           administration_date: string | null
@@ -4101,6 +4179,76 @@ export type Database = {
         }
         Relationships: []
       }
+      student_intake: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          focus_note: string | null
+          full_tests: boolean
+          intent: string | null
+          prep_level: string | null
+          self_rating: Json | null
+          skipped_at: string | null
+          student_id: string
+          study_days: Json | null
+          targets: Json
+          updated_at: string
+          weekly_hours: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          focus_note?: string | null
+          full_tests?: boolean
+          intent?: string | null
+          prep_level?: string | null
+          self_rating?: Json | null
+          skipped_at?: string | null
+          student_id: string
+          study_days?: Json | null
+          targets?: Json
+          updated_at?: string
+          weekly_hours?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          focus_note?: string | null
+          full_tests?: boolean
+          intent?: string | null
+          prep_level?: string | null
+          self_rating?: Json | null
+          skipped_at?: string | null
+          student_id?: string
+          study_days?: Json | null
+          targets?: Json
+          updated_at?: string
+          weekly_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_intake_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_intake_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_intake_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       student_invite_codes: {
         Row: {
           code: string
@@ -4259,6 +4407,11 @@ export type Database = {
           created_by: string | null
           goal_score: number | null
           id: string
+          intent: string | null
+          mode: string | null
+          phases: Json
+          prep_level: string | null
+          rationale: string | null
           starting_score: number | null
           status: string
           student_id: string
@@ -4272,6 +4425,11 @@ export type Database = {
           created_by?: string | null
           goal_score?: number | null
           id?: string
+          intent?: string | null
+          mode?: string | null
+          phases?: Json
+          prep_level?: string | null
+          rationale?: string | null
           starting_score?: number | null
           status?: string
           student_id: string
@@ -4285,6 +4443,11 @@ export type Database = {
           created_by?: string | null
           goal_score?: number | null
           id?: string
+          intent?: string | null
+          mode?: string | null
+          phases?: Json
+          prep_level?: string | null
+          rationale?: string | null
           starting_score?: number | null
           status?: string
           student_id?: string
@@ -4634,6 +4797,12 @@ export type Database = {
         Returns: string
       }
       effective_plan: { Args: { p_user: string }; Returns: string }
+      find_question_import_matches: {
+        Args: { p_identifiers: string[]; p_stem: string }
+        Returns: {
+          id: string
+        }[]
+      }
       get_plan_inputs: {
         Args: { p_student: string; p_test_type?: string }
         Returns: {
@@ -4810,6 +4979,7 @@ export type Database = {
         Args: { p_min_plan: string; p_user: string }
         Returns: boolean
       }
+      import_stem_key: { Args: { p_html: string }; Returns: string }
       import_student_practice_history: {
         Args: { p_student_id: string }
         Returns: Json
@@ -4821,6 +4991,10 @@ export type Database = {
       increment_attempt_time: {
         Args: { p_attempt_id: string; p_delta_ms: number }
         Returns: undefined
+      }
+      insert_reviewed_question: {
+        Args: { p_batch: string; p_publish: boolean; p_question: Json }
+        Returns: string
       }
       is_admin: { Args: never; Returns: boolean }
       is_contributor: { Args: never; Returns: boolean }
@@ -4918,6 +5092,10 @@ export type Database = {
         Args: { p_asof?: string; p_student: string; p_test_type?: string }
         Returns: number
       }
+      student_has_lesson_assignment: {
+        Args: { p_lesson_id: string; p_student_id: string }
+        Returns: boolean
+      }
       teacher_can_view_student: {
         Args: { target_student_id: string }
         Returns: boolean
@@ -4940,12 +5118,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4969,11 +5147,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4994,11 +5172,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5019,11 +5197,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5036,11 +5214,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

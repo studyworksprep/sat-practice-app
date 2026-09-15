@@ -1,39 +1,48 @@
-// First-run wizard (§6.4): target score → short diagnostic → first
-// plan. Closes the Phase 2 acceptance loop — a brand-new self-serve
-// student goes signup → here → first task with no human involvement.
+// Onboarding intake (docs/student-onboarding-and-plan-redesign-2026-09.md
+// §3): situation → (targets) → availability → self-assessment → build →
+// preview/activate. A brand-new self-serve student goes signup → here →
+// an activated, phased plan with no human involvement.
 //
 // STATELESS step machine: every visit derives the current step from
-// data, so the wizard survives leaving mid-flow (finish the diagnostic
-// tomorrow, come back, it picks up at "build my plan"):
+// data (profile goal/date, the student_intake row, any draft plan), so
+// the wizard survives leaving mid-flow. ?step=… revisits an earlier
+// step with the answers prefilled; it never jumps ahead. The ladder
+// itself is pure (lib/plan/intake.ts) and unit-tested.
 //
-//   active plan exists            → nothing to do here → /today
-//   no target or test date        → step 1 (goal)
-//   draft plan exists             → step 3 (review + activate)
-//   open diagnostic session       → step 2 (resume)
-//   no attempts yet (and no skip) → step 2 (start or skip)
-//   otherwise                     → step 3 (generate)
-//
-// The diagnostic is a normal practice session (marked
-// filter_criteria.diagnostic) — the existing runner, submit path, and
-// report all apply; finishing it feeds attempts → the on-demand
-// mastery snapshot → the generator. ?skip=1 lets a student go
-// straight to a plan (the generator handles unknown mastery, and the
-// §2.5 weekly re-pace corrects as real data arrives).
+// No diagnostic: evidence comes from the student's answers now and from
+// the coverage phase of the plan as they work (design doc §2).
 
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { normalizePhases, PlanOverview } from '@/lib/ui/PlanOverview';
 import {
-  saveGoalAction,
-  startDiagnosticAction,
-  generateFirstPlanAction,
+  SAT_DOMAIN_CODES,
+  deriveWizardStep,
+  parseIntakeRow,
+  shouldRouteToWelcome,
+} from '@/lib/plan/intake';
+import type { WizardStep } from '@/lib/plan/intake';
+import { SAT_TAXONOMY, findDomain } from '@/lib/practice/sat-taxonomy';
+import type { PlanMode } from '@/lib/plan/generate-plan';
+import {
+  saveSituationAction,
+  saveTargetsAction,
+  saveAvailabilityAction,
+  saveAssessmentAction,
+  buildPlanAction,
   activateFirstPlanAction,
+  setAsideAction,
 } from './actions';
 import {
-  GoalForm,
-  StartDiagnosticForm,
-  GenerateFirstPlanForm,
+  SituationForm,
+  TargetsForm,
+  AvailabilityForm,
+  SelfAssessmentForm,
+  BuildPlanButton,
+  RebuildPlanLink,
   ActivateFirstPlanButton,
+  SetAsideLink,
 } from './WelcomeInteractive';
 import s from './Welcome.module.css';
 
@@ -41,18 +50,29 @@ export const dynamic = 'force-dynamic';
 
 type PageProps = { searchParams: Promise<Record<string, string | undefined>> };
 
-const STEPS = ['Your goal', 'Quick diagnostic', 'Your plan'] as const;
+const STEP_LABEL: Record<WizardStep, string> = {
+  situation: 'Your situation',
+  targets: 'Your targets',
+  availability: 'Availability',
+  assess: 'Self-check',
+  build: 'Your plan',
+  preview: 'Your plan',
+};
 
-function StepHeader({ active }: { active: number }) {
+function StepHeader({ steps, active }: { steps: WizardStep[]; active: WizardStep }) {
+  // build and preview share one visible step.
+  const visible = steps.filter((st) => st !== 'build');
+  const activeVisible = active === 'build' ? 'preview' : active;
+  const activeIdx = visible.indexOf(activeVisible);
   return (
     <ol className={s.steps}>
-      {STEPS.map((label, i) => (
+      {visible.map((st, i) => (
         <li
-          key={label}
-          className={`${s.step} ${i === active ? s.stepActive : ''} ${i < active ? s.stepDone : ''}`}
+          key={st}
+          className={`${s.step} ${i === activeIdx ? s.stepActive : ''} ${i < activeIdx ? s.stepDone : ''}`}
         >
-          <span className={s.stepNum}>{i < active ? '✓' : i + 1}</span>
-          {label}
+          <span className={s.stepNum}>{i < activeIdx ? '✓' : i + 1}</span>
+          {STEP_LABEL[st]}
         </li>
       ))}
     </ol>
@@ -77,33 +97,25 @@ export default async function WelcomePage({ searchParams }: PageProps) {
     .maybeSingle();
   if (activePlan) redirect('/today');
 
-  const [{ data: fullProfile }, { data: draft }, { data: openDiag }, { count: attemptCount }] = await Promise.all([
+  const [{ data: fullProfile }, { data: intakeRow }, { data: draft }] = await Promise.all([
     supabase
       .from('profiles')
       .select('target_sat_score, sat_test_date')
       .eq('id', user.id)
       .maybeSingle(),
     supabase
+      .from('student_intake')
+      .select('prep_level, intent, targets, weekly_hours, study_days, self_rating, full_tests, completed_at, skipped_at')
+      .eq('student_id', user.id)
+      .maybeSingle(),
+    supabase
       .from('study_plans')
-      .select('id, goal_score, test_date, config')
+      .select('id, goal_score, test_date, mode, rationale, phases')
       .eq('student_id', user.id)
       .eq('test_type', 'sat')
       .eq('status', 'draft')
       .limit(1)
       .maybeSingle(),
-    supabase
-      .from('practice_sessions')
-      .select('id, current_position')
-      .eq('user_id', user.id)
-      .eq('status', 'in_progress')
-      .contains('filter_criteria', { diagnostic: true })
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from('attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id),
   ]);
 
   const goal = fullProfile?.target_sat_score ?? null;
@@ -111,34 +123,55 @@ export default async function WelcomePage({ searchParams }: PageProps) {
   const testDate = fullProfile?.sat_test_date
     ? String(fullProfile.sat_test_date).slice(0, 10)
     : null;
+  const intake = parseIntakeRow(intakeRow);
 
-  const skipped = sp.skip === '1';
-  const rebuilding = sp.rebuild === '1';
-  const hasSignal = (attemptCount ?? 0) > 0;
+  const step = deriveWizardStep({
+    goal,
+    testDate,
+    intake,
+    hasDraft: Boolean(draft),
+    override: sp.step ?? null,
+  });
 
-  // Derive the step (see header comment for the ladder). ?rebuild=1
-  // shows the generate form over an existing draft — generating again
-  // replaces it (writeDraftPlan swaps the prior draft atomically).
-  let step: 'goal' | 'diagnostic' | 'generate' | 'review';
-  if (!goal || !testDate) step = 'goal';
-  else if (draft && !rebuilding) step = 'review';
-  else if (openDiag) step = 'diagnostic';
-  else if (!hasSignal && !skipped && !rebuilding) step = 'diagnostic';
-  else step = 'generate';
+  const steps: WizardStep[] =
+    intake.intent === 'own_targets'
+      ? ['situation', 'targets', 'availability', 'assess', 'build', 'preview']
+      : ['situation', 'availability', 'assess', 'build', 'preview'];
 
-  // Draft summary for the review step.
-  let draftSummary: { taskCount: number; weeks: number } | null = null;
-  if (step === 'review' && draft) {
+  // Draft tasks for the preview step.
+  let draftTasks: {
+    id: string;
+    weekIndex: number;
+    scheduledDate: string | null;
+    taskType: string;
+    payload: Record<string, unknown>;
+  }[] = [];
+  if (step === 'preview' && draft) {
     const { data: taskRows } = await supabase
       .from('plan_tasks')
-      .select('week_index')
-      .eq('plan_id', draft.id);
-    const weeks = (taskRows ?? []).reduce((m, t) => Math.max(m, t.week_index + 1), 0);
-    draftSummary = { taskCount: (taskRows ?? []).length, weeks };
+      .select('id, week_index, scheduled_date, task_type, payload')
+      .eq('plan_id', draft.id)
+      .order('scheduled_date', { ascending: true, nullsFirst: true });
+    draftTasks = (taskRows ?? []).map((t) => ({
+      id: t.id,
+      weekIndex: t.week_index,
+      scheduledDate: t.scheduled_date,
+      taskType: t.task_type,
+      payload: (t.payload ?? {}) as Record<string, unknown>,
+    }));
   }
 
-  const stepIndex = step === 'goal' ? 0 : step === 'diagnostic' ? 1 : 2;
   const firstName = profile.first_name ?? null;
+  const showSetAside = shouldRouteToWelcome({ hasActivePlan: false, intake });
+  const selectedTargets = new Set(intake.targets.map((t) => `${t.domainCode}|${t.skillCode}`));
+  const ratingRows = SAT_DOMAIN_CODES.map((code) => {
+    const d = findDomain(code);
+    return {
+      code,
+      name: d?.name ?? code,
+      section: d?.subjectCode === 'math' ? 'Math' : 'Reading & Writing',
+    };
+  });
 
   return (
     <main className={s.container}>
@@ -146,90 +179,131 @@ export default async function WelcomePage({ searchParams }: PageProps) {
         <div className={s.eyebrow}>Welcome{firstName ? `, ${firstName}` : ''}</div>
         <h1 className={s.h1}>Let&rsquo;s set up your study plan</h1>
         <p className={s.sub}>
-          Three quick steps: tell us your goal, show us where you are, and we&rsquo;ll build a
+          A few quick questions about where you are and how you want to work, then a
           week-by-week plan that opens each day to exactly what to do next.
         </p>
       </header>
 
-      <StepHeader active={stepIndex} />
+      <StepHeader steps={steps} active={step} />
 
-      {step === 'goal' ? (
+      {step === 'situation' ? (
         <section className={s.card}>
-          <h2 className={s.cardTitle}>Where are you headed?</h2>
+          <h2 className={s.cardTitle}>Where are you starting from?</h2>
           <p className={s.cardSub}>
-            Your target score and test date set the pace of the whole plan. You can change both
-            later.
+            Your target and test date set the pace. How much prep you have done decides
+            whether the plan starts by covering every topic or goes straight to your
+            weak areas. You can change all of this later.
           </p>
-          <GoalForm
-            action={saveGoalAction}
-            defaults={{ target: goal ?? '', testDate: testDate ?? '' }}
+          <SituationForm
+            action={saveSituationAction}
+            defaults={{
+              target: goal ?? '',
+              testDate: testDate ?? '',
+              prepLevel: intake.prepLevel,
+              intent: intake.intent,
+            }}
           />
         </section>
       ) : null}
 
-      {step === 'diagnostic' ? (
+      {step === 'targets' ? (
         <section className={s.card}>
-          <h2 className={s.cardTitle}>
-            {openDiag ? 'Finish your diagnostic' : 'Show us where you are'}
-          </h2>
+          <h2 className={s.cardTitle}>What do you want to work on?</h2>
           <p className={s.cardSub}>
-            {openDiag
-              ? 'You have a diagnostic in progress — pick up where you left off. Your plan gets built from how you do.'
-              : 'A short mixed set — about 16 questions across every SAT topic, 15–20 minutes. It’s how the plan knows what to work on first. No score pressure; wrong answers here are the useful ones.'}
+            Pick the skills you already know you need. The plan cycles through them, with a
+            lesson the first time a weak one comes up. You can add or remove skills later.
           </p>
-          {openDiag ? (
-            <div className={s.actionsRow}>
-              <Link
-                href={`/practice/s/${openDiag.id}/${openDiag.current_position ?? 0}`}
-                className={s.primaryBtnLink}
-              >
-                Resume diagnostic
-              </Link>
-            </div>
-          ) : (
-            <div className={s.actionsRow}>
-              <StartDiagnosticForm action={startDiagnosticAction} />
-              <Link href="/welcome?skip=1" className={s.skipLink}>
-                Skip for now — build my plan without it
-              </Link>
-            </div>
-          )}
+          <TargetsForm
+            action={saveTargetsAction}
+            domains={SAT_TAXONOMY}
+            selected={selectedTargets}
+            fullTests={intake.fullTests}
+          />
         </section>
       ) : null}
 
-      {step === 'generate' ? (
+      {step === 'availability' ? (
+        <section className={s.card}>
+          <h2 className={s.cardTitle}>When can you study?</h2>
+          <p className={s.cardSub}>
+            Hours per week sets how many tasks each week gets. Days you pick are the only
+            days tasks land on, so the plan fits around your week instead of fighting it.
+          </p>
+          <AvailabilityForm
+            action={saveAvailabilityAction}
+            defaults={{
+              weeklyHours: intake.weeklyHours ?? 5,
+              studyDays: intake.studyDays ?? [0, 1, 2, 3, 4, 5, 6],
+            }}
+          />
+        </section>
+      ) : null}
+
+      {step === 'assess' ? (
+        <section className={s.card}>
+          <h2 className={s.cardTitle}>How comfortable are you with each area right now?</h2>
+          <p className={s.cardSub}>
+            There are no wrong answers. This helps the plan decide where to start; your
+            actual practice takes over from here within a couple of weeks.
+          </p>
+          <SelfAssessmentForm
+            action={saveAssessmentAction}
+            rows={ratingRows}
+            defaults={intake.selfRating}
+          />
+        </section>
+      ) : null}
+
+      {step === 'build' ? (
         <section className={s.card}>
           <h2 className={s.cardTitle}>Build your plan</h2>
           <p className={s.cardSub}>
-            Aiming for <strong>{goal}</strong> on <strong>{testDate}</strong>
-            {hasSignal
-              ? ' — using what your practice so far shows about your strengths and gaps.'
-              : ' — starting from a balanced baseline; the plan adjusts weekly as you practice.'}{' '}
-            <Link href="/welcome" className={s.inlineLink}>
-              Change goal
+            Aiming for <strong>{goal}</strong> on <strong>{testDate}</strong>, about{' '}
+            <strong>{intake.weeklyHours}</strong> hours a week.{' '}
+            <Link href="/welcome?step=situation" className={s.inlineLink}>
+              Change something
             </Link>
           </p>
-          <GenerateFirstPlanForm action={generateFirstPlanAction} defaultHours={5} />
+          <BuildPlanButton action={buildPlanAction} />
         </section>
       ) : null}
 
-      {step === 'review' && draft ? (
+      {step === 'preview' && draft ? (
         <section className={`${s.card} ${s.reviewCard}`}>
-          <h2 className={s.cardTitle}>Your plan is ready</h2>
+          <h2 className={s.cardTitle}>Here&rsquo;s your plan</h2>
           <p className={s.cardSub}>
-            {draftSummary?.weeks ?? '—'} weeks · {draftSummary?.taskCount ?? '—'} tasks toward{' '}
-            <strong>{draft.goal_score}</strong> by <strong>{draft.test_date}</strong>. Activate it
-            and the <strong>Today</strong> page becomes your home base: one to three tasks a day,
-            each chosen for a reason.
+            Read the outline, open any week to see what&rsquo;s in it, then start. Once
+            it&rsquo;s live, the <strong>Today</strong> page becomes your home base: one to
+            three tasks a day, each with a reason.
           </p>
-          <div className={s.actionsRow}>
+          <PlanOverview
+            goalScore={draft.goal_score ?? goal ?? 0}
+            testDate={draft.test_date ?? testDate ?? ''}
+            mode={(draft.mode as PlanMode | null) ?? null}
+            rationale={draft.rationale ?? null}
+            phases={normalizePhases(draft.phases)}
+            tasks={draftTasks}
+            expandWeeks={2}
+          />
+          <div className={`${s.actionsRow} ${s.previewActions}`}>
             <ActivateFirstPlanButton action={activateFirstPlanAction} planId={draft.id} />
             <span className={s.skipLink}>
-              Not right? <Link href="/welcome?rebuild=1" className={s.inlineLink}>Rebuild it</Link>
+              Not right?{' '}
+              <Link href="/welcome?step=situation" className={s.inlineLink}>Change my answers</Link>
+              {' · '}
+              <Link href="/welcome?step=availability" className={s.inlineLink}>Change hours or days</Link>
+              {' · '}
+              <RebuildPlanLink action={buildPlanAction} />
             </span>
           </div>
         </section>
       ) : null}
+
+      {showSetAside && step !== 'preview' && (
+        <div className={s.setAside}>
+          <SetAsideLink action={setAsideAction} />
+        </div>
+      )}
     </main>
   );
 }

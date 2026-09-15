@@ -10,15 +10,18 @@
 // Also home to writeDraftPlan, shared with generateStudyPlan, so the
 // draft-replacement semantics live in exactly one place.
 
-import { generatePlan, repacePlan } from './generate-plan';
-import { mapSkillRow } from './plan-inputs';
+import { repacePlan } from './generate-plan';
+import { applyEvidencePriors, mapSkillRow, planCompositionFromRow } from './plan-inputs';
 import type {
   ExistingTask,
+  PlanMode,
+  PlanPhase,
   PlanTaskDraft,
   PlanTaskSource,
   PlanTaskType,
   SkillState,
 } from './generate-plan';
+import type { PlanComposition } from './plan-inputs';
 import type { PlanInputRow } from './plan-inputs';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/lib/types/database';
@@ -55,6 +58,14 @@ export async function writeDraftPlan(
     startingScore: number | null;
     testDate: string;
     weeklyHours: number;
+    /** Composition (§5): how the plan was built and the intake answers
+     *  behind it. Optional so pre-phase callers keep working. */
+    mode?: PlanMode | null;
+    prepLevel?: string | null;
+    intent?: string | null;
+    rationale?: string | null;
+    phases?: PlanPhase[] | null;
+    composition?: Partial<Omit<PlanComposition, 'mode'>> | null;
   },
   tasks: DraftTaskWrite[],
 ): Promise<{ ok: true; planId: string } | { ok: false; error: string }> {
@@ -75,7 +86,23 @@ export async function writeDraftPlan(
       starting_score: meta.startingScore,
       test_date: meta.testDate,
       status: 'draft',
-      config: { weekly_hours: meta.weeklyHours },
+      mode: meta.mode ?? null,
+      prep_level: meta.prepLevel ?? null,
+      intent: meta.intent ?? null,
+      rationale: meta.rationale ?? null,
+      phases: (meta.phases ?? []).map((p) => ({
+        type: p.type,
+        start_week: p.startWeek,
+        end_week: p.endWeek,
+        summary: p.summary,
+      })),
+      config: {
+        weekly_hours: meta.weeklyHours,
+        study_days: meta.composition?.studyDays ?? null,
+        targets: meta.composition?.targets ?? null,
+        full_tests: meta.composition?.fullTests ?? true,
+        evidence: { self_rating: meta.composition?.selfRating ?? null },
+      } as unknown as Json,
     })
     .select('id')
     .single();
@@ -157,7 +184,7 @@ export async function runRepaceForStudent(
   // The active plan is what we re-pace against.
   const { data: active, error: activeErr } = await supabase
     .from('study_plans')
-    .select('id, goal_score, starting_score, test_date, config, created_at')
+    .select('id, goal_score, starting_score, test_date, config, created_at, mode, prep_level, intent')
     .eq('student_id', args.studentId)
     .eq('test_type', args.testType)
     .eq('status', 'active')
@@ -188,7 +215,11 @@ export async function runRepaceForStudent(
     p_test_type: args.testType,
   });
   if (inErr) return fail(`Could not load skill data: ${inErr.message}`);
-  const skills: SkillState[] = ((inputRows ?? []) as PlanInputRow[]).map(mapSkillRow);
+  const composition = planCompositionFromRow(active);
+  const skills: SkillState[] = applyEvidencePriors(
+    ((inputRows ?? []) as PlanInputRow[]).map(mapSkillRow),
+    composition,
+  );
 
   const { data: band } = await supabase.rpc('get_predicted_score_band', {
     p_student: args.studentId,
@@ -216,6 +247,10 @@ export async function runRepaceForStudent(
     skills,
     existingTasks,
     driftThreshold: args.driftThreshold,
+    mode: composition.mode ?? undefined,
+    studyDays: composition.studyDays,
+    targets: composition.targets,
+    fullTests: composition.fullTests,
   });
 
   if (!result.shouldRepace || !result.tasks) {
@@ -233,6 +268,12 @@ export async function runRepaceForStudent(
       startingScore: currentScore,
       testDate: active.test_date,
       weeklyHours,
+      mode: result.mode ?? composition.mode,
+      prepLevel: active.prep_level,
+      intent: active.intent,
+      rationale: result.rationale,
+      phases: result.phases,
+      composition,
     },
     result.tasks as PlanTaskDraft[],
   );

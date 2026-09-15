@@ -22,8 +22,8 @@ export const HELP_ARTICLES = [
   {
     slug: 'getting-started',
     title: 'Welcome — Start Here',
-    blurb: 'A 2-minute orientation to Studyworks and what to do in your first week.',
-    summary: 'New to Studyworks? Read this first. A short orientation to the platform, a five-step plan for your first week, a quick tour of every tab in the top nav, and pointers to the most useful guides for self-study students.',
+    blurb: 'A 2-minute orientation to Studyworks, your study plan, and what to do in your first week.',
+    summary: 'New to Studyworks? Read this first. A short orientation to the platform, how your study plan works, a quick tour of the sidebar, and pointers to the most useful guides for self-study students.',
     icon: InfoIcon, palette: 'gold',
     order: 1,
     sections: [
@@ -37,7 +37,7 @@ export const HELP_ARTICLES = [
   <li><strong>Turn each lesson into something you'll remember.</strong> Studyworks gives you three different study tools — Flashcards, Error Log entries, and Notes — so you can capture every kind of learning in the place where it'll be most useful later.</li>
   <li><strong>Measure progress with realistic practice tests.</strong> Full-length, adaptive simulations of the digital SAT and the ACT, so you always know where you actually stand.</li>
 </ul>
-<p>You don't need a tutor to use any of this well — plenty of students hit big score gains on their own. The articles in this Help section walk you through every tab in the top nav, explain the three study tools and when to use each, and lay out a self-study routine you can follow week by week. Skim what's useful; come back when something new comes up.</p>
+<p>You don't need a tutor to use any of this well — plenty of students hit big score gains on their own. The articles in this Help section walk you through every part of the sidebar, explain the three study tools and when to use each, and lay out a self-study routine you can follow week by week. Skim what's useful; come back when something new comes up.</p>
         `,
       },
       {
@@ -45,20 +45,21 @@ export const HELP_ARTICLES = [
         html: `
 <p>This is the simple loop. Don't worry about being perfect — just get the rhythm started.</p>
 <ol>
-  <li><strong>Take a baseline practice test.</strong> Open the <a href="/practice/tests"><em>Practice tests</em></a> tab and complete one full-length test under realistic conditions. It feels intimidating before you do it, but it's the single most useful thing you can do in week one: it gives you a starting score, tells the platform what to recommend, and makes the rest of your prep concrete.</li>
-  <li><strong>Spend half an hour with your Dashboard.</strong> Look at the Performance grid — those segmented bars show your accuracy on every skill. The red and yellow segments are where the points are hiding. Pick two or three skills to focus on first.</li>
-  <li><strong>Run a Practice session each weekday.</strong> Open <a href="/practice/start"><em>Practice</em></a>, click the skills you chose, and do 10-15 questions. Some days it'll feel hard — that's the point. The questions you struggle with are the ones teaching you something.</li>
+  <li><strong>Finish setting up your study plan.</strong> The first time you sign in, Studyworks asks a few questions — your target and test date, how much prep you've done, when you can study, and how comfortable you feel with each area. From those it builds a week-by-week plan and shows you the whole thing before you start. If you set it aside, you can come back to it any time from the <a href="/dashboard">Dashboard</a>.</li>
+  <li><strong>Open <a href="/today">Today</a> each study day.</strong> Once your plan is live, Today shows one to three tasks — a lesson, a drill, a review, or a practice test — each with a reason it's there. Start with the top one. Finishing a task checks it off automatically.</li>
+  <li><strong>Trust the order early on.</strong> If you're starting from scratch, the plan covers every topic in order first, then narrows to your weak areas once it has seen a few weeks of your work. That's deliberate: a handful of questions can't tell it much, but your first few weeks can.</li>
   <li><strong>Capture every miss with the right tool.</strong> Studyworks gives you three ways to save what you learn: <strong>Flashcards</strong> for a term or formula you didn't know, <strong>Error Log</strong> for a process mistake or a trap you fell for, and <strong>Notes</strong> for a topic you need to actually learn. Choosing well takes about ten seconds and pays off for the rest of your prep — see the <a href="/help/notes">Notes guide</a> for examples.</li>
-  <li><strong>Re-test every two weeks.</strong> Take another practice test, compare the score, and adjust which skills you're targeting. Real movement shows up over weeks, not days, so don't panic if a single session goes badly.</li>
+  <li><strong>Take the practice tests when the plan schedules them.</strong> They're checkpoints, not diagnostics: the score tells you how the whole thing is going, and the plan adjusts itself weekly as your results come in.</li>
 </ol>
 <p>That's the whole loop. Everything else in this Help section explains pieces of it in more detail — read whichever ones feel relevant when a question comes up.</p>
         `,
       },
       {
-        heading: 'The tabs in the top nav, briefly',
+        heading: 'The sidebar, briefly',
         html: `
 <ul>
-  <li><strong><a href="/dashboard">Dashboard</a></strong> — your stats, performance breakdown, and what to do next.</li>
+  <li><strong><a href="/today">Today</a></strong> — your study plan's daily view: what to do next, and what's already done.</li>
+  <li><strong><a href="/dashboard">Dashboard</a></strong> — your stats, performance breakdown, and recent work.</li>
   <li><strong><a href="/practice/start">Practice</a></strong> — start a self-guided session, filtered to whatever you want to work on.</li>
   <li><strong><a href="/practice/tests">Practice tests</a></strong> — launch a full-length, timed, adaptive SAT or ACT.</li>
   <li><strong><a href="/assignments">Assignments</a></strong> — work assigned by your tutor (skip if you don't have one).</li>
