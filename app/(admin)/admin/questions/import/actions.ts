@@ -1,5 +1,6 @@
 'use server';
 
+import { logger } from '@/lib/api/logger';
 import { actionOk, actionFail } from '@/lib/api/response';
 import type { AuthContext } from '@/lib/api/auth';
 import type { Row } from '@/lib/types';
@@ -69,7 +70,17 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
     let candidateRows = rows;
     if (!reference) {
       const found = await supabase.rpc('find_question_import_matches', { p_stem: candidate.stem_html, p_identifiers: [q.id, q.metadata.external_id, q.metadata.ibn].filter((v): v is string => !!v) });
-      if (found.error) throw new Error('Duplicate checking is unavailable. Install the supplemental-import migration before importing.');
+      if (found.error) {
+        logger.error({ action: 'compareImport', questionId: q.id, code: found.error.code }, 'Question duplicate check failed');
+        const message = found.error.code === '57014'
+          ? 'Duplicate checking timed out. No questions were imported. Please retry; if this persists, contact support.'
+          : ['42883', 'PGRST202'].includes(found.error.code)
+            ? 'The duplicate-check function is unavailable. An administrator needs to verify the importer migration.'
+            : found.error.code === '42501'
+              ? 'Duplicate checking was denied. Sign in again with an admin account and retry.'
+              : 'Duplicate checking failed. No questions were imported. Please retry or contact support.';
+        throw new Error(`Question ${q.id}: ${message}`);
+      }
       if (found.data.length) {
         const loaded = await supabase.from('questions_v2').select(columns).in('id', found.data.map(r => r.id));
         if (loaded.error) throw new Error('Could not load possible duplicates.');
