@@ -10,7 +10,7 @@ export default async function ImportPage() {
   await requireRole(['admin']);
   return <main className={s.main}>
     <Link href="/admin/questions">← Question bank</Link>
-    <header className={s.heading}><div><p className={s.eyebrow}>Admin · Question import</p><h1>Compare an import</h1><p>Review questions, answers, and explanations before choosing what to keep.</p></div><span className={s.badge}>Review & replace</span></header>
+    <header className={s.heading}><div><p className={s.eyebrow}>Admin · Question import</p><h1>Import questions</h1><p>Compare renderings, review each question, and bring the selected questions into the right practice bank.</p></div><span className={s.badge}>Admin workspace</span></header>
     <ImportComparison initialSets={await listImportSets()} showLocalPilot={process.env.NODE_ENV !== 'production'} />
   </main>;
 }

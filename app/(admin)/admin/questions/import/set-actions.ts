@@ -30,14 +30,14 @@ export async function createImportSet(form: FormData) {
     return actionOk(data);
   } catch(error) { return actionFail(error instanceof Error ? error : 'Unable to create set.'); }
 }
-export async function changeSetAccess(batchId:string,email:string,allow:boolean) {
+export async function changeSetAccess(batchId:string,userId:string,allow:boolean) {
   try {
     const ctx=await requireRole(['admin']); assertWriter(ctx);
-    if(typeof email!=='string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length>254) throw new Error('Enter the student’s account email.');
+    if(typeof userId!=='string' || !/^[0-9a-f-]{36}$/i.test(userId) || typeof allow!=='boolean') throw new Error('Select a user from the search results.');
     const batch=await ctx.supabase.from('question_batches').select('id').eq('id',batchId).eq('pool','opt_in').single();
     if(batch.error) throw new Error('Supplemental set not found.');
-    const recipient=await ctx.supabase.from('profiles').select('id').eq('email',email.trim().toLowerCase()).single();
-    if(recipient.error) throw new Error('No account found for that email.');
+    const recipient=await ctx.supabase.from('profiles').select('id').eq('id',userId).single();
+    if(recipient.error) throw new Error('That user account could not be found. Search again.');
     const result=allow ? await ctx.supabase.from('question_batch_access').upsert({batch_id:batchId,user_id:recipient.data.id,granted_by:ctx.user.id},{onConflict:'batch_id,user_id',ignoreDuplicates:true})
       : await ctx.supabase.from('question_batch_access').delete().eq('batch_id',batchId).eq('user_id',recipient.data.id);
     if(result.error) throw new Error('Could not change access.');
@@ -82,3 +82,20 @@ export async function publishImportDraft(id:string,confirmed:boolean) {
   } catch(error) { return actionFail(error instanceof Error ? error : 'Unable to publish draft.'); }
 }
 export type ImportSetsResult = Awaited<ReturnType<typeof listImportSets>>;
+
+
+export async function searchImportUsers(search:string) {
+  try {
+    const {supabase}=await requireRole(['admin']);
+    if(typeof search!=='string' || search.length>100) throw new Error('Search by a name or email, up to 100 characters.');
+    const terms=search.replace(/[^\p{L}\p{N}@. _-]/gu,'').trim().split(/\s+/).filter(Boolean).slice(0,4);
+    if(terms.join('').length<2) return actionOk({users:[]});
+    let query=supabase.from('profiles').select('id,first_name,last_name,email,role').is('banned_at',null);
+    // Only constrained search terms enter the PostgREST OR expression. Each
+    // term must match a name or email; multi-word names work in either order.
+    for(const term of terms) query=query.or(`first_name.ilike.%${term}%,last_name.ilike.%${term}%,email.ilike.%${term}%`);
+    const {data,error}=await query.order('first_name',{ascending:true}).order('id').limit(20);
+    if(error) throw new Error('User search is unavailable. Please try again.');
+    return actionOk({users:data});
+  }catch(error){return actionFail(error instanceof Error?error:'Unable to search users.');}
+}

@@ -42,6 +42,7 @@ export function parseMetadata(raw = ''): ImportMetadata[] {
 
 export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
   if (typeof mmd !== 'string' || mmd.length > MAX_TEXT) throw new Error('Mathpix text must be under 1 MB.');
+  mmd = normalizeMathpixHeadings(mmd);
   if (!/\\section\*\{Question ID:/.test(mmd)) mmd = numberedExport(mmd);
   const parts = mmd.split(/\\section\*\{Question ID:\s*([a-zA-Z0-9_-]+)\}/);
   if (parts.length < 3) throw new Error('No question headings found. Use Question ID headings or numbered headings such as ## Question 1.');
@@ -66,7 +67,7 @@ export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
     if (answerHeading) {
       stem = question.slice(0, answerHeading.index).trim();
       const choices = question.slice(answerHeading.index + answerHeading[0].length);
-      options = [...choices.matchAll(/\\item\[([A-D])\.\]\s*([\s\S]*?)(?=\\item\[|\\end\{itemize\})/g)].map(m => ({ label: m[1], mmd: m[2].trim() }));
+      options = [...choices.matchAll(/\\item\[([A-Da-d])\.\]\s*([\s\S]*?)(?=\\item\[|\\end\{itemize\})/g)].map(m => ({ label: m[1].toUpperCase(), mmd: m[2].trim() }));
       if (options.length !== 4 || options.some((o, j) => o.label !== 'ABCD'[j] || !o.mmd)) throw new Error(`Question ${id}: expected four complete choices A–D.`);
     }
     if (!stem) throw new Error(`Question ${id} has an empty prompt.`);
@@ -89,6 +90,15 @@ export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
   }
   const unused = metadata.filter(m => !ids.has(m.questionId));
   return { questions, warnings: unused.length ? [`${unused.length} metadata record(s) have no matching question: ${unused.map(m => m.questionId).join(', ')}`] : [] };
+}
+
+// Mathpix sometimes puts the ID in the metadata-table caption and the
+// Question label in a figure caption. Recognize these exact wrappers only.
+function normalizeMathpixHeadings(text: string): string {
+  return text.replace(/\\begin\{table\}\s*\\captionsetup\{labelformat=empty\}\s*\\caption\{Question ID:\s*([a-zA-Z0-9_-]+)\}([\s\S]*?)\\end\{table\}/g,
+    (_, id, header) => `\\section*{Question ID: ${id}}\n${header}`)
+    .replace(/\\begin\{figure\}\s*\\captionsetup\{labelformat=empty\}\s*\\caption\{Question\}\s*\\includegraphics(?:\[[^\n]*?\])?\{([^}\n]+)\}\s*\\end\{figure\}/g,
+      (_, path) => `Question\n![](${path})`);
 }
 
 // Numbered exports get content-derived IDs: page numbering is not a source identity.
@@ -125,12 +135,6 @@ export function mmdToHtml(text: string, images: Record<string, string> = {}, opt
     return block ? `\n\n${marker}\n\n` : marker;
   };
   if (/IMPORTTOKEN\d+END/.test(text)) throw new Error('Reserved token in input.');
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, path) => {
-    const normalized = path.replace(/^\.\//, '');
-    const src = images[normalized];
-    if (!src || !/^data:image\/(png|jpeg|webp);base64,/.test(src)) throw new Error(`Missing or unsupported figure: ${path}. Include the images in the Mathpix ZIP.`);
-    return token(`<img src="${src}" alt="${escapeHtml(alt || 'Imported question figure')}" style="max-width:100%;height:auto" />`);
-  });
   text = text.replace(/\\begin\{tabular\}(?:\[[^\]]*\])?\{[^}]*\}([\s\S]*?)\\end\{tabular\}/g, (_, body: string) => {
     const rows = body.replace(/\\hline/g, '').split(/\\\\/).map(r => r.trim()).filter(Boolean);
     return token(`<table><tbody>${rows.map((row, i) => `<tr>${row.split('&').map(cell => {
@@ -143,12 +147,19 @@ export function mmdToHtml(text: string, images: Record<string, string> = {}, opt
       return `<${tag} style="text-align:center"${i ? '' : ' scope="col"'}>${content}</${tag}>`;
     }).join('')}</tr>`).join('')}</tbody></table>`, true);
   });
+  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, path) => {
+    const normalized = path.replace(/^\.\//, '');
+    const src = images[normalized];
+    if (!src || !/^data:image\/(png|jpeg|webp);base64,/.test(src)) throw new Error(`Missing or unsupported figure: ${path}. Include the images in the Mathpix ZIP.`);
+    return token(`<img src="${src}" alt="${escapeHtml(alt || 'Imported question figure')}" style="max-width:100%;height:auto" />`);
+  });
   // Keep layout in ordinary HTML: the shared sanitizer removes MathJax's
   // custom container. Inline TeX supplies the bank's compact fraction size;
   // a separate paragraph supplies standalone alignment and spacing.
-  text = text.replace(/\$\$([\s\S]*?)\$\$|\$([^$]+)\$/g, (_, block, inline) => block !== undefined
+  text = text.replace(/(?<!\\)\$\$((?:\\[\s\S]|[^$\\]|\$(?!\$))*?)\$\$|(?<!\\)\$((?:\\[\s\S]|[^$\\])+)\$/g, (_, block, inline) => block !== undefined
     ? token(`<p style="text-align:${options.equationAlign ?? 'center'};margin:0.75em 0">\\(${escapeHtml(block.trim())}\\)</p>`, true)
     : token(`\\(${escapeHtml(inline)}\\)`));
+  text = text.replace(/\\\$/g, () => token('&#36;'));
   if (/\\(?:begin|end|section|item)\b/.test(text) || text.includes('$')) throw new Error('Unsupported or incomplete Mathpix markup. Review the export before continuing.');
   let html = text.split(/\n\s*\n/).filter(p => p.trim()).map(p => blocks.has(p.trim()) ? p.trim() : `<p>${escapeHtml(p.trim()).replace(/\n/g, ' ')}</p>`).join('');
   html = html.replace(/IMPORTTOKEN(\d+)END/g, (_, i) => tokens[Number(i)]);

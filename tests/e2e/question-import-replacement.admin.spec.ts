@@ -56,31 +56,32 @@ test('development replacement preserves identities, grading and attempts; reject
     for (let i=0;i<ids.length;i++) {
       await page.getByRole('button',{name:new RegExp(fixtures[i].source_id)}).click();
       await page.getByRole('button',{name:'Prefer imported',exact:true}).click();
-      const apply = page.getByRole('button',{name:/Apply imported presentation to/});
+      const apply = page.getByRole('button',{name:'Import this question',exact:true});
       await expect(apply).toBeDisabled();
       const unchanged = await db.from('questions_v2').select('*').eq('id',ids[i]).single();
       expect(unchanged.data).toEqual(before.data!.find(r=>r.id===ids[i]));
-      await page.getByRole('checkbox',{name:/I compared the text/}).check();
+      await page.getByRole('checkbox',{name:/Reviewed and ready/}).check();
       await expect(apply).toBeEnabled();
       if (i===2) {
         // Concurrent edit after comparison must be retained when stale apply fails.
         const changed = await db.from('questions_v2').update({difficulty:1}).eq('id',ids[i]);
         expect(changed.error).toBeNull();
         await apply.click();
-        await expect(page.getByRole('region',{name:'Apply replacement'})).toContainText('This question changed or was already applied.');
+        await expect(page.getByRole('region',{name:'Question review'})).toContainText('This question changed or was already applied.');
         const stale = await db.from('questions_v2').select('*').eq('id',ids[i]).single();
         expect(stale.data!.stem_html).toBe(fixtures[i].stem_html);
         expect(stale.data!.difficulty).toBe(1);
         // Recompare and explicitly review the new state before applying the table.
+        await page.locator('summary').filter({hasText:'1. Choose your files'}).click();
         await page.getByRole('button',{name:'Compare with question bank',exact:true}).click();
         await expect(page.getByRole('button',{name:'Compare with question bank',exact:true})).toBeEnabled();
         await expect(page.getByText(/10 questions · 3 with possible duplicates/)).toBeVisible();
         await page.getByRole('button',{name:new RegExp(fixtures[i].source_id)}).click();
         await page.getByRole('button',{name:'Prefer imported',exact:true}).click();
-        await page.getByRole('checkbox',{name:/I compared the text/}).check();
+        await page.getByRole('checkbox',{name:/Reviewed and ready/}).check();
       }
       await apply.click();
-      await expect(page.getByRole('region',{name:'Apply replacement'})).toContainText('Compare again to review the current bank content.');
+      await expect(page.getByRole('region',{name:'Question review'})).toContainText('Presentation replaced. Answers and student history preserved.');
       await expect(apply).toHaveCount(0);
     }
     const after = await db.from('questions_v2').select('*').in('id',ids);
