@@ -59,6 +59,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/lessons/import/actions.js` | `createLessonFromSpec` | requireRole[admin] |
 | `app/(admin)/admin/lessons/review/[revisionId]/actions.ts` | `requestRevisionChanges`, `rejectRevision`, `publishRevision` | requireRole[admin] + assertWriter |
 | `app/(admin)/admin/questions/import/actions.ts` | `compareImport`, `loadMathPilot`, `applyImportedPresentation` | requireRole[admin] + assertWriter |
+| `app/(admin)/admin/questions/import/set-actions.ts` | `listImportSets`, `createImportSet`, `changeSetAccess`, `insertImportedQuestion`, `publishImportDraft` | requireRole[admin] + assertWriter |
 | `app/(admin)/admin/questions/new/actions.js` | `listQuestionSources`, `createQuestion` | requireRole[admin] |
 | `app/(admin)/admin/reading-coach/actions.ts` | `importReadingCoachSpec`, `publishReadingCoachVersionAction`, `archiveReadingCoachItemAction` | requireRole[admin] |
 | `app/(admin)/admin/users/[userId]/actions.js` | `updateProfileFields`, `changeRole`, `toggleActive`, `banUser`, `unbanUser`, `deleteUser`, `assignTeacherStudent`, `unassignTeacherStudent`, `assignManagerTeacher`, `unassignManagerTeacher` | requireRole[admin] + requireServiceRole |
@@ -115,4 +116,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_20 route handlers, 64 server-action modules enumerated._
+_20 route handlers, 65 server-action modules enumerated._

@@ -10,6 +10,8 @@ import { renderHtml, renderRow } from '@/lib/content/render-math.mjs';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 
 import { signReview, readReview, mergeOptions } from '@/lib/sat-import/review';
+import { scorableAnswer } from '@/lib/sat-import/answers';
+import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 
 // A stable server-only key makes reviews valid across workers; never sent to clients.
@@ -36,6 +38,12 @@ function viewModel(row: BankRow) {
   };
 }
 
+async function mapInGroups<T,R>(values:T[],fn:(value:T)=>Promise<R>):Promise<R[]> {
+  const results:R[]=[];
+  for(let i=0;i<values.length;i+=5) results.push(...await Promise.all(values.slice(i,i+5).map(fn)));
+  return results;
+}
+
 type ReferenceSnapshot = { capturedAt: string; rows: Row<'questions_v2'>[] };
 async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, name: string, rawMetadata: string, reference?: ReferenceSnapshot, actor?: string) {
   const { mmd, images } = readMathpix(bytes, name);
@@ -46,7 +54,7 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
   const results = reference ? [{ data: reference.rows, error: null }] : await Promise.all(['source_id','source_external_id'].map(column => supabase.from('questions_v2').select(columns).in(column, identifiers)));
   if (results.some(r => r.error)) throw new Error('Could not check the question bank. Please retry.');
   const rows = [...new Map(results.flatMap(r => r.data ?? []).map(r => [r.id, r])).values()];
-  const items = parsed.questions.map(q => {
+  const items = await mapInGroups(parsed.questions, async q => {
     const candidate = {
       id: q.id, question_type: q.questionType,
       stem_html: mmdToHtml(q.stem, images), rationale_html: mmdToHtml(q.rationale, images),
@@ -58,10 +66,28 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
     for (const html of [candidate.stem_html,candidate.rationale_html,...candidate.options.map(o => o.content_html)]) {
       if (/data-mjx-error|merror/.test(renderHtml(html))) throw new Error(`Math rendering failed in ${q.id}. Review the export.`);
     }
+    let candidateRows = rows;
+    if (!reference) {
+      const found = await supabase.rpc('find_question_import_matches', { p_stem: candidate.stem_html, p_identifiers: [q.id, q.metadata.external_id, q.metadata.ibn].filter((v): v is string => !!v) });
+      if (found.error) throw new Error('Duplicate checking is unavailable. Install the supplemental-import migration before importing.');
+      if (found.data.length) {
+        const loaded = await supabase.from('questions_v2').select(columns).in('id', found.data.map(r => r.id));
+        if (loaded.error) throw new Error('Could not load possible duplicates.');
+        candidateRows = loaded.data;
+      } else candidateRows = [];
+    } else candidateRows = matchIdentifiers(q, rows);
+    const insertToken = !reference && actor && reviewSecret() && !candidateRows.length ? signReview({
+      purpose: 'insert', actor, target: randomUUID(), updatedAt: '', expires: Date.now() + 2 * 60 * 60 * 1000,
+      presentation: { stem_html: candidate.stem_html, rationale_html: candidate.rationale_html, options: candidate.options },
+      details: { question_type: candidate.question_type, correct_answer: candidate.correct_answer, domain_name: candidate.domain_name,
+        skill_name: candidate.skill_name, difficulty: candidate.difficulty, score_band: candidate.score_band,
+        source_id: q.id, source_external_id: q.metadata.external_id || q.metadata.ibn || q.id, hasAnswer: scorableAnswer(q.questionType,q.answer) },
+    }, reviewSecret()) : null;
     return {
+      insertToken, hasAnswer: scorableAnswer(q.questionType,q.answer),
       id: q.id, warnings: q.warnings, answer: q.answer || 'Not supplied', difficulty: candidate.difficulty, scoreBand: candidate.score_band,
       imported: viewModel(candidate),
-      matches: matchIdentifiers(q, rows).map(row => {
+      matches: candidateRows.map(row => {
         let applyToken: string | null = null;
         let applyBlocked: string | null = null;
         try {
@@ -81,7 +107,7 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
       }),
     };
   });
-  return { items, warnings: parsed.warnings, name, isSnapshot: !!reference, referenceLabel: reference ? `Production pilot snapshot captured ${reference.capturedAt.slice(0,10)}. Review only; this is not a live bank query.` : 'Compared with the bank configured for this app. Identifier matching only.' };
+  return { items, warnings: parsed.warnings, name, isSnapshot: !!reference, referenceLabel: reference ? `Production pilot snapshot captured ${reference.capturedAt.slice(0,10)}. Review only; this is not a live bank query.` : 'Compared with both question pools using identifiers and normalized prompt text. Review possible duplicates; matching is not semantic proof.' };
 }
 
 export async function compareImport(formData: FormData) {
@@ -124,6 +150,7 @@ export async function applyImportedPresentation(token: string, confirmed: boolea
     if (confirmed !== true) throw new Error('Confirm that the question, choices, figures, and explanation have identical meaning.');
     if (!reviewSecret()) throw new Error('Server review signing is not configured.');
     const review = readReview(token, reviewSecret(), ctx.user.id);
+    if (review.purpose === 'insert') throw new Error('This review is for a new question, not a replacement.');
     // Only server-signed presentation fields can reach this update. The timestamp
     // condition is checked in the same database statement as the mutation.
     const rendered = renderRow(review.presentation);

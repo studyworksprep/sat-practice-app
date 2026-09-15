@@ -1,5 +1,7 @@
+import { createHash } from 'node:crypto';
 export interface ImportMetadata {
   questionId: string;
+  correct_answer?: string | string[] | null;
   external_id?: string | null;
   ibn?: string | null;
   primary_class_cd_desc?: string | null;
@@ -29,6 +31,7 @@ export function parseMetadata(raw = ''): ImportMetadata[] {
     if (!row || typeof row.questionId !== 'string' || !/^[a-zA-Z0-9_-]{1,100}$/.test(row.questionId)) throw new Error('Each metadata row needs a valid questionId.');
     if (ids.has(row.questionId)) throw new Error(`Duplicate metadata ID: ${row.questionId}`);
     ids.add(row.questionId);
+    if (row.correct_answer != null && !(typeof row.correct_answer === 'string' || (Array.isArray(row.correct_answer) && row.correct_answer.length <= 20 && row.correct_answer.every((v: unknown) => typeof v === 'string')))) throw new Error('Metadata correct_answer must be a string or an array of strings.');
     for (const field of ['primary_class_cd_desc', 'skill_desc']) if (row[field] != null && (typeof row[field] !== 'string' || row[field].length > 300)) throw new Error(`Invalid ${field} for ${row.questionId}.`);
     if (row.difficulty != null && !['E','M','H'].includes(row.difficulty)) throw new Error(`Invalid difficulty for ${row.questionId}; expected E, M, or H.`);
     if (row.score_band_range_cd != null && (!Number.isInteger(row.score_band_range_cd) || row.score_band_range_cd < 1 || row.score_band_range_cd > 7)) throw new Error(`Invalid score band for ${row.questionId}.`);
@@ -39,8 +42,9 @@ export function parseMetadata(raw = ''): ImportMetadata[] {
 
 export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
   if (typeof mmd !== 'string' || mmd.length > MAX_TEXT) throw new Error('Mathpix text must be under 1 MB.');
+  if (!/\\section\*\{Question ID:/.test(mmd)) mmd = numberedExport(mmd);
   const parts = mmd.split(/\\section\*\{Question ID:\s*([a-zA-Z0-9_-]+)\}/);
-  if (parts.length < 3) throw new Error('No Question ID headings found. Use the College Board Mathpix export format.');
+  if (parts.length < 3) throw new Error('No question headings found. Use Question ID headings or numbered headings such as ## Question 1.');
   if ((parts.length - 1) / 2 > MAX_QUESTIONS) throw new Error('Please import at most 100 questions at a time.');
   const ids = new Set();
   const questions = [];
@@ -66,14 +70,16 @@ export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
       if (options.length !== 4 || options.some((o, j) => o.label !== 'ABCD'[j] || !o.mmd)) throw new Error(`Question ${id}: expected four complete choices A–D.`);
     }
     if (!stem) throw new Error(`Question ${id} has an empty prompt.`);
-    const answer = answerMatch?.[1].trim() ?? '';
+    const meta = metadata.find(row => row.questionId === id);
+    const metadataAnswer = Array.isArray(meta?.correct_answer) ? meta.correct_answer.join(', ') : meta?.correct_answer;
+    const answer = answerMatch?.[1].trim() || metadataAnswer?.trim() || '';
     const rationale = rationaleMatch ? content.slice(rationaleMatch.index + rationaleMatch[0].length).trim() : '';
     if (options.length && answer && !/^[A-D]$/.test(answer)) throw new Error(`Question ${id}: answer must identify one choice A–D.`);
     const warnings = [];
+    if (answerMatch && metadataAnswer && answer !== metadataAnswer.trim()) warnings.push('The export answer and metadata answer differ. Verify the answer before publishing.');
     if (!answer) warnings.push('No correct answer supplied.');
     if (!rationale) warnings.push('No explanation supplied.');
     if (/\$\s+\$|\$\s*[+-]\s*\d|\d\s+\$=/.test(rationale)) warnings.push('Some explanation equations are split across text and math. Check spacing.');
-    const meta = metadata.find(row => row.questionId === id);
     if (!meta) warnings.push('No matching metadata supplied.');
     const values = options.length ? [] : answer.split(',').map(v => v.trim()).filter(Boolean);
     // Numeric forms in the explanation can differ from the explicit key.
@@ -83,6 +89,27 @@ export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
   }
   const unused = metadata.filter(m => !ids.has(m.questionId));
   return { questions, warnings: unused.length ? [`${unused.length} metadata record(s) have no matching question: ${unused.map(m => m.questionId).join(', ')}`] : [] };
+}
+
+// Numbered exports get content-derived IDs: page numbering is not a source identity.
+export function numberedExport(text: string): string {
+  const sections=text.split(/(?:^|\n)(?:#{1,3}\s+Question\s+\d+|\\section\*\{Question\s+\d+\})[ \t]*\n/i);
+  if(sections.length<2) return text;
+  return sections.slice(1).map(body=>{
+    const id='local-'+createHash('sha256').update(body.trim().replace(/\s+/g,' ')).digest('hex').slice(0,24);
+    let content=body.trim().replace(/^Question\s*\n/i,'')
+      .replace(/^(?:#{1,3}\s*)?(?:Correct Answer|Answer):[ \t]*/gmi,'Correct Answer: ')
+      .replace(/^(?:#{1,3}\s*)?(?:Explanation|Rationale)[ \t]*:?[ \t]*$/gmi,'Rationale');
+    const end=content.search(/\n(?:Correct Answer:|Rationale\n)/);
+    let prompt=end<0?content:content.slice(0,end);
+    const suffix=end<0?'':content.slice(end);
+    if(/\nA[.)]\s/.test(prompt)) {
+      prompt=prompt.replace(/\nA[.)]\s/, '\nAnswer\n\\begin{itemize}\n\\item[A.] ')
+        .replace(/\n([B-D])[.)]\s/g, '\n\\item[$1.] ')+ '\n\\end{itemize}';
+    }
+    content=prompt+suffix;
+    return `\\section*{Question ID: ${id}}\nQuestion\n${content}\n`;
+  }).join('\n');
 }
 
 export const escapeHtml = (s: string) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c] ?? c));
