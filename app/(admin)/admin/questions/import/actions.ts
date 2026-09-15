@@ -49,7 +49,7 @@ type ReferenceSnapshot = { capturedAt: string; rows: Row<'questions_v2'>[] };
 async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, name: string, rawMetadata: string, reference?: ReferenceSnapshot, actor?: string) {
   const { mmd, images } = readMathpix(bytes, name);
   const parsed = parseQuestions(mmd, parseMetadata(rawMetadata));
-  const identifiers = [...new Set(parsed.questions.flatMap(q => [q.id, q.metadata.external_id, q.metadata.ibn]).filter(Boolean))];
+  const identifiers = [...new Set(parsed.questions.flatMap(q => [q.id, q.originalId, q.metadata.external_id, q.metadata.ibn]).filter(Boolean))];
   const columns = 'id, display_code, source, source_id, source_external_id, question_type, stem_html, stimulus_html, rationale_html, options, stem_rendered, stimulus_rendered, rationale_rendered, options_rendered, correct_answer, domain_name, skill_name, difficulty, score_band, updated_at, is_published, is_broken, deleted_at';
   // Two parameterized IN queries avoid interpolating imported IDs into filters.
   const results = reference ? [{ data: reference.rows, error: null }] : await Promise.all(['source_id','source_external_id'].map(column => supabase.from('questions_v2').select(columns).in(column, identifiers)));
@@ -69,7 +69,7 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
     }
     let candidateRows = rows;
     if (!reference) {
-      const found = await supabase.rpc('find_question_import_matches', { p_stem: candidate.stem_html, p_identifiers: [q.id, q.metadata.external_id, q.metadata.ibn].filter((v): v is string => !!v) });
+      const found = await supabase.rpc('find_question_import_matches', { p_stem: candidate.stem_html, p_identifiers: [q.id, q.originalId, q.metadata.external_id, q.metadata.ibn].filter((v): v is string => !!v) });
       if (found.error) {
         logger.error({ action: 'compareImport', questionId: q.id, code: found.error.code }, 'Question duplicate check failed');
         const message = found.error.code === '57014'
@@ -92,11 +92,11 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
       presentation: { stem_html: candidate.stem_html, rationale_html: candidate.rationale_html, options: candidate.options },
       details: { question_type: candidate.question_type, correct_answer: candidate.correct_answer, domain_name: candidate.domain_name,
         skill_name: candidate.skill_name, difficulty: candidate.difficulty, score_band: candidate.score_band,
-        source_id: q.id, source_external_id: q.metadata.external_id || q.metadata.ibn || q.id, hasAnswer: scorableAnswer(q.questionType,q.answer) },
+        source_id: q.id, original_source_id: q.originalId, source_external_id: q.metadata.external_id || q.metadata.ibn || q.id, hasAnswer: scorableAnswer(q.questionType,q.answer) },
     }, reviewSecret()) : null;
     return {
       insertToken, hasAnswer: scorableAnswer(q.questionType,q.answer),
-      id: q.id, warnings: q.warnings, answer: q.answer || 'Not supplied', difficulty: candidate.difficulty, scoreBand: candidate.score_band,
+      id: q.id, originalId: q.originalId, warnings: q.warnings, answer: q.answer || 'Not supplied', difficulty: candidate.difficulty, scoreBand: candidate.score_band,
       imported: viewModel(candidate),
       matches: candidateRows.map(row => {
         let applyToken: string | null = null;

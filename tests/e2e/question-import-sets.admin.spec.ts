@@ -5,7 +5,7 @@ import {randomUUID} from 'node:crypto';
 
 test('supplemental import, drafts, duplicates and per-student access',async({page,baseURL})=>{
   test.skip(process.env.E2E_IMPORT_SETS!=='1','Opt in to temporary development fixtures.');
-  test.setTimeout(180_000);loadEnvFile('.env.local');
+  test.setTimeout(180_000);page.setDefaultTimeout(15_000);loadEnvFile('.env.local');
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL!;
   expect(new URL(url).hostname).toBe('ikzhizgsawzjpuuznfid.supabase.co');
   expect(['localhost','127.0.0.1']).toContain(new URL(baseURL!).hostname);
@@ -15,6 +15,7 @@ test('supplemental import, drafts, duplicates and per-student access',async({pag
   const label='Import access test '+randomUUID();let batchId='';const regularSource='regular-'+randomUUID();
   const text=`## Question 1\nTest ${label}: what is $2+2$?\nA. 3\nB. 4\nC. 5\nD. 6\nCorrect Answer: B\nRationale\nAdding gives four.\n\n## Question 2\nTest ${label}: what is $3+3$?`;
   try {
+    await page.context().clearCookies();
     await page.goto('/login');await page.getByLabel(/email/i).fill('admin@test.studyworks');await page.getByLabel('Password',{exact:true}).fill('devseed123');await page.getByRole('button',{name:/^log in$/i}).click();await page.waitForURL(u=>!u.pathname.includes('/login'));
     await page.goto('/admin/questions/import');
     await page.locator('summary').filter({hasText:'Supplemental sets & student access'}).click();
@@ -27,6 +28,7 @@ test('supplemental import, drafts, duplicates and per-student access',async({pag
     await page.getByRole('button',{name:'Compare with question bank',exact:true}).click();
     await expect(page.getByText(/2 questions · 0 with possible duplicates/)).toBeVisible();
     await page.getByRole('button',{name:'Prefer imported',exact:true}).click();
+    if(await page.getByRole('combobox',{name:'SAT section',exact:true}).isEnabled()) await page.getByRole('combobox',{name:'SAT section',exact:true}).selectOption('M');
     await page.getByRole('combobox',{name:'Availability',exact:true}).selectOption('published');
     await page.getByRole('checkbox',{name:/Reviewed and ready/}).check();
     await page.getByRole('combobox',{name:'Destination',exact:true}).selectOption('regular');
@@ -39,6 +41,7 @@ test('supplemental import, drafts, duplicates and per-student access',async({pag
     await expect(page.getByRole('region',{name:'Question review'})).toContainText('Imported and published.');
     await page.getByRole('navigation',{name:'Imported questions'}).getByRole('button').nth(1).click();
     await page.getByRole('button',{name:'Prefer imported',exact:true}).click();
+    if(await page.getByRole('combobox',{name:'SAT section',exact:true}).isEnabled()) await page.getByRole('combobox',{name:'SAT section',exact:true}).selectOption('M');
     await expect(page.getByRole('combobox',{name:'Availability',exact:true})).toHaveValue('draft');
     await page.getByRole('checkbox',{name:/Reviewed and ready/}).check();
     await page.getByRole('button',{name:'Import this question',exact:true}).click();
@@ -96,6 +99,7 @@ test('supplemental import, drafts, duplicates and per-student access',async({pag
     await expect(page.getByRole('button',{name:'Compare with question bank',exact:true})).toBeEnabled();
     await expect(page.getByText(/1 questions · 0 with possible duplicates/)).toBeVisible();
     await page.getByRole('button',{name:'Prefer imported',exact:true}).click();
+    if(await page.getByRole('combobox',{name:'SAT section',exact:true}).isEnabled()) await page.getByRole('combobox',{name:'SAT section',exact:true}).selectOption('M');
     await page.getByRole('combobox',{name:'Destination',exact:true}).selectOption('regular');
     await page.getByRole('combobox',{name:'Availability',exact:true}).selectOption('published');
     await page.getByRole('checkbox',{name:/Reviewed and ready/}).check();

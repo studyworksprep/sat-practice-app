@@ -10,6 +10,7 @@ test('reviewed mixed bulk import preserves choices, reports failures and exclude
   expect(new URL(url).hostname).toBe('ikzhizgsawzjpuuznfid.supabase.co');expect(['localhost','127.0.0.1']).toContain(new URL(baseURL!).hostname);
   const db=createClient(url,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,{auth:{persistSession:false,autoRefreshToken:false}});
   expect((await db.auth.signInWithPassword({email:'admin@test.studyworks',password:'devseed123'})).error).toBeNull();
+  await page.context().clearCookies();
   const run=randomUUID(), label=`Bulk review test ${run}`, ids=Array.from({length:5},(_,i)=>`bulk-${run}-${i}`);
   let batchId='';const existingIds=[randomUUID(),randomUUID(),randomUUID()];
   try {
@@ -30,6 +31,7 @@ test('reviewed mixed bulk import preserves choices, reports failures and exclude
     await expect(page.getByRole('button',{name:'Import all selected (1)',exact:true})).toBeDisabled();
     for(let i=0;i<5;i++) {
       await pick(i);await page.getByRole('button',{name:i===4?'Keep existing':'Prefer imported',exact:true}).click();
+      if(i<2)await page.getByRole('combobox',{name:'SAT section',exact:true}).selectOption(i===0?'M':'RW');
       if(i===0)await page.getByRole('combobox',{name:'Availability',exact:true}).selectOption('published');
       if(i===1)await expect(page.getByRole('combobox',{name:'Availability',exact:true})).toHaveValue('draft');
       await approve();
@@ -50,6 +52,11 @@ test('reviewed mixed bulk import preserves choices, reports failures and exclude
     await expect(page.getByRole('button',{name:'Import all selected (1)',exact:true})).toBeEnabled();
     const saved=await db.from('questions_v2').select('*').eq('batch_id',batchId);expect(saved.data).toHaveLength(5);
     expect(saved.data!.find(q=>q.source_id===ids[0])!.is_published).toBe(true);expect(saved.data!.find(q=>q.source_id===ids[1])!.is_published).toBe(false);
+    for (let i=0;i<2;i++) {
+      const q=saved.data!.find(q=>q.source_id===ids[i])!;
+      expect(q.display_code).toMatch(i===0?/^M-\d{5,}$/:/^RW-\d{5,}$/);
+      expect(q.domain_code).toBeNull();expect(q.domain_name).toBeNull();expect(q.difficulty).toBeNull();
+    }
     expect(saved.data!.find(q=>q.id===existingIds[0])!.stem_html).toBe(fixtures[0].stem_html);
     expect(saved.data!.find(q=>q.id===existingIds[1])!.stem_html).not.toBe(fixtures[1].stem_html);
     expect(saved.data!.find(q=>q.id===existingIds[2])).toEqual(before.data!.find(q=>q.id===existingIds[2]));

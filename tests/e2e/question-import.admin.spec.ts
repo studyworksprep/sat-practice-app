@@ -48,6 +48,9 @@ test('full Algebra batch accepts mixed-case labels, currency and captioned headi
   await page.locator('input[name="metadata"]').setInputFiles(path.resolve('content/import/pilot/Algebra 1-100.txt'));
   await page.getByRole('button', {name:'Compare with question bank'}).click();
   await expect(page.getByText(/100 questions ·/)).toBeVisible({timeout:90_000});
+  await expect(page.getByText(/metadata record\(s\) have no matching question/)).toHaveCount(0);
+  await page.getByLabel('Find a question', {exact:true}).fill('0adbe034');
+  await expect(page.getByRole('region',{name:'Question comparison'})).toContainText('OCR question ID Oadbe034 corrected to canonical metadata ID 0adbe034.');
   await page.getByLabel('Find a question', {exact:true}).fill('84664a7c');
   await expect(page.getByRole('heading', {name:'Imported preview',exact:true})).toBeVisible();
   await expect(page.getByRole('region', {name:'Question comparison'})).toContainText('roller-coaster');

@@ -1,3 +1,4 @@
+import {sectionFromDomain} from './section.ts';
 export type ImportChoice = {
   preference: 'Keep existing' | 'Prefer imported' | 'Needs editing' | '';
   matchId: string | null;
@@ -7,6 +8,7 @@ export type ImportChoice = {
   destination: 'supplemental' | 'regular';
   batchId: string;
   publish: boolean;
+  section: 'M' | 'RW' | '';
 };
 export type ImportOutcome = { status: 'running' | 'success' | 'error' | 'kept'; message: string; recordId?: string };
 export type QueueItem = {
@@ -15,7 +17,7 @@ export type QueueItem = {
   matches: Array<{ id: string; applyToken: string | null; applyBlocked: string | null; requiresStimulusConfirmation?: boolean }>;
 };
 export function initialChoice(batchId = ''): ImportChoice {
-  return { preference: '', matchId: null, confirmed: false, stimulusIncluded: false, selected: false, destination: 'supplemental', batchId, publish: false };
+  return { preference: '', matchId: null, confirmed: false, stimulusIncluded: false, selected: false, destination: 'supplemental', batchId, publish: false, section: '' };
 }
 export function completed(outcome?: ImportOutcome) { return outcome?.status === 'success' || outcome?.status === 'kept'; }
 export function readiness(item: QueueItem, choice: ImportChoice, outcome?: ImportOutcome): string | null {
@@ -32,6 +34,7 @@ export function readiness(item: QueueItem, choice: ImportChoice, outcome?: Impor
     if (!item.insertToken) return 'This question cannot be inserted from this comparison.';
     if (choice.destination === 'supplemental' && !choice.batchId) return 'Choose a supplemental set.';
     if (choice.destination === 'regular' && (!item.difficulty || !item.imported.question.taxonomy.domain_name || !item.imported.question.taxonomy.skill_name)) return 'Topic and difficulty metadata are required for the regular bank. Choose a supplemental set instead.';
+    if (!sectionFromDomain(item.imported.question.taxonomy.domain_name) && !choice.section) return 'Choose Math or Reading & Writing for the new question ID.';
     if (choice.publish && !item.hasAnswer) return 'An answer is required for publication. Save this question as a draft.';
   }
   if (!choice.confirmed) return 'Confirm that you reviewed this question.';

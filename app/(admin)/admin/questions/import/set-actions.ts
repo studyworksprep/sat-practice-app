@@ -2,6 +2,7 @@
 
 import { assertWriter, requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk } from '@/lib/api/response';
+import { sectionFromDomain } from '@/lib/sat-import/section';
 import { scorableAnswer } from '@/lib/sat-import/answers';
 import { readReview } from '@/lib/sat-import/review';
 import { renderRow } from '@/lib/content/render-math.mjs';
@@ -44,7 +45,7 @@ export async function changeSetAccess(batchId:string,userId:string,allow:boolean
     return actionOk({allowed:allow});
   } catch(error) { return actionFail(error instanceof Error ? error : 'Unable to change access.'); }
 }
-export async function insertImportedQuestion(token:string,batchId:string | null,publish:boolean,confirmed:boolean) {
+export async function insertImportedQuestion(token:string,batchId:string | null,publish:boolean,confirmed:boolean,section:string='') {
   try {
     const ctx=await requireRole(['admin']); assertWriter(ctx);
     if(confirmed!==true || typeof publish!=='boolean') throw new Error('Confirm the question and duplicate review first.');
@@ -53,19 +54,24 @@ export async function insertImportedQuestion(token:string,batchId:string | null,
     const review=readReview(token,secret,ctx.user.id);
     if(review.purpose!=='insert' || !review.details) throw new Error('Compare this question again to prepare an insertion.');
     const details=review.details;
+    const knownSection=sectionFromDomain(details.domain_name);
+    if(section && section!=='M' && section!=='RW') throw new Error('Choose Math or Reading & Writing.');
+    if(knownSection && section && section!==knownSection) throw new Error('The selected section conflicts with the question metadata.');
+    const selectedSection=knownSection || section;
+    if(!selectedSection) throw new Error('Choose Math or Reading & Writing before importing.');
     if(publish && !details.hasAnswer) throw new Error('Questions without verified answers must be saved as drafts.');
     if(!batchId && (!details.domain_name || !details.skill_name || !details.difficulty)) throw new Error('Choose a supplemental set for questions without topic and difficulty metadata.');
     const rendered=renderRow(review.presentation);
     const {data,error}=await ctx.supabase.rpc('insert_reviewed_question',{
-      p_question:{id:review.target,...details,...review.presentation,stem_rendered:rendered.stem_rendered,rationale_rendered:rendered.rationale_rendered,options_rendered:rendered.options_rendered},
+      p_question:{id:review.target,...details,section:selectedSection,...review.presentation,stem_rendered:rendered.stem_rendered,rationale_rendered:rendered.rationale_rendered,options_rendered:rendered.options_rendered},
       // Postgres accepts NULL for the standard pool; generated RPC types omit nullability.
       p_batch:batchId!,p_publish:publish,
     });
     if(error) throw new Error(error.message.includes('duplicate') ? 'A possible duplicate now exists. Compare again before importing.' : 'The import could not be confirmed. Retry the same review; it will not create a second copy.');
-    const stored=await ctx.supabase.from('questions_v2').select('id,is_published,batch_id').eq('id',data).single();
+    const stored=await ctx.supabase.from('questions_v2').select('id,is_published,batch_id,display_code').eq('id',data).single();
     if(stored.error) throw new Error('Imported, but the saved record could not be read. Compare again before continuing.');
     if(stored.data.batch_id!==batchId) throw new Error('This review was already imported into another destination. Compare again to open the existing record.');
-    return actionOk({id:data,published:stored.data.is_published});
+    return actionOk({id:data,published:stored.data.is_published,displayCode:stored.data.display_code});
   } catch(error) { return actionFail(error instanceof Error ? error : 'Unable to import question.'); }
 }
 export async function publishImportDraft(id:string,confirmed:boolean) {

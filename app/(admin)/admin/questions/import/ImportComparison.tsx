@@ -6,6 +6,7 @@ import {compareImport, loadMathPilot, applyImportedPresentation, type Comparison
 import {ImportSets} from './ImportSets';
 import {insertImportedQuestion, type ImportSetsResult} from './set-actions';
 import {completed, initialChoice, queueProblem, readiness, type ImportChoice, type ImportOutcome} from '@/lib/sat-import/queue';
+import {sectionFromDomain} from '@/lib/sat-import/section';
 import s from './import.module.css';
 
 type Item=ComparisonBatch['items'][number];
@@ -91,9 +92,9 @@ export function ImportComparison({showLocalPilot=false,initialSets}:{showLocalPi
             if(!response.ok)throw new Error(response.error);
             result={status:'success',message:'Presentation replaced. Answers and student history preserved.',recordId:response.data.id};success++;
           }else {
-            const response=await insertImportedQuestion(q.insertToken!,c.destination==='regular'?null:c.batchId,c.publish,true);
+            const response=await insertImportedQuestion(q.insertToken!,c.destination==='regular'?null:c.batchId,c.publish,true,c.section);
             if(!response.ok)throw new Error(response.error);
-            result={status:'success',message:response.data.published?'Imported and published.':'Saved as an unpublished draft.',recordId:response.data.id};success++;
+            result={status:'success',message:(response.data.published?'Imported and published.':'Saved as an unpublished draft.') + (response.data.displayCode?` Bank ID: ${response.data.displayCode}.`:''),recordId:response.data.id};success++;
           }
         }catch(e){failed++;result={status:'error',message:e instanceof Error?e.message:'The result could not be confirmed. Compare again before retrying.'};}
         setOutcomes(current=>({...current,[q.id]:result}));
@@ -104,7 +105,7 @@ export function ImportComparison({showLocalPilot=false,initialSets}:{showLocalPi
   }
   function downloadReview() {
     if(!batch)return;
-    const payload={format:'sat-import-review-v2',source:batch.name,reference:batch.referenceLabel,exportedAt:new Date().toISOString(),items:items.map(q=>({questionId:q.id,choice:choiceFor(q),outcome:outcomes[q.id]??null,existingUpdatedAt:matchFor(q)?.updatedAt??null,warnings:q.warnings}))};
+    const payload={format:'sat-import-review-v2',source:batch.name,reference:batch.referenceLabel,exportedAt:new Date().toISOString(),items:items.map(q=>({questionId:q.id,originalOcrId:q.originalId,choice:choiceFor(q),outcome:outcomes[q.id]??null,existingUpdatedAt:matchFor(q)?.updatedAt??null,warnings:q.warnings}))};
     const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='sat-import-review.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   return <>
@@ -147,6 +148,7 @@ export function ImportComparison({showLocalPilot=false,initialSets}:{showLocalPi
             <div className={s.preferenceGroup}>{(['Keep existing','Prefer imported','Needs editing'] as const).map(value=><button key={value} aria-pressed={choice.preference===value} disabled={locked||completed(outcome)||(!match&&value==='Keep existing')||(item.matches.length>0&&!match&&value==='Prefer imported')} onClick={()=>patch(item,{preference:value})}>{value}</button>)}</div>
             {match?.requiresStimulusConfirmation&&choice.preference==='Prefer imported'&&<label className={s.reviewCheck}><input type="checkbox" disabled={locked||completed(outcome)} checked={choice.stimulusIncluded} onChange={e=>patch(item,{stimulusIncluded:e.target.checked})}/><span><strong>Imported prompt includes the stimulus</strong><small>I verified that the imported preview contains all equations, figures, and text from the existing stimulus. Importing will combine them in the prompt and clear the old separate stimulus, so it will not appear twice. The answer and metadata stay unchanged.</small></span></label>}
             {!item.matches.length&&choice.preference==='Prefer imported'&&<div className={s.destinationGrid}>
+              <label className={s.field}>SAT section<select aria-label="SAT section" aria-describedby="import-section-help" disabled={locked||completed(outcome)||!!sectionFromDomain(item.imported.question.taxonomy.domain_name)} value={sectionFromDomain(item.imported.question.taxonomy.domain_name)||choice.section} onChange={e=>patch(item,{section:e.target.value as ImportChoice['section']})}><option value="">Choose a section</option><option value="M">Math · M- IDs</option><option value="RW">Reading & Writing · RW- IDs</option></select><span id="import-section-help" className={s.small}>Determines the new bank ID. Topic and difficulty remain unknown unless supplied in metadata.</span></label>
               <label className={s.field}>Destination<select disabled={locked||completed(outcome)} value={choice.destination} onChange={e=>patch(item,{destination:e.target.value as ImportChoice['destination']})}><option value="supplemental">Supplemental practice set</option><option value="regular">Regular question bank</option></select></label>
               {choice.destination==='supplemental'&&<label className={s.field}>Supplemental set<select disabled={locked||completed(outcome)} value={choice.batchId} onChange={e=>patch(item,{batchId:e.target.value})}><option value="">Choose a set</option>{sets.ok&&sets.data.sets.map(b=><option key={b.id} value={b.id}>{b.label}</option>)}</select></label>}
               <label className={s.field}>Availability<select disabled={locked||completed(outcome)} value={choice.publish?'published':'draft'} onChange={e=>patch(item,{publish:e.target.value==='published'})}><option value="draft">Save as unpublished draft</option><option value="published" disabled={!item.hasAnswer}>Publish for practice after answer review</option></select></label>
