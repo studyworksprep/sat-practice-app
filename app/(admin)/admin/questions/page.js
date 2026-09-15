@@ -101,7 +101,10 @@ export default async function AdminQuestionsPage({ searchParams }) {
               {total.toLocaleString()} match{total === 1 ? '' : 'es'} · page {page} of {lastPage}
             </p>
           </div>
-          <Link href="/admin/questions/new" style={S.newBtn}>+ New question</Link>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <Link href="/admin/questions/import" style={S.newBtn}>Import questions</Link>
+            <Link href="/admin/questions/new" style={S.newBtn}>+ New question</Link>
+          </div>
         </div>
       </header>
 
