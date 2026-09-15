@@ -39,3 +39,18 @@ test('snapshot preferences cannot apply to the live bank', async ({ page }) => {
   await expect(page.getByRole('region', { name:'Question review' })).toContainText('The pilot snapshot is review-only.');
   await expect(page.getByRole('button', { name:'Import this question',exact:true })).toBeDisabled();
 });
+
+test('full Algebra batch accepts mixed-case labels, currency and captioned headings', async ({page}) => {
+  test.skip(!process.env.E2E_IMPORT_ALGEBRA100, 'Requires the local 100-question Algebra export.');
+  test.setTimeout(120_000);
+  await page.goto('/admin/questions/import');
+  await page.locator('input[name="export"]').setInputFiles(path.resolve('content/import/pilot/Algebra 1-100.mmd.zip'));
+  await page.locator('input[name="metadata"]').setInputFiles(path.resolve('content/import/pilot/Algebra 1-100.txt'));
+  await page.getByRole('button', {name:'Compare with question bank'}).click();
+  await expect(page.getByText(/100 questions ·/)).toBeVisible({timeout:90_000});
+  await page.getByLabel('Find a question', {exact:true}).fill('84664a7c');
+  await expect(page.getByRole('heading', {name:'Imported preview',exact:true})).toBeVisible();
+  await expect(page.getByRole('region', {name:'Question comparison'})).toContainText('roller-coaster');
+  await page.getByLabel('Find a question', {exact:true}).fill('1a1a95de');
+  await expect(page.getByRole('img', {name:'Imported question figure'})).toBeVisible();
+});
