@@ -1,10 +1,11 @@
 # Student onboarding and study-plan redesign
 
-> **Status: Living document.** Last verified against code and
-> production: 2026-09-14. Design settled with the owner on
-> 2026-09-14; the delivery ledger at the end is the working state.
-> Supersedes the first-run wizard section (§6.4) of
-> `upgrade-plan-2026-07.md` once Phase 1 below ships.
+> **Status: Living document.** Last verified against code: 2026-09-15
+> (Phase 1 implemented on branch `claude/student-signup-flow-issues-3280fb`;
+> migration applied to dev, pending prod). Design settled with the
+> owner on 2026-09-14; the delivery ledger at the end is the working
+> state. Supersedes the first-run wizard section (§6.4) of
+> `upgrade-plan-2026-07.md`.
 
 This document records the agreed redesign of the self-serve student
 experience from first login through a living study plan. It covers
@@ -441,22 +442,44 @@ the existing path; the report row links to the resulting
 
 | Column | Type | Notes |
 |---|---|---|
-| `mode` | text | `foundations` · `targeted` · `self_directed` |
+| `mode` | text | `foundations` · `targeted` · `self_directed` (null = pre-phase plan) |
 | `prep_level` | text | as entered at intake |
 | `intent` | text | as entered at intake |
-| `rationale` | text | the generator's sentence, stored at write time |
-| `phases` | jsonb | `[{ type, start_week, end_week, summary }]` |
-| `config` | jsonb (existing) | adds `study_days: [0..6]`, `evidence: { domain_prior, self_rating }`, `targets: [skill_code]` |
+| `rationale` | text | the generator's paragraph, stored at write time |
+| `phases` | jsonb | `[{ type, start_week, end_week, summary }]`, inclusive 0-based weeks |
+| `config` | jsonb (existing) | adds `study_days: [0..6]`, `full_tests`, `evidence: { self_rating }` (Phase 3 adds `domain_prior`), `targets: [skill_code]` |
+
+Migration: `supabase/migrations/20260915120000_student_intake_and_plan_phases.sql`
+(applied to dev 2026-09-15; apply to prod with the Phase 1 deploy).
 
 `plan_tasks.payload` gains `phase` (type string) and the new
 `why_code` values. No new task columns.
 
-### 7.3 `profiles`
+### 7.3 `student_intake` (new, Phase 1)
 
-`intake_completed_at timestamptz null`. Set when step 6 activates.
-Drives the login-time routing in §3.1. Signup stops writing
-`target_sat_score`, `high_school`, and `graduation_year`; the columns
-remain for existing rows and the account page.
+The intake answers need a home before a plan exists (the wizard is
+resumable step by step), so they live in their own row rather than on
+`profiles`. One row per student, `student_id` primary key, RLS
+`can_view(student_id)` like `study_plans`.
+
+| Column | Type | Notes |
+|---|---|---|
+| `prep_level` / `intent` | text | as entered at step 1 |
+| `targets` | jsonb | `[{ domain_code, skill_code }]` (own_targets) |
+| `weekly_hours` | int | 1–40 |
+| `study_days` | jsonb | `[0..6]`, 0 = Sunday |
+| `self_rating` | jsonb | `{ "H": 3, … }` 1–5 per domain |
+| `full_tests` | bool | self-directed toggle, default true |
+| `focus_note` | text | reserved for the Phase 3 free-text line |
+| `completed_at` | timestamptz | set when the first plan activates |
+| `skipped_at` | timestamptz | set by "I'll do this later" |
+
+Login routing (§3.1) reads this row: a student with no active plan
+and neither `completed_at` nor `skipped_at` is sent from `/dashboard`
+to `/welcome`. Signup stops writing `target_sat_score`, `high_school`,
+and `graduation_year`; the columns remain for existing rows and the
+account page. (The earlier draft of this doc put a single
+`intake_completed_at` on `profiles`; the row above replaces it.)
 
 ### 7.4 Removed
 
@@ -472,7 +495,7 @@ coherent state. Order is by leverage against the funnel.
 
 | Phase | Scope | Acceptance |
 |---|---|---|
-| **1 · Intake and routing** | Steps 1, 4, 5, 6 of §3 (no evidence branch yet: prep = some/a_lot go straight to availability); signup shrink; login routes new students to `/welcome`; help redirect removed; welcome email and getting-started copy updated; diagnostic code removed. Generator gains `mode` and phases with the self-assessment prior only. Preview renders phases and rationale; `rationale` and `phases` stored. | A new student signs up and reaches an activated, phased plan without visiting help or a practice session. `/welcome` never dead-ends. Existing e2e auth and plan tests pass; new e2e covers the three modes. |
+| **1 · Intake and routing** — **implemented 2026-09-15** | Steps 1, 3, 4, 5, 6 of §3 (no evidence branch yet: prep = some/a_lot go straight to availability); signup shrink; login routes new students to `/welcome`; help redirect removed; welcome email and getting-started copy updated; diagnostic code removed. Generator gains `mode` and phases with the self-assessment prior only. Preview renders phases and rationale via the shared `PlanOverview`; `rationale` and `phases` stored. Re-pace and week regeneration compose in the plan's stored mode. | Walked in dev 2026-09-15 as a fresh student: login → `/welcome` → self-directed plan → `/today` with no help or practice-session detour; `/welcome` never dead-ends ("I'll do this later" ends routing). Unit tests cover the three modes, phase layout, priors, study days, and the step ladder (`lib/plan/phase-composer.test.mjs`, `intake.test.mjs`). No new Playwright spec: CI's e2e job runs against its own bank and the seeded student already has a plan, so a wizard walk there would be unreproducible — see `docs/runbook.md` e2e notes. |
 | **2 · Plan hub** | `/plan` per §6, sidebar anchor, dashboard plan card, Today link, adjust + rebuild flows, phase-aware re-pace. `MasteryNote` moves. | A student with an active plan can see every week, change hours or date with a preview of the effect, and rebuild. Tutor editor unaffected. |
 | **3 · Evidence branch** | `student_score_reports`; manual domain entry form; student-scoped Bluebook upload with the illustrated walkthrough; evidence prior (§5.4) and reason codes wired through the generator; hub shows reported tests. | A targeted-mode student who enters two reports gets a plan whose first-week drills carry `prior_weak` reasons for their weakest domains. An upload of an ingested test yields item attempts visible in the hub. |
 | **4 · Content** | Help rewrite with screenshots; Bluebook walkthrough screenshots; retire `/learn/getting-started`. | Help describes the sidebar app; every help article that names a surface shows it. |

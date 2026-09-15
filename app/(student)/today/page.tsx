@@ -77,10 +77,10 @@ export default async function TodayPage({ searchParams }: PageProps) {
         <section className={s.emptyCard}>
           <h2 className={s.emptyTitle}>No study plan yet</h2>
           <p className={s.emptyBody}>
-            Set one up in about ten minutes — pick a target, take a short
-            diagnostic, and get a week-by-week plan built around where you
-            are. (If you work with a tutor, they can set it up with you
-            too.) Until then, the{' '}
+            Set one up in about five minutes — a few questions about where
+            you are and when you can study, and you get a week-by-week plan
+            built around it. (If you work with a tutor, they can set it up
+            with you too.) Until then, the{' '}
             <Link href="/review" className={s.inlineLink}>Review hub</Link>
             {' '}and{' '}
             <Link href="/practice/start" className={s.inlineLink}>self-guided practice</Link>

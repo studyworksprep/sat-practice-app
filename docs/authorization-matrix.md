@@ -74,7 +74,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(student)/review/actions.js` | `createWeakQueueDrill`, `createSkillDrill`, `createActWeakQueueDrill`, `createActCategoryDrill` | requireUser + rateLimit |
 | `app/(student)/review/queue-actions.ts` | `createDueReviewSession` | requireUser + rateLimit |
 | `app/(student)/today/actions.ts` | `startPlanTask`, `markTaskDone` | requireUser + rateLimit |
-| `app/(student)/welcome/actions.ts` | `saveGoalAction`, `startDiagnosticAction`, `generateFirstPlanAction`, `activateFirstPlanAction` | requireUser + rateLimit |
+| `app/(student)/welcome/actions.ts` | `saveSituationAction`, `saveTargetsAction`, `saveAvailabilityAction`, `saveAssessmentAction`, `buildPlanAction`, `activateFirstPlanAction`, `setAsideAction` | requireUser |
 | `app/(tutor)/tutor/assignments/[id]/actions.js` | `addAssignmentMembers`, `submitAssignmentOnBehalf`, `archiveAssignment` | requireUser |
 | `app/(tutor)/tutor/assignments/[id]/reassign-actions.ts` | `reassignAssignment` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/assignments/new/actions.ts` | `createAssignment` | requireUser + rateLimit |

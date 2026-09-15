@@ -108,3 +108,100 @@
 .skipLink { color: var(--fg3); font-size: 0.85rem; }
 .inlineLink { color: var(--color-app-accent); text-decoration: underline; }
 .error { color: var(--color-diff-hard-fg, #b42318); font-size: 0.85rem; margin: 0; }
+
+/* ── Intake steps (design doc §3) ── */
+.fieldset { border: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s2); }
+.fieldset > legend { padding: 0; margin-bottom: var(--s1); }
+
+.choiceGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--s2); }
+.choice {
+  display: flex;
+  gap: var(--s2);
+  align-items: flex-start;
+  padding: var(--s3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  cursor: pointer;
+}
+.choice:has(input:checked) { border-color: var(--color-app-accent); box-shadow: 0 0 0 1px var(--color-app-accent) inset; }
+.choice input { margin-top: 3px; accent-color: var(--color-app-accent); }
+.choiceBody { display: flex; flex-direction: column; gap: 2px; }
+.choiceTitle { font-weight: 600; font-size: 0.9rem; color: var(--fg1); }
+.choiceSub { font-size: 0.8rem; color: var(--fg2); line-height: 1.4; }
+
+.skillColumns { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--s4); }
+.skillColumn { display: flex; flex-direction: column; gap: var(--s3); }
+.skillSection { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-app-accent); }
+.skillGroup { border: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.skillDomain { font-weight: 600; font-size: 0.85rem; color: var(--fg1); padding: 0; margin-bottom: 4px; }
+.skillRow { display: flex; gap: var(--s2); align-items: center; font-size: 0.85rem; color: var(--fg2); cursor: pointer; }
+.skillRow input, .checkRow input, .dayChip input { accent-color: var(--color-app-accent); }
+.checkRow { display: flex; gap: var(--s2); align-items: flex-start; font-size: 0.85rem; color: var(--fg2); cursor: pointer; }
+
+.dayRow { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.dayChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--fg2);
+  cursor: pointer;
+  background: var(--bg-white);
+}
+.dayChip:has(input:checked) { border-color: var(--color-app-accent); color: var(--color-app-accent); }
+
+.ratingScaleHint { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--fg3); }
+.ratingTable { display: flex; flex-direction: column; gap: var(--s2); }
+.ratingRow {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--s2) var(--s3);
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  background: var(--bg-white);
+}
+.ratingLegend { float: left; padding: 0; display: flex; flex-direction: column; }
+.ratingName { font-weight: 600; font-size: 0.9rem; color: var(--fg1); }
+.ratingSection { font-size: 0.75rem; color: var(--fg3); }
+.ratingOptions { display: flex; gap: 4px; margin-left: auto; }
+.ratingOption {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--fg2);
+  cursor: pointer;
+}
+.ratingOption input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.ratingOption:has(input:checked) { background: var(--color-app-accent); border-color: var(--color-app-accent); color: #fff; }
+.ratingOption:has(input:focus-visible) { outline: 2px solid var(--color-app-accent); outline-offset: 1px; }
+
+.linkBtn,
+.skipBtn {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.linkBtn { color: var(--color-app-accent); text-decoration: underline; font-size: inherit; }
+.skipBtn { color: var(--fg3); font-size: 0.85rem; text-decoration: underline; }
+.skipBtn:disabled, .linkBtn:disabled { opacity: 0.55; cursor: default; }
+.setAside { margin-top: var(--s2); text-align: center; }
+.previewActions { margin-top: var(--s4); }

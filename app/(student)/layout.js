@@ -22,6 +22,7 @@ import { requireUserPage } from '@/lib/api/auth';
 import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
 import { maybeSendWelcomeEmail } from '@/lib/email/maybeSendWelcomeEmail';
 import { sidebarEnabledFor } from '@/lib/flags-server';
+import { parseIntakeRow, shouldRouteToWelcome } from '@/lib/plan/intake';
 import { AppNav } from '@/lib/ui/AppNav';
 import { AppShell } from '@/lib/ui/AppSidebar';
 import { SidebarFooterStrip } from '@/lib/ui/SidebarFooterStrip';
@@ -102,6 +103,39 @@ export default async function StudentTreeLayout({ children }) {
     await maybeSendWelcomeEmail({ userId: user.id, email: user.email });
   }
 
+  // The student's live plan + intake state, read once: they drive the
+  // login routing below and the sidebar's Today anchor + footer strip.
+  let activePlan = null;
+  let intake = parseIntakeRow(null);
+  if (!isTutor && profile.role === 'student') {
+    const [{ data: activePlans }, { data: intakeRow }] = await Promise.all([
+      supabase
+        .from('study_plans')
+        .select('id, test_date')
+        .eq('student_id', user.id)
+        .eq('status', 'active')
+        .limit(1),
+      supabase
+        .from('student_intake')
+        .select('prep_level, intent, targets, weekly_hours, study_days, self_rating, full_tests, completed_at, skipped_at')
+        .eq('student_id', user.id)
+        .maybeSingle(),
+    ]);
+    activePlan = (activePlans ?? [])[0] ?? null;
+    intake = parseIntakeRow(intakeRow);
+
+    // A new student's first stop is the intake, not the dashboard
+    // (docs/student-onboarding-and-plan-redesign-2026-09.md §3.1).
+    // Only the dashboard bounces — every other surface stays reachable
+    // — and "I'll do this later" (intake.skipped_at) ends it.
+    if (
+      pathname === '/dashboard' &&
+      shouldRouteToWelcome({ hasActivePlan: Boolean(activePlan), intake })
+    ) {
+      redirect('/welcome');
+    }
+  }
+
   if (await sidebarEnabledFor(navUser.role)) {
     let sections;
     let footer = null;
@@ -113,14 +147,8 @@ export default async function StudentTreeLayout({ children }) {
       // The plan read also feeds the footer strip (§6.1): plan test
       // date wins over the profile date, same precedence as the
       // dashboard; the streak comes from one aggregate RPC.
-      const [{ data: activePlans }, { data: profileDates }, { data: streakRows }] =
+      const [{ data: profileDates }, { data: streakRows }] =
         await Promise.all([
-          supabase
-            .from('study_plans')
-            .select('id, test_date')
-            .eq('student_id', user.id)
-            .eq('status', 'active')
-            .limit(1),
           supabase
             .from('profiles')
             .select('sat_test_date')
@@ -129,7 +157,6 @@ export default async function StudentTreeLayout({ children }) {
             .then((r) => ({ data: r.data ? [r.data] : [] })),
           supabase.rpc('get_practice_streak', { p_user: user.id }),
         ]);
-      const activePlan = (activePlans ?? [])[0] ?? null;
       sections = studentSections({ hasTutor, hasPlan: Boolean(activePlan) });
 
       const testDateIso = activePlan?.test_date ?? profileDates?.[0]?.sat_test_date ?? null;

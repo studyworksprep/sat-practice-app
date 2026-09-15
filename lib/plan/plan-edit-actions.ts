@@ -24,7 +24,7 @@ import {
   regenerateWeekTasks,
   survivesWeekRegeneration,
 } from './generate-plan';
-import { mapSkillRow } from './plan-inputs';
+import { applyEvidencePriors, mapSkillRow, planCompositionFromRow } from './plan-inputs';
 import type { ExistingTask, PlanTaskSource, PlanTaskType, SkillState } from './generate-plan';
 import type { PlanInputRow } from './plan-inputs';
 import type { ActionResult, Fail } from '@/lib/types';
@@ -49,6 +49,7 @@ const MANUAL_TASK_TYPES: ReadonlySet<string> = new Set([
 type SupabaseCtx = Awaited<ReturnType<typeof requireUser>>['supabase'];
 
 interface PlanRow {
+  mode?: string | null;
   id: string;
   student_id: string;
   test_type: 'sat' | 'act';
@@ -90,7 +91,7 @@ function sourceFor(userId: string, plan: PlanRow): PlanTaskSource {
 async function loadPlan(supabase: SupabaseCtx, planId: string): Promise<PlanRow | null> {
   const { data } = await supabase
     .from('study_plans')
-    .select('id, student_id, test_type, status, goal_score, starting_score, test_date, config, created_at')
+    .select('id, student_id, test_type, status, goal_score, starting_score, test_date, config, created_at, mode')
     .eq('id', planId)
     .in('status', ['draft', 'active'])
     .maybeSingle();
@@ -371,7 +372,11 @@ export async function regeneratePlanWeek(
     p_test_type: plan.test_type,
   });
   if (inErr) return actionFail(`Could not load skill data: ${inErr.message}`);
-  const skills: SkillState[] = ((inputRows ?? []) as PlanInputRow[]).map(mapSkillRow);
+  const composition = planCompositionFromRow(plan);
+  const skills: SkillState[] = applyEvidencePriors(
+    ((inputRows ?? []) as PlanInputRow[]).map(mapSkillRow),
+    composition,
+  );
 
   const tasks = await loadPlanTasks(supabase, plan.id);
   const anchor = planAnchor(plan, tasks);
@@ -398,6 +403,10 @@ export async function regeneratePlanWeek(
     testType: plan.test_type,
     skills,
     existingTasks,
+    mode: composition.mode ?? undefined,
+    studyDays: composition.studyDays,
+    targets: composition.targets,
+    fullTests: composition.fullTests,
   });
 
   // Replace the week's still-pending generated tasks. Delete first, then

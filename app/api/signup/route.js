@@ -34,7 +34,6 @@ export async function POST(request) {
   const body = await request.json();
   const {
     email, password, firstName, lastName, userType,
-    highSchool, graduationYear, targetSatScore,
     teacherCode, // used by teachers (registration code) AND students (teacher invite code)
   } = body;
 
@@ -162,11 +161,9 @@ export async function POST(request) {
     metadata.subscription_exempt = true;
   }
 
-  if (userType === 'student') {
-    if (highSchool) metadata.high_school = highSchool.trim();
-    if (graduationYear) metadata.graduation_year = String(graduationYear);
-    if (targetSatScore) metadata.target_sat_score = String(targetSatScore);
-  }
+  // Target score, test date, and everything else that shapes a plan
+  // are collected by the onboarding intake (/welcome), not at signup
+  // (docs/student-onboarding-and-plan-redesign-2026-09.md §2).
 
   // Create auth user — email_confirm: false requires email verification
   const { data: authData, error: authError } = await svc.auth.admin.createUser({
