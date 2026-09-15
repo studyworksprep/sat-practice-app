@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { rationaleAnswer } from './answers.ts';
 export interface ImportMetadata {
   questionId: string;
   correct_answer?: string | string[] | null;
@@ -50,7 +51,17 @@ export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
   const ids = new Set();
   const questions = [];
   for (let i = 1; i < parts.length; i += 2) {
-    const id = parts[i];
+    const originalId = parts[i];
+    let meta = metadata.find(row => row.questionId === originalId);
+    // Only recognize O/0 confusion in eight-character hexadecimal SAT IDs.
+    // The metadata spelling is canonical; ambiguous matches fail closed.
+    if (!meta && /^[0-9a-fO]{8}$/i.test(originalId)) {
+      const key = originalId.replace(/o/gi, '0').toLowerCase();
+      const matches = metadata.filter(row => /^[0-9a-f]{8}$/i.test(row.questionId) && row.questionId.toLowerCase() === key);
+      if (matches.length > 1) throw new Error(`Question ${originalId}: ambiguous metadata ID correction. Correct the export ID before continuing.`);
+      meta = matches[0];
+    }
+    const id = meta?.questionId ?? originalId;
     if (ids.has(id)) throw new Error(`Repeated question ID: ${id}`);
     ids.add(id);
     const body = parts[i + 1];
@@ -71,12 +82,15 @@ export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
       if (options.length !== 4 || options.some((o, j) => o.label !== 'ABCD'[j] || !o.mmd)) throw new Error(`Question ${id}: expected four complete choices A–D.`);
     }
     if (!stem) throw new Error(`Question ${id} has an empty prompt.`);
-    const meta = metadata.find(row => row.questionId === id);
     const metadataAnswer = Array.isArray(meta?.correct_answer) ? meta.correct_answer.join(', ') : meta?.correct_answer;
-    const answer = answerMatch?.[1].trim() || metadataAnswer?.trim() || '';
     const rationale = rationaleMatch ? content.slice(rationaleMatch.index + rationaleMatch[0].length).trim() : '';
+    const explicitAnswer = answerMatch?.[1].trim() || metadataAnswer?.trim() || '';
+    const inferredAnswer = explicitAnswer ? null : rationaleAnswer(options.length ? 'mcq' : 'spr', rationale);
+    const answer = explicitAnswer || inferredAnswer || '';
     if (options.length && answer && !/^[A-D]$/.test(answer)) throw new Error(`Question ${id}: answer must identify one choice A–D.`);
     const warnings = [];
+    if (id !== originalId) warnings.push(`OCR question ID ${originalId} corrected to canonical metadata ID ${id}.`);
+    if (inferredAnswer) warnings.push('Answer extracted from the explanation. Verify it against the source before publishing or replacing a rendering.');
     if (answerMatch && metadataAnswer && answer !== metadataAnswer.trim()) warnings.push('The export answer and metadata answer differ. Verify the answer before publishing.');
     if (!answer) warnings.push('No correct answer supplied.');
     if (!rationale) warnings.push('No explanation supplied.');
@@ -86,7 +100,7 @@ export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
     // Numeric forms in the explanation can differ from the explicit key.
     const entered = rationale.match(/Note that ([\s\S]*?)examples of ways to enter a correct answer/i);
     if (entered) warnings.push('The explanation describes accepted answer forms. Compare them with the explicit answer key.');
-    questions.push({ id, stem, options, rationale, answer, warnings, metadata: meta ?? { questionId: id }, questionType: options.length ? 'mcq' as const : 'spr' as const, correctAnswer: options.length ? { option_label: answer || null } : { text: JSON.stringify(values) } });
+    questions.push({ id, originalId, stem, options, rationale, answer, warnings, metadata: meta ?? { questionId: id }, questionType: options.length ? 'mcq' as const : 'spr' as const, correctAnswer: options.length ? { option_label: answer || null } : { text: JSON.stringify(values) } });
   }
   const unused = metadata.filter(m => !ids.has(m.questionId));
   return { questions, warnings: unused.length ? [`${unused.length} metadata record(s) have no matching question: ${unused.map(m => m.questionId).join(', ')}`] : [] };

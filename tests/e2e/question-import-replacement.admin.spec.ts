@@ -11,6 +11,8 @@ import { unzipSync, zipSync, strFromU8, strToU8 } from 'fflate';
 test('development replacement preserves identities, grading and attempts; rejects stale reviews', async ({ page, baseURL }) => {
   test.skip(process.env.E2E_IMPORT_REPLACE !== '1', 'Opt in to temporary development fixtures.');
   test.setTimeout(180_000);
+  page.setDefaultTimeout(15_000);
+  await page.context().clearCookies();
   loadEnvFile('.env.local');
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   expect(new URL(url).hostname).toBe('ikzhizgsawzjpuuznfid.supabase.co');
@@ -25,7 +27,7 @@ test('development replacement preserves identities, grading and attempts; reject
   const snapshot = JSON.parse(readFileSync(root+'analysis/bank-comparison.json','utf8'));
   const fixtures = sources.map((source,i) => {
     const original = snapshot.rows.find((r: {source_id:string}) => r.source_id === source);
-    return { ...original, id:ids[i],display_code:`TEST-${run.slice(0,8)}-${i}`,source_id:`import-test-${run}-${source}`,source_external_id:null,source:'generated',pool:'opt_in',updated_at:new Date().toISOString(),
+    return { ...original, ...(i===0 ? {stimulus_html:original.stem_html,stimulus_rendered:original.stem_rendered,stem_html:'<p>Review the equations above.</p>',stem_rendered:null,domain_name:'Algebra'} : {}), id:ids[i],display_code:`TEST-${run.slice(0,8)}-${i}`,source_id:`import-test-${run}-${source}`,source_external_id:null,source:'generated',pool:'opt_in',updated_at:new Date().toISOString(),
       options:Array.isArray(original.options) ? original.options.map((o: object,j:number)=>({...o,id:`stable-${i}-${j}`})) : original.options };
   });
   const archive = unzipSync(readFileSync(root+'Algebra 10 questions and answers.mmd.zip'));
@@ -61,6 +63,12 @@ test('development replacement preserves identities, grading and attempts; reject
       const unchanged = await db.from('questions_v2').select('*').eq('id',ids[i]).single();
       expect(unchanged.data).toEqual(before.data!.find(r=>r.id===ids[i]));
       await page.getByRole('checkbox',{name:/Reviewed and ready/}).check();
+      if (i===0) {
+        await expect(apply).toBeDisabled();
+        await page.getByRole('checkbox',{name:/Imported prompt includes the stimulus/}).check();
+        await expect(page.getByRole('checkbox',{name:/Reviewed and ready/})).not.toBeChecked();
+        await page.getByRole('checkbox',{name:/Reviewed and ready/}).check();
+      }
       await expect(apply).toBeEnabled();
       if (i===2) {
         // Concurrent edit after comparison must be retained when stale apply fails.
@@ -90,7 +98,8 @@ test('development replacement preserves identities, grading and attempts; reject
     for (let i=0;i<ids.length;i++) {
       const old = before.data!.find(r=>r.id===ids[i])!;
       const next = after.data!.find(r=>r.id===ids[i])!;
-      for (const key of Object.keys(old)) if (!presentationFields.has(key)) expect(next[key],key).toEqual(i===2 && key==='difficulty' ? 1 : old[key]);
+      for (const key of Object.keys(old)) if (!presentationFields.has(key) && !(i===0 && ['stimulus_html','stimulus_rendered'].includes(key))) expect(next[key],key).toEqual(i===2 && key==='difficulty' ? 1 : old[key]);
+      if (i===0) { expect(next.stimulus_html).toBeNull(); expect(next.stimulus_rendered).toBeNull(); }
       expect(next.stem_html).not.toBe(old.stem_html);
       expect(next.stem_rendered).toBeTruthy();
       expect(next.updated_by).toBeTruthy();
@@ -102,6 +111,7 @@ test('development replacement preserves identities, grading and attempts; reject
       const history = await db.from('question_content_history').select('*').eq('question_id',ids[i]);
       expect(history.error).toBeNull(); expect(history.data).toHaveLength(i===2 ? 2 : 1);
       expect(history.data!.some(h=>h.stem_html===old.stem_html)).toBe(true);
+      if (i===0) expect(history.data!.some(h=>h.stimulus_html===old.stimulus_html)).toBe(true);
     }
     const attemptAfter = await db.from('attempts').select('*').eq('id',attempt.data!.id).single();
     expect(attemptAfter.data).toEqual(attempt.data);
