@@ -329,7 +329,7 @@ tutor training practice. Attempt-driven surfaces (weak-questions
 drill, review-queue question leg) are deliberately unfiltered — they
 only resurface questions the student already answered.
 
-Supplemental importer access migrations (development verified 2026-09-15; production rollout pending) add `question_batch_access` and restrictive read policies. Admins grant/revoke individual student access; staff retain review access. Student access requires published, active questions, even for direct ID queries. Anonymous supplemental reads are denied. See `sat-import-comparison.md` for migration order and verification.
+Supplemental importer access migrations (development and production verified 2026-09-15) add `question_batch_access` and restrictive read policies. Admins grant/revoke individual student access; staff retain review access. Student access requires published, active questions, even for direct ID queries. Anonymous supplemental reads are denied. See `sat-import-comparison.md` for migration order and verification.
 
 Import mechanics: importers stamp `source` + `source_external_id`
 per question (now enforced unique where non-null, so a re-run
