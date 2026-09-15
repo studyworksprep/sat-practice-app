@@ -1,6 +1,6 @@
 # SAT import comparison
 
-**Living** — last verified 2026-09-14.
+**Living** — last verified 2026-09-15.
 
 Admins open **Questions → Import questions** (`/admin/questions/import`). The screen compares imports and can apply an individually confirmed presentation replacement to a live, published question. It also inserts reviewed new questions into the regular bank or restricted supplemental sets, and holds unanswered questions as unpublished drafts. Every server action and the page require the admin role; all mutation actions reject demo accounts.
 
@@ -38,6 +38,8 @@ Supplemental questions and their batches remain opt-in. Staff can review them; s
 
 New imports use signed, actor-bound insertion tokens with a fixed question UUID for retry idempotency. They never use a replacement token. A repeated insertion returns the existing record and its actual publication state, without overwriting it. Source IDs and conservative prompt-text duplicate checks span both pools, including deleted/unpublished records; a possible duplicate must go through comparison instead of insertion. This does not replace visual duplicate review.
 
-Deployment requires **20260915013501_supplemental_question_import.sql**, then **20260915014713_supplemental_access_hardening.sql**, via the repository’s MCP migration procedure before deploying the code. Both are applied and tested on development only. No production question changes or migrations were performed. New database type declarations were regenerated from development and integrated without copying unrelated environment drift. Security/performance advisors reported no security findings on the new objects; the new access-grant foreign-key index finding was addressed.
+Deployment requires **20260915013501_supplemental_question_import.sql**, then **20260915014713_supplemental_access_hardening.sql**, via the repository’s MCP migration procedure before deploying the code. Both are applied in development and production (production migration versions `20260915015645` and `20260915015656`). Follow-up `20260915015801_restrict_import_rpc_execution.sql` revokes direct anonymous function grants inherited from default privileges; it is also applied in both environments. No question content or student grants were changed. New database type declarations were regenerated from development and integrated without copying unrelated environment drift. Security/performance advisors reported no security findings on the new objects; the new access-grant foreign-key index finding was addressed.
 
 Development integration passed for supplemental publication, unanswered drafts, regular-bank metadata rejection and valid regular insertion, duplicate rejection, per-student grants/revocation, preservation of draft privacy, and standard-pool exclusion. The previous equation/graph/table replacement integration also passed. Test questions, sets and grants were removed.
+
+Production verification on 2026-09-15 confirmed enabled access-table RLS, four restrictive supplemental read policies, no anonymous execution on the three import functions, successful denial of non-admin insertion, and the unchanged 3,431-question standard pool. Generated production declarations match the committed import types. Security advisors reported no findings on the new import objects.
