@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 export type Presentation = { stem_html: string; rationale_html: string; options: Array<Record<string, Json | undefined> & { label: string; content_html: string }> };
 export type ImportDetails = { question_type: 'mcq' | 'spr'; correct_answer: Json; domain_name: string | null; skill_name: string | null; difficulty: number | null; score_band: number | null; source_id: string; source_external_id: string; hasAnswer: boolean };
-export type Review = { purpose?: 'insert'; details?: ImportDetails; actor: string; target: string; updatedAt: string; expires: number; presentation: Presentation };
+export type Review = { clearStimulus?: true; purpose?: 'insert'; details?: ImportDetails; actor: string; target: string; updatedAt: string; expires: number; presentation: Presentation };
 function signature(body: string, secret: string) {
   return createHmac('sha256', secret).update('sat-import-review-v1:').update(body).digest();
 }
@@ -34,4 +34,8 @@ export function mergeOptions(existing: unknown, imported: Presentation['options'
     delete result.content_html_rendered;
     return result;
   });
+}
+
+export function canCombineMathStimulus(domain: string | null | undefined): boolean {
+  return ['Algebra', 'Advanced Math', 'Problem-Solving and Data Analysis', 'Geometry and Trigonometry'].includes(domain ?? '');
 }

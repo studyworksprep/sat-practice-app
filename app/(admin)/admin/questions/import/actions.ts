@@ -10,7 +10,7 @@ import { readMathpix } from '@/lib/sat-import/archive';
 import { renderHtml, renderRow } from '@/lib/content/render-math.mjs';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 
-import { signReview, readReview, mergeOptions } from '@/lib/sat-import/review';
+import { signReview, readReview, mergeOptions, canCombineMathStimulus } from '@/lib/sat-import/review';
 import { scorableAnswer } from '@/lib/sat-import/answers';
 import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
@@ -105,16 +105,16 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
           if (reference) throw new Error('The pilot snapshot is review-only. Upload the files against the live bank to apply.');
           if (!actor || !reviewSecret()) throw new Error('Server review signing is not configured.');
           if (!row.updated_at || row.deleted_at || row.is_broken !== false || !row.is_published) throw new Error('Only published, active questions can be replaced here.');
-          if (row.stimulus_html?.trim()) throw new Error('This question has a separate passage. Edit it separately to preserve its structure.');
+          if (row.stimulus_html?.trim() && !canCombineMathStimulus(row.domain_name)) throw new Error('This question has a separate passage. Edit it separately to preserve its structure.');
           if (row.question_type !== candidate.question_type) throw new Error('Answer formats differ.');
           const normalize = (v: string | null) => String(v ?? '').split(/\s+or\s+|,/).map(x => x.trim()).sort().join('|');
           const answer = row.question_type === 'mcq' ? extractMcqCorrectId(row.correct_answer) : formatSprCorrect(row.correct_answer);
           if (!q.answer || normalize(answer) !== normalize(q.answer)) throw new Error('Correct answers differ or are missing. Resolve this separately.');
           if (row.question_type === 'mcq' && typeof row.correct_answer === 'object' && row.correct_answer && 'option_labels' in row.correct_answer && Array.isArray(row.correct_answer.option_labels) && row.correct_answer.option_labels.length > 1) throw new Error('Multiple-answer questions require separate review.');
           const options = mergeOptions(row.options ?? [], candidate.options);
-          applyToken = signReview({ actor, target: row.id, updatedAt: row.updated_at, expires: Date.now() + 2 * 60 * 60 * 1000, presentation: { stem_html: candidate.stem_html, rationale_html: candidate.rationale_html || row.rationale_html || '', options } }, reviewSecret());
+          applyToken = signReview({ ...(row.stimulus_html?.trim() ? { clearStimulus: true as const } : {}), actor, target: row.id, updatedAt: row.updated_at, expires: Date.now() + 2 * 60 * 60 * 1000, presentation: { stem_html: candidate.stem_html, rationale_html: candidate.rationale_html || row.rationale_html || '', options } }, reviewSecret());
         } catch (error) { applyBlocked = error instanceof Error ? error.message : 'Cannot apply this match.'; }
-        return { id: row.id, code: row.display_code, updatedAt: row.updated_at, deleted: !!row.deleted_at, published: row.is_published, broken: row.is_broken, difficulty: row.difficulty, scoreBand: row.score_band, answer: row.question_type === 'mcq' ? extractMcqCorrectId(row.correct_answer) : formatSprCorrect(row.correct_answer), ...viewModel(row), applyToken, applyBlocked };
+        return { id: row.id, code: row.display_code, updatedAt: row.updated_at, deleted: !!row.deleted_at, published: row.is_published, broken: row.is_broken, difficulty: row.difficulty, scoreBand: row.score_band, answer: row.question_type === 'mcq' ? extractMcqCorrectId(row.correct_answer) : formatSprCorrect(row.correct_answer), ...viewModel(row), requiresStimulusConfirmation: !!row.stimulus_html?.trim() && canCombineMathStimulus(row.domain_name), applyToken, applyBlocked };
       }),
     };
   });
@@ -154,7 +154,7 @@ export async function loadMathPilot() {
 export type ComparisonBatch = Awaited<ReturnType<typeof compare>>;
 
 
-export async function applyImportedPresentation(token: string, confirmed: boolean) {
+export async function applyImportedPresentation(token: string, confirmed: boolean, stimulusConfirmed = false) {
   try {
     const ctx = await requireRole(['admin']);
     assertWriter(ctx);
@@ -162,11 +162,13 @@ export async function applyImportedPresentation(token: string, confirmed: boolea
     if (!reviewSecret()) throw new Error('Server review signing is not configured.');
     const review = readReview(token, reviewSecret(), ctx.user.id);
     if (review.purpose === 'insert') throw new Error('This review is for a new question, not a replacement.');
+    if (review.clearStimulus && stimulusConfirmed !== true) throw new Error('Confirm that the imported prompt includes all stimulus content.');
     // Only server-signed presentation fields can reach this update. The timestamp
     // condition is checked in the same database statement as the mutation.
     const rendered = renderRow(review.presentation);
     const { data, error } = await ctx.supabase.from('questions_v2').update({
       ...review.presentation,
+      ...(review.clearStimulus ? { stimulus_html: null, stimulus_rendered: null } : {}),
       stem_rendered: rendered.stem_rendered,
       rationale_rendered: rendered.rationale_rendered,
       options_rendered: rendered.options_rendered,

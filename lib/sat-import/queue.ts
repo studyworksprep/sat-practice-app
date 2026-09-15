@@ -2,6 +2,7 @@ export type ImportChoice = {
   preference: 'Keep existing' | 'Prefer imported' | 'Needs editing' | '';
   matchId: string | null;
   confirmed: boolean;
+  stimulusIncluded: boolean;
   selected: boolean;
   destination: 'supplemental' | 'regular';
   batchId: string;
@@ -11,10 +12,10 @@ export type ImportOutcome = { status: 'running' | 'success' | 'error' | 'kept'; 
 export type QueueItem = {
   id: string; insertToken: string | null; hasAnswer: boolean; difficulty: number | null;
   imported: { question: { taxonomy: { domain_name: string | null; skill_name: string | null } } };
-  matches: Array<{ id: string; applyToken: string | null; applyBlocked: string | null }>;
+  matches: Array<{ id: string; applyToken: string | null; applyBlocked: string | null; requiresStimulusConfirmation?: boolean }>;
 };
 export function initialChoice(batchId = ''): ImportChoice {
-  return { preference: '', matchId: null, confirmed: false, selected: false, destination: 'supplemental', batchId, publish: false };
+  return { preference: '', matchId: null, confirmed: false, stimulusIncluded: false, selected: false, destination: 'supplemental', batchId, publish: false };
 }
 export function completed(outcome?: ImportOutcome) { return outcome?.status === 'success' || outcome?.status === 'kept'; }
 export function readiness(item: QueueItem, choice: ImportChoice, outcome?: ImportOutcome): string | null {
@@ -25,6 +26,7 @@ export function readiness(item: QueueItem, choice: ImportChoice, outcome?: Impor
     const match = item.matches.find(m => m.id === choice.matchId);
     if (!match) return 'Choose the existing question to compare.';
     if (choice.preference === 'Prefer imported' && !match.applyToken) return match.applyBlocked || 'This replacement is unavailable. Compare again.';
+    if (choice.preference === 'Prefer imported' && match.requiresStimulusConfirmation && !choice.stimulusIncluded) return 'Confirm that the imported prompt includes all stimulus content.';
   } else {
     if (choice.preference !== 'Prefer imported') return 'Choose the imported rendering for a new question.';
     if (!item.insertToken) return 'This question cannot be inserted from this comparison.';
