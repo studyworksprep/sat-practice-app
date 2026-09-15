@@ -18,6 +18,7 @@ authorization matrix to prove it's fresh.
 | Document | What it is |
 |---|---|
 | `upgrade-plan-2026-07.md` | **The active roadmap** — verified against code + production |
+| `student-onboarding-and-plan-redesign-2026-09.md` | Self-serve onboarding redesign — branching intake, evidence branch (domain entry / Bluebook upload), phase-composer generator, student plan hub; settled 2026-09-14 with a delivery ledger |
 | `bluebook-contributions-plan-2026-08.md` | Bluebook contributions build plan — settled design + phase ledger |
 | `reading-coach-implementation-plan.md` | Reading Coach product, data, AI-evaluation, QA, and phased delivery plan |
 | `bluebook-contributor-guide.md` | How to send Bluebook results — written for contributors, not engineers |
