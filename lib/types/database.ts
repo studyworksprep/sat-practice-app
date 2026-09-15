@@ -2726,6 +2726,84 @@ export type Database = {
         }
         Relationships: []
       }
+      question_batch_access: {
+        Row: {
+          batch_id: string
+          created_at: string
+          granted_by: string | null
+          user_id: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          granted_by?: string | null
+          user_id: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          granted_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_batch_access_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "published_question_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "question_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_batch_access_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       question_batches: {
         Row: {
           administration_date: string | null
@@ -4590,6 +4668,17 @@ export type Database = {
       }
     }
     Functions: {
+      find_question_import_matches: {
+        Args: { p_identifiers: string[]; p_stem: string }
+        Returns: {
+          id: string
+        }[]
+      }
+      import_stem_key: { Args: { p_html: string }; Returns: string }
+      insert_reviewed_question: {
+        Args: { p_batch: string; p_publish: boolean; p_question: Json }
+        Returns: string
+      }
       activate_study_plan: { Args: { p_plan_id: string }; Returns: string }
       assignment_has_visible_student: {
         Args: { p_assignment_id: string }

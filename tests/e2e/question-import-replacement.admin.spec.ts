@@ -50,7 +50,7 @@ test('development replacement preserves identities, grading and attempts; reject
     await page.goto('/admin/questions/import');
     await page.locator('input[name="export"]').setInputFiles({name:'development-pilot.zip',mimeType:'application/zip',buffer:Buffer.from(zipSync(archive))});
     await page.getByRole('button',{name:'Compare with question bank',exact:true}).click();
-    await expect(page.getByText(/10 questions · 3 with identifier matches/)).toBeVisible();
+    await expect(page.getByText(/10 questions · 3 with possible duplicates/)).toBeVisible();
 
     // Review is read-only, and the explicit confirmation gates the apply button.
     for (let i=0;i<ids.length;i++) {
@@ -74,7 +74,7 @@ test('development replacement preserves identities, grading and attempts; reject
         // Recompare and explicitly review the new state before applying the table.
         await page.getByRole('button',{name:'Compare with question bank',exact:true}).click();
         await expect(page.getByRole('button',{name:'Compare with question bank',exact:true})).toBeEnabled();
-        await expect(page.getByText(/10 questions · 3 with identifier matches/)).toBeVisible();
+        await expect(page.getByText(/10 questions · 3 with possible duplicates/)).toBeVisible();
         await page.getByRole('button',{name:new RegExp(fixtures[i].source_id)}).click();
         await page.getByRole('button',{name:'Prefer imported',exact:true}).click();
         await page.getByRole('checkbox',{name:/I compared the text/}).check();

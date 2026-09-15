@@ -8,7 +8,7 @@ test('admin can compare an export and export review choices', async ({ page }) =
   await page.locator('input[name="export"]').setInputFiles({ name:'test.mmd', mimeType:'text/plain', buffer:Buffer.from(mmd) });
   await page.getByRole('button', { name:'Compare with question bank' }).click();
   await expect(page.getByRole('heading', { name:'2. Review the import' })).toBeVisible();
-  await expect(page.getByText('No identifier match. Content-based duplicate checking is still required.')).toBeVisible();
+  await expect(page.getByText('No identifier or normalized-text match. Confirm this is a new question; differently encoded duplicates can still exist.')).toBeVisible();
   await expect(page.getByRole('button', { name:'Prefer imported', exact:true })).toBeDisabled();
   await page.getByRole('button', { name:'Needs editing', exact:true }).click();
   const downloadPromise = page.waitForEvent('download');
