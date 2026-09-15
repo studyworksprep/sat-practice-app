@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { rationaleAnswer } from './answers.ts';
 export interface ImportMetadata {
   questionId: string;
   correct_answer?: string | string[] | null;
@@ -73,10 +74,13 @@ export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
     if (!stem) throw new Error(`Question ${id} has an empty prompt.`);
     const meta = metadata.find(row => row.questionId === id);
     const metadataAnswer = Array.isArray(meta?.correct_answer) ? meta.correct_answer.join(', ') : meta?.correct_answer;
-    const answer = answerMatch?.[1].trim() || metadataAnswer?.trim() || '';
     const rationale = rationaleMatch ? content.slice(rationaleMatch.index + rationaleMatch[0].length).trim() : '';
+    const explicitAnswer = answerMatch?.[1].trim() || metadataAnswer?.trim() || '';
+    const inferredAnswer = explicitAnswer ? null : rationaleAnswer(options.length ? 'mcq' : 'spr', rationale);
+    const answer = explicitAnswer || inferredAnswer || '';
     if (options.length && answer && !/^[A-D]$/.test(answer)) throw new Error(`Question ${id}: answer must identify one choice A–D.`);
     const warnings = [];
+    if (inferredAnswer) warnings.push('Answer extracted from the explanation. Verify it against the source before publishing or replacing a rendering.');
     if (answerMatch && metadataAnswer && answer !== metadataAnswer.trim()) warnings.push('The export answer and metadata answer differ. Verify the answer before publishing.');
     if (!answer) warnings.push('No correct answer supplied.');
     if (!rationale) warnings.push('No explanation supplied.');

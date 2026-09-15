@@ -53,4 +53,7 @@ test('full Algebra batch accepts mixed-case labels, currency and captioned headi
   await expect(page.getByRole('region', {name:'Question comparison'})).toContainText('roller-coaster');
   await page.getByLabel('Find a question', {exact:true}).fill('1a1a95de');
   await expect(page.getByRole('img', {name:'Imported question figure'})).toBeVisible();
+  await page.getByLabel('Find a question', {exact:true}).fill('d1b66ae6');
+  await expect(page.getByRole('region', {name:'Question comparison'})).toContainText('3/2, 1.5');
+  await expect(page.getByRole('region', {name:'Question comparison'})).toContainText('Answer extracted from the explanation. Verify it against the source');
 });
