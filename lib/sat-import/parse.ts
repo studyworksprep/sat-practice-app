@@ -149,6 +149,32 @@ export function mmdToHtml(text: string, images: Record<string, string> = {}, opt
     return block ? `\n\n${marker}\n\n` : marker;
   };
   if (/IMPORTTOKEN\d+END/.test(text)) throw new Error('Reserved token in input.');
+  // Mathpix floats retain meaningful captions (including scale notes and
+  // data-set names). Convert their contents recursively so ordinary image,
+  // table, escaping, and math validation still apply.
+  text = text.replace(/\\begin\{(figure|table)\}([\s\S]*?)\\end\{\1\}/g, (_, kind: string, body: string) => {
+    const content = body
+      .replace(/\\captionsetup\{labelformat=empty\}/g, '')
+      .replace(/\\caption\{([^{}]*)\}/g, (_, caption: string) => `\n\n${caption}\n\n`)
+      .replace(/\\includegraphics(?:\[[^\]\n]*\])?\{([^{}\n]+)\}/g, (_, path: string) => {
+        if (/[()]/.test(path)) throw new Error('Unsupported figure path. Review the export before continuing.');
+        return `\n\n![](${path})\n\n`;
+      });
+    if (kind === 'figure' && !/!\[[^\]]*\]\([^)]+\)/.test(content)) throw new Error('Figure has no supported image.');
+    return token(`<div>${mmdToHtml(content, images, options)}</div>`, true);
+  });
+  // These are statements I/II/... within the prompt, not the A-D answer
+  // choices parsed separately above. Keep explicit labels and source order.
+  text = text.replace(/\\begin\{itemize\}([\s\S]*?)\\end\{itemize\}/g, (_, body: string) => {
+    const parts = body.split(/\\item\[([IVXLCDM]+\.)\]/);
+    if (parts.length < 3 || parts[0].trim()) throw new Error('Unsupported prompt list. Expected labeled Roman-numeral statements.');
+    const items: string[] = [];
+    for (let i = 1; i < parts.length; i += 2) {
+      if (!parts[i + 1].trim()) throw new Error('Empty prompt list statement.');
+      items.push(`<li>${mmdToHtml(`${parts[i]} ${parts[i + 1].trim()}`, images, options)}</li>`);
+    }
+    return token(`<ol style="list-style-type:none">${items.join('')}</ol>`, true);
+  });
   text = text.replace(/\\begin\{tabular\}(?:\[[^\]]*\])?\{[^}]*\}([\s\S]*?)\\end\{tabular\}/g, (_, body: string) => {
     const rows = body.replace(/\\hline/g, '').split(/\\\\/).map(r => r.trim()).filter(Boolean);
     return token(`<table><tbody>${rows.map((row, i) => `<tr>${row.split('&').map(cell => {
@@ -174,7 +200,7 @@ export function mmdToHtml(text: string, images: Record<string, string> = {}, opt
     ? token(`<p style="text-align:${options.equationAlign ?? 'center'};margin:0.75em 0">\\(${escapeHtml(block.trim())}\\)</p>`, true)
     : token(`\\(${escapeHtml(inline)}\\)`));
   text = text.replace(/\\\$/g, () => token('&#36;'));
-  if (/\\(?:begin|end|section|item)\b/.test(text) || text.includes('$')) throw new Error('Unsupported or incomplete Mathpix markup. Review the export before continuing.');
+  if (/\\(?:begin|end|section|item|caption|captionsetup|includegraphics)\b/.test(text) || text.includes('$')) throw new Error('Unsupported or incomplete Mathpix markup. Review the export before continuing.');
   let html = text.split(/\n\s*\n/).filter(p => p.trim()).map(p => blocks.has(p.trim()) ? p.trim() : `<p>${escapeHtml(p.trim()).replace(/\n/g, ' ')}</p>`).join('');
   html = html.replace(/IMPORTTOKEN(\d+)END/g, (_, i) => tokens[Number(i)]);
   return html;

@@ -4753,17 +4753,6 @@ export type Database = {
       }
     }
     Functions: {
-      find_question_import_matches: {
-        Args: { p_identifiers: string[]; p_stem: string }
-        Returns: {
-          id: string
-        }[]
-      }
-      import_stem_key: { Args: { p_html: string }; Returns: string }
-      insert_reviewed_question: {
-        Args: { p_batch: string; p_publish: boolean; p_question: Json }
-        Returns: string
-      }
       activate_study_plan: { Args: { p_plan_id: string }; Returns: string }
       assignment_has_visible_student: {
         Args: { p_assignment_id: string }
