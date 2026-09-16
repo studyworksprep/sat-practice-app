@@ -5,6 +5,7 @@ export type ImportChoice = {
   confirmed: boolean;
   stimulusIncluded: boolean;
   selected: boolean;
+  importAsNew: boolean;
   destination: 'supplemental' | 'regular';
   batchId: string;
   publish: boolean;
@@ -17,14 +18,14 @@ export type QueueItem = {
   matches: Array<{ id: string; applyToken: string | null; applyBlocked: string | null; requiresStimulusConfirmation?: boolean }>;
 };
 export function initialChoice(batchId = ''): ImportChoice {
-  return { preference: '', matchId: null, confirmed: false, stimulusIncluded: false, selected: false, destination: 'supplemental', batchId, publish: false, section: '' };
+  return { preference: '', matchId: null, confirmed: false, stimulusIncluded: false, selected: false, importAsNew: false, destination: 'supplemental', batchId, publish: false, section: '' };
 }
 export function completed(outcome?: ImportOutcome) { return outcome?.status === 'success' || outcome?.status === 'kept'; }
 export function readiness(item: QueueItem, choice: ImportChoice, outcome?: ImportOutcome): string | null {
   if (completed(outcome)) return 'Already completed.';
   if (!choice.preference) return 'Choose which rendering to keep.';
   if (choice.preference === 'Needs editing') return 'Resolve the editing issues before importing.';
-  if (item.matches.length) {
+  if (item.matches.length && !choice.importAsNew) {
     const match = item.matches.find(m => m.id === choice.matchId);
     if (!match) return 'Choose the existing question to compare.';
     if (choice.preference === 'Prefer imported' && !match.applyToken) return match.applyBlocked || 'This replacement is unavailable. Compare again.';
@@ -46,10 +47,30 @@ export function queueProblem(items: QueueItem[], choices: Record<string, ImportC
     const choice = choices[item.id] ?? initialChoice();
     const reason = readiness(item, choice, outcomes[item.id]);
     if (reason) return `${item.id}: ${reason}`;
-    if (item.matches.length && choice.matchId) {
+    if (item.matches.length && !choice.importAsNew && choice.matchId) {
       if (seen.has(choice.matchId)) return 'Two selected imports refer to the same bank question. Select only one of them.';
       seen.add(choice.matchId);
     }
   }
   return null;
+}
+
+export type BatchSettings = Pick<ImportChoice, 'destination' | 'batchId' | 'publish' | 'section'>;
+/** One explicit batch review action; unresolved duplicates and editing holds stay out. */
+export function approveBatch(items: QueueItem[], choices: Record<string, ImportChoice>, outcomes: Record<string, ImportOutcome>, settings: BatchSettings) {
+  const next = {...choices};
+  const approved: string[] = [], skipped: string[] = [];
+  for (const item of items) {
+    const choice = next[item.id] ?? initialChoice();
+    if (!choice.selected || completed(outcomes[item.id])) continue;
+    if (choice.preference === 'Needs editing' || (item.matches.length && !choice.importAsNew)) {
+      next[item.id] = {...choice, selected:false}; skipped.push(item.id); continue;
+    }
+    const candidate: ImportChoice = {...choice, ...settings, section:sectionFromDomain(item.imported.question.taxonomy.domain_name)||settings.section, preference:'Prefer imported', confirmed:true};
+    if (readiness(item, candidate, outcomes[item.id])) {
+      next[item.id] = {...choice, selected:false}; skipped.push(item.id); continue;
+    }
+    next[item.id] = candidate; approved.push(item.id);
+  }
+  return {choices:next, approved, skipped};
 }
