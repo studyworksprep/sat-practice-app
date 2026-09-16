@@ -87,7 +87,9 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
         candidateRows = loaded.data;
       } else candidateRows = [];
     } else candidateRows = matchIdentifiers(q, rows);
-    const insertToken = !reference && actor && reviewSecret() && !candidateRows.length ? signReview({
+    const identifierMatches = [...matchIdentifiers(q, candidateRows), ...matchIdentifiers({...q, id:q.originalId}, candidateRows)];
+    const insertToken = !reference && actor && reviewSecret() && !identifierMatches.length && candidateRows.every(row => !!row.updated_at) ? signReview({
+      duplicateMatches: candidateRows.map(row => ({ id: row.id, updated_at: row.updated_at! })),
       purpose: 'insert', actor, target: randomUUID(), updatedAt: '', expires: Date.now() + 2 * 60 * 60 * 1000,
       presentation: { stem_html: candidate.stem_html, rationale_html: candidate.rationale_html, options: candidate.options },
       details: { question_type: candidate.question_type, correct_answer: candidate.correct_answer, domain_name: candidate.domain_name,
@@ -95,7 +97,7 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
         source_id: q.id, original_source_id: q.originalId, source_external_id: q.metadata.external_id || q.metadata.ibn || q.id, hasAnswer: scorableAnswer(q.questionType,q.answer) },
     }, reviewSecret()) : null;
     return {
-      insertToken, hasAnswer: scorableAnswer(q.questionType,q.answer),
+      insertToken, insertBlocked: identifierMatches.length ? 'A source identifier already belongs to a bank question. Resolve its identity before importing another copy.' : null, hasAnswer: scorableAnswer(q.questionType,q.answer),
       id: q.id, originalId: q.originalId, warnings: q.warnings, answer: q.answer || 'Not supplied', difficulty: candidate.difficulty, scoreBand: candidate.score_band,
       imported: viewModel(candidate),
       matches: candidateRows.map(row => {

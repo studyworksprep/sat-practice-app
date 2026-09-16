@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 export type Presentation = { stem_html: string; rationale_html: string; options: Array<Record<string, Json | undefined> & { label: string; content_html: string }> };
 export type ImportDetails = { question_type: 'mcq' | 'spr'; correct_answer: Json; domain_name: string | null; skill_name: string | null; difficulty: number | null; score_band: number | null; source_id: string; original_source_id?: string; source_external_id: string; hasAnswer: boolean };
-export type Review = { clearStimulus?: true; purpose?: 'insert'; details?: ImportDetails; actor: string; target: string; updatedAt: string; expires: number; presentation: Presentation };
+export type Review = { duplicateMatches?: Array<{ id: string; updated_at: string }>; clearStimulus?: true; purpose?: 'insert'; details?: ImportDetails; actor: string; target: string; updatedAt: string; expires: number; presentation: Presentation };
 function signature(body: string, secret: string) {
   return createHmac('sha256', secret).update('sat-import-review-v1:').update(body).digest();
 }

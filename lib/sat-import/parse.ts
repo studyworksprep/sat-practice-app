@@ -177,15 +177,34 @@ export function mmdToHtml(text: string, images: Record<string, string> = {}, opt
   });
   text = text.replace(/\\begin\{tabular\}(?:\[[^\]]*\])?\{[^}]*\}([\s\S]*?)\\end\{tabular\}/g, (_, body: string) => {
     const rows = body.replace(/\\hline/g, '').split(/\\\\/).map(r => r.trim()).filter(Boolean);
-    return token(`<table><tbody>${rows.map((row, i) => `<tr>${row.split('&').map(cell => {
-      let content = mmdToHtml(cell.trim(), images);
-      // A simple cell is inline content, not a prose paragraph. Keeping
-      // that wrapper adds the runner's paragraph margins to every row.
-      // Leave multiple paragraphs and other block content intact.
-      if (content.startsWith('<p>') && content.indexOf('</p>') === content.length - 4) content = content.slice(3, -4);
-      const tag = i ? 'td' : 'th';
-      return `<${tag} style="text-align:center"${i ? '' : ' scope="col"'}>${content}</${tag}>`;
-    }).join('')}</tr>`).join('')}</tbody></table>`, true);
+    const spanning: number[] = [];
+    const headerRows = /\\(?:multirow|multicolumn)\b/.test(rows[0] ?? '') ? 2 : 1;
+    const renderedRows = rows.map((row, rowIndex) => {
+      let column = 0;
+      const cells = row.split('&').map(raw => {
+        let cell = raw.trim();
+        // Mathpix leaves an empty placeholder for a cell covered by a rowspan.
+        if ((spanning[column] ?? 0) > rowIndex) {
+          if (cell) throw new Error('Unexpected content under a spanning table heading.');
+          column++;
+          return '';
+        }
+        let colspan = 1, rowspan = 1;
+        const multiColumn = /^\\multicolumn\{(\d+)\}\{[^{}]*\}\{([\s\S]*)\}$/.exec(cell);
+        if (multiColumn) { colspan = Number(multiColumn[1]); cell = multiColumn[2]; }
+        const multiRow = /^\\multirow(?:\[[^\]]*\])?\{(\d+)\}\{[^{}]*\}\{([\s\S]*)\}$/.exec(cell);
+        if (multiRow) { rowspan = Number(multiRow[1]); cell = multiRow[2]; }
+        if (colspan < 1 || colspan > 50 || rowspan < 1 || rowspan > rows.length - rowIndex) throw new Error('Invalid table heading span.');
+        for (let offset = 0; offset < colspan; offset++) spanning[column + offset] = rowIndex + rowspan;
+        column += colspan;
+        let content = mmdToHtml(cell.trim(), images, options);
+        if (content.startsWith('<p>') && content.indexOf('</p>') === content.length - 4) content = content.slice(3, -4);
+        const tag = rowIndex < headerRows ? 'th' : 'td';
+        return `<${tag} style="text-align:center"${tag === 'th' ? ` scope="${colspan > 1 ? 'colgroup' : 'col'}"` : ''}${colspan > 1 ? ` colspan="${colspan}"` : ''}${rowspan > 1 ? ` rowspan="${rowspan}"` : ''}>${content}</${tag}>`;
+      });
+      return `<tr>${cells.join('')}</tr>`;
+    });
+    return token(`<table><tbody>${renderedRows.join('')}</tbody></table>`, true);
   });
   text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, path) => {
     const normalized = path.replace(/^\.\//, '');
@@ -200,7 +219,9 @@ export function mmdToHtml(text: string, images: Record<string, string> = {}, opt
     ? token(`<p style="text-align:${options.equationAlign ?? 'center'};margin:0.75em 0">\\(${escapeHtml(block.trim())}\\)</p>`, true)
     : token(`\\(${escapeHtml(inline)}\\)`));
   text = text.replace(/\\\$/g, () => token('&#36;'));
-  if (/\\(?:begin|end|section|item|caption|captionsetup|includegraphics)\b/.test(text) || text.includes('$')) throw new Error('Unsupported or incomplete Mathpix markup. Review the export before continuing.');
+  // Math tokens are already protected: only prose escapes are decoded here.
+  text = text.replace(/\\%/g, '%');
+  if (/\\(?:begin|end|section|item|caption|captionsetup|includegraphics|multirow|multicolumn)\b/.test(text) || text.includes('$')) throw new Error('Unsupported or incomplete Mathpix markup. Review the export before continuing.');
   let html = text.split(/\n\s*\n/).filter(p => p.trim()).map(p => blocks.has(p.trim()) ? p.trim() : `<p>${escapeHtml(p.trim()).replace(/\n/g, ' ')}</p>`).join('');
   html = html.replace(/IMPORTTOKEN(\d+)END/g, (_, i) => tokens[Number(i)]);
   return html;

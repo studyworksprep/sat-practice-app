@@ -45,7 +45,7 @@ export async function changeSetAccess(batchId:string,userId:string,allow:boolean
     return actionOk({allowed:allow});
   } catch(error) { return actionFail(error instanceof Error ? error : 'Unable to change access.'); }
 }
-export async function insertImportedQuestion(token:string,batchId:string | null,publish:boolean,confirmed:boolean,section:string='') {
+export async function insertImportedQuestion(token:string,batchId:string | null,publish:boolean,confirmed:boolean,section:string='',notDuplicate:boolean=false) {
   try {
     const ctx=await requireRole(['admin']); assertWriter(ctx);
     if(confirmed!==true || typeof publish!=='boolean') throw new Error('Confirm the question and duplicate review first.');
@@ -53,6 +53,7 @@ export async function insertImportedQuestion(token:string,batchId:string | null,
     if(!secret) throw new Error('Review signing is unavailable.');
     const review=readReview(token,secret,ctx.user.id);
     if(review.purpose!=='insert' || !review.details) throw new Error('Compare this question again to prepare an insertion.');
+    if(review.duplicateMatches?.length && notDuplicate!==true) throw new Error('Confirm that the compared questions are not duplicates before importing as new.');
     const details=review.details;
     const knownSection=sectionFromDomain(details.domain_name);
     if(section && section!=='M' && section!=='RW') throw new Error('Choose Math or Reading & Writing.');
@@ -63,7 +64,7 @@ export async function insertImportedQuestion(token:string,batchId:string | null,
     if(!batchId && (!details.domain_name || !details.skill_name || !details.difficulty)) throw new Error('Choose a supplemental set for questions without topic and difficulty metadata.');
     const rendered=renderRow(review.presentation);
     const {data,error}=await ctx.supabase.rpc('insert_reviewed_question',{
-      p_question:{id:review.target,...details,section:selectedSection,...review.presentation,stem_rendered:rendered.stem_rendered,rationale_rendered:rendered.rationale_rendered,options_rendered:rendered.options_rendered},
+      p_question:{id:review.target,...details,reviewed_non_duplicates:review.duplicateMatches??[],section:selectedSection,...review.presentation,stem_rendered:rendered.stem_rendered,rationale_rendered:rendered.rationale_rendered,options_rendered:rendered.options_rendered},
       // Postgres accepts NULL for the standard pool; generated RPC types omit nullability.
       p_batch:batchId!,p_publish:publish,
     });
