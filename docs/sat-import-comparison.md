@@ -1,6 +1,6 @@
 # SAT import comparison
 
-**Living** — last verified 2026-09-15.
+**Living** — last verified 2026-09-16.
 
 Admins open **Questions → Import questions** (`/admin/questions/import`). The screen compares imports and can apply reviewed presentation replacements individually or in a selected batch to a live, published question. It also inserts reviewed new questions into the regular bank or restricted supplemental sets, and holds unanswered questions as unpublished drafts. Every server action and the page require the admin role; all mutation actions reject demo accounts.
 
@@ -23,6 +23,8 @@ Limits: 100 questions, 8 MB compressed export, 1 MB metadata/MMD text, 12 MB exp
 Validation: parser/archive unit tests cover page continuations, multiple accepted numeric strings, legacy IDs, ambiguous matches, table retention, unsafe HTML, missing figures, duplicate IDs, archive limits, and RTF metadata. An admin E2E test covers an unmatched question and review export; the optional pilot-upload test uses `E2E_IMPORT_PILOT=1`. Replacement protection tests cover signed review tampering, expiry, actor binding, and option identity preservation. Supplemental insertion/access tests are opt-in with `E2E_IMPORT_SETS=1`.
 
 ## Reviewing and importing a selection
+
+Mathpix figure and table wrappers preserve their captions in source order, including scale notes and data-set names. Figure images use the same archive lookup and validation as Markdown images. Roman-numeral lists inside prompts retain explicit labels and remain separate from A–D answer choices. Unsupported wrappers and missing images still reject the batch. The September 16 Math exports were checked locally against the parser and shared math renderer; these checks do not replace visual review or live duplicate checks.
 
 The page separates file upload, question review, and import results. File inputs collapse after comparison; supplemental set administration is a separate disclosure. Search and status filters narrow the question list without clearing decisions. Shared preview styling keeps both renderings comparable. Inline guidance explains rendering choices, duplicate review, destinations, draft visibility, and grants.
 
