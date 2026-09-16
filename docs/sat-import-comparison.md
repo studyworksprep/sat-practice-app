@@ -74,7 +74,7 @@ For new questions, use **Select all questions** (or select individual rows), cho
 
 A prompt-text candidate can be marked **Not a duplicate — import as a new question** after comparing all suggestions. The new question receives its own ID, imported answer and metadata; no candidate is changed. Source-identifier matches cannot be dismissed. Insertion reviews sign the candidate IDs and update timestamps. The insertion RPC allows only those reviewed prompt matches, and still rejects identity conflicts, changed candidates, or new candidates discovered at insert time. The review export records the `importAsNew` decision. The database migration is backward compatible with previous clients and does not change the RPC signature.
 
-Requires `20260916170921_reviewed_import_false_positives.sql` before deploying the new duplicate override. Applied to development for integration validation; production deployment remains pending.
+Requires `20260916170921_reviewed_import_false_positives.sql` before deploying the new duplicate override. Applied to development and production on September 16, 2026. Production verification confirmed the reviewed-match logic, source-ID guard, advisory lock, security-invoker execution, empty search path, and authenticated-only execution grant. Application deployment remains pending.
 
 Mathpix `multirow`/`multicolumn` headings now render as HTML row/column spans, including blank placeholders below merged headings. Prose `\%` becomes `%`; math-mode escapes stay inside TeX for rendering. Regression fixtures cover grouped headings and mixed prose/math percentages.
 
