@@ -38,8 +38,9 @@ export interface PlanComposition {
   studyDays: number[] | null;
   targets: string[] | null;
   fullTests: boolean;
-  /** 1–5 per SAT domain code, from the intake self-assessment. */
-  selfRating: Record<string, number> | null;
+  /** 1–5 per SAT domain code, from the intake self-assessment; null
+   *  for a domain the student marked "not sure" (no prior). */
+  selfRating: Record<string, number | null> | null;
 }
 
 const PLAN_MODES: readonly string[] = ['foundations', 'targeted', 'self_directed'];
@@ -56,9 +57,11 @@ export function planCompositionFromRow(row: {
   const config = obj(row.config);
   const evidence = obj(config?.evidence);
   const rating = obj(evidence?.self_rating);
-  const selfRating: Record<string, number> | null = rating
+  const selfRating: Record<string, number | null> | null = rating
     ? Object.fromEntries(
-        Object.entries(rating).filter((e): e is [string, number] => typeof e[1] === 'number'),
+        Object.entries(rating).filter(
+          (e): e is [string, number | null] => typeof e[1] === 'number' || e[1] === null,
+        ),
       )
     : null;
   const days = Array.isArray(config?.study_days)

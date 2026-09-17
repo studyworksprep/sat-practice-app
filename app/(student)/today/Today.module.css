@@ -375,3 +375,15 @@
   }
   .startBtn { flex: 1 1 auto; }
 }
+
+/* ── Keep going (ahead of schedule) ── */
+.aheadCard {
+  margin-top: var(--s4);
+  padding: var(--s4);
+  border: 1px dashed var(--border-strong, var(--border));
+  border-radius: var(--radius-lg);
+  background: var(--bg-white);
+}
+.aheadTitle { font-size: 1.05rem; font-weight: 600; color: var(--fg1); margin: 0 0 var(--s1); }
+.aheadSub { color: var(--fg2); font-size: 0.9rem; line-height: 1.5; margin: 0 0 var(--s3); max-width: 58ch; }
+.weekLink { margin: var(--s2) 0 0; font-size: 0.85rem; }

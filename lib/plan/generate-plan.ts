@@ -493,7 +493,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
           // Lesson, then the drill for the same skill in the very next
           // slot — the cursor advances on the drill.
           lessonsScheduled.add(s.skillCode);
-          weekTasks.push(lessonTask(w, s, 'Learn it first — part of covering every topic in order'));
+          weekTasks.push(lessonTask(w, s, ''));
         } else {
           cursors.coverage++;
           weekTasks.push(drillTask(w, s, { code: 'coverage', attempts: s.attemptsCount }));
@@ -508,7 +508,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
         cursors.targets++;
         if (s.hasLesson && isWeak(s) && !isStrong(s) && !lessonsScheduled.has(s.skillCode)) {
           lessonsScheduled.add(s.skillCode);
-          weekTasks.push(lessonTask(w, s, 'Learn it first — a skill you chose that still needs a base'));
+          weekTasks.push(lessonTask(w, s, ''));
         } else {
           weekTasks.push(drillTask(w, s, { code: 'targets', attempts: s.attemptsCount }));
         }

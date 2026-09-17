@@ -19,6 +19,23 @@ export const INTENTS: readonly Intent[] = ['guide_me', 'own_targets'];
 export const SAT_DOMAIN_CODES = ['H', 'P', 'Q', 'S', 'INI', 'CAS', 'EOI', 'SEC'] as const;
 export type SatDomainCode = (typeof SAT_DOMAIN_CODES)[number];
 
+/** One-line "what's in this domain" for students who haven't memorized
+ *  the College Board names — shown under the domain on the self-check
+ *  and the targets picker. */
+export const DOMAIN_EXAMPLES: Record<SatDomainCode, string> = {
+  H: 'Linear equations and inequalities, systems of equations, graphs of lines',
+  P: 'Quadratics, exponents and radicals, polynomials, nonlinear functions',
+  Q: 'Ratios and percents, unit conversion, statistics, reading tables and graphs',
+  S: 'Area and volume, angles, triangles, circles, right-triangle trig',
+  INI: 'Main ideas and details, inferences, using evidence from a passage or graph',
+  CAS: 'Words in context, text structure and purpose, comparing two texts',
+  EOI: 'Transitions between sentences, choosing the right note for a goal',
+  SEC: 'Punctuation, verb agreement, sentence boundaries, modifiers',
+};
+
+/** A self-check answer: 1–5 comfort, or null for "I'm not sure". */
+export type SelfRatingValue = number | null;
+
 export interface IntakeTarget {
   domainCode: string;
   skillCode: string;
@@ -32,8 +49,9 @@ export interface IntakeState {
   weeklyHours: number | null;
   /** 0 = Sunday … 6 = Saturday. Null = unanswered. */
   studyDays: number[] | null;
-  /** 1–5 comfort per domain code. Null = unanswered. */
-  selfRating: Partial<Record<SatDomainCode, number>> | null;
+  /** Per domain: 1–5 comfort, or null for "not sure". The whole map is
+   *  null until every domain has been answered. */
+  selfRating: Partial<Record<SatDomainCode, SelfRatingValue>> | null;
   /** Self-directed: keep scheduled full-length tests (default true). */
   fullTests: boolean;
   completedAt: string | null;
@@ -112,19 +130,26 @@ export function parseStudyDays(v: unknown): number[] | null {
   return days.length > 0 ? days : null;
 }
 
-/** A complete self-rating: every domain present with an integer 1–5. */
-export function parseSelfRating(v: unknown): Partial<Record<SatDomainCode, number>> | null {
+/** A complete self-rating: every domain present, each an integer 1–5 or
+ *  null ("not sure"). A missing key means unanswered → null overall. */
+export function parseSelfRating(
+  v: unknown,
+): Partial<Record<SatDomainCode, SelfRatingValue>> | null {
   if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
-  const out: Partial<Record<SatDomainCode, number>> = {};
+  const out: Partial<Record<SatDomainCode, SelfRatingValue>> = {};
   for (const code of SAT_DOMAIN_CODES) {
+    if (!Object.hasOwn(v, code)) continue;
     const r = (v as Record<string, unknown>)[code];
-    if (Number.isInteger(r) && (r as number) >= 1 && (r as number) <= 5) out[code] = r as number;
+    if (r === null) out[code] = null;
+    else if (Number.isInteger(r) && (r as number) >= 1 && (r as number) <= 5) out[code] = r as number;
   }
   return Object.keys(out).length === SAT_DOMAIN_CODES.length ? out : null;
 }
 
-export function isSelfRatingComplete(v: Partial<Record<SatDomainCode, number>> | null): boolean {
-  return v != null && SAT_DOMAIN_CODES.every((c) => Number.isInteger(v[c]));
+export function isSelfRatingComplete(
+  v: Partial<Record<SatDomainCode, SelfRatingValue>> | null,
+): boolean {
+  return v != null && SAT_DOMAIN_CODES.every((c) => Object.hasOwn(v, c));
 }
 
 // ── Intake → generator inputs ─────────────────────────────────────
@@ -153,22 +178,42 @@ export function selfRatingToPrior(rating: number): number {
 
 // ── Wizard step ladder (§3.1) ─────────────────────────────────────
 
+// One question per screen (owner note 2026-09-17: "slower, one
+// question at a time, friendlier"). Each answer is its own column, so
+// the ladder still derives purely from data.
 export type WizardStep =
-  | 'situation'
+  | 'target'
+  | 'test_date'
+  | 'prep'
+  | 'intent'
   | 'targets'
-  | 'availability'
+  | 'hours'
+  | 'days'
   | 'assess'
   | 'build'
   | 'preview';
 
 export const WIZARD_STEP_ORDER: readonly WizardStep[] = [
-  'situation',
+  'target',
+  'test_date',
+  'prep',
+  'intent',
   'targets',
-  'availability',
+  'hours',
+  'days',
   'assess',
   'build',
   'preview',
 ];
+
+/** The question screens a student sees, in order (targets only for
+ *  own_targets). Used for "Question N of M". */
+export function questionSteps(intent: Intent | null): WizardStep[] {
+  const base: WizardStep[] = ['target', 'test_date', 'prep', 'intent'];
+  if (intent === 'own_targets') base.push('targets');
+  base.push('hours', 'days', 'assess');
+  return base;
+}
 
 export function isWizardStep(v: unknown): v is WizardStep {
   return typeof v === 'string' && (WIZARD_STEP_ORDER as readonly string[]).includes(v);
@@ -187,9 +232,13 @@ export function deriveWizardStep(args: {
   const { goal, testDate, intake, hasDraft } = args;
 
   let derived: WizardStep;
-  if (!goal || !testDate || !intake.prepLevel || !intake.intent) derived = 'situation';
+  if (!goal) derived = 'target';
+  else if (!testDate) derived = 'test_date';
+  else if (!intake.prepLevel) derived = 'prep';
+  else if (!intake.intent) derived = 'intent';
   else if (intake.intent === 'own_targets' && intake.targets.length === 0) derived = 'targets';
-  else if (!intake.weeklyHours || !intake.studyDays) derived = 'availability';
+  else if (!intake.weeklyHours) derived = 'hours';
+  else if (!intake.studyDays) derived = 'days';
   else if (!isSelfRatingComplete(intake.selfRating)) derived = 'assess';
   else if (!hasDraft) derived = 'build';
   else derived = 'preview';

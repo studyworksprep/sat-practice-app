@@ -48,6 +48,7 @@ export default async function StudentDashboardPage() {
   // derive from this single reference.
   // eslint-disable-next-line react-hooks/purity
   const nowMs = Date.now();
+  const today = new Date(nowMs).toISOString().slice(0, 10);
   const nowIso = new Date(nowMs).toISOString();
 
   // Heavy aggregate (totals + per-domain) lives behind a 60s cache
@@ -222,12 +223,22 @@ export default async function StudentDashboardPage() {
     // without a plan get pointed at the first-run wizard.
     supabase
       .from('study_plans')
-      .select('id')
+      .select('id, test_date, goal_score, mode, phases')
       .eq('student_id', user.id)
       .eq('status', 'active')
       .limit(1)
       .maybeSingle(),
   ]);
+
+  // Plan card (design doc §6.3): phase + week + this week's progress.
+  let planSummary = null;
+  if (activePlanRow) {
+    const { data: planTaskRows } = await supabase
+      .from('plan_tasks')
+      .select('week_index, scheduled_date, status')
+      .eq('plan_id', activePlanRow.id);
+    planSummary = summarizePlan(activePlanRow, planTaskRows ?? [], today);
+  }
 
   // Weekly accuracy trend for the "Your weekly progress" card.
   // Reuses the same RPC the tutor performance page calls — passing
@@ -463,6 +474,7 @@ export default async function StudentDashboardPage() {
       accountCreatedAt={fullProfile?.created_at ?? null}
       updateTargetScoreAction={updateTargetScore}
       hasActivePlan={Boolean(activePlanRow)}
+      planSummary={planSummary}
     />
   );
 }
@@ -516,4 +528,33 @@ function accuracyTone(pct) {
   if (pct >= 80) return 'good';
   if (pct >= 50) return 'ok';
   return 'warn';
+}
+
+// Compact plan state for the dashboard card: the current week (anchored
+// like lib/plan/today.ts — week 0 at the earliest scheduled task), the
+// phase that week sits in, and this week's done/total.
+function summarizePlan(plan, taskRows, todayIso) {
+  if (!taskRows.length) return null;
+  const dates = taskRows.map((t) => t.scheduled_date).filter(Boolean).sort();
+  const maxIndex = Math.max(...taskRows.map((t) => t.week_index));
+  const total = maxIndex + 1;
+  let index = 0;
+  if (dates.length) {
+    const offset = Math.round(
+      (Date.parse(`${todayIso}T00:00:00Z`) - Date.parse(`${dates[0]}T00:00:00Z`)) / 86_400_000,
+    );
+    index = Math.max(0, Math.min(Math.floor(offset / 7), maxIndex));
+  }
+  const inWeek = taskRows.filter((t) => t.week_index === index);
+  const phases = Array.isArray(plan.phases) ? plan.phases : [];
+  const phase = phases.find((p) => index >= p.start_week && index <= p.end_week) ?? null;
+  const PHASE_LABEL = { coverage: 'Coverage', focus: 'Focus', rehearsal: 'Rehearsal', targets: 'Your targets' };
+  return {
+    week: index + 1,
+    totalWeeks: total,
+    phaseLabel: phase ? PHASE_LABEL[phase.type] ?? null : null,
+    doneThisWeek: inWeek.filter((t) => t.status !== 'pending').length,
+    countThisWeek: inWeek.length,
+    goalScore: plan.goal_score ?? null,
+  };
 }

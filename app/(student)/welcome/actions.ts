@@ -1,10 +1,12 @@
 // Server Actions for the onboarding intake (docs/student-onboarding-and-
-// plan-redesign-2026-09.md §3). One verb per step — situation, targets,
-// availability, self-assessment — plus build, activate, and "set aside".
-// Each is a thin RLS-scoped write to profiles / student_intake; the page
-// derives the current step from data, so nothing here tracks wizard
-// state. Any answer change deletes the draft plan (it was built from the
-// old answers) so the ladder lands on "build" again.
+// plan-redesign-2026-09.md §3). One question per screen: saveAnswerAction
+// takes a `question` name and stores that one answer; targets and the
+// self-check have their own verbs because they submit many values at
+// once. Then build, activate, and "set aside". Each is a thin RLS-scoped
+// write to profiles / student_intake; the page derives the current step
+// from data, so nothing here tracks wizard state. Any answer change
+// deletes the draft plan (it was built from the old answers) so the
+// ladder lands on "build" again.
 
 'use server';
 
@@ -61,9 +63,12 @@ async function dropDraft(ctx: Ctx): Promise<void> {
     .eq('status', 'draft');
 }
 
-// ── Step 1: situation ─────────────────────────────────────────────
+// ── One answer at a time ──────────────────────────────────────────
 
-export async function saveSituationAction(
+const ONE_ANSWER = ['target', 'test_date', 'prep', 'intent', 'hours', 'days'] as const;
+type OneAnswer = (typeof ONE_ANSWER)[number];
+
+export async function saveAnswerAction(
   _prev: ActionResult | null,
   fd: FormData,
 ): Promise<ActionResult> {
@@ -75,41 +80,73 @@ export async function saveSituationAction(
   }
   const { user, supabase } = ctx;
 
-  const target = Number(fd.get('target'));
-  const testDate = String(fd.get('testDate') ?? '');
-  const prepLevel = fd.get('prepLevel');
-  const intent = fd.get('intent');
-  if (!Number.isFinite(target) || target < 400 || target > 1600 || target % 10 !== 0) {
-    return actionFail('Pick a target between 400 and 1600 (multiples of 10).');
+  const question = String(fd.get('question') ?? '') as OneAnswer;
+  if (!ONE_ANSWER.includes(question)) return actionFail('Unknown question.');
+
+  let err: string | null = null;
+  switch (question) {
+    case 'target': {
+      const target = Number(fd.get('target'));
+      if (!Number.isFinite(target) || target < 400 || target > 1600 || target % 10 !== 0) {
+        return actionFail('Pick a score between 400 and 1600, in steps of 10.');
+      }
+      err = (await supabase.from('profiles').update({ target_sat_score: target }).eq('id', user.id))
+        .error?.message ?? null;
+      break;
+    }
+    case 'test_date': {
+      const testDate = String(fd.get('testDate') ?? '');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(testDate)) return actionFail('Pick your test date.');
+      const today = new Date().toISOString().slice(0, 10);
+      if (testDate <= today) return actionFail('That date has passed — pick one in the future.');
+      err = (await supabase.from('profiles').update({ sat_test_date: testDate }).eq('id', user.id))
+        .error?.message ?? null;
+      break;
+    }
+    case 'prep': {
+      const prepLevel = fd.get('prepLevel');
+      if (!isPrepLevel(prepLevel)) return actionFail('Pick the one that fits best.');
+      err = await patchIntake(ctx, { prep_level: prepLevel });
+      break;
+    }
+    case 'intent': {
+      const intent = fd.get('intent');
+      if (!isIntent(intent)) return actionFail('Pick the one that fits best.');
+      // Switching away from own-targets clears the picks so a later
+      // switch back starts clean.
+      err = await patchIntake(ctx, { intent, ...(intent === 'guide_me' ? { targets: [] } : {}) });
+      break;
+    }
+    case 'hours': {
+      const weeklyHours = Number(fd.get('weeklyHours'));
+      if (!Number.isFinite(weeklyHours) || weeklyHours < 1 || weeklyHours > 40) {
+        return actionFail('Pick a number of hours between 1 and 40.');
+      }
+      err = await patchIntake(ctx, { weekly_hours: weeklyHours });
+      break;
+    }
+    case 'days': {
+      const days = [
+        ...new Set(
+          fd
+            .getAll('day')
+            .map((v) => Number(v))
+            .filter((d) => Number.isInteger(d) && d >= 0 && d <= 6),
+        ),
+      ].sort((a, b) => a - b);
+      if (days.length === 0) return actionFail('Pick at least one day.');
+      err = await patchIntake(ctx, { study_days: days });
+      break;
+    }
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(testDate)) return actionFail('Pick your test date.');
-  const today = new Date().toISOString().slice(0, 10);
-  if (testDate <= today) return actionFail('Your test date needs to be in the future.');
-  if (!isPrepLevel(prepLevel)) return actionFail('Tell us how much prep you have done so far.');
-  if (!isIntent(intent)) return actionFail('Pick how you want the plan to work.');
-
-  // Self-update rides RLS — same columns the dashboard tiles edit.
-  const { error } = await supabase
-    .from('profiles')
-    .update({ target_sat_score: target, sat_test_date: testDate })
-    .eq('id', user.id);
-  if (error) return actionFail(error.message);
-
-  const intakeErr = await patchIntake(ctx, {
-    prep_level: prepLevel,
-    intent,
-    // Switching away from own-targets clears the picks so a later
-    // switch back starts clean.
-    ...(intent === 'guide_me' ? { targets: [] } : {}),
-  });
-  if (intakeErr) return actionFail(intakeErr);
+  if (err) return actionFail(err);
 
   await dropDraft(ctx);
   revalidatePath('/welcome');
   return { ok: true };
 }
 
-// ── Step 2: targets (own_targets only) ────────────────────────────
+// ── Targets (own_targets only) ────────────────────────────────────
 
 export async function saveTargetsAction(
   _prev: ActionResult | null,
@@ -143,42 +180,7 @@ export async function saveTargetsAction(
   return { ok: true };
 }
 
-// ── Step 3: availability ──────────────────────────────────────────
-
-export async function saveAvailabilityAction(
-  _prev: ActionResult | null,
-  fd: FormData,
-): Promise<ActionResult> {
-  let ctx: Ctx;
-  try {
-    ctx = await requireStudent();
-  } catch (err) {
-    return asFail(err);
-  }
-
-  const weeklyHours = Number(fd.get('weeklyHours'));
-  if (!Number.isFinite(weeklyHours) || weeklyHours < 1 || weeklyHours > 40) {
-    return actionFail('Weekly hours must be between 1 and 40.');
-  }
-  const days = [
-    ...new Set(
-      fd
-        .getAll('day')
-        .map((v) => Number(v))
-        .filter((d) => Number.isInteger(d) && d >= 0 && d <= 6),
-    ),
-  ].sort((a, b) => a - b);
-  if (days.length === 0) return actionFail('Pick at least one day you can study.');
-
-  const intakeErr = await patchIntake(ctx, { weekly_hours: weeklyHours, study_days: days });
-  if (intakeErr) return actionFail(intakeErr);
-
-  await dropDraft(ctx);
-  revalidatePath('/welcome');
-  return { ok: true };
-}
-
-// ── Step 4: self-assessment → build ───────────────────────────────
+// ── Self-check → build ────────────────────────────────────────────
 
 export async function saveAssessmentAction(
   _prev: ActionResult | null,
@@ -191,11 +193,17 @@ export async function saveAssessmentAction(
     return asFail(err);
   }
 
-  const rating: Record<string, number> = {};
+  // Each domain: "1".."5", or "unsure" (stored as null — no prior).
+  const rating: Record<string, number | null> = {};
   for (const code of SAT_DOMAIN_CODES) {
-    const r = Number(fd.get(`rating_${code}`));
+    const raw = String(fd.get(`rating_${code}`) ?? '');
+    if (raw === 'unsure') {
+      rating[code] = null;
+      continue;
+    }
+    const r = Number(raw);
     if (!Number.isInteger(r) || r < 1 || r > 5) {
-      return actionFail('Rate every area from 1 to 5 — there are no wrong answers.');
+      return actionFail('Answer every area — "not sure" is a fine answer.');
     }
     rating[code] = r;
   }
@@ -226,7 +234,7 @@ export async function buildPlanAction(
 }
 
 /** Generate the draft from the profile + intake row. Shared by the
- *  assessment step (auto-build) and the explicit build/rebuild button. */
+ *  self-check (auto-build) and the explicit build/rebuild button. */
 async function buildFromIntake(ctx: Ctx): Promise<ActionResult> {
   const { user, supabase } = ctx;
 
@@ -257,8 +265,8 @@ async function buildFromIntake(ctx: Ctx): Promise<ActionResult> {
   const testDate = String(profile.sat_test_date).slice(0, 10);
 
   // Fold any practice the student has already done into the mastery
-  // snapshot so the plan reflects it. Best-effort: a failure degrades
-  // the plan's inputs, it must not block plan creation.
+  // snapshot so the plan reflects it. Best-effort: a failure here
+  // degrades the plan's inputs, it must not block plan creation.
   const { error: snapErr } = await supabase.rpc('snapshot_student_skill_mastery', {
     p_student: user.id,
   });
@@ -279,7 +287,7 @@ async function buildFromIntake(ctx: Ctx): Promise<ActionResult> {
     studyDays: intake.studyDays,
     targets: intake.targets.map((t) => t.skillCode),
     fullTests: intake.fullTests,
-    selfRating: intake.selfRating as Record<string, number> | null,
+    selfRating: intake.selfRating as Record<string, number | null> | null,
   });
   return res.ok ? { ok: true } : res;
 }
@@ -302,9 +310,9 @@ export async function activateFirstPlanAction(
   const res = await activatePlan(planId);
   if (!res.ok) return res;
 
-  // The sidebar's Today anchor is decided in the student layout, which
-  // a soft redirect would not re-render — invalidate the layout so the
-  // student lands on Today with Today in the nav.
+  // The sidebar's Today/Plan anchors are decided in the student layout,
+  // which a soft redirect would not re-render — invalidate the layout so
+  // the student lands on Today with the plan in the nav.
   revalidatePath('/', 'layout');
 
   const intakeErr = await patchIntake(ctx, { completed_at: new Date().toISOString() });

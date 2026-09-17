@@ -50,7 +50,7 @@ export interface GenerateStudyPlanArgs {
   studyDays?: number[] | null;
   targets?: string[] | null;
   fullTests?: boolean;
-  selfRating?: Record<string, number> | null;
+  selfRating?: Record<string, number | null> | null;
 }
 
 export async function generateStudyPlan(
@@ -117,7 +117,7 @@ export async function generateStudyPlan(
         studyDays: intake.studyDays,
         targets: intake.targets.map((t) => t.skillCode),
         fullTests: intake.fullTests,
-        selfRating: intake.selfRating as Record<string, number> | null,
+        selfRating: intake.selfRating as Record<string, number | null> | null,
       };
     } else {
       mode = rawSkills.some((s) => s.attemptsCount >= LOW_EVIDENCE_ATTEMPTS)

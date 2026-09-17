@@ -135,7 +135,8 @@ export default async function TodayPage({ searchParams }: PageProps) {
       {wasAutoRepaced && (
         <div className={s.repaceNote}>
           Your plan was updated this week to match your progress — the
-          schedule below reflects where you are now.
+          schedule below reflects where you are now.{' '}
+          <Link href="/plan" className={s.inlineLink}>See the plan</Link>
         </div>
       )}
 
@@ -190,6 +191,22 @@ export default async function TodayPage({ searchParams }: PageProps) {
         </section>
       )}
 
+      {/* ---------- Keep going (ahead of schedule) ---------- */}
+      {view.due.length === 0 && !view.planFinished && view.ahead.length > 0 && (
+        <section className={s.aheadCard}>
+          <h2 className={s.aheadTitle}>Want to get ahead?</h2>
+          <p className={s.aheadSub}>
+            These are next on your plan. Doing them now moves you ahead of schedule — the plan
+            keeps its order, you just reach it sooner.
+          </p>
+          <div className={s.taskList}>
+            {view.ahead.map((t) => (
+              <TaskCard key={t.id} task={t} isPrimary={false} today={today} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ---------- Week progress ---------- */}
       {view.week && view.week.count > 0 && (
         <section className={s.weekCard}>
@@ -213,10 +230,11 @@ export default async function TodayPage({ searchParams }: PageProps) {
               style={{ width: `${Math.round((view.week.done / view.week.count) * 100)}%` }}
             />
           </div>
+          <p className={s.weekLink}>
+            <Link href="/plan" className={s.inlineLink}>See the whole plan →</Link>
+          </p>
         </section>
       )}
-
-      <MasteryNote />
     </main>
   );
 }
@@ -253,34 +271,6 @@ function Header({
         )}
       </div>
     </header>
-  );
-}
-
-// The one place mastery is explained, for the student who wonders where
-// "why this task" comes from. Collapsed by default and last on the page,
-// so it costs nothing to the student who doesn't care — and a native
-// <details> keeps this page free of client islands (see file header).
-function MasteryNote() {
-  return (
-    <details className={s.masteryNote}>
-      <summary className={s.masteryNoteSummary}>How progress is measured</summary>
-      <div className={s.masteryNoteBody}>
-        <p>
-          Every skill has a mastery score out of 100, and 80 counts as
-          mastered. It goes up when you answer correctly — faster on harder
-          questions — but it only climbs as high as your practice count
-          allows, because four right answers in a row aren&rsquo;t enough to
-          be sure of anything. Getting a few right in the last couple of
-          weeks adds a small bonus on top.
-        </p>
-        <p>
-          So a skill you&rsquo;re doing well on can still sit low: you
-          haven&rsquo;t done enough of it yet. That&rsquo;s also why this
-          isn&rsquo;t your accuracy percentage — that one lives on your{' '}
-          <Link href="/dashboard" className={s.inlineLink}>dashboard</Link>.
-        </p>
-      </div>
-    </details>
   );
 }
 
