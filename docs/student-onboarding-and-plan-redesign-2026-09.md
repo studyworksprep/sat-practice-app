@@ -2,7 +2,7 @@
 
 > **Status: Living document.** Last verified against code: 2026-09-15
 > (Phase 1 implemented on branch `claude/student-signup-flow-issues-3280fb`;
-> migration applied to dev, pending prod). Design settled with the
+> migrations applied to dev and production 2026-09-17). Design settled with the
 > owner on 2026-09-14; the delivery ledger at the end is the working
 > state. Supersedes the first-run wizard section (§6.4) of
 > `upgrade-plan-2026-07.md`.
@@ -450,7 +450,7 @@ the existing path; the report row links to the resulting
 | `config` | jsonb (existing) | adds `study_days: [0..6]`, `full_tests`, `evidence: { self_rating }` (Phase 3 adds `domain_prior`), `targets: [skill_code]` |
 
 Migration: `supabase/migrations/20260915120000_student_intake_and_plan_phases.sql`
-(applied to dev 2026-09-15; apply to prod with the Phase 1 deploy).
+(applied to dev 2026-09-15 and to production 2026-09-17).
 
 `plan_tasks.payload` gains `phase` (type string) and the new
 `why_code` values. No new task columns.

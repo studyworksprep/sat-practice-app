@@ -73,7 +73,8 @@ creating a new account, from **Admin → Users → the student → Testing**
    every `*@test.studyworks` student.
 2. **Reset to first login**: type the account's email to confirm. One
    transactional DB function (`reset_test_student`, migration
-   `20260917120000_test_student_reset.sql`) deletes everything the
+   `20260917120000_test_student_reset.sql`, applied to dev and
+   production 2026-09-17) deletes everything the
    student generated — attempts, sessions, plans and tasks, the intake
    row, mastery snapshots, review queue, lesson progress, notes, error
    notes, flashcards, saved calculator states, ACT and practice-test
