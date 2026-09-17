@@ -283,3 +283,10 @@ insert into public.practice_test_attempts_v2 (
   ('c3000001-0000-0000-0000-000000000001', '33333333-3333-3333-3333-333333333333',
    'c0000001-0000-0000-0000-000000000001', now() - interval '1 day', 'in_progress', 'app')
 on conflict (id) do nothing;
+
+-- Seeded students are test accounts: an admin can put them back at
+-- first login with reset_test_student() (migration
+-- 20260917120000_test_student_reset.sql) from /admin/users/<id>.
+update public.profiles
+   set is_test = true
+ where role = 'student' and email like '%@test.studyworks';

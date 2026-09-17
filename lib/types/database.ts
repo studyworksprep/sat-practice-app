@@ -2638,6 +2638,7 @@ export type Database = {
           id: string
           is_active: boolean
           is_demo: boolean
+          is_test: boolean
           last_name: string | null
           lessonworks_organization_id: string | null
           lessonworks_student_id: string | null
@@ -2663,6 +2664,7 @@ export type Database = {
           id: string
           is_active?: boolean
           is_demo?: boolean
+          is_test?: boolean
           last_name?: string | null
           lessonworks_organization_id?: string | null
           lessonworks_student_id?: string | null
@@ -2688,6 +2690,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_demo?: boolean
+          is_test?: boolean
           last_name?: string | null
           lessonworks_organization_id?: string | null
           lessonworks_student_id?: string | null
@@ -5076,6 +5079,10 @@ export type Database = {
       redeem_class_invite: { Args: { invite_code: string }; Returns: string }
       refresh_feature_efficacy: { Args: never; Returns: number }
       refresh_item_stats: { Args: never; Returns: number }
+      reset_test_student: {
+        Args: { p_resend_welcome?: boolean; p_student: string }
+        Returns: Json
+      }
       sat_scaled_for_raw: {
         Args: { p_raw: number; p_section: string }
         Returns: number
