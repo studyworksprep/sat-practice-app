@@ -61,3 +61,35 @@ The script creates three fixed-ID assignments, three synthetic roster members pe
 | Generated attempts | 106 |
 
 The expected assignment sizes are 12 math questions, 12 Reading and Writing questions, and 16 mixed questions.
+
+## Resetting a test student to first login
+
+Admins can put a flagged student back at "first login" without
+creating a new account, from **Admin → Users → the student → Testing**
+(2026-09-17):
+
+1. Flag the account as a **test account** (`profiles.is_test`). Only
+   students can be flagged, never demo accounts. The dev seed flags
+   every `*@test.studyworks` student.
+2. **Reset to first login**: type the account's email to confirm. One
+   transactional DB function (`reset_test_student`, migration
+   `20260917120000_test_student_reset.sql`) deletes everything the
+   student generated — attempts, sessions, plans and tasks, the intake
+   row, mastery snapshots, review queue, lesson progress, notes, error
+   notes, flashcards, saved calculator states, ACT and practice-test
+   attempts, reading-coach sessions, official scores — and clears
+   target score, test date, and the practice-test import stamp. It
+   keeps the auth user, name/email, role, tutor and class links,
+   assignments, subscription/entitlement rows, invite-code claims, and
+   tutor-authored notes.
+3. Optional **re-send the welcome email** (clears
+   `welcome_email_sent_at`); off by default so resets do not spam the
+   test inbox.
+
+Guards live inside the function and are re-checked there: caller must
+be an admin, target must be a flagged student, never demo, and never an
+account with an active/trialing/past-due subscription. The dismissed
+help-banner state lives in the browser, so a fully clean run means a
+private window. The Playwright onboarding spec
+(`tests/e2e/onboarding.student.spec.ts`) uses the same function via the
+admin storage state to reset `student4` before walking the intake.

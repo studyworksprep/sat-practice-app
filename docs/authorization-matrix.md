@@ -60,7 +60,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/lessons/review/[revisionId]/actions.ts` | `requestRevisionChanges`, `rejectRevision`, `publishRevision` | requireRole[admin] + assertWriter |
 | `app/(admin)/admin/questions/new/actions.js` | `listQuestionSources`, `createQuestion` | requireRole[admin] |
 | `app/(admin)/admin/reading-coach/actions.ts` | `importReadingCoachSpec`, `publishReadingCoachVersionAction`, `archiveReadingCoachItemAction` | requireRole[admin] |
-| `app/(admin)/admin/users/[userId]/actions.js` | `updateProfileFields`, `changeRole`, `toggleActive`, `banUser`, `unbanUser`, `deleteUser`, `assignTeacherStudent`, `unassignTeacherStudent`, `assignManagerTeacher`, `unassignManagerTeacher` | requireRole[admin] + requireServiceRole |
+| `app/(admin)/admin/users/[userId]/actions.js` | `updateProfileFields`, `changeRole`, `toggleActive`, `banUser`, `unbanUser`, `deleteUser`, `assignTeacherStudent`, `unassignTeacherStudent`, `assignManagerTeacher`, `unassignManagerTeacher`, `setTestFlag`, `resetTestStudent` | requireRole[admin] + requireServiceRole + rateLimit |
 | `app/(admin)/admin/users/codes/actions.js` | `createTeacherCode`, `revokeTeacherCode`, `inviteStudent`, `revokeStudentInvite` | requireRole[admin] |
 | `app/(student)/assignments/[id]/actions.js` | `startAssignmentPractice` | requireUser + rateLimit |
 | `app/(student)/dashboard/actions.js` | `updateTargetScore` | requireUser |

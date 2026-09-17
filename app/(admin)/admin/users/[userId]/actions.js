@@ -7,6 +7,8 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { requireRole, requireServiceRole } from '@/lib/api/auth';
 import { actionOk, actionFail, ApiError } from '@/lib/api/response';
+import { rateLimit } from '@/lib/api/rateLimit';
+import { logger } from '@/lib/api/logger';
 
 // Mirrors the profiles.role CHECK constraint. `contributor` is the
 // outside-Bluebook-contributor role: no roster, no subscription, reaches
@@ -416,4 +418,114 @@ function numberOrNull(v) {
   if (typeof v !== 'string' || v.trim() === '') return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
+}
+
+// ── Test accounts ─────────────────────────────────────────────────
+//
+// profiles.is_test marks an account that exists for testing; only a
+// flagged student can be reset. The reset itself is one transactional
+// DB function (reset_test_student, migration 20260917120000) that
+// re-checks admin + flag + not-demo + no-live-subscription inside the
+// database, so this action is a thin, logged wrapper.
+
+/**
+ * Toggle profiles.is_test. Only students can be flagged (the reset
+ * only means something for a student), and never a demo account.
+ */
+export async function setTestFlag(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await requireRole(['admin']);
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  let userId;
+  try {
+    userId = getUserId(formData);
+  } catch (err) {
+    return err.toActionResult();
+  }
+  const isTest = formData.get('is_test') === 'true';
+
+  const { data: target } = await ctx.supabase
+    .from('profiles')
+    .select('role, is_demo')
+    .eq('id', userId)
+    .maybeSingle();
+  if (!target) return actionFail('User not found.');
+  if (isTest && target.role !== 'student') {
+    return actionFail('Only student accounts can be flagged as test accounts.');
+  }
+  if (isTest && target.is_demo) {
+    return actionFail('Demo accounts are read-only and cannot be test accounts.');
+  }
+
+  const { error } = await ctx.supabase
+    .from('profiles')
+    .update({ is_test: isTest })
+    .eq('id', userId);
+  if (error) return actionFail(`Failed: ${error.message}`);
+
+  logger.info(
+    { event: 'admin_test_flag', admin_id: ctx.user.id, user_id: userId, is_test: isTest },
+    'admin_test_flag',
+  );
+  revalidatePath(`/admin/users/${userId}`);
+  return actionOk({ is_test: isTest });
+}
+
+/**
+ * Put a flagged test student back at first login. Form contract:
+ *   user_id         — required
+ *   confirm         — must equal the account's email
+ *   resend_welcome  — optional; "on" clears welcome_email_sent_at so
+ *                     the welcome email fires again on next login
+ */
+export async function resetTestStudent(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await requireRole(['admin']);
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  let userId;
+  try {
+    userId = getUserId(formData);
+  } catch (err) {
+    return err.toActionResult();
+  }
+
+  const rl = await rateLimit(`admin-reset-test:${ctx.user.id}`, { limit: 10, windowMs: 60_000 });
+  if (!rl.ok) return actionFail('Too many resets in a minute. Wait and try again.');
+
+  const { data: target } = await ctx.supabase
+    .from('profiles')
+    .select('email, is_test, role')
+    .eq('id', userId)
+    .maybeSingle();
+  if (!target) return actionFail('User not found.');
+  if (!target.is_test) return actionFail('Flag this account as a test account first.');
+  const typed = String(formData.get('confirm') ?? '').trim().toLowerCase();
+  if (!target.email || typed !== target.email.toLowerCase()) {
+    return actionFail('Type the account email exactly to confirm.');
+  }
+  const resendWelcome = formData.get('resend_welcome') != null;
+
+  const { data, error } = await ctx.supabase.rpc('reset_test_student', {
+    p_student: userId,
+    p_resend_welcome: resendWelcome,
+  });
+  if (error) return actionFail(`Reset failed: ${error.message}`);
+
+  logger.info(
+    { event: 'admin_test_student_reset', admin_id: ctx.user.id, user_id: userId, result: data },
+    'admin_test_student_reset',
+  );
+  revalidatePath(`/admin/users/${userId}`);
+  const deleted = data && typeof data === 'object' ? data.deleted ?? {} : {};
+  return actionOk({ deleted });
 }

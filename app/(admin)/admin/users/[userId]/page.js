@@ -17,6 +17,7 @@ import { UserEditForm } from './UserEditForm';
 import { RoleChanger } from './RoleChanger';
 import { StatusActions } from './StatusActions';
 import { Relationships } from './Relationships';
+import { TestingActions } from './TestingActions';
 import a from '../../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -34,7 +35,7 @@ export default async function AdminUserDetailPage({ params }) {
   const { data: subject, error } = await supabase
     .from('profiles')
     .select(
-      'id, email, first_name, last_name, role, is_active, banned_at, subscription_exempt, target_sat_score, high_school, graduation_year, tutor_name, sat_test_date, created_at',
+      'id, email, first_name, last_name, role, is_active, banned_at, subscription_exempt, target_sat_score, high_school, graduation_year, tutor_name, sat_test_date, created_at, is_test, is_demo',
     )
     .eq('id', userId)
     .maybeSingle();
@@ -99,6 +100,16 @@ export default async function AdminUserDetailPage({ params }) {
       <Section title="Relationships">
         <Relationships supabase={supabase} subject={subject} />
       </Section>
+
+      {subject.role === 'student' && !subject.is_demo && (
+        <Section title="Testing">
+          <TestingActions
+            userId={subject.id}
+            email={subject.email}
+            isTest={subject.is_test === true}
+          />
+        </Section>
+      )}
 
       <Section title="Status & deletion" tone="danger">
         <StatusActions
