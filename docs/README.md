@@ -32,6 +32,7 @@ authorization matrix to prove it's fresh.
 | `lesson-voice-rewrites-2026-09.md` | Per-lesson voice rewrites (plan step 6.2) — a handle for the move, opener, closer, and retrieval stem, was vs. proposed; **approved and applied 2026-09-03**, frozen as the record of what was replaced |
 | `runbook.md` | Operational runbook (incidents, deploys, hotfix migrations, e2e) |
 | `database.md` | Schema operations + safe service-role usage |
+| `sat-import-comparison.md` | Reviewed bulk imports, guarded replacements, searchable supplemental access, and local testing |
 | `billing.md` | Subscription enforcement, the Stripe webhook contract, reconciliation |
 | `lesson-json-authoring-guide.md` | Lesson JSON authoring format |
 | `design/runner-spec.md` | Runner design contract — the codified Bluebook exception (parity-locked vs brand-adjustable) |

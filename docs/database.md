@@ -308,7 +308,7 @@ question bank has two visibility pools:
   pre-existing rows.
 - `pool = 'opt_in'` — externally sourced import batches (e.g. the
   March 2026 SAT reconstruction set). Served to a student **only**
-  when they select the batch in the practice launcher's "Extra
+  when they have a per-set access grant and select the batch in the practice launcher's "Extra
   practice sets" section, or through explicit by-id selection
   (quick-find click-through, lesson packs, admin surfaces).
 
@@ -328,6 +328,8 @@ mid-session difficulty detour, tutor assignment generation, and
 tutor training practice. Attempt-driven surfaces (weak-questions
 drill, review-queue question leg) are deliberately unfiltered — they
 only resurface questions the student already answered.
+
+Supplemental importer access migrations (development and production verified 2026-09-15) add `question_batch_access` and restrictive read policies. Admins grant/revoke individual student access; staff retain review access. Student access requires published, active questions, even for direct ID queries. Anonymous supplemental reads are denied. See `sat-import-comparison.md` for migration order and verification.
 
 Import mechanics: importers stamp `source` + `source_external_id`
 per question (now enforced unique where non-null, so a re-run
