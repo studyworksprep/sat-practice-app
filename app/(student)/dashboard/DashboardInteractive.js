@@ -51,6 +51,8 @@ export function DashboardInteractive({
   updateTargetScoreAction,
   // §6.4: no active study plan → point at the first-run wizard.
   hasActivePlan = false,
+  // Design doc §6.3: with a plan, a compact card replaces the callout.
+  planSummary = null,
 }) {
   const [optimisticTarget, setOptimisticTarget] = useOptimistic(
     stats.targetScore,
@@ -111,6 +113,28 @@ export function DashboardInteractive({
           </Link>
         </div>
       </section>
+
+      {/* ---------- Plan card (design doc §6.3) ---------- */}
+      {hasActivePlan && planSummary && (
+        <section className={s.planCallout}>
+          <div>
+            <div className={s.planCalloutTitle}>
+              Your plan · week {planSummary.week} of {planSummary.totalWeeks}
+              {planSummary.phaseLabel ? ` · ${planSummary.phaseLabel}` : ''}
+            </div>
+            <div className={s.planCalloutBody}>
+              {planSummary.countThisWeek > 0
+                ? `${planSummary.doneThisWeek} of ${planSummary.countThisWeek} tasks done this week.`
+                : 'Nothing scheduled this week.'}
+              {' '}Today shows what to do next; the plan page shows every week and how far you are.
+            </div>
+          </div>
+          <div className={s.bannerActions}>
+            <Link href="/plan" className={s.btnSecondary}>See the plan</Link>
+            <Link href="/today" className={s.btnPrimary}>Today</Link>
+          </div>
+        </section>
+      )}
 
       {/* ---------- Study-plan setup callout (§6.4) ---------- */}
       {!hasActivePlan && (

@@ -128,6 +128,11 @@ function legacyHeadroomWhy(stored: string): string | null {
   return 'Early days on this skill — more practice will show where you stand';
 }
 
+/** Reason codes that are kept on the payload for the record but never
+ *  rendered: the plan's structure already says why a coverage or
+ *  targets task is there (owner note 2026-09-17: the line was noise). */
+const SILENT_WHY_CODES: ReadonlySet<DrillWhyCode> = new Set(['coverage', 'targets']);
+
 /** Why-this line for a plan task, or null when it carries none.
  *
  *  Precedence: the stored reason code (copy owned here) → a stored
@@ -137,6 +142,7 @@ function legacyHeadroomWhy(stored: string): string | null {
 export function planTaskWhy(payload: unknown): string | null {
   const code = str(payload, 'why_code');
   if (isDrillWhyCode(code)) {
+    if (SILENT_WHY_CODES.has(code)) return null;
     return renderDrillWhy(code, num(payload, 'why_attempts') ?? 0);
   }
   const stored = str(payload, 'why');

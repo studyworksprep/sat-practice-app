@@ -205,3 +205,64 @@
 .skipBtn:disabled, .linkBtn:disabled { opacity: 0.55; cursor: default; }
 .setAside { margin-top: var(--s2); text-align: center; }
 .previewActions { margin-top: var(--s4); }
+
+/* ── One question per screen (owner notes 2026-09-17) ── */
+.progress { display: flex; flex-direction: column; gap: var(--s1); max-width: 420px; }
+.progressBar { height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.progressFill { height: 100%; background: var(--color-app-accent); transition: width var(--dur-fast) var(--ease-std); }
+.progressLabel { font-size: 0.8rem; color: var(--fg3); }
+
+.inputBig { font-size: 1.25rem; padding: var(--s3) var(--s3); max-width: 240px; }
+.hint { margin: 0; font-size: 0.85rem; color: var(--fg3); line-height: 1.45; }
+.choiceStack { display: flex; flex-direction: column; gap: var(--s2); }
+.backRow { margin-top: var(--s3); }
+.backLink { color: var(--fg3); font-size: 0.85rem; text-decoration: none; }
+.backLink:hover { color: var(--color-app-accent); text-decoration: underline; }
+
+.skillExample { display: block; font-weight: 400; font-size: 0.75rem; color: var(--fg3); line-height: 1.4; }
+
+.selfCheck { display: flex; flex-direction: column; gap: var(--s2); }
+.selfCheckProgress { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--fg3); }
+.selfCheckName { font-family: var(--font-serif); font-size: 1.5rem; color: var(--fg1); }
+.selfCheckSection { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-app-accent); }
+.selfCheckExample { margin: 0 0 var(--s2); font-size: 0.9rem; color: var(--fg2); line-height: 1.5; max-width: 52ch; }
+.ratingButtons { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--s2); max-width: 520px; }
+.ratingBtn {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--s3) var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  color: var(--fg1);
+  cursor: pointer;
+  min-height: 64px;
+  transition: border-color var(--dur-fast) var(--ease-std), background var(--dur-fast) var(--ease-std);
+}
+.ratingBtn:hover { border-color: var(--color-app-accent); }
+.ratingBtnOn { background: var(--color-app-accent); border-color: var(--color-app-accent); color: #fff; }
+.ratingBtnNum { font-weight: 700; font-size: 1.1rem; }
+.ratingBtnSub { font-size: 0.68rem; line-height: 1.2; text-align: center; opacity: 0.85; }
+.unsureBtn {
+  appearance: none;
+  align-self: flex-start;
+  padding: var(--s2) var(--s3);
+  border: 1px dashed var(--border-strong, var(--border));
+  border-radius: 999px;
+  background: none;
+  color: var(--fg2);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.unsureBtn:hover { border-color: var(--color-app-accent); color: var(--color-app-accent); }
+@media (max-width: 480px) {
+  .ratingButtons { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+  .ratingBtnSub { display: none; }
+}
+
+/* A lone field in the column form must not take the row flex-basis as
+   its height (the 160px basis is for .fieldRow). */
+.form > .field { flex: 0 0 auto; max-width: 280px; }

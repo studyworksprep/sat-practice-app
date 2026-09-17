@@ -1,8 +1,8 @@
 # Student onboarding and study-plan redesign
 
-> **Status: Living document.** Last verified against code: 2026-09-15
-> (Phase 1 implemented on branch `claude/student-signup-flow-issues-3280fb`;
-> migrations applied to dev and production 2026-09-17). Design settled with the
+> **Status: Living document.** Last verified against code: 2026-09-17
+> (Phase 1 and Phase 2 implemented; migrations applied to dev and
+> production 2026-09-17; owner notes of 2026-09-17 folded in — see §3.4). Design settled with the
 > owner on 2026-09-14; the delivery ledger at the end is the working
 > state. Supersedes the first-run wizard section (§6.4) of
 > `upgrade-plan-2026-07.md`.
@@ -198,6 +198,31 @@ plan* (activates and redirects to `/today`), *Change something*
 (returns to the step the student picks). This replaces the current
 "N weeks · M tasks" card.
 
+### 3.3a Owner notes applied 2026-09-17
+
+After walking the shipped Phase 1, the owner asked for four changes;
+all are implemented:
+
+1. **One question per screen, friendlier tone.** The situation and
+   availability cards were split into single questions — target, test
+   date, prep level, intent, (targets), hours, days — each with its
+   own reassurance line and a "Question N of M" progress bar. Every
+   answer is its own column, so the ladder still derives from data
+   (`questionSteps`, `deriveWizardStep` in `lib/plan/intake.ts`).
+2. **Self-check: "I'm not sure" and domain examples.** The eight-domain
+   comfort check walks one domain at a time, shows a one-line example
+   of what the domain covers (`DOMAIN_EXAMPLES`), and offers "I'm not
+   sure", stored as null (no prior for that domain). The targets picker
+   shows the same example under each domain name.
+3. **No reason line on coverage or targets tasks.** The `coverage` and
+   `targets` reason codes stay on the payload for the record but render
+   nothing; the plan's structure already says why those tasks exist.
+   Evidence-based reasons (self-rated low, decayed, and so on) still
+   render.
+4. **A place to see the plan and get ahead.** The `/plan` hub (§6) is
+   live, and Today offers "Want to get ahead?" with the next three
+   pending tasks, startable now, whenever today's list is clear.
+
 ### 3.3 What happens to existing surfaces
 
 | Surface | Change |
@@ -325,9 +350,10 @@ Two additions:
   you entered showed this area as weak") and `self_rated_low` ("You
   rated this area as uncomfortable"), rendered by
   `lib/plan/task-labels.ts`. Coverage-phase tasks carry
-  `why_code = 'coverage'` ("Part of covering every topic in order").
-  This is the first place the plan visibly reflects what the student
-  told it.
+  `why_code = 'coverage'` and self-directed tasks `'targets'`, kept for
+  the record but **not rendered** (owner note 3, 2026-09-17): the
+  plan's structure already explains them. Evidence-based reasons are
+  the first place the plan visibly reflects what the student told it.
 
 ### 5.4 Deriving the evidence prior
 
@@ -496,7 +522,7 @@ coherent state. Order is by leverage against the funnel.
 | Phase | Scope | Acceptance |
 |---|---|---|
 | **1 · Intake and routing** — **implemented 2026-09-15** | Steps 1, 3, 4, 5, 6 of §3 (no evidence branch yet: prep = some/a_lot go straight to availability); signup shrink; login routes new students to `/welcome`; help redirect removed; welcome email and getting-started copy updated; diagnostic code removed. Generator gains `mode` and phases with the self-assessment prior only. Preview renders phases and rationale via the shared `PlanOverview`; `rationale` and `phases` stored. Re-pace and week regeneration compose in the plan's stored mode. | Walked in dev 2026-09-15 as a fresh student: login → `/welcome` → self-directed plan → `/today` with no help or practice-session detour; `/welcome` never dead-ends ("I'll do this later" ends routing). Unit tests cover the three modes, phase layout, priors, study days, and the step ladder (`lib/plan/phase-composer.test.mjs`, `intake.test.mjs`). No new Playwright spec: CI's e2e job runs against its own bank and the seeded student already has a plan, so a wizard walk there would be unreproducible — see `docs/runbook.md` e2e notes. |
-| **2 · Plan hub** | `/plan` per §6, sidebar anchor, dashboard plan card, Today link, adjust + rebuild flows, phase-aware re-pace. `MasteryNote` moves. | A student with an active plan can see every week, change hours or date with a preview of the effect, and rebuild. Tutor editor unaffected. |
+| **2 · Plan hub** — **implemented 2026-09-17** | `/plan` per §6: header with target/date/countdown/tasks done, "right now" (week, phase, this week's bar, rationale), "up next" with Start buttons (also the "get ahead" path), progress by section from `get_student_coverage`, the week-by-week `PlanOverview` with the current week open, and Adjust (target, date, hours, days) + Rebuild. Both verbs regenerate the remaining weeks **in place** (`regenerateRemainingTasks`): same plan id, completed history and human-authored tasks kept, phases laid over the original grid. Sidebar anchor Today · Plan · Dashboard; dashboard plan card; Today links to the hub and offers "Want to get ahead?"; `MasteryNote` moved. | Walked in dev 2026-09-17 (e2e `onboarding.student.spec.ts` reaches `/plan` and checks week/phase/progress). Deviation from §6.2: adjust applies immediately with a result line rather than a before/after preview — the preview is Phase 4 polish if wanted. Legacy plans (no `phases`) render without the phase strip. |
 | **3 · Evidence branch** | `student_score_reports`; manual domain entry form; student-scoped Bluebook upload with the illustrated walkthrough; evidence prior (§5.4) and reason codes wired through the generator; hub shows reported tests. | A targeted-mode student who enters two reports gets a plan whose first-week drills carry `prior_weak` reasons for their weakest domains. An upload of an ingested test yields item attempts visible in the hub. |
 | **4 · Content** | Help rewrite with screenshots; Bluebook walkthrough screenshots; retire `/learn/getting-started`. | Help describes the sidebar app; every help article that names a surface shows it. |
 

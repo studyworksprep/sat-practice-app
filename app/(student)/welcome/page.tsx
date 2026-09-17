@@ -1,44 +1,48 @@
 // Onboarding intake (docs/student-onboarding-and-plan-redesign-2026-09.md
-// §3): situation → (targets) → availability → self-assessment → build →
-// preview/activate. A brand-new self-serve student goes signup → here →
-// an activated, phased plan with no human involvement.
+// §3), one question per screen: target → test date → prep → intent →
+// (targets) → hours → days → self-check → build → preview/activate. A
+// brand-new self-serve student goes signup → here → an activated, phased
+// plan with no human involvement.
 //
 // STATELESS step machine: every visit derives the current step from
-// data (profile goal/date, the student_intake row, any draft plan), so
-// the wizard survives leaving mid-flow. ?step=… revisits an earlier
-// step with the answers prefilled; it never jumps ahead. The ladder
-// itself is pure (lib/plan/intake.ts) and unit-tested.
-//
-// No diagnostic: evidence comes from the student's answers now and from
-// the coverage phase of the plan as they work (design doc §2).
+// data (each answer is its own column on profiles / student_intake, plus
+// any draft plan), so the wizard survives leaving mid-flow. ?step=…
+// revisits an earlier question with the answer prefilled; it never
+// jumps ahead. The ladder itself is pure (lib/plan/intake.ts) and
+// unit-tested.
 
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { normalizePhases, PlanOverview } from '@/lib/ui/PlanOverview';
 import {
+  DOMAIN_EXAMPLES,
   SAT_DOMAIN_CODES,
   deriveWizardStep,
   parseIntakeRow,
+  questionSteps,
   shouldRouteToWelcome,
 } from '@/lib/plan/intake';
 import type { WizardStep } from '@/lib/plan/intake';
 import { SAT_TAXONOMY, findDomain } from '@/lib/practice/sat-taxonomy';
 import type { PlanMode } from '@/lib/plan/generate-plan';
 import {
-  saveSituationAction,
+  saveAnswerAction,
   saveTargetsAction,
-  saveAvailabilityAction,
   saveAssessmentAction,
   buildPlanAction,
   activateFirstPlanAction,
   setAsideAction,
 } from './actions';
 import {
-  SituationForm,
+  TargetForm,
+  TestDateForm,
+  PrepForm,
+  IntentForm,
   TargetsForm,
-  AvailabilityForm,
-  SelfAssessmentForm,
+  HoursForm,
+  DaysForm,
+  SelfCheck,
   BuildPlanButton,
   RebuildPlanLink,
   ActivateFirstPlanButton,
@@ -50,34 +54,42 @@ export const dynamic = 'force-dynamic';
 
 type PageProps = { searchParams: Promise<Record<string, string | undefined>> };
 
-const STEP_LABEL: Record<WizardStep, string> = {
-  situation: 'Your situation',
-  targets: 'Your targets',
-  availability: 'Availability',
-  assess: 'Self-check',
-  build: 'Your plan',
-  preview: 'Your plan',
+// One friendly question per screen. Title is the question; sub is the
+// reassurance — why we ask, and that it can change later.
+const QUESTION_COPY: Partial<Record<WizardStep, { title: string; sub: string }>> = {
+  target: {
+    title: 'What score are you aiming for?',
+    sub: 'A stretch goal is fine. This sets the pace of the plan, and you can change it any time.',
+  },
+  test_date: {
+    title: 'When are you taking the SAT?',
+    sub: "Haven't registered yet? Pick the date you're planning on — the plan works backwards from it.",
+  },
+  prep: {
+    title: 'How much SAT prep have you done so far?',
+    sub: 'No wrong answer. This decides whether we start by covering every topic or go straight to your weak spots.',
+  },
+  intent: {
+    title: 'How do you want your plan to work?',
+    sub: 'Most students pick the first one. Pick the second if you already know exactly what you need to work on.',
+  },
+  targets: {
+    title: 'Which skills do you want to work on?',
+    sub: 'Pick as many as you like. The plan cycles through them, with a lesson the first time a weak one comes up.',
+  },
+  hours: {
+    title: 'About how many hours a week can you study?',
+    sub: 'Be honest — a plan you can actually follow beats an ambitious one you abandon.',
+  },
+  days: {
+    title: 'Which days work for you?',
+    sub: 'Pick the days you can usually sit down for a while. Weekends count.',
+  },
+  assess: {
+    title: 'Last one — how comfortable are you with each area?',
+    sub: "Eight quick taps. There are no wrong answers, and \"I'm not sure\" is a perfectly good one.",
+  },
 };
-
-function StepHeader({ steps, active }: { steps: WizardStep[]; active: WizardStep }) {
-  // build and preview share one visible step.
-  const visible = steps.filter((st) => st !== 'build');
-  const activeVisible = active === 'build' ? 'preview' : active;
-  const activeIdx = visible.indexOf(activeVisible);
-  return (
-    <ol className={s.steps}>
-      {visible.map((st, i) => (
-        <li
-          key={st}
-          className={`${s.step} ${i === activeIdx ? s.stepActive : ''} ${i < activeIdx ? s.stepDone : ''}`}
-        >
-          <span className={s.stepNum}>{i < activeIdx ? '✓' : i + 1}</span>
-          {STEP_LABEL[st]}
-        </li>
-      ))}
-    </ol>
-  );
-}
 
 export default async function WelcomePage({ searchParams }: PageProps) {
   const sp = await searchParams;
@@ -133,10 +145,10 @@ export default async function WelcomePage({ searchParams }: PageProps) {
     override: sp.step ?? null,
   });
 
-  const steps: WizardStep[] =
-    intake.intent === 'own_targets'
-      ? ['situation', 'targets', 'availability', 'assess', 'build', 'preview']
-      : ['situation', 'availability', 'assess', 'build', 'preview'];
+  const questions = questionSteps(intake.intent);
+  const qIndex = questions.indexOf(step);
+  const isQuestion = qIndex >= 0;
+  const prevStep = qIndex > 0 ? questions[qIndex - 1] : null;
 
   // Draft tasks for the preview step.
   let draftTasks: {
@@ -164,118 +176,92 @@ export default async function WelcomePage({ searchParams }: PageProps) {
   const firstName = profile.first_name ?? null;
   const showSetAside = shouldRouteToWelcome({ hasActivePlan: false, intake });
   const selectedTargets = new Set(intake.targets.map((t) => `${t.domainCode}|${t.skillCode}`));
-  const ratingRows = SAT_DOMAIN_CODES.map((code) => {
+  const selfCheckRows = SAT_DOMAIN_CODES.map((code) => {
     const d = findDomain(code);
     return {
       code,
       name: d?.name ?? code,
       section: d?.subjectCode === 'math' ? 'Math' : 'Reading & Writing',
+      example: DOMAIN_EXAMPLES[code],
     };
   });
+  const copy = QUESTION_COPY[step];
 
   return (
     <main className={s.container}>
       <header className={s.header}>
-        <div className={s.eyebrow}>Welcome{firstName ? `, ${firstName}` : ''}</div>
-        <h1 className={s.h1}>Let&rsquo;s set up your study plan</h1>
-        <p className={s.sub}>
-          A few quick questions about where you are and how you want to work, then a
-          week-by-week plan that opens each day to exactly what to do next.
-        </p>
+        <div className={s.eyebrow}>{firstName ? `Hi, ${firstName}` : 'Welcome'}</div>
+        <h1 className={s.h1}>
+          {step === 'preview' ? 'Here’s your plan' : 'Let’s build your study plan'}
+        </h1>
+        {isQuestion ? (
+          <div className={s.progress} aria-label={`Question ${qIndex + 1} of ${questions.length}`}>
+            <div className={s.progressBar} role="progressbar" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={qIndex}>
+              <div className={s.progressFill} style={{ width: `${Math.round((qIndex / questions.length) * 100)}%` }} />
+            </div>
+            <span className={s.progressLabel}>Question {qIndex + 1} of {questions.length}</span>
+          </div>
+        ) : (
+          <p className={s.sub}>
+            {step === 'preview'
+              ? 'Read the outline, open any week to see what’s in it, then start whenever you’re ready.'
+              : 'A few quick questions, then a week-by-week plan that opens each day to exactly what to do next.'}
+          </p>
+        )}
       </header>
 
-      <StepHeader steps={steps} active={step} />
-
-      {step === 'situation' ? (
+      {isQuestion && copy && (
         <section className={s.card}>
-          <h2 className={s.cardTitle}>Where are you starting from?</h2>
-          <p className={s.cardSub}>
-            Your target and test date set the pace. How much prep you have done decides
-            whether the plan starts by covering every topic or goes straight to your
-            weak areas. You can change all of this later.
-          </p>
-          <SituationForm
-            action={saveSituationAction}
-            defaults={{
-              target: goal ?? '',
-              testDate: testDate ?? '',
-              prepLevel: intake.prepLevel,
-              intent: intake.intent,
-            }}
-          />
+          <h2 className={s.cardTitle}>{copy.title}</h2>
+          <p className={s.cardSub}>{copy.sub}</p>
+
+          {step === 'target' && <TargetForm action={saveAnswerAction} defaultValue={goal ?? ''} />}
+          {step === 'test_date' && <TestDateForm action={saveAnswerAction} defaultValue={testDate ?? ''} />}
+          {step === 'prep' && <PrepForm action={saveAnswerAction} defaultValue={intake.prepLevel} />}
+          {step === 'intent' && <IntentForm action={saveAnswerAction} defaultValue={intake.intent} />}
+          {step === 'targets' && (
+            <TargetsForm
+              action={saveTargetsAction}
+              domains={SAT_TAXONOMY}
+              examples={DOMAIN_EXAMPLES}
+              selected={selectedTargets}
+              fullTests={intake.fullTests}
+            />
+          )}
+          {step === 'hours' && <HoursForm action={saveAnswerAction} defaultValue={intake.weeklyHours ?? 5} />}
+          {step === 'days' && (
+            <DaysForm action={saveAnswerAction} defaultValue={intake.studyDays ?? [1, 2, 3, 4, 5]} />
+          )}
+          {step === 'assess' && (
+            <SelfCheck action={saveAssessmentAction} rows={selfCheckRows} defaults={intake.selfRating} />
+          )}
+
+          {prevStep && (
+            <div className={s.backRow}>
+              <Link href={`/welcome?step=${prevStep}`} className={s.backLink}>
+                ← Back
+              </Link>
+            </div>
+          )}
         </section>
-      ) : null}
+      )}
 
-      {step === 'targets' ? (
+      {step === 'build' && (
         <section className={s.card}>
-          <h2 className={s.cardTitle}>What do you want to work on?</h2>
-          <p className={s.cardSub}>
-            Pick the skills you already know you need. The plan cycles through them, with a
-            lesson the first time a weak one comes up. You can add or remove skills later.
-          </p>
-          <TargetsForm
-            action={saveTargetsAction}
-            domains={SAT_TAXONOMY}
-            selected={selectedTargets}
-            fullTests={intake.fullTests}
-          />
-        </section>
-      ) : null}
-
-      {step === 'availability' ? (
-        <section className={s.card}>
-          <h2 className={s.cardTitle}>When can you study?</h2>
-          <p className={s.cardSub}>
-            Hours per week sets how many tasks each week gets. Days you pick are the only
-            days tasks land on, so the plan fits around your week instead of fighting it.
-          </p>
-          <AvailabilityForm
-            action={saveAvailabilityAction}
-            defaults={{
-              weeklyHours: intake.weeklyHours ?? 5,
-              studyDays: intake.studyDays ?? [0, 1, 2, 3, 4, 5, 6],
-            }}
-          />
-        </section>
-      ) : null}
-
-      {step === 'assess' ? (
-        <section className={s.card}>
-          <h2 className={s.cardTitle}>How comfortable are you with each area right now?</h2>
-          <p className={s.cardSub}>
-            There are no wrong answers. This helps the plan decide where to start; your
-            actual practice takes over from here within a couple of weeks.
-          </p>
-          <SelfAssessmentForm
-            action={saveAssessmentAction}
-            rows={ratingRows}
-            defaults={intake.selfRating}
-          />
-        </section>
-      ) : null}
-
-      {step === 'build' ? (
-        <section className={s.card}>
-          <h2 className={s.cardTitle}>Build your plan</h2>
+          <h2 className={s.cardTitle}>Ready when you are</h2>
           <p className={s.cardSub}>
             Aiming for <strong>{goal}</strong> on <strong>{testDate}</strong>, about{' '}
             <strong>{intake.weeklyHours}</strong> hours a week.{' '}
-            <Link href="/welcome?step=situation" className={s.inlineLink}>
-              Change something
+            <Link href="/welcome?step=target" className={s.inlineLink}>
+              Change an answer
             </Link>
           </p>
           <BuildPlanButton action={buildPlanAction} />
         </section>
-      ) : null}
+      )}
 
-      {step === 'preview' && draft ? (
+      {step === 'preview' && draft && (
         <section className={`${s.card} ${s.reviewCard}`}>
-          <h2 className={s.cardTitle}>Here&rsquo;s your plan</h2>
-          <p className={s.cardSub}>
-            Read the outline, open any week to see what&rsquo;s in it, then start. Once
-            it&rsquo;s live, the <strong>Today</strong> page becomes your home base: one to
-            three tasks a day, each with a reason.
-          </p>
           <PlanOverview
             goalScore={draft.goal_score ?? goal ?? 0}
             testDate={draft.test_date ?? testDate ?? ''}
@@ -288,16 +274,16 @@ export default async function WelcomePage({ searchParams }: PageProps) {
           <div className={`${s.actionsRow} ${s.previewActions}`}>
             <ActivateFirstPlanButton action={activateFirstPlanAction} planId={draft.id} />
             <span className={s.skipLink}>
-              Not right?{' '}
-              <Link href="/welcome?step=situation" className={s.inlineLink}>Change my answers</Link>
+              Not quite right?{' '}
+              <Link href="/welcome?step=target" className={s.inlineLink}>Change an answer</Link>
               {' · '}
-              <Link href="/welcome?step=availability" className={s.inlineLink}>Change hours or days</Link>
+              <Link href="/welcome?step=hours" className={s.inlineLink}>Change hours or days</Link>
               {' · '}
               <RebuildPlanLink action={buildPlanAction} />
             </span>
           </div>
         </section>
-      ) : null}
+      )}
 
       {showSetAside && step !== 'preview' && (
         <div className={s.setAside}>

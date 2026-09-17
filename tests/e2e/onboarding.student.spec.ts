@@ -1,18 +1,19 @@
 // Onboarding intake walk (docs/student-onboarding-and-plan-redesign-
-// 2026-09.md Phase 1): a flagged test student is reset to first login
-// through reset_test_student(), signs in, is routed to /welcome, walks
-// situation → availability → self-check → preview, activates, and lands
-// on /today.
+// 2026-09.md Phase 1, one question per screen): a flagged test student
+// is reset to first login through reset_test_student(), signs in, is
+// routed to /welcome, answers target → test date → prep → intent →
+// hours → days → self-check, previews the plan, activates, lands on
+// /today, and can open the plan hub.
 //
 // Runs in the `student` project by filename but with NO storage state:
 // the seeded student1 already has a plan, so this spec signs in as
-// student4 (6666…, no tutor-independent history) after resetting it.
-// The reset is made as the seeded admin, using the access token inside
-// tests/.auth/admin.json (written by auth.setup.ts) against the
-// PostgREST rpc endpoint — the same function the admin "Testing"
-// section calls. If the environment can't reset (no Supabase env, the
-// function isn't migrated, or the student isn't flagged) the spec
-// SKIPS with the reason rather than failing on a missing fixture.
+// student4 (6666…) after resetting it. The reset is made as the seeded
+// admin, using the access token inside tests/.auth/admin.json (written
+// by auth.setup.ts) against the PostgREST rpc endpoint — the same
+// function the admin "Testing" section calls. If the environment can't
+// reset (no Supabase env, the function isn't migrated, or the student
+// isn't flagged) the spec SKIPS with the reason rather than failing on a
+// missing fixture.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -98,7 +99,7 @@ test.describe('onboarding intake', () => {
     await resetStudent4();
   });
 
-  test('fresh student is routed to the intake and reaches an activated plan', async ({ page }) => {
+  test('fresh student answers one question at a time and reaches an activated plan', async ({ page }) => {
     await page.goto('/login');
     await page.getByLabel(/email/i).fill(STUDENT4.email);
     await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
@@ -106,41 +107,67 @@ test.describe('onboarding intake', () => {
 
     // Login → /dashboard → student layout bounces to the intake.
     await expect(page).toHaveURL(/\/welcome/, { timeout: 20_000 });
-    await expect(page.getByRole('heading', { name: /set up your study plan/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /build your study plan/i })).toBeVisible();
 
-    // Step 1 — situation.
+    // Q1 — target.
+    await expect(page.getByRole('heading', { name: /what score are you aiming for/i })).toBeVisible();
+    await page.locator('input[name="target"]').fill('1300');
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+
+    // Q2 — test date.
+    await expect(page.getByRole('heading', { name: /when are you taking the sat/i })).toBeVisible();
     const nextYear = new Date();
     nextYear.setUTCFullYear(nextYear.getUTCFullYear() + 1);
-    await page.locator('input[name="target"]').fill('1300');
     await page.locator('input[name="testDate"]').fill(nextYear.toISOString().slice(0, 10));
-    await page.locator('input[name="prepLevel"][value="none"]').check();
-    await page.locator('input[name="intent"][value="guide_me"]').check();
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
 
-    // Step 2 — availability (guide_me skips the targets step).
-    await expect(page.getByRole('heading', { name: /when can you study/i })).toBeVisible();
-    await page.locator('input[name="weeklyHours"]').fill('5');
+    // Q3 — prep level.
+    await expect(page.getByRole('heading', { name: /how much sat prep/i })).toBeVisible();
+    await page.locator('input[name="prepLevel"][value="none"]').check();
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+
+    // Q4 — intent (guide_me skips the targets step).
+    await expect(page.getByRole('heading', { name: /how do you want your plan/i })).toBeVisible();
+    await page.locator('input[name="intent"][value="guide_me"]').check();
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+
+    // Q5 — hours.
+    await expect(page.getByRole('heading', { name: /how many hours/i })).toBeVisible();
+    await page.locator('input[name="weeklyHours"][value="5"]').check();
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+
+    // Q6 — days (weekdays only).
+    await expect(page.getByRole('heading', { name: /which days work/i })).toBeVisible();
     await page.locator('input[name="day"][value="0"]').uncheck();
     await page.locator('input[name="day"][value="6"]').uncheck();
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
 
-    // Step 3 — self-check: the radios are visually hidden, so force.
+    // Q7 — self-check, one domain at a time: "3" for seven of them,
+    // "I'm not sure" for the last, then build.
     await expect(page.getByRole('heading', { name: /how comfortable are you/i })).toBeVisible();
-    for (const code of ['H', 'P', 'Q', 'S', 'INI', 'CAS', 'EOI', 'SEC']) {
-      await page.locator(`input[name="rating_${code}"][value="3"]`).check({ force: true });
+    for (let i = 0; i < 7; i++) {
+      await page.getByRole('button', { name: /^3 — So-so$/ }).click();
     }
+    await page.getByRole('button', { name: /not sure/i }).click();
     await page.getByRole('button', { name: 'Build my plan' }).click();
 
     // Preview — a foundations plan: coverage → focus → rehearsal.
     await expect(page.getByRole('heading', { name: /here.s your plan/i })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText('Foundations plan')).toBeVisible();
     await expect(page.getByText(/cover every topic in order/i).first()).toBeVisible();
-    await expect(page.getByText('Week 1', { exact: false }).first()).toBeVisible();
+    // Coverage tasks carry no "why" line (owner note 3).
+    await expect(page.getByText('Part of covering every topic in order')).toHaveCount(0);
 
     // Activate → Today.
     await page.getByRole('button', { name: 'Start my plan' }).click();
     await expect(page).toHaveURL(/\/today/, { timeout: 20_000 });
     await expect(page.getByRole('heading', { name: /what.s next/i })).toBeVisible();
+
+    // The plan hub is reachable and shows where the student is.
+    await page.goto('/plan');
+    await expect(page.getByRole('heading', { name: /foundations plan/i })).toBeVisible();
+    await expect(page.getByText(/week 1 of/i).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Progress by section' })).toBeVisible();
 
     // The intake is done: the dashboard no longer bounces.
     await page.goto('/dashboard');

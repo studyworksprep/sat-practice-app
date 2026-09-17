@@ -24,6 +24,8 @@ import type { PlanTaskType } from './generate-plan.ts';
 import { planTaskTitle, planTaskWhy } from './task-labels.ts';
 
 export const MAX_TODAY_TASKS = 3;
+/** How many upcoming tasks "keep going" offers once today is clear. */
+export const MAX_AHEAD_TASKS = 3;
 
 export type PlanTaskStatus = 'pending' | 'completed' | 'skipped';
 
@@ -57,6 +59,9 @@ export interface TodayView {
   /** The next pending task scheduled after today (a "what's coming" hint,
    *  shown when today's list is empty or short). */
   upNext: TodayTaskRow | null;
+  /** The next few pending tasks after today, startable now — a student
+   *  who is ahead of schedule can keep going instead of waiting. */
+  ahead: TodayTaskRow[];
   week: TodayWeek | null;
   /** Days until the plan's test date (0 = today); null without a date. */
   daysToTest: number | null;
@@ -99,6 +104,7 @@ export function buildTodayView(
     .filter((t) => t.scheduledDate != null && t.scheduledDate > today)
     .sort(dueOrder);
   const upNext = futurePending[0] ?? null;
+  const ahead = futurePending.slice(0, MAX_AHEAD_TASKS);
 
   // Current week: anchor week 0 at the plan's earliest scheduled date and
   // count 7-day windows to today. Falls back to the task-declared
@@ -130,6 +136,7 @@ export function buildTodayView(
     due,
     doneToday,
     upNext,
+    ahead,
     week,
     daysToTest: testDate ? daysBetween(today, testDate) : null,
     planFinished: tasks.length > 0 && pending.length === 0,

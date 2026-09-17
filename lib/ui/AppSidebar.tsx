@@ -50,6 +50,7 @@ import {
   TestIcon,
   TutorIcon,
   UsersIcon,
+  ClipboardCheckIcon,
 } from './icons';
 import s from './AppSidebar.module.css';
 
@@ -64,6 +65,7 @@ const asIcon = (icon: unknown): IconComponent => icon as IconComponent;
 // links carry string icon keys and this map owns the components.
 const NAV_ICONS: Record<NavIconName, IconComponent> = {
   today: asIcon(CalendarIcon),
+  plan: asIcon(ClipboardCheckIcon),
   dashboard: asIcon(BarChartIcon),
   practice: asIcon(PencilIcon),
   test: asIcon(TestIcon),

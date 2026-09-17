@@ -32,6 +32,7 @@
 
 export type NavIconName =
   | 'today'
+  | 'plan'
   | 'dashboard'
   | 'practice'
   | 'test'
@@ -86,6 +87,10 @@ const STUDENT_TODAY: NavLink = {
 };
 const STUDENT_DASHBOARD: NavLink = {
   href: '/dashboard', label: 'Dashboard', icon: 'dashboard',
+};
+// The plan hub (design doc §6): the whole plan, progress, adjust.
+const STUDENT_PLAN: NavLink = {
+  href: '/plan', label: 'Plan', icon: 'plan',
 };
 // "Practice" owns self-guided sessions; matchPrefix picks up the
 // session runner (/practice/s/...) + history too.
@@ -316,7 +321,9 @@ export function studentSections(
   const practice = hasTutor
     ? [STUDENT_PRACTICE, STUDENT_TESTS, STUDENT_ASSIGNMENTS]
     : [STUDENT_PRACTICE, STUDENT_TESTS];
-  const anchor = hasPlan ? [STUDENT_TODAY, STUDENT_DASHBOARD] : [STUDENT_DASHBOARD];
+  const anchor = hasPlan
+    ? [STUDENT_TODAY, STUDENT_PLAN, STUDENT_DASHBOARD]
+    : [STUDENT_DASHBOARD];
   return [
     { title: null, links: anchor },
     { title: 'Practice', links: practice },
