@@ -2,13 +2,11 @@
 // plan-redesign-2026-09.md §3). One question per screen: each island is
 // a small form wired to a route-local Server Action via useActionState;
 // step progression is server-derived (page.tsx re-renders after each
-// action revalidates the route), so these islands hold no wizard state
-// — except SelfCheck, which walks the eight domains locally and submits
-// them all at once.
+// action revalidates the route), so these islands hold no wizard state.
 
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState } from 'react';
 import type { ActionResult } from '@/lib/types';
 import type { PrepLevel, Intent, SatDomainCode, SelfRatingValue } from '@/lib/plan/intake';
 import type { SatDomain } from '@/lib/practice/sat-taxonomy';
@@ -45,6 +43,20 @@ function SubmitRow({
   );
 }
 
+// ── Welcome ───────────────────────────────────────────────────────
+
+export function StartIntakeButton({ action }: { action: WizardAction }) {
+  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(action, null);
+  return (
+    <form action={formAction} className={s.inlineForm}>
+      <button className={s.primaryBtn} type="submit" disabled={pending}>
+        {pending ? 'One moment…' : "Let's go"}
+      </button>
+      <ErrorNote state={state} />
+    </form>
+  );
+}
+
 // ── Single-answer questions ───────────────────────────────────────
 
 export function TargetForm({ action, defaultValue }: { action: WizardAction; defaultValue: number | '' }) {
@@ -67,7 +79,6 @@ export function TargetForm({ action, defaultValue }: { action: WizardAction; def
           placeholder="1400"
         />
       </label>
-      <p className={s.hint}>Most students aim 100–200 points above their current score.</p>
       <SubmitRow pending={pending} label="Next" pendingLabel="Saving…" state={state} />
     </form>
   );
@@ -88,9 +99,9 @@ export function TestDateForm({ action, defaultValue }: { action: WizardAction; d
 }
 
 const PREP_OPTIONS: { value: PrepLevel; title: string; sub: string }[] = [
-  { value: 'none', title: "I'm just getting started", sub: 'Little or no SAT prep so far — and that is completely fine.' },
-  { value: 'some', title: "I've done some studying", sub: 'A class, some practice on my own, or a test or two.' },
-  { value: 'a_lot', title: "I've prepped seriously", sub: 'Tutoring or a lot of practice. I mostly want to sharpen weak areas.' },
+  { value: 'none', title: 'Just getting started', sub: 'Little or no SAT prep so far.' },
+  { value: 'some', title: 'Some studying', sub: 'A class, some practice, or a test or two.' },
+  { value: 'a_lot', title: 'Prepped seriously', sub: 'Tutoring or lots of practice — I want to sharpen weak areas.' },
 ];
 
 export function PrepForm({ action, defaultValue }: { action: WizardAction; defaultValue: PrepLevel | null }) {
@@ -115,8 +126,8 @@ export function PrepForm({ action, defaultValue }: { action: WizardAction; defau
 }
 
 const INTENT_OPTIONS: { value: Intent; title: string; sub: string }[] = [
-  { value: 'guide_me', title: 'Guide me', sub: 'Build the plan around what you know about me. I will follow it day by day.' },
-  { value: 'own_targets', title: 'I know what I need', sub: 'I will pick the skills. You put them on a schedule.' },
+  { value: 'guide_me', title: 'Guide me', sub: 'Build the plan around what you know about me.' },
+  { value: 'own_targets', title: 'I know what I need', sub: 'I pick the skills; you schedule them.' },
 ];
 
 export function IntentForm({ action, defaultValue }: { action: WizardAction; defaultValue: Intent | null }) {
@@ -152,11 +163,11 @@ export function HoursForm({ action, defaultValue }: { action: WizardAction; defa
         {HOUR_OPTIONS.map((h) => (
           <label key={h} className={s.dayChip}>
             <input type="radio" name="weeklyHours" value={h} defaultChecked={preset === h} />
-            <span>{h} {h === 1 ? 'hour' : 'hours'}</span>
+            <span>{h} hrs</span>
           </label>
         ))}
       </div>
-      <p className={s.hint}>Roughly one task is 40 minutes, so 5 hours is about 7 or 8 tasks a week.</p>
+      <p className={s.hint}>One task is about 40 minutes.</p>
       <SubmitRow pending={pending} label="Next" pendingLabel="Saving…" state={state} />
     </form>
   );
@@ -178,7 +189,6 @@ export function DaysForm({ action, defaultValue }: { action: WizardAction; defau
           </label>
         ))}
       </div>
-      <p className={s.hint}>Tasks only land on the days you pick, so the plan fits around your week.</p>
       <SubmitRow pending={pending} label="Next" pendingLabel="Saving…" state={state} />
     </form>
   );
@@ -234,14 +244,14 @@ export function TargetsForm({
       </div>
       <label className={s.checkRow}>
         <input type="checkbox" name="fullTests" defaultChecked={fullTests} />
-        <span>Keep full-length practice tests on the schedule (every few weeks, then weekly near the test)</span>
+        <span>Keep full-length practice tests on the schedule</span>
       </label>
       <SubmitRow pending={pending} label="Next" pendingLabel="Saving…" state={state} />
     </form>
   );
 }
 
-// ── Self-check: one domain at a time ──────────────────────────────
+// ── Self-check: one tile, eight rows ──────────────────────────────
 
 export interface SelfCheckRow {
   code: SatDomainCode;
@@ -250,15 +260,7 @@ export interface SelfCheckRow {
   example: string;
 }
 
-const RATING_OPTIONS: { value: string; label: string; sub?: string }[] = [
-  { value: '1', label: '1', sub: 'Not comfortable' },
-  { value: '2', label: '2' },
-  { value: '3', label: '3', sub: 'So-so' },
-  { value: '4', label: '4' },
-  { value: '5', label: '5', sub: 'Very comfortable' },
-];
-
-export function SelfCheck({
+export function SelfCheckGrid({
   action,
   rows,
   defaults,
@@ -268,89 +270,68 @@ export function SelfCheck({
   defaults: Partial<Record<SatDomainCode, SelfRatingValue>> | null;
 }) {
   const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(action, null);
-  // 'unsure' | '1'..'5' per domain, filled as the student walks through.
-  const [answers, setAnswers] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    if (defaults) {
-      for (const r of rows) {
-        if (Object.hasOwn(defaults, r.code)) {
-          const v = defaults[r.code];
-          init[r.code] = v == null ? 'unsure' : String(v);
-        }
-      }
-    }
-    return init;
-  });
-  const firstUnanswered = rows.findIndex((r) => !answers[r.code]);
-  const [index, setIndex] = useState(firstUnanswered === -1 ? rows.length : firstUnanswered);
-
-  const done = index >= rows.length;
-  const row = done ? null : rows[index];
-
-  function pick(value: string) {
-    if (!row) return;
-    setAnswers((a) => ({ ...a, [row.code]: value }));
-    setIndex((i) => i + 1);
-  }
+  const current = (code: SatDomainCode): string | null => {
+    if (!defaults || !Object.hasOwn(defaults, code)) return null;
+    const v = defaults[code];
+    return v == null ? 'unsure' : String(v);
+  };
+  const sections = [...new Set(rows.map((r) => r.section))];
 
   return (
     <form action={formAction} className={s.form}>
-      {rows.map((r) => (
-        <input key={r.code} type="hidden" name={`rating_${r.code}`} value={answers[r.code] ?? ''} />
-      ))}
-
-      {row ? (
-        <div className={s.selfCheck} key={row.code}>
-          <div className={s.selfCheckProgress}>
-            {index + 1} of {rows.length}
-            {index > 0 && (
-              <button type="button" className={s.linkBtn} onClick={() => setIndex((i) => i - 1)}>
-                ← Back
-              </button>
-            )}
-          </div>
-          <div className={s.selfCheckName}>{row.name}</div>
-          <div className={s.selfCheckSection}>{row.section}</div>
-          <p className={s.selfCheckExample}>{row.example}</p>
-          <div className={s.ratingButtons} role="group" aria-label={`Comfort with ${row.name}`}>
-            {RATING_OPTIONS.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                className={`${s.ratingBtn} ${answers[row.code] === o.value ? s.ratingBtnOn : ''}`}
-                onClick={() => pick(o.value)}
-                aria-label={o.sub ? `${o.label} — ${o.sub}` : o.label}
-              >
-                <span className={s.ratingBtnNum}>{o.label}</span>
-                {o.sub && <span className={s.ratingBtnSub}>{o.sub}</span>}
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            className={`${s.unsureBtn} ${answers[row.code] === 'unsure' ? s.ratingBtnOn : ''}`}
-            onClick={() => pick('unsure')}
-          >
-            I&rsquo;m not sure
-          </button>
+      <div className={s.ratingScale} aria-hidden="true">
+        <span />
+        <div className={s.ratingScaleLabels}>
+          <span>1 · not comfortable</span>
+          <span>5 · very comfortable</span>
         </div>
-      ) : (
-        <div className={s.selfCheck}>
-          <div className={s.selfCheckName}>That&rsquo;s everything.</div>
-          <p className={s.selfCheckExample}>
-            Ready to see your plan? It takes a few seconds to build.
-          </p>
-          <div className={s.actionsRow}>
-            <button className={s.primaryBtn} type="submit" disabled={pending}>
-              {pending ? 'Building your plan…' : 'Build my plan'}
-            </button>
-            <button type="button" className={s.linkBtn} onClick={() => setIndex(rows.length - 1)}>
-              ← Back
-            </button>
-            <ErrorNote state={state} />
+      </div>
+      <div className={s.ratingGrid} role="group" aria-label="Comfort by area">
+        {sections.map((section) => (
+          <div key={section} className={s.ratingGrid}>
+            <div className={s.ratingSection}>{section}</div>
+            {rows
+              .filter((r) => r.section === section)
+              .map((r) => {
+                const chosen = current(r.code);
+                return (
+                  <fieldset key={r.code} className={s.ratingRow}>
+                    <legend className={s.ratingLegend}>
+                      <span className={s.ratingName}>{r.name}</span>
+                      <span className={s.ratingExample}>{r.example}</span>
+                    </legend>
+                    <div className={s.ratingOptions}>
+                      {[1, 2, 3, 4, 5].map((v) => (
+                        <label key={v} className={s.ratingOption} title={String(v)}>
+                          <input
+                            type="radio"
+                            name={`rating_${r.code}`}
+                            value={v}
+                            required
+                            defaultChecked={chosen === String(v)}
+                            aria-label={`${r.name}: ${v}`}
+                          />
+                          <span>{v}</span>
+                        </label>
+                      ))}
+                      <label className={`${s.ratingOption} ${s.ratingUnsure}`} title="I'm not sure">
+                        <input
+                          type="radio"
+                          name={`rating_${r.code}`}
+                          value="unsure"
+                          defaultChecked={chosen === 'unsure'}
+                          aria-label={`${r.name}: not sure`}
+                        />
+                        <span>Not sure</span>
+                      </label>
+                    </div>
+                  </fieldset>
+                );
+              })}
           </div>
-        </div>
-      )}
+        ))}
+      </div>
+      <SubmitRow pending={pending} label="Build my plan" pendingLabel="Building your plan…" state={state} />
     </form>
   );
 }
@@ -399,7 +380,7 @@ export function SetAsideLink({ action }: { action: WizardAction }) {
   return (
     <form action={formAction} className={s.inlineForm}>
       <button className={s.skipBtn} type="submit" disabled={pending}>
-        {pending ? 'One moment…' : "I'll do this later — take me to the dashboard"}
+        {pending ? 'One moment…' : 'Skip for now'}
       </button>
       <ErrorNote state={state} />
     </form>

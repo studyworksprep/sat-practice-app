@@ -30,13 +30,14 @@
 .phaseStrip {
   list-style: none;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--s2);
   margin: 0;
   padding: 0;
 }
 .phase {
   flex-basis: 0;
-  min-width: 0;
+  min-width: 170px;
   border-radius: var(--radius-md);
   padding: var(--s2) var(--s3);
   border: 1px solid var(--border);
@@ -135,3 +136,7 @@
   .task { grid-template-columns: auto 1fr; }
   .taskMeta { grid-column: 2; white-space: normal; }
 }
+
+.why { font-size: 0.85rem; }
+.whySummary { cursor: pointer; color: var(--color-app-accent); font-weight: 600; }
+.why .rationale { margin-top: var(--s2); }

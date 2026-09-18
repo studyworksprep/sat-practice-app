@@ -152,3 +152,6 @@
 .masteryNoteSummary { cursor: pointer; color: var(--fg3); }
 .masteryNoteBody { margin-top: var(--s2); line-height: 1.55; max-width: 64ch; }
 .masteryNoteBody p { margin: 0 0 var(--s2); }
+
+.why { margin-top: var(--s3); font-size: 0.85rem; }
+.whySummary { cursor: pointer; color: var(--color-app-accent); font-weight: 600; }

@@ -122,6 +122,9 @@
   flex-shrink: 0;
 }
 
+.bannerLink { font-size: 13px; font-weight: 600; color: var(--fg2); text-decoration: underline; padding: 0 6px; }
+.bannerLink:hover { color: var(--color-app-accent); }
+
 /* Buttons used in the banner. Reused below as well. */
 .btnPrimary,
 .btnSecondary {

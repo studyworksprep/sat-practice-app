@@ -223,6 +223,24 @@ all are implemented:
    live, and Today offers "Want to get ahead?" with the next three
    pending tasks, startable now, whenever today's list is clear.
 
+### 3.3b Design pass 2026-09-17 (screenshots review)
+
+- The intake renders **bare** (no sidebar) and opens on a **welcome
+  screen** — greeting, three-line outline of what's coming, "Let's
+  go" — before the first question. Questions are one short title with
+  at most one line under it; copy lives in the options.
+- The self-check is **one tile**: eight rows (domain, one-line
+  example, 1–5 segments, "Not sure"), grouped Math / Reading &
+  Writing. Walking eight screens one at a time was tedious.
+- The preview tucks the rationale behind "Why this plan"; the phase
+  strip carries the explanation.
+- The dashboard has **one primary action**: "Continue plan" (Today)
+  with "See the plan" beside it when a plan is active, "Set up my
+  plan" otherwise; free practice / resume are text links. The
+  full-width help banner is gone; a small dismissible nudge points at
+  Help on the first three dashboard visits of an account under 14
+  days.
+
 ### 3.3 What happens to existing surfaces
 
 | Surface | Change |

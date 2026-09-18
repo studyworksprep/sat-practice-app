@@ -25,7 +25,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 // route.ts. The Stripe webhook handler was rewritten for the billing
 // hardening work (idempotency + no silent event drops), so it converted
 // as part of a substantial refactor rather than a bare rename.
-const JS_FILE_BASELINE = 311;
+const JS_FILE_BASELINE = 310; // 2026-09-17: HelpDashboardBanner.jsx retired (HelpNudge.tsx replaces it)
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {

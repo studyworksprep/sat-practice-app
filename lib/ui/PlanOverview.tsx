@@ -30,6 +30,8 @@ export interface PlanOverviewProps {
   expandWeeks?: number;
   /** 0-based week to highlight as "now" (the hub); omit on a preview. */
   currentWeek?: number | null;
+  /** Tuck the rationale paragraph behind a "Why this plan" toggle. */
+  rationaleCollapsed?: boolean;
 }
 
 export const MODE_LABEL: Record<PlanMode, string> = {
@@ -94,6 +96,7 @@ export function PlanOverview({
   tasks,
   expandWeeks = 2,
   currentWeek = null,
+  rationaleCollapsed = false,
 }: PlanOverviewProps) {
   const weekCount = tasks.reduce((m, t) => Math.max(m, t.weekIndex + 1), 0);
   const totalWeeks = Math.max(weekCount, ...phases.map((p) => p.endWeek + 1), 0);
@@ -116,7 +119,7 @@ export function PlanOverview({
         </span>
       </div>
 
-      {rationale && <p className={s.rationale}>{rationale}</p>}
+      {rationale && !rationaleCollapsed && <p className={s.rationale}>{rationale}</p>}
 
       {phases.length > 0 && (
         <ol className={s.phaseStrip} aria-label="Plan phases">
@@ -143,6 +146,13 @@ export function PlanOverview({
             );
           })}
         </ol>
+      )}
+
+      {rationale && rationaleCollapsed && (
+        <details className={s.why}>
+          <summary className={s.whySummary}>Why this plan</summary>
+          <p className={s.rationale}>{rationale}</p>
+        </details>
       )}
 
       <div className={s.weeks}>

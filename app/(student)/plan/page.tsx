@@ -185,7 +185,12 @@ export default async function PlanPage() {
             </div>
           )}
         </div>
-        {plan.rationale && <p className={s.rationale}>{plan.rationale}</p>}
+        {plan.rationale && (
+          <details className={s.why}>
+            <summary className={s.whySummary}>Why this plan</summary>
+            <p className={s.rationale}>{plan.rationale}</p>
+          </details>
+        )}
       </section>
 
       {/* ---------- Coming up (startable now) ---------- */}
@@ -198,10 +203,7 @@ export default async function PlanPage() {
         ) : (
           <>
             {view.due.length === 0 && (
-              <p className={s.body}>
-                Today is clear. These are next on the plan — start one now and you move ahead of
-                schedule.
-              </p>
+              <p className={s.body}>Today is clear — start one of these to get ahead.</p>
             )}
             <ul className={s.upList}>
               {upcoming.map((t) => {
@@ -233,10 +235,7 @@ export default async function PlanPage() {
       {/* ---------- Progress by section ---------- */}
       <section className={s.card}>
         <h2 className={s.h2}>Progress by section</h2>
-        <p className={s.body}>
-          Every skill on the SAT, by how much of it you have covered. Skills move right as you
-          practice; a skill counts as mastered at 80 out of 100.
-        </p>
+        <p className={s.body}>Every SAT skill, by how far along you are.</p>
         <div className={s.sections}>
           {(['math', 'rw'] as const).map((key) => {
             const sec = sections[key];
