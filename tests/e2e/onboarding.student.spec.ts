@@ -89,6 +89,10 @@ async function resetStudent4(): Promise<{ ok: true } | { ok: false; reason: stri
 }
 
 test.describe('onboarding intake', () => {
+  // Nine screens plus a plan build: ~25 s locally, longer on the CI
+  // runner. The default 30 s per-test budget was the first CI failure.
+  test.setTimeout(180_000);
+
   test.beforeAll(async () => {
     const r = await resetStudent4();
     test.skip(!r.ok, r.ok ? '' : `cannot reset the test student — ${r.reason}`);
