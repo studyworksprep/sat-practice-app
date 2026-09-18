@@ -25,7 +25,7 @@ import {
   ProgressIcon,
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
-import { HelpDashboardBanner } from '../help/HelpDashboardBanner';
+import { HelpNudge } from '../help/HelpNudge';
 import s from './Dashboard.module.css';
 
 export function DashboardInteractive({
@@ -74,14 +74,24 @@ export function DashboardInteractive({
 
   return (
     <main className={s.main}>
-      <HelpDashboardBanner accountCreatedAt={accountCreatedAt} hasActivePlan={hasActivePlan} />
+      <HelpNudge accountCreatedAt={accountCreatedAt} />
 
-      {/* ---------- Banner ---------- */}
+      {/* ---------- Banner: greeting + ONE primary action ----------
+          With a plan, the plan is the action (Today); without one,
+          setting it up is. Practice stays one click away as a link. */}
       <section className={s.banner}>
         <div className={s.bannerText}>
           <div className={s.bannerGreeting}>{greeting}</div>
           <div className={s.bannerSub}>
-            {bannerStatusLine(stats, daysToTest)}
+            {hasActivePlan && planSummary
+              ? `Week ${planSummary.week} of ${planSummary.totalWeeks}` +
+                (planSummary.phaseLabel ? ` · ${planSummary.phaseLabel}` : '') +
+                (planSummary.countThisWeek > 0
+                  ? ` · ${planSummary.doneThisWeek} of ${planSummary.countThisWeek} tasks done this week`
+                  : '')
+              : hasActivePlan
+                ? 'Your plan is live — Today shows what to do next.'
+                : bannerStatusLine(stats, daysToTest)}
           </div>
           <div className={s.bannerChips}>
             <span className={`${s.bannerChip} ${s.bannerChipAccent}`}>
@@ -100,57 +110,28 @@ export function DashboardInteractive({
           </div>
         </div>
         <div className={s.bannerActions}>
-          {resumeInfo && (
+          {resumeInfo ? (
             <Link
               href={`/practice/s/${resumeInfo.sessionId}/${resumeInfo.position}`}
-              className={s.btnSecondary}
+              className={s.bannerLink}
             >
               Resume session
             </Link>
+          ) : (
+            <Link href="/practice/start" className={s.bannerLink}>
+              Free practice
+            </Link>
           )}
-          <Link href="/practice/start" className={s.btnPrimary}>
-            Start practice
-          </Link>
+          {hasActivePlan ? (
+            <>
+              <Link href="/plan" className={s.btnSecondary}>See the plan</Link>
+              <Link href="/today" className={s.btnPrimary}>Continue plan</Link>
+            </>
+          ) : (
+            <Link href="/welcome" className={s.btnPrimary}>Set up my plan</Link>
+          )}
         </div>
       </section>
-
-      {/* ---------- Plan card (design doc §6.3) ---------- */}
-      {hasActivePlan && planSummary && (
-        <section className={s.planCallout}>
-          <div>
-            <div className={s.planCalloutTitle}>
-              Your plan · week {planSummary.week} of {planSummary.totalWeeks}
-              {planSummary.phaseLabel ? ` · ${planSummary.phaseLabel}` : ''}
-            </div>
-            <div className={s.planCalloutBody}>
-              {planSummary.countThisWeek > 0
-                ? `${planSummary.doneThisWeek} of ${planSummary.countThisWeek} tasks done this week.`
-                : 'Nothing scheduled this week.'}
-              {' '}Today shows what to do next; the plan page shows every week and how far you are.
-            </div>
-          </div>
-          <div className={s.bannerActions}>
-            <Link href="/plan" className={s.btnSecondary}>See the plan</Link>
-            <Link href="/today" className={s.btnPrimary}>Today</Link>
-          </div>
-        </section>
-      )}
-
-      {/* ---------- Study-plan setup callout (§6.4) ---------- */}
-      {!hasActivePlan && (
-        <section className={s.planCallout}>
-          <div>
-            <div className={s.planCalloutTitle}>You don&apos;t have a study plan yet</div>
-            <div className={s.planCalloutBody}>
-              A few quick questions about where you are and when you can
-              study, and the app opens each day to exactly what to do next.
-            </div>
-          </div>
-          <Link href="/welcome" className={s.btnPrimary}>
-            Set up my plan
-          </Link>
-        </section>
-      )}
 
       {/* ---------- Test-date countdown ---------- */}
       {stats.satTestDate && (

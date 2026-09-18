@@ -1,0 +1,31 @@
+.nudge {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 360px;
+  padding: 10px 12px 10px 14px;
+  border-radius: 12px;
+  background: var(--color-navy-900, #102a43);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(16, 42, 67, 0.25);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.text { flex: 1 1 auto; }
+.link { color: #fff; font-weight: 600; text-decoration: underline; }
+.close {
+  appearance: none;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.close:hover { color: #fff; }
+@media (max-width: 480px) { .nudge { left: 16px; right: 16px; max-width: none; } }

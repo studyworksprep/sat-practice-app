@@ -389,6 +389,7 @@ export function isActive(pathname: string, link: NavLink): boolean {
 // chrome never suppresses (it never did).
 
 const SHELL_SUPPRESSED_PATTERNS: readonly RegExp[] = [
+  /^\/welcome$/,                            // onboarding intake: one thing at a time, no nav
   /^\/practice\/s\//,                       // student session runner
   /^\/tutor\/training\/practice\/s\//,      // tutor training runner
   /^\/practice\/test\/attempt\/[^/]+\/m\//, // test module runner + module review

@@ -43,6 +43,8 @@ export interface IntakeTarget {
 
 /** A student_intake row, normalized (jsonb columns parsed, nulls kept). */
 export interface IntakeState {
+  /** A row exists at all — the student has passed the welcome screen. */
+  exists: boolean;
   prepLevel: PrepLevel | null;
   intent: Intent | null;
   targets: IntakeTarget[];
@@ -59,6 +61,7 @@ export interface IntakeState {
 }
 
 export const EMPTY_INTAKE: IntakeState = {
+  exists: false,
   prepLevel: null,
   intent: null,
   targets: [],
@@ -92,6 +95,7 @@ export function parseIntakeRow(row: {
 } | null | undefined): IntakeState {
   if (!row) return EMPTY_INTAKE;
   return {
+    exists: true,
     prepLevel: isPrepLevel(row.prep_level) ? row.prep_level : null,
     intent: isIntent(row.intent) ? row.intent : null,
     targets: parseTargets(row.targets),
@@ -182,6 +186,7 @@ export function selfRatingToPrior(rating: number): number {
 // question at a time, friendlier"). Each answer is its own column, so
 // the ladder still derives purely from data.
 export type WizardStep =
+  | 'welcome'
   | 'target'
   | 'test_date'
   | 'prep'
@@ -194,6 +199,7 @@ export type WizardStep =
   | 'preview';
 
 export const WIZARD_STEP_ORDER: readonly WizardStep[] = [
+  'welcome',
   'target',
   'test_date',
   'prep',
@@ -232,7 +238,11 @@ export function deriveWizardStep(args: {
   const { goal, testDate, intake, hasDraft } = args;
 
   let derived: WizardStep;
-  if (!goal) derived = 'target';
+  // The welcome screen shows once: until the student taps through it
+  // there is no intake row. Older accounts that already carry a target
+  // from the old signup form still see it — it's the greeting.
+  if (!intake.exists) derived = 'welcome';
+  else if (!goal) derived = 'target';
   else if (!testDate) derived = 'test_date';
   else if (!intake.prepLevel) derived = 'prep';
   else if (!intake.intent) derived = 'intent';

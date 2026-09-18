@@ -108,6 +108,7 @@ test.describe('onboarding intake', () => {
     // Login → /dashboard → student layout bounces to the intake.
     await expect(page).toHaveURL(/\/welcome/, { timeout: 20_000 });
     await expect(page.getByRole('heading', { name: /build your study plan/i })).toBeVisible();
+    await page.getByRole('button', { name: "Let's go" }).click();
 
     // Q1 — target.
     await expect(page.getByRole('heading', { name: /what score are you aiming for/i })).toBeVisible();
@@ -127,7 +128,7 @@ test.describe('onboarding intake', () => {
     await page.getByRole('button', { name: 'Next', exact: true }).click();
 
     // Q4 — intent (guide_me skips the targets step).
-    await expect(page.getByRole('heading', { name: /how do you want your plan/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /how should the plan work/i })).toBeVisible();
     await page.locator('input[name="intent"][value="guide_me"]').check();
     await page.getByRole('button', { name: 'Next', exact: true }).click();
 
@@ -142,13 +143,13 @@ test.describe('onboarding intake', () => {
     await page.locator('input[name="day"][value="6"]').uncheck();
     await page.getByRole('button', { name: 'Next', exact: true }).click();
 
-    // Q7 — self-check, one domain at a time: "3" for seven of them,
-    // "I'm not sure" for the last, then build.
+    // Q7 — self-check on one tile: "3" for seven domains, "not sure"
+    // for the last, then build. The radios are visually hidden → force.
     await expect(page.getByRole('heading', { name: /how comfortable are you/i })).toBeVisible();
-    for (let i = 0; i < 7; i++) {
-      await page.getByRole('button', { name: /^3 — So-so$/ }).click();
+    for (const code of ['H', 'P', 'Q', 'S', 'INI', 'CAS', 'EOI']) {
+      await page.locator(`input[name="rating_${code}"][value="3"]`).check({ force: true });
     }
-    await page.getByRole('button', { name: /not sure/i }).click();
+    await page.locator('input[name="rating_SEC"][value="unsure"]').check({ force: true });
     await page.getByRole('button', { name: 'Build my plan' }).click();
 
     // Preview — a foundations plan: coverage → focus → rehearsal.

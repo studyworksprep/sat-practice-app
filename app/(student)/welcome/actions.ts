@@ -63,6 +63,28 @@ async function dropDraft(ctx: Ctx): Promise<void> {
     .eq('status', 'draft');
 }
 
+// ── Welcome ───────────────────────────────────────────────────────
+
+/** "Let's go" on the welcome screen: create the (empty) intake row so
+ *  the ladder moves past the greeting. Idempotent. */
+export async function startIntakeAction(
+  _prev: ActionResult | null,
+  _fd: FormData,
+): Promise<ActionResult> {
+  let ctx: Ctx;
+  try {
+    ctx = await requireStudent();
+  } catch (err) {
+    return asFail(err);
+  }
+  const { error } = await ctx.supabase
+    .from('student_intake')
+    .upsert({ student_id: ctx.user.id }, { onConflict: 'student_id', ignoreDuplicates: true });
+  if (error) return actionFail(error.message);
+  revalidatePath('/welcome');
+  return { ok: true };
+}
+
 // ── One answer at a time ──────────────────────────────────────────
 
 const ONE_ANSWER = ['target', 'test_date', 'prep', 'intent', 'hours', 'days'] as const;
