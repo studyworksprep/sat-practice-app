@@ -459,6 +459,37 @@ date before the profile's, matching the sidebar footer.
 
 ---
 
+### 6.4 Assignments and the plan (implemented 2026-09-19)
+
+Before this, a tutored student with an active plan had two to-do lists
+that never talked. Now an assignment given to a student with an
+**active** plan is mirrored into the plan as a task with
+`source = 'tutor'` (so re-pacing preserves it, overdue or not), dated
+to the assignment's due date (never in the past, never past test
+day), titled "Assigned: …", linked through `payload.assignment_id`.
+Type mapping: questions → `practice_set`, practice test →
+`full_test`, lesson / lesson pack → `lesson`.
+
+Everything lives in database triggers
+(`20260919120000_assignments_into_plan_tasks.sql`) so every creation
+and completion path is covered without touching each one:
+
+| Event | Effect on the plan task |
+|---|---|
+| Junction row inserted (create, reassign, add member, v1 sync) | Task created in the student's active plan |
+| `assignment_students_v2.completed_at` stamped (any completion path, submit-on-behalf) | Task completed, `completed_via = 'assignment:<id>'` |
+| Completion cleared | Task reopened |
+| Student removed from the assignment | Pending task deleted |
+| Assignment archived or deleted | Pending task skipped (`assignment_closed`); un-archive reopens |
+| Due date changed | Pending task moved, week re-anchored |
+| Plan activated later | Open assignments mirrored into the new plan |
+
+On Today and the hub, an assignment task shows an "Assigned" tag and
+"Assigned by your tutor"; Start opens the assignment itself (the
+task completes through the assignment, never by hand). The hub's
+week-by-week list now carries Start buttons on every pending task, so
+a student can get ahead from any week.
+
 ## 7. Data model
 
 All changes are timestamped migrations under `supabase/migrations/`

@@ -696,6 +696,10 @@ function skillCodeOf(payload: Record<string, unknown>): string | null {
 function isPreservableTutorTask(t: ExistingTask, today: string): boolean {
   if (t.source !== 'tutor') return false;
   if (t.status !== 'pending') return false;
+  // A task mirrored from an assignment is owed until the assignment is
+  // done or closed, overdue or not — dropping it would hide the
+  // assignment from the plan while it stays open.
+  if (typeof t.payload?.assignment_id === 'string') return true;
   if (t.scheduledDate && t.scheduledDate < today) return false;
   return true;
 }

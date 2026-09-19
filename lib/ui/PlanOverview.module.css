@@ -133,10 +133,24 @@
 .type_drill, .type_practice_set { background: #fef3c7; color: #78350f; }
 .type_full_test { background: #dcfce7; color: #14532d; }
 .type_review { background: #ede9fe; color: #4c1d95; }
+.type_assigned { background: #fff7d6; color: #7a4d00; border: 1px solid #f2d27a; }
 .taskBody { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .taskTitle { font-weight: 600; font-size: 0.9rem; color: var(--fg1); }
 .taskWhy { font-size: 0.8rem; color: var(--fg2); line-height: 1.4; }
-.taskMeta { font-size: 0.78rem; color: var(--fg3); white-space: nowrap; }
+.taskMeta { font-size: 0.78rem; color: var(--fg3); white-space: nowrap; display: inline-flex; align-items: center; gap: var(--s2); }
+.startForm { display: inline; }
+.startBtn {
+  appearance: none;
+  border: 1px solid var(--color-app-accent);
+  background: var(--bg-white);
+  color: var(--color-app-accent);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.startBtn:hover { background: var(--color-app-accent); color: #fff; }
 
 @media (max-width: 560px) {
   .task { grid-template-columns: auto 1fr; }

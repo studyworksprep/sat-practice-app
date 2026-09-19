@@ -114,6 +114,14 @@ export async function startPlanTask(formData: FormData): Promise<void> {
   const { task, plan } = await loadOwnPendingTask(supabase, user.id, taskId);
   const payload = task.payload;
 
+  // A task mirrored from a tutor assignment (migration 20260919120000)
+  // opens the assignment itself; completing the assignment completes
+  // the task through the assignment_students_v2 trigger.
+  const assignmentId = str(payload, 'assignment_id');
+  if (assignmentId && UUID_RE.test(assignmentId)) {
+    redirect(`/assignments/${assignmentId}`);
+  }
+
   switch (task.taskType) {
     case 'drill':
     case 'practice_set': {

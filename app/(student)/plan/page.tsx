@@ -285,6 +285,7 @@ export default async function PlanPage() {
           tasks={tasks}
           expandWeeks={0}
           currentWeek={currentWeek}
+          startAction={startPlanTask}
         />
       </section>
 
