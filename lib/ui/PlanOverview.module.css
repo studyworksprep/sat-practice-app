@@ -65,6 +65,12 @@
 
 /* ── Weeks ── */
 .weeks { display: flex; flex-direction: column; gap: var(--s2); }
+/* Wide screens: collapsed weeks flow two-up so the list doesn't run
+   off the bottom; an open week spans the full width. */
+@media (min-width: 900px) {
+  .weeks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .week[open] { grid-column: 1 / -1; }
+}
 .week {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

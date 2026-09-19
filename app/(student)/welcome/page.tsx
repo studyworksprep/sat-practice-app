@@ -167,7 +167,7 @@ export default async function WelcomePage({ searchParams }: PageProps) {
 
   return (
     <div className={s.page}>
-      <main className={s.container}>
+      <main className={`${s.container} ${step === 'preview' ? s.containerWide : ''}`}>
         <div className={s.brand}>
           <span className={s.brandName}>Study<span>works</span></span>
           {isQuestion && <span className={s.brandRight}>Setting up your plan</span>}
@@ -183,12 +183,18 @@ export default async function WelcomePage({ searchParams }: PageProps) {
         )}
 
         {step === 'welcome' && (
-          <section className={s.card}>
-            <div className={s.welcomeEyebrow}>Welcome to Studyworks</div>
-            <h1 className={s.welcomeTitle}>{firstName ? `Hi ${firstName}, let’s build your study plan.` : 'Let’s build your study plan.'}</h1>
-            <p className={s.welcomeLead}>
-              Seven quick questions, then a week-by-week plan that opens each day to exactly what to do next.
-            </p>
+          <section className={`${s.card} ${s.welcomeCard}`}>
+            <div className={s.welcomeHead}>
+              <div className={s.welcomeEyebrow}>Welcome to Studyworks</div>
+              <h1 className={s.welcomeTitle}>{firstName ? `Hi ${firstName}, let’s build your study plan.` : 'Let’s build your study plan.'}</h1>
+              <p className={s.welcomeLead}>
+                Seven quick questions, then a week-by-week plan that opens each day to exactly what to do next.
+              </p>
+              <div className={s.actionsRow}>
+                <StartIntakeButton action={startIntakeAction} />
+                {showSetAside && <SetAsideLink action={setAsideAction} />}
+              </div>
+            </div>
             <ol className={s.welcomeSteps}>
               <li className={s.welcomeStep}>
                 <span className={s.welcomeStepNum}>1</span>
@@ -212,18 +218,16 @@ export default async function WelcomePage({ searchParams }: PageProps) {
                 </div>
               </li>
             </ol>
-            <div className={s.actionsRow}>
-              <StartIntakeButton action={startIntakeAction} />
-              {showSetAside && <SetAsideLink action={setAsideAction} />}
-            </div>
           </section>
         )}
 
         {isQuestion && copy && (
-          <section className={s.card}>
-            <h1 className={s.question}>{copy.title}</h1>
-            {copy.sub && <p className={s.questionSub}>{copy.sub}</p>}
-
+          <section className={`${s.card} ${s.questionCard} ${step === 'assess' || step === 'targets' ? s.questionCardWide : ''}`}>
+            <div className={s.questionHead}>
+              <h1 className={s.question}>{copy.title}</h1>
+              {copy.sub && <p className={s.questionSub}>{copy.sub}</p>}
+            </div>
+            <div className={s.questionBody}>
             {step === 'target' && <TargetForm action={saveAnswerAction} defaultValue={goal ?? ''} />}
             {step === 'test_date' && <TestDateForm action={saveAnswerAction} defaultValue={testDate ?? ''} />}
             {step === 'prep' && <PrepForm action={saveAnswerAction} defaultValue={intake.prepLevel} />}
@@ -244,6 +248,7 @@ export default async function WelcomePage({ searchParams }: PageProps) {
             {step === 'assess' && (
               <SelfCheckGrid action={saveAssessmentAction} rows={selfCheckRows} defaults={intake.selfRating} />
             )}
+            </div>
 
             <div className={s.navRow}>
               {prevStep ? (
