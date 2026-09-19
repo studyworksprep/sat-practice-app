@@ -234,6 +234,10 @@ all are implemented:
   Writing. Walking eight screens one at a time was tedious.
 - The preview tucks the rationale behind "Why this plan"; the phase
   strip carries the explanation.
+- Wide screens use the width: question screens go two-column (the
+  question on the left, controls on the right) from 900px; the long
+  forms (targets, self-check) stay single-column; the preview and the
+  plan hub widen to 1080px and collapsed weeks flow two-up.
 - The dashboard has **one primary action**: "Continue plan" (Today)
   with "See the plan" beside it when a plan is active, "Set up my
   plan" otherwise; free practice / resume are text links. The
