@@ -70,10 +70,13 @@ export function SkillBreakdownCard({ title, tone, domains, opportunities = [] })
         <div className={s.title}>{title}</div>
         <div className={sectPctCls}>{sectPct == null ? '—' : `${sectPct}%`}</div>
       </div>
+      {/* Legend text as explicit strings: a bare `&lt;` after a
+          self-closing tag hydrated with a different leading space
+          than the server rendered (React text-node normalization). */}
       <div className={s.legend} aria-hidden="true">
-        <span className={`${s.legendDot} ${s.bucketLow}`} /> &lt; 50%
-        <span className={`${s.legendDot} ${s.bucketMid}`} /> 50–74%
-        <span className={`${s.legendDot} ${s.bucketHigh}`} /> 75%+
+        <span className={`${s.legendDot} ${s.bucketLow}`} />{' < 50% '}
+        <span className={`${s.legendDot} ${s.bucketMid}`} />{' 50–74% '}
+        <span className={`${s.legendDot} ${s.bucketHigh}`} />{' 75%+ '}
         <span className={s.legendSep}>·</span>
         <span className={s.legendPriority}>🎯 priority skill</span>
       </div>

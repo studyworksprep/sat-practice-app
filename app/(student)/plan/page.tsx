@@ -18,7 +18,7 @@ import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
 import type { PlanMode, PlanPhaseType, PlanTaskType } from '@/lib/plan/generate-plan';
 import { findDomain } from '@/lib/practice/sat-taxonomy';
 import { MODE_LABEL, normalizePhases, PlanOverview } from '@/lib/ui/PlanOverview';
-import { startPlanTask } from '../today/actions';
+import { startPlanTask } from '../dashboard/task-actions';
 import { adjustPlanAction, rebuildPlanAction } from './actions';
 import { AdjustPlanForm, RebuildPlanButton } from './PlanInteractive';
 import s from './Plan.module.css';
@@ -226,7 +226,7 @@ export default async function PlanPage() {
               })}
             </ul>
             <p className={s.body}>
-              <Link href="/today" className={s.inlineLink}>Go to Today →</Link>
+              <Link href="/dashboard" className={s.inlineLink}>Back to the dashboard →</Link>
             </p>
           </>
         )}

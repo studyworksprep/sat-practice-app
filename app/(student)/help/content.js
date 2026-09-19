@@ -46,7 +46,7 @@ export const HELP_ARTICLES = [
 <p>This is the simple loop. Don't worry about being perfect — just get the rhythm started.</p>
 <ol>
   <li><strong>Finish setting up your study plan.</strong> The first time you sign in, Studyworks asks a few questions — your target and test date, how much prep you've done, when you can study, and how comfortable you feel with each area. From those it builds a week-by-week plan and shows you the whole thing before you start. If you set it aside, you can come back to it any time from the <a href="/dashboard">Dashboard</a>.</li>
-  <li><strong>Open <a href="/today">Today</a> each study day.</strong> Once your plan is live, Today shows one to three tasks — a lesson, a drill, a review, or a practice test — each with a reason it's there. Start with the top one. Finishing a task checks it off automatically.</li>
+  <li><strong>Open your <a href="/dashboard">Dashboard</a> each study day.</strong> Once your plan is live, the Tasks box shows one to three tasks — a lesson, a drill, a review, or a practice test — each with a reason it's there. Anything your tutor assigns shows up in the same list, marked <em>Assigned</em>. Start with the top one. Finishing a task checks it off automatically.</li>
   <li><strong>Trust the order early on.</strong> If you're starting from scratch, the plan covers every topic in order first, then narrows to your weak areas once it has seen a few weeks of your work. That's deliberate: a handful of questions can't tell it much, but your first few weeks can.</li>
   <li><strong>Capture every miss with the right tool.</strong> Studyworks gives you three ways to save what you learn: <strong>Flashcards</strong> for a term or formula you didn't know, <strong>Error Log</strong> for a process mistake or a trap you fell for, and <strong>Notes</strong> for a topic you need to actually learn. Choosing well takes about ten seconds and pays off for the rest of your prep — see the <a href="/help/notes">Notes guide</a> for examples.</li>
   <li><strong>Take the practice tests when the plan schedules them.</strong> They're checkpoints, not diagnostics: the score tells you how the whole thing is going, and the plan adjusts itself weekly as your results come in.</li>
@@ -58,8 +58,9 @@ export const HELP_ARTICLES = [
         heading: 'The sidebar, briefly',
         html: `
 <ul>
-  <li><strong><a href="/today">Today</a></strong> — your study plan's daily view: what to do next, and what's already done.</li>
-  <li><strong><a href="/dashboard">Dashboard</a></strong> — your stats, performance breakdown, and recent work.</li>
+  <li><strong><a href="/dashboard">Dashboard</a></strong> — where you land: today's tasks, a quick read on your progress, and your recent work.</li>
+  <li><strong><a href="/plan">Plan</a></strong> — the whole study plan, week by week, and where to change your target, date, or hours.</li>
+  <li><strong><a href="/performance">Performance</a></strong> — every statistic: per-skill accuracy, weekly trend, daily activity, and a ranked list of skills weakest-first.</li>
   <li><strong><a href="/practice/start">Practice</a></strong> — start a self-guided session, filtered to whatever you want to work on.</li>
   <li><strong><a href="/practice/tests">Practice tests</a></strong> — launch a full-length, timed, adaptive SAT or ACT.</li>
   <li><strong><a href="/assignments">Assignments</a></strong> — work assigned by your tutor (skip if you don't have one).</li>
@@ -83,40 +84,42 @@ export const HELP_ARTICLES = [
   {
     slug: 'dashboard',
     title: 'Your Dashboard',
-    blurb: 'Greeting, stats tiles, recently finished, and the performance grid.',
-    summary: 'Your Dashboard is the single-screen summary you land on after logging in. It shows your target, your week-over-week pace, what you most recently completed, and a Performance grid that segments every domain by skill so you can see at a glance where the points are hiding.',
+    blurb: 'Tasks, Progress, and Recently finished — the page you land on.',
+    summary: 'Your Dashboard is the page you land on after logging in and the place to start every study day. It has three boxes: Tasks (what to do next, from your plan and your tutor), Progress (a quick read on how it is going, with a link to the full Performance page), and Recently finished (the reports for your latest work).',
     icon: PerformanceIcon, palette: 'navy',
     order: 2,
     sections: [
       {
         heading: 'What the Dashboard is',
         html: `
-<p>The <a href="/dashboard">Dashboard</a> is the page you land on when you log in. It's a single-screen summary of where you stand and what to do next.</p>
+<p>The <a href="/dashboard">Dashboard</a> is the page you land on when you log in. It answers two questions on one screen: what should I do next, and how is it going. Everything else in the app is one click away from it.</p>
         `,
       },
       {
         heading: 'The banner — target, accuracy, days to test',
         html: `
-<p>Top of the page. Shows your name, your target score (you can change it inline), your overall accuracy, and a countdown to your test date if you've set one. If you have an in-progress practice session, a <strong>Resume</strong> button appears here too.</p>
-<p>Set a target score if you haven't yet — having a number on the screen makes the work feel concrete. A realistic 3-month goal is your baseline + 100 to 150 points.</p>
+<p>Top of the page. Shows your name, which week of your plan you're in, your target score, your overall accuracy, and a countdown to your test date. If you have an in-progress practice session, a <strong>Resume session</strong> button appears here too, next to <strong>Free practice</strong>.</p>
+<p>To change your target or test date, open the <a href="/plan">Plan</a> page and use <em>Adjust</em> — the plan re-paces itself around the new numbers. A realistic 3-month goal is your baseline + 100 to 150 points.</p>
         `,
       },
       {
-        heading: 'Pending assignments',
+        heading: 'Tasks',
         html: `
-<p>If you have a tutor, any open assignments show here, with the newest first. Click in to start. No tutor? You won't see anything here — that's normal.</p>
+<p>What to do next. Once your plan is live this box shows one to three tasks for the day — a lesson, a drill, a review, or a practice test — each with a reason it's there and a <strong>Start</strong> button. The top one has a highlighted border: begin there. Finishing the work checks the task off automatically, and anything you complete today stays listed with a check mark so you can see the day adding up.</p>
+<p>If you have a tutor, their assignments appear in the same list with a violet <strong>Assigned</strong> tag, dated to when they're due. Start opens the assignment itself.</p>
+<p>When nothing is due, the box shows the next task up so you can get ahead, and <strong>See the whole plan</strong> opens the <a href="/plan">Plan</a> page — every week, every task, and the controls to adjust or rebuild. No plan yet? The box holds the <strong>Set up my plan</strong> button instead.</p>
         `,
       },
       {
-        heading: 'Stats tiles',
+        heading: 'Progress',
         html: `
-<p>Four numbers, computed from everything you've ever done on the platform:</p>
+<p>A quick read on how it's going, over the last 90 days:</p>
 <ul>
-  <li><strong>Total questions</strong> — running count of attempts.</li>
-  <li><strong>This week</strong> — what you've done in the last 7 days. The single best leading indicator that you're studying enough.</li>
-  <li><strong>Overall accuracy</strong> — the high-level number. Don't chase it as a goal; use the per-skill bars below instead.</li>
-  <li><strong>Practice tests taken</strong> — count, and your latest composite.</li>
+  <li><strong>Questions</strong> — running count of attempts, with a weekly sparkline.</li>
+  <li><strong>Accuracy</strong> — the high-level number, with the trend and how this week compares to before. Don't chase it as a goal; use the per-skill view instead.</li>
+  <li><strong>This week</strong> — what you've done in the last 7 days against the week before. The single best leading indicator that you're studying enough.</li>
 </ul>
+<p>Below the tiles, one accuracy bar per domain — Math on top, Reading &amp; Writing beneath (and ACT if you practice it). Green is 80% and up, amber is 50–79%, red is under 50%. <strong>See full performance</strong> opens the <a href="/performance">Performance</a> page.</p>
         `,
       },
       {
@@ -127,10 +130,10 @@ export const HELP_ARTICLES = [
         `,
       },
       {
-        heading: 'Performance grid',
+        heading: 'The Performance page',
         html: `
-<p>This is the most useful section on the Dashboard — the one to come back to whenever you're not sure what to practice next.</p>
-<p>You'll see two columns: <strong>Math</strong> and <strong>Reading &amp; Writing</strong>. Each one is broken into domains (Algebra, Advanced Math, Information and Ideas, Standard English Conventions, and so on). Inside each domain bar you'll see <strong>colored segments</strong> — one per skill in that domain. The width of a segment shows how much you've practiced that skill; the color shows how well you're doing on it.</p>
+<p>The <a href="/performance">Performance</a> page is where the detail lives — the place to come back to whenever you're not sure what to practice next. It's the same view your tutor sees of you: the per-skill performance grid, a 13-week accuracy trend, a daily activity heatmap, your results by difficulty and score band, and a full list of skills ranked weakest-first.</p>
+<p>In the performance grid you'll see two columns: <strong>Math</strong> and <strong>Reading &amp; Writing</strong>. Each one is broken into domains (Algebra, Advanced Math, Information and Ideas, Standard English Conventions, and so on). Inside each domain bar you'll see <strong>colored segments</strong> — one per skill in that domain. The width of a segment shows how much you've practiced that skill; the color shows how well you're doing on it.</p>
 <p>Color tones:</p>
 <ul>
   <li><strong>Green</strong> (80%+): you have this skill. Maintain it with the occasional question; don't waste time grinding here.</li>
@@ -138,13 +141,8 @@ export const HELP_ARTICLES = [
   <li><strong>Red</strong> (under 50%): a real weakness. Slow down, read the rationales carefully, and treat anything you don't understand as a topic to actually learn (a Note), not just to re-attempt.</li>
 </ul>
 <p>Hover or tap a segment to see which skill it represents and your accuracy on it. When you're picking what to practice, scan for the red and yellow segments inside the domains you care about most.</p>
-<p>Take ACT questions too? A separate ACT performance card appears here with the same shape. If you've never attempted an ACT question, that card stays hidden so the page doesn't feel cluttered.</p>
-        `,
-      },
-      {
-        heading: 'Weekly accuracy trend',
-        html: `
-<p>A 13-week line chart of your weekly accuracy. Look for the slope — going up is good, flat is fine if you're at a high level, going down means review days are getting skipped.</p>
+<p>Take ACT questions too? A separate ACT performance card appears with the same shape. If you've never attempted an ACT question, that card stays hidden so the page doesn't feel cluttered.</p>
+<p>The weekly accuracy trend is a 13-week line chart. Look for the slope — going up is good, flat is fine if you're at a high level, going down means review days are getting skipped.</p>
         `,
       },
     ],
@@ -169,7 +167,7 @@ export const HELP_ARTICLES = [
 <p>Open the <em>Practice</em> tab. The filter panel lays out everything you need to pick what to work on:</p>
 <ul>
   <li><strong>Math and Reading &amp; Writing columns</strong> — the two subjects sit side by side. You can pick skills from one column, the other, or both. There's no toggle, so a mixed session (a little Math, a little R&amp;W) is one click away if that's what you want. If you also practice ACT questions, switch tests with the tab at the top.</li>
-  <li><strong>Domain &amp; Skill filters</strong> — each domain expands to show its individual skills. <em>This is the high-leverage move</em>: a session of 15 questions on one skill teaches you far more than 15 random questions across the whole test. When in doubt, pick the weakest skill you can see on your Dashboard and click just that one.</li>
+  <li><strong>Domain &amp; Skill filters</strong> — each domain expands to show its individual skills. <em>This is the high-leverage move</em>: a session of 15 questions on one skill teaches you far more than 15 random questions across the whole test. When in doubt, pick the weakest skill you can see on your Performance page and click just that one.</li>
   <li><strong>Difficulty</strong> — Easy, Medium, or Hard. Match your current level, then push up when you start getting most questions right. Mixing in one or two harder questions per session is fine; an all-Hard session early on usually just frustrates.</li>
   <li><strong>Score band</strong> — a precise 1-to-7 difficulty rating that lines up with the public Easy/Medium/Hard buckets. See <a href="/help/scores">Understanding Your Scores</a> for the full mapping.</li>
   <li><strong>Session size and order</strong> — pick how many questions and whether you want them randomized, then hit <strong>Start</strong>. A live counter shows how many questions match your filters before you commit.</li>
@@ -562,7 +560,7 @@ export const HELP_ARTICLES = [
         html: `
 <p>Aim for thirty solid minutes most days. Even on busy days, ten focused minutes is better than zero — momentum is the thing that compounds.</p>
 <ol>
-  <li><strong>5 minutes — pick a skill.</strong> Open the <a href="/dashboard">Dashboard</a> and look at the segmented bars in the Performance grid. Find a red or yellow segment in a skill that matters for your target score, and that's what you're working on today. Don't overthink it; whichever weak skill catches your eye is fine.</li>
+  <li><strong>5 minutes — pick a skill.</strong> If your plan has a task due, that's your skill — skip to step two. Otherwise open <a href="/performance">Performance</a> and look at the segmented bars in the performance grid. Find a red or yellow segment in a skill that matters for your target score, and that's what you're working on today. Don't overthink it; whichever weak skill catches your eye is fine.</li>
   <li><strong>20 minutes — practice it.</strong> Open <a href="/practice/start">Practice</a>, click just that skill, and run a 10-15 question session. Take the questions seriously: read carefully, work them out, then hit <strong>Reveal Answer</strong>. After each question — including the ones you got right — pause and ask: <em>what did I learn?</em>
     <ul>
       <li>If the answer is "a term, formula, or rule I didn't know" → add a Flashcard.</li>

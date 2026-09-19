@@ -1,4 +1,6 @@
-// Server Actions for the student "Today" page (§2.3).
+// Server Actions behind the dashboard's Tasks box (and the plan hub's
+// per-task Start buttons). The Tasks box is what the "Today" page (§2.3)
+// became once it folded into the dashboard.
 //
 // startPlanTask is the one-tap start: it turns a pending plan task into
 // the right next screen, stamping plan_task_id onto anything it spawns so
@@ -24,10 +26,10 @@
 // hatch.
 //
 // Both actions are plain <form action> handlers: on failure they redirect
-// back to /today?error=… (no client island needed); on success they
-// redirect to the started surface. Ownership: Today is the student's own
-// surface, so both assert the task's plan belongs to the CALLER and is
-// active — tighter than the tutor-manageable RLS floor.
+// back to /dashboard?error=… (no client island needed); on success they
+// redirect to the started surface. Ownership: the dashboard is the
+// student's own surface, so both assert the task's plan belongs to the
+// CALLER and is active — tighter than the tutor-manageable RLS floor.
 
 'use server';
 
@@ -54,7 +56,7 @@ const MAX_DRILL_COUNT = 50;
 const REVIEW_TASK_SIZE = 10;
 
 function fail(message: string): never {
-  redirect(`/today?error=${encodeURIComponent(message)}`);
+  redirect(`/dashboard?error=${encodeURIComponent(message)}`);
 }
 
 function str(obj: Record<string, unknown> | null | undefined, key: string): string | null {
@@ -334,6 +336,7 @@ export async function markTaskDone(formData: FormData): Promise<void> {
     .eq('status', 'pending');
   if (error) fail(`Could not mark the task done: ${error.message}`);
 
-  revalidatePath('/today');
-  redirect('/today');
+  revalidatePath('/dashboard');
+  revalidatePath('/plan');
+  redirect('/dashboard');
 }

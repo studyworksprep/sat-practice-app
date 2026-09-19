@@ -1,6 +1,6 @@
 # Student onboarding and study-plan redesign
 
-> **Status: Living document.** Last verified against code: 2026-09-17
+> **Status: Living document.** Last verified against code: 2026-09-19
 > (Phase 1 and Phase 2 implemented; migrations applied to dev and
 > production 2026-09-17; owner notes of 2026-09-17 folded in — see §3.4). Design settled with the
 > owner on 2026-09-14; the delivery ledger at the end is the working
@@ -126,8 +126,8 @@ of the curriculum.
 - **Entry.** A student with no active plan and no completed intake
   is routed to `/welcome` on login (server-side, in the login
   redirect and the student layout), not to the dashboard. The
-  dashboard callout and the Today empty state stay as secondary
-  entry points.
+  dashboard's Tasks box (its no-plan state) stays as the secondary
+  entry point.
 
 ### 3.2 Steps and branches
 
@@ -220,8 +220,9 @@ all are implemented:
    Evidence-based reasons (self-rated low, decayed, and so on) still
    render.
 4. **A place to see the plan and get ahead.** The `/plan` hub (§6) is
-   live, and Today offers "Want to get ahead?" with the next three
-   pending tasks, startable now, whenever today's list is clear.
+   live with Start buttons on every pending task, and the dashboard's
+   Tasks box offers the next task up, startable now, whenever today's
+   list is clear.
 
 ### 3.3b Design pass 2026-09-17 (screenshots review)
 
@@ -238,12 +239,14 @@ all are implemented:
   question on the left, controls on the right) from 900px; the long
   forms (targets, self-check) stay single-column; the preview and the
   plan hub widen to 1080px and collapsed weeks flow two-up.
-- The dashboard has **one primary action**: "Continue plan" (Today)
-  with "See the plan" beside it when a plan is active, "Set up my
-  plan" otherwise; free practice / resume are text links. The
-  full-width help banner is gone; a small dismissible nudge points at
-  Help on the first three dashboard visits of an account under 14
-  days.
+- The dashboard's primary action is the day's first task: the Tasks
+  box (§6.3) carries the Start buttons, so the banner has no primary
+  button — free practice / resume are secondary links. Without a
+  plan the Tasks box holds "Set up my plan". The full-width help
+  banner is gone; a small dismissible nudge points at Help on the
+  first three dashboard visits of an account under 14 days.
+  *(Revised 2026-09-19; the 09-17 version had a "Continue plan"
+  button that opened the separate Today page.)*
 
 ### 3.3 What happens to existing surfaces
 
@@ -405,8 +408,8 @@ boundary, composes the next phase from current evidence. A
 foundations plan therefore enters focus with real mastery data. Human
 edits (`source = 'tutor' | 'student'`) are preserved as today.
 
-The `wasAutoRepaced` notice on Today should link to the hub's
-"what changed" list rather than a one-line message.
+The `wasAutoRepaced` notice in the dashboard's Tasks box should link
+to the hub's "what changed" list rather than a one-line message.
 
 ---
 
@@ -414,12 +417,14 @@ The `wasAutoRepaced` notice on Today should link to the hub's
 
 ### 6.1 Route and navigation
 
-New route `/plan` in the student tree. Sidebar: with an active plan
-the anchor section becomes **Today · Plan · Dashboard**; without one
-it stays **Dashboard** and the setup callout points at `/welcome`.
-`/welcome` continues to redirect to `/today` when a plan is active,
-but the hub owns goal, hours, days, and rebuild, so nothing becomes
-unreachable.
+New route `/plan` in the student tree. Sidebar (as of 2026-09-19):
+the anchor section is **Dashboard · Plan · Performance** with an
+active plan and **Dashboard · Performance** without one; the
+dashboard's Tasks box carries the setup callout pointing at
+`/welcome`. `/welcome` redirects to `/dashboard` when a plan is
+active, but the hub owns goal, hours, days, and rebuild, so nothing
+becomes unreachable. `/today` and `/dashboard/stats` remain as
+redirects (to `/dashboard` and `/performance`).
 
 ### 6.2 Content, top to bottom
 
@@ -446,16 +451,44 @@ unreachable.
    draft from current evidence for review, leaving the active plan
    in place until activated, same as the tutor's regenerate.
 7. **How progress is measured.** The existing `MasteryNote`, moved
-   here from Today.
+   here from the former Today page.
 
-### 6.3 Relationship to Today and the dashboard
+### 6.3 The dashboard as command center (revised 2026-09-19)
 
-Today stays the daily surface and is unchanged in intent: due tasks,
-done today, week bar. It gains one link, "See the whole plan". The
-dashboard gets a compact plan card (phase, week N of M, tasks done
-this week, link to `/plan`) replacing the setup callout when a plan
-is active. The dashboard's test-date tile should read the plan's
-date before the profile's, matching the sidebar footer.
+The separate Today page is gone: the dashboard is the landing page
+and the daily surface at once. Owner framing: a dashboard is the
+command center that leads to every part of the app, and "today" is a
+box on it, not a page. Three boxes:
+
+- **Tasks.** The former Today content, reduced: today's due tasks
+  (the first highlighted) with Start / Mark-done, tasks completed
+  today as checked-off rows, and when the day is clear the next task
+  up with its date so a student can get ahead. Assignments arrive as
+  mirrored plan tasks (§6.4) and render in the violet "assigned"
+  treatment — a left rail, tinted background, and an *Assigned* tag —
+  so tutor work stands out from generated work. "See the whole plan"
+  opens `/plan`. The week bar, the three-task "get ahead" list, and
+  the mastery note all live on the hub now. Without a plan the box is
+  the setup callout, plus the student's open assignments when they
+  have a tutor (assignments only mirror into a plan once one exists).
+- **Progress.** The reduced statistics: three tiles (questions,
+  accuracy, this week — sparklines and deltas kept) and one accuracy
+  bar per domain. "See full performance" opens `/performance`, the
+  former `/dashboard/stats` promoted to a sidebar page; the per-skill
+  grid, weekly trend chart, heatmap, and ranked skill table live
+  there.
+- **Recently finished.** Unchanged: report links for the latest
+  sessions, tests, and assignments.
+
+The banner keeps the greeting, the plan's "week N of M · phase ·
+tasks done" line, and the target / accuracy / countdown chips, with
+Resume and Free practice as secondary links. The target-score editor
+is gone from the dashboard (the hub's Adjust owns target and date),
+and the countdown reads the plan's date first, then a registered
+exam, then the profile date — the sidebar footer's precedence, so
+the two never disagree. The task Server Actions moved to
+`app/(student)/dashboard/task-actions.ts`; the hub imports them from
+there. The page is Server-Component only apart from the help nudge.
 
 ---
 
@@ -484,9 +517,10 @@ and completion path is covered without touching each one:
 | Due date changed | Pending task moved, week re-anchored |
 | Plan activated later | Open assignments mirrored into the new plan |
 
-On Today and the hub, an assignment task shows an "Assigned" tag and
-"Assigned by your tutor"; Start opens the assignment itself (the
-task completes through the assignment, never by hand). The hub's
+In the dashboard's Tasks box and on the hub, an assignment task
+shows an "Assigned" tag and "Assigned by your tutor"; Start opens the
+assignment itself (the task completes through the assignment, never
+by hand). The hub's
 week-by-week list now carries Start buttons on every pending task, so
 a student can get ahead from any week.
 
@@ -576,6 +610,7 @@ coherent state. Order is by leverage against the funnel.
 |---|---|---|
 | **1 · Intake and routing** — **implemented 2026-09-15** | Steps 1, 3, 4, 5, 6 of §3 (no evidence branch yet: prep = some/a_lot go straight to availability); signup shrink; login routes new students to `/welcome`; help redirect removed; welcome email and getting-started copy updated; diagnostic code removed. Generator gains `mode` and phases with the self-assessment prior only. Preview renders phases and rationale via the shared `PlanOverview`; `rationale` and `phases` stored. Re-pace and week regeneration compose in the plan's stored mode. | Walked in dev 2026-09-15 as a fresh student: login → `/welcome` → self-directed plan → `/today` with no help or practice-session detour; `/welcome` never dead-ends ("I'll do this later" ends routing). Unit tests cover the three modes, phase layout, priors, study days, and the step ladder (`lib/plan/phase-composer.test.mjs`, `intake.test.mjs`). No new Playwright spec: CI's e2e job runs against its own bank and the seeded student already has a plan, so a wizard walk there would be unreproducible — see `docs/runbook.md` e2e notes. |
 | **2 · Plan hub** — **implemented 2026-09-17** | `/plan` per §6: header with target/date/countdown/tasks done, "right now" (week, phase, this week's bar, rationale), "up next" with Start buttons (also the "get ahead" path), progress by section from `get_student_coverage`, the week-by-week `PlanOverview` with the current week open, and Adjust (target, date, hours, days) + Rebuild. Both verbs regenerate the remaining weeks **in place** (`regenerateRemainingTasks`): same plan id, completed history and human-authored tasks kept, phases laid over the original grid. Sidebar anchor Today · Plan · Dashboard; dashboard plan card; Today links to the hub and offers "Want to get ahead?"; `MasteryNote` moved. | Walked in dev 2026-09-17 (e2e `onboarding.student.spec.ts` reaches `/plan` and checks week/phase/progress). Deviation from §6.2: adjust applies immediately with a result line rather than a before/after preview — the preview is Phase 4 polish if wanted. Legacy plans (no `phases`) render without the phase strip. |
+| **2b · Dashboard as command center** — **implemented 2026-09-19** | §6.3 as revised: Today folded into the dashboard's Tasks box (assignments included, violet "assigned" treatment); Progress box with the reduced statistics; `/dashboard/stats` → `/performance` on the sidebar; sidebar anchor Dashboard · Plan · Performance; `/today` kept as a redirect; target editor retired from the dashboard; countdown reads the plan date first. Help "Your Dashboard" and "Getting started" articles and the welcome email rewritten to match. | Typecheck, 545 unit tests, hygiene ratchet (308, two client-island `.js` files retired) and the regenerated auth matrix all green; e2e onboarding walk asserts the Tasks heading on `/dashboard` after activation. Walked in dev as the seeded student. |
 | **3 · Evidence branch** | `student_score_reports`; manual domain entry form; student-scoped Bluebook upload with the illustrated walkthrough; evidence prior (§5.4) and reason codes wired through the generator; hub shows reported tests. | A targeted-mode student who enters two reports gets a plan whose first-week drills carry `prior_weak` reasons for their weakest domains. An upload of an ingested test yields item attempts visible in the hub. |
 | **4 · Content** | Help rewrite with screenshots; Bluebook walkthrough screenshots; retire `/learn/getting-started`. | Help describes the sidebar app; every help article that names a surface shows it. |
 

@@ -36,7 +36,6 @@ import {
   BarChartIcon,
   BookmarkIcon,
   BookOpenIcon,
-  CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   GraduationCapIcon,
@@ -64,7 +63,6 @@ const asIcon = (icon: unknown): IconComponent => icon as IconComponent;
 // nav-links.ts stays JSX-free (unit-testable under node --test), so
 // links carry string icon keys and this map owns the components.
 const NAV_ICONS: Record<NavIconName, IconComponent> = {
-  today: asIcon(CalendarIcon),
   plan: asIcon(ClipboardCheckIcon),
   dashboard: asIcon(BarChartIcon),
   practice: asIcon(PencilIcon),

@@ -104,7 +104,7 @@ export default async function StudentTreeLayout({ children }) {
   }
 
   // The student's live plan + intake state, read once: they drive the
-  // login routing below and the sidebar's Today anchor + footer strip.
+  // login routing below and the sidebar's Plan anchor + footer strip.
   let activePlan = null;
   let intake = parseIntakeRow(null);
   if (!isTutor && profile.role === 'student') {
@@ -142,8 +142,8 @@ export default async function StudentTreeLayout({ children }) {
     if (isTutor) {
       sections = tutorSectionsForRole(profile.role);
     } else {
-      // Today (§2.3) anchors the sidebar only when the student has an
-      // active plan — without one the link would open an empty surface.
+      // Plan joins the sidebar anchor only when the student has an
+      // active plan — without one the link would open an empty hub.
       // The plan read also feeds the footer strip (§6.1): plan test
       // date wins over the profile date, same precedence as the
       // dashboard; the streak comes from one aggregate RPC.

@@ -31,7 +31,6 @@
 // AppSidebar owns the key → component map.
 
 export type NavIconName =
-  | 'today'
   | 'plan'
   | 'dashboard'
   | 'practice'
@@ -82,15 +81,18 @@ export interface NavSection {
 // anchor item. Sidebar-only, like Learn — the flag-off AppNav must stay
 // byte-identical to the pre-sidebar chrome — and only offered when the
 // student actually has an active plan (studentSections's hasPlan).
-const STUDENT_TODAY: NavLink = {
-  href: '/today', label: 'Today', icon: 'today',
-};
+// The landing page and command center: today's plan tasks, the
+// reduced progress read, recent work.
 const STUDENT_DASHBOARD: NavLink = {
   href: '/dashboard', label: 'Dashboard', icon: 'dashboard',
 };
 // The plan hub (design doc §6): the whole plan, progress, adjust.
 const STUDENT_PLAN: NavLink = {
   href: '/plan', label: 'Plan', icon: 'plan',
+};
+// The full statistics (the dashboard's Progress box links here too).
+const STUDENT_PERFORMANCE: NavLink = {
+  href: '/performance', label: 'Performance', icon: 'performance',
 };
 // "Practice" owns self-guided sessions; matchPrefix picks up the
 // session runner (/practice/s/...) + history too.
@@ -321,9 +323,12 @@ export function studentSections(
   const practice = hasTutor
     ? [STUDENT_PRACTICE, STUDENT_TESTS, STUDENT_ASSIGNMENTS]
     : [STUDENT_PRACTICE, STUDENT_TESTS];
+  // Plan joins the anchor only with an active plan — without one the
+  // link would open an empty hub; the dashboard's Tasks box carries
+  // the setup callout instead.
   const anchor = hasPlan
-    ? [STUDENT_TODAY, STUDENT_PLAN, STUDENT_DASHBOARD]
-    : [STUDENT_DASHBOARD];
+    ? [STUDENT_DASHBOARD, STUDENT_PLAN, STUDENT_PERFORMANCE]
+    : [STUDENT_DASHBOARD, STUDENT_PERFORMANCE];
   return [
     { title: null, links: anchor },
     { title: 'Practice', links: practice },

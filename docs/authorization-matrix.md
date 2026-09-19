@@ -65,7 +65,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/users/[userId]/actions.js` | `updateProfileFields`, `changeRole`, `toggleActive`, `banUser`, `unbanUser`, `deleteUser`, `assignTeacherStudent`, `unassignTeacherStudent`, `assignManagerTeacher`, `unassignManagerTeacher`, `setTestFlag`, `resetTestStudent` | requireRole[admin] + requireServiceRole + rateLimit |
 | `app/(admin)/admin/users/codes/actions.js` | `createTeacherCode`, `revokeTeacherCode`, `inviteStudent`, `revokeStudentInvite` | requireRole[admin] |
 | `app/(student)/assignments/[id]/actions.js` | `startAssignmentPractice` | requireUser + rateLimit |
-| `app/(student)/dashboard/actions.js` | `updateTargetScore` | requireUser |
+| `app/(student)/dashboard/task-actions.ts` | `startPlanTask`, `markTaskDone` | requireUser + rateLimit |
 | `app/(student)/learn/[lessonId]/actions.js` | `markBlockComplete`, `submitCheckAnswer`, `submitDesmosResult`, `markLessonComplete`, `createLessonPracticeDrill` | requireUser + rateLimit |
 | `app/(student)/notes/actions.ts` | `createNote`, `updateNote`, `deleteNote`, `upsertNoteForQuestion` | requireUser |
 | `app/(student)/plan/actions.ts` | `adjustPlanAction`, `rebuildPlanAction` | requireUser |
@@ -74,7 +74,6 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(student)/practice/tests/actions.ts` | `startActPracticeTest`, `finalizeActPracticeTest` | requireUser + rateLimit |
 | `app/(student)/review/actions.js` | `createWeakQueueDrill`, `createSkillDrill`, `createActWeakQueueDrill`, `createActCategoryDrill` | requireUser + rateLimit |
 | `app/(student)/review/queue-actions.ts` | `createDueReviewSession` | requireUser + rateLimit |
-| `app/(student)/today/actions.ts` | `startPlanTask`, `markTaskDone` | requireUser + rateLimit |
 | `app/(student)/welcome/actions.ts` | `startIntakeAction`, `saveAnswerAction`, `saveTargetsAction`, `saveAssessmentAction`, `buildPlanAction`, `activateFirstPlanAction`, `setAsideAction` | requireUser |
 | `app/(tutor)/tutor/assignments/[id]/actions.js` | `addAssignmentMembers`, `submitAssignmentOnBehalf`, `archiveAssignment` | requireUser |
 | `app/(tutor)/tutor/assignments/[id]/reassign-actions.ts` | `reassignAssignment` | requireRole[admin|manager|teacher] |
@@ -117,4 +116,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_20 route handlers, 66 server-action modules enumerated._
+_20 route handlers, 65 server-action modules enumerated._

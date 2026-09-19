@@ -30,6 +30,7 @@ import { absoluteUrl, siteUrl } from '@/lib/config/site';
 const AUTHENTICATED_PREFIXES = [
   // Student surface
   '/dashboard',
+  '/performance',
   '/today',
   '/welcome',
   '/practice',
