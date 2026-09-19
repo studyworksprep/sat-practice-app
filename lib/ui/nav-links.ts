@@ -88,7 +88,7 @@ const STUDENT_DASHBOARD: NavLink = {
 };
 // The plan hub (design doc §6): the whole plan, progress, adjust.
 const STUDENT_PLAN: NavLink = {
-  href: '/plan', label: 'Plan', icon: 'plan',
+  href: '/plan', label: 'Study Plan', icon: 'plan',
 };
 // The full statistics (the dashboard's Progress box links here too).
 const STUDENT_PERFORMANCE: NavLink = {
@@ -97,7 +97,7 @@ const STUDENT_PERFORMANCE: NavLink = {
 // "Practice" owns self-guided sessions; matchPrefix picks up the
 // session runner (/practice/s/...) + history too.
 const STUDENT_PRACTICE: NavLink = {
-  href: '/practice/start', label: 'Practice', icon: 'practice',
+  href: '/practice/start', label: 'Practice Questions', icon: 'practice',
   matchPrefix: ['/practice/start', '/practice/s', '/practice/history', '/practice/review'],
 };
 // "Practice tests" owns full-length simulations. The launch hub
@@ -128,7 +128,7 @@ const STUDENT_REVIEW: NavLink = {
 // had a top-nav tab, and the flag-off AppNav must stay byte-identical
 // to the pre-sidebar chrome.
 const STUDENT_LEARN: NavLink = {
-  href: '/learn', label: 'Learn', icon: 'learn', matchPrefix: '/learn',
+  href: '/learn', label: 'Lessons', icon: 'learn', matchPrefix: '/learn',
 };
 // Help is the new-student onboarding hub. Last so it doesn't
 // displace the daily-driver tabs above, but always present so a
