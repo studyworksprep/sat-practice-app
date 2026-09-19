@@ -471,7 +471,8 @@ Type mapping: questions → `practice_set`, practice test →
 `full_test`, lesson / lesson pack → `lesson`.
 
 Everything lives in database triggers
-(`20260919120000_assignments_into_plan_tasks.sql`) so every creation
+(`20260919120000_assignments_into_plan_tasks.sql`, applied to dev and
+production 2026-09-19) so every creation
 and completion path is covered without touching each one:
 
 | Event | Effect on the plan task |
