@@ -32,6 +32,10 @@ export interface PlanOverviewProps {
   currentWeek?: number | null;
   /** Tuck the rationale paragraph behind a "Why this plan" toggle. */
   rationaleCollapsed?: boolean;
+  /** When given (the hub), every pending task gets a Start button that
+   *  posts its id to this Server Action — so a student can get ahead
+   *  from any week, not just from Today. */
+  startAction?: (formData: FormData) => Promise<void>;
 }
 
 export const MODE_LABEL: Record<PlanMode, string> = {
@@ -97,6 +101,7 @@ export function PlanOverview({
   expandWeeks = 2,
   currentWeek = null,
   rationaleCollapsed = false,
+  startAction,
 }: PlanOverviewProps) {
   const weekCount = tasks.reduce((m, t) => Math.max(m, t.weekIndex + 1), 0);
   const totalWeeks = Math.max(weekCount, ...phases.map((p) => p.endWeek + 1), 0);
@@ -192,8 +197,8 @@ export function PlanOverview({
                   const completed = t.status === 'completed';
                   return (
                     <li key={t.id ?? `${w}-${i}`} className={`${s.task} ${completed ? s.taskDone : ''}`}>
-                      <span className={`${s.typeTag} ${s[`type_${t.taskType}`] ?? ''}`}>
-                        {TYPE_LABEL[t.taskType] ?? 'Task'}
+                      <span className={`${s.typeTag} ${t.payload.assignment_id ? s.type_assigned : (s[`type_${t.taskType}`] ?? '')}`}>
+                        {t.payload.assignment_id ? 'Assigned' : (TYPE_LABEL[t.taskType] ?? 'Task')}
                       </span>
                       <span className={s.taskBody}>
                         <span className={s.taskTitle}>{planTaskTitle(String(t.taskType), t.payload)}</span>
@@ -202,7 +207,13 @@ export function PlanOverview({
                       <span className={s.taskMeta}>
                         {t.scheduledDate ? formatDate(t.scheduledDate) ?? t.scheduledDate : ''}
                         {minutes != null ? ` · ~${minutes} min` : ''}
-                        {completed ? ' · done' : ''}
+                        {completed ? ' · done' : t.status === 'skipped' ? ' · skipped' : ''}
+                        {startAction && t.id && (t.status ?? 'pending') === 'pending' && (
+                          <form action={startAction} className={s.startForm}>
+                            <input type="hidden" name="task_id" value={t.id} />
+                            <button type="submit" className={s.startBtn}>Start</button>
+                          </form>
+                        )}
                       </span>
                     </li>
                   );

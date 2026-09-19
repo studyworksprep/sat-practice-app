@@ -287,7 +287,9 @@ function TaskCard({
   const why = taskWhy(task);
   const minutes = typeof task.payload.minutes === 'number' ? task.payload.minutes : null;
   const overdue = task.scheduledDate != null && task.scheduledDate < today;
-  const manual = MANUAL_COMPLETE_TYPES.includes(task.taskType);
+  // Assignment-linked tasks complete through the assignment, never by hand.
+  const manual =
+    MANUAL_COMPLETE_TYPES.includes(task.taskType) && !task.payload.assignment_id;
 
   return (
     <section className={isPrimary ? `${s.taskCard} ${s.taskCardPrimary}` : s.taskCard}>
