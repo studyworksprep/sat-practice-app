@@ -332,9 +332,10 @@ export async function activateFirstPlanAction(
   const res = await activatePlan(planId);
   if (!res.ok) return res;
 
-  // The sidebar's Today/Plan anchors are decided in the student layout,
-  // which a soft redirect would not re-render — invalidate the layout so
-  // the student lands on Today with the plan in the nav.
+  // The sidebar's Plan anchor is decided in the student layout, which a
+  // soft redirect would not re-render — invalidate the layout so the
+  // student lands on the dashboard with the plan in the nav and the
+  // first task in the Tasks box.
   revalidatePath('/', 'layout');
 
   const intakeErr = await patchIntake(ctx, { completed_at: new Date().toISOString() });
@@ -346,7 +347,7 @@ export async function activateFirstPlanAction(
       'welcome_intake_complete_failed',
     );
   }
-  redirect('/today');
+  redirect('/dashboard');
 }
 
 // ── Set aside ─────────────────────────────────────────────────────

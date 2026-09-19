@@ -133,7 +133,9 @@
 .type_drill, .type_practice_set { background: #fef3c7; color: #78350f; }
 .type_full_test { background: #dcfce7; color: #14532d; }
 .type_review { background: #ede9fe; color: #4c1d95; }
-.type_assigned { background: #fff7d6; color: #7a4d00; border: 1px solid #f2d27a; }
+/* Tutor-assigned work: the violet the dashboard's Tasks box and the
+   finished-list badge use, so one color means "from your tutor". */
+.type_assigned { background: var(--tile-violet-bg, #ede9fe); color: var(--tile-violet-fg, #5e3fbf); }
 .taskBody { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .taskTitle { font-weight: 600; font-size: 0.9rem; color: var(--fg1); }
 .taskWhy { font-size: 0.8rem; color: var(--fg2); line-height: 1.4; }

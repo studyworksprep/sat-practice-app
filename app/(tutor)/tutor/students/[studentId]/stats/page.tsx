@@ -2,7 +2,7 @@
 // the shared StudentStatsView server component, which does the
 // data load and renders every section. Every byte of layout
 // here is intentionally identical to the student-facing
-// /dashboard/stats page — see lib/practice/StudentStatsView.tsx.
+// /performance page — see lib/practice/StudentStatsView.tsx.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';

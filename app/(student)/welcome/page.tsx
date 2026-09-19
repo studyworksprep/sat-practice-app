@@ -85,7 +85,7 @@ export default async function WelcomePage({ searchParams }: PageProps) {
     .eq('status', 'active')
     .limit(1)
     .maybeSingle();
-  if (activePlan) redirect('/today');
+  if (activePlan) redirect('/dashboard');
 
   const [{ data: fullProfile }, { data: intakeRow }, { data: draft }] = await Promise.all([
     supabase

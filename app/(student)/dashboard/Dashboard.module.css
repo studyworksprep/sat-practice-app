@@ -2,11 +2,9 @@
    Student dashboard. Tokens from [data-tree="next"].
 
    Layout: vertical stack inside .main —
-     - banner (greeting + chips + CTAs)
-     - statsRow (4 stat cards)
-     - perfGrid (Math + R&W performance cards)
-     - bottomRow (Recent sessions + Assignments)
-     - targetCard (target-score editor)
+     - banner (greeting + chips + Resume / Free-practice)
+     - grid: Tasks box (left) | Progress box (right)
+     - Recently finished (full width)
 ============================================================= */
 
 .main {
@@ -17,16 +15,6 @@
   gap: var(--s4);
   font-family: var(--font-sans);
   color: var(--fg1);
-}
-
-.srOnly {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 /* ---------- Banner ---------- */
@@ -44,21 +32,6 @@
   position: relative;
   overflow: hidden;
 }
-
-/* Study-plan setup callout (§6.4) */
-.planCallout {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s4);
-  flex-wrap: wrap;
-  border: 1px solid var(--color-app-accent);
-  border-radius: 14px;
-  padding: 16px 20px;
-  background: #fbfaf7;
-}
-.planCalloutTitle { font-weight: 600; color: var(--fg1); font-size: 0.95rem; }
-.planCalloutBody { color: var(--fg2); font-size: 0.85rem; margin-top: 2px; max-width: 52ch; }
 
 .banner::before {
   content: "";
@@ -79,6 +52,7 @@
 }
 
 .bannerGreeting {
+  margin: 0;
   font-family: var(--font-serif);
   font-size: 30px;
   font-weight: 700;
@@ -125,7 +99,6 @@
 .bannerLink { font-size: 13px; font-weight: 600; color: var(--fg2); text-decoration: underline; padding: 0 6px; }
 .bannerLink:hover { color: var(--color-app-accent); }
 
-/* Buttons used in the banner. Reused below as well. */
 .btnPrimary,
 .btnSecondary {
   display: inline-flex;
@@ -163,27 +136,400 @@
   border-color: var(--border-strong);
 }
 
-/* ---------- Stats row ---------- */
-
-.statsRow {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--s3);
-}
-
 @media (max-width: 720px) {
-  .statsRow { grid-template-columns: repeat(2, 1fr); }
+  .banner { flex-direction: column; align-items: flex-start; }
 }
 
-.statCard {
+/* ---------- Two-up grid: Tasks | Progress ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--s4);
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- Card chrome ---------- */
+
+.card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  padding: 16px 18px;
+  padding: 18px 20px;
+  min-width: 0;
+}
+
+.tasksCard,
+.progressCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+}
+
+/* Section labels double as the boxes' h2s — reset the heading defaults. */
+.sectionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.cardSub {
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: 2px;
+  max-width: 620px;
+}
+
+.cardHeaderLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.cardHeaderLink:hover { text-decoration: underline; }
+
+.empty {
+  color: var(--fg3);
+  font-size: 13px;
+  margin: 0;
+}
+
+.inlineLink {
+  color: var(--color-app-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.inlineLink:hover { text-decoration: underline; }
+
+/* ---------- Tasks: notes ---------- */
+
+.errorNote {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: var(--radius-md, 10px);
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+/* Plan-updated note (§2.5 auto re-pace) */
+.repaceNote {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #3730a3;
+  border-radius: var(--radius-md, 10px);
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+/* ---------- Tasks: done today ---------- */
+
+.doneList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.doneRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 13px;
+  color: var(--fg3);
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md, 10px);
+  padding: 8px 14px;
+}
+
+.doneCheck {
+  color: var(--color-success-700, #15803d);
+  font-weight: 700;
+}
+
+.doneTitle {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-slate-300);
+}
+
+.doneTag {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-success-700, #15803d);
+}
+
+/* ---------- Tasks: task rows ---------- */
+
+.taskList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.taskRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 10px);
+  padding: 14px 16px;
+}
+
+/* The first row is "the thing to do" — a touch more presence. */
+.taskRowPrimary {
+  border-color: var(--color-gold-300);
+  box-shadow: 0 2px 10px rgb(16 42 67 / 0.07);
+}
+
+/* Tutor-assigned work: the violet family the finished-list badge and
+   the plan hub's "Assigned" tag already use, so one color means
+   "from your tutor" everywhere. */
+.taskRowAssigned {
+  background: color-mix(in srgb, var(--tile-violet-bg, #ede9fe) 45%, var(--bg-white));
+  border-left: 4px solid var(--tile-violet-fg, #5e3fbf);
+}
+
+.taskRowPrimary.taskRowAssigned {
+  border-color: color-mix(in srgb, var(--tile-violet-fg, #5e3fbf) 35%, var(--border));
+  border-left-color: var(--tile-violet-fg, #5e3fbf);
+}
+
+.taskListAssigned { margin-top: var(--s1); }
+
+.taskIcon { flex: 0 0 auto; }
+
+.taskBody {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.taskTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.taskTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+}
+
+.assignedPill,
+.overduePill,
+.upNextPill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.assignedPill {
+  color: var(--tile-violet-fg, #5e3fbf);
+  background: var(--tile-violet-bg, #ede9fe);
+}
+
+.overduePill {
+  color: var(--color-gold-800);
+  background: var(--color-app-highlight-soft);
+}
+
+.upNextPill {
+  color: var(--fg2);
+  background: var(--color-slate-100);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+.taskMeta {
+  margin-top: 3px;
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.taskWhy { color: var(--fg2); }
+
+.taskMinutes {
+  color: var(--fg3);
+  white-space: nowrap;
+}
+
+.taskDueOverdue {
+  color: var(--color-diff-hard-fg);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.taskActions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.startBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-navy-900);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 22px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+
+.startBtn:hover { background: var(--color-navy-700); color: #fff; }
+
+.doneBtn {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std);
+}
+
+.doneBtn:hover {
+  background: var(--color-slate-100);
+  color: var(--fg1);
+}
+
+.startBtn:focus-visible,
+.doneBtn:focus-visible {
+  outline: 2px solid var(--color-navy-500);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .taskRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .taskActions {
+    flex-direction: row;
+    width: 100%;
+  }
+  .startBtn { flex: 1 1 auto; }
+}
+
+/* ---------- Tasks: caught-up / no-plan states ---------- */
+
+.caughtUp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.caughtUpTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-navy-900);
+}
+
+.caughtUpSub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg2);
+  line-height: 1.55;
+}
+
+.noPlan {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s2);
+  padding: var(--s2) 0;
+}
+
+.noPlanTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-navy-900);
+}
+
+.noPlanBody {
+  margin: 0 0 var(--s1);
+  max-width: 52ch;
+  font-size: 13px;
+  color: var(--fg2);
+  line-height: 1.55;
+}
+
+/* ---------- Progress: stat tiles ---------- */
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s2);
+}
+
+@media (max-width: 480px) {
+  .statsRow { grid-template-columns: 1fr; }
+}
+
+.statCard {
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .statValueRow {
@@ -194,7 +540,7 @@
 }
 
 .statValue {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 750;
   letter-spacing: -0.01em;
   color: var(--fg1);
@@ -217,281 +563,87 @@
   letter-spacing: 0.06em;
 }
 
-/* ---------- Performance section ----------
-   Section label + "More statistics" deep-link sit above the
-   two-column shell that holds the SkillBreakdownCards (Math +
-   RW). The cards bring their own card chrome — these rules
-   only own the header strip + grid spacing. */
+/* ---------- Progress: domain bars ---------- */
 
-.perfSection {
+.domainGroups {
   display: flex;
   flex-direction: column;
-  gap: var(--s2);
+  gap: var(--s3);
 }
 
-.perfHeader {
+.domainGroup {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--s3);
-}
-
-.perfGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--s3);
-}
-
-@media (max-width: 820px) {
-  .perfGrid { grid-template-columns: 1fr; }
-}
-
-/* ---------- Bottom row ---------- */
-
-.bottomRow {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: var(--s3);
-}
-
-@media (max-width: 820px) {
-  .bottomRow { grid-template-columns: 1fr; }
-}
-
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 18px 20px;
-}
-
-/* Pending-assignments card variant — soft-amber wash + a thicker
-   left-edge accent. Reads as "the action item" without being loud:
-   gold-50 (#fffbea) is friendly and light, the gold-500 left rail
-   ties it to the InboxIcon's gold palette, and the slightly larger
-   shadow lifts it above the rest of the page. */
-.pendingCard {
-  background: var(--color-gold-50);
-  border-color: var(--color-gold-300);
-  border-left: 4px solid var(--color-gold-500);
-  box-shadow: 0 2px 10px rgba(240, 180, 41, 0.10);
-}
-
-.cardHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: var(--s3);
-}
-
-.sectionLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--fg3);
-}
-
-.cardHeaderLink {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-app-accent);
-  text-decoration: none;
-}
-
-.cardHeaderLink:hover { text-decoration: underline; }
-
-.empty {
-  color: var(--fg3);
-  font-size: 13px;
-  margin: 0;
-}
-
-.inlineLink {
-  color: var(--color-app-accent);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.inlineLink:hover { text-decoration: underline; }
-
-/* Recent practice session list */
-
-.sessionList {
-  display: grid;
+  flex-direction: column;
   gap: 6px;
 }
 
-.sessionRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s3);
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: var(--color-slate-50);
-  border: 1px solid transparent;
-  color: inherit;
-  text-decoration: none;
-  transition: all var(--dur-fast) var(--ease-std);
+.domainGroupTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg2);
 }
 
-.sessionRow:hover {
-  border-color: var(--border);
-  background: var(--bg-white);
-  color: inherit;
-}
+.domainTone_math { color: var(--color-subject-math, var(--fg2)); }
+.domainTone_rw   { color: var(--color-subject-rw, var(--fg2)); }
+.domainTone_act  { color: #0e7490; }
 
-.sessionRowLeft {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-}
-
-.sessionRowDate {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--fg1);
-}
-
-.sessionRowMeta {
-  font-size: 11px;
-  color: var(--fg3);
-}
-
-.sessionRowChevron {
-  color: var(--fg3);
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-/* Assignment list */
-
-.assignmentList {
+.domainList {
   list-style: none;
-  padding: 0;
   margin: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 4px;
-}
-
-.assignmentRow {
+  padding: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s3);
-  padding: 10px 12px;
-  border-radius: 10px;
-  text-decoration: none;
-  color: inherit;
-  min-width: 0;
-  transition: background var(--dur-fast) var(--ease-std);
+  flex-direction: column;
+  gap: 5px;
 }
 
-.assignmentRow:hover { background: var(--color-slate-50); }
+.domainRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 12px;
+}
 
-.assignmentTitle {
-  font-size: 13px;
-  font-weight: 500;
+.domainName {
   color: var(--fg1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  min-width: 0;
-  flex: 1;
 }
 
-.due {
-  font-size: 11px;
-  color: var(--fg3);
+.domainBar {
+  display: block;
+  height: 7px;
+  background: var(--color-slate-100);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
 }
 
-.dueOverdue {
-  font-size: 11px;
-  color: var(--color-diff-hard-fg);
-  font-weight: 700;
+.domainFill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-300);
 }
 
-/* ---------- Target score editor ---------- */
+.domainFill_good    { background: var(--color-diff-easy-fg); }
+.domainFill_ok      { background: var(--color-diff-med-fg); }
+.domainFill_warn    { background: var(--color-diff-hard-fg); }
+.domainFill_neutral { background: var(--color-slate-300); }
 
-.targetCard {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 16px 20px;
-}
-
-.targetForm {
-  display: flex;
-  align-items: center;
-  gap: var(--s2);
-  margin-top: var(--s2);
-  flex-wrap: wrap;
-}
-
-.targetInput {
-  padding: 6px 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-family: var(--font-mono);
-  width: 100px;
-  color: var(--fg1);
-  background: var(--bg-white);
-}
-
-.targetInput:focus-visible {
-  outline: none;
-  border-color: var(--color-app-accent);
-  box-shadow: var(--shadow-ring-accent);
-}
-
-.targetBtn {
-  padding: 6px 14px;
-  background: var(--color-app-accent);
-  color: #fff;
-  border: 1px solid var(--color-app-accent);
-  border-radius: var(--radius-sm);
-  font-family: inherit;
-  font-size: 13px;
+.domainPct {
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
-  cursor: pointer;
+  color: var(--fg1);
+  white-space: nowrap;
 }
 
-.targetBtn:hover:not(:disabled) {
-  background: var(--color-app-accent-hover);
-  border-color: var(--color-app-accent-hover);
-}
-
-.targetBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.targetError {
-  color: var(--color-diff-hard-fg);
-  font-size: 12px;
-}
-
-.targetOk {
-  color: var(--color-diff-easy-fg);
-  font-size: 12px;
+.domainCount {
+  font-weight: 500;
+  color: var(--fg3);
 }
 
 /* ---------- Recently finished ---------- */
-
-.cardSub {
-  font-size: 12px;
-  color: var(--fg3);
-  margin-top: 2px;
-  max-width: 620px;
-}
 
 .finishedList {
   list-style: none;
@@ -535,8 +687,7 @@
 .typeBadge_test       { background: #fff7ed; color: #c2410c; }
 .typeBadge_session    { background: #ecfdf5; color: #047857; }
 /* ACT practice sessions. Cyan matches the ACT launcher's IconTile
-   palette, and reads as clearly distinct from the green SAT
-   practice badge sitting next to it in the same list. */
+   palette and reads as distinct from the green SAT practice badge. */
 .typeBadge_act_session { background: #ecfeff; color: #0e7490; }
 
 .finishedMain {

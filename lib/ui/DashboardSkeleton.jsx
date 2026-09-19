@@ -1,8 +1,8 @@
 // Dashboard-shaped Suspense fallback. Mirrors the student
-// dashboard's vertical stack — banner → 4-tile stats row → 2-up
-// performance grid → bottom row (recent + assignments) → target
-// card — so the load-in handoff matches the real dashboard
-// instead of the generic PageSkeleton's eyebrow + stats + cards.
+// dashboard's vertical stack — banner → 2-up Tasks | Progress boxes
+// → full-width Recently finished — so the load-in handoff matches
+// the real dashboard instead of the generic PageSkeleton's eyebrow +
+// stats + cards.
 //
 // Dashboard pulls 9+ queries on every visit (see (student)
 // /dashboard/page.js); this is the screen the cold-start latency
@@ -32,23 +32,12 @@ export function DashboardSkeleton() {
         </div>
       </div>
 
-      <div className={s.statsRow}>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className={`${s.shimmer} ${s.stat}`} />
-        ))}
+      <div className={s.boxGrid}>
+        <div className={`${s.shimmer} ${s.tasksBox}`} />
+        <div className={`${s.shimmer} ${s.progressBox}`} />
       </div>
 
-      <div className={s.perfGrid}>
-        <div className={`${s.shimmer} ${s.perfCard}`} />
-        <div className={`${s.shimmer} ${s.perfCard}`} />
-      </div>
-
-      <div className={s.bottomRow}>
-        <div className={`${s.shimmer} ${s.bottomCard}`} />
-        <div className={`${s.shimmer} ${s.bottomCard}`} />
-      </div>
-
-      <div className={`${s.shimmer} ${s.targetCard}`} />
+      <div className={`${s.shimmer} ${s.finishedCard}`} />
     </main>
   );
 }

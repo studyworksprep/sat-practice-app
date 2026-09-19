@@ -45,7 +45,6 @@ async function loadOwnActivePlan(ctx: Ctx) {
 
 function revalidateSurfaces() {
   revalidatePath('/plan');
-  revalidatePath('/today');
   revalidatePath('/dashboard');
 }
 

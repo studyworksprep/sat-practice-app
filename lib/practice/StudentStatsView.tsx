@@ -1,5 +1,5 @@
 // Shared "More statistics" view, rendered identically for the
-// student (their own /dashboard/stats) and the tutor
+// student (their own /performance) and the tutor
 // (/tutor/students/[id]/stats). One server component does the
 // data load and renders the page; the two routes are thin auth
 // wrappers that pass the right userId + presentation copy.

@@ -3,7 +3,7 @@
 // is reset to first login through reset_test_student(), signs in, is
 // routed to /welcome, answers target → test date → prep → intent →
 // hours → days → self-check, previews the plan, activates, lands on
-// /today, and can open the plan hub.
+// the dashboard's Tasks box, and can open the plan hub.
 //
 // Runs in the `student` project by filename but with NO storage state:
 // the seeded student1 already has a plan, so this spec signs in as
@@ -163,10 +163,11 @@ test.describe('onboarding intake', () => {
     // Coverage tasks carry no "why" line (owner note 3).
     await expect(page.getByText('Part of covering every topic in order')).toHaveCount(0);
 
-    // Activate → Today.
+    // Activate → the dashboard, with the plan's first task in the Tasks box.
     await page.getByRole('button', { name: 'Start my plan' }).click();
-    await expect(page).toHaveURL(/\/today/, { timeout: 20_000 });
-    await expect(page.getByRole('heading', { name: /what.s next/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
+    await expect(page.getByRole('heading', { name: 'Tasks' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /see the whole plan/i })).toBeVisible();
 
     // The plan hub is reachable and shows where the student is.
     await page.goto('/plan');
