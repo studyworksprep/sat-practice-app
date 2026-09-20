@@ -59,9 +59,9 @@ export const HELP_ARTICLES = [
         html: `
 <ul>
   <li><strong><a href="/dashboard">Dashboard</a></strong> — where you land: today's tasks, a quick read on your progress, and your recent work.</li>
-  <li><strong><a href="/plan">Plan</a></strong> — the whole study plan, week by week, and where to change your target, date, or hours.</li>
+  <li><strong><a href="/plan">Study Plan</a></strong> — the whole study plan, week by week, and where to change your target, date, or hours.</li>
   <li><strong><a href="/performance">Performance</a></strong> — every statistic: per-skill accuracy, weekly trend, daily activity, and a ranked list of skills weakest-first.</li>
-  <li><strong><a href="/practice/start">Practice</a></strong> — start a self-guided session, filtered to whatever you want to work on.</li>
+  <li><strong><a href="/practice/start">Practice Questions</a></strong> — start a self-guided session, filtered to whatever you want to work on.</li>
   <li><strong><a href="/practice/tests">Practice tests</a></strong> — launch a full-length, timed, adaptive SAT or ACT.</li>
   <li><strong><a href="/assignments">Assignments</a></strong> — work assigned by your tutor (skip if you don't have one).</li>
   <li><strong><a href="/notes">Notes</a></strong> — rich-text notes, your Error Log, and Flashcards. All your study material in one place.</li>
@@ -99,7 +99,7 @@ export const HELP_ARTICLES = [
         heading: 'The banner — target, accuracy, days to test',
         html: `
 <p>Top of the page. Shows your name, which week of your plan you're in, your target score, your overall accuracy, and a countdown to your test date. If you have an in-progress practice session, a <strong>Resume session</strong> button appears here too, next to <strong>Free practice</strong>.</p>
-<p>To change your target or test date, open the <a href="/plan">Plan</a> page and use <em>Adjust</em> — the plan re-paces itself around the new numbers. A realistic 3-month goal is your baseline + 100 to 150 points.</p>
+<p>To change your target or test date, open the <a href="/plan">Study Plan</a> page and use <em>Adjust</em> — the plan re-paces itself around the new numbers. A realistic 3-month goal is your baseline + 100 to 150 points.</p>
         `,
       },
       {
@@ -107,7 +107,7 @@ export const HELP_ARTICLES = [
         html: `
 <p>What to do next. Once your plan is live this box shows one to three tasks for the day — a lesson, a drill, a review, or a practice test — each with a reason it's there and a <strong>Start</strong> button. The top one has a highlighted border: begin there. Finishing the work checks the task off automatically, and anything you complete today stays listed with a check mark so you can see the day adding up.</p>
 <p>If you have a tutor, their assignments appear in the same list with a violet <strong>Assigned</strong> tag, dated to when they're due. Start opens the assignment itself.</p>
-<p>When nothing is due, the box shows the next task up so you can get ahead, and <strong>See the whole plan</strong> opens the <a href="/plan">Plan</a> page — every week, every task, and the controls to adjust or rebuild. No plan yet? The box holds the <strong>Set up my plan</strong> button instead.</p>
+<p>When nothing is due, the box shows the next task up so you can get ahead, and <strong>See the whole plan</strong> opens the <a href="/plan">Study Plan</a> page — every week, every task, and the controls to adjust or rebuild. No plan yet? The box holds the <strong>Set up my plan</strong> button instead.</p>
         `,
       },
       {
@@ -164,7 +164,7 @@ export const HELP_ARTICLES = [
       {
         heading: 'Starting a session',
         html: `
-<p>Open the <em>Practice</em> tab. The filter panel lays out everything you need to pick what to work on:</p>
+<p>Open the <em>Practice Questions</em> tab. The filter panel lays out everything you need to pick what to work on:</p>
 <ul>
   <li><strong>Math and Reading &amp; Writing columns</strong> — the two subjects sit side by side. You can pick skills from one column, the other, or both. There's no toggle, so a mixed session (a little Math, a little R&amp;W) is one click away if that's what you want. If you also practice ACT questions, switch tests with the tab at the top.</li>
   <li><strong>Domain &amp; Skill filters</strong> — each domain expands to show its individual skills. <em>This is the high-leverage move</em>: a session of 15 questions on one skill teaches you far more than 15 random questions across the whole test. When in doubt, pick the weakest skill you can see on your Performance page and click just that one.</li>
@@ -561,7 +561,7 @@ export const HELP_ARTICLES = [
 <p>Aim for thirty solid minutes most days. Even on busy days, ten focused minutes is better than zero — momentum is the thing that compounds.</p>
 <ol>
   <li><strong>5 minutes — pick a skill.</strong> If your plan has a task due, that's your skill — skip to step two. Otherwise open <a href="/performance">Performance</a> and look at the segmented bars in the performance grid. Find a red or yellow segment in a skill that matters for your target score, and that's what you're working on today. Don't overthink it; whichever weak skill catches your eye is fine.</li>
-  <li><strong>20 minutes — practice it.</strong> Open <a href="/practice/start">Practice</a>, click just that skill, and run a 10-15 question session. Take the questions seriously: read carefully, work them out, then hit <strong>Reveal Answer</strong>. After each question — including the ones you got right — pause and ask: <em>what did I learn?</em>
+  <li><strong>20 minutes — practice it.</strong> Open <a href="/practice/start">Practice Questions</a>, click just that skill, and run a 10-15 question session. Take the questions seriously: read carefully, work them out, then hit <strong>Reveal Answer</strong>. After each question — including the ones you got right — pause and ask: <em>what did I learn?</em>
     <ul>
       <li>If the answer is "a term, formula, or rule I didn't know" → add a Flashcard.</li>
       <li>If the answer is "I made a process mistake or fell for a trap" → write an Error Log entry.</li>
