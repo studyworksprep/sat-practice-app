@@ -15,11 +15,15 @@
 //   ?broken=1         — only rows with is_broken = true
 //   ?trimmed=1        — only rows with "TRIMMED" in any field
 //   ?hasmath=1        — only rows with <math> or <img role="math">
+//   ?tag=<id>         — only rows linked to this concept tag
+//                       (repeatable; several tags AND-combine)
 //   ?page=N           — 1-indexed; 50 rows per page
 
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { fetchAll } from '@/lib/api/paginate';
+import { intersectTaggedQuestionIds, normalizeTagIds } from '@/lib/practice/tag-question-ids';
 import { formatDate } from '@/lib/formatters';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import a from '../../admin.module.css';
@@ -44,6 +48,27 @@ export default async function AdminQuestionsPage({ searchParams }) {
   const page     = Math.max(1, Number(sp.page) || 1);
   const offset   = (page - 1) * PAGE_SIZE;
 
+  // Concept-tag filter. Multiple ?tag= values AND-combine, matching
+  // the quick-find search and the lesson-pack builder. Unknown ids
+  // (a stale bookmark after a tag merge/delete) are dropped rather
+  // than left as an invisible constraint that matches nothing.
+  const tagCatalog = await loadTagCatalog(supabase);
+  const tagById = new Map(tagCatalog.map((t) => [t.id, t]));
+  const tagIds = normalizeTagIds(Array.isArray(sp.tag) ? sp.tag : [sp.tag])
+    .filter((id) => tagById.has(id));
+  const activeTags = tagIds.map((id) => tagById.get(id));
+
+  // Resolve tags → question ids before the main query so the filter
+  // is a single .in('id', …). An empty intersection means nothing
+  // can match; skip the query rather than send an empty IN list.
+  let tagFilteredIds = null;
+  let tagResolveFailed = false;
+  if (tagIds.length > 0) {
+    const intersection = await intersectTaggedQuestionIds(supabase, tagIds);
+    if (intersection == null) tagResolveFailed = true;
+    else tagFilteredIds = Array.from(intersection);
+  }
+
   let query = supabase
     .from('questions_v2')
     .select(
@@ -53,6 +78,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
     .is('deleted_at', null);
 
   if (pattern) query = query.eq('pattern_id', pattern);
+  if (tagFilteredIds) query = query.in('id', tagFilteredIds);
   if (broken)  query = query.eq('is_broken', true);
   if (trimmed) query = query.or('stem_html.ilike.%TRIMMED%,stimulus_html.ilike.%TRIMMED%,rationale_html.ilike.%TRIMMED%');
   if (hasmath) query = query.or('stem_html.ilike.%<math%,stem_html.ilike.%role="math"%,stimulus_html.ilike.%<math%,stimulus_html.ilike.%role="math"%');
@@ -62,10 +88,18 @@ export default async function AdminQuestionsPage({ searchParams }) {
     query = query.or(`display_code.ilike.%${q}%,stem_html.ilike.%${q}%`);
   }
 
+  const noTagMatches = tagFilteredIds != null && tagFilteredIds.length === 0;
+
   const [{ data: rows, count, error }, { data: patternRow }] = await Promise.all([
-    query
-      .order('display_code', { ascending: true, nullsFirst: false })
-      .range(offset, offset + PAGE_SIZE - 1),
+    noTagMatches || tagResolveFailed
+      ? Promise.resolve(
+          tagResolveFailed
+            ? { data: null, count: null, error: { message: 'could not resolve the tag filter' } }
+            : { data: [], count: 0, error: null },
+        )
+      : query
+          .order('display_code', { ascending: true, nullsFirst: false })
+          .range(offset, offset + PAGE_SIZE - 1),
     pattern
       ? supabase.from('question_patterns').select('name, skill_code').eq('id', pattern).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -85,6 +119,17 @@ export default async function AdminQuestionsPage({ searchParams }) {
 
   const total = count ?? 0;
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Tag names for the rows on this page. One small query keyed on
+  // the 50 visible ids — cheap, and it makes the tag filter legible
+  // (you can see why a row matched, and which tags to narrow by next).
+  const tagNamesByQuestion = await loadRowTags(
+    supabase,
+    (rows ?? []).map((r) => r.id),
+    tagById,
+  );
+
+  const filterParams = { q, broken, trimmed, hasmath, pattern, tags: tagIds };
 
   return (
     <main className={a.container}>
@@ -115,13 +160,17 @@ export default async function AdminQuestionsPage({ searchParams }) {
             {patternRow ? `“${patternRow.name}” (${patternRow.skill_code})` : 'with this pattern'}
           </strong>
           {' · '}
-          <Link href={toUrl({ q, broken, trimmed, hasmath })} style={S.clearLink}>clear</Link>
+          <Link href={toUrl({ q, broken, trimmed, hasmath, tags: tagIds })} style={S.clearLink}>clear</Link>
           {' · '}
           <Link href="/admin/content/patterns" style={S.clearLink}>pattern catalog →</Link>
         </p>
       )}
 
-      <FilterBar current={{ q, broken, trimmed, hasmath, pattern }} />
+      <FilterBar
+        current={{ q, broken, trimmed, hasmath, pattern, tags: tagIds }}
+        activeTags={activeTags}
+        tagCatalog={tagCatalog}
+      />
 
       {(rows ?? []).length === 0 ? (
         <p style={S.empty}>No questions match the current filters.</p>
@@ -135,6 +184,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
               <Th>Skill</Th>
               <Th style={{ textAlign: 'center' }}>Diff</Th>
               <Th>Flags</Th>
+              <Th>Tags</Th>
               <Th>Stem preview</Th>
               <Th>Updated</Th>
             </tr>
@@ -156,6 +206,12 @@ export default async function AdminQuestionsPage({ searchParams }) {
                 <Td>
                   <FlagPills row={r} />
                 </Td>
+                <Td style={{ maxWidth: 220 }}>
+                  <TagPills
+                    names={tagNamesByQuestion.get(r.id) ?? []}
+                    params={filterParams}
+                  />
+                </Td>
                 <Td style={{ maxWidth: 380, color: '#374151' }}>
                   <span style={S.snippet}>{stripToSnippet(r.stem_html)}</span>
                 </Td>
@@ -168,22 +224,32 @@ export default async function AdminQuestionsPage({ searchParams }) {
         </Table>
       )}
 
-      <Pagination current={page} last={lastPage} params={{ q, broken, trimmed, hasmath, pattern }} />
+      <Pagination current={page} last={lastPage} params={filterParams} />
     </main>
   );
 }
 
 // ──────────────────────────────────────────────────────────────
 
-function FilterBar({ current }) {
+function FilterBar({ current, activeTags, tagCatalog }) {
   // Plain form with GET submit — URL params carry state so each
   // filter change is bookmarkable + shareable. Keeps this a Server
   // Component; no client JS needed.
+  //
+  // Tags: the active ones render as chips (each with a remove link)
+  // and ride along as hidden inputs so re-applying the text filter
+  // keeps them. The "+ tag" select adds one more per submit; the
+  // already-active tags are left out of its options.
+  const activeIds = new Set(activeTags.map((t) => t.id));
+  const addable = tagCatalog.filter((t) => !activeIds.has(t.id));
   return (
     <form action="/admin/questions" method="get" style={S.filterBar}>
       {/* Carried through so applying a text filter narrows within the
           pattern drill-in rather than silently dropping it. */}
       {current.pattern && <input type="hidden" name="pattern" value={current.pattern} />}
+      {activeTags.map((t) => (
+        <input key={t.id} type="hidden" name="tag" value={t.id} />
+      ))}
       <input
         type="text"
         name="q"
@@ -191,6 +257,36 @@ function FilterBar({ current }) {
         placeholder="Search display code or stem text…"
         style={S.search}
       />
+      {activeTags.length > 0 && (
+        <span style={S.tagChips}>
+          {activeTags.map((t) => (
+            <span key={t.id} style={S.tagChip}>
+              {t.name}
+              <Link
+                href={toUrl({ ...current, tags: current.tags.filter((id) => id !== t.id) })}
+                aria-label={`Remove tag filter ${t.name}`}
+                title="Remove this tag filter"
+                style={S.tagChipRemove}
+              >
+                ×
+              </Link>
+            </span>
+          ))}
+        </span>
+      )}
+      {addable.length > 0 && (
+        <select
+          name="tag"
+          defaultValue=""
+          aria-label="Add a concept-tag filter"
+          style={S.tagSelect}
+        >
+          <option value="">{activeTags.length > 0 ? '+ another tag…' : 'Filter by tag…'}</option>
+          {addable.map((t) => (
+            <option key={t.id} value={t.id}>{t.name}</option>
+          ))}
+        </select>
+      )}
       <label style={S.toggle}>
         <input type="checkbox" name="broken"  value="1" defaultChecked={current.broken} />
         Broken
@@ -246,6 +342,32 @@ function FlagPills({ row }) {
   );
 }
 
+// Per-row tag chips. Each chip links to the current filters plus
+// that tag, so narrowing from a row is one click. Tags already in
+// the filter render flat (no link) — clicking them would be a no-op.
+function TagPills({ names, params }) {
+  if (names.length === 0) return <span style={{ color: 'var(--fg3)' }}>—</span>;
+  const active = new Set(params.tags);
+  return (
+    <span style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+      {names.map(({ id, name }) =>
+        active.has(id) ? (
+          <span key={id} style={{ ...S.rowTag, ...S.rowTagActive }}>{name}</span>
+        ) : (
+          <Link
+            key={id}
+            href={toUrl({ ...params, tags: [...params.tags, id] })}
+            title={`Filter by tag “${name}”`}
+            style={S.rowTag}
+          >
+            {name}
+          </Link>
+        ),
+      )}
+    </span>
+  );
+}
+
 function Pagination({ current, last, params }) {
   if (last <= 1) return null;
   const prev = current > 1 ? toUrl({ ...params, page: current - 1 }) : null;
@@ -259,16 +381,60 @@ function Pagination({ current, last, params }) {
   );
 }
 
-function toUrl({ q, broken, trimmed, hasmath, pattern, page }) {
+function toUrl({ q, broken, trimmed, hasmath, pattern, tags, page }) {
   const params = new URLSearchParams();
   if (q)       params.set('q',       q);
   if (broken)  params.set('broken',  '1');
   if (trimmed) params.set('trimmed', '1');
   if (hasmath) params.set('hasmath', '1');
   if (pattern) params.set('pattern', pattern);
+  for (const id of tags ?? []) params.append('tag', id);
   if (page && page !== 1) params.set('page', String(page));
   const qs = params.toString();
   return `/admin/questions${qs ? `?${qs}` : ''}`;
+}
+
+// ──────────────────────────────────────────────────────────────
+// Concept-tag lookups.
+//
+// The catalog is small (hundreds of rows) and is what the filter
+// select renders, so it's read whole. Read failures degrade to an
+// empty catalog — the page still renders, just without the tag
+// controls — rather than failing the whole list.
+// ──────────────────────────────────────────────────────────────
+
+async function loadTagCatalog(supabase) {
+  try {
+    return await fetchAll(
+      () => supabase.from('concept_tags').select('id, name'),
+      { order: [{ column: 'name' }, { column: 'id' }] },
+    );
+  } catch {
+    return [];
+  }
+}
+
+// tag names per visible question, sorted by name. Only the ids on
+// the current page are queried; the result is keyed by question id.
+async function loadRowTags(supabase, questionIds, tagById) {
+  const out = new Map();
+  if (questionIds.length === 0 || tagById.size === 0) return out;
+  const { data } = await supabase
+    .from('question_concept_tags')
+    .select('question_id, tag_id')
+    .in('question_id', questionIds);
+  for (const link of data ?? []) {
+    const tag = tagById.get(link.tag_id);
+    if (!tag) continue;
+    let list = out.get(link.question_id);
+    if (!list) {
+      list = [];
+      out.set(link.question_id, list);
+    }
+    list.push(tag);
+  }
+  for (const list of out.values()) list.sort((a, b) => a.name.localeCompare(b.name));
+  return out;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -356,6 +522,58 @@ const S = {
     fontSize: 13,
     color: 'var(--fg1)',
     fontWeight: 600,
+  },
+  tagSelect: {
+    padding: '8px 10px',
+    border: '1px solid var(--border-strong)',
+    borderRadius: 'var(--radius-md)',
+    fontSize: 13,
+    fontFamily: 'inherit',
+    color: 'var(--fg1)',
+    background: 'var(--bg-white)',
+    maxWidth: 240,
+  },
+  tagChips: {
+    display: 'flex',
+    gap: 6,
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
+  tagChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '4px 6px 4px 10px',
+    borderRadius: 'var(--radius-pill)',
+    fontSize: 12,
+    fontWeight: 600,
+    background: 'var(--color-app-accent-soft)',
+    color: 'var(--color-app-accent)',
+    border: '1px solid var(--color-app-accent)',
+  },
+  tagChipRemove: {
+    color: 'inherit',
+    textDecoration: 'none',
+    fontSize: 14,
+    lineHeight: 1,
+    padding: '0 4px',
+  },
+  rowTag: {
+    display: 'inline-block',
+    padding: '2px 8px',
+    borderRadius: 'var(--radius-pill)',
+    fontSize: 11,
+    fontWeight: 600,
+    background: 'var(--color-slate-50)',
+    color: 'var(--fg2)',
+    border: '1px solid var(--border)',
+    textDecoration: 'none',
+    whiteSpace: 'nowrap',
+  },
+  rowTagActive: {
+    background: 'var(--color-app-accent-soft)',
+    color: 'var(--color-app-accent)',
+    borderColor: 'var(--color-app-accent)',
   },
   submit: {
     padding: '8px 16px',
