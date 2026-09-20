@@ -13,6 +13,7 @@ import { requireUser } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import type { ActionResult, Fail } from '@/lib/types';
+import { intersectTaggedQuestionIds, normalizeTagIds } from '@/lib/practice/tag-question-ids';
 
 const MAX_QUESTIONS_PER_PACK = 200;
 const SEARCH_PAGE_SIZE = 25;
@@ -307,15 +308,15 @@ export async function searchQuestions(input: {
 
   // Resolve tag filters before the main query — question_concept_tags
   // is v2-keyed (FK to questions_v2), so each tag resolves directly
-  // to v2 question ids and we AND-intersect across tags. An empty
-  // intersection short-circuits the whole search.
-  const tagIds = (input.tagIds ?? []).filter(Boolean);
+  // to v2 question ids and the shared resolver AND-intersects across
+  // tags. An empty intersection short-circuits the whole search.
+  const tagIds = normalizeTagIds(input.tagIds ?? []);
   let tagFilteredV2Ids: string[] | null = null;
   if (tagIds.length > 0) {
     if (!TAG_SEARCH_ROLES.has(ctx.profile.role)) {
       return actionFail('Concept-tag filtering is not available for your role.');
     }
-    const intersection = await intersectTaggedV2Ids(ctx.supabase, tagIds);
+    const intersection = await intersectTaggedQuestionIds(ctx.supabase, tagIds);
     if (intersection == null) return actionFail('Failed to resolve tag filter.');
     if (intersection.size === 0) {
       return actionOk({ rows: [], total: 0, page, pageSize: SEARCH_PAGE_SIZE });
@@ -426,44 +427,4 @@ export async function listConceptTags(): Promise<
     .order('name', { ascending: true });
   if (error) return actionFail(`Failed to load tags: ${error.message}`);
   return actionOk((data ?? []) as Array<{ id: string; name: string }>);
-}
-
-// ─── intersectTaggedV2Ids ──────────────────────────────────
-// question_concept_tags.question_id is v2-keyed (FK to questions_v2).
-// AND across tags is the intersection of per-tag id sets.
-async function intersectTaggedV2Ids(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
-  tagIds: string[],
-): Promise<Set<string> | null> {
-  const { data: linkRows, error: linkErr } = await supabase
-    .from('question_concept_tags')
-    .select('tag_id, question_id')
-    .in('tag_id', tagIds);
-  if (linkErr) return null;
-
-  const idsByTag = new Map<string, Set<string>>();
-  for (const row of linkRows ?? []) {
-    if (!row?.tag_id || !row?.question_id) continue;
-    let bucket = idsByTag.get(row.tag_id);
-    if (!bucket) {
-      bucket = new Set();
-      idsByTag.set(row.tag_id, bucket);
-    }
-    bucket.add(row.question_id);
-  }
-  for (const tagId of tagIds) {
-    if (!idsByTag.has(tagId)) return new Set();
-  }
-
-  const setsByTag = Array.from(idsByTag.values());
-  if (setsByTag.length === 0) return new Set();
-  setsByTag.sort((a, b) => a.size - b.size);
-  const out = new Set(setsByTag[0]);
-  for (let i = 1; i < setsByTag.length; i += 1) {
-    for (const id of out) {
-      if (!setsByTag[i].has(id)) out.delete(id);
-    }
-  }
-  return out;
 }

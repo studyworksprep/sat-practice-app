@@ -15,9 +15,9 @@
 //   - Concept tags (`tagIds[]`) — manager+admin only. AND-combined
 //     with each other and with the text search. Tag links live on
 //     question_concept_tags(question_id), v2-keyed, so each tag
-//     resolves directly to v2 question ids and the resolver
-//     intersects across tags before handing the candidate set to
-//     the main query.
+//     resolves directly to v2 question ids and the shared resolver
+//     (lib/practice/tag-question-ids.ts) intersects across tags
+//     before handing the candidate set to the main query.
 //
 // listConceptTagsForSearch returns the full tag catalog so the
 // QuestionSearch UI can render a searchable +Tag picker.
@@ -26,6 +26,7 @@
 
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
+import { intersectTaggedQuestionIds, normalizeTagIds } from '@/lib/practice/tag-question-ids';
 
 const MAX_RESULTS = 25;
 const TAG_SEARCH_ROLES = new Set(['manager', 'admin']);
@@ -51,10 +52,9 @@ export async function searchQuestions(
   formData: FormData,
 ): Promise<QuestionSearchResult | { ok: false; error: string }> {
   const q = String(formData.get('q') ?? '').trim();
-  const tagIdsRaw = formData.getAll('tagIds').map((v) => String(v)).filter(Boolean);
   // Dedupe + clamp the tag list. A handful of tags is sane; an
   // unbounded list would bloat the AND-intersection loop.
-  const tagIds = Array.from(new Set(tagIdsRaw)).slice(0, 20);
+  const tagIds = normalizeTagIds(formData.getAll('tagIds').map((v) => String(v)));
 
   if (!q && tagIds.length === 0) {
     return { ok: true, results: [], truncated: false };
@@ -177,54 +177,4 @@ export async function listConceptTagsForSearch(): Promise<
     .order('name', { ascending: true });
   if (error) return actionFail(error.message);
   return { ok: true, tags: (data ?? []) as ConceptTagListItem[] };
-}
-
-// ──────────────────────────────────────────────────────────────
-// Internal: tag → question-id resolver (AND-intersection).
-//
-// question_concept_tags.question_id is v2-keyed (FK to questions_v2).
-// AND across tags is an intersection of the per-tag id sets; no
-// DB-side trick because PostgREST doesn't expose intersect-style
-// joins in a clean way for our shape.
-// ──────────────────────────────────────────────────────────────
-
-type SupabaseFromCtx = Awaited<ReturnType<typeof requireUser>>['supabase'];
-
-async function intersectTaggedQuestionIds(
-  supabase: SupabaseFromCtx,
-  tagIds: string[],
-): Promise<Set<string> | null> {
-  const { data: linkRows, error: linkErr } = await supabase
-    .from('question_concept_tags')
-    .select('tag_id, question_id')
-    .in('tag_id', tagIds);
-  if (linkErr) return null;
-
-  const idsByTag = new Map<string, Set<string>>();
-  for (const row of linkRows ?? []) {
-    if (!row?.tag_id || !row?.question_id) continue;
-    let bucket = idsByTag.get(row.tag_id);
-    if (!bucket) {
-      bucket = new Set();
-      idsByTag.set(row.tag_id, bucket);
-    }
-    bucket.add(row.question_id);
-  }
-
-  // Any tag with no link rows yields an empty intersection.
-  for (const tagId of tagIds) {
-    if (!idsByTag.has(tagId)) return new Set();
-  }
-
-  const setsByTag = Array.from(idsByTag.values());
-  if (setsByTag.length === 0) return new Set();
-  // Start from the smallest set so the intersection loop is cheap.
-  setsByTag.sort((a, b) => a.size - b.size);
-  const out = new Set(setsByTag[0]);
-  for (let i = 1; i < setsByTag.length; i += 1) {
-    for (const id of out) {
-      if (!setsByTag[i].has(id)) out.delete(id);
-    }
-  }
-  return out;
 }
