@@ -27,6 +27,9 @@
 // transitive deps.
 
 import sanitizeHtml from 'sanitize-html';
+// Relative + extension on purpose: node --test loads this file
+// directly (lib/sat-import/parse.test.mjs) with no `@/` alias.
+import { normalizeMathSvgUnits } from './content/math-svg-units.ts';
 
 // ──────────────────────────────────────────────────────────────
 // Note profile — what docToFullHtml emits, plus inline SVG so
@@ -173,5 +176,10 @@ const QUESTION_OPTIONS: sanitizeHtml.IOptions = {
 
 export function sanitizeQuestionHtml(html: string | null | undefined): string {
   if (!html) return '';
-  return sanitizeHtml(html, QUESTION_OPTIONS);
+  // Not a security step: this is the one seam every piece of question
+  // HTML crosses before it reaches the DOM (QuestionRenderer, HtmlBlock,
+  // SafeHtml, hints), so it is also where pre-rendered MathJax SVG gets
+  // its ex-based sizing rewritten to em. See lib/content/math-svg-units.ts
+  // for why (Safari page zoom inflates ex-sized boxes).
+  return normalizeMathSvgUnits(sanitizeHtml(html, QUESTION_OPTIONS));
 }
