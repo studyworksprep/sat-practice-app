@@ -6,6 +6,7 @@ import { Inter, Playfair_Display } from 'next/font/google';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
 import { desmosCalculatorSrc } from '../lib/config/desmos';
+import { MATH_SCALE } from '../lib/content/math-svg-units';
 import { siteUrl, siteName, siteTitle, siteDescription } from '../lib/config/site';
 
 // Self-hosted Google Fonts via next/font. The bundler downloads them
@@ -120,12 +121,18 @@ export default function RootLayout({ children }) {
                 one typeset after matched Inter (1.2355) — a ~4% wobble
                 between page loads, in every browser.
 
-            1.2355 is the value the measurement itself produces against
-            Inter once loaded (ex/em 0.5461 ÷ the TeX font's 0.442
-            x-height), so this pins the intended appearance rather than
-            changing it — it just stops re-deriving it from a probe that
-            zoom and font-loading both perturb. Re-measure it if
-            --font-sans ever stops being Inter. */}
+            MATH_SCALE (1.2355) is the value the measurement itself
+            produces against Inter once loaded (ex/em 0.5461 ÷ the TeX
+            font's 0.442 x-height), so this pins the intended appearance
+            rather than changing it — it just stops re-deriving it from
+            a probe that zoom and font-loading both perturb. The constant
+            lives in lib/content/math-svg-units.ts, which applies the
+            same scale to the pre-rendered SVG path (the *_rendered
+            columns) by rewriting MathJax's ex-based svg sizing to em —
+            WebKit also mis-resolves `ex` itself under page zoom, so the
+            SVG path had the same Safari-only inflation through a
+            different door. Re-measure it if --font-sans ever stops
+            being Inter. */}
         <Script id="mathjax-config" strategy="beforeInteractive">
           {`
             window.MathJax = {
@@ -137,7 +144,7 @@ export default function RootLayout({ children }) {
               },
               chtml: {
                 matchFontHeight: false,
-                scale: 1.2355
+                scale: ${MATH_SCALE}
               }
             };
           `}
