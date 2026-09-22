@@ -12,6 +12,7 @@
 
 import { composePhases, daysBetween, generatePlan, repacePlan } from './generate-plan';
 import { applyEvidencePriors, mapSkillRow, planCompositionFromRow } from './plan-inputs';
+import { loadSyllabusInputs } from './unit-steps';
 import type {
   ExistingTask,
   PlanMode,
@@ -221,10 +222,14 @@ export async function runRepaceForStudent(
     composition,
   );
 
-  const { data: band } = await supabase.rpc('get_predicted_score_band', {
-    p_student: args.studentId,
-    p_test_type: args.testType,
-  });
+  const [{ data: band }, syllabus] = await Promise.all([
+    supabase.rpc('get_predicted_score_band', {
+      p_student: args.studentId,
+      p_test_type: args.testType,
+    }),
+    // Unit syllabi (flag `unit_syllabus`): null → pre-syllabus generator.
+    loadSyllabusInputs(supabase, args.studentId, args.testType),
+  ]);
   const currentScore = band?.[0]?.total_scaled ?? null;
 
   // Week-0 anchor: the earliest scheduled task, else the plan's creation date.
@@ -251,6 +256,8 @@ export async function runRepaceForStudent(
     studyDays: composition.studyDays,
     targets: composition.targets,
     fullTests: composition.fullTests,
+    unitSteps: syllabus?.unitSteps ?? null,
+    completedLessonIds: syllabus?.completedLessonIds ?? null,
   });
 
   if (!result.shouldRepace || !result.tasks) {
@@ -362,6 +369,7 @@ export async function regenerateRemainingTasks(
     composition,
   );
   const weeklyHours = numFromJson(plan.config, 'weekly_hours') ?? 5;
+  const syllabus = await loadSyllabusInputs(supabase, plan.student_id, testType);
 
   const draft = generatePlan({
     goalScore: plan.goal_score,
@@ -375,6 +383,8 @@ export async function regenerateRemainingTasks(
     studyDays: composition.studyDays,
     targets: composition.targets,
     fullTests: composition.fullTests,
+    unitSteps: syllabus?.unitSteps ?? null,
+    completedLessonIds: syllabus?.completedLessonIds ?? null,
     elapsedWeeks: elapsed,
   });
 

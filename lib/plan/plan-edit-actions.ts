@@ -25,6 +25,7 @@ import {
   survivesWeekRegeneration,
 } from './generate-plan';
 import { applyEvidencePriors, mapSkillRow, planCompositionFromRow } from './plan-inputs';
+import { loadSyllabusInputs } from './unit-steps';
 import type { ExistingTask, PlanTaskSource, PlanTaskType, SkillState } from './generate-plan';
 import type { PlanInputRow } from './plan-inputs';
 import type { ActionResult, Fail } from '@/lib/types';
@@ -378,7 +379,10 @@ export async function regeneratePlanWeek(
     composition,
   );
 
-  const tasks = await loadPlanTasks(supabase, plan.id);
+  const [tasks, syllabus] = await Promise.all([
+    loadPlanTasks(supabase, plan.id),
+    loadSyllabusInputs(supabase, plan.student_id, plan.test_type),
+  ]);
   const anchor = planAnchor(plan, tasks);
   const existingTasks: ExistingTask[] = tasks.map((t) => ({
     weekIndex: t.week_index,
@@ -407,6 +411,8 @@ export async function regeneratePlanWeek(
     studyDays: composition.studyDays,
     targets: composition.targets,
     fullTests: composition.fullTests,
+    unitSteps: syllabus?.unitSteps ?? null,
+    completedLessonIds: syllabus?.completedLessonIds ?? null,
   });
 
   // Replace the week's still-pending generated tasks. Delete first, then

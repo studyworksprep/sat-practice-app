@@ -29,7 +29,13 @@
 // tests load this chain under plain `node --test` (no tsconfig-paths
 // resolution) — same convention as today.ts → generate-plan.ts.
 
-import { findSkill } from '../practice/sat-taxonomy.ts';
+import { SAT_TAXONOMY, findSkill } from '../practice/sat-taxonomy.ts';
+
+/** Full domain name from the SAT taxonomy; falls back to the raw code. */
+export function domainDisplayName(domainCode: string | null | undefined): string {
+  const domain = SAT_TAXONOMY.find((d) => d.code === domainCode);
+  return domain?.name ?? domainCode ?? 'Domain';
+}
 
 /** Full skill name from the SAT taxonomy; falls back to the raw codes. */
 export function skillDisplayName(

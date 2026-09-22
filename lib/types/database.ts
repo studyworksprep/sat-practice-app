@@ -1210,6 +1210,76 @@ export type Database = {
           },
         ]
       }
+      curriculum_unit_steps: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          lesson_id: string | null
+          minutes: number | null
+          pattern_id: string | null
+          position: number
+          question_count: number | null
+          role: string | null
+          skill_codes: string[] | null
+          skip_if_completed: boolean
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          lesson_id?: string | null
+          minutes?: number | null
+          pattern_id?: string | null
+          position: number
+          question_count?: number | null
+          role?: string | null
+          skill_codes?: string[] | null
+          skip_if_completed?: boolean
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          lesson_id?: string | null
+          minutes?: number | null
+          pattern_id?: string | null
+          position?: number
+          question_count?: number | null
+          role?: string | null
+          skill_codes?: string[] | null
+          skip_if_completed?: boolean
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_unit_steps_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_unit_steps_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "question_patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_unit_steps_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       curriculum_units: {
         Row: {
           created_at: string
@@ -1220,6 +1290,7 @@ export type Database = {
           prerequisite_unit_ids: string[]
           sequence: number
           skill_code: string
+          syllabus_authored_at: string | null
           test_type: string
           title: string
           updated_at: string
@@ -1233,6 +1304,7 @@ export type Database = {
           prerequisite_unit_ids?: string[]
           sequence: number
           skill_code: string
+          syllabus_authored_at?: string | null
           test_type?: string
           title: string
           updated_at?: string
@@ -1246,6 +1318,7 @@ export type Database = {
           prerequisite_unit_ids?: string[]
           sequence?: number
           skill_code?: string
+          syllabus_authored_at?: string | null
           test_type?: string
           title?: string
           updated_at?: string
@@ -5047,6 +5120,10 @@ export type Database = {
         }[]
       }
       plan_rank: { Args: { p_plan: string }; Returns: number }
+      plan_task_for_assignment: {
+        Args: { p_assignment_id: string; p_student_id: string }
+        Returns: undefined
+      }
       publish_lesson_revision: {
         Args: { p_force?: boolean; p_revision_id: string }
         Returns: string
