@@ -8,9 +8,12 @@
 // Runs in the `student` project by filename but with NO storage state:
 // the seeded student1 already has a plan, so this spec signs in as
 // student4 (6666…) after resetting it. student4 must have NO tutor
-// assignment (scripts/dev-seed-ui-preview.sql keeps it that way): the
-// login gate routes only a new self-study student to /welcome, and the
-// reset clears attempts/plans/intake but not tutor relationships.
+// assignment and its OWN access grant (scripts/dev-seed-ui-preview.sql
+// keeps it that way: no roster row, a manual 'full' entitlement): the
+// login gate routes only a new self-study student to /welcome, and a
+// student without a tutor or a plan is bounced to /subscribe by the
+// proxy before the layout runs. The reset clears attempts/plans/intake
+// but not tutor relationships or entitlements.
 // The reset is made as the seeded
 // admin, using the access token inside tests/.auth/admin.json (written
 // by auth.setup.ts) against the PostgREST rpc endpoint — the same
