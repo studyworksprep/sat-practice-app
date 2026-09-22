@@ -1,8 +1,9 @@
 # Student onboarding and study-plan redesign
 
-> **Status: Living document.** Last verified against code: 2026-09-19
+> **Status: Living document.** Last verified against code: 2026-09-22
 > (Phase 1 and Phase 2 implemented; migrations applied to dev and
-> production 2026-09-17; owner notes of 2026-09-17 folded in — see §3.4). Design settled with the
+> production 2026-09-17; owner notes of 2026-09-17 folded in — see §3.4;
+> login routing narrowed to new students 2026-09-22 — see §3.1). Design settled with the
 > owner on 2026-09-14; the delivery ledger at the end is the working
 > state. Supersedes the first-run wizard section (§6.4) of
 > `upgrade-plan-2026-07.md`.
@@ -123,11 +124,18 @@ of the curriculum.
   branch adds at most three.
 - **Plan preview before anything optional.** The student sees a
   real, phased plan before being asked for any extra effort.
-- **Entry.** A student with no active plan and no completed intake
-  is routed to `/welcome` on login (server-side, in the login
-  redirect and the student layout), not to the dashboard. The
-  dashboard's Tasks box (its no-plan state) stays as the secondary
-  entry point.
+- **Entry.** A **new self-study** student — no active plan, no
+  completed or set-aside intake, **no practice history** (zero
+  `attempts`), **and no assigned tutor** — is routed to `/welcome` on
+  login (server-side, in the student layout's `/dashboard` branch),
+  not to the dashboard. A student who has already answered questions
+  on the platform is an existing user, and a tutor-managed student's
+  work is directed by the tutor; neither is ever routed, and for them
+  the dashboard's Tasks box (its no-plan state) is the only entry
+  point. Accounts that predate the
+  intake (created before 2026-09-15) were additionally backfilled
+  with `skipped_at` on 2026-09-22, after the original gate bounced
+  59 long-standing students into the wizard.
 
 ### 3.2 Steps and branches
 
@@ -587,9 +595,15 @@ resumable step by step), so they live in their own row rather than on
 | `completed_at` | timestamptz | set when the first plan activates |
 | `skipped_at` | timestamptz | set by "I'll do this later" |
 
-Login routing (§3.1) reads this row: a student with no active plan
-and neither `completed_at` nor `skipped_at` is sent from `/dashboard`
-to `/welcome`. Signup stops writing `target_sat_score`, `high_school`,
+Login routing (§3.1) reads this row: a student with no active plan,
+no `attempts`, no `teacher_student_assignments` row, and neither
+`completed_at` nor `skipped_at` is sent from `/dashboard` to
+`/welcome` (`shouldRouteToWelcome` in `lib/plan/intake.ts`; the
+probes are `lib/api/hasPracticeHistory.ts` and
+`lib/api/hasAssignedTutor.js`). Pre-2026-09-15 accounts with no
+plan carry a backfilled `skipped_at` of `2026-09-22T12:00:00Z`
+(`supabase/migrations/20260922120000_backfill_intake_skipped_for_existing_students.sql`).
+Signup stops writing `target_sat_score`, `high_school`,
 and `graduation_year`; the columns remain for existing rows and the
 account page. (The earlier draft of this doc put a single
 `intake_completed_at` on `profiles`; the row above replaces it.)
@@ -611,6 +625,7 @@ coherent state. Order is by leverage against the funnel.
 | **1 · Intake and routing** — **implemented 2026-09-15** | Steps 1, 3, 4, 5, 6 of §3 (no evidence branch yet: prep = some/a_lot go straight to availability); signup shrink; login routes new students to `/welcome`; help redirect removed; welcome email and getting-started copy updated; diagnostic code removed. Generator gains `mode` and phases with the self-assessment prior only. Preview renders phases and rationale via the shared `PlanOverview`; `rationale` and `phases` stored. Re-pace and week regeneration compose in the plan's stored mode. | Walked in dev 2026-09-15 as a fresh student: login → `/welcome` → self-directed plan → `/today` with no help or practice-session detour; `/welcome` never dead-ends ("I'll do this later" ends routing). Unit tests cover the three modes, phase layout, priors, study days, and the step ladder (`lib/plan/phase-composer.test.mjs`, `intake.test.mjs`). No new Playwright spec: CI's e2e job runs against its own bank and the seeded student already has a plan, so a wizard walk there would be unreproducible — see `docs/runbook.md` e2e notes. |
 | **2 · Plan hub** — **implemented 2026-09-17** | `/plan` per §6: header with target/date/countdown/tasks done, "right now" (week, phase, this week's bar, rationale), "up next" with Start buttons (also the "get ahead" path), progress by section from `get_student_coverage`, the week-by-week `PlanOverview` with the current week open, and Adjust (target, date, hours, days) + Rebuild. Both verbs regenerate the remaining weeks **in place** (`regenerateRemainingTasks`): same plan id, completed history and human-authored tasks kept, phases laid over the original grid. Sidebar anchor Today · Plan · Dashboard; dashboard plan card; Today links to the hub and offers "Want to get ahead?"; `MasteryNote` moved. | Walked in dev 2026-09-17 (e2e `onboarding.student.spec.ts` reaches `/plan` and checks week/phase/progress). Deviation from §6.2: adjust applies immediately with a result line rather than a before/after preview — the preview is Phase 4 polish if wanted. Legacy plans (no `phases`) render without the phase strip. |
 | **2b · Dashboard as command center** — **implemented 2026-09-19** | §6.3 as revised: Today folded into the dashboard's Tasks box (assignments included, violet "assigned" treatment); Progress box with the reduced statistics; `/dashboard/stats` → `/performance` on the sidebar; sidebar anchor Dashboard · Plan · Performance; `/today` kept as a redirect; target editor retired from the dashboard; countdown reads the plan date first. Help "Your Dashboard" and "Getting started" articles and the welcome email rewritten to match. | Typecheck, 545 unit tests, hygiene ratchet (308, two client-island `.js` files retired) and the regenerated auth matrix all green; e2e onboarding walk asserts the Tasks heading on `/dashboard` after activation. Walked in dev as the seeded student. |
+| **1c · Routing fix for existing students** — **shipped 2026-09-22** | The §3.1 entry gate had no notion of "new": every pre-intake account without a plan (59 in production, 46 of them tutor-managed) was bounced into `/welcome` on its next login and 11 had already tapped "I'll do this later". Gate now also requires no practice history and no assigned tutor; pre-2026-09-15 accounts backfilled with `skipped_at`. | `shouldRouteToWelcome` unit tests cover the history case; production query after the backfill shows zero students in the "would be routed" state who have ever practiced. |
 | **3 · Evidence branch** | `student_score_reports`; manual domain entry form; student-scoped Bluebook upload with the illustrated walkthrough; evidence prior (§5.4) and reason codes wired through the generator; hub shows reported tests. | A targeted-mode student who enters two reports gets a plan whose first-week drills carry `prior_weak` reasons for their weakest domains. An upload of an ingested test yields item attempts visible in the hub. |
 | **4 · Content** | Help rewrite with screenshots; Bluebook walkthrough screenshots; retire `/learn/getting-started`. | Help describes the sidebar app; every help article that names a surface shows it. |
 

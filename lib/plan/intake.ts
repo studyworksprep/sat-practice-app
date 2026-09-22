@@ -264,12 +264,24 @@ export function deriveWizardStep(args: {
 }
 
 /** Whether the app should route this student to /welcome on login
- *  (§3.1): no active plan, and the intake is neither finished nor
- *  explicitly set aside. */
+ *  (§3.1): a self-study student with no active plan, no practice
+ *  history, and an intake that is neither finished nor explicitly
+ *  set aside.
+ *
+ *  The practice-history and tutor checks are what make this a
+ *  NEW SELF-STUDY student gate. Without them, every long-standing
+ *  account that never built a plan looked identical to a fresh signup
+ *  and was bounced into the wizard on their next login; and a
+ *  tutor-managed student's work is directed by their tutor, so a
+ *  self-built plan is never the right first stop for them. */
 export function shouldRouteToWelcome(args: {
   hasActivePlan: boolean;
+  hasPracticeHistory: boolean;
+  hasTutor: boolean;
   intake: IntakeState;
 }): boolean {
   if (args.hasActivePlan) return false;
+  if (args.hasPracticeHistory) return false;
+  if (args.hasTutor) return false;
   return !args.intake.completedAt && !args.intake.skippedAt;
 }
