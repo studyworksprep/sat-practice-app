@@ -58,18 +58,18 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
   const items = await mapInGroups(parsed.questions, async q => {
     const candidate = {
       id: q.id, question_type: q.questionType,
-      stem_html: mmdToHtml(q.stem, images), rationale_html: mmdToHtml(q.rationale, images),
+      stem_html: mmdToHtml(q.stem, images), stimulus_html: q.stimulus ? mmdToHtml(q.stimulus, images) : null, rationale_html: mmdToHtml(q.rationale, images),
       options: q.options.map(o => ({ label: o.label, content_html: mmdToHtml(o.mmd, images, { equationAlign: 'left' }) })),
       correct_answer: q.correctAnswer, domain_name: q.metadata.primary_class_cd_desc ?? null,
       skill_name: q.metadata.skill_desc ?? null, difficulty: ({E:1,M:2,H:3} as Record<string, number>)[q.metadata.difficulty ?? ''] ?? null,
       score_band: q.metadata.score_band_range_cd ?? null, source: 'Import preview',
     };
-    for (const html of [candidate.stem_html,candidate.rationale_html,...candidate.options.map(o => o.content_html)]) {
+    for (const html of [candidate.stimulus_html ?? '',candidate.stem_html,candidate.rationale_html,...candidate.options.map(o => o.content_html)]) {
       if (/data-mjx-error|merror/.test(renderHtml(html))) throw new Error(`Math rendering failed in ${q.id}. Review the export.`);
     }
     let candidateRows = rows;
     if (!reference) {
-      const found = await supabase.rpc('find_question_import_matches', { p_stem: candidate.stem_html, p_identifiers: [q.id, q.originalId, q.metadata.external_id, q.metadata.ibn].filter((v): v is string => !!v) });
+      const found = await supabase.rpc('find_question_import_matches', { p_stem: (candidate.stimulus_html ?? '') + candidate.stem_html, p_identifiers: [q.id, q.originalId, q.metadata.external_id, q.metadata.ibn].filter((v): v is string => !!v) });
       if (found.error) {
         logger.error({ action: 'compareImport', questionId: q.id, code: found.error.code }, 'Question duplicate check failed');
         const message = found.error.code === '57014'
@@ -91,7 +91,7 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
     const insertToken = !reference && actor && reviewSecret() && !identifierMatches.length && candidateRows.every(row => !!row.updated_at) ? signReview({
       duplicateMatches: candidateRows.map(row => ({ id: row.id, updated_at: row.updated_at! })),
       purpose: 'insert', actor, target: randomUUID(), updatedAt: '', expires: Date.now() + 2 * 60 * 60 * 1000,
-      presentation: { stem_html: candidate.stem_html, rationale_html: candidate.rationale_html, options: candidate.options },
+      presentation: { stem_html: candidate.stem_html, stimulus_html: candidate.stimulus_html, rationale_html: candidate.rationale_html, options: candidate.options },
       details: { question_type: candidate.question_type, correct_answer: candidate.correct_answer, domain_name: candidate.domain_name,
         skill_name: candidate.skill_name, difficulty: candidate.difficulty, score_band: candidate.score_band,
         source_id: q.id, original_source_id: q.originalId, source_external_id: q.metadata.external_id || q.metadata.ibn || q.id, hasAnswer: scorableAnswer(q.questionType,q.answer) },
@@ -107,16 +107,16 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
           if (reference) throw new Error('The pilot snapshot is review-only. Upload the files against the live bank to apply.');
           if (!actor || !reviewSecret()) throw new Error('Server review signing is not configured.');
           if (!row.updated_at || row.deleted_at || row.is_broken !== false || !row.is_published) throw new Error('Only published, active questions can be replaced here.');
-          if (row.stimulus_html?.trim() && !canCombineMathStimulus(row.domain_name)) throw new Error('This question has a separate passage. Edit it separately to preserve its structure.');
+          if (row.stimulus_html?.trim() && !candidate.stimulus_html && !canCombineMathStimulus(row.domain_name)) throw new Error('This question has a separate passage. Edit it separately to preserve its structure.');
           if (row.question_type !== candidate.question_type) throw new Error('Answer formats differ.');
           const normalize = (v: string | null) => String(v ?? '').split(/\s+or\s+|,/).map(x => x.trim()).sort().join('|');
           const answer = row.question_type === 'mcq' ? extractMcqCorrectId(row.correct_answer) : formatSprCorrect(row.correct_answer);
           if (!q.answer || normalize(answer) !== normalize(q.answer)) throw new Error('Correct answers differ or are missing. Resolve this separately.');
           if (row.question_type === 'mcq' && typeof row.correct_answer === 'object' && row.correct_answer && 'option_labels' in row.correct_answer && Array.isArray(row.correct_answer.option_labels) && row.correct_answer.option_labels.length > 1) throw new Error('Multiple-answer questions require separate review.');
           const options = mergeOptions(row.options ?? [], candidate.options);
-          applyToken = signReview({ ...(row.stimulus_html?.trim() ? { clearStimulus: true as const } : {}), actor, target: row.id, updatedAt: row.updated_at, expires: Date.now() + 2 * 60 * 60 * 1000, presentation: { stem_html: candidate.stem_html, rationale_html: candidate.rationale_html || row.rationale_html || '', options } }, reviewSecret());
+          applyToken = signReview({ ...(row.stimulus_html?.trim() && !candidate.stimulus_html ? { clearStimulus: true as const } : {}), actor, target: row.id, updatedAt: row.updated_at, expires: Date.now() + 2 * 60 * 60 * 1000, presentation: { stem_html: candidate.stem_html, stimulus_html: candidate.stimulus_html, rationale_html: candidate.rationale_html || row.rationale_html || '', options } }, reviewSecret());
         } catch (error) { applyBlocked = error instanceof Error ? error.message : 'Cannot apply this match.'; }
-        return { id: row.id, code: row.display_code, updatedAt: row.updated_at, deleted: !!row.deleted_at, published: row.is_published, broken: row.is_broken, difficulty: row.difficulty, scoreBand: row.score_band, answer: row.question_type === 'mcq' ? extractMcqCorrectId(row.correct_answer) : formatSprCorrect(row.correct_answer), ...viewModel(row), requiresStimulusConfirmation: !!row.stimulus_html?.trim() && canCombineMathStimulus(row.domain_name), applyToken, applyBlocked };
+        return { id: row.id, code: row.display_code, updatedAt: row.updated_at, deleted: !!row.deleted_at, published: row.is_published, broken: row.is_broken, difficulty: row.difficulty, scoreBand: row.score_band, answer: row.question_type === 'mcq' ? extractMcqCorrectId(row.correct_answer) : formatSprCorrect(row.correct_answer), ...viewModel(row), requiresStimulusConfirmation: !!row.stimulus_html?.trim() && !candidate.stimulus_html && canCombineMathStimulus(row.domain_name), applyToken, applyBlocked };
       }),
     };
   });
@@ -172,9 +172,11 @@ export async function applyImportedPresentation(token: string, confirmed: boolea
       ...review.presentation,
       ...(review.clearStimulus ? { stimulus_html: null, stimulus_rendered: null } : {}),
       stem_rendered: rendered.stem_rendered,
+      stimulus_rendered: rendered.stimulus_rendered,
       rationale_rendered: rendered.rationale_rendered,
       options_rendered: rendered.options_rendered,
-      rendered_source_hash: null,
+      rendered_source_hash: rendered.rendered_source_hash,
+      rendered_at: new Date().toISOString(),
       updated_by: ctx.user.id,
     }).eq('id', review.target).eq('updated_at', review.updatedAt)
       .eq('is_published', true).eq('is_broken', false).is('deleted_at', null)

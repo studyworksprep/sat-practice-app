@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { rationaleAnswer } from './answers.ts';
+import { splitReadingQuestion } from './reading.ts';
 export interface ImportMetadata {
   questionId: string;
   correct_answer?: string | string[] | null;
@@ -100,7 +101,10 @@ export function parseQuestions(mmd: string, metadata: ImportMetadata[] = []) {
     // Numeric forms in the explanation can differ from the explicit key.
     const entered = rationale.match(/Note that ([\s\S]*?)examples of ways to enter a correct answer/i);
     if (entered) warnings.push('The explanation describes accepted answer forms. Compare them with the explicit answer key.');
-    questions.push({ id, originalId, stem, options, rationale, answer, warnings, metadata: meta ?? { questionId: id }, questionType: options.length ? 'mcq' as const : 'spr' as const, correctAnswer: options.length ? { option_label: answer || null } : { text: JSON.stringify(values) } });
+    let reading;
+    try { reading = splitReadingQuestion(stem, meta?.primary_class_cd_desc); }
+    catch (error) { throw new Error(`Question ${id}: ${error instanceof Error ? error.message : 'Invalid reading layout.'}`); }
+    questions.push({ id, originalId, ...reading, options, rationale, answer, warnings, metadata: meta ?? { questionId: id }, questionType: options.length ? 'mcq' as const : 'spr' as const, correctAnswer: options.length ? { option_label: answer || null } : { text: JSON.stringify(values) } });
   }
   const unused = metadata.filter(m => !ids.has(m.questionId));
   return { questions, warnings: unused.length ? [`${unused.length} metadata record(s) have no matching question: ${unused.map(m => m.questionId).join(', ')}`] : [] };
@@ -166,6 +170,13 @@ export function mmdToHtml(text: string, images: Record<string, string> = {}, opt
   // These are statements I/II/... within the prompt, not the A-D answer
   // choices parsed separately above. Keep explicit labels and source order.
   text = text.replace(/\\begin\{itemize\}([\s\S]*?)\\end\{itemize\}/g, (_, body: string) => {
+    if (/^\s*\\item(?:\[-\])?\s/.test(body)) {
+      const bullets = body.split(/\\item(?:\[-\])?\s+/);
+      if (bullets[0].trim() || bullets.length < 2 || bullets.slice(1).some(item => !item.trim() || /\\item\b/.test(item))) {
+        throw new Error('Unsupported or empty bullet list. Review the notes before importing.');
+      }
+      return token(`<ul>${bullets.slice(1).map(item => `<li>${mmdToHtml(item.trim(), images, options)}</li>`).join('')}</ul>`, true);
+    }
     const parts = body.split(/\\item\[([IVXLCDM]+\.)\]/);
     if (parts.length < 3 || parts[0].trim()) throw new Error('Unsupported prompt list. Expected labeled Roman-numeral statements.');
     const items: string[] = [];
@@ -220,7 +231,7 @@ export function mmdToHtml(text: string, images: Record<string, string> = {}, opt
     : token(`\\(${escapeHtml(inline)}\\)`));
   text = text.replace(/\\\$/g, () => token('&#36;'));
   // Math tokens are already protected: only prose escapes are decoded here.
-  text = text.replace(/\\%/g, '%');
+  text = text.replace(/\\([%#])/g, '$1');
   if (/\\(?:begin|end|section|item|caption|captionsetup|includegraphics|multirow|multicolumn)\b/.test(text) || text.includes('$')) throw new Error('Unsupported or incomplete Mathpix markup. Review the export before continuing.');
   let html = text.split(/\n\s*\n/).filter(p => p.trim()).map(p => blocks.has(p.trim()) ? p.trim() : `<p>${escapeHtml(p.trim()).replace(/\n/g, ' ')}</p>`).join('');
   html = html.replace(/IMPORTTOKEN(\d+)END/g, (_, i) => tokens[Number(i)]);

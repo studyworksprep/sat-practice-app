@@ -60,18 +60,20 @@ export async function insertImportedQuestion(token:string,batchId:string | null,
     if(knownSection && section && section!==knownSection) throw new Error('The selected section conflicts with the question metadata.');
     const selectedSection=knownSection || section;
     if(!selectedSection) throw new Error('Choose Math or Reading & Writing before importing.');
+    if(selectedSection==='RW' && !review.presentation.stimulus_html?.trim()) throw new Error('Reading imports require a separate passage. Include reading metadata and compare the files again.');
     if(publish && !details.hasAnswer) throw new Error('Questions without verified answers must be saved as drafts.');
     if(!batchId && (!details.domain_name || !details.skill_name || !details.difficulty)) throw new Error('Choose a supplemental set for questions without topic and difficulty metadata.');
     const rendered=renderRow(review.presentation);
     const {data,error}=await ctx.supabase.rpc('insert_reviewed_question',{
-      p_question:{id:review.target,...details,reviewed_non_duplicates:review.duplicateMatches??[],section:selectedSection,...review.presentation,stem_rendered:rendered.stem_rendered,rationale_rendered:rendered.rationale_rendered,options_rendered:rendered.options_rendered},
+      p_question:{id:review.target,...details,reviewed_non_duplicates:review.duplicateMatches??[],section:selectedSection,...review.presentation,stem_rendered:rendered.stem_rendered,stimulus_rendered:rendered.stimulus_rendered,rendered_source_hash:rendered.rendered_source_hash,rationale_rendered:rendered.rationale_rendered,options_rendered:rendered.options_rendered},
       // Postgres accepts NULL for the standard pool; generated RPC types omit nullability.
       p_batch:batchId!,p_publish:publish,
     });
     if(error) throw new Error(error.message.includes('duplicate') ? 'A possible duplicate now exists. Compare again before importing.' : 'The import could not be confirmed. Retry the same review; it will not create a second copy.');
-    const stored=await ctx.supabase.from('questions_v2').select('id,is_published,batch_id,display_code').eq('id',data).single();
+    const stored=await ctx.supabase.from('questions_v2').select('id,is_published,batch_id,display_code,stimulus_html,stem_html').eq('id',data).single();
     if(stored.error) throw new Error('Imported, but the saved record could not be read. Compare again before continuing.');
     if(stored.data.batch_id!==batchId) throw new Error('This review was already imported into another destination. Compare again to open the existing record.');
+    if(stored.data.stem_html!==review.presentation.stem_html || (stored.data.stimulus_html??null)!==(review.presentation.stimulus_html??null)) throw new Error('The saved passage or prompt differs from the reviewed layout. Open the bank record before continuing.');
     return actionOk({id:data,published:stored.data.is_published,displayCode:stored.data.display_code});
   } catch(error) { return actionFail(error instanceof Error ? error : 'Unable to import question.'); }
 }
