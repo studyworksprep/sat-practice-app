@@ -20,6 +20,7 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { requireUserPage } from '@/lib/api/auth';
 import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
+import { hasPracticeHistory } from '@/lib/api/hasPracticeHistory';
 import { maybeSendWelcomeEmail } from '@/lib/email/maybeSendWelcomeEmail';
 import { sidebarEnabledFor } from '@/lib/flags-server';
 import { parseIntakeRow, shouldRouteToWelcome } from '@/lib/plan/intake';
@@ -127,10 +128,16 @@ export default async function StudentTreeLayout({ children }) {
     // A new student's first stop is the intake, not the dashboard
     // (docs/student-onboarding-and-plan-redesign-2026-09.md §3.1).
     // Only the dashboard bounces — every other surface stays reachable
-    // — and "I'll do this later" (intake.skipped_at) ends it.
+    // — and "I'll do this later" (intake.skipped_at) ends it. Only a
+    // NEW SELF-STUDY student is routed: no practice history (a student
+    // who has already answered questions here is an existing user) and
+    // no tutor (a tutor directs that student's work). The attempts
+    // probe runs only once the cheaper checks say the student would
+    // otherwise be routed.
     if (
       pathname === '/dashboard' &&
-      shouldRouteToWelcome({ hasActivePlan: Boolean(activePlan), intake })
+      shouldRouteToWelcome({ hasActivePlan: Boolean(activePlan), hasPracticeHistory: false, hasTutor, intake }) &&
+      !(await hasPracticeHistory(supabase, user.id))
     ) {
       redirect('/welcome');
     }

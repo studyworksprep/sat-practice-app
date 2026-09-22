@@ -14,6 +14,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
+import { hasPracticeHistory } from '@/lib/api/hasPracticeHistory';
 import { normalizePhases, PlanOverview } from '@/lib/ui/PlanOverview';
 import {
   DOMAIN_EXAMPLES,
@@ -87,7 +89,7 @@ export default async function WelcomePage({ searchParams }: PageProps) {
     .maybeSingle();
   if (activePlan) redirect('/dashboard');
 
-  const [{ data: fullProfile }, { data: intakeRow }, { data: draft }] = await Promise.all([
+  const [{ data: fullProfile }, { data: intakeRow }, { data: draft }, practiced, hasTutor] = await Promise.all([
     supabase
       .from('profiles')
       .select('target_sat_score, sat_test_date')
@@ -106,6 +108,8 @@ export default async function WelcomePage({ searchParams }: PageProps) {
       .eq('status', 'draft')
       .limit(1)
       .maybeSingle(),
+    hasPracticeHistory(supabase, user.id),
+    hasAssignedTutor(supabase, user.id),
   ]);
 
   const goal = fullProfile?.target_sat_score ?? null;
@@ -152,7 +156,10 @@ export default async function WelcomePage({ searchParams }: PageProps) {
   }
 
   const firstName = profile.first_name ?? null;
-  const showSetAside = shouldRouteToWelcome({ hasActivePlan: false, intake });
+  // "I'll do this later" only makes sense for a student who would
+  // otherwise be routed here on login; an existing student who opened
+  // the wizard from the dashboard can simply leave.
+  const showSetAside = shouldRouteToWelcome({ hasActivePlan: false, hasPracticeHistory: practiced, hasTutor, intake });
   const selectedTargets = new Set(intake.targets.map((t) => `${t.domainCode}|${t.skillCode}`));
   const selfCheckRows = SAT_DOMAIN_CODES.map((code) => {
     const d = findDomain(code);
