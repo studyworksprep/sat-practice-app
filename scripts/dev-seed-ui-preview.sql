@@ -102,9 +102,31 @@ on conflict (id) do nothing;
 insert into public.teacher_student_assignments (teacher_id, student_id)
 values
   ('22222222-2222-2222-2222-222222222222', '55555555-5555-5555-5555-555555555555'),
-  ('22222222-2222-2222-2222-222222222222', '66666666-6666-6666-6666-666666666666'),
   ('22222222-2222-2222-2222-222222222222', '77777777-7777-7777-7777-777777777777')
 on conflict do nothing;
+-- student4 (6666…) is deliberately NOT assigned to a tutor: it is the
+-- self-study fixture for the onboarding e2e walk
+-- (tests/e2e/onboarding.student.spec.ts). The login gate only routes a
+-- new SELF-STUDY student to /welcome, so a tutor-managed student4 would
+-- land on the dashboard. Without a tutor the proxy's access gate
+-- applies (proxy.js), and a student with no plan is bounced to
+-- /subscribe before the layout ever runs. A tutored student inherits
+-- 'full' from an exempt teacher (effective_plan()); a self-study
+-- student needs its own grant, so student4 gets a manual 'full'
+-- entitlement — the same footing as a paid self-study account under
+-- the entitlements gate (on in studyworks-dev) — plus
+-- subscription_exempt for the legacy gate-off path. reset_test_student()
+-- leaves entitlement rows and the exempt flag alone. Already-seeded
+-- databases had all three applied by hand on 2026-09-22.
+delete from public.teacher_student_assignments
+where student_id = '66666666-6666-6666-6666-666666666666';
+update public.profiles set subscription_exempt = true
+where id = '66666666-6666-6666-6666-666666666666';
+insert into public.entitlements (id, user_id, plan, source, status, note)
+values ('e2e00004-0000-0000-0000-000000000004', '66666666-6666-6666-6666-666666666666',
+        'full', 'manual', 'active',
+        'e2e self-study onboarding fixture (tests/e2e/onboarding.student.spec.ts)')
+on conflict (id) do nothing;
 
 -- ============================================================
 -- 2. LESSON (one published lesson for the lesson assignment)
