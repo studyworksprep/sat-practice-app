@@ -102,9 +102,16 @@ on conflict (id) do nothing;
 insert into public.teacher_student_assignments (teacher_id, student_id)
 values
   ('22222222-2222-2222-2222-222222222222', '55555555-5555-5555-5555-555555555555'),
-  ('22222222-2222-2222-2222-222222222222', '66666666-6666-6666-6666-666666666666'),
   ('22222222-2222-2222-2222-222222222222', '77777777-7777-7777-7777-777777777777')
 on conflict do nothing;
+-- student4 (6666…) is deliberately NOT assigned to a tutor: it is the
+-- self-study fixture for the onboarding e2e walk
+-- (tests/e2e/onboarding.student.spec.ts). The login gate only routes a
+-- new SELF-STUDY student to /welcome, so a tutor-managed student4 would
+-- land on the dashboard. Already-seeded databases had the row removed
+-- by hand on 2026-09-22:
+--   delete from public.teacher_student_assignments
+--   where student_id = '66666666-6666-6666-6666-666666666666';
 
 -- ============================================================
 -- 2. LESSON (one published lesson for the lesson assignment)
