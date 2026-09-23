@@ -1,45 +1,33 @@
-// Admin Server Actions for unit syllabi (curriculum_unit_steps;
+// Admin Server Actions for the curriculum editor (curriculum_unit_steps;
 // docs/foundations-and-question-patterns.md §7).
 //
 // Admin-authored reference data in the curriculum_units mold: every
 // mutation is requireRole(['admin']) on the RLS-scoped client — the
 // table's policies (migration 20260922120000) grant admins
-// insert/update/delete. Two authoring paths, one validator: the per-unit
-// editor's forms and the CSV importer both go through
-// lib/admin/unitSyllabusCsv, so a step the importer would reject is not
-// quietly accepted by the form.
+// insert/update/delete, and feature_flags' ff_write policy is
+// is_admin() too, so the "plans use these syllabi" switch needs no
+// service role.
 //
-// Positions are unique per unit, so reordering renumbers through a
-// +1000 offset (two passes) rather than swapping values in place —
-// a direct swap would trip the (unit_id, position) unique index
-// mid-write.
+// Positions are unique per unit, so inserting or reordering renumbers
+// through a +1000 offset (two passes) rather than shifting values in
+// place — a direct shift would trip the (unit_id, position) unique
+// index mid-write.
 
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
-import {
-  normalizeStepInput,
-  parseSyllabusCsv,
-  planSyllabusImport,
-  type CsvIssue,
-  type NormalizedStep,
-  type StepInput,
-} from '@/lib/admin/unitSyllabusCsv';
+import { normalizeStepInput, type NormalizedStep, type StepInput } from '@/lib/admin/unitSyllabus';
+import { UNIT_SYLLABUS_FLAG } from '@/lib/plan/unit-steps';
 import type { ActionResult, AuthContext } from '@/lib/types';
 
 const RENUMBER_OFFSET = 1000;
 const DEFAULT_DRILL_COUNT = 8;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export interface StepFormInput extends StepInput {
   kind: string;
-}
-
-export interface ImportSyllabiSummary {
-  unitsReplaced: number;
-  stepsWritten: number;
-  issues: CsvIssue[];
 }
 
 type Supabase = AuthContext['supabase'];
@@ -54,10 +42,12 @@ function fromErr(err: unknown): ActionResult {
 }
 
 // Syllabi feed plan generation everywhere a plan is composed; the
-// tutor tree reads them on demand, so its layout cache goes too.
+// units worklist shows their outlines; the tutor tree reads them on
+// demand, so its layout cache goes too.
 function revalidateSyllabusSurfaces(unitId?: string) {
+  revalidatePath('/admin/curriculum');
+  if (unitId) revalidatePath(`/admin/curriculum/${unitId}`);
   revalidatePath('/admin/content/units');
-  if (unitId) revalidatePath(`/admin/content/units/${unitId}/syllabus`);
   revalidatePath('/tutor/students', 'layout');
 }
 
@@ -76,10 +66,7 @@ async function loadUnitCtx(supabase: Supabase, unitId: string): Promise<UnitCtx 
   if (!unit) return null;
   const [{ data: lessons }, { data: patterns }] = await Promise.all([
     supabase.from('lessons').select('id'),
-    supabase
-      .from('question_patterns')
-      .select('id, name, skill_code')
-      .eq('skill_code', unit.skill_code),
+    supabase.from('question_patterns').select('id, name, skill_code').eq('skill_code', unit.skill_code),
   ]);
   return {
     unit,
@@ -109,6 +96,16 @@ async function stampAuthored(supabase: Supabase, unitId: string, authored: boole
     .from('curriculum_units')
     .update({ syllabus_authored_at: authored ? new Date().toISOString() : null })
     .eq('id', unitId);
+}
+
+async function orderedStepIds(supabase: Supabase, unitId: string): Promise<string[]> {
+  const { data } = await supabase
+    .from('curriculum_unit_steps')
+    .select('id')
+    .eq('unit_id', unitId)
+    .order('position', { ascending: true })
+    .order('id', { ascending: true });
+  return (data ?? []).map((r) => r.id);
 }
 
 /** Renumber a unit's steps 1..n in the given id order. Two passes
@@ -143,25 +140,18 @@ async function renumber(supabase: Supabase, unitId: string, orderedIds: string[]
   return null;
 }
 
-async function orderedStepIds(supabase: Supabase, unitId: string): Promise<string[]> {
-  const { data } = await supabase
-    .from('curriculum_unit_steps')
-    .select('id')
-    .eq('unit_id', unitId)
-    .order('position', { ascending: true })
-    .order('id', { ascending: true });
-  return (data ?? []).map((r) => r.id);
-}
-
-/** Append one step to a unit's syllabus. */
+/** Add one step: at the end, or right after `afterStepId`. */
 export async function addUnitStep({
   unitId,
   input,
+  afterStepId,
 }: {
   unitId: string;
   input: StepFormInput;
+  /** Insert after this step; omitted (or null) appends. */
+  afterStepId?: string | null;
 }): Promise<ActionResult<{ data: { id: string } }>> {
-  if (!unitId) return actionFail('unitId required');
+  if (!UUID_RE.test(unitId)) return actionFail('unitId required');
   let ctx: AuthContext;
   try {
     ctx = await adminCtx();
@@ -179,19 +169,29 @@ export async function addUnitStep({
   if (!normalized.ok) return actionFail(normalized.error);
 
   const ids = await orderedStepIds(supabase, unitId);
+  // Append past every existing position (offset-safe), then renumber
+  // into the requested slot.
   const { data, error } = await supabase
     .from('curriculum_unit_steps')
-    .insert(rowFor(unitId, ids.length + 1, normalized.value))
+    .insert(rowFor(unitId, ids.length + 1 + RENUMBER_OFFSET, normalized.value))
     .select('id')
     .maybeSingle();
   if (error) return actionFail(error.message);
   if (!data) return actionFail('Step was not created.');
+
+  const at = afterStepId ? ids.indexOf(afterStepId) : -1;
+  const ordered = [...ids];
+  if (afterStepId && at >= 0) ordered.splice(at + 1, 0, data.id);
+  else ordered.push(data.id);
+  const renumErr = await renumber(supabase, unitId, ordered);
+  if (renumErr) return actionFail(renumErr);
+
   await stampAuthored(supabase, unitId, true);
   revalidateSyllabusSurfaces(unitId);
   return actionOk({ id: data.id });
 }
 
-/** Edit one step in place (kind may change). */
+/** Edit one step in place. */
 export async function updateUnitStep({
   stepId,
   input,
@@ -199,7 +199,7 @@ export async function updateUnitStep({
   stepId: string;
   input: StepFormInput;
 }): Promise<ActionResult<{ data: { id: string } }>> {
-  if (!stepId) return actionFail('stepId required');
+  if (!UUID_RE.test(stepId)) return actionFail('stepId required');
   let ctx: AuthContext;
   try {
     ctx = await adminCtx();
@@ -233,7 +233,7 @@ export async function updateUnitStep({
 }
 
 export async function deleteUnitStep({ stepId }: { stepId: string }): Promise<ActionResult> {
-  if (!stepId) return actionFail('stepId required');
+  if (!UUID_RE.test(stepId)) return actionFail('stepId required');
   let ctx: AuthContext;
   try {
     ctx = await adminCtx();
@@ -263,7 +263,7 @@ export async function moveUnitStep({
   stepId: string;
   direction: 'up' | 'down';
 }): Promise<ActionResult<{ data: { moved: boolean } }>> {
-  if (!stepId) return actionFail('stepId required');
+  if (!UUID_RE.test(stepId)) return actionFail('stepId required');
   if (direction !== 'up' && direction !== 'down') return actionFail('Unknown direction.');
   let ctx: AuthContext;
   try {
@@ -294,7 +294,7 @@ export async function moveUnitStep({
  *  skill-tagged lesson the launcher would have opened (first by title),
  *  then one practice drill — and clear the authored stamp. */
 export async function resetUnitSyllabus({ unitId }: { unitId: string }): Promise<ActionResult<{ data: { steps: number } }>> {
-  if (!unitId) return actionFail('unitId required');
+  if (!UUID_RE.test(unitId)) return actionFail('unitId required');
   let ctx: AuthContext;
   try {
     ctx = await adminCtx();
@@ -336,66 +336,33 @@ export async function resetUnitSyllabus({ unitId }: { unitId: string }): Promise
   return actionOk({ steps: rows.length });
 }
 
-/**
- * Commit a CSV import: every unit the file names gets its syllabus
- * replaced by the file's rows. Re-parses and re-plans against lessons,
- * patterns, and units read here — the client preview is advisory.
- * Units with any rejected row are left untouched (the planner drops
- * them and says so).
- */
-export async function importUnitSyllabi({ csv }: { csv: string }): Promise<ActionResult<{ data: ImportSyllabiSummary }>> {
-  if (!csv || !csv.trim()) return actionFail('Paste or upload a CSV first.');
+/** The "study plans use these syllabi" switch — feature flag
+ *  `unit_syllabus`, read by lib/plan/unit-steps.ts on every plan
+ *  generation. Off = every unit falls back to the simple pair. */
+export async function setUnitSyllabusFlag({ on }: { on: boolean }): Promise<ActionResult<{ data: { on: boolean } }>> {
   let ctx: AuthContext;
   try {
     ctx = await adminCtx();
   } catch (err) {
-    return fromErr(err) as ActionResult<{ data: ImportSyllabiSummary }>;
+    return fromErr(err) as ActionResult<{ data: { on: boolean } }>;
   }
   const { supabase } = ctx;
-
-  const parsed = parseSyllabusCsv(csv);
-  if (parsed.rows.length === 0) {
-    const first = parsed.issues[0];
-    return actionFail(first ? `Nothing to import — ${first.line > 0 ? `line ${first.line}: ` : ''}${first.message}` : 'Nothing to import — no data rows found.');
-  }
-
-  const [{ data: units }, { data: lessons }, { data: patterns }, { data: stepRows }] = await Promise.all([
-    supabase.from('curriculum_units').select('id, skill_code, domain_code').eq('test_type', 'sat'),
-    supabase.from('lessons').select('id, title, status'),
-    supabase.from('question_patterns').select('id, name, skill_code'),
-    supabase.from('curriculum_unit_steps').select('unit_id'),
-  ]);
-  const existingCounts = new Map<string, number>();
-  for (const r of stepRows ?? []) existingCounts.set(r.unit_id, (existingCounts.get(r.unit_id) ?? 0) + 1);
-
-  const plan = planSyllabusImport(parsed, {
-    units: units ?? [],
-    lessons: lessons ?? [],
-    patterns: patterns ?? [],
-    existingCounts,
-  });
-  const issues = [...plan.issues];
-  let unitsReplaced = 0;
-  let stepsWritten = 0;
-
-  for (const unit of plan.units) {
-    const { error: delErr } = await supabase.from('curriculum_unit_steps').delete().eq('unit_id', unit.unitId);
-    if (delErr) {
-      issues.push({ line: 0, message: `${unit.skillCode}: ${delErr.message}` });
-      continue;
-    }
-    const rows = unit.steps.map((step, i) => rowFor(unit.unitId, i + 1, step));
-    const { error: insErr } = await supabase.from('curriculum_unit_steps').insert(rows);
-    if (insErr) {
-      issues.push({ line: 0, message: `${unit.skillCode}: ${insErr.message} — the unit now has no syllabus; re-import it.` });
-      continue;
-    }
-    await stampAuthored(supabase, unit.unitId, true);
-    unitsReplaced += 1;
-    stepsWritten += rows.length;
-    revalidatePath(`/admin/content/units/${unit.unitId}/syllabus`);
-  }
-
-  if (unitsReplaced > 0) revalidateSyllabusSurfaces();
-  return actionOk({ unitsReplaced, stepsWritten, issues });
+  const { data, error } = await supabase
+    .from('feature_flags')
+    .upsert(
+      {
+        key: UNIT_SYLLABUS_FLAG,
+        value: on ? 'on' : 'off',
+        description:
+          'Plan generator walks curriculum_unit_steps (lessons in teaching order, drills tied to lessons) instead of the built-in lesson-then-drill pair. on | off.',
+        updated_at: new Date().toISOString(),
+        updated_by: ctx.user.id,
+      },
+      { onConflict: 'key' },
+    )
+    .select('value')
+    .maybeSingle();
+  if (error) return actionFail(error.message);
+  revalidateSyllabusSurfaces();
+  return actionOk({ on: data?.value === 'on' });
 }

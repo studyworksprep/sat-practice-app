@@ -51,7 +51,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/content/drafts/[draftId]/actions.js` | `saveDraft`, `promoteDraft`, `rejectDraft` | requireRole[admin] |
 | `app/(admin)/admin/content/patterns/actions.ts` | `createQuestionPattern`, `updateQuestionPattern`, `deleteQuestionPattern`, `importQuestionPatterns`, `moveQuestionPattern` | requireRole[admin] |
 | `app/(admin)/admin/content/units/actions.ts` | `updateCurriculumUnitSettings`, `moveCurriculumUnit` | requireRole[admin] |
-| `app/(admin)/admin/content/units/syllabus-actions.ts` | `addUnitStep`, `updateUnitStep`, `deleteUnitStep`, `moveUnitStep`, `resetUnitSyllabus`, `importUnitSyllabi` | requireRole[admin] |
+| `app/(admin)/admin/curriculum/actions.ts` | `addUnitStep`, `updateUnitStep`, `deleteUnitStep`, `moveUnitStep`, `resetUnitSyllabus`, `setUnitSyllabusFlag` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson`, `addLessonTopic`, `removeLessonTopic` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/import/actions.js` | `importBlocksIntoLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/actions.js` | `createLesson` | requireRole[admin] |

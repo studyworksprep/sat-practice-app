@@ -537,25 +537,42 @@ covers the walk.
 
 ### 7.4 Authoring (landed 2026-09-22)
 
-- **Per-unit editor** at `/admin/content/units/<unit>/syllabus`: the
-  ordered steps with a "student sees" column (the generator's own
-  `expandUnitSyllabus`, so the preview is the task list a plan emits),
-  add lesson / drill steps, edit, reorder, remove, and reset to the
-  backfilled default. Any edit stamps `syllabus_authored_at`.
-- **Units worklist** gains a "Unit syllabi" view (per-unit outline,
-  authored/default badge, editor links) and a Syllabus column on the
-  coverage view.
-- **CSV import / export** on that view (`lib/admin/unitSyllabusCsv.ts`,
-  unit-tested; same dry-run-then-commit shape as the pattern catalog).
-  One row per step; columns `skill_code, kind, lesson, role,
-  skill_codes, pattern, question_count, minutes, skip_if_completed,
-  position`; lessons match by exact title or id, patterns by name
-  within the skill. **Replace per unit**: every unit the file names has
-  its whole syllabus replaced; a unit with any rejected row is left
-  untouched. Export round-trips the same columns.
+Built for a non-technical editor working entirely inside the admin
+account (owner direction 2026-09-22: no spreadsheet or CSV path). The
+sidebar gains **Curriculum** (`/admin/curriculum`):
+
+- **Curriculum home**: every SAT unit in teaching order, grouped Math
+  then Reading & Writing, with its syllabus outline and a status the
+  editor can act on (Authored · Default — not yet authored · needs
+  attention: no steps / no lesson / an unpublished lesson). A "How to
+  build a unit" note states the teaching sequence in plain words.
+- **The switch**: "Study plans use these syllabi: On/Off" flips the
+  `unit_syllabus` flag through a Server Action (feature_flags'
+  `ff_write` policy is `is_admin()`), with a confirm that says what
+  changes for students. No SQL involved.
+- **Unit editor** (`/admin/curriculum/<unit>`): steps as numbered
+  cards in teaching order — Lesson · Practice · Mixed set — each with
+  move up/down, Edit, Remove, and an "add a step here" insert point
+  between cards plus "Add a step" at the end. Adding a lesson opens a
+  searchable picker (title, status, "Teaches: <skills>", "Also in:
+  <units>"; lessons tagged to the unit listed first). Practice and
+  mixed sets ask "How many questions?" and "Which questions?" — this
+  unit's skill (or, for a mixed set, everything covered so far in the
+  domain) or skills chosen by name; an optional "only one question
+  type" select appears when the skill has a pattern catalog. A "what a
+  student will see" panel runs the generator's own
+  `expandUnitSyllabus`, so the preview is the exact task list a plan
+  emits. "Start over with the default" resets the unit. Every edit
+  stamps `syllabus_authored_at`.
 - **Tutor editor**: "Unit syllabus" in the add-task type list drops a
   unit's whole syllabus into a week as tutor tasks (completed lessons
   skipped, one step per day), not gated on the flag.
+- Field validation lives in `lib/admin/unitSyllabus.ts` (unit-tested)
+  and is shared by the editor's forms and its Server Actions.
+  Reordering and insert-at renumber through a +1000 offset so the
+  `(unit_id, position)` unique index never trips mid-write.
+- The units worklist keeps its coverage and planning-settings views
+  and links each unit to its editor.
 
 ### 7.5 Still to build
 
