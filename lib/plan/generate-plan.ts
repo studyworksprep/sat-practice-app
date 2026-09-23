@@ -22,7 +22,7 @@
 // or targets (the student's own picks) — and the MODE decides which
 // phases a plan gets and how long each runs.
 
-import { skillDisplayName, renderDrillWhy } from './task-labels.ts';
+import { domainDisplayName, skillDisplayName, renderDrillWhy } from './task-labels.ts';
 import type { DrillWhyCode } from './task-labels.ts';
 import { VOLUME_CURVE } from '../mastery.ts';
 
@@ -54,6 +54,46 @@ export interface PlanPhase {
 /** Who authored a task. The generator only emits 'generated'; re-pacing
  *  (§2.5) preserves 'tutor' tasks and a student can add 'student' ones. */
 export type PlanTaskSource = 'generated' | 'tutor' | 'student';
+
+// ── Unit syllabi (docs/foundations-and-question-patterns.md §5) ──────
+//
+// A curriculum unit (one per skill) may carry an ordered syllabus: the
+// lessons that teach it, in teaching order, each followed by the drill
+// that exercises it, and a mixed set at the end. When PlanInput.unitSteps
+// is present (feature flag `unit_syllabus`, loaded by unit-steps.ts) the
+// coverage and targets phases walk each unit's steps instead of the
+// built-in lesson-then-drill pair, and focus draws its drills from the
+// unit's syllabus. Absent = the pre-syllabus behavior, unchanged.
+
+export type UnitStepKind = 'lesson' | 'drill';
+/** practice = the questions for the lesson just taught; mixed = homework
+ *  across the unit (and its domain's earlier units) so far. */
+export type DrillRole = 'practice' | 'mixed';
+
+export interface UnitStep {
+  /** curriculum_unit_steps.id; null for a synthesized default step. */
+  id?: string | null;
+  position: number;
+  kind: UnitStepKind;
+  /** kind = lesson. A null id is a placeholder the launcher resolves. */
+  lessonId?: string | null;
+  lessonTitle?: string | null;
+  /** kind = drill */
+  role?: DrillRole | null;
+  /** Skill codes the drill draws from; null = the unit's own skill (or,
+   *  for a mixed set, the domain's units walked so far). */
+  skillCodes?: readonly string[] | null;
+  patternId?: string | null;
+  questionCount?: number | null;
+  minutes?: number | null;
+  /** Lesson steps: skip when the student already completed the lesson
+   *  (default true) — a technique taught in an earlier unit is not
+   *  re-taught. */
+  skipIfCompleted?: boolean;
+}
+
+/** Syllabi keyed by the unit's skill code. */
+export type UnitSyllabi = Readonly<Record<string, readonly UnitStep[]>>;
 
 /** One skill's current state — the shape get_student_coverage (§1.3)
  *  joined with curriculum_units (§1.2) + skill_learnability provides. */
@@ -100,6 +140,11 @@ export interface PlanInput {
    *  regenerates the remaining horizon but phases are laid out over the
    *  ORIGINAL horizon, so a plan in its focus phase stays there. */
   elapsedWeeks?: number;
+  /** Per-unit syllabi (flag `unit_syllabus`). See UnitStep. */
+  unitSteps?: UnitSyllabi | null;
+  /** Lessons the student has completed (lesson_progress.completed_at);
+   *  their lesson steps are skipped wherever they appear. */
+  completedLessonIds?: readonly string[] | null;
 }
 
 export interface PlanTaskDraft {
@@ -109,6 +154,9 @@ export interface PlanTaskDraft {
   payload: Record<string, unknown>;
   source: PlanTaskSource;
 }
+
+/** A task before its day is chosen. */
+type SlotTask = Omit<PlanTaskDraft, 'scheduledDate'>;
 
 export interface PlanDraft {
   weeks: number;
@@ -122,6 +170,8 @@ export interface PlanDraft {
 const AVG_TASK_MINUTES = 40;       // rough minutes per non-test task, for sizing the week
 const DEFAULT_CADENCE_WEEKS = 3;   // a full practice test every N weeks
 const DRILL_QUESTION_COUNT = 8;    // questions per skill drill
+const MIXED_SET_QUESTION_COUNT = 10; // questions per mixed set (syllabus 'mixed' drill)
+const MIXED_SET_MAX_SKILLS = 4;    // a mixed set spans at most this many skills
 const FULL_TEST_MINUTES = 180;
 const REVIEW_MINUTES = 20;
 const MAX_WEEKS = 52;
@@ -297,11 +347,90 @@ export function buildLessonPayload(s: SkillRef, why: string): Record<string, unk
   };
 }
 
+/** A syllabus lesson step. Carries the pinned lesson (id + its own
+ *  title, so the task promises exactly what Start opens); a placeholder
+ *  step (no lesson id) degrades to the skill-named lesson task. */
+export function buildLessonStepPayload(
+  s: SkillRef,
+  step: UnitStep,
+  why: string,
+): Record<string, unknown> {
+  const label = skillDisplayName(s.domainCode, s.skillCode);
+  return {
+    domain_code: s.domainCode,
+    skill_code: s.skillCode,
+    ...(step.lessonId ? { lesson_id: step.lessonId } : {}),
+    ...(step.id ? { unit_step_id: step.id } : {}),
+    title: step.lessonTitle ? `Lesson: ${step.lessonTitle}` : `Lesson: ${label}`,
+    minutes: step.minutes ?? s.expectedMinutes ?? AVG_TASK_MINUTES,
+    why,
+  };
+}
+
+/** A syllabus drill step. `lesson` is the lesson step it follows (the
+ *  practice drill exercises that lesson, and the title says so);
+ *  `mixedSkills` is the default draw for a mixed set. The
+ *  filter_criteria shape extends the plain drill's with skill_codes and
+ *  an optional pattern_id, which the launcher honors. */
+export function buildDrillStepPayload(
+  s: SkillRef,
+  step: UnitStep,
+  why: string | DrillWhy,
+  opts: { lesson?: UnitStep | null; mixedSkills?: readonly string[] | null } = {},
+): Record<string, unknown> {
+  const label = skillDisplayName(s.domainCode, s.skillCode);
+  const role: DrillRole = step.role ?? 'practice';
+  const reason = typeof why === 'string' ? null : why;
+  const skillCodes: string[] =
+    step.skillCodes && step.skillCodes.length > 0
+      ? [...step.skillCodes]
+      : role === 'mixed' && opts.mixedSkills && opts.mixedSkills.length > 0
+        ? [...opts.mixedSkills]
+        : [s.skillCode];
+  const count =
+    step.questionCount ?? (role === 'mixed' ? MIXED_SET_QUESTION_COUNT : DRILL_QUESTION_COUNT);
+  const title =
+    role === 'mixed'
+      ? `Mixed practice: ${domainDisplayName(s.domainCode)}`
+      : opts.lesson?.lessonTitle
+        ? `Practice: ${opts.lesson.lessonTitle}`
+        : `Drill: ${label}`;
+  return {
+    domain_code: s.domainCode,
+    skill_code: s.skillCode,
+    skill_codes: skillCodes,
+    filter_criteria: {
+      domain_code: s.domainCode,
+      skill_code: s.skillCode,
+      skill_codes: skillCodes,
+      count,
+      ...(step.patternId ? { pattern_id: step.patternId } : {}),
+    },
+    title,
+    minutes: step.minutes ?? Math.min(s.expectedMinutes ?? AVG_TASK_MINUTES, AVG_TASK_MINUTES),
+    why: reason ? renderDrillWhy(reason.code, reason.attempts) : why,
+    ...(reason ? { why_code: reason.code, why_attempts: reason.attempts } : {}),
+    drill_role: role,
+    ...(step.id ? { unit_step_id: step.id } : {}),
+    ...(opts.lesson?.lessonId ? { lesson_id: opts.lesson.lessonId } : {}),
+  };
+}
+
+/** The built-in pair a unit falls back to when it has no syllabus rows:
+ *  a (placeholder) lesson if the unit has lesson coverage, then a
+ *  practice drill — the pre-syllabus behavior. */
+export function defaultUnitSteps(s: SkillState): UnitStep[] {
+  const steps: UnitStep[] = [];
+  if (s.hasLesson) steps.push({ position: 1, kind: 'lesson' });
+  steps.push({ position: steps.length + 1, kind: 'drill', role: 'practice' });
+  return steps;
+}
+
 // ── Phase composition (§5.2) ──────────────────────────────────────
 
 const PHASE_SUMMARY: Record<PlanPhaseType, string> = {
   coverage:
-    'Cover every topic in order — a lesson, then a short drill — so the plan learns where you actually stand.',
+    'Cover every topic in order — its lessons, each with a short practice set — so the plan learns where you actually stand.',
   focus: 'Concentrate on the skills your work so far shows are weakest.',
   rehearsal: 'Full-length practice tests and targeted review — pacing and stamina for test day.',
   targets: 'Cycle through the skills you chose, with a lesson the first time a weak one comes up.',
@@ -431,18 +560,156 @@ export function generatePlan(input: PlanInput): PlanDraft {
   const tasks: PlanTaskDraft[] = [];
   const cursors: Record<PlanPhaseType, number> = { coverage: 0, focus: 0, rehearsal: 0, targets: 0 };
 
-  const lessonTask = (w: number, s: SkillState, why: string): Omit<PlanTaskDraft, 'scheduledDate'> => ({
+  const lessonTask = (w: number, s: SkillState, why: string): SlotTask => ({
     weekIndex: w,
     taskType: 'lesson',
     source: 'generated',
     payload: buildLessonPayload(s, why),
   });
-  const drillTask = (w: number, s: SkillState, why: string | DrillWhy): Omit<PlanTaskDraft, 'scheduledDate'> => ({
+  const drillTask = (w: number, s: SkillState, why: string | DrillWhy): SlotTask => ({
     weekIndex: w,
     taskType: 'drill',
     source: 'generated',
     payload: buildDrillPayload(s, why),
   });
+
+  // ── Syllabus walk (unitSteps present) ─────────────────────────────
+  const syllabi = input.unitSteps ?? null;
+  const completedLessons = new Set(input.completedLessonIds ?? []);
+  /** Lesson ids emitted in this draft — a lesson shared by several
+   *  units is scheduled once. */
+  const lessonsEmitted = new Set<string>();
+  /** Where each pool's walk stands: which unit, which step within it.
+   *  unit counts past the pool length, so pass = floor(unit / length). */
+  const walks: Record<'coverage' | 'targets', { unit: number; step: number }> = {
+    coverage: { unit: 0, step: 0 },
+    targets: { unit: 0, step: 0 },
+  };
+  /** Skills walked so far per domain — the default draw for a mixed set. */
+  const walkedByDomain = new Map<string, string[]>();
+  const focusDrillCursor = new Map<string, number>();
+
+  const noteWalked = (s: SkillState) => {
+    const list = walkedByDomain.get(s.domainCode) ?? [];
+    if (!list.includes(s.skillCode)) {
+      list.push(s.skillCode);
+      walkedByDomain.set(s.domainCode, list);
+    }
+  };
+  const mixedSkillsFor = (s: SkillState): string[] => {
+    const list = walkedByDomain.get(s.domainCode) ?? [];
+    const codes = list.includes(s.skillCode) ? list : [...list, s.skillCode];
+    return codes.slice(-MIXED_SET_MAX_SKILLS);
+  };
+  const stepsFor = (s: SkillState): readonly UnitStep[] =>
+    syllabi?.[s.skillCode] ?? defaultUnitSteps(s);
+  /** A later pass over a pool revisits only the unit's mixed sets (else
+   *  its last drill) — the lessons were taught on the first pass. */
+  const stepsForPass = (s: SkillState, pass: number): readonly UnitStep[] => {
+    const steps = stepsFor(s);
+    if (pass === 0) return steps;
+    const drills = steps.filter((st) => st.kind === 'drill');
+    const mixed = drills.filter((st) => st.role === 'mixed');
+    if (mixed.length > 0) return mixed;
+    return drills.length > 0 ? [drills[drills.length - 1]] : [];
+  };
+  const lessonBefore = (steps: readonly UnitStep[], index: number): UnitStep | null => {
+    for (let i = index - 1; i >= 0; i--) if (steps[i].kind === 'lesson') return steps[i];
+    return null;
+  };
+  const lessonStepTask = (w: number, s: SkillState, step: UnitStep, why: string): SlotTask => ({
+    weekIndex: w,
+    taskType: 'lesson',
+    source: 'generated',
+    payload: buildLessonStepPayload(s, step, why),
+  });
+  const drillStepTask = (
+    w: number,
+    s: SkillState,
+    steps: readonly UnitStep[],
+    step: UnitStep,
+    why: string | DrillWhy,
+  ): SlotTask => {
+    const idx = steps.indexOf(step);
+    // A practice drill exercises the lesson before it; a mixed set is
+    // homework across the unit and links to no single lesson.
+    const lesson = step.role !== 'mixed' && idx >= 0 ? lessonBefore(steps, idx) : null;
+    return {
+      weekIndex: w,
+      taskType: 'drill',
+      source: 'generated',
+      payload: buildDrillStepPayload(s, step, why, { lesson, mixedSkills: mixedSkillsFor(s) }),
+    };
+  };
+  /** Claim a lesson step: false when the lesson is already completed or
+   *  already on this draft. A placeholder (no id) dedupes by skill. */
+  const takeLessonStep = (s: SkillState, step: UnitStep): boolean => {
+    const id = step.lessonId ?? null;
+    if (id) {
+      if ((step.skipIfCompleted ?? true) && completedLessons.has(id)) return false;
+      if (lessonsEmitted.has(id)) return false;
+      lessonsEmitted.add(id);
+      return true;
+    }
+    if (lessonsScheduled.has(s.skillCode)) return false;
+    lessonsScheduled.add(s.skillCode);
+    return true;
+  };
+  /** The next task from walking a pool's syllabi in order, or null once
+   *  every remaining step is skippable. */
+  const nextFromWalk = (
+    pool: readonly SkillState[],
+    key: 'coverage' | 'targets',
+    w: number,
+    why: (s: SkillState) => string | DrillWhy,
+  ): SlotTask | null => {
+    if (pool.length === 0) return null;
+    const st = walks[key];
+    const maxSteps = Math.max(1, ...pool.map((s) => stepsFor(s).length));
+    // One full pass over the pool is the most we need to look; the guard
+    // keeps a pool whose every step is skippable finite.
+    for (let guard = 0; guard < pool.length * (maxSteps + 1) + 1; guard++) {
+      const pass = Math.floor(st.unit / pool.length);
+      const s = pool[st.unit % pool.length];
+      const steps = stepsForPass(s, pass);
+      if (st.step >= steps.length) {
+        st.unit++;
+        st.step = 0;
+        continue;
+      }
+      const step = steps[st.step++];
+      if (step.kind === 'lesson') {
+        if (!takeLessonStep(s, step)) continue;
+        noteWalked(s);
+        return lessonStepTask(w, s, step, '');
+      }
+      noteWalked(s);
+      return drillStepTask(w, s, steps, step, why(s));
+    }
+    return null;
+  };
+  /** Focus/rehearsal pick with a syllabus: the first unclaimed lesson
+   *  while the skill is weak, else cycle the unit's drills. */
+  const focusPickFromSyllabus = (w: number, s: SkillState): SlotTask => {
+    const steps = stepsFor(s);
+    if (isWeak(s)) {
+      const lessonStep = steps.find(
+        (st) =>
+          st.kind === 'lesson' &&
+          (st.lessonId
+            ? !completedLessons.has(st.lessonId) && !lessonsEmitted.has(st.lessonId)
+            : !lessonsScheduled.has(s.skillCode)),
+      );
+      if (lessonStep && takeLessonStep(s, lessonStep)) {
+        return lessonStepTask(w, s, lessonStep, 'Learn it first — weak but improvable');
+      }
+    }
+    const drills = steps.filter((st) => st.kind === 'drill');
+    if (drills.length === 0) return drillTask(w, s, whyForDrill(s));
+    const idx = focusDrillCursor.get(s.skillCode) ?? 0;
+    focusDrillCursor.set(s.skillCode, idx + 1);
+    return drillStepTask(w, s, steps, drills[idx % drills.length], whyForDrill(s));
+  };
 
   for (let w = 0; w < weeks; w++) {
     const weekStart = addDays(input.today, w * 7);
@@ -453,7 +720,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
     const testThisWeek =
       fullTests && (inRehearsal || w === weeks - 1 || (w > 0 && w % cadence === 0));
 
-    const weekTasks: Array<Omit<PlanTaskDraft, 'scheduledDate'>> = [];
+    const weekTasks: SlotTask[] = [];
 
     if (testThisWeek) {
       weekTasks.push({
@@ -486,45 +753,66 @@ export function generatePlan(input: PlanInput): PlanDraft {
     // Rehearsal weeks are lighter on new skill work — the test is the work.
     if (inRehearsal) slots = Math.max(1, Math.floor(slots / 2));
 
-    for (let i = 0; i < slots; i++) {
+    // One slot: coverage walk → targets pool → focus ranking. A syllabus
+    // walk that runs dry falls through to the next source; the built-in
+    // paths never run dry (they cycle).
+    const pickSlot = (): SlotTask | null => {
       if (phase.type === 'coverage' && curriculum.length > 0) {
-        const s = curriculum[cursors.coverage % curriculum.length];
-        if (s.hasLesson && !isStrong(s) && !lessonsScheduled.has(s.skillCode)) {
-          // Lesson, then the drill for the same skill in the very next
-          // slot — the cursor advances on the drill.
-          lessonsScheduled.add(s.skillCode);
-          weekTasks.push(lessonTask(w, s, ''));
+        if (syllabi) {
+          const t = nextFromWalk(curriculum, 'coverage', w, (s) => ({
+            code: 'coverage',
+            attempts: s.attemptsCount,
+          }));
+          if (t) return t;
         } else {
+          const s = curriculum[cursors.coverage % curriculum.length];
+          if (s.hasLesson && !isStrong(s) && !lessonsScheduled.has(s.skillCode)) {
+            // Lesson, then the drill for the same skill in the very next
+            // slot — the cursor advances on the drill.
+            lessonsScheduled.add(s.skillCode);
+            return lessonTask(w, s, '');
+          }
           cursors.coverage++;
-          weekTasks.push(drillTask(w, s, { code: 'coverage', attempts: s.attemptsCount }));
+          return drillTask(w, s, { code: 'coverage', attempts: s.attemptsCount });
         }
-      } else if (
-        (phase.type === 'targets' || mode === 'self_directed') &&
-        targetPool.length > 0
-      ) {
+      }
+      if ((phase.type === 'targets' || mode === 'self_directed') && targetPool.length > 0) {
         // Self-directed plans draw from the chosen skills in every phase,
         // rehearsal included.
-        const s = targetPool[cursors.targets % targetPool.length];
-        cursors.targets++;
-        if (s.hasLesson && isWeak(s) && !isStrong(s) && !lessonsScheduled.has(s.skillCode)) {
-          lessonsScheduled.add(s.skillCode);
-          weekTasks.push(lessonTask(w, s, ''));
+        if (syllabi) {
+          const t = nextFromWalk(targetPool, 'targets', w, (s) => ({
+            code: 'targets',
+            attempts: s.attemptsCount,
+          }));
+          if (t) return t;
         } else {
-          weekTasks.push(drillTask(w, s, { code: 'targets', attempts: s.attemptsCount }));
+          const s = targetPool[cursors.targets % targetPool.length];
+          cursors.targets++;
+          if (s.hasLesson && isWeak(s) && !isStrong(s) && !lessonsScheduled.has(s.skillCode)) {
+            lessonsScheduled.add(s.skillCode);
+            return lessonTask(w, s, '');
+          }
+          return drillTask(w, s, { code: 'targets', attempts: s.attemptsCount });
         }
-      } else if (ranked.length > 0) {
+      }
+      if (ranked.length > 0) {
         // focus, rehearsal, or a coverage/targets phase with nothing to draw.
         const s = ranked[cursors.focus % ranked.length];
         cursors.focus++;
+        if (syllabi) return focusPickFromSyllabus(w, s);
         if (s.hasLesson && isWeak(s) && !isStrong(s) && !lessonsScheduled.has(s.skillCode)) {
           lessonsScheduled.add(s.skillCode);
-          weekTasks.push(lessonTask(w, s, 'Learn it first — weak but improvable'));
-        } else {
-          weekTasks.push(drillTask(w, s, whyForDrill(s)));
+          return lessonTask(w, s, 'Learn it first — weak but improvable');
         }
-      } else {
-        break;
+        return drillTask(w, s, whyForDrill(s));
       }
+      return null;
+    };
+
+    for (let i = 0; i < slots; i++) {
+      const t = pickSlot();
+      if (!t) break;
+      weekTasks.push(t);
     }
 
     // Spread the week's tasks across its allowed study days. The horizon
@@ -540,7 +828,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
     const testOffset = weekend[0] ?? offsets[offsets.length - 1];
     const others = weekTasks.filter((t) => t.taskType !== 'full_test');
     const n = others.length;
-    const place = (t: Omit<PlanTaskDraft, 'scheduledDate'>, dayOffset: number) => {
+    const place = (t: SlotTask, dayOffset: number) => {
       const sched = addDays(weekStart, dayOffset);
       tasks.push({ ...t, scheduledDate: sched > input.testDate ? input.testDate : sched });
     };
@@ -565,6 +853,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
     fullTests,
     topSkills: ranked.slice(0, 3).map((s) => skillDisplayName(s.domainCode, s.skillCode)),
     targetCount: targetPool.length,
+    syllabus: syllabi != null,
   });
 
   return { weeks, tasks, rationale, mode, phases };
@@ -587,6 +876,9 @@ function buildRationale(args: {
   fullTests: boolean;
   topSkills: string[];
   targetCount: number;
+  /** Units were walked by syllabus (several lessons per unit) rather
+   *  than the built-in lesson-then-drill pair. */
+  syllabus?: boolean;
 }): string {
   const total = args.weeks + args.elapsed;
   const gapText =
@@ -598,7 +890,11 @@ function buildRationale(args: {
   for (const p of args.phases) {
     const range = weekRange(p, args.elapsed);
     if (p.type === 'coverage') {
-      parts.push(`${cap(range)} cover every topic in order — a lesson, then a short drill for each — so the plan learns where you actually stand.`);
+      parts.push(
+        args.syllabus
+          ? `${cap(range)} cover every topic in order — each topic's lessons, with a short practice set after each — so the plan learns where you actually stand.`
+          : `${cap(range)} cover every topic in order — a lesson, then a short drill for each — so the plan learns where you actually stand.`,
+      );
     } else if (p.type === 'focus') {
       parts.push(
         `${cap(range)} focus on what the evidence shows is weakest` +
@@ -667,6 +963,9 @@ export interface RepaceInput {
   studyDays?: readonly number[] | null;
   targets?: readonly string[] | null;
   fullTests?: boolean;
+  /** Unit syllabi + completed lessons (flag `unit_syllabus`); see PlanInput. */
+  unitSteps?: UnitSyllabi | null;
+  completedLessonIds?: readonly string[] | null;
 }
 
 export interface RepaceResult {
@@ -755,6 +1054,8 @@ export function repacePlan(input: RepaceInput): RepaceResult {
     studyDays: input.studyDays,
     targets: input.targets,
     fullTests: input.fullTests,
+    unitSteps: input.unitSteps,
+    completedLessonIds: input.completedLessonIds,
     // Keep the plan in the phase it has reached: phases are laid over
     // the original horizon, this draft covers the remaining weeks.
     elapsedWeeks: Math.max(0, Math.floor(daysBetween(input.planStart, input.today) / 7)),
@@ -818,6 +1119,9 @@ export interface RegenerateWeekInput {
   studyDays?: readonly number[] | null;
   targets?: readonly string[] | null;
   fullTests?: boolean;
+  /** Unit syllabi + completed lessons (flag `unit_syllabus`); see PlanInput. */
+  unitSteps?: UnitSyllabi | null;
+  completedLessonIds?: readonly string[] | null;
 }
 
 /** A task in the target week that survives regeneration: hand-authored,
@@ -848,6 +1152,8 @@ export function regenerateWeekTasks(input: RegenerateWeekInput): PlanTaskDraft[]
     studyDays: input.studyDays,
     targets: input.targets,
     fullTests: input.fullTests,
+    unitSteps: input.unitSteps,
+    completedLessonIds: input.completedLessonIds,
   });
 
   return regen.tasks.filter((t) => t.weekIndex === input.weekIndex);

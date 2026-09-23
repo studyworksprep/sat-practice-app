@@ -69,6 +69,13 @@ function num(obj: Record<string, unknown> | null | undefined, key: string): numb
   return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
+function strList(obj: Record<string, unknown> | null | undefined, key: string): string[] | null {
+  const v = obj?.[key];
+  if (!Array.isArray(v)) return null;
+  const out = v.filter((x): x is string => typeof x === 'string' && x.trim().length > 0);
+  return out.length > 0 ? out : null;
+}
+
 /** Load a pending task + assert it belongs to the caller's ACTIVE plan. */
 async function loadOwnPendingTask(
   supabase: Awaited<ReturnType<typeof requireUser>>['supabase'],
@@ -140,7 +147,11 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       const fc = (payload.filter_criteria ?? {}) as Record<string, unknown>;
       const skillCode = str(fc, 'skill_code') ?? str(payload, 'skill_code');
       const domainCode = str(fc, 'domain_code') ?? str(payload, 'domain_code');
-      if (!skillCode && !domainCode) {
+      // Syllabus drills (curriculum_unit_steps) may span several skills
+      // (a mixed set) and may pin one question pattern.
+      const skillCodes = strList(fc, 'skill_codes') ?? (skillCode ? [skillCode] : null);
+      const patternId = str(fc, 'pattern_id');
+      if (!skillCodes && !domainCode) {
         fail('This drill has no skill attached — ask your tutor to fix it.');
       }
       const count = Math.min(
@@ -152,21 +163,36 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       // difficulty ramping — the drill warms up before it bites;
       // unknown difficulty sorts last), display_code as the
       // deterministic tiebreak.
-      let query = supabase
-        .from('questions_v2')
-        .select('id, display_code')
-        .eq('is_published', true)
-        .eq('is_broken', false)
-        .is('deleted_at', null)
-        // Opt-in import batches are excluded from every auto-selector.
-        .eq('pool', 'standard')
-        .order('difficulty', { ascending: true, nullsFirst: false })
-        .order('display_code', { ascending: true })
-        .limit(500);
-      query = skillCode ? query.eq('skill_code', skillCode) : query.eq('domain_code', domainCode!);
-      const { data: candidates, error: qErr } = await query;
-      if (qErr) fail(`Could not load questions: ${qErr.message}`);
-      const candidateIds = (candidates ?? []).map((r) => r.id);
+      const baseQuery = () => {
+        let q = supabase
+          .from('questions_v2')
+          .select('id, display_code')
+          .eq('is_published', true)
+          .eq('is_broken', false)
+          .is('deleted_at', null)
+          // Opt-in import batches are excluded from every auto-selector.
+          .eq('pool', 'standard')
+          .order('difficulty', { ascending: true, nullsFirst: false })
+          .order('display_code', { ascending: true })
+          .limit(500);
+        q = skillCodes ? q.in('skill_code', skillCodes) : q.eq('domain_code', domainCode!);
+        return q;
+      };
+      // A pinned pattern narrows the draw; if the bank has nothing
+      // tagged to it yet, fall back to the skill-wide draw rather than
+      // refusing the drill.
+      let candidates: Array<{ id: string }> | null = null;
+      if (patternId && UUID_RE.test(patternId)) {
+        const { data, error: pErr } = await baseQuery().eq('pattern_id', patternId);
+        if (pErr) fail(`Could not load questions: ${pErr.message}`);
+        if (data && data.length > 0) candidates = data;
+      }
+      if (!candidates) {
+        const { data, error: qErr } = await baseQuery();
+        if (qErr) fail(`Could not load questions: ${qErr.message}`);
+        candidates = data ?? [];
+      }
+      const candidateIds = candidates.map((r) => r.id);
       if (candidateIds.length === 0) {
         fail('No published questions match this drill right now.');
       }
@@ -196,7 +222,10 @@ export async function startPlanTask(formData: FormData): Promise<void> {
             source: 'study_plan',
             plan_task_id: task.id,
             skill_code: skillCode,
+            skill_codes: skillCodes,
             domain_code: domainCode,
+            ...(patternId ? { pattern_id: patternId } : {}),
+            ...(str(payload, 'drill_role') ? { drill_role: str(payload, 'drill_role') } : {}),
             count,
             actual_size: questionIds.length,
           },
@@ -325,16 +354,52 @@ export async function markTaskDone(formData: FormData): Promise<void> {
     fail('This task completes automatically when you finish the work.');
   }
 
+  const completedAt = new Date().toISOString();
   const { error } = await supabase
     .from('plan_tasks')
     .update({
       status: 'completed',
-      completed_at: new Date().toISOString(),
+      completed_at: completedAt,
       completed_via: 'manual',
     })
     .eq('id', task.id)
     .eq('status', 'pending');
   if (error) fail(`Could not mark the task done: ${error.message}`);
+
+  // A lesson task pinned to a bank lesson: marking it done is the
+  // student saying "I know this" — record the lesson as completed too,
+  // so a syllabus that teaches the same lesson in a later unit skips it
+  // (the skip rule reads lesson_progress.completed_at). Best-effort: the
+  // task completion above already landed.
+  const lessonId = task.taskType === 'lesson' ? str(task.payload, 'lesson_id') : null;
+  if (lessonId && UUID_RE.test(lessonId)) {
+    try {
+      const { data: existing } = await supabase
+        .from('lesson_progress')
+        .select('completed_at')
+        .eq('student_id', user.id)
+        .eq('lesson_id', lessonId)
+        .maybeSingle();
+      if (!existing) {
+        await supabase.from('lesson_progress').insert({
+          student_id: user.id,
+          lesson_id: lessonId,
+          started_at: completedAt,
+          completed_at: completedAt,
+          completed_blocks: [],
+          check_answers: {},
+        });
+      } else if (!existing.completed_at) {
+        await supabase
+          .from('lesson_progress')
+          .update({ completed_at: completedAt })
+          .eq('student_id', user.id)
+          .eq('lesson_id', lessonId);
+      }
+    } catch {
+      // The plan task is done; the lesson record is a convenience.
+    }
+  }
 
   revalidatePath('/dashboard');
   revalidatePath('/plan');

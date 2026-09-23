@@ -2,7 +2,7 @@
 
 > **Status: Living — adopted design, partially implemented.** Written
 > 2026-07-26 from the owner's pedagogical observations; last verified
-> against the codebase 2026-08-16. §3.4 step 1 (schema) and most of
+> against the codebase 2026-09-22 (§7 added). §3.4 step 1 (schema) and most of
 > step 2 (lesson scope/kind fields, scoped generate prefills, the
 > pattern-catalog editor, and question→pattern tagging in the review
 > surfaces) have landed; the content-drafts picker, the classification
@@ -462,3 +462,87 @@ Open, owner to decide during steps 1–2:
 - Naming: is "question type" the student-facing label, or does
   Studyworks teaching vocabulary use another word ("format",
   "setup")? Schema says `question_patterns` regardless (§3.1).
+
+## 7. Unit syllabi (added 2026-09-22)
+
+### 7.1 Why
+
+The generator's coverage phase emitted one "lesson" task per skill,
+resolved to a bank lesson only when the student pressed Start (first
+published skill-tagged lesson, alphabetically), followed by one
+skill-wide drill. That model assumed one lesson per skill. The owner's
+teaching does not work that way: a unit is a *sequence* — teach one
+technique (solve by graphing), practice it on adapted examples, teach
+the next (solve by regression), practice, then a mixed homework set —
+and a technique lesson is reused across units (regression under H.B.,
+P.C., Q.D.). In production 8 of 29 skills carry two to five lessons,
+and 15 of 44 pending lesson tasks resolved to whichever lesson sorted
+first, sometimes the same lesson under three different skill titles.
+
+There is no intro drill: the lesson's own check blocks and interactive
+elements are the examples (owner note 2026-09-22).
+
+### 7.2 Model
+
+`curriculum_unit_steps` — an ordered syllabus per unit (migration
+`20260922120000_curriculum_unit_steps.sql`, applied to dev 2026-09-22;
+production pending). Units stay at skill grain (§3.3); the syllabus is
+intra-unit detail.
+
+| Column | Meaning |
+|---|---|
+| `kind` | `lesson` or `drill` |
+| `lesson_id` | the bank lesson (kind = lesson); the same lesson may appear in several units |
+| `role` | `practice` (the questions for the lesson just taught) or `mixed` (homework across the unit and its domain's earlier units) |
+| `skill_codes` | widens a drill beyond the unit's skill; null = the unit's skill, or for a mixed set the domain's units walked so far (max 4) |
+| `pattern_id` | narrows a drill to one question pattern once catalogs exist; the launcher falls back to the skill-wide draw when nothing is tagged |
+| `question_count`, `minutes` | null = 8 (practice) / 10 (mixed) and the unit's minutes |
+| `skip_if_completed` | lesson steps: skip when `lesson_progress.completed_at` is set (default true) |
+
+`curriculum_units.syllabus_authored_at` marks a human-authored
+syllabus; every SAT unit was backfilled with a **default two-step
+syllabus** (the lesson the launcher would have picked, then an
+8-question practice drill) so output is unchanged until a real one is
+authored.
+
+### 7.3 Generator (flag `unit_syllabus`)
+
+`lib/plan/unit-steps.ts` loads the syllabi and the student's completed
+lessons when the flag is `on`; every generator caller (wizard,
+tutor generate, re-pace interactive + cron, remaining-weeks
+regeneration, tutor week regeneration) passes them through. With them:
+
+- **Coverage** walks each unit's steps in order. A lesson step is the
+  unit's opening move for everyone — the self-assessment no longer
+  skips lessons; the student's own *Mark complete* (or *Mark done* on
+  the plan task, which now stamps `lesson_progress`) is the skip
+  mechanism, and it carries across units because the record is per
+  lesson. A lesson already on the draft is not scheduled twice. A
+  second pass over the curriculum revisits only mixed sets (else the
+  unit's last drill), never re-teaches.
+- **Targets** (self-directed) walks the chosen units' syllabi the same
+  way.
+- **Focus / rehearsal** picks, for a ranked weak skill, the unit's
+  first unclaimed lesson ("Learn it first"), else cycles the unit's
+  drills. Reassigning the specific lesson whose drill went worst needs
+  per-drill outcomes and is a follow-up.
+- Payloads: lesson tasks carry `lesson_id` + the lesson's own title
+  ("Lesson: Solve Equations by Graphing…"); drills carry
+  `skill_codes`, `drill_role`, optional `pattern_id`, the `lesson_id`
+  they exercise ("Practice: <lesson title>"), and `unit_step_id`.
+
+Without the flag (or for units with no rows) the pre-syllabus
+behavior is byte-for-byte unchanged; `lib/plan/unit-syllabus.test.mjs`
+covers the walk.
+
+### 7.4 Still to build
+
+1. Per-unit syllabus editor in `/admin/content/units` with the same
+   CSV import shape the pattern catalog uses; "add unit" in the tutor
+   plan editor.
+2. Pattern-targeted drills once catalogs exist (the column and the
+   launcher fallback are already in place).
+3. Focus-phase lesson reassignment from per-drill outcomes.
+4. Pacing copy: a syllabus unit is ~2.5 hours, so at 5 hours/week the
+   coverage phase covers ~2 units/week and short runways will not fit
+   every unit; the rationale should say so.

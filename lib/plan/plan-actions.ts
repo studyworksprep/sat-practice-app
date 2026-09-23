@@ -15,6 +15,7 @@ import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { generatePlan, LOW_EVIDENCE_ATTEMPTS } from './generate-plan';
 import { applyEvidencePriors, mapSkillRow } from './plan-inputs';
+import { loadSyllabusInputs } from './unit-steps';
 import { deriveMode, parseIntakeRow } from './intake';
 import { runRepaceForStudent, writeDraftPlan } from './repace-runner';
 import type { PlanMode, PlanPhase, SkillState } from './generate-plan';
@@ -126,6 +127,8 @@ export async function generateStudyPlan(
     }
   }
   const skills = applyEvidencePriors(rawSkills, composition);
+  // Unit syllabi (flag `unit_syllabus`): null → pre-syllabus generator.
+  const syllabus = await loadSyllabusInputs(supabase, studentId, testType);
 
   // Baseline: use the provided score, else the current predicted band total.
   let startingScore = args.startingScore ?? null;
@@ -150,6 +153,8 @@ export async function generateStudyPlan(
     studyDays: composition.studyDays,
     targets: composition.targets,
     fullTests: composition.fullTests,
+    unitSteps: syllabus?.unitSteps ?? null,
+    completedLessonIds: syllabus?.completedLessonIds ?? null,
   });
 
   const written = await writeDraftPlan(
