@@ -252,10 +252,9 @@ export async function deleteLesson(_prev, formData) {
 
 // ─── Scope tags (lesson_topics) ──────────────────────────────────
 //
-// The builder edits skill- and section-grain tags directly; pattern
-// tags arrive via the pattern catalog tooling. Grain coherence is
-// enforced by the lesson_topics_one_grain check constraint — these
-// actions just shape the row.
+// The builder edits skill- and section-grain tags directly. Grain
+// coherence is enforced by the lesson_topics_one_grain check
+// constraint — these actions just shape the row.
 
 export async function addLessonTopic(_prev, formData) {
   let ctx;

@@ -45,7 +45,7 @@ export default async function TutorTrainingReviewPage({ params }) {
   const {
     sessionMeta, items, metrics, timing, assignment,
     desmosCanSave, conceptTagsCatalog, conceptTagsCanTag, conceptTagsCanDelete,
-    questionPatternsCatalog, questionPatternsCanTag,
+    techniqueCatalog, techniquesCanTag,
     questionNotesCanView, questionNotesIsAdmin, currentUserId,
   } = await buildSessionReview({ supabase, user, role: profile.role, session });
 
@@ -58,8 +58,8 @@ export default async function TutorTrainingReviewPage({ params }) {
       assignment={assignment}
       desmosCanSave={desmosCanSave}
       conceptTagsCatalog={conceptTagsCatalog}
-      questionPatternsCatalog={questionPatternsCatalog}
-      questionPatternsCanTag={questionPatternsCanTag}
+      techniqueCatalog={techniqueCatalog}
+      techniquesCanTag={techniquesCanTag}
       conceptTagsCanTag={conceptTagsCanTag}
       conceptTagsCanDelete={conceptTagsCanDelete}
       questionNotesCanView={questionNotesCanView}

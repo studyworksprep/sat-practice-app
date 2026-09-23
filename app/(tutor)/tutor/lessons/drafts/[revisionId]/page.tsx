@@ -80,7 +80,7 @@ export default async function TutorLessonDraftPage({
     supabase.from('lesson_revision_blocks')
       .select('id, source_block_id, sort_order, block_type, content').eq('revision_id', revisionId).order('sort_order'),
     supabase.from('lesson_revision_topics')
-      .select('id, source_topic_id, section, domain_name, skill_code, pattern_id, question_patterns(name)')
+      .select('id, source_topic_id, section, domain_name, skill_code')
       .eq('revision_id', revisionId),
   ]);
   if (!revisionData) notFound();

@@ -101,8 +101,8 @@ function parseScope(scope: unknown): LessonScope | null {
   if (s.grain === 'skill' && typeof s.skillCode === 'string' && s.skillCode.trim()) {
     return { grain: 'skill', skillCode: s.skillCode.trim() };
   }
-  if (s.grain === 'pattern' && typeof s.patternId === 'string' && s.patternId.trim()) {
-    return { grain: 'pattern', patternId: s.patternId.trim() };
+  if (s.grain === 'technique' && typeof s.techniqueId === 'string' && s.techniqueId.trim()) {
+    return { grain: 'technique', techniqueId: s.techniqueId.trim() };
   }
   return null;
 }
@@ -190,10 +190,11 @@ export async function saveGeneratedLesson(input: SaveGeneratedLessonInput) {
     return actionFail(`Failed to insert blocks: ${insertBlocksErr.message}`);
   }
 
-  // Stamp the launch scope as a lesson_topics row so the lesson counts
-  // toward coverage (skill grain) or its pattern immediately. A tag
-  // failure must not lose the saved lesson — surface it as a warning
-  // the admin can fix in the editor.
+  // Stamp the launch scope: a skill scope becomes a lesson_topics row
+  // so the lesson counts toward coverage; a technique scope becomes a
+  // lesson_techniques link so the practice set after it narrows to the
+  // technique. A tag failure must not lose the saved lesson — surface
+  // it as a warning the admin can fix in the editor.
   let scopeWarning: string | null = null;
   const scope = parseScope(input?.scope);
   if (scope) {
@@ -210,11 +211,11 @@ export async function saveGeneratedLesson(input: SaveGeneratedLessonInput) {
         scopeWarning = `Lesson saved, but "${scope.skillCode}" is not a known skill code — tag it in the editor.`;
       }
     } else {
-      const { error } = await ctx.supabase.from('lesson_topics').insert({
+      const { error } = await ctx.supabase.from('lesson_techniques').insert({
         lesson_id: lesson.id,
-        pattern_id: scope.patternId,
+        technique_id: scope.techniqueId,
       });
-      if (error) scopeWarning = `Lesson saved, but tagging the question pattern failed: ${error.message}`;
+      if (error) scopeWarning = `Lesson saved, but linking the technique failed: ${error.message}`;
     }
   }
 

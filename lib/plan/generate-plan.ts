@@ -83,7 +83,10 @@ export interface UnitStep {
   /** Skill codes the drill draws from; null = the unit's own skill (or,
    *  for a mixed set, the domain's units walked so far). */
   skillCodes?: readonly string[] | null;
-  patternId?: string | null;
+  /** Optional explicit narrowing: questions matching these techniques
+   *  (tagged, or default-applicable by skill) are drawn first and the
+   *  launcher tops up from the skills when short. */
+  techniqueIds?: readonly string[] | null;
   questionCount?: number | null;
   minutes?: number | null;
   /** Lesson steps: skip when the student already completed the lesson
@@ -371,7 +374,8 @@ export function buildLessonStepPayload(
  *  practice drill exercises that lesson, and the title says so);
  *  `mixedSkills` is the default draw for a mixed set. The
  *  filter_criteria shape extends the plain drill's with skill_codes and
- *  an optional pattern_id, which the launcher honors. */
+ *  optional technique_ids, which the launcher honors (technique-matching
+ *  questions first, topped up from the skills). */
 export function buildDrillStepPayload(
   s: SkillRef,
   step: UnitStep,
@@ -404,7 +408,9 @@ export function buildDrillStepPayload(
       skill_code: s.skillCode,
       skill_codes: skillCodes,
       count,
-      ...(step.patternId ? { pattern_id: step.patternId } : {}),
+      ...(step.techniqueIds && step.techniqueIds.length > 0
+        ? { technique_ids: [...step.techniqueIds] }
+        : {}),
     },
     title,
     minutes: step.minutes ?? Math.min(s.expectedMinutes ?? AVG_TASK_MINUTES, AVG_TASK_MINUTES),

@@ -47,7 +47,7 @@ export default async function AdminLessonEditPage({ params }) {
       .order('sort_order'),
     supabase
       .from('lesson_topics')
-      .select('id, section, domain_name, skill_code, pattern_id, question_patterns(name)')
+      .select('id, section, domain_name, skill_code')
       .eq('lesson_id', lessonId),
   ]);
 

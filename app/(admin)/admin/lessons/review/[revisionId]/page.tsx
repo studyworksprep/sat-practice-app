@@ -69,7 +69,6 @@ type LessonTopic = {
   section: string | null;
   domain_name: string | null;
   skill_code: string | null;
-  pattern_id: string | null;
 };
 
 export default async function LessonReviewPage({
@@ -97,7 +96,7 @@ export default async function LessonReviewPage({
     supabase.from('lesson_revision_blocks')
       .select('id, source_block_id, sort_order, block_type, content').eq('revision_id', revisionId).order('sort_order'),
     supabase.from('lesson_revision_topics')
-      .select('id, source_topic_id, section, domain_name, skill_code, pattern_id').eq('revision_id', revisionId),
+      .select('id, source_topic_id, section, domain_name, skill_code').eq('revision_id', revisionId),
   ]);
   if (!revisionData) notFound();
   const revision = revisionData as unknown as Revision;
@@ -110,7 +109,7 @@ export default async function LessonReviewPage({
     const [blocksResult, topicsResult] = await Promise.all([
       supabase.from('lesson_blocks').select('id, sort_order, block_type, content')
         .eq('lesson_id', revision.base_lesson_id).order('sort_order'),
-      supabase.from('lesson_topics').select('id, section, domain_name, skill_code, pattern_id')
+      supabase.from('lesson_topics').select('id, section, domain_name, skill_code')
         .eq('lesson_id', revision.base_lesson_id),
     ]);
     baseBlocks = (blocksResult.data ?? []) as BaseBlock[];
@@ -232,7 +231,7 @@ function summarizeDiff(
   }
   let blocksRemoved = 0;
   for (const block of baseBlocks) if (!proposedSourceIds.has(block.id)) blocksRemoved += 1;
-  const topicKey = (topic: LessonTopic) => [topic.section, topic.domain_name, topic.skill_code, topic.pattern_id].map((value) => value ?? '').join('|');
+  const topicKey = (topic: LessonTopic) => [topic.section, topic.domain_name, topic.skill_code].map((value) => value ?? '').join('|');
   const baseTopicKeys = new Set(baseTopics.map(topicKey));
   const proposedTopicKeys = new Set(proposedTopics.map(topicKey));
   let topicChanges = 0;

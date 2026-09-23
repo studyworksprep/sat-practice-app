@@ -41,10 +41,10 @@ export default async function AdminQuestionsPage({ searchParams }) {
   const broken   = sp.broken   === '1';
   const trimmed  = sp.trimmed  === '1';
   const hasmath  = sp.hasmath  === '1';
-  // Set by the pattern catalog's per-pattern question count
-  // (/admin/content/patterns). Not a FilterBar control — it is a
-  // drill-in from elsewhere, so it shows as a dismissible chip.
-  const pattern  = typeof sp.pattern  === 'string' ? sp.pattern.trim()  : '';
+  // Set by the Techniques catalog's per-technique tag count
+  // (/admin/techniques). Not a FilterBar control — it is a drill-in
+  // from elsewhere, so it shows as a dismissible chip.
+  const technique = typeof sp.technique === 'string' ? sp.technique.trim() : '';
   const page     = Math.max(1, Number(sp.page) || 1);
   const offset   = (page - 1) * PAGE_SIZE;
 
@@ -69,15 +69,19 @@ export default async function AdminQuestionsPage({ searchParams }) {
     else tagFilteredIds = Array.from(intersection);
   }
 
+  // A technique drill-in joins question_techniques (!inner keeps only
+  // tagged rows) rather than resolving ids first: a well-used technique
+  // can carry thousands of tags, more than an `in` URL should hold.
   let query = supabase
     .from('questions_v2')
     .select(
-      'id, display_code, question_type, domain_name, skill_name, difficulty, is_broken, stem_html, updated_at',
+      'id, display_code, question_type, domain_name, skill_name, difficulty, is_broken, stem_html, updated_at' +
+        (technique ? ', question_techniques!inner(technique_id)' : ''),
       { count: 'exact' },
     )
     .is('deleted_at', null);
 
-  if (pattern) query = query.eq('pattern_id', pattern);
+  if (technique) query = query.eq('question_techniques.technique_id', technique);
   if (tagFilteredIds) query = query.in('id', tagFilteredIds);
   if (broken)  query = query.eq('is_broken', true);
   if (trimmed) query = query.or('stem_html.ilike.%TRIMMED%,stimulus_html.ilike.%TRIMMED%,rationale_html.ilike.%TRIMMED%');
@@ -90,7 +94,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
 
   const noTagMatches = tagFilteredIds != null && tagFilteredIds.length === 0;
 
-  const [{ data: rows, count, error }, { data: patternRow }] = await Promise.all([
+  const [{ data: rows, count, error }, { data: techniqueRow }] = await Promise.all([
     noTagMatches || tagResolveFailed
       ? Promise.resolve(
           tagResolveFailed
@@ -100,8 +104,8 @@ export default async function AdminQuestionsPage({ searchParams }) {
       : query
           .order('display_code', { ascending: true, nullsFirst: false })
           .range(offset, offset + PAGE_SIZE - 1),
-    pattern
-      ? supabase.from('question_patterns').select('name, skill_code').eq('id', pattern).maybeSingle()
+    technique
+      ? supabase.from('techniques').select('name').eq('id', technique).maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
 
@@ -129,7 +133,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
     tagById,
   );
 
-  const filterParams = { q, broken, trimmed, hasmath, pattern, tags: tagIds };
+  const filterParams = { q, broken, trimmed, hasmath, technique, tags: tagIds };
 
   return (
     <main className={a.container}>
@@ -153,21 +157,19 @@ export default async function AdminQuestionsPage({ searchParams }) {
         </div>
       </header>
 
-      {pattern && (
-        <p style={S.patternChip}>
-          Showing questions tagged{' '}
-          <strong>
-            {patternRow ? `“${patternRow.name}” (${patternRow.skill_code})` : 'with this pattern'}
-          </strong>
+      {technique && (
+        <p style={S.techniqueChip}>
+          Showing questions tagged with the technique{' '}
+          <strong>{techniqueRow ? `“${techniqueRow.name}”` : 'selected'}</strong>
           {' · '}
           <Link href={toUrl({ q, broken, trimmed, hasmath, tags: tagIds })} style={S.clearLink}>clear</Link>
           {' · '}
-          <Link href="/admin/content/patterns" style={S.clearLink}>pattern catalog →</Link>
+          <Link href="/admin/techniques" style={S.clearLink}>techniques →</Link>
         </p>
       )}
 
       <FilterBar
-        current={{ q, broken, trimmed, hasmath, pattern, tags: tagIds }}
+        current={{ q, broken, trimmed, hasmath, technique, tags: tagIds }}
         activeTags={activeTags}
         tagCatalog={tagCatalog}
       />
@@ -245,8 +247,8 @@ function FilterBar({ current, activeTags, tagCatalog }) {
   return (
     <form action="/admin/questions" method="get" style={S.filterBar}>
       {/* Carried through so applying a text filter narrows within the
-          pattern drill-in rather than silently dropping it. */}
-      {current.pattern && <input type="hidden" name="pattern" value={current.pattern} />}
+          technique drill-in rather than silently dropping it. */}
+      {current.technique && <input type="hidden" name="technique" value={current.technique} />}
       {activeTags.map((t) => (
         <input key={t.id} type="hidden" name="tag" value={t.id} />
       ))}
@@ -381,13 +383,13 @@ function Pagination({ current, last, params }) {
   );
 }
 
-function toUrl({ q, broken, trimmed, hasmath, pattern, tags, page }) {
+function toUrl({ q, broken, trimmed, hasmath, technique, tags, page }) {
   const params = new URLSearchParams();
   if (q)       params.set('q',       q);
   if (broken)  params.set('broken',  '1');
   if (trimmed) params.set('trimmed', '1');
   if (hasmath) params.set('hasmath', '1');
-  if (pattern) params.set('pattern', pattern);
+  if (technique) params.set('technique', technique);
   for (const id of tags ?? []) params.append('tag', id);
   if (page && page !== 1) params.set('page', String(page));
   const qs = params.toString();
@@ -467,7 +469,7 @@ function stripToSnippet(html, limit = 120) {
 // admin.module.css; the inline objects below cover the per-page
 // internals — filter bar, snippet column, pagination.
 const S = {
-  patternChip: {
+  techniqueChip: {
     margin: '0 0 0.75rem',
     padding: '0.5rem 0.75rem',
     background: '#eef2ff',

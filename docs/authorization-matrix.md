@@ -49,7 +49,6 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/concept-tags/actions.ts` | `renameConceptTag`, `deleteConceptTag`, `mergeConceptTags` | requireRole[admin] |
 | `app/(admin)/admin/content/actions.js` | `addScoreConversions`, `deleteScoreConversion`, `updateTestThresholds`, `saveSkillLearnability` | requireRole[admin] |
 | `app/(admin)/admin/content/drafts/[draftId]/actions.js` | `saveDraft`, `promoteDraft`, `rejectDraft` | requireRole[admin] |
-| `app/(admin)/admin/content/patterns/actions.ts` | `createQuestionPattern`, `updateQuestionPattern`, `deleteQuestionPattern`, `importQuestionPatterns`, `moveQuestionPattern` | requireRole[admin] |
 | `app/(admin)/admin/content/units/actions.ts` | `updateCurriculumUnitSettings`, `moveCurriculumUnit` | requireRole[admin] |
 | `app/(admin)/admin/curriculum/actions.ts` | `addUnitStep`, `updateUnitStep`, `deleteUnitStep`, `moveUnitStep`, `resetUnitSyllabus`, `setUnitSyllabusFlag` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson`, `addLessonTopic`, `removeLessonTopic` | requireRole[admin] |
@@ -63,6 +62,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/questions/import/set-actions.ts` | `listImportSets`, `createImportSet`, `changeSetAccess`, `insertImportedQuestion`, `publishImportDraft`, `searchImportUsers` | requireRole[admin] + assertWriter |
 | `app/(admin)/admin/questions/new/actions.js` | `listQuestionSources`, `createQuestion` | requireRole[admin] |
 | `app/(admin)/admin/reading-coach/actions.ts` | `importReadingCoachSpec`, `publishReadingCoachVersionAction`, `archiveReadingCoachItemAction` | requireRole[admin] |
+| `app/(admin)/admin/techniques/actions.ts` | `createTechnique`, `updateTechnique`, `deleteTechnique`, `moveTechnique` | requireRole[admin] |
 | `app/(admin)/admin/users/[userId]/actions.js` | `updateProfileFields`, `changeRole`, `toggleActive`, `banUser`, `unbanUser`, `deleteUser`, `assignTeacherStudent`, `unassignTeacherStudent`, `assignManagerTeacher`, `unassignManagerTeacher`, `setTestFlag`, `resetTestStudent` | requireRole[admin] + requireServiceRole + rateLimit |
 | `app/(admin)/admin/users/codes/actions.js` | `createTeacherCode`, `revokeTeacherCode`, `inviteStudent`, `revokeStudentInvite` | requireRole[admin] |
 | `app/(student)/assignments/[id]/actions.js` | `startAssignmentPractice` | requireUser + rateLimit |
@@ -104,9 +104,9 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/practice/flashcards-actions.ts` | `listFlashcardSets`, `listFlashcards`, `createFlashcard`, `updateFlashcard`, `deleteFlashcard`, `rateFlashcard`, `createFlashcardSet` | requireUser |
 | `lib/practice/load-question-action.ts` | `loadQuestionAction` | requireUser |
 | `lib/practice/question-notes-actions.ts` | `addQuestionNote`, `updateQuestionNote`, `deleteQuestionNote` | requireRole[admin|manager|teacher] |
-| `lib/practice/question-pattern-actions.ts` | `setQuestionPattern` | requireRole[admin|manager] |
 | `lib/practice/question-search-actions.ts` | `searchQuestions`, `listConceptTagsForSearch` | requireUser |
 | `lib/practice/question-stats-actions.ts` | `loadQuestionStatsAction` | requireRole[admin|manager|teacher] |
+| `lib/practice/question-technique-actions.ts` | `setQuestionTechniques` | requireRole[admin|manager] |
 | `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `abandonPracticeSession`, `togglePracticeMark`, `getDetourOptions`, `injectEasierQuestion` | requireUser + rateLimit |
 
 ## Attention list

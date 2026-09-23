@@ -2,8 +2,8 @@
 //
 //   1. Metadata form  — title / description / status / visibility /
 //                       kind (+ foundation order).
-//   2. Scope tags     — the lesson_topics rows: which section, skill,
-//                       or question pattern this lesson teaches.
+//   2. Scope tags     — the lesson_topics rows: which section or skill
+//                       this lesson teaches.
 //   3. Lesson canvas   — the WYSIWYG block editor (CanvasEditor): a
 //                       single vertical canvas with inline editing,
 //                       drag-to-reorder, and between-block inserters.
@@ -170,18 +170,14 @@ function MetadataSection({ lesson, action, revisionMode }) {
 
 // ─── Scope tags ──────────────────────────────────────────────────
 //
-// lesson_topics editor for the section/domain/skill grains. Pattern
-// tags are shown (so the generate-flow stamp is visible) but authored
-// through the pattern catalog tooling, not here. One select encodes
-// the grain + value; hidden inputs decode it for the server action.
+// lesson_topics editor for the section/domain/skill grains. One select
+// encodes the grain + value; hidden inputs decode it for the server
+// action. The techniques a lesson teaches are a separate link table
+// (lesson_techniques), not a scope grain.
 
 function topicLabel(topic) {
   if (topic.section) {
     return topic.section === 'math' ? 'Math section' : 'Reading & Writing section';
-  }
-  if (topic.pattern_id) {
-    const name = topic.question_patterns?.name;
-    return name ? `Pattern: ${name}` : `Pattern ${String(topic.pattern_id).slice(0, 8)}…`;
   }
   if (topic.skill_code) return `${topic.skill_code} · ${topic.domain_name}`;
   return topic.domain_name ?? 'Unknown tag';

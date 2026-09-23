@@ -36,10 +36,10 @@ export interface MappedBlockRow {
   content: unknown;
 }
 
-// The scope a generation was launched with (?skill= / ?pattern= on
+// The scope a generation was launched with (?skill= / ?technique= on
 // the generate page). Carried through the client so the save action
-// can stamp the matching lesson_topics grain
-// (docs/foundations-and-question-patterns.md §3.1).
+// can stamp the matching lesson_topics skill tag or lesson_techniques
+// link (docs/foundations-and-question-patterns.md §3.1, §8).
 export type LessonScope =
   | { grain: 'skill'; skillCode: string }
-  | { grain: 'pattern'; patternId: string };
+  | { grain: 'technique'; techniqueId: string };

@@ -1217,12 +1217,12 @@ export type Database = {
           kind: string
           lesson_id: string | null
           minutes: number | null
-          pattern_id: string | null
           position: number
           question_count: number | null
           role: string | null
           skill_codes: string[] | null
           skip_if_completed: boolean
+          technique_ids: string[] | null
           unit_id: string
           updated_at: string
         }
@@ -1232,12 +1232,12 @@ export type Database = {
           kind: string
           lesson_id?: string | null
           minutes?: number | null
-          pattern_id?: string | null
           position: number
           question_count?: number | null
           role?: string | null
           skill_codes?: string[] | null
           skip_if_completed?: boolean
+          technique_ids?: string[] | null
           unit_id: string
           updated_at?: string
         }
@@ -1247,12 +1247,12 @@ export type Database = {
           kind?: string
           lesson_id?: string | null
           minutes?: number | null
-          pattern_id?: string | null
           position?: number
           question_count?: number | null
           role?: string | null
           skill_codes?: string[] | null
           skip_if_completed?: boolean
+          technique_ids?: string[] | null
           unit_id?: string
           updated_at?: string
         }
@@ -1262,13 +1262,6 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "curriculum_unit_steps_pattern_id_fkey"
-            columns: ["pattern_id"]
-            isOneToOne: false
-            referencedRelation: "question_patterns"
             referencedColumns: ["id"]
           },
           {
@@ -1912,7 +1905,6 @@ export type Database = {
         Row: {
           domain_name: string | null
           id: string
-          pattern_id: string | null
           revision_id: string
           section: string | null
           skill_code: string | null
@@ -1921,7 +1913,6 @@ export type Database = {
         Insert: {
           domain_name?: string | null
           id?: string
-          pattern_id?: string | null
           revision_id: string
           section?: string | null
           skill_code?: string | null
@@ -1930,20 +1921,12 @@ export type Database = {
         Update: {
           domain_name?: string | null
           id?: string
-          pattern_id?: string | null
           revision_id?: string
           section?: string | null
           skill_code?: string | null
           source_topic_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "lesson_revision_topics_pattern_id_fkey"
-            columns: ["pattern_id"]
-            isOneToOne: false
-            referencedRelation: "question_patterns"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "lesson_revision_topics_revision_id_fkey"
             columns: ["revision_id"]
@@ -2070,12 +2053,41 @@ export type Database = {
           },
         ]
       }
+      lesson_techniques: {
+        Row: {
+          lesson_id: string
+          technique_id: string
+        }
+        Insert: {
+          lesson_id: string
+          technique_id: string
+        }
+        Update: {
+          lesson_id?: string
+          technique_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_techniques_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_techniques_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "techniques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_topics: {
         Row: {
           domain_name: string | null
           id: string
           lesson_id: string
-          pattern_id: string | null
           section: string | null
           skill_code: string | null
         }
@@ -2083,7 +2095,6 @@ export type Database = {
           domain_name?: string | null
           id?: string
           lesson_id: string
-          pattern_id?: string | null
           section?: string | null
           skill_code?: string | null
         }
@@ -2091,7 +2102,6 @@ export type Database = {
           domain_name?: string | null
           id?: string
           lesson_id?: string
-          pattern_id?: string | null
           section?: string | null
           skill_code?: string | null
         }
@@ -2101,13 +2111,6 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_topics_pattern_id_fkey"
-            columns: ["pattern_id"]
-            isOneToOne: false
-            referencedRelation: "question_patterns"
             referencedColumns: ["id"]
           },
         ]
@@ -2982,7 +2985,6 @@ export type Database = {
           id: string
           notes: string | null
           options: Json | null
-          pattern_id: string | null
           promoted_at: string | null
           promoted_by: string | null
           question_id: string
@@ -3001,7 +3003,6 @@ export type Database = {
           id?: string
           notes?: string | null
           options?: Json | null
-          pattern_id?: string | null
           promoted_at?: string | null
           promoted_by?: string | null
           question_id: string
@@ -3020,7 +3021,6 @@ export type Database = {
           id?: string
           notes?: string | null
           options?: Json | null
-          pattern_id?: string | null
           promoted_at?: string | null
           promoted_by?: string | null
           question_id?: string
@@ -3033,13 +3033,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "question_content_drafts_pattern_id_fkey"
-            columns: ["pattern_id"]
-            isOneToOne: false
-            referencedRelation: "question_patterns"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "question_content_drafts_question_id_fkey"
             columns: ["question_id"]
@@ -3190,44 +3183,62 @@ export type Database = {
           },
         ]
       }
-      question_patterns: {
+      question_techniques: {
         Row: {
-          created_at: string | null
-          domain_code: string
-          id: string
-          name: string
-          process_summary: string | null
-          recognition_cue: string
-          sequence: number
-          skill_code: string
-          test_type: string
-          updated_at: string | null
+          question_id: string
+          tagged_at: string
+          tagged_by: string | null
+          technique_id: string
         }
         Insert: {
-          created_at?: string | null
-          domain_code: string
-          id?: string
-          name: string
-          process_summary?: string | null
-          recognition_cue: string
-          sequence?: number
-          skill_code: string
-          test_type?: string
-          updated_at?: string | null
+          question_id: string
+          tagged_at?: string
+          tagged_by?: string | null
+          technique_id: string
         }
         Update: {
-          created_at?: string | null
-          domain_code?: string
-          id?: string
-          name?: string
-          process_summary?: string | null
-          recognition_cue?: string
-          sequence?: number
-          skill_code?: string
-          test_type?: string
-          updated_at?: string | null
+          question_id?: string
+          tagged_at?: string
+          tagged_by?: string | null
+          technique_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "question_techniques_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_techniques_tagged_by_fkey"
+            columns: ["tagged_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_techniques_tagged_by_fkey"
+            columns: ["tagged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_techniques_tagged_by_fkey"
+            columns: ["tagged_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "question_techniques_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "techniques"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       questions_v2: {
         Row: {
@@ -3252,9 +3263,6 @@ export type Database = {
           last_fixed_by: string | null
           options: Json | null
           options_rendered: Json | null
-          pattern_id: string | null
-          pattern_tagged_at: string | null
-          pattern_tagged_by: string | null
           pool: string
           question_type: string
           rationale_html: string | null
@@ -3296,9 +3304,6 @@ export type Database = {
           last_fixed_by?: string | null
           options?: Json | null
           options_rendered?: Json | null
-          pattern_id?: string | null
-          pattern_tagged_at?: string | null
-          pattern_tagged_by?: string | null
           pool?: string
           question_type: string
           rationale_html?: string | null
@@ -3340,9 +3345,6 @@ export type Database = {
           last_fixed_by?: string | null
           options?: Json | null
           options_rendered?: Json | null
-          pattern_id?: string | null
-          pattern_tagged_at?: string | null
-          pattern_tagged_by?: string | null
           pool?: string
           question_type?: string
           rationale_html?: string | null
@@ -3376,34 +3378,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "question_batches"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_v2_pattern_id_fkey"
-            columns: ["pattern_id"]
-            isOneToOne: false
-            referencedRelation: "question_patterns"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_v2_pattern_tagged_by_fkey"
-            columns: ["pattern_tagged_by"]
-            isOneToOne: false
-            referencedRelation: "profile_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_v2_pattern_tagged_by_fkey"
-            columns: ["pattern_tagged_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_v2_pattern_tagged_by_fkey"
-            columns: ["pattern_tagged_by"]
-            isOneToOne: false
-            referencedRelation: "student_practice_stats"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -4710,6 +4684,65 @@ export type Database = {
           },
         ]
       }
+      technique_skills: {
+        Row: {
+          skill_code: string
+          technique_id: string
+        }
+        Insert: {
+          skill_code: string
+          technique_id: string
+        }
+        Update: {
+          skill_code?: string
+          technique_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technique_skills_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "techniques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      techniques: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          name: string
+          process_summary: string | null
+          section: string | null
+          sequence: number
+          test_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          name: string
+          process_summary?: string | null
+          section?: string | null
+          sequence?: number
+          test_type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          process_summary?: string | null
+          section?: string | null
+          sequence?: number
+          test_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tutor_notes: {
         Row: {
           author_id: string
@@ -5164,8 +5197,8 @@ export type Database = {
         Args: { p_raw: number; p_section: string }
         Returns: number
       }
-      set_question_pattern: {
-        Args: { p_pattern_id: string; p_question_id: string }
+      set_question_techniques: {
+        Args: { p_question_id: string; p_technique_ids: string[] }
         Returns: Json
       }
       snapshot_all_skill_mastery: {

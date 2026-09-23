@@ -27,7 +27,7 @@ import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
 import { loadQuestionNotesByQuestion } from '@/lib/practice/load-question-notes';
 import { GroupAssignmentReport } from '@/lib/practice/GroupAssignmentReport';
-import { loadPatternCatalog, canTagPatterns } from '@/lib/practice/load-question-patterns';
+import { loadTechniqueCatalog, loadQuestionTechniqueIds, canTagTechniques } from '@/lib/practice/load-question-techniques';
 
 // Mirrors the constants in build-session-review.js. The cohort
 // report doesn't go through that builder (it's aggregated, not
@@ -141,7 +141,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
     supabase
       .from('questions_v2')
       .select(
-        'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, rationale_html, rationale_rendered, correct_answer, domain_code, domain_name, skill_code, skill_name, difficulty, score_band, display_code, pattern_id',
+        'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, rationale_html, rationale_rendered, correct_answer, domain_code, domain_name, skill_code, skill_name, difficulty, score_band, display_code',
       )
       .in('id', questionIds),
     studentIds.length > 0 && attemptQuestionIds.length > 0
@@ -308,8 +308,6 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
         difficulty: q.difficulty,
         score_band: q.score_band,
       },
-      // Current sub-skill classification, for the pattern picker.
-      patternId: q.pattern_id ?? null,
       reveal: {
         correctOptionId: !isSpr ? extractMcqCorrectId(q.correct_answer) : null,
         correctAnswerDisplay: isSpr ? formatSprCorrect(q.correct_answer) : null,
@@ -380,16 +378,13 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
     }),
   ]);
 
-  // Pattern catalog scoped to the skills on this report, so each
-  // picker offers only patterns that could apply (same treatment as
+  // Technique catalog + each question's tags (same treatment as
   // build-session-review gives the per-student report).
-  const questionPatternsCanTag = canTagPatterns(profile.role);
-  const questionPatternsCatalog = await loadPatternCatalog({
-    role: profile.role,
-    skillCodes: items
-      .filter((it) => !it.missing && it.taxonomy?.skill_code)
-      .map((it) => it.taxonomy.skill_code),
-  });
+  const techniquesCanTag = canTagTechniques(profile.role);
+  const techniqueCatalog = await loadTechniqueCatalog({ role: profile.role });
+  const techniquesByQid = techniquesCanTag
+    ? await loadQuestionTechniqueIds({ questionIds: presentQids })
+    : new Map();
 
   const conceptTagsCatalog = conceptTagsCanTag ? (conceptCatalog ?? []) : null;
   const conceptTagIdsByQid = new Map();
@@ -410,6 +405,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
   for (const it of items) {
     if (it.missing) continue;
     if (conceptTagsCanTag) it.conceptTagIds = conceptTagIdsByQid.get(it.questionId) ?? [];
+    if (techniquesCanTag) it.techniqueIds = techniquesByQid.get(it.questionId) ?? [];
     if (MATH_DOMAIN_CODES.has(it.taxonomy?.domain_code ?? '')) {
       it.desmosSavedState = desmosStateByQid.get(it.questionId) ?? null;
     }
@@ -420,8 +416,8 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
 
   return (
     <GroupAssignmentReport
-      questionPatternsCatalog={questionPatternsCatalog}
-      questionPatternsCanTag={questionPatternsCanTag}
+      techniqueCatalog={techniqueCatalog}
+      techniquesCanTag={techniquesCanTag}
       assignment={{
         id: assignment.id,
         title: assignment.title ?? 'Assignment',

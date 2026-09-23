@@ -3,7 +3,7 @@
 // curriculum editor's forms and its Server Actions so a step the
 // server would reject never looks valid in the form.
 //
-// Pure module — no Supabase, no React. Lessons and patterns arrive as
+// Pure module — no Supabase, no React. Lessons and techniques arrive as
 // arguments.
 
 import { SAT_TAXONOMY, findSkill } from '../practice/sat-taxonomy.ts';
@@ -21,10 +21,9 @@ export interface LessonRef {
   status: string;
 }
 
-export interface PatternRef {
+export interface TechniqueRef {
   id: string;
   name: string;
-  skill_code: string;
 }
 
 /** A validated, resolved step ready to insert (position assigned by
@@ -34,7 +33,8 @@ export interface NormalizedStep {
   lessonId: string | null;
   role: 'practice' | 'mixed' | null;
   skillCodes: string[] | null;
-  patternId: string | null;
+  /** Drill steps: explicit technique narrowing, or null. */
+  techniqueIds: string[] | null;
   questionCount: number | null;
   minutes: number | null;
   skipIfCompleted: boolean;
@@ -50,7 +50,8 @@ export interface StepInput {
   role?: string | null;
   /** Codes separated by ";" / "|" / "," / whitespace, or an array. */
   skillCodes?: string | string[] | null;
-  patternId?: string | null;
+  /** Technique ids separated like skillCodes, or an array. */
+  techniqueIds?: string | string[] | null;
   questionCount?: string | number | null;
   minutes?: string | number | null;
   skipIfCompleted?: string | boolean | null;
@@ -62,6 +63,16 @@ export function parseSkillCodeList(v: string | string[] | null | undefined): str
   for (const item of raw) {
     const code = item.trim().toUpperCase();
     if (code && !out.includes(code)) out.push(code);
+  }
+  return out;
+}
+
+function parseIdList(v: string | string[] | null | undefined): string[] {
+  const raw = Array.isArray(v) ? v : String(v ?? '').split(/[;|,\s]+/);
+  const out: string[] = [];
+  for (const item of raw) {
+    const id = String(item ?? '').trim();
+    if (id && !out.includes(id)) out.push(id);
   }
   return out;
 }
@@ -90,11 +101,11 @@ function intInRange(
 }
 
 /** Validate one step's fields. The caller has already resolved lesson /
- *  pattern references to ids (the CSV resolver does that by title or
- *  name; the form posts ids). `unitSkillCode` scopes the pattern check. */
+ *  technique references to ids (the form posts ids). Techniques cut
+ *  across skills, so a drill may name any technique in the catalog. */
 export function normalizeStepInput(
   input: StepInput,
-  ctx: { unitSkillCode: string; lessonIds: ReadonlySet<string>; patterns: readonly PatternRef[] },
+  ctx: { unitSkillCode: string; lessonIds: ReadonlySet<string>; techniques: readonly TechniqueRef[] },
 ): { ok: true; value: NormalizedStep } | { ok: false; error: string } {
   const kind = String(input.kind ?? '').trim().toLowerCase();
   if (kind !== 'lesson' && kind !== 'drill') {
@@ -119,7 +130,7 @@ export function normalizeStepInput(
         lessonId,
         role: null,
         skillCodes: null,
-        patternId: null,
+        techniqueIds: null,
         questionCount: null,
         minutes: minutes.value,
         skipIfCompleted: skip,
@@ -135,12 +146,10 @@ export function normalizeStepInput(
   for (const code of codes) {
     if (!skillExists(code)) return { ok: false, error: `unknown skill code "${code}" in skill_codes` };
   }
-  const patternId = String(input.patternId ?? '').trim();
-  if (patternId) {
-    const pattern = ctx.patterns.find((p) => p.id === patternId);
-    if (!pattern) return { ok: false, error: 'that pattern does not exist' };
-    if (pattern.skill_code !== ctx.unitSkillCode) {
-      return { ok: false, error: `pattern "${pattern.name}" belongs to ${pattern.skill_code}, not this unit` };
+  const techniqueIds = parseIdList(input.techniqueIds);
+  for (const id of techniqueIds) {
+    if (!ctx.techniques.some((t) => t.id === id)) {
+      return { ok: false, error: 'that technique does not exist' };
     }
   }
   return {
@@ -150,7 +159,7 @@ export function normalizeStepInput(
       lessonId: null,
       role: roleRaw,
       skillCodes: codes.length > 0 ? codes : null,
-      patternId: patternId || null,
+      techniqueIds: techniqueIds.length > 0 ? techniqueIds : null,
       questionCount: count.value,
       minutes: minutes.value,
       skipIfCompleted: true,

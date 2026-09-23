@@ -1,15 +1,19 @@
-# Foundations and question patterns — extending the curriculum model
+# Foundations, techniques and unit syllabi — extending the curriculum model
 
-> **Status: Living — adopted design, partially implemented.** Written
-> 2026-07-26 from the owner's pedagogical observations; last verified
-> against the codebase 2026-09-22 (§7 added). §3.4 step 1 (schema) and most of
-> step 2 (lesson scope/kind fields, scoped generate prefills, the
-> pattern-catalog editor, and question→pattern tagging in the review
-> surfaces) have landed; the content-drafts picker, the classification
-> queue, and every consumer in step 3 have not. The engineering work described in §3
-> should update this doc (and the upgrade-plan ledger) as it lands.
-> The human workstream in §4 is the operating checklist for the owner
-> and co-instructors and should be kept true as steps complete.
+> **Status: Living — adopted design, in delivery.** Written 2026-07-26
+> from the owner's pedagogical observations; last verified against the
+> codebase 2026-09-23 (§8 added: **question patterns retired in favor
+> of techniques**, schema + rename shipped as step A of four). §3.4
+> step 1 (schema) and step 2 (lesson scope/kind fields, scoped generate
+> prefills) landed in July–August as the *pattern* layer; that layer is
+> gone — the tables, columns, RPC and admin surfaces it introduced were
+> replaced on 2026-09-23 by the technique layer described in §8, which
+> now carries the "how a question is solved" grain. §7 (unit syllabi)
+> is live behind the `unit_syllabus` flag with an in-app editor. The
+> engineering work described in §3 and §8 should update this doc (and
+> the ledger in `student-onboarding-and-plan-redesign-2026-09.md`) as it
+> lands. The human workstream in §4 is the operating checklist for the
+> owner and co-instructors and should be kept true as steps complete.
 
 ## 1. Why this exists
 
@@ -25,33 +29,44 @@ fit that grain:
 1. **Foundations** — big-picture method lessons that apply to a whole
    section and are delivered to *every* student, up front, as a
    prerequisite for productive practice. Example: the reading passage
-   strategy, which applies equally to all Reading & Writing questions.
-   Today these exist only as one-on-one sessions; self-serve students
-   never get them.
-2. **Question-pattern lessons** — "when you see this format, run this
-   process." Narrower than a skill: a recognizable question format
-   within a skill, with a rehearsed procedure. The team is already
-   authoring at this grain (see `docs/lesson-template-specs/` —
-   "Solve SAT Boundaries Questions in the Fastest Order", "Solve
-   Percent and Percent Change Problems with Desmos") but the model can
-   only record them as skill-level lessons, losing the specificity.
+   strategy, which applies equally to all Reading & Writing questions;
+   "Desmos: graphing and x-intercepts" and "Desmos: regression" before
+   the first Math unit. Today these exist only as one-on-one sessions;
+   self-serve students never get them.
+2. **Technique lessons** — "here is a tool; here is when to reach for
+   it." A technique is *how* a question is solved (graphing to
+   x-intercepts, regression, Desmos lists, plugging in answers, Good
+   Cop Bad Cop), and it cuts across skills: the SAT splits linear and
+   nonlinear content that share one method, word problems and geometry
+   questions end in "solve an equation", and one question is often
+   solvable by several techniques. The team already authors at this
+   grain ("Solve Equations by Regression", "Solve Percent and Percent
+   Change Problems with Desmos") but the skill-keyed model could only
+   record them as skill-level lessons, losing what they actually teach.
 
 Forcing either into skill tags corrupts the model: a section lesson
 tagged to all twelve R&W skills would flip `has_lesson` coverage for
 units that have no real skill lesson, spam "Learn it first" on every
-miss, and scramble `feature_efficacy` attribution.
+miss, and scramble `feature_efficacy` attribution; a technique tagged to
+one skill would never drill the same tool in the next unit.
 
-## 2. The model: one scope axis, one behavior axis
+## 2. The model: two axes, plus a behavior
 
-Every lesson is described by two independent properties:
-
-**Scope** — where on the content hierarchy the lesson attaches.
-Four grains, one axis:
+**Content** is the spine: the 29 SAT skills. Units, mastery, coverage
+and plan phases stay keyed to it and it does not change (§3.3).
+Lessons attach to it through `lesson_topics` at one of three grains:
 
 ```
-section  →  domain  →  skill  →  question pattern
-(RW/Math)   (e.g. SEC)  (e.g. BOU)  (e.g. "two blanks joined by a semicolon")
+section  →  domain  →  skill
+(RW/Math)   (e.g. SEC)  (e.g. BOU)
 ```
+
+**Technique** is the second axis (§8): how a question is solved. A
+technique declares *default applicability* by skill (every question in
+those skills counts) and questions can be tagged individually, many
+techniques per question. Lessons carry the techniques they teach
+(`lesson_techniques`), which is what the practice step after a lesson
+narrows to.
 
 **Behavior** — how the lesson enters a student's work:
 
@@ -60,113 +75,90 @@ section  →  domain  →  skill  →  question pattern
 | **Foundational** | none — every student gets it | front-loaded, before drilling its scope | binary (`lesson_progress.completed_at`), tutor can mark "covered in session" |
 | **Standard** (instructional/remedial) | weakness or misses in its scope | woven into drills, plans, reports | same progress record, but re-recommendable |
 
-The three lesson kinds are points in this two-axis space, not three
-sibling categories:
+The three lesson kinds are points in this space, not sibling
+categories:
 
-- Foundation = coarse scope (usually section) + foundational behavior.
+- Foundation = tool mechanics (`lessons.kind = 'foundation'`, usually
+  section scope) + foundational behavior. Teaches a technique's
+  mechanics before the section's first unit.
 - Skill lesson = skill scope + standard behavior.
-- Pattern lesson = pattern scope + standard behavior.
-
-Other combinations are legal where they make sense (a domain-scoped
-standard lesson; in principle a skill-scoped foundation).
+- Technique lesson = skill scope + the technique(s) it applies, standard
+  behavior. "Solve linear equations by graphing" (H.A.) and "Advanced
+  solving" (P.B.) stay in their units as *applications* of a tool the
+  foundation introduced.
 
 ### 2.1 Authoring decision rules
 
-When categorizing a lesson idea, answer two questions:
+When categorizing a lesson idea, answer three questions:
 
-1. **Scope: what is the narrowest scope at which the advice is
-   true?** If the process only works when you recognize a specific
-   format, it's pattern-scoped. If it applies to any question in the
-   skill, it's skill-scoped. If it applies regardless of skill
-   (passage strategy, Desmos fluency, SPR entry mechanics,
-   annotation habits), it's section- or domain-scoped.
-2. **Behavior: does every student need it before drilling,
+1. **Scope: what is the narrowest content scope at which the advice is
+   true?** If it applies to any question in the skill, it's
+   skill-scoped. If it applies regardless of skill (passage strategy,
+   Desmos fluency, SPR entry mechanics, annotation habits), it's
+   section- or domain-scoped.
+2. **Technique: which tool does it teach?** Pick from the Techniques
+   catalog (or add one). A lesson can teach several. A lesson that
+   teaches no particular tool carries none.
+3. **Behavior: does every student need it before drilling,
    regardless of their performance?** Yes → foundational.
    Only students who are missing these questions → standard.
 
 Worked examples:
 
-| Lesson idea | Scope | Behavior |
-|---|---|---|
-| Reading passage strategy | section: RW | foundational |
-| Desmos fluency / calculator strategy | section: Math | foundational |
-| SPR answer-entry mechanics | section: Math | foundational |
-| "Boundaries in the fastest order" | skill: BOU | standard |
-| "Percent change with Desmos" | pattern (or skill) under Q.B. | standard |
-| "Transitions: bracket the pivot" | skill: TRA | standard |
-| "System has no solution — parallel lines" | pattern under H.D. | standard |
+| Lesson idea | Scope | Techniques | Behavior |
+|---|---|---|---|
+| Reading passage strategy | section: RW | Process and Pre-Answer | foundational |
+| Desmos: graphing and x-intercepts | section: Math | Solve by graphing | foundational |
+| Desmos: regression | section: Math | Solve by regression | foundational |
+| "Solve linear equations by graphing" | skill: H.A. | Solve by graphing | standard |
+| "Advanced solving" | skill: P.B. | Solve by regression | standard |
+| "Boundaries in the fastest order" | skill: BOU | — | standard |
+| "Transitions: bracket the pivot" | skill: TRA | Good Cop Bad Cop | standard |
 
 ### 2.2 Precedence when scopes overlap
 
 For **remediation** (a student misses questions), recommend the most
 specific applicable uncompleted lesson first, falling back up the
-hierarchy: pattern lesson → skill lesson → domain lesson → the
-section foundation (only if uncompleted). For **planning**,
-foundations front-load unconditionally; standard lessons schedule
-where the generator's weakness logic already places them.
+hierarchy: skill lesson → domain lesson → the section foundation (only
+if uncompleted). For **planning**, foundations front-load
+unconditionally; standard lessons schedule where the unit's syllabus
+(§7) places them.
 
 ## 3. Architecture
 
-### 3.1 New schema (one migration, then regenerate types)
+### 3.1 Schema
 
-**`question_patterns`** — a curated sub-skill catalog, reference data
-in the same spirit as `curriculum_units` (admin-authored,
-student-readable, RLS: select for all authenticated, write for
-admin):
-
-```
-question_patterns (
-  id uuid pk,
-  test_type text default 'sat',
-  domain_code text not null,
-  skill_code text not null,          -- parent skill
-  name text not null,                -- short label, e.g. "Punctuation between clauses"
-  recognition_cue text not null,     -- the "when you see…" sentence
-  process_summary text,              -- the "…do this" in one or two lines
-  sequence integer not null,         -- teaching order within the skill
-  unique (test_type, domain_code, skill_code, name)
-)
-```
-
-Naming note: the concept is called a **question pattern** in schema
-and code because `questions_v2.question_type` already exists and means
-answer format (MCQ vs. SPR). UI copy may still say "question type."
-Do **not** repurpose `concept_tags` — it is a free-form staff notebook
-with manager/admin-only RLS; a pedagogical join key needs a controlled
-vocabulary and student-readable rows.
-
-**`questions_v2.pattern_id`** — nullable FK to `question_patterns`.
-One primary pattern per question (see §6 for the deliberate
-single-pattern decision). Also added to `question_content_drafts` so
-new questions are born classified. Untyped questions are legal
-forever; classification is per-skill, on demand (§4 step 3).
+**Techniques** — see §8.2 for the four tables (`techniques`,
+`technique_skills`, `question_techniques`, `lesson_techniques`) and the
+`set_question_techniques()` write path. Migration `20260923120000`
+(techniques replace question patterns).
 
 **`lessons.kind`** — `'standard' | 'foundation'`, default
 `'standard'`, plus `foundation_sequence integer` (ordering of
-foundations within their scope; null for standard lessons).
+foundations within their scope; null for standard lessons). Migration
+`20260727190000`.
 
-**`lesson_topics` scope grains** — the tagging table grows from two
-grains (domain, skill) to four. Add nullable `section text`
-(`'math' | 'reading_writing'`, matching `get_plan_inputs`) and
-nullable `pattern_id uuid`, with a check constraint enforcing exactly
-one coherent grain per row:
+**`lesson_topics` scope grains** — three grains (section, domain,
+skill), exactly one coherent grain per row, enforced by the
+`lesson_topics_one_grain` check: section-level (`section` set, others
+null), domain-level (`domain_name` set, `skill_code` null), skill-level
+(`domain_name` + `skill_code`). `section` is `'math' |
+'reading_writing'`, matching `get_plan_inputs`. `lesson_revision_topics`
+mirrors the same shape for the tutor draft flow.
 
-- section-level: `section` set, others null
-- domain-level: `domain_name` set, `skill_code`/`pattern_id` null (already exists)
-- skill-level: `domain_name` + `skill_code` set (already exists)
-- pattern-level: `pattern_id` set (its skill is derivable)
-
-The unique index extends accordingly.
+Do **not** repurpose `concept_tags` for any of this — it is a free-form
+staff notebook with manager/admin-only RLS; a pedagogical join key
+needs a controlled vocabulary and student-readable rows.
 
 ### 3.2 Consumer rules
 
 | Consumer | Change |
 |---|---|
-| `lib/lesson/recommend.ts` | Becomes scope-aware. Input gains optional pattern ids (from the missed questions themselves). Resolution follows the §2.2 precedence chain; an uncompleted section foundation is surfaced ahead of (not instead of) the specific lesson. |
-| `lib/plan/generate-plan.ts` | New front-load pass before the weekly weak-skill loop: for each section the plan touches, emit that section's uncompleted foundation lessons (ordered by `foundation_sequence`) in the earliest weeks, before that section's first drills. Completion via the existing `lesson_progress` linkage — already-completed foundations are skipped, so tutored students who did them live are never re-assigned (§4 step 5). |
-| Drill builders (`weak-queue`, session creation, plan drill payloads) | `filter_criteria` gains optional `pattern_id`, closing the see-format→run-process loop: pattern lesson, then a drill of exactly that format. |
-| Dynamic detours (upgrade plan §3.2) | Prefer an easier same-pattern question over same-skill; when a skill has no tagged lesson, the section foundation is the fallback "step back" offer. |
-| `feature_efficacy` (§3.5) | Scoped tags expand to member skills for pre/post measurement: a section-tagged foundation is measured across the whole section's skills; a pattern-tagged lesson is measured on exactly its pattern's questions — the sharpest efficacy signal available. |
+| `lib/lesson/recommend.ts` | Becomes scope-aware. Resolution follows the §2.2 precedence chain; an uncompleted section foundation is surfaced ahead of (not instead of) the specific lesson. |
+| `lib/plan/generate-plan.ts` | Foundations: one syllabus per section ("Before Math", "Before Reading & Writing", §8.6) walked before the section's first unit in coverage, or before the section's first task in targeted/self-directed plans; already-completed foundations are skipped (`lesson_progress`), so tutored students who did them live are never re-assigned (§4 step 5). Unit syllabi: §7. |
+| Drill builders (syllabus practice steps, end-of-lesson "Practice this now", session creation) | Draw from the step's skills narrowed to the preceding lesson's techniques: tagged or default-applicable questions first, topped up from the skill when short. `filter_criteria.technique_ids` carries the narrowing; the session records how many matched. |
+| Dynamic detours (upgrade plan §3.2) | Prefer an easier same-technique question over same-skill; when a skill has no tagged lesson, the section foundation is the fallback "step back" offer. |
+| `feature_efficacy` (§3.5) | Scoped tags expand to member skills for pre/post measurement: a section-tagged foundation is measured across the whole section's skills. Technique-level efficacy is a later addition (§8.7). |
 | `/welcome` wizard + Today | A new student's first plan opens with foundations — the digitized version of the owner's first one-on-one sessions. |
 | Tutor roster | "Foundations covered" becomes a visible per-student signal, plus a one-click **mark covered in session** action (writes a completed `lesson_progress` row) for work done live. |
 
@@ -174,114 +166,63 @@ The unique index extends accordingly.
 
 - **The syllabus layer stays at skill grain.** `curriculum_units`
   remains 29 rows; coverage, mastery snapshots, and plan *scheduling*
-  do not descend to pattern grain. Patterns are intra-skill detail for
-  drills, recommendations, and reports — per-student pattern-level
-  mastery would be statistically noisy and would bloat plans.
+  do not descend below the skill. Techniques are a second axis for
+  drills, lessons, and reports — per-student technique-level mastery
+  would be statistically noisy and would bloat plans.
 - **Scoped tags do not flip `has_lesson`.** A unit counts as
   lesson-covered in `get_plan_inputs` / `/admin/content/units` only
-  via skill-grain (or pattern-grain, rolled up) content. Publishing
-  one passage-strategy foundation must not mark twelve R&W units
-  covered.
+  via skill-grain content. Publishing one passage-strategy foundation
+  must not mark twelve R&W units covered. A technique link never
+  counts as coverage either.
 - **Foundations never hard-block.** They order and nudge (front-load
   position, "start here" chips); drills are never locked behind them —
   consistent with hints and detours being offers, not gates.
 - **Foundations stay out of the mastery math.** Their effect is
   measured by `feature_efficacy` at section scope, not by a synthetic
   skill score.
+- **Techniques narrow, never exclude.** A technique-narrowed drill fills
+  from the rest of the skill when the technique runs short, so a thin
+  catalog never starves a student. There are no per-question
+  exclusions.
 - **Test runner untouched** (Bluebook parity, as always).
 
 ### 3.4 Engineering sequence
 
-1. Migration: `question_patterns` + `lessons.kind`/`foundation_sequence`
-   + `lesson_topics` grains + `questions_v2.pattern_id` (+ drafts
-   column). Apply via MCP `apply_migration` per
-   `supabase/migrations/README.md`; regenerate `lib/types/database.ts`.
-   **✅ Landed 2026-07-27** — migration
-   `20260727190000_question_patterns_lesson_scopes.sql`, applied to
-   dev + prod via MCP; types regenerated. Constraint probes verified
-   in dev (one-grain check rejects mixed rows, section values
-   restricted to `math`/`reading_writing`, `foundation_sequence`
-   rejected on standard lessons, pattern delete cascades its tags and
-   nulls its questions). Guardrail confirmed against the live
-   `get_plan_inputs`: `has_lesson` matches `lesson_topics.skill_code`
-   only, so section-/pattern-grain rows cannot flip unit coverage.
-2. Admin surfaces: pattern-catalog editor (per skill, under
-   `/admin/content/units`), pattern picker in the question editor and
-   drafts review, kind/scope fields in the lesson builder + AI generate
-   flow, AI-assisted bulk classification queue (§4 step 3).
-   **Partially landed 2026-07-27**: the units worklist's per-unit
-   "Generate lesson" link now carries `?skill=`, the generate page
-   prefills the brief from scope facts (taxonomy names, published
-   depth + difficulty mix, `expected_minutes`; `?pattern=` prefills
-   recognition cue + process once patterns exist) and stamps the
-   matching `lesson_topics` row on save; the lesson builder gained
-   kind/foundation-order metadata fields and a Scope-tags editor
-   (section + skill grains; pattern tags display but are authored via
-   the catalog tooling).
-   **Pattern-catalog editor landed 2026-08-16** at
-   `/admin/content/patterns` — admin-only, grouped per skill in
-   teaching order, with create/edit/delete/reorder plus a CSV
-   importer (dry-run preview, skip-or-update duplicate policy,
-   template download, and export of the live catalog for round-trip
-   editing in a spreadsheet). Domain/skill codes are validated against
-   `SAT_TAXONOMY` on both authoring paths, so a pattern cannot be
-   filed under a unit that does not exist. Delete states its cost
-   first: tagged questions fall back to unclassified (FK set null),
-   lesson scope tags are removed (FK cascade). The units worklist
-   gained a Patterns column deep-linking per skill, and each pattern
-   row links to `/admin/lessons/generate?pattern=`, which reaches the
-   cue+process prefill built in this step. CSV parse/plan logic is
-   `lib/admin/questionPatternCsv.ts`, shared by the client preview and
-   the Server Action and covered by
-   `lib/admin/questionPatternCsv.test.mjs`.
-   **Question tagging landed 2026-08-16** — migration
-   `20260816120000_question_pattern_tagging.sql`, applied to dev +
-   prod via MCP. Verified in dev (role gate rejects teacher and
-   unauthenticated callers; a cross-skill pattern is refused; a
-   matching tag records its tagger; clearing wipes all three columns)
-   and in prod (columns, index, SECURITY DEFINER with pinned
-   `search_path`, execute granted to `authenticated` and not `anon`,
-   role gate rejecting, zero rows touched). `questions_v2`
-   UPDATE is admin-only (`questions_v2_admin_all`; the
-   `demo_readonly_*` policies are RESTRICTIVE guards, not grants), and
-   widening it so tutors could classify would also hand them
-   `stem_html`, `is_published` and `is_broken`. So the write goes
-   through `set_question_pattern()`, a SECURITY DEFINER function gated
-   on `is_manager()` (manager + admin, matching the concept-tag write
-   bar) that touches `pattern_id` plus new `pattern_tagged_by` /
-   `pattern_tagged_at` attribution columns and nothing else — the same
-   shape as `merge_concept_tags()`. It refuses a pattern whose
-   domain/skill differs from the question's, so the bank cannot
-   accumulate cross-skill tags no recommendation path could use.
-   The picker (`lib/practice/QuestionPatternTag.tsx`) mounts through
-   `QuestionRenderer`'s existing `controlsNode` slot beside
-   `ConceptTags` — **not** inside the renderer, which
-   `TestRunnerInteractive` also mounts. Live surfaces: the per-student
-   and group assignment reports, practice-session review, test
-   results, and the shared question detail page. Options are scoped to
-   the question's own skill, and the control hides itself when that
-   skill has no patterns. `/admin/content/patterns` grew a "Recently
-   tagged" audit strip off the attribution columns.
-   Still open from this step: the pattern picker in the *content
-   drafts* review (`question_content_drafts.pattern_id` is still
-   unwritten — that pipeline stages content fields only), and the
-   AI-assisted classification queue.
-3. Consumers, in dependency order: `recommend.ts` chain →
-   generator front-load pass → drill `pattern_id` filter → detours →
-   efficacy expansion → wizard/Today/roster surfaces.
+1. **Schema (landed 2026-07-27; superseded in part 2026-09-23).**
+   Migration `20260727190000` added
+   `lessons.kind` / `foundation_sequence` and the `lesson_topics`
+   grains, which stand, and a per-skill question-pattern catalog with a
+   single-pattern column on `questions_v2`, which did not survive
+   contact with the owner's first unit (§8.1). Guardrail confirmed
+   against the live `get_plan_inputs`: `has_lesson` matches
+   `lesson_topics.skill_code` only, so section-grain rows cannot flip
+   unit coverage.
+2. **Admin surfaces (landed 2026-07-27 → 2026-08-16, reworked
+   2026-09-23).** The units worklist's per-unit "Generate lesson" link
+   carries `?skill=`; the generate page prefills the brief from scope
+   facts (taxonomy names, published depth + difficulty mix,
+   `expected_minutes`) and stamps the matching `lesson_topics` row on
+   save; the lesson builder gained kind/foundation-order fields and a
+   Scope-tags editor (section + skill grains). The pattern catalog,
+   CSV importer and per-question single-select picker that shipped in
+   August were replaced by the Techniques catalog, the per-question
+   technique tags and the technique-narrowed draw (§8.5, step A).
+3. Consumers, in dependency order: technique-narrowed practice steps
+   and pickers (§8.5 steps B–C) → section foundations (§8.5 step D) →
+   `recommend.ts` chain → detours → efficacy expansion →
+   wizard/Today/roster surfaces.
 4. Tutor "mark covered" action + roster foundations signal.
 5. Each step behind normal review; user-facing changes ride
    `feature_flags` if staged rollout is warranted (foundations
-   front-load changes every new plan — flag it).
-
-Steps 1–2 unblock the human workstream's in-app portions; §4 steps 1–2
-need no engineering at all and can start immediately.
+   front-load changes every new plan — it rides the `unit_syllabus`
+   switch, which is off in production until the owner turns it on).
 
 ## 4. The human workstream (owner + co-instructors)
 
 This is the practical checklist. Artifacts marked **[now]** can be
-drafted today in a doc or spreadsheet; **[in-app]** waits on §3.4
-steps 1–2.
+drafted today in a doc or spreadsheet; **[in-app]** are done inside the
+admin account — there is no CSV path anymore, by the owner's direction
+(2026-09-22).
 
 ### Step 1 — Inventory the foundations **[now]**
 
@@ -290,8 +231,9 @@ For each, record:
 
 | Field | Prompt |
 |---|---|
-| Working title | e.g. "Reading passage strategy" |
+| Working title | e.g. "Reading passage strategy", "Desmos: regression" |
 | Scope | RW section / Math section / a domain |
+| Technique(s) | Which tool it introduces — that becomes the technique the unit lessons later apply |
 | Order | If a student had one hour before their first drill, what comes first? This becomes `foundation_sequence`. |
 | Length | Target 10–20 minutes as a lesson; split anything longer. |
 | "Done" check | 2–4 check questions that prove the method was absorbed (these become `check` blocks; the lesson isn't complete until they're passed). |
@@ -301,6 +243,9 @@ Things to think about:
 
 - **Keep the list short.** Expect 3–6 per section. Foundations are the
   material you'd never let a student skip — not everything useful.
+- **Foundations = tool mechanics; unit lessons = applications.** Teach
+  what regression *is* once, before Math; teach "solve this unit's
+  equations by regression" inside each unit that uses it.
 - **Personal-preference vs. platform method.** If co-instructors teach
   a step differently, reconcile before authoring: the platform version
   becomes *the* Studyworks method every self-serve student learns.
@@ -309,95 +254,74 @@ Things to think about:
   `video` blocks) where tone and demonstration matter — passage
   annotation in particular is hard to teach in text alone.
 
-### Step 2 — Draft the pattern catalogs **[now, and now also in-app]**
+### Step 2 — Build the Techniques catalog **[in-app]**
 
-Drafting still happens wherever it's fastest — a doc or spreadsheet is
-fine. Since 2026-08-16 the drafts have somewhere to land:
-`/admin/content/patterns` takes either a CSV upload (columns
-`domain_code, skill_code, name, recognition_cue, process_summary,
-sequence`; download the template from the importer) or one-at-a-time
-entry. Import previews every row before writing, and re-importing a
-corrected sheet with "Update existing" is the supported way to revise
-a catalog — the app never becomes a fork of the spreadsheet.
-
-Per skill, starting only with skills where you actually teach
-"see format → run process" (don't force catalogs onto skills you teach
-holistically). For each pattern:
+`/admin/techniques`. One entry per tool you teach; expect a dozen or so
+across both sections, not one per question format. For each technique:
 
 | Field | Prompt |
 |---|---|
-| Name | Short, student-facing: "No-solution systems" |
-| Recognition cue | One sentence: "When you see…" — **this is the highest-value artifact.** It becomes UI copy, the classifier prompt for step 3, and the lesson's opening line. If you can't write a crisp cue, it isn't a pattern. |
-| Process | The numbered steps you teach, in 1–3 lines (full detail goes in the lesson later). |
-| Rough share | What fraction of the skill's questions fit? (Sanity check for step 3.) |
+| Name | The name you use in the room: "Solve by regression", "Good Cop Bad Cop" |
+| When to use it | One sentence a student matches *before* solving — **the highest-value field.** It becomes UI copy and the lesson's opening line. If you can't write a crisp cue, it isn't a technique. |
+| The process | The steps you teach, in 1–3 lines (full detail goes in the lesson later). |
+| Applies to | The skills where *every* question counts (Good Cop Bad Cop = every R&W skill except Form, Structure, and Sense). Use the all-Math / all-R&W shortcuts. Leave empty for a tool that only fits questions you tag one by one. |
 
 Rules of thumb:
 
-- **2–6 patterns per skill.** More means the grain is too fine to
-  drill against (a skill has ~100–120 questions in the bank; a pattern
-  needs enough questions to build drills from).
-- **Recognizable from the question alone.** A student (and a
-  classifier) must be able to assign the pattern *before* solving.
-  "Questions students find tricky" is not a pattern.
-- **Leftovers are fine.** Questions matching no pattern stay
-  unclassified and are handled by skill-level material. Never force
-  100% coverage.
-- Where the catalogs already exist implicitly — the three authored
-  template specs — extract their implied patterns first.
+- **Recognizable from the question alone.** A student must be able to
+  pick the technique *before* solving. "Questions students find
+  tricky" is not a technique.
+- **One tool, many units.** If the same method shows up under H.A.,
+  H.D., P.C. and Q.B., it is one technique with several default skills
+  (or several lessons that apply it), never four catalog entries.
+- You can also add a technique from inside a unit's syllabus editor
+  when the practice step needs one.
 
-### Step 3 — Classify the question bank **[in-app]**, per skill, on demand
+### Step 3 — Tag the question bank **[in-app]**, per unit, on demand
 
-Classification happens when a skill's first pattern lesson is ready to
-ship — never big-bang across all 3,381 questions.
+Tagging happens when a unit's syllabus is being built — never big-bang
+across all 3,381 questions. Two paths, both writing the same rows
+(`question_techniques`, via `set_question_techniques()`), and
+`/admin/techniques` shows who tagged what:
 
-Since 2026-08-16 there is also an **opportunistic path** that needs no
-queue: any manager or admin reviewing an assignment, a practice
-session, or a test result gets a pattern picker under the question,
-scoped to that question's skill. Tagging the obvious fits as they come
-up costs seconds and needs no sweep. The two are complementary — this
-catches what a tutor happens to see; the queue below is how a skill
-gets covered systematically. Both write the same column, and
-`/admin/content/patterns` shows who tagged what.
+1. **The unit's tagging screen** (§8.5 step B): the unit's published
+   questions one at a time, technique checkboxes, "N of M tagged",
+   untagged first. Managers can help; a co-instructor can take a unit.
+2. **Opportunistically**: any manager or admin reviewing an assignment,
+   a practice session, a test result, or a question page gets the
+   technique tags under the question and can add one in seconds.
 
-1. Engineering provides an AI-assisted queue (drafts-pipeline
-   pattern): for a chosen skill, the model proposes a pattern per
-   question using your recognition cues, and a reviewer confirms or
-   corrects.
-2. **Human review protocol** (you or a co-instructor, ~100–120
-   questions per skill; expect under an hour per skill once fluent):
-   review grouped *by proposed pattern*, not question order — misfits
-   jump out visually; spot-check the "no pattern" pile for a missed
-   pattern; when one question plausibly fits two patterns, assign the
-   one whose *process* you'd actually use, and if that's ambiguous
-   often, your patterns overlap — merge or sharpen the cues.
-3. **Sanity check with item stats**: patterns should cluster in
-   difficulty/p-value; a wild outlier inside a pattern is usually
-   misfiled (or mis-keyed — flag it to the §1.7 audit).
-4. New questions get classified at draft review (a picker in the
-   drafts flow), so the bank never regresses to untyped for cataloged
-   skills.
+Human review protocol: tag the technique(s) you would *actually use* on
+the question; a question that a default-applicable technique already
+covers needs no tag; when a whole skill fits a technique, set it as a
+default skill on the technique instead of tagging every question.
+AI-suggested tags are a later addition (§8.7).
 
 ### Step 4 — Author the lessons **[in-app]**, priority order
 
-Use the existing generate flow (`/admin/lessons/generate`) + builder
-review; the builder gains kind/scope fields (§3.4).
+Use the existing generate flow (`/admin/lessons/generate`, which
+prefills from `?technique=` or `?skill=`) + builder review; the builder
+carries kind/scope fields and, from step C, a technique picker.
 
 Priority: **foundations first** — the list is short, the reach is
-every student, and they unblock the wizard/plan front-loading. Then
-pattern and skill lessons for the weakest-covered, highest-traffic
-units, in the order `/admin/content/units` already ranks them.
+every student, and they unblock the "Before Math" / "Before Reading &
+Writing" syllabi. Then technique and skill lessons for the units you
+are building, in the order `/admin/curriculum` walks them.
 
 Structural templates:
 
-- **Foundation**: why this method → the method (video where
+- **Foundation**: why this tool → the mechanics (video where
   demonstration matters) → worked demonstration → completion check
   (the step-1 "done" questions, with branch-remediation on misses).
-- **Pattern lesson**: recognition cue up front ("when you see…") →
-  the process, numbered → one worked example → 2–3 checks with
-  branch/rejoin remediation → ends into a drill of that pattern
-  (the `pattern_id` drill filter makes this automatic).
+  Its practice step is a mixed set across the technique's default
+  skills.
+- **Technique lesson**: "when to use it" up front → the process,
+  numbered → one worked example → 2–3 checks with branch/rejoin
+  remediation → the unit's practice step drills the unit's questions
+  for that technique. The worked solutions must demonstrate the
+  technique, never a general path.
 - Keep using `lesson_topics` skill tags for skill lessons exactly as
-  today; nothing about §3.4 changes existing authoring.
+  today; nothing about §3 changes existing authoring.
 
 ### Step 5 — Backfill your current students **[in-app]**
 
@@ -413,13 +337,13 @@ each co-instructor for their own roster; it's minutes per student.
 
 The `/admin/lessons` efficacy column already measures pre/post
 first-attempt accuracy per tagged skill; §3.2 extends it to section
-scope (foundations) and pattern scope. Review monthly:
+scope (foundations). Review monthly:
 
 - A foundation that doesn't move section accuracy is a red flag on
   the *digitization*, not necessarily the method — compare against
   students who got it live (their gains are the benchmark).
-- A pattern lesson with flat efficacy usually means the recognition
-  cue isn't landing — students aren't identifying the format under
+- A technique lesson with flat efficacy usually means the "when to use
+  it" isn't landing — students aren't recognizing the moment under
   test conditions. Sharpen the cue before rewriting the process.
 
 ### Adjacent (optional, same muscle): prerequisite graph
@@ -434,34 +358,37 @@ anything in this document.
 
 | Order | Who | What | Depends on |
 |---|---|---|---|
-| 1 | Owner + co-instructors | Foundation inventory (step 1), pattern catalogs for first 3–5 skills (step 2) | nothing — start now; catalogs can be entered or imported at `/admin/content/patterns` |
-| 2 | Engineering | Schema migration + admin surfaces (§3.4 steps 1–2) | design sign-off — schema and the catalog editor done; picker + classification queue outstanding |
-| 3 | Engineering | Recommendation chain, generator front-load, drill filter (§3.4 step 3) | 2 |
-| 4 | Owner + co-instructors | Author foundations (step 4); classify first skills (step 3); backfill rosters (step 5) | 2, and 3 for front-loading to take effect |
-| 5 | Both, ongoing | Pattern lessons per unit-coverage ranking; efficacy review (step 6) | 4 |
+| 1 | Owner + co-instructors | Foundation inventory (step 1); the Techniques catalog (step 2) | nothing — the catalog is live at `/admin/techniques` |
+| 2 | Engineering | Techniques layer steps B–D (§8.5): tagging screen, lesson pickers + technique-first practice steps, section foundations | step A (shipped 2026-09-23) |
+| 3 | Owner + co-instructors | Build units in `/admin/curriculum`; tag their questions (step 3); author foundations (step 4) | 2 (tagging screen for step 3; B–C for the practice option) |
+| 4 | Engineering | Recommendation chain, detours, efficacy expansion, roster signal (§3.2) | 3 |
+| 5 | Both, ongoing | Turn the syllabus switch on; backfill rosters (step 5); efficacy review (step 6) | 4 |
 
 ## 6. Decisions taken / still open
 
-Taken in this design (revisit deliberately, not by drift):
+Taken (revisit deliberately, not by drift):
 
-- **One primary pattern per question** (nullable FK, not a junction).
-  Simpler classification, unambiguous drills and efficacy. If real
-  multi-pattern questions emerge, a junction can supersede the column.
+- **Two axes, content and technique** (§8.1). Content is the spine and
+  does not change; technique cuts across it.
+- **Many techniques per question, default-by-skill plus explicit
+  tags, no exclusions** (§8.1). This supersedes the July decision of
+  one primary pattern per question: real questions are solvable by
+  several tools, and a tool that fits a whole skill should not need
+  100 tags.
 - **Foundations nudge, never gate** (§3.3).
 - **Syllabus/mastery stay at skill grain** (§3.3).
 - **`concept_tags` untouched** — separate concern, different
   governance.
+- **No CSV / no codes as primary labels** for any of the authoring
+  surfaces (owner direction 2026-09-22).
 
-Open, owner to decide during steps 1–2:
+Open, owner to decide:
 
 - Should foundations **re-surface near test day** (a "refresher" plan
   task in the final weeks), or is once enough?
 - Is there a **domain-scoped foundation** in practice (e.g. an essay
   of the SEC grammar approach), or do all foundations land at section
   scope? The schema supports both; the inventory will tell.
-- Naming: is "question type" the student-facing label, or does
-  Studyworks teaching vocabulary use another word ("format",
-  "setup")? Schema says `question_patterns` regardless (§3.1).
 
 ## 7. Unit syllabi (added 2026-09-22)
 
@@ -485,9 +412,9 @@ elements are the examples (owner note 2026-09-22).
 ### 7.2 Model
 
 `curriculum_unit_steps` — an ordered syllabus per unit (migration
-`20260922120000_curriculum_unit_steps.sql`, applied to dev 2026-09-22;
-production pending). Units stay at skill grain (§3.3); the syllabus is
-intra-unit detail.
+`20260922120000_curriculum_unit_steps.sql`, applied to dev and
+production 2026-09-22). Units stay at skill grain (§3.3); the syllabus
+is intra-unit detail.
 
 | Column | Meaning |
 |---|---|
@@ -495,7 +422,7 @@ intra-unit detail.
 | `lesson_id` | the bank lesson (kind = lesson); the same lesson may appear in several units |
 | `role` | `practice` (the questions for the lesson just taught) or `mixed` (homework across the unit and its domain's earlier units) |
 | `skill_codes` | widens a drill beyond the unit's skill; null = the unit's skill, or for a mixed set the domain's units walked so far (max 4) |
-| `pattern_id` | narrows a drill to one question pattern once catalogs exist; the launcher falls back to the skill-wide draw when nothing is tagged |
+| `technique_ids` | optional explicit narrowing for a practice step: questions matching these techniques (tagged, or default-applicable by skill) are drawn first, topped up from the skills when short. Null = no explicit narrowing; from step C the launcher narrows to the preceding lesson's techniques by default. Mixed sets ignore techniques. |
 | `question_count`, `minutes` | null = 8 (practice) / 10 (mixed) and the unit's minutes |
 | `skip_if_completed` | lesson steps: skip when `lesson_progress.completed_at` is set (default true) |
 
@@ -528,8 +455,9 @@ regeneration, tutor week regeneration) passes them through. With them:
   per-drill outcomes and is a follow-up.
 - Payloads: lesson tasks carry `lesson_id` + the lesson's own title
   ("Lesson: Solve Equations by Graphing…"); drills carry
-  `skill_codes`, `drill_role`, optional `pattern_id`, the `lesson_id`
-  they exercise ("Practice: <lesson title>"), and `unit_step_id`.
+  `skill_codes`, `drill_role`, optional `technique_ids`, the
+  `lesson_id` they exercise ("Practice: <lesson title>"), and
+  `unit_step_id`.
 
 Without the flag (or for units with no rows) the pre-syllabus
 behavior is byte-for-byte unchanged; `lib/plan/unit-syllabus.test.mjs`
@@ -558,8 +486,10 @@ sidebar gains **Curriculum** (`/admin/curriculum`):
   <units>"; lessons tagged to the unit listed first). Practice and
   mixed sets ask "How many questions?" and "Which questions?" — this
   unit's skill (or, for a mixed set, everything covered so far in the
-  domain) or skills chosen by name; an optional "only one question
-  type" select appears when the skill has a pattern catalog. A "what a
+  domain) or skills chosen by name; a practice set can additionally
+  pick "Which techniques?" (checkboxes over the catalog, the unit's
+  default-applicable techniques first, with an inline "New technique"
+  form that pre-fills this unit's skill as its default). A "what a
   student will see" panel runs the generator's own
   `expandUnitSyllabus`, so the preview is the exact task list a plan
   emits. "Start over with the default" resets the unit. Every edit
@@ -576,9 +506,154 @@ sidebar gains **Curriculum** (`/admin/curriculum`):
 
 ### 7.5 Still to build
 
-1. Pattern-targeted drills once catalogs exist (the column, the editor
-   field, and the launcher fallback are already in place).
+1. The technique layer's steps B–D (§8.5): the per-unit tagging screen,
+   "questions for the lesson just taught" as the default practice
+   option, and the section foundation syllabi.
 2. Focus-phase lesson reassignment from per-drill outcomes.
 3. Pacing copy: a syllabus unit is ~2.5 hours, so at 5 hours/week the
    coverage phase covers ~2 units/week and short runways will not fit
    every unit; the rationale should say so.
+
+## 8. Techniques replace question patterns (2026-09-23)
+
+### 8.1 Why, and the decisions
+
+The owner started building the first unit (H.A., Linear equations in
+one variable) in the curriculum editor and hit the limit of the
+pattern layer immediately: a practice drill could only target a whole
+skill, but the drill after "Solve by regression" needs *the questions
+regression solves*. A pattern was scoped to one skill and a question
+could hold only one, while techniques cut across skills (the SAT
+splits linear/nonlinear content that shares one method; word problems
+and geometry questions end in "solve an equation") and one question is
+solvable by several. The pattern catalog held two rows in production
+with nothing tagged, so replacing it cost nothing.
+
+Decisions, made with the owner (do not relitigate):
+
+1. **Two axes.** *Content* = the 29 SAT skills — units, mastery,
+   coverage and plan phases stay keyed to it; it is the spine and does
+   not change. *Technique* = how a question is solved; it cuts across
+   skills and domains.
+2. **Replace "question patterns / question types" with
+   "Techniques"** — in schema, code and every piece of UI copy.
+   Nothing is called a pattern or question type anymore.
+3. **A technique declares default applicability by skill** (a list of
+   skills where every question counts) **and questions can be tagged
+   individually, many techniques per question.** No per-question
+   exclusions for now.
+4. **Lessons carry the techniques they teach** (one or several).
+5. **The practice step after a lesson draws from the unit's skill(s)
+   narrowed to that lesson's techniques**, tagged/default-applicable
+   questions first, topping up from the rest of the skill when short
+   (the task's why-line says so). Mixed sets draw from the unit's
+   skills regardless of technique. The same lesson reused in another
+   unit therefore drills that unit's questions for the same technique —
+   the intended way to teach a tool in several units.
+6. **Foundations = tool mechanics; unit lessons = applications.**
+   Foundations live in one syllabus per section ("Before Math",
+   "Before Reading & Writing"), built in the same editor, walked by the
+   generator before the section's first unit in coverage (or before
+   the section's first task in targeted/self-directed plans), skipped
+   when already completed. A foundation's practice step is a mixed set
+   across its techniques' applicable skills.
+7. **Question tagging is done in-app** by admins/managers on a per-unit
+   tagging screen; everything is usable by a non-technical owner with
+   no CSV and no codes as primary labels.
+
+### 8.2 Schema
+
+Migration `20260923120000` (techniques replace question patterns;
+applied to dev 2026-09-23; production on the owner's go-ahead).
+
+| Table | Columns | RLS |
+|---|---|---|
+| `techniques` | `id`, `test_type`, `name` (unique per test), `description` ("when to use it"), `process_summary`, `section` (`math` / `reading_writing` / null = both — catalog grouping only), `sequence`, timestamps | select all authenticated; write `is_admin()` |
+| `technique_skills` | `(technique_id, skill_code)` — default applicability | same |
+| `question_techniques` | `(question_id, technique_id)`, `tagged_by`, `tagged_at` — explicit tags, many per question | select all; managers write through `set_question_techniques()` (SECURITY DEFINER, `is_manager()`, replaces the question's whole set, same shape as the retired `merge_concept_tags`-style RPC); admins may write directly |
+| `lesson_techniques` | `(lesson_id, technique_id)` — what a lesson teaches | select all; write `is_admin()` |
+
+`curriculum_unit_steps.technique_ids uuid[]` replaces the single
+per-step pin (drill steps only; a trigger scrubs a deleted technique out
+of every step). Retired in the same migration: the pattern table, the
+per-question column and its attribution columns, the drafts column, the
+scope-grain column on `lesson_topics` and `lesson_revision_topics`
+(their one-grain checks and unique indexes were rebuilt on three grains,
+and `create_lesson_revision` / `publish_lesson_revision` redefined
+without it), and the single-select tagging RPC. The two production
+pattern rows carried over as techniques with the pattern's skill as
+their one default skill, keeping their ids.
+
+### 8.3 What a question "matches"
+
+A question matches a technique when it is tagged to it explicitly
+**or** its skill is one of the technique's default skills.
+`lib/practice/technique-match.ts` (pure, unit-tested) partitions a
+candidate list into matching / rest; every drill draw that narrows to
+techniques takes the matching group first — each group ordered
+unanswered-first, then already-answered — and fills from the rest. The
+practice session's `filter_criteria` records `technique_ids` and
+`technique_matched`.
+
+### 8.4 Admin surfaces
+
+- **Techniques** (`/admin/techniques`, sidebar entry between
+  Curriculum and Lessons): grouped Math / Reading & Writing / both, in
+  catalog order; name, when to use it, process; "Applies to" in plain
+  words ("Every Math question", "Every question in Linear equations in
+  one variable, …"); tagged-question, lesson and syllabus-step counts;
+  create / edit / reorder / delete with the delete's real cost stated
+  first; a "Recently tagged" audit strip; a "Lesson" button into the
+  generate flow (`?technique=` prefills the brief with the cue, process
+  and where it applies, and the saved lesson gets a `lesson_techniques`
+  link).
+- **Curriculum editor**: a practice set's "Which techniques?"
+  checkboxes with inline create (§7.4); step cards say "<technique>
+  first".
+- **Review surfaces** (assignment reports, session review, test
+  results, question page): "Techniques" under the question for
+  managers and admins — default-applicable techniques shown as muted,
+  non-removable chips; explicit tags as removable chips; an "+ Add
+  technique…" select with the question's section first.
+- `/admin/questions?technique=<id>` lists a technique's tagged
+  questions (linked from the catalog's counts).
+
+### 8.5 Build order (one PR each, verified in dev as admin first)
+
+- **A. Schema + rename — shipped 2026-09-23.** Everything above; the
+  retired terms are enforced by `scripts/check-code-hygiene.mjs`.
+- **B. Tagging screen** per unit (`/admin/curriculum/<unit>/tag`): the
+  unit's published `pool = 'standard'` questions rendered with the
+  shared renderer, technique checkboxes, "N of M tagged", keyboard
+  shortcuts, skip, untagged first; writes through
+  `set_question_techniques()` so managers can help. Leaves a seam for
+  AI suggestions without building them.
+- **C. Lessons + practice steps + draw.** Technique picker on the
+  lesson editor (admin builder and the tutor draft flow) and the AI
+  generate flow; in the unit editor the practice form's "Which
+  questions?" gains a first, preselected "Questions for the lesson just
+  taught (its techniques)" beside "This unit's skill", "Choose skills"
+  and "Specific techniques"; `buildDrillStepPayload` writes the
+  preceding lesson's techniques into `filter_criteria` by default; the
+  generator stays pure and unit-tested and the editor preview keeps
+  using `expandUnitSyllabus`.
+- **D. Section foundations.** `curriculum_unit_steps` rows scoped to a
+  section (nullable `unit_id` + `section`, exactly one set), two
+  "Before …" syllabi in the Curriculum home and editor, the generator
+  front-load per decision 6, optional tutor "covered in session", plan
+  rationale copy.
+
+### 8.6 Guardrails
+
+Students see nothing new until the owner turns the syllabus switch on.
+Units, mastery, coverage and phases do not change. v2 tables only;
+Server Actions via `actionOk`/`actionFail`; auth via `requireRole`;
+`npm run typecheck`, `npm run test:unit`, `node
+scripts/generate-auth-matrix.mjs` and `node
+scripts/check-code-hygiene.mjs` before every PR.
+
+### 8.7 Later, not now
+
+AI tag suggestions; technique-level efficacy/accuracy; focus-phase
+"reassign the lesson whose drill went worst"; pacing copy for
+syllabus-length plans.

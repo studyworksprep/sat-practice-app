@@ -77,8 +77,8 @@ export default async function AdminContentPage({ searchParams }) {
           {' '}— lesson coverage plus planning settings: unit order, time, and mastery bar.
         </p>
         <p className={a.sub}>
-          <Link href="/admin/content/patterns" className={a.link}>→ Question patterns</Link>
-          {' '}— the sub-skill catalog: recognition cue + process per question format.
+          <Link href="/admin/techniques" className={a.link}>→ Techniques</Link>
+          {' '}— how questions are solved: when to use each technique, its process, and the skills it applies to.
         </p>
       </header>
 
