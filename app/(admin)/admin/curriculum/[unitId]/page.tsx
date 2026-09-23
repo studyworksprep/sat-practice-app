@@ -39,7 +39,7 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
     .maybeSingle();
   if (!unit) notFound();
 
-  const [{ data: stepRows }, { data: lessonRows }, { data: topicRows }, { data: usageRows }, { data: techniqueRows }, { data: allUnits }] =
+  const [{ data: stepRows }, { data: lessonRows }, { data: topicRows }, { data: usageRows }, { data: techniqueRows }, { data: allUnits }, { count: questionTotal }, { data: tagRows }] =
     await Promise.all([
       supabase
         .from('curriculum_unit_steps')
@@ -61,7 +61,29 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
         .order('sequence', { ascending: true })
         .order('name', { ascending: true }),
       supabase.from('curriculum_units').select('id, title').eq('test_type', 'sat'),
+      // Tagging progress for the header link (published, unbroken,
+      // standard pool — what the tagging screen lists).
+      supabase
+        .from('questions_v2')
+        .select('id', { count: 'exact', head: true })
+        .eq('skill_code', unit.skill_code)
+        .eq('is_published', true)
+        .eq('is_broken', false)
+        .is('deleted_at', null)
+        .eq('pool', 'standard'),
+      supabase
+        .from('question_techniques')
+        .select('question_id, question:questions_v2!inner(skill_code, is_published, is_broken, deleted_at, pool)')
+        .eq('question.skill_code', unit.skill_code),
     ]);
+  const taggedQuestions = new Set(
+    ((tagRows ?? []) as unknown as Array<{
+      question_id: string;
+      question: { is_published: boolean; is_broken: boolean; deleted_at: string | null; pool: string } | null;
+    }>)
+      .filter((r) => r.question && r.question.is_published && !r.question.is_broken && !r.question.deleted_at && r.question.pool === 'standard')
+      .map((r) => r.question_id),
+  ).size;
 
   const unitTitle = new Map((allUnits ?? []).map((u) => [u.id, u.title]));
   const skillsByLesson = new Map<string, string[]>();
@@ -132,6 +154,12 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
         <p className={a.sub}>
           Build this unit the way you teach it: a lesson, then practice on it, the next lesson, then
           practice, and a mixed set to finish. Students see the steps in this order.
+        </p>
+        <p className={a.sub}>
+          <Link href={`/tutor/tagging/${unit.id}`} className={a.link}>
+            Tag this unit&rsquo;s questions by technique &rarr;
+          </Link>{' '}
+          {taggedQuestions} of {questionTotal ?? 0} tagged.
         </p>
       </header>
 

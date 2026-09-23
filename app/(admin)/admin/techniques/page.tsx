@@ -146,8 +146,8 @@ export default async function AdminTechniquesPage({
         </p>
         <p className={a.help}>
           Each technique says <em>when to use it</em> in the words a student would recognize, and lists the
-          skills where every question counts by default. Tag the rest question by question from a unit&rsquo;s
-          tagging screen or any review page.
+          skills where every question counts by default. Tag the rest question by question on the{' '}
+          <Link href="/tutor/tagging" className={a.link}>tagging screens</Link> or from any review page.
         </p>
       </header>
 

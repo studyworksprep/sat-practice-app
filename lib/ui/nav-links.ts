@@ -190,6 +190,13 @@ const MANAGER_TEACHERS: NavLink = {
   href: '/tutor/teachers', label: 'Teachers', icon: 'teachers',
   matchPrefix: '/tutor/teachers',
 };
+// Technique tagging: managers help tag the question bank unit by unit
+// (docs/foundations-and-question-patterns.md §8.5 step B). Lives in
+// the tutor tree because the admin tree redirects managers.
+const MANAGER_TAGGING: NavLink = {
+  href: '/tutor/tagging', label: 'Tag questions', icon: 'questions',
+  matchPrefix: '/tutor/tagging',
+};
 
 const BASE_TUTOR_LINKS: readonly NavLink[] = [
   TUTOR_DASHBOARD,
@@ -232,7 +239,9 @@ const ADMIN_CURRICULUM: NavLink = {
 // patterns.md §8).
 const ADMIN_TECHNIQUES: NavLink = {
   href: '/admin/techniques', label: 'Techniques', icon: 'lessons',
-  matchPrefix: '/admin/techniques',
+  // The tagging screens are technique work too, so the tab stays lit
+  // while an admin tags.
+  matchPrefix: ['/admin/techniques', '/tutor/tagging'],
 };
 const ADMIN_LESSONS: NavLink = {
   href: '/admin/lessons', label: 'Lessons', icon: 'lessons',
@@ -319,7 +328,7 @@ export function contributorSections(): NavSection[] {
 export function tutorLinksForRole(role: string): NavItem[] {
   if (role === 'admin') return adminLinks();
   if (role === 'manager') {
-    return [...BASE_TUTOR_LINKS, MANAGER_TEACHERS, CONTRIBUTE];
+    return [...BASE_TUTOR_LINKS, MANAGER_TEACHERS, MANAGER_TAGGING, CONTRIBUTE];
   }
   return [...BASE_TUTOR_LINKS, CONTRIBUTE];
 }
@@ -373,7 +382,7 @@ const ADMIN_SECTIONS: readonly NavSection[] = [
 export function tutorSectionsForRole(role: string): NavSection[] {
   if (role === 'admin') return [...ADMIN_SECTIONS];
   if (role === 'manager') {
-    return [...TEACHER_SECTIONS, { title: 'Team', links: [MANAGER_TEACHERS] }];
+    return [...TEACHER_SECTIONS, { title: 'Team', links: [MANAGER_TEACHERS, MANAGER_TAGGING] }];
   }
   return [...TEACHER_SECTIONS];
 }
