@@ -51,6 +51,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/content/drafts/[draftId]/actions.js` | `saveDraft`, `promoteDraft`, `rejectDraft` | requireRole[admin] |
 | `app/(admin)/admin/content/patterns/actions.ts` | `createQuestionPattern`, `updateQuestionPattern`, `deleteQuestionPattern`, `importQuestionPatterns`, `moveQuestionPattern` | requireRole[admin] |
 | `app/(admin)/admin/content/units/actions.ts` | `updateCurriculumUnitSettings`, `moveCurriculumUnit` | requireRole[admin] |
+| `app/(admin)/admin/curriculum/actions.ts` | `addUnitStep`, `updateUnitStep`, `deleteUnitStep`, `moveUnitStep`, `resetUnitSyllabus`, `setUnitSyllabusFlag` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson`, `addLessonTopic`, `removeLessonTopic` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/import/actions.js` | `importBlocksIntoLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/actions.js` | `createLesson` | requireRole[admin] |
@@ -93,7 +94,7 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/bluebook/submission-actions.ts` | `crossCheckAttempt`, `loadAttemptEntryView`, `createHtmlUploadSubmission`, `createAttemptLinkedSubmission`, `createManualGridSubmission`, `reviewSubmission`, `artifactDownloadUrl`, `promoteSubmission` | requireRole[...CONTRIBUTOR_ROLES|...STAFF_ROLES] + requireServiceRole |
 | `lib/lesson/editor-question-actions.ts` | `searchLessonEditorQuestions`, `getLessonEditorQuestion` | requireRole[admin|manager|teacher] |
 | `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan`, `proposeRepace` | requireUser |
-| `lib/plan/plan-edit-actions.ts` | `movePlanTask`, `addManualPlanTask`, `removePlanTask`, `swapPlanTaskSkill`, `regeneratePlanWeek` | requireUser |
+| `lib/plan/plan-edit-actions.ts` | `movePlanTask`, `addManualPlanTask`, `addUnitSyllabusToWeek`, `removePlanTask`, `swapPlanTaskSkill`, `regeneratePlanWeek` | requireUser |
 | `lib/practice-test/load-test-question-action.ts` | `loadTestQuestionAction` | requireUser |
 | `lib/practice-test/score-actions.ts` | `recalculateScore` | requireServiceRole |
 | `lib/practice/broken-actions.js` | `loadBrokenDataAction`, `flagQuestionBroken`, `saveQuestionCorrections` | requireRole[admin|manager] |
@@ -116,4 +117,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_20 route handlers, 65 server-action modules enumerated._
+_20 route handlers, 66 server-action modules enumerated._

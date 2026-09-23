@@ -15,6 +15,7 @@ import { ApiError } from '@/lib/api/response';
 import { generateStudyPlan, activatePlan } from '@/lib/plan/plan-actions';
 import {
   addManualPlanTask,
+  addUnitSyllabusToWeek,
   movePlanTask,
   regeneratePlanWeek,
   removePlanTask,
@@ -136,10 +137,24 @@ export async function addTaskAction(
   if (denied) return denied;
 
   const [domainCode = '', skillCode = ''] = String(fd.get('unit') ?? '').split('|');
+  const taskType = String(fd.get('taskType') ?? '');
+  // "Unit syllabus" drops the unit's whole ordered syllabus into the
+  // week — the tutor's version of the generator's coverage walk.
+  if (taskType === 'unit') {
+    const unitRes = await addUnitSyllabusToWeek({
+      planId: String(fd.get('planId') ?? ''),
+      weekIndex: Number(fd.get('weekIndex')),
+      domainCode,
+      skillCode,
+      why: String(fd.get('why') ?? ''),
+    });
+    if (unitRes.ok) revalidateFor(fd);
+    return unitRes;
+  }
   const res = await addManualPlanTask({
     planId: String(fd.get('planId') ?? ''),
     weekIndex: Number(fd.get('weekIndex')),
-    taskType: String(fd.get('taskType') ?? '') as PlanTaskType,
+    taskType: taskType as PlanTaskType,
     domainCode: domainCode || undefined,
     skillCode: skillCode || undefined,
     title: String(fd.get('title') ?? ''),

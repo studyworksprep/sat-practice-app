@@ -14,9 +14,10 @@
 //     legacy signal has_lesson relied on before real lessons carried
 //     topics.
 //
-// The coverage view ranks and links the content-production work. The
-// syllabus view is the admin editor for the active per-unit settings
-// consumed today: order, expected minutes, and mastery threshold.
+// Two views: coverage ranks and links the content-production work;
+// settings edits the per-unit planning knobs (order, minutes, mastery
+// bar). Each unit's syllabus (docs/foundations-and-question-patterns.md
+// §7) is built on /admin/curriculum; the coverage view links there.
 
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -41,6 +42,23 @@ interface UnitRow {
   sequence: number;
   expected_minutes: number;
   mastery_threshold: number;
+  syllabus_authored_at: string | null;
+}
+
+interface StepRow {
+  unit_id: string;
+  position: number;
+  kind: string;
+  role: string | null;
+  lesson: { title: string; status: string } | Array<{ title: string; status: string }> | null;
+}
+
+interface UnitSyllabusSummary {
+  count: number;
+  authoredAt: string | null;
+  /** "Lesson: A → Practice → Mixed set" */
+  outline: string;
+  hasUnpublishedLesson: boolean;
 }
 
 interface TopicRow {
@@ -61,6 +79,7 @@ interface UnitCoverage {
   draftLessons: number;
   packCovered: boolean;
   patternCount: number;
+  syllabus: UnitSyllabusSummary;
 }
 
 const DOMAIN_BY_CODE = new Map(SAT_TAXONOMY.map((d) => [d.code, d]));
@@ -100,11 +119,18 @@ export default async function AdminContentUnitsPage({
     redirect('/');
   }
 
-  const [{ data: unitRows }, questionRows, { data: topicRows }, packRows, { data: patternRows }] =
+  const [
+    { data: unitRows },
+    questionRows,
+    { data: topicRows },
+    packRows,
+    { data: patternRows },
+    { data: stepRows },
+  ] =
     await Promise.all([
     supabase
       .from('curriculum_units')
-      .select('id, domain_code, skill_code, title, sequence, expected_minutes, mastery_threshold')
+      .select('id, domain_code, skill_code, title, sequence, expected_minutes, mastery_threshold, syllabus_authored_at')
       .eq('test_type', 'sat')
       .order('sequence', { ascending: true }),
     // async wrapper: the Postgrest builder is a thenable, not a
@@ -130,6 +156,11 @@ export default async function AdminContentUnitsPage({
     // Sub-skill coverage: how far the pattern catalog has been drafted
     // for each unit (docs/foundations-and-question-patterns.md §3.4).
     supabase.from('question_patterns').select('skill_code').eq('test_type', 'sat'),
+    // Unit syllabi (§7): every unit's ordered steps, for the outline column.
+    supabase
+      .from('curriculum_unit_steps')
+      .select('unit_id, position, kind, role, lesson:lessons(title, status)')
+      .order('position', { ascending: true }),
   ]);
 
   // Published-question depth per skill (skill codes are globally
@@ -166,6 +197,30 @@ export default async function AdminContentUnitsPage({
     patternCounts.set(p.skill_code, (patternCounts.get(p.skill_code) ?? 0) + 1);
   }
 
+  // Per-unit syllabus outline.
+  const stepsByUnit = new Map<string, StepRow[]>();
+  for (const r of (stepRows ?? []) as StepRow[]) {
+    (stepsByUnit.get(r.unit_id) ?? stepsByUnit.set(r.unit_id, []).get(r.unit_id)!).push(r);
+  }
+  const lessonOf = (r: StepRow) => (Array.isArray(r.lesson) ? r.lesson[0] : r.lesson);
+  const summarize = (unit: UnitRow): UnitSyllabusSummary => {
+    const steps = stepsByUnit.get(unit.id) ?? [];
+    return {
+      count: steps.length,
+      authoredAt: unit.syllabus_authored_at,
+      outline: steps
+        .map((r) =>
+          r.kind === 'lesson'
+            ? `Lesson: ${lessonOf(r)?.title ?? '?'}`
+            : r.role === 'mixed'
+              ? 'Mixed set'
+              : 'Practice',
+        )
+        .join(' → '),
+      hasUnpublishedLesson: steps.some((r) => r.kind === 'lesson' && lessonOf(r)?.status !== 'published'),
+    };
+  };
+
   const coverage: UnitCoverage[] = ((unitRows ?? []) as UnitRow[]).map((unit) => {
     const lessons = lessonsBySkill.get(unit.skill_code) ?? { published: 0, draft: 0 };
     return {
@@ -178,8 +233,10 @@ export default async function AdminContentUnitsPage({
       publishedLessons: lessons.published,
       draftLessons: lessons.draft,
       packCovered: packSkills.has(unit.skill_code),
+      syllabus: summarize(unit),
     };
   }).sort(coverageOrder);
+
 
   const totalUnits = coverage.length;
   const withPublished = coverage.filter((c) => c.publishedLessons > 0).length;
@@ -212,12 +269,13 @@ export default async function AdminContentUnitsPage({
         <p className={a.sub}>
           {view === 'coverage'
             ? 'The lesson-production worklist: every SAT unit with its question-bank depth and lesson coverage, weakest coverage first.'
-            : 'The active syllabus settings used by coverage and plan generation: teaching order, expected time, and mastery bar.'}
+            : 'The planning settings used by coverage and plan generation: teaching order, expected time, and mastery bar.'}
         </p>
         <p className={a.sub}>
           <strong>{withPublished} of {totalUnits}</strong> units have a published
           lesson{withDraft > 0 ? <> ({withDraft} more in draft)</> : null} ·{' '}
           {totalQuestions.toLocaleString()} published questions in the bank ·{' '}
+          <Link href="/admin/curriculum" className={a.link}>→ Curriculum (syllabi)</Link> ·{' '}
           <Link href="/admin/lessons" className={a.link}>→ Lessons</Link> ·{' '}
           <Link href="/admin/content/patterns" className={a.link}>→ Question patterns</Link>
         </p>
@@ -238,7 +296,7 @@ export default async function AdminContentUnitsPage({
           size="sm"
           aria-current={view === 'syllabus' ? 'page' : undefined}
         >
-          Syllabus settings
+          Planning settings
         </Button>
       </nav>
 
@@ -254,6 +312,7 @@ export default async function AdminContentUnitsPage({
                 <Th style={{ textAlign: 'right' }}>Questions</Th>
                 <Th style={{ textAlign: 'center' }}>Lessons</Th>
                 <Th style={{ textAlign: 'center' }}>Patterns</Th>
+                <Th style={{ textAlign: 'center' }}>Syllabus</Th>
                 <Th style={{ textAlign: 'center' }}>Pack proxy</Th>
                 <Th></Th>
               </tr>
@@ -290,6 +349,16 @@ export default async function AdminContentUnitsPage({
                       className={a.link}
                     >
                       {c.patternCount > 0 ? c.patternCount : 'add'}
+                    </Link>
+                  </Td>
+                  <Td style={{ textAlign: 'center' }}>
+                    <Link
+                      href={`/admin/curriculum/${c.unit.id}`}
+                      className={a.link}
+                      title={c.syllabus.outline || 'No steps'}
+                    >
+                      {c.syllabus.count} step{c.syllabus.count === 1 ? '' : 's'}
+                      {c.syllabus.authoredAt ? ' ✓' : ''}
                     </Link>
                   </Td>
                   <Td style={{ textAlign: 'center' }}>{c.packCovered ? '✓' : '—'}</Td>

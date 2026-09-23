@@ -21,11 +21,13 @@ import {
   buildDrillPayload,
   buildLessonPayload,
   daysBetween,
+  defaultUnitSteps,
+  expandUnitSyllabus,
   regenerateWeekTasks,
   survivesWeekRegeneration,
 } from './generate-plan';
 import { applyEvidencePriors, mapSkillRow, planCompositionFromRow } from './plan-inputs';
-import { loadSyllabusInputs } from './unit-steps';
+import { buildSyllabi, loadSyllabusInputs, type UnitStepRow } from './unit-steps';
 import type { ExistingTask, PlanTaskSource, PlanTaskType, SkillState } from './generate-plan';
 import type { PlanInputRow } from './plan-inputs';
 import type { ActionResult, Fail } from '@/lib/types';
@@ -269,6 +271,126 @@ export async function addManualPlanTask(args: AddManualTaskArgs): Promise<Action
   });
   if (error) return actionFail(error.message);
   return { ok: true };
+}
+
+// ── Add a whole unit's syllabus ───────────────────────────────────
+//
+// The tutor's counterpart to the generator's coverage walk: drop one
+// unit's ordered steps into a week (lesson, its practice set, next
+// lesson, …, mixed set) as tutor-authored tasks. Not gated on the
+// unit_syllabus flag — a tutor choosing a unit is an explicit act. A
+// unit with no authored steps falls back to the built-in pair. The
+// student's completed lessons are skipped per step, exactly as a
+// generated plan would.
+
+export interface AddUnitSyllabusArgs {
+  planId: string;
+  weekIndex: number;
+  domainCode: string;
+  skillCode: string;
+  why?: string;
+}
+
+export async function addUnitSyllabusToWeek(
+  args: AddUnitSyllabusArgs,
+): Promise<ActionResult<{ data: { added: number; skipped: number } }>> {
+  let ctx;
+  try {
+    ctx = await requireEditor();
+  } catch (err) {
+    return editErr(err) as ActionResult<{ data: { added: number; skipped: number } }>;
+  }
+  const { user, supabase } = ctx;
+
+  if (!UUID_RE.test(args.planId)) return actionFail('Invalid plan.');
+  if (!Number.isInteger(args.weekIndex) || args.weekIndex < 0 || args.weekIndex > MAX_WEEK_INDEX) {
+    return actionFail('Invalid week.');
+  }
+  const domainCode = (args.domainCode ?? '').trim();
+  const skillCode = (args.skillCode ?? '').trim();
+  if (!domainCode || !skillCode) return actionFail('Pick a unit.');
+
+  const plan = await loadPlan(supabase, args.planId);
+  if (!plan) return actionFail('Plan not found or not accessible.');
+
+  const { data: unit } = await supabase
+    .from('curriculum_units')
+    .select('id, expected_minutes')
+    .eq('test_type', plan.test_type)
+    .eq('domain_code', domainCode)
+    .eq('skill_code', skillCode)
+    .maybeSingle();
+  if (!unit) return actionFail('That skill is not in the curriculum.');
+
+  const [{ data: stepRows }, { data: done }, { data: tagged }] = await Promise.all([
+    supabase
+      .from('curriculum_unit_steps')
+      .select(
+        'id, position, kind, lesson_id, role, skill_codes, pattern_id, question_count, minutes, skip_if_completed, ' +
+          'unit:curriculum_units!inner(skill_code, test_type), lesson:lessons(title, status)',
+      )
+      .eq('unit_id', unit.id)
+      .order('position', { ascending: true }),
+    supabase
+      .from('lesson_progress')
+      .select('lesson_id')
+      .eq('student_id', plan.student_id)
+      .not('completed_at', 'is', null),
+    // For the no-rows fallback: does the skill have a published lesson?
+    supabase
+      .from('lesson_topics')
+      .select('lesson_id, lessons!inner(status)')
+      .eq('skill_code', skillCode)
+      .eq('lessons.status', 'published')
+      .limit(1),
+  ]);
+
+  let steps = buildSyllabi((stepRows ?? []) as unknown as UnitStepRow[])[skillCode] ?? [];
+  if (steps.length === 0) {
+    steps = defaultUnitSteps({
+      domainCode,
+      skillCode,
+      section: 'math',
+      mastery: null,
+      attemptsCount: 0,
+      coverageStatus: 'not_started',
+      masteryThreshold: 80,
+      learnability: null,
+      expectedMinutes: unit.expected_minutes,
+      sequence: 0,
+      questionsAvailable: 1,
+      hasLesson: (tagged ?? []).length > 0,
+    });
+  }
+
+  const why = (args.why ?? '').trim().slice(0, 300) || 'Added by your tutor';
+  const expanded = expandUnitSyllabus(
+    { domainCode, skillCode, expectedMinutes: unit.expected_minutes },
+    steps,
+    { completedLessonIds: (done ?? []).map((r) => r.lesson_id), why },
+  );
+  if (expanded.length === 0) {
+    return actionFail('Every lesson in this unit is already completed and it has no drills — nothing to add.');
+  }
+
+  const tasks = await loadPlanTasks(supabase, plan.id);
+  const anchor = planAnchor(plan, tasks);
+  const weekStart = addDays(anchor, args.weekIndex * 7);
+  const source = sourceFor(user.id, plan);
+  // Spread the steps across the week, one per day, so the order the
+  // tutor authored is the order the student meets them.
+  const rows = expanded.map((t, i) => ({
+    plan_id: plan.id,
+    week_index: args.weekIndex,
+    scheduled_date: clampToTest(addDays(weekStart, Math.min(i, 6)), plan),
+    task_type: t.taskType,
+    payload: t.payload as unknown as Json,
+    status: 'pending' as const,
+    source,
+  }));
+  const { error } = await supabase.from('plan_tasks').insert(rows);
+  if (error) return actionFail(error.message);
+  return { ok: true, data: { added: rows.length, skipped: steps.length - rows.length } };
 }
 
 // ── Remove a pending task ─────────────────────────────────────────

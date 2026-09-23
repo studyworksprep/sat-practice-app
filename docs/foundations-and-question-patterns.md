@@ -535,14 +535,50 @@ Without the flag (or for units with no rows) the pre-syllabus
 behavior is byte-for-byte unchanged; `lib/plan/unit-syllabus.test.mjs`
 covers the walk.
 
-### 7.4 Still to build
+### 7.4 Authoring (landed 2026-09-22)
 
-1. Per-unit syllabus editor in `/admin/content/units` with the same
-   CSV import shape the pattern catalog uses; "add unit" in the tutor
-   plan editor.
-2. Pattern-targeted drills once catalogs exist (the column and the
-   launcher fallback are already in place).
-3. Focus-phase lesson reassignment from per-drill outcomes.
-4. Pacing copy: a syllabus unit is ~2.5 hours, so at 5 hours/week the
+Built for a non-technical editor working entirely inside the admin
+account (owner direction 2026-09-22: no spreadsheet or CSV path). The
+sidebar gains **Curriculum** (`/admin/curriculum`):
+
+- **Curriculum home**: every SAT unit in teaching order, grouped Math
+  then Reading & Writing, with its syllabus outline and a status the
+  editor can act on (Authored · Default — not yet authored · needs
+  attention: no steps / no lesson / an unpublished lesson). A "How to
+  build a unit" note states the teaching sequence in plain words.
+- **The switch**: "Study plans use these syllabi: On/Off" flips the
+  `unit_syllabus` flag through a Server Action (feature_flags'
+  `ff_write` policy is `is_admin()`), with a confirm that says what
+  changes for students. No SQL involved.
+- **Unit editor** (`/admin/curriculum/<unit>`): steps as numbered
+  cards in teaching order — Lesson · Practice · Mixed set — each with
+  move up/down, Edit, Remove, and an "add a step here" insert point
+  between cards plus "Add a step" at the end. Adding a lesson opens a
+  searchable picker (title, status, "Teaches: <skills>", "Also in:
+  <units>"; lessons tagged to the unit listed first). Practice and
+  mixed sets ask "How many questions?" and "Which questions?" — this
+  unit's skill (or, for a mixed set, everything covered so far in the
+  domain) or skills chosen by name; an optional "only one question
+  type" select appears when the skill has a pattern catalog. A "what a
+  student will see" panel runs the generator's own
+  `expandUnitSyllabus`, so the preview is the exact task list a plan
+  emits. "Start over with the default" resets the unit. Every edit
+  stamps `syllabus_authored_at`.
+- **Tutor editor**: "Unit syllabus" in the add-task type list drops a
+  unit's whole syllabus into a week as tutor tasks (completed lessons
+  skipped, one step per day), not gated on the flag.
+- Field validation lives in `lib/admin/unitSyllabus.ts` (unit-tested)
+  and is shared by the editor's forms and its Server Actions.
+  Reordering and insert-at renumber through a +1000 offset so the
+  `(unit_id, position)` unique index never trips mid-write.
+- The units worklist keeps its coverage and planning-settings views
+  and links each unit to its editor.
+
+### 7.5 Still to build
+
+1. Pattern-targeted drills once catalogs exist (the column, the editor
+   field, and the launcher fallback are already in place).
+2. Focus-phase lesson reassignment from per-drill outcomes.
+3. Pacing copy: a syllabus unit is ~2.5 hours, so at 5 hours/week the
    coverage phase covers ~2 units/week and short runways will not fit
    every unit; the rationale should say so.

@@ -219,6 +219,13 @@ const ADMIN_QUESTIONS: NavLink = {
   href: '/admin/questions', label: 'Questions', icon: 'questions',
   matchPrefix: ['/admin/questions', '/admin/content', '/admin/concept-tags', '/tutor/review'],
 };
+// The curriculum editor: each unit's syllabus (lessons in teaching
+// order with their practice sets), built in-app by a non-technical
+// admin (docs/foundations-and-question-patterns.md §7.4).
+const ADMIN_CURRICULUM: NavLink = {
+  href: '/admin/curriculum', label: 'Curriculum', icon: 'plan',
+  matchPrefix: '/admin/curriculum',
+};
 const ADMIN_LESSONS: NavLink = {
   href: '/admin/lessons', label: 'Lessons', icon: 'lessons',
   matchPrefix: '/admin/lessons',
@@ -243,6 +250,7 @@ const OPERATE_LINKS: readonly NavLink[] = [
   ADMIN_OVERVIEW,
   ADMIN_USERS,
   ADMIN_QUESTIONS,
+  ADMIN_CURRICULUM,
   ADMIN_LESSONS,
   ADMIN_READING_COACH,
   ADMIN_PERFORMANCE,
