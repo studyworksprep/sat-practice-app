@@ -24,7 +24,7 @@ import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { ConceptTags } from './ConceptTags';
-import { QuestionPatternTag } from './QuestionPatternTag';
+import { QuestionTechniqueTags } from './QuestionTechniqueTags';
 import { DesmosSavedStateButton } from './DesmosSavedStateButton';
 import { BrokenButton } from './BrokenButton';
 import { QuestionStatsButton } from './QuestionStatsButton';
@@ -55,8 +55,8 @@ export function GroupAssignmentReport({
   conceptTagsCatalog = null,
   conceptTagsCanTag = false,
   conceptTagsCanDelete = false,
-  questionPatternsCatalog = null,
-  questionPatternsCanTag = false,
+  techniqueCatalog = null,
+  techniquesCanTag = false,
   questionNotesCanView = false,
   questionNotesIsAdmin = false,
   currentUserId = null,
@@ -401,7 +401,7 @@ export function GroupAssignmentReport({
                 } : null}
                 controlsNode={
                   (conceptTagsCanTag && conceptTagsCatalog) ||
-                  (questionPatternsCanTag && questionPatternsCatalog) ? (
+                  (techniquesCanTag && techniqueCatalog) ? (
                     <div className={s.tutorTools}>
                       {conceptTagsCanTag && conceptTagsCatalog && (
                         <ConceptTags
@@ -413,14 +413,14 @@ export function GroupAssignmentReport({
                           canDelete={conceptTagsCanDelete}
                         />
                       )}
-                      {questionPatternsCanTag && questionPatternsCatalog && !selected.missing && (
-                        <QuestionPatternTag
-                          key={`pattern-${selected.questionId}`}
+                      {techniquesCanTag && techniqueCatalog && !selected.missing && (
+                        <QuestionTechniqueTags
+                          key={`techniques-${selected.questionId}`}
                           questionId={selected.questionId}
                           skillCode={selected.taxonomy?.skill_code ?? null}
-                          patterns={questionPatternsCatalog}
-                          initialPatternId={selected.patternId ?? null}
-                          canTag={questionPatternsCanTag}
+                          techniques={techniqueCatalog}
+                          initialTechniqueIds={selected.techniqueIds ?? []}
+                          canTag={techniquesCanTag}
                         />
                       )}
                     </div>

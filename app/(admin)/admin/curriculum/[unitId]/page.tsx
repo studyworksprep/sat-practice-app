@@ -1,13 +1,13 @@
 // Admin · Curriculum · one unit. Loads the unit, its steps, the lesson
 // bank (with each lesson's tagged skills and the other units already
-// using it), and the unit's question types, and hands them to the
+// using it), and the technique catalog, and hands them to the
 // UnitEditor island.
 
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { SAT_TAXONOMY } from '@/lib/practice/sat-taxonomy';
-import { UnitEditor, type EditorLesson, type EditorPattern, type EditorStep } from './UnitEditor';
+import { UnitEditor, type EditorLesson, type EditorStep, type EditorTechnique } from './UnitEditor';
 import a from '../../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -39,11 +39,11 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
     .maybeSingle();
   if (!unit) notFound();
 
-  const [{ data: stepRows }, { data: lessonRows }, { data: topicRows }, { data: usageRows }, { data: patternRows }, { data: allUnits }] =
+  const [{ data: stepRows }, { data: lessonRows }, { data: topicRows }, { data: usageRows }, { data: techniqueRows }, { data: allUnits }] =
     await Promise.all([
       supabase
         .from('curriculum_unit_steps')
-        .select('id, position, kind, lesson_id, role, skill_codes, pattern_id, question_count, minutes, skip_if_completed, lesson:lessons(title, status)')
+        .select('id, position, kind, lesson_id, role, skill_codes, technique_ids, question_count, minutes, skip_if_completed, lesson:lessons(title, status)')
         .eq('unit_id', unit.id)
         .order('position', { ascending: true }),
       supabase
@@ -53,7 +53,13 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
         .order('title', { ascending: true }),
       supabase.from('lesson_topics').select('lesson_id, skill_code').not('skill_code', 'is', null),
       supabase.from('curriculum_unit_steps').select('lesson_id, unit_id').eq('kind', 'lesson'),
-      supabase.from('question_patterns').select('id, name, recognition_cue').eq('skill_code', unit.skill_code).order('sequence', { ascending: true }),
+      supabase
+        .from('techniques')
+        .select('id, name, description, section, technique_skills(skill_code)')
+        .eq('test_type', 'sat')
+        .order('section', { ascending: true, nullsFirst: true })
+        .order('sequence', { ascending: true })
+        .order('name', { ascending: true }),
       supabase.from('curriculum_units').select('id, title').eq('test_type', 'sat'),
     ]);
 
@@ -74,8 +80,14 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
     unitsByLesson.set(u.lesson_id, list);
   }
 
-  const patterns: EditorPattern[] = (patternRows ?? []).map((p) => ({ id: p.id, name: p.name, cue: p.recognition_cue }));
-  const patternName = new Map(patterns.map((p) => [p.id, p.name]));
+  const techniques: EditorTechnique[] = (techniqueRows ?? []).map((t) => ({
+    id: t.id,
+    name: t.name,
+    description: t.description,
+    section: t.section === 'math' || t.section === 'reading_writing' ? t.section : null,
+    skillCodes: (t.technique_skills ?? []).map((s) => s.skill_code),
+  }));
+  const techniqueName = new Map(techniques.map((t) => [t.id, t.name]));
   const steps: EditorStep[] = (stepRows ?? []).map((r) => {
     const lesson = Array.isArray(r.lesson) ? r.lesson[0] : r.lesson;
     return {
@@ -87,8 +99,8 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
       lessonStatus: lesson?.status ?? null,
       role: r.role === 'mixed' ? 'mixed' : r.role === 'practice' ? 'practice' : null,
       skillCodes: r.skill_codes,
-      patternId: r.pattern_id,
-      patternName: r.pattern_id ? (patternName.get(r.pattern_id) ?? null) : null,
+      techniqueIds: r.technique_ids && r.technique_ids.length > 0 ? r.technique_ids : null,
+      techniqueNames: (r.technique_ids ?? []).map((id) => techniqueName.get(id)).filter((n): n is string => Boolean(n)),
       questionCount: r.question_count,
       minutes: r.minutes,
       skipIfCompleted: r.skip_if_completed,
@@ -136,7 +148,7 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
         }}
         steps={steps}
         lessons={lessons}
-        patterns={patterns}
+        techniques={techniques}
       />
     </main>
   );

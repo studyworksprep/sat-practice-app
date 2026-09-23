@@ -55,7 +55,7 @@ export async function loadLessonCatalog(
     chunk(lessons.map((lesson) => lesson.id), 100).map((lessonIds) => (
       supabase
         .from('lesson_topics')
-        .select('lesson_id, section, domain_name, skill_code, pattern_id, question_patterns(name, domain_code, skill_code)')
+        .select('lesson_id, section, domain_name, skill_code')
         .in('lesson_id', lessonIds)
     )),
   );

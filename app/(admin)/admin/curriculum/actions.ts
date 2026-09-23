@@ -54,7 +54,8 @@ function revalidateSyllabusSurfaces(unitId?: string) {
 interface UnitCtx {
   unit: { id: string; skill_code: string; domain_code: string };
   lessonIds: Set<string>;
-  patterns: Array<{ id: string; name: string; skill_code: string }>;
+  /** The whole catalog: techniques cut across skills, so any may narrow a drill. */
+  techniques: Array<{ id: string; name: string }>;
 }
 
 async function loadUnitCtx(supabase: Supabase, unitId: string): Promise<UnitCtx | null> {
@@ -64,14 +65,14 @@ async function loadUnitCtx(supabase: Supabase, unitId: string): Promise<UnitCtx 
     .eq('id', unitId)
     .maybeSingle();
   if (!unit) return null;
-  const [{ data: lessons }, { data: patterns }] = await Promise.all([
+  const [{ data: lessons }, { data: techniques }] = await Promise.all([
     supabase.from('lessons').select('id'),
-    supabase.from('question_patterns').select('id, name, skill_code').eq('skill_code', unit.skill_code),
+    supabase.from('techniques').select('id, name').eq('test_type', 'sat'),
   ]);
   return {
     unit,
     lessonIds: new Set((lessons ?? []).map((l) => l.id)),
-    patterns: patterns ?? [],
+    techniques: techniques ?? [],
   };
 }
 
@@ -83,7 +84,7 @@ function rowFor(unitId: string, position: number, step: NormalizedStep) {
     lesson_id: step.lessonId,
     role: step.role,
     skill_codes: step.skillCodes,
-    pattern_id: step.patternId,
+    technique_ids: step.techniqueIds,
     question_count: step.questionCount,
     minutes: step.minutes,
     skip_if_completed: step.skipIfCompleted,
@@ -164,7 +165,7 @@ export async function addUnitStep({
   const normalized = normalizeStepInput(input, {
     unitSkillCode: unitCtx.unit.skill_code,
     lessonIds: unitCtx.lessonIds,
-    patterns: unitCtx.patterns,
+    techniques: unitCtx.techniques,
   });
   if (!normalized.ok) return actionFail(normalized.error);
 
@@ -218,7 +219,7 @@ export async function updateUnitStep({
   const normalized = normalizeStepInput(input, {
     unitSkillCode: unitCtx.unit.skill_code,
     lessonIds: unitCtx.lessonIds,
-    patterns: unitCtx.patterns,
+    techniques: unitCtx.techniques,
   });
   if (!normalized.ok) return actionFail(normalized.error);
 
@@ -321,12 +322,12 @@ export async function resetUnitSyllabus({ unitId }: { unitId: string }): Promise
   const rows = [];
   if (lesson) {
     rows.push(rowFor(unitId, 1, {
-      kind: 'lesson', lessonId: lesson.id, role: null, skillCodes: null, patternId: null,
+      kind: 'lesson', lessonId: lesson.id, role: null, skillCodes: null, techniqueIds: null,
       questionCount: null, minutes: null, skipIfCompleted: true,
     }));
   }
   rows.push(rowFor(unitId, rows.length + 1, {
-    kind: 'drill', lessonId: null, role: 'practice', skillCodes: null, patternId: null,
+    kind: 'drill', lessonId: null, role: 'practice', skillCodes: null, techniqueIds: null,
     questionCount: DEFAULT_DRILL_COUNT, minutes: null, skipIfCompleted: true,
   }));
   const { error: insErr } = await supabase.from('curriculum_unit_steps').insert(rows);

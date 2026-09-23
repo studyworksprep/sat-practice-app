@@ -24,8 +24,8 @@ import { inferLayoutMode } from '@/lib/ui/question-layout';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { loadConceptTags } from '@/lib/practice/load-concept-tags';
-import { QuestionPatternTag } from '@/lib/practice/QuestionPatternTag';
-import { loadQuestionPattern } from '@/lib/practice/load-question-patterns';
+import { QuestionTechniqueTags } from '@/lib/practice/QuestionTechniqueTags';
+import { loadQuestionTechniques } from '@/lib/practice/load-question-techniques';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
 import { loadQuestionNotes } from '@/lib/practice/load-question-notes';
 import { BrokenButton } from '@/lib/practice/BrokenButton';
@@ -136,9 +136,9 @@ export async function QuestionReviewPage({ questionId, chrome }) {
     rationaleHtml: question.rationale_rendered ?? question.rationale_html,
   };
 
-  const [conceptTags, questionPattern, questionNotes, brokenData] = await Promise.all([
+  const [conceptTags, questionTechniques, questionNotes, brokenData] = await Promise.all([
     loadConceptTags({ questionId: question.id, role: profile.role }),
-    loadQuestionPattern({ questionId: question.id, role: profile.role }),
+    loadQuestionTechniques({ questionId: question.id, role: profile.role }),
     loadQuestionNotes({ questionId: question.id, role: profile.role, userId: user.id }),
     loadBrokenData({ questionId: question.id, role: profile.role }),
   ]);
@@ -218,7 +218,7 @@ export async function QuestionReviewPage({ questionId, chrome }) {
           question={questionVM}
           result={resultVM}
           controlsNode={
-            conceptTags.canTag || questionPattern.canTag ? (
+            conceptTags.canTag || questionTechniques.canTag ? (
               <div
                 style={{
                   marginTop: '0.5rem',
@@ -236,14 +236,14 @@ export async function QuestionReviewPage({ questionId, chrome }) {
                     canDelete={conceptTags.canDelete}
                   />
                 )}
-                {questionPattern.canTag && (
+                {questionTechniques.canTag && (
                   <div style={{ marginTop: conceptTags.canTag ? '0.75rem' : 0 }}>
-                    <QuestionPatternTag
+                    <QuestionTechniqueTags
                       questionId={question.id}
-                      skillCode={questionPattern.skillCode}
-                      patterns={questionPattern.patterns}
-                      initialPatternId={questionPattern.patternId}
-                      canTag={questionPattern.canTag}
+                      skillCode={questionTechniques.skillCode}
+                      techniques={questionTechniques.techniques}
+                      initialTechniqueIds={questionTechniques.techniqueIds}
+                      canTag={questionTechniques.canTag}
                       showCatalogHint={profile.role === 'admin'}
                     />
                   </div>

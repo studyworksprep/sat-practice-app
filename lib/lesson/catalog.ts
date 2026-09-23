@@ -1,7 +1,7 @@
 import { SAT_TAXONOMY, type SatDomain } from '../practice/sat-taxonomy.ts';
 
 export type LessonSection = 'reading_writing' | 'math';
-export type LessonTopicGrain = 'section' | 'domain' | 'skill' | 'pattern';
+export type LessonTopicGrain = 'section' | 'domain' | 'skill';
 
 export interface LessonCatalogTopic {
   grain: LessonTopicGrain;
@@ -11,8 +11,6 @@ export interface LessonCatalogTopic {
   domainName: string | null;
   skillCode: string | null;
   skillName: string | null;
-  patternId: string | null;
-  patternName: string | null;
 }
 
 export interface LessonCatalogItem {
@@ -68,18 +66,12 @@ export interface CatalogTopicRow {
   section: string | null;
   domain_name: string | null;
   skill_code: string | null;
-  pattern_id: string | null;
-  question_patterns:
-    | { name: string; domain_code: string; skill_code: string }
-    | Array<{ name: string; domain_code: string; skill_code: string }>
-    | null;
 }
 
 const GRAIN_ORDER: Record<LessonTopicGrain, number> = {
   section: 0,
   domain: 1,
   skill: 2,
-  pattern: 3,
 };
 
 export function sectionLabel(section: string | null | undefined): string {
@@ -180,52 +172,38 @@ export function getLessonScopeLabels(lesson: LessonCatalogItem): string[] {
     ...lesson.topics.map((topic) => topic.sectionLabel),
     ...lesson.topics.map((topic) => topic.domainName),
     ...lesson.topics.map((topic) => topic.skillName),
-    ...lesson.topics.map((topic) => topic.patternName),
   ].filter((value): value is string => !!value));
 }
 
 function normalizeTopic(row: CatalogTopicRow): LessonCatalogTopic | null {
-  const pattern = Array.isArray(row.question_patterns)
-    ? row.question_patterns[0] ?? null
-    : row.question_patterns;
-  const grain: LessonTopicGrain | null = row.pattern_id
-    ? 'pattern'
-    : row.skill_code
-      ? 'skill'
-      : row.domain_name
-        ? 'domain'
-        : row.section
-          ? 'section'
-          : null;
+  const grain: LessonTopicGrain | null = row.skill_code
+    ? 'skill'
+    : row.domain_name
+      ? 'domain'
+      : row.section
+        ? 'section'
+        : null;
   if (!grain) return null;
 
-  const domain = findTopicDomain(row, pattern);
+  const domain = findTopicDomain(row);
   const section = domain
     ? subjectToSection(domain.subjectCode)
     : normalizeSection(row.section);
-  const skillCode = pattern?.skill_code ?? row.skill_code;
+  const skillCode = row.skill_code;
   const skill = domain?.skills.find((candidate) => candidate.code === skillCode) ?? null;
 
   return {
     grain,
     section,
     sectionLabel: section ? sectionLabel(section) : null,
-    domainCode: domain?.code ?? pattern?.domain_code ?? null,
+    domainCode: domain?.code ?? null,
     domainName: domain?.name ?? row.domain_name,
     skillCode: skillCode ?? null,
     skillName: skill?.name ?? null,
-    patternId: row.pattern_id,
-    patternName: pattern?.name ?? null,
   };
 }
 
-function findTopicDomain(
-  row: CatalogTopicRow,
-  pattern: { domain_code: string; skill_code: string } | null,
-): SatDomain | null {
-  if (pattern?.domain_code) {
-    return SAT_TAXONOMY.find((domain) => domain.code === pattern.domain_code) ?? null;
-  }
+function findTopicDomain(row: CatalogTopicRow): SatDomain | null {
   if (row.domain_name) {
     const normalizedName = row.domain_name.toLocaleLowerCase();
     const byName = SAT_TAXONOMY.find((domain) => domain.name.toLocaleLowerCase() === normalizedName);
@@ -256,19 +234,17 @@ function getTopicSearchLabels(topics: LessonCatalogTopic[]): string[] {
     topic.sectionLabel,
     topic.domainName,
     topic.skillName,
-    topic.patternName,
   ]).filter((value): value is string => !!value);
 }
 
 function topicKey(topic: LessonCatalogTopic): string {
-  return [topic.grain, topic.section, topic.domainCode, topic.skillCode, topic.patternId].join('|');
+  return [topic.grain, topic.section, topic.domainCode, topic.skillCode].join('|');
 }
 
 function compareTopics(a: LessonCatalogTopic, b: LessonCatalogTopic): number {
   return GRAIN_ORDER[a.grain] - GRAIN_ORDER[b.grain]
     || (a.domainName ?? '').localeCompare(b.domainName ?? '')
-    || (a.skillName ?? '').localeCompare(b.skillName ?? '')
-    || (a.patternName ?? '').localeCompare(b.patternName ?? '');
+    || (a.skillName ?? '').localeCompare(b.skillName ?? '');
 }
 
 function compareLessons(

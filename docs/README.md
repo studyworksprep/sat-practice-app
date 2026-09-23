@@ -22,7 +22,7 @@ authorization matrix to prove it's fresh.
 | `bluebook-contributions-plan-2026-08.md` | Bluebook contributions build plan — settled design + phase ledger |
 | `reading-coach-implementation-plan.md` | Reading Coach product, data, AI-evaluation, QA, and phased delivery plan |
 | `bluebook-contributor-guide.md` | How to send Bluebook results — written for contributors, not engineers |
-| `foundations-and-question-patterns.md` | Curriculum model for section-wide foundation lessons + question-pattern lessons (adopted design + owner/instructor workstream) |
+| `foundations-and-question-patterns.md` | Curriculum model for section-wide foundation lessons, techniques (how questions are solved, cutting across skills — replaced question patterns 2026-09-23), and unit syllabi (adopted design + owner/instructor workstream) |
 | `lesson-improvement-plan-2026-08.md` | Phased plan for acting on the 2026-08-18 lesson review — AI-authored steps vs tutor-team tasks per phase, with a status ledger |
 | `lesson-transfer-checks-proposal-2026-08.md` | Per-lesson transfer/retrieval check designations (plan step 1.7) — confirmed 2026-08-22 and applied by the 1.5 pass; keep in step with `scripts/apply-one-shot-checks.mjs` |
 | `lesson-lint-punch-list-2026-08.md` | Item-quality lint findings per lesson (plan step 2.2) — the Phase 2 work queue; Status column hand-maintained |

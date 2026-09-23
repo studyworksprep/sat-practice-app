@@ -326,7 +326,7 @@ export async function addUnitSyllabusToWeek(
     supabase
       .from('curriculum_unit_steps')
       .select(
-        'id, position, kind, lesson_id, role, skill_codes, pattern_id, question_count, minutes, skip_if_completed, ' +
+        'id, position, kind, lesson_id, role, skill_codes, technique_ids, question_count, minutes, skip_if_completed, ' +
           'unit:curriculum_units!inner(skill_code, test_type), lesson:lessons(title, status)',
       )
       .eq('unit_id', unit.id)

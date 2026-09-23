@@ -18,6 +18,8 @@ import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import { SAT_TAXONOMY } from '@/lib/practice/sat-taxonomy';
 import { expandUnitSyllabus, type UnitStep } from '@/lib/plan/generate-plan';
 import { COUNT_MAX, COUNT_MIN, MINUTES_MAX, MINUTES_MIN } from '@/lib/admin/unitSyllabus';
+import { createTechnique } from '@/app/(admin)/admin/techniques/actions';
+import { TechniqueForm, EMPTY_TECHNIQUE_FORM, type TechniqueFormValues } from '@/app/(admin)/admin/techniques/TechniqueForm';
 import type { ActionResult } from '@/lib/types';
 import {
   addUnitStep,
@@ -39,8 +41,9 @@ export interface EditorStep {
   lessonStatus: string | null;
   role: 'practice' | 'mixed' | null;
   skillCodes: string[] | null;
-  patternId: string | null;
-  patternName: string | null;
+  techniqueIds: string[] | null;
+  /** Names for techniqueIds, same order; deleted techniques dropped. */
+  techniqueNames: string[];
   questionCount: number | null;
   minutes: number | null;
   skipIfCompleted: boolean;
@@ -59,10 +62,14 @@ export interface EditorLesson {
   otherUnits: string[];
 }
 
-export interface EditorPattern {
+export interface EditorTechnique {
   id: string;
   name: string;
-  cue: string;
+  /** "When to use it." */
+  description: string;
+  section: 'math' | 'reading_writing' | null;
+  /** Default applicability: every question in these skills counts. */
+  skillCodes: string[];
 }
 
 interface UnitInfo {
@@ -85,7 +92,7 @@ interface FormValues {
   questionCount: string;
   skillMode: 'unit' | 'choose';
   skillCodes: string[];
-  patternId: string;
+  techniqueIds: string[];
   minutes: string;
 }
 
@@ -98,6 +105,7 @@ interface Composer {
 
 const KIND_LABEL: Record<StepKind, string> = { lesson: 'Lesson', practice: 'Practice', mixed: 'Mixed set' };
 const SKILL_NAME = new Map(SAT_TAXONOMY.flatMap((d) => d.skills.map((s) => [s.code, s.name] as const)));
+const MATH_DOMAINS = new Set(['H', 'P', 'Q', 'S']);
 
 function emptyValues(kind: StepKind, unit: UnitInfo): FormValues {
   return {
@@ -107,7 +115,7 @@ function emptyValues(kind: StepKind, unit: UnitInfo): FormValues {
     questionCount: '',
     skillMode: 'unit',
     skillCodes: [unit.skillCode],
-    patternId: '',
+    techniqueIds: [],
     minutes: '',
   };
 }
@@ -121,7 +129,7 @@ function valuesFromStep(step: EditorStep, unit: UnitInfo): FormValues {
     questionCount: step.questionCount == null ? '' : String(step.questionCount),
     skillMode: explicit ? 'choose' : 'unit',
     skillCodes: explicit ? step.skillCodes! : [unit.skillCode],
-    patternId: step.patternId ?? '',
+    techniqueIds: step.techniqueIds ?? [],
     minutes: step.minutes == null ? '' : String(step.minutes),
   };
 }
@@ -134,7 +142,7 @@ function toInput(v: FormValues): StepFormInput {
     kind: 'drill',
     role: v.kind,
     skillCodes: v.skillMode === 'choose' ? v.skillCodes : null,
-    patternId: v.patternId || null,
+    techniqueIds: v.techniqueIds,
     questionCount: v.questionCount,
     minutes: v.minutes,
   };
@@ -149,7 +157,7 @@ function toUnitStep(step: EditorStep): UnitStep {
     lessonTitle: step.lessonTitle,
     role: step.role,
     skillCodes: step.skillCodes,
-    patternId: step.patternId,
+    techniqueIds: step.techniqueIds,
     questionCount: step.questionCount,
     minutes: step.minutes,
     skipIfCompleted: step.skipIfCompleted,
@@ -160,12 +168,12 @@ export function UnitEditor({
   unit,
   steps,
   lessons,
-  patterns,
+  techniques,
 }: {
   unit: UnitInfo;
   steps: EditorStep[];
   lessons: EditorLesson[];
-  patterns: EditorPattern[];
+  techniques: EditorTechnique[];
 }) {
   const router = useRouter();
   const [confirm, confirmDialog] = useConfirm();
@@ -288,7 +296,7 @@ export function UnitEditor({
                   pending={pending}
                   unit={unit}
                   lessons={lessons}
-                  patterns={patterns}
+                  techniques={techniques}
                   title={`Edit step ${step.position}`}
                 />
               ) : (
@@ -316,7 +324,7 @@ export function UnitEditor({
                   pending={pending}
                   unit={unit}
                   lessons={lessons}
-                  patterns={patterns}
+                  techniques={techniques}
                   title={`New ${KIND_LABEL[composer.values.kind].toLowerCase()} after step ${step.position}`}
                 />
               ) : (
@@ -341,7 +349,7 @@ export function UnitEditor({
             pending={pending}
             unit={unit}
             lessons={lessons}
-            patterns={patterns}
+            techniques={techniques}
             title={`New ${KIND_LABEL[composer.values.kind].toLowerCase()} at the end`}
           />
         ) : (
@@ -418,7 +426,7 @@ function StepCard({
           ) : (
             <span>
               {step.questionCount ?? (kind === 'mixed' ? 10 : 8)} questions
-              {step.patternName ? ` · only "${step.patternName}"` : ''}
+              {step.techniqueNames.length > 0 ? ` · ${step.techniqueNames.join(', ')} first` : ''}
             </span>
           )}
           {kind === 'lesson' && step.lessonStatus && step.lessonStatus !== 'published' && (
@@ -495,7 +503,7 @@ function StepComposer({
   pending,
   unit,
   lessons,
-  patterns,
+  techniques,
   title,
 }: {
   composer: Composer;
@@ -505,7 +513,7 @@ function StepComposer({
   pending: boolean;
   unit: UnitInfo;
   lessons: EditorLesson[];
-  patterns: EditorPattern[];
+  techniques: EditorTechnique[];
   title: string;
 }) {
   const v = composer.values;
@@ -569,20 +577,6 @@ function StepComposer({
                 onChange={(e) => set('questionCount', e.target.value)}
               />
             </label>
-            {v.kind === 'practice' && patterns.length > 0 && (
-              <label className={f.label} style={{ gridColumn: 'span 2' }}>
-                <span className={f.labelText}>Only one question type? <span className={f.muted}>(optional)</span></span>
-                <select className={f.select} value={v.patternId} disabled={pending} onChange={(e) => set('patternId', e.target.value)}>
-                  <option value="">Any question in the skill</option>
-                  {patterns.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-                <span className={f.formHint}>
-                  Drill exactly this format. Until questions are tagged to it, the whole skill is used.
-                </span>
-              </label>
-            )}
           </div>
 
           <fieldset className={f.fieldset}>
@@ -630,6 +624,16 @@ function StepComposer({
               </div>
             )}
           </fieldset>
+
+          {v.kind === 'practice' && (
+            <TechniquePicker
+              unit={unit}
+              techniques={techniques}
+              value={v.techniqueIds}
+              onChange={(ids) => set('techniqueIds', ids)}
+              disabled={pending}
+            />
+          )}
         </>
       )}
 
@@ -657,6 +661,111 @@ function StepComposer({
         </Button>
       </div>
     </form>
+  );
+}
+
+// Optional technique narrowing for a practice set: questions that use
+// the chosen techniques (tagged, or in one of a technique's default
+// skills) come first and the rest of the skill fills the set. Techniques
+// that already apply to this unit by default are listed first; a new
+// technique can be created right here, with this unit's skill as its
+// default, so the editor never has to leave the syllabus.
+function TechniquePicker({
+  unit,
+  techniques,
+  value,
+  onChange,
+  disabled,
+}: {
+  unit: UnitInfo;
+  techniques: EditorTechnique[];
+  value: string[];
+  onChange: (ids: string[]) => void;
+  disabled: boolean;
+}) {
+  const router = useRouter();
+  const [creating, setCreating] = useState(false);
+  const [values, setValues] = useState<TechniqueFormValues>(EMPTY_TECHNIQUE_FORM);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const unitSection = MATH_DOMAINS.has(unit.domainCode) ? 'math' : 'reading_writing';
+
+  const ordered = useMemo(() => {
+    const rank = (t: EditorTechnique) =>
+      t.skillCodes.includes(unit.skillCode) ? 0 : !t.section || t.section === unitSection ? 1 : 2;
+    return [...techniques].sort((x, y) => rank(x) - rank(y));
+  }, [techniques, unit.skillCode, unitSection]);
+
+  function openCreate() {
+    setValues({ ...EMPTY_TECHNIQUE_FORM, section: unitSection, skillCodes: [unit.skillCode] });
+    setError(null);
+    setCreating(true);
+  }
+
+  function submitCreate() {
+    setError(null);
+    startTransition(async () => {
+      const res = await createTechnique(values);
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      onChange([...value, res.data.id]);
+      setCreating(false);
+      router.refresh();
+    });
+  }
+
+  return (
+    <fieldset className={f.fieldset}>
+      <legend className={f.legend}>
+        Which techniques? <span className={f.muted}>(optional)</span>
+      </legend>
+      <p className={f.formHint} style={{ marginTop: 0 }}>
+        Questions solved with these techniques come first; the rest of the skill fills the set when there are
+        not enough of them.
+      </p>
+      {ordered.length === 0 && !creating && (
+        <p className={f.muted} style={{ margin: '4px 0' }}>No techniques in the catalog yet.</p>
+      )}
+      {ordered.map((t) => {
+        const checked = value.includes(t.id);
+        const byDefault = t.skillCodes.includes(unit.skillCode);
+        return (
+          <label key={t.id} className={f.row} style={{ margin: 0 }} title={t.description}>
+            <input
+              type="checkbox"
+              checked={checked}
+              disabled={disabled || pending}
+              onChange={(e) => onChange(e.target.checked ? [...value, t.id] : value.filter((id) => id !== t.id))}
+            />
+            <span>
+              {t.name}
+              {byDefault && <span className={f.muted}> · every {unit.skillName} question already counts</span>}
+            </span>
+          </label>
+        );
+      })}
+      {creating ? (
+        <div style={S.inlineCreate}>
+          <h4 className={a.sectionLabel} style={{ marginTop: 0 }}>New technique</h4>
+          <TechniqueForm
+            compact
+            values={values}
+            onChange={setValues}
+            onSubmit={submitCreate}
+            onCancel={() => setCreating(false)}
+            pending={pending}
+            submitLabel="Create and select"
+          />
+          {error && <p className={f.err} role="alert">{error}</p>}
+        </div>
+      ) : (
+        <button type="button" style={S.insertLink} onClick={openCreate} disabled={disabled}>
+          + New technique
+        </button>
+      )}
+    </fieldset>
   );
 }
 
@@ -787,6 +896,7 @@ const S: Record<string, React.CSSProperties> = {
   chooser: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', padding: '8px 0 8px 40px' },
   composer: { border: '1px solid #c7d2fe', background: '#f8faff', borderRadius: 10, padding: '0.75rem 1rem', margin: '6px 0' },
   composerHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' },
+  inlineCreate: { border: '1px dashed #c7d2fe', borderRadius: 8, padding: '0.5rem 0.75rem', margin: '6px 0', background: '#fff' },
   skillGroups: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '0.5rem 1rem', marginTop: '0.5rem' },
   skillGroup: { display: 'flex', flexDirection: 'column', gap: 2, fontSize: '0.85rem' },
   skillGroupTitle: { fontWeight: 700, fontSize: '0.78rem', color: '#374151', margin: '4px 0 2px' },

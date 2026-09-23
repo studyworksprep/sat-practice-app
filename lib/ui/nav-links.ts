@@ -226,6 +226,14 @@ const ADMIN_CURRICULUM: NavLink = {
   href: '/admin/curriculum', label: 'Curriculum', icon: 'plan',
   matchPrefix: '/admin/curriculum',
 };
+// The technique catalog: how questions are solved (graphing, regression,
+// Good Cop Bad Cop…), cutting across skills; lessons teach techniques
+// and practice sets narrow to them (docs/foundations-and-question-
+// patterns.md §8).
+const ADMIN_TECHNIQUES: NavLink = {
+  href: '/admin/techniques', label: 'Techniques', icon: 'lessons',
+  matchPrefix: '/admin/techniques',
+};
 const ADMIN_LESSONS: NavLink = {
   href: '/admin/lessons', label: 'Lessons', icon: 'lessons',
   matchPrefix: '/admin/lessons',
@@ -251,6 +259,7 @@ const OPERATE_LINKS: readonly NavLink[] = [
   ADMIN_USERS,
   ADMIN_QUESTIONS,
   ADMIN_CURRICULUM,
+  ADMIN_TECHNIQUES,
   ADMIN_LESSONS,
   ADMIN_READING_COACH,
   ADMIN_PERFORMANCE,

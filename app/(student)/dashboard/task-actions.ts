@@ -48,6 +48,7 @@ import {
 // scoring is the same intake policy the queue itself grew out of.
 import { buildWeakQueue, selectDrillQuestionIds } from '@/lib/practice/weak-queue';
 import { recommendLessonsForSkills } from '@/lib/lesson/recommend';
+import { partitionByTechnique } from '@/lib/practice/technique-match';
 import type { PlanTaskType } from '@/lib/plan/generate-plan';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -148,9 +149,9 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       const skillCode = str(fc, 'skill_code') ?? str(payload, 'skill_code');
       const domainCode = str(fc, 'domain_code') ?? str(payload, 'domain_code');
       // Syllabus drills (curriculum_unit_steps) may span several skills
-      // (a mixed set) and may pin one question pattern.
+      // (a mixed set) and may narrow to techniques.
       const skillCodes = strList(fc, 'skill_codes') ?? (skillCode ? [skillCode] : null);
-      const patternId = str(fc, 'pattern_id');
+      const techniqueIds = (strList(fc, 'technique_ids') ?? []).filter((id) => UUID_RE.test(id));
       if (!skillCodes && !domainCode) {
         fail('This drill has no skill attached — ask your tutor to fix it.');
       }
@@ -163,51 +164,78 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       // difficulty ramping — the drill warms up before it bites;
       // unknown difficulty sorts last), display_code as the
       // deterministic tiebreak.
-      const baseQuery = () => {
-        let q = supabase
-          .from('questions_v2')
-          .select('id, display_code')
-          .eq('is_published', true)
-          .eq('is_broken', false)
-          .is('deleted_at', null)
-          // Opt-in import batches are excluded from every auto-selector.
-          .eq('pool', 'standard')
-          .order('difficulty', { ascending: true, nullsFirst: false })
-          .order('display_code', { ascending: true })
-          .limit(500);
-        q = skillCodes ? q.in('skill_code', skillCodes) : q.eq('domain_code', domainCode!);
-        return q;
-      };
-      // A pinned pattern narrows the draw; if the bank has nothing
-      // tagged to it yet, fall back to the skill-wide draw rather than
-      // refusing the drill.
-      let candidates: Array<{ id: string }> | null = null;
-      if (patternId && UUID_RE.test(patternId)) {
-        const { data, error: pErr } = await baseQuery().eq('pattern_id', patternId);
-        if (pErr) fail(`Could not load questions: ${pErr.message}`);
-        if (data && data.length > 0) candidates = data;
-      }
-      if (!candidates) {
-        const { data, error: qErr } = await baseQuery();
-        if (qErr) fail(`Could not load questions: ${qErr.message}`);
-        candidates = data ?? [];
-      }
-      const candidateIds = candidates.map((r) => r.id);
-      if (candidateIds.length === 0) {
+      let candidateQuery = supabase
+        .from('questions_v2')
+        .select('id, display_code, skill_code')
+        .eq('is_published', true)
+        .eq('is_broken', false)
+        .is('deleted_at', null)
+        // Opt-in import batches are excluded from every auto-selector.
+        .eq('pool', 'standard')
+        .order('difficulty', { ascending: true, nullsFirst: false })
+        .order('display_code', { ascending: true })
+        .limit(500);
+      candidateQuery = skillCodes
+        ? candidateQuery.in('skill_code', skillCodes)
+        : candidateQuery.eq('domain_code', domainCode!);
+      const { data: candidateRows, error: qErr } = await candidateQuery;
+      if (qErr) fail(`Could not load questions: ${qErr.message}`);
+      let candidates = candidateRows ?? [];
+      if (candidates.length === 0) {
         fail('No published questions match this drill right now.');
       }
 
+      // Technique narrowing: questions matching the techniques (tagged
+      // to them, or in one of their default skills) come first; the
+      // rest of the skills top up the count, so a thin catalog never
+      // starves a drill. The session records how many matched.
+      let matchingIds = new Set<string>();
+      if (techniqueIds.length > 0) {
+        const candidateIds = candidates.map((r) => r.id);
+        const chunks = Array.from({ length: Math.ceil(candidateIds.length / 100) }, (_, i) =>
+          candidateIds.slice(i * 100, (i + 1) * 100),
+        );
+        const [taggedChunks, { data: defaults }] = await Promise.all([
+          Promise.all(
+            chunks.map((ids) =>
+              supabase
+                .from('question_techniques')
+                .select('question_id, technique_id')
+                .in('technique_id', techniqueIds)
+                .in('question_id', ids),
+            ),
+          ),
+          supabase.from('technique_skills').select('technique_id, skill_code').in('technique_id', techniqueIds),
+        ]);
+        const { matching, rest } = partitionByTechnique(candidates, {
+          techniqueIds,
+          tagged: taggedChunks.flatMap((r) => r.data ?? []),
+          defaults: defaults ?? [],
+        });
+        matchingIds = new Set(matching.map((r) => r.id));
+        candidates = [...matching, ...rest];
+      }
+      const candidateIds = candidates.map((r) => r.id);
+
       // Unanswered first, then already-answered to fill the count — a
-      // drill should stretch the student before it repeats them.
+      // drill should stretch the student before it repeats them. Within
+      // a technique-narrowed drill that ordering applies to the matching
+      // questions first, then to the top-up.
       const { data: answered } = await supabase
         .from('attempts')
         .select('question_id')
         .eq('user_id', user.id)
         .in('question_id', candidateIds);
       const answeredSet = new Set((answered ?? []).map((r) => r.question_id));
-      const fresh = candidateIds.filter((id) => !answeredSet.has(id));
-      const repeats = candidateIds.filter((id) => answeredSet.has(id));
-      const questionIds = [...fresh, ...repeats].slice(0, count);
+      const freshFirst = (ids: string[]) => [
+        ...ids.filter((id) => !answeredSet.has(id)),
+        ...ids.filter((id) => answeredSet.has(id)),
+      ];
+      const questionIds = [
+        ...freshFirst(candidateIds.filter((id) => matchingIds.has(id))),
+        ...freshFirst(candidateIds.filter((id) => !matchingIds.has(id))),
+      ].slice(0, count);
+      const techniqueMatched = questionIds.filter((id) => matchingIds.has(id)).length;
 
       const { data: session, error: insErr } = await supabase
         .from('practice_sessions')
@@ -224,7 +252,7 @@ export async function startPlanTask(formData: FormData): Promise<void> {
             skill_code: skillCode,
             skill_codes: skillCodes,
             domain_code: domainCode,
-            ...(patternId ? { pattern_id: patternId } : {}),
+            ...(techniqueIds.length > 0 ? { technique_ids: techniqueIds, technique_matched: techniqueMatched } : {}),
             ...(str(payload, 'drill_role') ? { drill_role: str(payload, 'drill_role') } : {}),
             count,
             actual_size: questionIds.length,

@@ -53,7 +53,7 @@ export interface UnitStepRow {
   lesson_id: string | null;
   role: string | null;
   skill_codes: string[] | null;
-  pattern_id: string | null;
+  technique_ids: string[] | null;
   question_count: number | null;
   minutes: number | null;
   skip_if_completed: boolean;
@@ -86,7 +86,7 @@ export function buildSyllabi(rows: readonly UnitStepRow[]): UnitSyllabi {
       lessonTitle: r.kind === 'lesson' ? (lesson?.title ?? null) : null,
       role: r.kind === 'drill' ? ((r.role as DrillRole | null) ?? 'practice') : null,
       skillCodes: r.skill_codes && r.skill_codes.length > 0 ? r.skill_codes : null,
-      patternId: r.pattern_id,
+      techniqueIds: r.technique_ids && r.technique_ids.length > 0 ? r.technique_ids : null,
       questionCount: r.question_count,
       minutes: r.minutes,
       skipIfCompleted: r.skip_if_completed,
@@ -110,7 +110,7 @@ export async function loadSyllabusInputs(
     supabase
       .from('curriculum_unit_steps')
       .select(
-        'id, position, kind, lesson_id, role, skill_codes, pattern_id, question_count, minutes, skip_if_completed, ' +
+        'id, position, kind, lesson_id, role, skill_codes, technique_ids, question_count, minutes, skip_if_completed, ' +
           'unit:curriculum_units!inner(skill_code, test_type), lesson:lessons(title, status)',
       )
       .eq('unit.test_type', testType)

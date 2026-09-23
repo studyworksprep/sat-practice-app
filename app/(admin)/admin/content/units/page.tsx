@@ -78,7 +78,6 @@ interface UnitCoverage {
   publishedLessons: number;
   draftLessons: number;
   packCovered: boolean;
-  patternCount: number;
   syllabus: UnitSyllabusSummary;
 }
 
@@ -124,7 +123,6 @@ export default async function AdminContentUnitsPage({
     questionRows,
     { data: topicRows },
     packRows,
-    { data: patternRows },
     { data: stepRows },
   ] =
     await Promise.all([
@@ -153,9 +151,6 @@ export default async function AdminContentUnitsPage({
         .select('question_id, questions_v2(domain_code, skill_code)')
         .range(from, to),
     ),
-    // Sub-skill coverage: how far the pattern catalog has been drafted
-    // for each unit (docs/foundations-and-question-patterns.md §3.4).
-    supabase.from('question_patterns').select('skill_code').eq('test_type', 'sat'),
     // Unit syllabi (§7): every unit's ordered steps, for the outline column.
     supabase
       .from('curriculum_unit_steps')
@@ -191,12 +186,6 @@ export default async function AdminContentUnitsPage({
     if (q?.skill_code) packSkills.add(q.skill_code);
   }
 
-  const patternCounts = new Map<string, number>();
-  for (const p of (patternRows ?? []) as Array<{ skill_code: string | null }>) {
-    if (!p.skill_code) continue;
-    patternCounts.set(p.skill_code, (patternCounts.get(p.skill_code) ?? 0) + 1);
-  }
-
   // Per-unit syllabus outline.
   const stepsByUnit = new Map<string, StepRow[]>();
   for (const r of (stepRows ?? []) as StepRow[]) {
@@ -225,7 +214,6 @@ export default async function AdminContentUnitsPage({
     const lessons = lessonsBySkill.get(unit.skill_code) ?? { published: 0, draft: 0 };
     return {
       unit,
-      patternCount: patternCounts.get(unit.skill_code) ?? 0,
       domainName: DOMAIN_BY_CODE.get(unit.domain_code)?.name ?? unit.domain_code,
       skillName: skillNameFor(unit.domain_code, unit.skill_code),
       section: (MATH_DOMAINS.has(unit.domain_code) ? 'Math' : 'R&W') as UnitCoverage['section'],
@@ -277,7 +265,7 @@ export default async function AdminContentUnitsPage({
           {totalQuestions.toLocaleString()} published questions in the bank ·{' '}
           <Link href="/admin/curriculum" className={a.link}>→ Curriculum (syllabi)</Link> ·{' '}
           <Link href="/admin/lessons" className={a.link}>→ Lessons</Link> ·{' '}
-          <Link href="/admin/content/patterns" className={a.link}>→ Question patterns</Link>
+          <Link href="/admin/techniques" className={a.link}>→ Techniques</Link>
         </p>
       </header>
 
@@ -311,7 +299,6 @@ export default async function AdminContentUnitsPage({
                 <Th>Section</Th>
                 <Th style={{ textAlign: 'right' }}>Questions</Th>
                 <Th style={{ textAlign: 'center' }}>Lessons</Th>
-                <Th style={{ textAlign: 'center' }}>Patterns</Th>
                 <Th style={{ textAlign: 'center' }}>Syllabus</Th>
                 <Th style={{ textAlign: 'center' }}>Pack proxy</Th>
                 <Th></Th>
@@ -340,16 +327,6 @@ export default async function AdminContentUnitsPage({
                     ) : (
                       <span style={S.noneBadge}>none</span>
                     )}
-                  </Td>
-                  <Td style={{ textAlign: 'center' }}>
-                    {/* Scoped link into the pattern catalog — the
-                        sub-skill grain of the same unit. */}
-                    <Link
-                      href={`/admin/content/patterns?skill=${encodeURIComponent(c.unit.skill_code)}`}
-                      className={a.link}
-                    >
-                      {c.patternCount > 0 ? c.patternCount : 'add'}
-                    </Link>
                   </Td>
                   <Td style={{ textAlign: 'center' }}>
                     <Link

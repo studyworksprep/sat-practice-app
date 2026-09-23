@@ -191,7 +191,6 @@ async function main() {
       updated_by: null,
       approved_by: null,
       last_fixed_by: null,
-      pattern_id: null,
       deleted_at: null,
     }));
 

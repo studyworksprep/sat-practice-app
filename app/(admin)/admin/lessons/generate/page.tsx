@@ -14,14 +14,14 @@ import {
   DEFAULT_LESSON_PROMPT_TEMPLATE,
   LESSON_GEN_TEMPLATE_NAME,
 } from '@/lib/admin/lessonGenPrompt';
-import { buildPatternBrief, buildSkillBrief } from '@/lib/admin/lessonBriefPrefill';
+import { buildSkillBrief, buildTechniqueBrief } from '@/lib/admin/lessonBriefPrefill';
 import { GenerateClient } from './GenerateClient';
 import a from '../../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
 interface GeneratePageProps {
-  searchParams: Promise<{ skill?: string; pattern?: string }>;
+  searchParams: Promise<{ skill?: string; technique?: string }>;
 }
 
 export default async function AdminLessonsGeneratePage({ searchParams }: GeneratePageProps) {
@@ -35,7 +35,7 @@ export default async function AdminLessonsGeneratePage({ searchParams }: Generat
 
   const sp = (await searchParams) ?? {};
   const skillCode = typeof sp.skill === 'string' ? sp.skill.trim() : '';
-  const patternId = typeof sp.pattern === 'string' ? sp.pattern.trim() : '';
+  const techniqueId = typeof sp.technique === 'string' ? sp.technique.trim() : '';
 
   const [{ data: stored }, initialBrief] = await Promise.all([
     supabase
@@ -43,10 +43,10 @@ export default async function AdminLessonsGeneratePage({ searchParams }: Generat
       .select('template')
       .eq('name', LESSON_GEN_TEMPLATE_NAME)
       .maybeSingle(),
-    // Scope-aware prefill: ?pattern= wins over ?skill=; unknown ids
+    // Scope-aware prefill: ?technique= wins over ?skill=; unknown ids
     // fall back to an empty brief rather than erroring.
-    patternId
-      ? buildPatternBrief(supabase, patternId)
+    techniqueId
+      ? buildTechniqueBrief(supabase, techniqueId)
       : skillCode
         ? buildSkillBrief(supabase, skillCode)
         : Promise.resolve(null),
@@ -76,8 +76,8 @@ export default async function AdminLessonsGeneratePage({ searchParams }: Generat
         isCustomized={Boolean(stored)}
         initialBrief={initialBrief ?? ''}
         scope={
-          patternId && initialBrief
-            ? { grain: 'pattern', patternId }
+          techniqueId && initialBrief
+            ? { grain: 'technique', techniqueId }
             : skillCode && initialBrief
               ? { grain: 'skill', skillCode }
               : null

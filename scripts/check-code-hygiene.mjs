@@ -71,6 +71,13 @@ const RETIRED_TERMS = [
   'resolveLegacyQuestionIds',
   'Question Bank', // pre-rebuild student nav tab; current tab is "Practice"
   'Smart Review', // pre-rebuild review queue; current surface is Review drills
+  // The question-pattern layer, retired 2026-09-23 in favor of techniques
+  // (docs/foundations-and-question-patterns.md §8): the table, its
+  // per-question column, its RPC, and its picker component.
+  'question_patterns',
+  'pattern_id',
+  'set_question_pattern',
+  'QuestionPatternTag',
 ];
 
 // Proper nouns for things that still exist and merely happen to contain a
@@ -86,6 +93,10 @@ const EXEMPT_PHRASES = [
   // College Board's official product name for the source of the question
   // bank's items (docs/authenticity-sheets.md and the plan ledger cite it).
   'Educator Question Bank',
+  // bluebook_submissions.planned_pattern_id names a Bluebook response
+  // pattern in a scoring study — unrelated to the retired question-
+  // pattern layer, and still live.
+  'planned_pattern_id',
 ];
 
 const ALLOWLIST_PREFIXES = [
