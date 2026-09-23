@@ -136,6 +136,7 @@ export default async function AdminCurriculumPage() {
           {attention > 0 ? <> · <strong>{attention}</strong> need attention</> : null} ·{' '}
           <Link href="/admin/lessons" className={a.link}>Lessons</Link> ·{' '}
           <Link href="/admin/techniques" className={a.link}>Techniques</Link> ·{' '}
+          <Link href="/tutor/tagging" className={a.link}>Tag questions</Link> ·{' '}
           <Link href="/admin/content/units" className={a.link}>Coverage &amp; planning settings</Link>
         </p>
       </header>

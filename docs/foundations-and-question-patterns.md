@@ -3,7 +3,8 @@
 > **Status: Living — adopted design, in delivery.** Written 2026-07-26
 > from the owner's pedagogical observations; last verified against the
 > codebase 2026-09-23 (§8 added: **question patterns retired in favor
-> of techniques**, schema + rename shipped as step A of four). §3.4
+> of techniques**; step A (schema + rename) and step B (the per-unit
+> tagging screen) of four shipped, migration applied to production). §3.4
 > step 1 (schema) and step 2 (lesson scope/kind fields, scoped generate
 > prefills) landed in July–August as the *pattern* layer; that layer is
 > gone — the tables, columns, RPC and admin surfaces it introduced were
@@ -284,9 +285,12 @@ across all 3,381 questions. Two paths, both writing the same rows
 (`question_techniques`, via `set_question_techniques()`), and
 `/admin/techniques` shows who tagged what:
 
-1. **The unit's tagging screen** (§8.5 step B): the unit's published
-   questions one at a time, technique checkboxes, "N of M tagged",
-   untagged first. Managers can help; a co-instructor can take a unit.
+1. **The unit's tagging screen** (`/tutor/tagging`, then a unit; §8.5
+   step B): the unit's published questions one at a time with the
+   answer in view, technique checkboxes (keys 1–9), Save & next
+   (Enter), Skip, "N of M tagged", untagged first. Managers can help
+   from their sidebar's "Tag questions"; a co-instructor can take a
+   unit.
 2. **Opportunistically**: any manager or admin reviewing an assignment,
    a practice session, a test result, or a question page gets the
    technique tags under the question and can add one in seconds.
@@ -622,12 +626,21 @@ practice session's `filter_criteria` records `technique_ids` and
 
 - **A. Schema + rename — shipped 2026-09-23.** Everything above; the
   retired terms are enforced by `scripts/check-code-hygiene.mjs`.
-- **B. Tagging screen** per unit (`/admin/curriculum/<unit>/tag`): the
-  unit's published `pool = 'standard'` questions rendered with the
-  shared renderer, technique checkboxes, "N of M tagged", keyboard
-  shortcuts, skip, untagged first; writes through
-  `set_question_techniques()` so managers can help. Leaves a seam for
-  AI suggestions without building them.
+- **B. Tagging screen — shipped 2026-09-23.** `/tutor/tagging` (every
+  unit with its progress; manager + admin) and `/tutor/tagging/<unit>`:
+  the unit's published `pool = 'standard'` questions one at a time,
+  rendered by the shared renderer in teacher mode with the answer and
+  rationale, technique checkboxes with keys 1–9, Save & next (Enter),
+  Skip (S / →), Previous (←), "N of M tagged", an order switch
+  (untagged first · in order · tagged only), and a note of the
+  techniques that already apply to the whole skill. Lives in the tutor
+  tree because the admin tree redirects managers; admins link in from
+  the Curriculum home, each unit editor and the Techniques page,
+  managers from their sidebar. Writes through `set_question_techniques()`.
+  Questions load one step ahead through a Server Action; the first is
+  server-rendered. The seam for AI suggestions is the view-model's
+  `suggestions` list (always empty today), which the panel renders as
+  one-click chips when present.
 - **C. Lessons + practice steps + draw.** Technique picker on the
   lesson editor (admin builder and the tutor draft flow) and the AI
   generate flow; in the unit editor the practice form's "Which
