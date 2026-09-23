@@ -416,6 +416,52 @@ export function buildDrillStepPayload(
   };
 }
 
+/** One unit's syllabus expanded into tasks, in order — the same rules
+ *  the generator's walk applies (completed lessons skipped, a shared
+ *  lesson once, a practice drill titled after the lesson before it, a
+ *  mixed set unlinked). Used by the tutor editor's "add unit" and the
+ *  admin editor's "student sees" preview, so both match the plan. */
+export interface ExpandedSyllabusTask {
+  taskType: 'lesson' | 'drill';
+  payload: Record<string, unknown>;
+}
+
+export function expandUnitSyllabus(
+  s: SkillRef,
+  steps: readonly UnitStep[],
+  opts: {
+    completedLessonIds?: readonly string[] | null;
+    why?: string;
+    /** Default draw for a mixed set; the unit's own skill when omitted. */
+    mixedSkills?: readonly string[] | null;
+  } = {},
+): ExpandedSyllabusTask[] {
+  const completed = new Set(opts.completedLessonIds ?? []);
+  const emitted = new Set<string>();
+  const why = opts.why ?? '';
+  const out: ExpandedSyllabusTask[] = [];
+  let lastLesson: UnitStep | null = null;
+  for (const step of steps) {
+    if (step.kind === 'lesson') {
+      // The practice drill after a skipped lesson still names it.
+      lastLesson = step;
+      const id = step.lessonId ?? null;
+      if (id && ((step.skipIfCompleted ?? true) && completed.has(id) || emitted.has(id))) continue;
+      if (id) emitted.add(id);
+      out.push({ taskType: 'lesson', payload: buildLessonStepPayload(s, step, why) });
+      continue;
+    }
+    out.push({
+      taskType: 'drill',
+      payload: buildDrillStepPayload(s, step, why, {
+        lesson: step.role === 'mixed' ? null : lastLesson,
+        mixedSkills: opts.mixedSkills ?? [s.skillCode],
+      }),
+    });
+  }
+  return out;
+}
+
 /** The built-in pair a unit falls back to when it has no syllabus rows:
  *  a (placeholder) lesson if the unit has lesson coverage, then a
  *  practice drill — the pre-syllabus behavior. */

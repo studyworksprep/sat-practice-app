@@ -535,14 +535,33 @@ Without the flag (or for units with no rows) the pre-syllabus
 behavior is byte-for-byte unchanged; `lib/plan/unit-syllabus.test.mjs`
 covers the walk.
 
-### 7.4 Still to build
+### 7.4 Authoring (landed 2026-09-22)
 
-1. Per-unit syllabus editor in `/admin/content/units` with the same
-   CSV import shape the pattern catalog uses; "add unit" in the tutor
-   plan editor.
-2. Pattern-targeted drills once catalogs exist (the column and the
-   launcher fallback are already in place).
-3. Focus-phase lesson reassignment from per-drill outcomes.
-4. Pacing copy: a syllabus unit is ~2.5 hours, so at 5 hours/week the
+- **Per-unit editor** at `/admin/content/units/<unit>/syllabus`: the
+  ordered steps with a "student sees" column (the generator's own
+  `expandUnitSyllabus`, so the preview is the task list a plan emits),
+  add lesson / drill steps, edit, reorder, remove, and reset to the
+  backfilled default. Any edit stamps `syllabus_authored_at`.
+- **Units worklist** gains a "Unit syllabi" view (per-unit outline,
+  authored/default badge, editor links) and a Syllabus column on the
+  coverage view.
+- **CSV import / export** on that view (`lib/admin/unitSyllabusCsv.ts`,
+  unit-tested; same dry-run-then-commit shape as the pattern catalog).
+  One row per step; columns `skill_code, kind, lesson, role,
+  skill_codes, pattern, question_count, minutes, skip_if_completed,
+  position`; lessons match by exact title or id, patterns by name
+  within the skill. **Replace per unit**: every unit the file names has
+  its whole syllabus replaced; a unit with any rejected row is left
+  untouched. Export round-trips the same columns.
+- **Tutor editor**: "Unit syllabus" in the add-task type list drops a
+  unit's whole syllabus into a week as tutor tasks (completed lessons
+  skipped, one step per day), not gated on the flag.
+
+### 7.5 Still to build
+
+1. Pattern-targeted drills once catalogs exist (the column, the editor
+   field, and the launcher fallback are already in place).
+2. Focus-phase lesson reassignment from per-drill outcomes.
+3. Pacing copy: a syllabus unit is ~2.5 hours, so at 5 hours/week the
    coverage phase covers ~2 units/week and short runways will not fit
    every unit; the rationale should say so.

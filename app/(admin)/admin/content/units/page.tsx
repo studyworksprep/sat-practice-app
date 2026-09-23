@@ -14,9 +14,11 @@
 //     legacy signal has_lesson relied on before real lessons carried
 //     topics.
 //
-// The coverage view ranks and links the content-production work. The
-// syllabus view is the admin editor for the active per-unit settings
-// consumed today: order, expected minutes, and mastery threshold.
+// Three views: coverage ranks and links the content-production work;
+// settings edits the per-unit planning knobs (order, minutes, mastery
+// bar); syllabi (docs/foundations-and-question-patterns.md §7) lists
+// each unit's ordered steps with the CSV importer and links to the
+// per-unit editor.
 
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -29,7 +31,10 @@ import {
   CurriculumUnitSettingsTable,
   type CurriculumUnitSettingsRow,
 } from './CurriculumUnitSettingsTable';
+import { SyllabusImportPanel } from './SyllabusImportPanel';
+import type { ExportableStep } from '@/lib/admin/unitSyllabusCsv';
 import a from '../../../admin.module.css';
+import f from '../../../forms.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +46,30 @@ interface UnitRow {
   sequence: number;
   expected_minutes: number;
   mastery_threshold: number;
+  syllabus_authored_at: string | null;
+}
+
+interface StepRow {
+  id: string;
+  unit_id: string;
+  position: number;
+  kind: string;
+  lesson_id: string | null;
+  role: string | null;
+  skill_codes: string[] | null;
+  pattern_id: string | null;
+  question_count: number | null;
+  minutes: number | null;
+  skip_if_completed: boolean;
+  lesson: { title: string; status: string } | Array<{ title: string; status: string }> | null;
+}
+
+interface UnitSyllabusSummary {
+  count: number;
+  authoredAt: string | null;
+  /** "Lesson: A → Practice → Mixed set" */
+  outline: string;
+  hasUnpublishedLesson: boolean;
 }
 
 interface TopicRow {
@@ -61,6 +90,7 @@ interface UnitCoverage {
   draftLessons: number;
   packCovered: boolean;
   patternCount: number;
+  syllabus: UnitSyllabusSummary;
 }
 
 const DOMAIN_BY_CODE = new Map(SAT_TAXONOMY.map((d) => [d.code, d]));
@@ -91,7 +121,7 @@ export default async function AdminContentUnitsPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = (await searchParams) ?? {};
-  const view = sp.view === 'syllabus' ? 'syllabus' : 'coverage';
+  const view = sp.view === 'syllabus' ? 'syllabus' : sp.view === 'syllabi' ? 'syllabi' : 'coverage';
   const { profile, supabase } = await requireUser();
 
   if (profile.role !== 'admin') {
@@ -100,11 +130,19 @@ export default async function AdminContentUnitsPage({
     redirect('/');
   }
 
-  const [{ data: unitRows }, questionRows, { data: topicRows }, packRows, { data: patternRows }] =
+  const [
+    { data: unitRows },
+    questionRows,
+    { data: topicRows },
+    packRows,
+    { data: patternRows },
+    { data: stepRows },
+    { data: lessonRows },
+  ] =
     await Promise.all([
     supabase
       .from('curriculum_units')
-      .select('id, domain_code, skill_code, title, sequence, expected_minutes, mastery_threshold')
+      .select('id, domain_code, skill_code, title, sequence, expected_minutes, mastery_threshold, syllabus_authored_at')
       .eq('test_type', 'sat')
       .order('sequence', { ascending: true }),
     // async wrapper: the Postgrest builder is a thenable, not a
@@ -129,7 +167,16 @@ export default async function AdminContentUnitsPage({
     ),
     // Sub-skill coverage: how far the pattern catalog has been drafted
     // for each unit (docs/foundations-and-question-patterns.md §3.4).
-    supabase.from('question_patterns').select('skill_code').eq('test_type', 'sat'),
+    supabase.from('question_patterns').select('id, name, skill_code').eq('test_type', 'sat'),
+    // Unit syllabi (§7): every unit's ordered steps, with lesson titles.
+    supabase
+      .from('curriculum_unit_steps')
+      .select(
+        'id, unit_id, position, kind, lesson_id, role, skill_codes, pattern_id, question_count, minutes, skip_if_completed, lesson:lessons(title, status)',
+      )
+      .order('position', { ascending: true }),
+    // The lesson bank, for the importer's title matching.
+    supabase.from('lessons').select('id, title, status').in('status', ['published', 'draft']),
   ]);
 
   // Published-question depth per skill (skill codes are globally
@@ -161,10 +208,53 @@ export default async function AdminContentUnitsPage({
   }
 
   const patternCounts = new Map<string, number>();
-  for (const p of (patternRows ?? []) as Array<{ skill_code: string | null }>) {
+  const patternName = new Map<string, string>();
+  for (const p of (patternRows ?? []) as Array<{ id: string; name: string; skill_code: string | null }>) {
+    patternName.set(p.id, p.name);
     if (!p.skill_code) continue;
     patternCounts.set(p.skill_code, (patternCounts.get(p.skill_code) ?? 0) + 1);
   }
+
+  // Per-unit syllabus outline + the importer's export rows.
+  const stepsByUnit = new Map<string, StepRow[]>();
+  for (const r of (stepRows ?? []) as StepRow[]) {
+    (stepsByUnit.get(r.unit_id) ?? stepsByUnit.set(r.unit_id, []).get(r.unit_id)!).push(r);
+  }
+  const lessonOf = (r: StepRow) => (Array.isArray(r.lesson) ? r.lesson[0] : r.lesson);
+  const summarize = (unit: UnitRow): UnitSyllabusSummary => {
+    const steps = stepsByUnit.get(unit.id) ?? [];
+    return {
+      count: steps.length,
+      authoredAt: unit.syllabus_authored_at,
+      outline: steps
+        .map((r) =>
+          r.kind === 'lesson'
+            ? `Lesson: ${lessonOf(r)?.title ?? '?'}`
+            : r.role === 'mixed'
+              ? 'Mixed set'
+              : 'Practice',
+        )
+        .join(' → '),
+      hasUnpublishedLesson: steps.some((r) => r.kind === 'lesson' && lessonOf(r)?.status !== 'published'),
+    };
+  };
+  const unitById = new Map(((unitRows ?? []) as UnitRow[]).map((u) => [u.id, u]));
+  const exportSteps: ExportableStep[] = ((unitRows ?? []) as UnitRow[]).flatMap((u) =>
+    (stepsByUnit.get(u.id) ?? []).map((r) => ({
+      skill_code: u.skill_code,
+      position: r.position,
+      kind: r.kind,
+      lesson_title: r.kind === 'lesson' ? (lessonOf(r)?.title ?? r.lesson_id) : null,
+      role: r.role,
+      skill_codes: r.skill_codes,
+      pattern_name: r.pattern_id ? (patternName.get(r.pattern_id) ?? r.pattern_id) : null,
+      question_count: r.question_count,
+      minutes: r.minutes,
+      skip_if_completed: r.skip_if_completed,
+    })),
+  );
+  const existingCounts: Record<string, number> = {};
+  for (const [unitId, steps] of stepsByUnit) if (unitById.has(unitId)) existingCounts[unitId] = steps.length;
 
   const coverage: UnitCoverage[] = ((unitRows ?? []) as UnitRow[]).map((unit) => {
     const lessons = lessonsBySkill.get(unit.skill_code) ?? { published: 0, draft: 0 };
@@ -178,8 +268,11 @@ export default async function AdminContentUnitsPage({
       publishedLessons: lessons.published,
       draftLessons: lessons.draft,
       packCovered: packSkills.has(unit.skill_code),
+      syllabus: summarize(unit),
     };
   }).sort(coverageOrder);
+  const bySequence = [...coverage].sort((x, y) => x.unit.sequence - y.unit.sequence);
+  const authoredUnits = coverage.filter((c) => c.syllabus.authoredAt).length;
 
   const totalUnits = coverage.length;
   const withPublished = coverage.filter((c) => c.publishedLessons > 0).length;
@@ -212,7 +305,9 @@ export default async function AdminContentUnitsPage({
         <p className={a.sub}>
           {view === 'coverage'
             ? 'The lesson-production worklist: every SAT unit with its question-bank depth and lesson coverage, weakest coverage first.'
-            : 'The active syllabus settings used by coverage and plan generation: teaching order, expected time, and mastery bar.'}
+            : view === 'syllabi'
+              ? 'Each unit\u2019s ordered syllabus — the lessons it teaches, each followed by its practice set, then a mixed set — which the plan generator walks when the unit_syllabus flag is on.'
+              : 'The active syllabus settings used by coverage and plan generation: teaching order, expected time, and mastery bar.'}
         </p>
         <p className={a.sub}>
           <strong>{withPublished} of {totalUnits}</strong> units have a published
@@ -233,17 +328,83 @@ export default async function AdminContentUnitsPage({
           Coverage priorities
         </Button>
         <Button
+          href="/admin/content/units?view=syllabi"
+          variant={view === 'syllabi' ? 'primary' : 'secondary'}
+          size="sm"
+          aria-current={view === 'syllabi' ? 'page' : undefined}
+        >
+          Unit syllabi
+        </Button>
+        <Button
           href="/admin/content/units?view=syllabus"
           variant={view === 'syllabus' ? 'primary' : 'secondary'}
           size="sm"
           aria-current={view === 'syllabus' ? 'page' : undefined}
         >
-          Syllabus settings
+          Planning settings
         </Button>
       </nav>
 
       {view === 'syllabus' ? (
         <CurriculumUnitSettingsTable units={syllabusUnits} />
+      ) : view === 'syllabi' ? (
+        <>
+          <p className={a.sub}>
+            <strong>{authoredUnits} of {totalUnits}</strong> units have an authored syllabus; the rest carry the
+            backfilled default (one lesson if the skill has one, then a drill).
+          </p>
+          <SyllabusImportPanel
+            units={((unitRows ?? []) as UnitRow[]).map((u) => ({ id: u.id, skill_code: u.skill_code, domain_code: u.domain_code }))}
+            lessons={(lessonRows ?? []) as Array<{ id: string; title: string; status: string }>}
+            patterns={(patternRows ?? []) as Array<{ id: string; name: string; skill_code: string }>}
+            existingCounts={existingCounts}
+            exportSteps={exportSteps}
+          />
+          <section className={a.section}>
+            <Table style={{ fontSize: '0.85rem' }}>
+              <thead>
+                <tr>
+                  <Th style={{ width: '3rem' }}>#</Th>
+                  <Th>Unit</Th>
+                  <Th>Syllabus</Th>
+                  <Th style={{ textAlign: 'center' }}>Status</Th>
+                  <Th></Th>
+                </tr>
+              </thead>
+              <tbody>
+                {bySequence.map((c) => (
+                  <tr key={c.unit.id}>
+                    <Td className={f.tdMuted}>{c.unit.sequence}</Td>
+                    <Td>
+                      <div style={{ fontWeight: 600 }}>{c.unit.title}</div>
+                      <div style={{ color: 'var(--fg3, #6b7280)', fontSize: '0.78rem' }}>
+                        {c.section} · {c.domainName} · <code>{c.unit.skill_code}</code>
+                      </div>
+                    </Td>
+                    <Td style={{ fontSize: '0.8rem' }}>
+                      {c.syllabus.count === 0 ? <span style={S.noneBadge}>no steps</span> : c.syllabus.outline}
+                      {c.syllabus.hasUnpublishedLesson && (
+                        <span style={S.thinBadge}>unpublished lesson</span>
+                      )}
+                    </Td>
+                    <Td style={{ textAlign: 'center' }}>
+                      {c.syllabus.authoredAt ? (
+                        <span style={S.okBadge}>authored</span>
+                      ) : (
+                        <span style={S.draftBadge}>default</span>
+                      )}
+                    </Td>
+                    <Td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      <Link href={`/admin/content/units/${c.unit.id}/syllabus`} className={a.link}>
+                        Edit syllabus →
+                      </Link>
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </section>
+        </>
       ) : (
         <section className={a.section}>
           <Table style={{ fontSize: '0.85rem' }}>
@@ -254,6 +415,7 @@ export default async function AdminContentUnitsPage({
                 <Th style={{ textAlign: 'right' }}>Questions</Th>
                 <Th style={{ textAlign: 'center' }}>Lessons</Th>
                 <Th style={{ textAlign: 'center' }}>Patterns</Th>
+                <Th style={{ textAlign: 'center' }}>Syllabus</Th>
                 <Th style={{ textAlign: 'center' }}>Pack proxy</Th>
                 <Th></Th>
               </tr>
@@ -290,6 +452,16 @@ export default async function AdminContentUnitsPage({
                       className={a.link}
                     >
                       {c.patternCount > 0 ? c.patternCount : 'add'}
+                    </Link>
+                  </Td>
+                  <Td style={{ textAlign: 'center' }}>
+                    <Link
+                      href={`/admin/content/units/${c.unit.id}/syllabus`}
+                      className={a.link}
+                      title={c.syllabus.outline || 'No steps'}
+                    >
+                      {c.syllabus.count} step{c.syllabus.count === 1 ? '' : 's'}
+                      {c.syllabus.authoredAt ? ' ✓' : ''}
                     </Link>
                   </Td>
                   <Td style={{ textAlign: 'center' }}>{c.packCovered ? '✓' : '—'}</Td>

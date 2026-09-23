@@ -155,6 +155,9 @@ export function RegenerateWeekButton({ planId, studentId, weekIndex, action }: R
 // ── Add a manual task ─────────────────────────────────────────────
 
 const ADDABLE_TYPES: Array<{ value: string; label: string; needsUnit: boolean }> = [
+  // The unit's whole syllabus (lessons in order, each with its practice
+  // set, then the mixed set) — see lib/plan/plan-edit-actions.ts.
+  { value: 'unit', label: 'Unit syllabus', needsUnit: true },
   { value: 'drill', label: 'Drill', needsUnit: true },
   { value: 'lesson', label: 'Lesson', needsUnit: true },
   { value: 'review', label: 'Review', needsUnit: false },
