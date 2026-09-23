@@ -69,8 +69,12 @@ export default async function AdminContentPage({ searchParams }) {
           {' '}— staged fixes for questions_v2 rows, side-by-side review + promote.
         </p>
         <p className={a.sub}>
+          <Link href="/admin/curriculum" className={a.link}>→ Curriculum</Link>
+          {' '}— each unit&apos;s syllabus: lessons in teaching order with their practice sets.
+        </p>
+        <p className={a.sub}>
           <Link href="/admin/content/units" className={a.link}>→ Curriculum units</Link>
-          {' '}— lesson coverage plus active syllabus order, time, and mastery settings.
+          {' '}— lesson coverage plus planning settings: unit order, time, and mastery bar.
         </p>
         <p className={a.sub}>
           <Link href="/admin/content/patterns" className={a.link}>→ Question patterns</Link>
