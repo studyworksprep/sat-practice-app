@@ -6,8 +6,8 @@
 > of techniques**; all four steps shipped — A (schema + rename), B (the
 > per-unit tagging screen), C (lesson technique pickers +
 > technique-first practice steps) and D (section foundation syllabi,
-> 2026-09-24). A's and C's migrations are in production; D's migration
-> `20260924150000` is in dev pending the owner's go-ahead). §3.4
+> 2026-09-24). All three migrations — A's, C's and D's — are in
+> production as of 2026-09-24). §3.4
 > step 1 (schema) and step 2 (lesson scope/kind fields, scoped generate
 > prefills) landed in July–August as the *pattern* layer; that layer is
 > gone — the tables, columns, RPC and admin surfaces it introduced were
@@ -703,7 +703,7 @@ practice session's `filter_criteria` records `technique_ids` and
   technique-matching questions first, tops up from the skills and
   records `technique_matched`.
 - **D. Section foundations — shipped 2026-09-24.** Migration
-  `20260924150000` (dev; production on the owner's go-ahead):
+  `20260924150000` (dev and production, 2026-09-24):
   `curriculum_unit_steps.unit_id` nullable, `section` + `test_type`
   columns, exactly one of unit/section per row, positions unique per
   section syllabus. Two "Before …" syllabi on the Curriculum home and a
