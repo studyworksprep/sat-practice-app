@@ -346,7 +346,9 @@
    "blow out the question card." Cap figures to ~480px so a small
    diagram doesn't dominate the screen. Authors who want a
    different size can override via an explicit width attribute,
-   which the sanitizer preserves. */
+   which the sanitizer preserves. College Board's inline math
+   PNGs (`<img role="math">`) are exempt — see the
+   img[role="math"] override in app/styles/next-prose.css. */
 .stem img,
 .stimulus img,
 .stimulusColumn img {
@@ -361,7 +363,9 @@
    The author-supplied inline `max-width: 100%` would otherwise let
    an SVG with no intrinsic width/height stretch to the full pane
    width — hence !important to win over that inline style, and a
-   max-height so a tall/square figure can't dominate the card. */
+   max-height so a tall/square figure can't dominate the card.
+   Inline math PNGs (`<img role="math">`) are exempt — see
+   app/styles/next-prose.css. */
 .optionContent img {
   display: block;
   max-width: min(280px, 100%) !important;
