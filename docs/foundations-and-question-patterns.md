@@ -9,8 +9,7 @@
 > 2026-09-24). All three migrations — A's, C's and D's — are in
 > production as of 2026-09-24; the tutor "covered in session" action and
 > the roster foundations signal, §3.2, shipped 2026-09-24 behind
-> migration `20260924180000` — applied to dev, production on the owner's
-> go-ahead). §3.4
+> migration `20260924180000`, in dev and production the same day). §3.4
 > step 1 (schema) and step 2 (lesson scope/kind fields, scoped generate
 > prefills) landed in July–August as the *pattern* layer; that layer is
 > gone — the tables, columns, RPC and admin surfaces it introduced were
@@ -154,8 +153,8 @@ null), domain-level (`domain_name` set, `skill_code` null), skill-level
 mirrors the same shape for the tutor draft flow.
 
 **`lesson_progress.covered_by` / `covered_at`** — the tutor's "covered
-in session" record (migration `20260924180000`; dev 2026-09-24,
-production on the owner's go-ahead): who recorded a lesson as covered
+in session" record (migration `20260924180000`, applied to dev and
+production 2026-09-24): who recorded a lesson as covered
 live and when, both null for a completion the student earned in the
 app. Written only through `mark_lesson_covered(student, lesson)` and
 `unmark_lesson_covered(student, lesson)` — SECURITY DEFINER, gated on
