@@ -28,13 +28,20 @@ export interface TechniqueRef {
 
 /** A validated, resolved step ready to insert (position assigned by
  *  the planner). */
+export type TechniqueSource = 'lesson' | 'none' | 'explicit';
+
 export interface NormalizedStep {
   kind: 'lesson' | 'drill';
   lessonId: string | null;
   role: 'practice' | 'mixed' | null;
   skillCodes: string[] | null;
-  /** Drill steps: explicit technique narrowing, or null. */
+  /** Drill steps: explicit technique narrowing (techniqueSource =
+   *  'explicit'), else null. */
   techniqueIds: string[] | null;
+  /** Practice drills: 'lesson' (the preceding lesson's techniques —
+   *  the default), 'none', or 'explicit'. Mixed sets are always 'none';
+   *  lesson steps carry the default and ignore it. */
+  techniqueSource: TechniqueSource;
   questionCount: number | null;
   minutes: number | null;
   skipIfCompleted: boolean;
@@ -52,6 +59,8 @@ export interface StepInput {
   skillCodes?: string | string[] | null;
   /** Technique ids separated like skillCodes, or an array. */
   techniqueIds?: string | string[] | null;
+  /** 'lesson' | 'none' | 'explicit'; blank = lesson for practice, none for mixed. */
+  techniqueSource?: string | null;
   questionCount?: string | number | null;
   minutes?: string | number | null;
   skipIfCompleted?: string | boolean | null;
@@ -131,6 +140,7 @@ export function normalizeStepInput(
         role: null,
         skillCodes: null,
         techniqueIds: null,
+        techniqueSource: 'lesson',
         questionCount: null,
         minutes: minutes.value,
         skipIfCompleted: skip,
@@ -152,6 +162,22 @@ export function normalizeStepInput(
       return { ok: false, error: 'that technique does not exist' };
     }
   }
+  // Mixed sets never narrow. A practice set narrows to the preceding
+  // lesson's techniques unless told otherwise; explicit needs a list.
+  const sourceRaw = String(input.techniqueSource ?? '').trim().toLowerCase();
+  let techniqueSource: TechniqueSource;
+  if (roleRaw === 'mixed') {
+    techniqueSource = 'none';
+  } else if (!sourceRaw) {
+    techniqueSource = techniqueIds.length > 0 ? 'explicit' : 'lesson';
+  } else if (sourceRaw === 'lesson' || sourceRaw === 'none' || sourceRaw === 'explicit') {
+    techniqueSource = sourceRaw;
+  } else {
+    return { ok: false, error: `technique_source must be "lesson", "none" or "explicit" (got "${sourceRaw}")` };
+  }
+  if (techniqueSource === 'explicit' && techniqueIds.length === 0) {
+    return { ok: false, error: 'pick at least one technique, or use the lesson\'s techniques' };
+  }
   return {
     ok: true,
     value: {
@@ -159,7 +185,8 @@ export function normalizeStepInput(
       lessonId: null,
       role: roleRaw,
       skillCodes: codes.length > 0 ? codes : null,
-      techniqueIds: techniqueIds.length > 0 ? techniqueIds : null,
+      techniqueIds: techniqueSource === 'explicit' ? techniqueIds : null,
+      techniqueSource,
       questionCount: count.value,
       minutes: minutes.value,
       skipIfCompleted: true,

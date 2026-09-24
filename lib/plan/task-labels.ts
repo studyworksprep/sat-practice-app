@@ -139,6 +139,12 @@ function legacyHeadroomWhy(stored: string): string | null {
  *  targets task is there (owner note 2026-09-17: the line was noise). */
 const SILENT_WHY_CODES: ReadonlySet<DrillWhyCode> = new Set(['coverage', 'targets']);
 
+/** Whether a reason code renders nothing on its own (the generator
+ *  uses this to decide whether a technique note stands alone). */
+export function isSilentWhyCode(code: DrillWhyCode): boolean {
+  return SILENT_WHY_CODES.has(code);
+}
+
 /** Why-this line for a plan task, or null when it carries none.
  *
  *  Precedence: the stored reason code (copy owned here) → a stored

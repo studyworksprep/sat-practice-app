@@ -3,8 +3,11 @@
 > **Status: Living — adopted design, in delivery.** Written 2026-07-26
 > from the owner's pedagogical observations; last verified against the
 > codebase 2026-09-23 (§8 added: **question patterns retired in favor
-> of techniques**; step A (schema + rename) and step B (the per-unit
-> tagging screen) of four shipped, migration applied to production). §3.4
+> of techniques**; steps A (schema + rename), B (the per-unit tagging
+> screen) and C (lesson technique pickers + technique-first practice
+> steps, 2026-09-24) of four shipped; A's migration is in production,
+> C's migration `20260924120000` is in dev pending the owner's
+> go-ahead). §3.4
 > step 1 (schema) and step 2 (lesson scope/kind fields, scoped generate
 > prefills) landed in July–August as the *pattern* layer; that layer is
 > gone — the tables, columns, RPC and admin surfaces it introduced were
@@ -426,7 +429,8 @@ is intra-unit detail.
 | `lesson_id` | the bank lesson (kind = lesson); the same lesson may appear in several units |
 | `role` | `practice` (the questions for the lesson just taught) or `mixed` (homework across the unit and its domain's earlier units) |
 | `skill_codes` | widens a drill beyond the unit's skill; null = the unit's skill, or for a mixed set the domain's units walked so far (max 4) |
-| `technique_ids` | optional explicit narrowing for a practice step: questions matching these techniques (tagged, or default-applicable by skill) are drawn first, topped up from the skills when short. Null = no explicit narrowing; from step C the launcher narrows to the preceding lesson's techniques by default. Mixed sets ignore techniques. |
+| `technique_source` | practice steps: `lesson` (default) = narrow to the techniques of the lesson step just before it (`lesson_techniques`); `none` = the whole skill (or the chosen skills); `explicit` = this step's `technique_ids`. Mixed sets never narrow; lesson steps ignore it. |
+| `technique_ids` | the explicit list when `technique_source = 'explicit'`, else null. Matching questions (tagged, or default-applicable by skill) are drawn first and the launcher tops up from the skills when short; the task's why-line says so and names the techniques. |
 | `question_count`, `minutes` | null = 8 (practice) / 10 (mixed) and the unit's minutes |
 | `skip_if_completed` | lesson steps: skip when `lesson_progress.completed_at` is set (default true) |
 
@@ -490,14 +494,20 @@ sidebar gains **Curriculum** (`/admin/curriculum`):
   <units>"; lessons tagged to the unit listed first). Practice and
   mixed sets ask "How many questions?" and "Which questions?" — this
   unit's skill (or, for a mixed set, everything covered so far in the
-  domain) or skills chosen by name; a practice set can additionally
-  pick "Which techniques?" (checkboxes over the catalog, the unit's
+  domain) or skills chosen by name. A practice set's "Which
+  questions?" offers four answers (step C): **Questions for the lesson
+  just taught — its techniques first** (preselected), **Any question
+  in the skill**, **Choose the skills myself**, and **Specific
+  techniques** (checkboxes over the catalog, the unit's
   default-applicable techniques first, with an inline "New technique"
-  form that pre-fills this unit's skill as its default). A "what a
-  student will see" panel runs the generator's own
-  `expandUnitSyllabus`, so the preview is the exact task list a plan
-  emits. "Start over with the default" resets the unit. Every edit
-  stamps `syllabus_authored_at`.
+  form that pre-fills this unit's skill as its default). Step cards
+  say what a practice set narrows to ("Solve by regression first", or
+  "any technique (the lesson before it has no techniques yet)") and
+  lesson cards list what they teach. A "what a student will see" panel
+  runs the generator's own `expandUnitSyllabus`, so the preview is the
+  exact task list a plan emits, why-lines included. "Start over with
+  the default" resets the unit. Every edit stamps
+  `syllabus_authored_at`.
 - **Tutor editor**: "Unit syllabus" in the add-task type list drops a
   unit's whole syllabus into a week as tutor tasks (completed lessons
   skipped, one step per day), not gated on the flag.
@@ -510,9 +520,8 @@ sidebar gains **Curriculum** (`/admin/curriculum`):
 
 ### 7.5 Still to build
 
-1. The technique layer's steps B–D (§8.5): the per-unit tagging screen,
-   "questions for the lesson just taught" as the default practice
-   option, and the section foundation syllabi.
+1. The technique layer's step D (§8.5): the section foundation
+   syllabi.
 2. Focus-phase lesson reassignment from per-drill outcomes.
 3. Pacing copy: a syllabus unit is ~2.5 hours, so at 5 hours/week the
    coverage phase covers ~2 units/week and short runways will not fit
@@ -641,15 +650,29 @@ practice session's `filter_criteria` records `technique_ids` and
   server-rendered. The seam for AI suggestions is the view-model's
   `suggestions` list (always empty today), which the panel renders as
   one-click chips when present.
-- **C. Lessons + practice steps + draw.** Technique picker on the
-  lesson editor (admin builder and the tutor draft flow) and the AI
-  generate flow; in the unit editor the practice form's "Which
-  questions?" gains a first, preselected "Questions for the lesson just
-  taught (its techniques)" beside "This unit's skill", "Choose skills"
-  and "Specific techniques"; `buildDrillStepPayload` writes the
-  preceding lesson's techniques into `filter_criteria` by default; the
-  generator stays pure and unit-tested and the editor preview keeps
-  using `expandUnitSyllabus`.
+- **C. Lessons + practice steps + draw — shipped 2026-09-24.**
+  Migration `20260924120000` (dev; production on the owner's
+  go-ahead): `curriculum_unit_steps.technique_source` (`lesson` |
+  `none` | `explicit`, default `lesson`) and
+  `lesson_revision_techniques`, with `create_lesson_revision` copying a
+  lesson's techniques into a draft and `publish_lesson_revision`
+  writing them back. A "Techniques" section on the lesson editor (admin
+  builder and the tutor draft flow) links what a lesson teaches; the AI
+  generate page has a "Techniques this lesson teaches" picker
+  (preselected from `?technique=`) saved with the lesson; the admin
+  review of a proposal counts technique changes. In the unit editor a
+  practice set's "Which questions?" defaults to the lesson just taught.
+  The generator (pure, `lib/plan/unit-syllabus.test.mjs`) carries each
+  lesson step's techniques and writes the preceding lesson's
+  `technique_ids` into a practice drill's `filter_criteria` unless the
+  step says `none` or `explicit`; a completed (skipped) lesson still
+  narrows the practice after it; mixed sets never narrow. The drill's
+  why-line says what comes first ("Questions solved by Solve by
+  regression come first, then the rest of Linear equations in one
+  variable."); a real reason (focus phase) precedes it, a silent
+  coverage/targets code yields to it. The launcher (step A) draws
+  technique-matching questions first, tops up from the skills and
+  records `technique_matched`.
 - **D. Section foundations.** `curriculum_unit_steps` rows scoped to a
   section (nullable `unit_id` + `section`, exactly one set), two
   "Before …" syllabi in the Curriculum home and editor, the generator

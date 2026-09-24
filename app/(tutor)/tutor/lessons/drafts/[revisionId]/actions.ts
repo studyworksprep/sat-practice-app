@@ -166,6 +166,50 @@ export async function removeRevisionTopic(_prev: unknown, formData: FormData) {
   return actionOk({ savedAt: Date.now() });
 }
 
+// Techniques the draft teaches (lesson_revision_techniques). Copied
+// from the base lesson when the revision opened; publish writes them
+// back (docs/foundations-and-question-patterns.md §8.5 step C).
+export async function addRevisionTechnique(_prev: unknown, formData: FormData) {
+  const revisionId = revisionIdFrom(formData);
+  const techniqueId = String(formData.get('technique_id') || '').trim();
+  if (!revisionId) return actionFail('Draft id required.');
+  if (!UUID_RE.test(techniqueId)) return actionFail('Pick a technique.');
+  let ctx;
+  try { ctx = await editableRevision(revisionId); }
+  catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unable to add a technique.');
+  }
+  const { error } = await ctx.supabase
+    .from('lesson_revision_techniques')
+    .insert({ revision_id: revisionId, technique_id: techniqueId });
+  if (error) {
+    if (error.code === '23505') return actionFail('That technique is already on this draft.');
+    return actionFail(`Failed: ${error.message}`);
+  }
+  await ctx.supabase.from('lesson_revisions').update({ updated_at: new Date().toISOString() }).eq('id', revisionId);
+  revalidateDraft(revisionId);
+  return actionOk({ savedAt: Date.now() });
+}
+
+export async function removeRevisionTechnique(_prev: unknown, formData: FormData) {
+  const revisionId = revisionIdFrom(formData);
+  const techniqueId = String(formData.get('technique_id') || '').trim();
+  if (!revisionId || !UUID_RE.test(techniqueId)) return actionFail('Draft and technique ids are required.');
+  let ctx;
+  try { ctx = await editableRevision(revisionId); }
+  catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unable to remove the technique.');
+  }
+  const { error } = await ctx.supabase.from('lesson_revision_techniques')
+    .delete().eq('revision_id', revisionId).eq('technique_id', techniqueId);
+  if (error) return actionFail(`Failed: ${error.message}`);
+  await ctx.supabase.from('lesson_revisions').update({ updated_at: new Date().toISOString() }).eq('id', revisionId);
+  revalidateDraft(revisionId);
+  return actionOk({ savedAt: Date.now() });
+}
+
 export async function deleteRevision(_prev: unknown, formData: FormData) {
   const revisionId = revisionIdFrom(formData);
   if (!revisionId) return actionFail('Draft id required.');

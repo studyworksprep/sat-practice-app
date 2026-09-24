@@ -22,7 +22,7 @@
 // or targets (the student's own picks) — and the MODE decides which
 // phases a plan gets and how long each runs.
 
-import { domainDisplayName, skillDisplayName, renderDrillWhy } from './task-labels.ts';
+import { domainDisplayName, skillDisplayName, renderDrillWhy, isSilentWhyCode } from './task-labels.ts';
 import type { DrillWhyCode } from './task-labels.ts';
 import { VOLUME_CURVE } from '../mastery.ts';
 
@@ -69,6 +69,9 @@ export type UnitStepKind = 'lesson' | 'drill';
 /** practice = the questions for the lesson just taught; mixed = homework
  *  across the unit (and its domain's earlier units) so far. */
 export type DrillRole = 'practice' | 'mixed';
+/** Where a practice drill's technique narrowing comes from
+ *  (curriculum_unit_steps.technique_source). */
+export type TechniqueSource = 'lesson' | 'none' | 'explicit';
 
 export interface UnitStep {
   /** curriculum_unit_steps.id; null for a synthesized default step. */
@@ -83,10 +86,18 @@ export interface UnitStep {
   /** Skill codes the drill draws from; null = the unit's own skill (or,
    *  for a mixed set, the domain's units walked so far). */
   skillCodes?: readonly string[] | null;
-  /** Optional explicit narrowing: questions matching these techniques
-   *  (tagged, or default-applicable by skill) are drawn first and the
-   *  launcher tops up from the skills when short. */
+  /** kind = drill: explicit technique narrowing (techniqueSource =
+   *  'explicit'). kind = lesson: the techniques the lesson teaches
+   *  (lesson_techniques), which the practice step after it narrows to
+   *  by default. Matching questions — tagged, or default-applicable by
+   *  skill — are drawn first; the launcher tops up from the skills. */
   techniqueIds?: readonly string[] | null;
+  /** Names for techniqueIds, same order, for titles and why-lines. */
+  techniqueNames?: readonly string[] | null;
+  /** kind = drill: 'lesson' (default) narrows a practice drill to the
+   *  preceding lesson step's techniques; 'none' draws the whole skill;
+   *  'explicit' uses this step's techniqueIds. Mixed sets never narrow. */
+  techniqueSource?: TechniqueSource | null;
   questionCount?: number | null;
   minutes?: number | null;
   /** Lesson steps: skip when the student already completed the lesson
@@ -364,14 +375,52 @@ export function buildLessonStepPayload(
     skill_code: s.skillCode,
     ...(step.lessonId ? { lesson_id: step.lessonId } : {}),
     ...(step.id ? { unit_step_id: step.id } : {}),
+    ...(step.techniqueNames && step.techniqueNames.length > 0
+      ? { technique_names: [...step.techniqueNames] }
+      : {}),
     title: step.lessonTitle ? `Lesson: ${step.lessonTitle}` : `Lesson: ${label}`,
     minutes: step.minutes ?? s.expectedMinutes ?? AVG_TASK_MINUTES,
     why,
   };
 }
 
+/** "A and B", "A, B, and C". */
+function joinNames(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? '';
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+}
+
+/** The techniques a drill step narrows to: its own (explicit), the
+ *  preceding lesson's (the default), or none. Mixed sets never narrow. */
+export function resolveTechniqueNarrowing(
+  step: UnitStep,
+  lesson: UnitStep | null | undefined,
+): { ids: string[]; names: string[] } {
+  const role: DrillRole = step.role ?? 'practice';
+  if (role === 'mixed') return { ids: [], names: [] };
+  // A step that carries its own ids without saying so is explicit
+  // (the same rule the editor's validator applies to blank input).
+  const source: TechniqueSource =
+    step.techniqueSource ?? (step.techniqueIds && step.techniqueIds.length > 0 ? 'explicit' : 'lesson');
+  const from = source === 'explicit' ? step : source === 'lesson' ? lesson : null;
+  const ids = [...(from?.techniqueIds ?? [])];
+  if (ids.length === 0) return { ids: [], names: [] };
+  const names = (from?.techniqueNames ?? []).filter((n): n is string => Boolean(n));
+  return { ids, names: names.length === ids.length ? [...names] : [] };
+}
+
+/** The why-line for a narrowed drill: says what comes first and that
+ *  the rest of the skill fills in (docs §8.1 decision 5). */
+export function techniqueWhyLine(names: readonly string[], skillLabel: string): string {
+  return names.length > 0
+    ? `Questions solved by ${joinNames(names)} come first, then the rest of ${skillLabel}.`
+    : `Questions for the lesson's techniques come first, then the rest of ${skillLabel}.`;
+}
+
 /** A syllabus drill step. `lesson` is the lesson step it follows (the
- *  practice drill exercises that lesson, and the title says so);
+ *  practice drill exercises that lesson, the title says so, and by
+ *  default the drill narrows to the techniques that lesson teaches);
  *  `mixedSkills` is the default draw for a mixed set. The
  *  filter_criteria shape extends the plain drill's with skill_codes and
  *  optional technique_ids, which the launcher honors (technique-matching
@@ -399,6 +448,15 @@ export function buildDrillStepPayload(
       : opts.lesson?.lessonTitle
         ? `Practice: ${opts.lesson.lessonTitle}`
         : `Drill: ${label}`;
+  const narrowing = resolveTechniqueNarrowing(step, opts.lesson);
+  const narrowed = narrowing.ids.length > 0;
+  const reasonText = reason ? renderDrillWhy(reason.code, reason.attempts) : why;
+  // A narrowed drill says so in its why-line. A silent phase code
+  // (coverage / targets) yields to the technique note; a real reason
+  // precedes it. The code itself is dropped then — the rendered line
+  // would otherwise take precedence and hide the note.
+  const techniqueWhy = narrowed ? techniqueWhyLine(narrowing.names, label) : null;
+  const leadIn = reason ? (isSilentWhyCode(reason.code) ? '' : reasonText) : why;
   return {
     domain_code: s.domainCode,
     skill_code: s.skillCode,
@@ -408,14 +466,13 @@ export function buildDrillStepPayload(
       skill_code: s.skillCode,
       skill_codes: skillCodes,
       count,
-      ...(step.techniqueIds && step.techniqueIds.length > 0
-        ? { technique_ids: [...step.techniqueIds] }
-        : {}),
+      ...(narrowed ? { technique_ids: narrowing.ids } : {}),
     },
+    ...(narrowed && narrowing.names.length > 0 ? { technique_names: narrowing.names } : {}),
     title,
     minutes: step.minutes ?? Math.min(s.expectedMinutes ?? AVG_TASK_MINUTES, AVG_TASK_MINUTES),
-    why: reason ? renderDrillWhy(reason.code, reason.attempts) : why,
-    ...(reason ? { why_code: reason.code, why_attempts: reason.attempts } : {}),
+    why: techniqueWhy ? [leadIn, techniqueWhy].filter(Boolean).join(' ') : reasonText,
+    ...(reason && !techniqueWhy ? { why_code: reason.code, why_attempts: reason.attempts } : {}),
     drill_role: role,
     ...(step.id ? { unit_step_id: step.id } : {}),
     ...(opts.lesson?.lessonId ? { lesson_id: opts.lesson.lessonId } : {}),

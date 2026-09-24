@@ -43,7 +43,7 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
     await Promise.all([
       supabase
         .from('curriculum_unit_steps')
-        .select('id, position, kind, lesson_id, role, skill_codes, technique_ids, question_count, minutes, skip_if_completed, lesson:lessons(title, status)')
+        .select('id, position, kind, lesson_id, role, skill_codes, technique_ids, technique_source, question_count, minutes, skip_if_completed, lesson:lessons(title, status, lesson_techniques(technique_id))')
         .eq('unit_id', unit.id)
         .order('position', { ascending: true }),
       supabase
@@ -110,8 +110,17 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
     skillCodes: (t.technique_skills ?? []).map((s) => s.skill_code),
   }));
   const techniqueName = new Map(techniques.map((t) => [t.id, t.name]));
+  type LessonEmbed = { title: string; status: string; lesson_techniques: Array<{ technique_id: string }> | null };
   const steps: EditorStep[] = (stepRows ?? []).map((r) => {
-    const lesson = Array.isArray(r.lesson) ? r.lesson[0] : r.lesson;
+    const lesson = (Array.isArray(r.lesson) ? r.lesson[0] : r.lesson) as LessonEmbed | null;
+    // A lesson step carries the techniques its lesson teaches; a drill
+    // step carries its own explicit narrowing (if any).
+    const techniqueIds: string[] =
+      r.kind === 'lesson'
+        ? (lesson?.lesson_techniques ?? []).map((t) => t.technique_id)
+        : r.technique_ids && r.technique_ids.length > 0
+          ? r.technique_ids
+          : [];
     return {
       id: r.id,
       position: r.position,
@@ -121,8 +130,9 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
       lessonStatus: lesson?.status ?? null,
       role: r.role === 'mixed' ? 'mixed' : r.role === 'practice' ? 'practice' : null,
       skillCodes: r.skill_codes,
-      techniqueIds: r.technique_ids && r.technique_ids.length > 0 ? r.technique_ids : null,
-      techniqueNames: (r.technique_ids ?? []).map((id) => techniqueName.get(id)).filter((n): n is string => Boolean(n)),
+      techniqueIds: techniqueIds.length > 0 ? techniqueIds : null,
+      techniqueNames: techniqueIds.map((id) => techniqueName.get(id)).filter((n): n is string => Boolean(n)),
+      techniqueSource: r.technique_source === 'none' || r.technique_source === 'explicit' ? r.technique_source : 'lesson',
       questionCount: r.question_count,
       minutes: r.minutes,
       skipIfCompleted: r.skip_if_completed,

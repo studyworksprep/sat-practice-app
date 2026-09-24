@@ -4,6 +4,10 @@
 //                       kind (+ foundation order).
 //   2. Scope tags     — the lesson_topics rows: which section or skill
 //                       this lesson teaches.
+//   2b. Techniques    — the lesson_techniques rows: what the lesson
+//                       teaches the student to DO (graphing, regression,
+//                       Good Cop Bad Cop…); the practice set after it
+//                       in a unit's syllabus narrows to these.
 //   3. Lesson canvas   — the WYSIWYG block editor (CanvasEditor): a
 //                       single vertical canvas with inline editing,
 //                       drag-to-reorder, and between-block inserters.
@@ -22,10 +26,24 @@ import { CanvasEditor } from './CanvasEditor';
 import a from '../../../admin.module.css';
 import f from '../../../forms.module.css';
 
+/**
+ * @param {object} props
+ * @param {any} props.lesson
+ * @param {any[]} props.initialBlocks
+ * @param {any[]} [props.topics]
+ * @param {Array<{ technique_id: string, name: string }>} [props.techniques]
+ *   - lesson_techniques rows (or the revision's copy) with names
+ * @param {Array<{ id: string, name: string, description: string, section: string | null }>} [props.techniqueCatalog]
+ *   - the whole catalog, for the add select
+ * @param {any} props.actions
+ * @param {boolean} [props.revisionMode]
+ */
 export function EditorClient({
   lesson,
   initialBlocks,
   topics,
+  techniques = [],
+  techniqueCatalog = [],
   actions,
   revisionMode = false,
 }) {
@@ -42,6 +60,15 @@ export function EditorClient({
         addAction={actions.addTopic}
         removeAction={actions.removeTopic}
       />
+      {actions.addTechnique && actions.removeTechnique && (
+        <TechniquesSection
+          lessonId={lesson.id}
+          techniques={techniques ?? []}
+          catalog={techniqueCatalog ?? []}
+          addAction={actions.addTechnique}
+          removeAction={actions.removeTechnique}
+        />
+      )}
       <CanvasEditor
         lessonId={lesson.id}
         initialBlocks={initialBlocks}
@@ -260,6 +287,97 @@ function ScopeTagsSection({ lessonId, topics, addAction, removeAction }) {
         </label>
         <Button type="submit" variant="secondary" disabled={addPending || !choice}>
           {addPending ? 'Adding…' : 'Add tag'}
+        </Button>
+        {addState?.ok === false && !addPending && (
+          <span className={f.err}>{addState.error}</span>
+        )}
+        {removeState?.ok === false && !removePending && (
+          <span className={f.err}>{removeState.error}</span>
+        )}
+      </form>
+    </section>
+  );
+}
+
+// ─── Techniques ──────────────────────────────────────────────────
+//
+// lesson_techniques editor: chips for the techniques this lesson
+// teaches, plus a select to add one from the catalog (grouped by
+// section). Same form-per-chip shape as the scope tags so the two
+// sections behave alike; the actions differ per host (admin lesson vs
+// tutor draft revision).
+
+const SECTION_GROUPS = [
+  ['math', 'Math'],
+  ['reading_writing', 'Reading & Writing'],
+  [null, 'Both sections'],
+];
+
+function TechniquesSection({ lessonId, techniques, catalog, addAction, removeAction }) {
+  const [addState, addFormAction, addPending] = useActionState(addAction, null);
+  const [removeState, removeFormAction, removePending] = useActionState(removeAction, null);
+  const [choice, setChoice] = useState('');
+
+  const linked = new Set(techniques.map((t) => t.technique_id));
+  const addable = catalog.filter((t) => !linked.has(t.id));
+
+  return (
+    <section className={a.section}>
+      <h2 className={a.h2}>Techniques</h2>
+      <p className={f.muted} style={{ fontSize: 13, marginTop: -4 }}>
+        What this lesson teaches the student to <em>do</em>. In a unit&rsquo;s syllabus, the
+        practice set after this lesson draws questions solved with these techniques first.
+      </p>
+
+      <div style={S.tagRow}>
+        {techniques.length === 0 && (
+          <span className={f.muted} style={{ fontSize: 13 }}>
+            No techniques yet &mdash; the practice set after this lesson uses the whole skill.
+          </span>
+        )}
+        {techniques.map((t) => (
+          <form key={t.technique_id} action={removeFormAction} style={S.tagChipForm}>
+            <input type="hidden" name="lesson_id" value={lessonId} />
+            <input type="hidden" name="technique_id" value={t.technique_id} />
+            <span style={S.tagChip}>
+              {t.name}
+              <button
+                type="submit"
+                disabled={removePending}
+                title="Remove technique"
+                style={S.tagRemove}
+              >
+                ×
+              </button>
+            </span>
+          </form>
+        ))}
+      </div>
+
+      <form action={addFormAction} className={f.actions} style={{ alignItems: 'flex-end' }}>
+        <input type="hidden" name="lesson_id" value={lessonId} />
+        <input type="hidden" name="technique_id" value={choice} />
+        <label className={f.label} style={{ minWidth: 320 }}>
+          <span className={f.labelText}>Add technique</span>
+          <select value={choice} onChange={(e) => setChoice(e.target.value)} className={f.select}>
+            <option value="">{catalog.length === 0 ? 'No techniques in the catalog yet' : 'Pick a technique…'}</option>
+            {SECTION_GROUPS.map(([section, label]) => {
+              const items = addable.filter((t) => (t.section ?? null) === section);
+              if (items.length === 0) return null;
+              return (
+                <optgroup key={label} label={label}>
+                  {items.map((t) => (
+                    <option key={t.id} value={t.id} title={t.description}>
+                      {t.name}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
+          </select>
+        </label>
+        <Button type="submit" variant="secondary" disabled={addPending || !choice}>
+          {addPending ? 'Adding…' : 'Add technique'}
         </Button>
         {addState?.ok === false && !addPending && (
           <span className={f.err}>{addState.error}</span>
