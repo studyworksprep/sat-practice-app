@@ -1,17 +1,19 @@
 // Admin Server Actions for the curriculum editor (curriculum_unit_steps;
-// docs/foundations-and-question-patterns.md §7).
+// docs/foundations-and-question-patterns.md §7 and §8.5 step D).
 //
-// Admin-authored reference data in the curriculum_units mold: every
-// mutation is requireRole(['admin']) on the RLS-scoped client — the
-// table's policies (migration 20260922120000) grant admins
+// A syllabus belongs to one TARGET: a curriculum unit, or a section's
+// foundation syllabus ("Before Math" / "Before Reading & Writing" —
+// rows with a section and no unit). Every mutation takes or derives
+// that target and is requireRole(['admin']) on the RLS-scoped client —
+// the table's policies (migration 20260922120000) grant admins
 // insert/update/delete, and feature_flags' ff_write policy is
 // is_admin() too, so the "plans use these syllabi" switch needs no
 // service role.
 //
-// Positions are unique per unit, so inserting or reordering renumbers
-// through a +1000 offset (two passes) rather than shifting values in
-// place — a direct shift would trip the (unit_id, position) unique
-// index mid-write.
+// Positions are unique per syllabus, so inserting or reordering
+// renumbers through a +1000 offset (two passes) rather than shifting
+// values in place — a direct shift would trip the unique index
+// mid-write.
 
 'use server';
 
@@ -25,6 +27,12 @@ import type { ActionResult, AuthContext } from '@/lib/types';
 const RENUMBER_OFFSET = 1000;
 const DEFAULT_DRILL_COUNT = 8;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const TEST_TYPE = 'sat';
+
+export type SyllabusSection = 'math' | 'reading_writing';
+
+/** Which syllabus a step belongs to. */
+export type SyllabusTarget = { unitId: string; section?: undefined } | { section: SyllabusSection; unitId?: undefined };
 
 export interface StepFormInput extends StepInput {
   kind: string;
@@ -41,44 +49,71 @@ function fromErr(err: unknown): ActionResult {
   return actionFail('Unexpected error');
 }
 
+function validTarget(target: SyllabusTarget | null | undefined): SyllabusTarget | null {
+  if (!target) return null;
+  if (target.unitId) return UUID_RE.test(target.unitId) ? { unitId: target.unitId } : null;
+  if (target.section === 'math' || target.section === 'reading_writing') return { section: target.section };
+  return null;
+}
+
+/** The target a stored step belongs to. */
+function targetOfRow(row: { unit_id: string | null; section: string | null }): SyllabusTarget | null {
+  if (row.unit_id) return { unitId: row.unit_id };
+  if (row.section === 'math' || row.section === 'reading_writing') return { section: row.section };
+  return null;
+}
+
+function editorPath(target: SyllabusTarget): string {
+  return target.unitId ? `/admin/curriculum/${target.unitId}` : `/admin/curriculum/section/${target.section}`;
+}
+
 // Syllabi feed plan generation everywhere a plan is composed; the
 // units worklist shows their outlines; the tutor tree reads them on
 // demand, so its layout cache goes too.
-function revalidateSyllabusSurfaces(unitId?: string) {
+function revalidateSyllabusSurfaces(target?: SyllabusTarget) {
   revalidatePath('/admin/curriculum');
-  if (unitId) revalidatePath(`/admin/curriculum/${unitId}`);
+  if (target) revalidatePath(editorPath(target));
   revalidatePath('/admin/content/units');
   revalidatePath('/tutor/students', 'layout');
 }
 
-interface UnitCtx {
-  unit: { id: string; skill_code: string; domain_code: string };
+interface TargetCtx {
+  target: SyllabusTarget;
+  /** The unit's skill, for unit targets. */
+  skillCode: string | null;
   lessonIds: Set<string>;
   /** The whole catalog: techniques cut across skills, so any may narrow a drill. */
   techniques: Array<{ id: string; name: string }>;
 }
 
-async function loadUnitCtx(supabase: Supabase, unitId: string): Promise<UnitCtx | null> {
-  const { data: unit } = await supabase
-    .from('curriculum_units')
-    .select('id, skill_code, domain_code')
-    .eq('id', unitId)
-    .maybeSingle();
-  if (!unit) return null;
+async function loadTargetCtx(supabase: Supabase, target: SyllabusTarget): Promise<TargetCtx | null> {
+  let skillCode: string | null = null;
+  if (target.unitId) {
+    const { data: unit } = await supabase
+      .from('curriculum_units')
+      .select('id, skill_code')
+      .eq('id', target.unitId)
+      .maybeSingle();
+    if (!unit) return null;
+    skillCode = unit.skill_code;
+  }
   const [{ data: lessons }, { data: techniques }] = await Promise.all([
     supabase.from('lessons').select('id'),
-    supabase.from('techniques').select('id, name').eq('test_type', 'sat'),
+    supabase.from('techniques').select('id, name').eq('test_type', TEST_TYPE),
   ]);
   return {
-    unit,
+    target,
+    skillCode,
     lessonIds: new Set((lessons ?? []).map((l) => l.id)),
     techniques: techniques ?? [],
   };
 }
 
-function rowFor(unitId: string, position: number, step: NormalizedStep) {
+function rowFor(target: SyllabusTarget, position: number, step: NormalizedStep) {
   return {
-    unit_id: unitId,
+    unit_id: target.unitId ?? null,
+    section: target.section ?? null,
+    test_type: TEST_TYPE,
     position,
     kind: step.kind,
     lesson_id: step.lessonId,
@@ -93,31 +128,34 @@ function rowFor(unitId: string, position: number, step: NormalizedStep) {
   };
 }
 
-async function stampAuthored(supabase: Supabase, unitId: string, authored: boolean) {
+/** Marks a unit whose syllabus a human authored. Section syllabi have
+ *  no backfilled default, so "built" is simply "has steps". */
+async function stampAuthored(supabase: Supabase, target: SyllabusTarget, authored: boolean) {
+  if (!target.unitId) return;
   await supabase
     .from('curriculum_units')
     .update({ syllabus_authored_at: authored ? new Date().toISOString() : null })
-    .eq('id', unitId);
+    .eq('id', target.unitId);
 }
 
-async function orderedStepIds(supabase: Supabase, unitId: string): Promise<string[]> {
-  const { data } = await supabase
-    .from('curriculum_unit_steps')
-    .select('id')
-    .eq('unit_id', unitId)
+function stepsOf(supabase: Supabase, target: SyllabusTarget) {
+  const q = supabase.from('curriculum_unit_steps').select('id, position');
+  if (target.unitId) return q.eq('unit_id', target.unitId);
+  return q.eq('section', target.section ?? '').eq('test_type', TEST_TYPE).is('unit_id', null);
+}
+
+async function orderedStepIds(supabase: Supabase, target: SyllabusTarget): Promise<string[]> {
+  const { data } = await stepsOf(supabase, target)
     .order('position', { ascending: true })
     .order('id', { ascending: true });
   return (data ?? []).map((r) => r.id);
 }
 
-/** Renumber a unit's steps 1..n in the given id order. Two passes
+/** Renumber a syllabus's steps 1..n in the given id order. Two passes
  *  through an offset so no intermediate state violates the unique
- *  (unit_id, position) index. */
-async function renumber(supabase: Supabase, unitId: string, orderedIds: string[]): Promise<string | null> {
-  const { data: rows, error } = await supabase
-    .from('curriculum_unit_steps')
-    .select('id, position')
-    .eq('unit_id', unitId);
+ *  position index. */
+async function renumber(supabase: Supabase, target: SyllabusTarget, orderedIds: string[]): Promise<string | null> {
+  const { data: rows, error } = await stepsOf(supabase, target);
   if (error) return error.message;
   const current = new Map((rows ?? []).map((r) => [r.id, r.position]));
   const changes = orderedIds
@@ -144,16 +182,17 @@ async function renumber(supabase: Supabase, unitId: string, orderedIds: string[]
 
 /** Add one step: at the end, or right after `afterStepId`. */
 export async function addUnitStep({
-  unitId,
+  target,
   input,
   afterStepId,
 }: {
-  unitId: string;
+  target: SyllabusTarget;
   input: StepFormInput;
   /** Insert after this step; omitted (or null) appends. */
   afterStepId?: string | null;
 }): Promise<ActionResult<{ data: { id: string } }>> {
-  if (!UUID_RE.test(unitId)) return actionFail('unitId required');
+  const t = validTarget(target);
+  if (!t) return actionFail('A unit or a section is required.');
   let ctx: AuthContext;
   try {
     ctx = await adminCtx();
@@ -161,21 +200,21 @@ export async function addUnitStep({
     return fromErr(err) as ActionResult<{ data: { id: string } }>;
   }
   const { supabase } = ctx;
-  const unitCtx = await loadUnitCtx(supabase, unitId);
-  if (!unitCtx) return actionFail('Curriculum unit not found.');
+  const targetCtx = await loadTargetCtx(supabase, t);
+  if (!targetCtx) return actionFail('Curriculum unit not found.');
   const normalized = normalizeStepInput(input, {
-    unitSkillCode: unitCtx.unit.skill_code,
-    lessonIds: unitCtx.lessonIds,
-    techniques: unitCtx.techniques,
+    unitSkillCode: targetCtx.skillCode ?? undefined,
+    lessonIds: targetCtx.lessonIds,
+    techniques: targetCtx.techniques,
   });
   if (!normalized.ok) return actionFail(normalized.error);
 
-  const ids = await orderedStepIds(supabase, unitId);
+  const ids = await orderedStepIds(supabase, t);
   // Append past every existing position (offset-safe), then renumber
   // into the requested slot.
   const { data, error } = await supabase
     .from('curriculum_unit_steps')
-    .insert(rowFor(unitId, ids.length + 1 + RENUMBER_OFFSET, normalized.value))
+    .insert(rowFor(t, ids.length + 1 + RENUMBER_OFFSET, normalized.value))
     .select('id')
     .maybeSingle();
   if (error) return actionFail(error.message);
@@ -185,11 +224,11 @@ export async function addUnitStep({
   const ordered = [...ids];
   if (afterStepId && at >= 0) ordered.splice(at + 1, 0, data.id);
   else ordered.push(data.id);
-  const renumErr = await renumber(supabase, unitId, ordered);
+  const renumErr = await renumber(supabase, t, ordered);
   if (renumErr) return actionFail(renumErr);
 
-  await stampAuthored(supabase, unitId, true);
-  revalidateSyllabusSurfaces(unitId);
+  await stampAuthored(supabase, t, true);
+  revalidateSyllabusSurfaces(t);
   return actionOk({ id: data.id });
 }
 
@@ -211,26 +250,28 @@ export async function updateUnitStep({
   const { supabase } = ctx;
   const { data: existing } = await supabase
     .from('curriculum_unit_steps')
-    .select('id, unit_id, position')
+    .select('id, unit_id, section, position')
     .eq('id', stepId)
     .maybeSingle();
   if (!existing) return actionFail('Step not found.');
-  const unitCtx = await loadUnitCtx(supabase, existing.unit_id);
-  if (!unitCtx) return actionFail('Curriculum unit not found.');
+  const t = targetOfRow(existing);
+  if (!t) return actionFail('Step has no syllabus.');
+  const targetCtx = await loadTargetCtx(supabase, t);
+  if (!targetCtx) return actionFail('Curriculum unit not found.');
   const normalized = normalizeStepInput(input, {
-    unitSkillCode: unitCtx.unit.skill_code,
-    lessonIds: unitCtx.lessonIds,
-    techniques: unitCtx.techniques,
+    unitSkillCode: targetCtx.skillCode ?? undefined,
+    lessonIds: targetCtx.lessonIds,
+    techniques: targetCtx.techniques,
   });
   if (!normalized.ok) return actionFail(normalized.error);
 
   const { error } = await supabase
     .from('curriculum_unit_steps')
-    .update(rowFor(existing.unit_id, existing.position, normalized.value))
+    .update(rowFor(t, existing.position, normalized.value))
     .eq('id', stepId);
   if (error) return actionFail(error.message);
-  await stampAuthored(supabase, existing.unit_id, true);
-  revalidateSyllabusSurfaces(existing.unit_id);
+  await stampAuthored(supabase, t, true);
+  revalidateSyllabusSurfaces(t);
   return actionOk({ id: stepId });
 }
 
@@ -247,14 +288,16 @@ export async function deleteUnitStep({ stepId }: { stepId: string }): Promise<Ac
     .from('curriculum_unit_steps')
     .delete()
     .eq('id', stepId)
-    .select('unit_id')
+    .select('unit_id, section')
     .maybeSingle();
   if (error) return actionFail(error.message);
   if (!removed) return actionFail('Step not found.');
-  const renumErr = await renumber(supabase, removed.unit_id, await orderedStepIds(supabase, removed.unit_id));
+  const t = targetOfRow(removed);
+  if (!t) return { ok: true };
+  const renumErr = await renumber(supabase, t, await orderedStepIds(supabase, t));
   if (renumErr) return actionFail(renumErr);
-  await stampAuthored(supabase, removed.unit_id, true);
-  revalidateSyllabusSurfaces(removed.unit_id);
+  await stampAuthored(supabase, t, true);
+  revalidateSyllabusSurfaces(t);
   return { ok: true };
 }
 
@@ -276,25 +319,28 @@ export async function moveUnitStep({
   const { supabase } = ctx;
   const { data: step } = await supabase
     .from('curriculum_unit_steps')
-    .select('id, unit_id')
+    .select('id, unit_id, section')
     .eq('id', stepId)
     .maybeSingle();
   if (!step) return actionFail('Step not found.');
-  const ids = await orderedStepIds(supabase, step.unit_id);
+  const t = targetOfRow(step);
+  if (!t) return actionFail('Step has no syllabus.');
+  const ids = await orderedStepIds(supabase, t);
   const index = ids.indexOf(stepId);
   const swapWith = direction === 'up' ? index - 1 : index + 1;
   if (index === -1 || swapWith < 0 || swapWith >= ids.length) return actionOk({ moved: false });
   [ids[index], ids[swapWith]] = [ids[swapWith], ids[index]];
-  const renumErr = await renumber(supabase, step.unit_id, ids);
+  const renumErr = await renumber(supabase, t, ids);
   if (renumErr) return actionFail(renumErr);
-  await stampAuthored(supabase, step.unit_id, true);
-  revalidateSyllabusSurfaces(step.unit_id);
+  await stampAuthored(supabase, t, true);
+  revalidateSyllabusSurfaces(t);
   return actionOk({ moved: true });
 }
 
-/** Put the unit back on the backfilled default: the published
+/** Put a unit back on the backfilled default: the published
  *  skill-tagged lesson the launcher would have opened (first by title),
- *  then one practice drill — and clear the authored stamp. */
+ *  then one practice drill — and clear the authored stamp. Units only;
+ *  a section syllabus has no default (empty = no foundations). */
 export async function resetUnitSyllabus({ unitId }: { unitId: string }): Promise<ActionResult<{ data: { steps: number } }>> {
   if (!UUID_RE.test(unitId)) return actionFail('unitId required');
   let ctx: AuthContext;
@@ -304,13 +350,14 @@ export async function resetUnitSyllabus({ unitId }: { unitId: string }): Promise
     return fromErr(err) as ActionResult<{ data: { steps: number } }>;
   }
   const { supabase } = ctx;
-  const unitCtx = await loadUnitCtx(supabase, unitId);
-  if (!unitCtx) return actionFail('Curriculum unit not found.');
+  const t: SyllabusTarget = { unitId };
+  const targetCtx = await loadTargetCtx(supabase, t);
+  if (!targetCtx || !targetCtx.skillCode) return actionFail('Curriculum unit not found.');
 
   const { data: tagged } = await supabase
     .from('lesson_topics')
     .select('lesson_id, lessons!inner(id, title, status)')
-    .eq('skill_code', unitCtx.unit.skill_code)
+    .eq('skill_code', targetCtx.skillCode)
     .eq('lessons.status', 'published');
   const candidates = (tagged ?? [])
     .map((r) => (Array.isArray(r.lessons) ? r.lessons[0] : r.lessons))
@@ -322,25 +369,26 @@ export async function resetUnitSyllabus({ unitId }: { unitId: string }): Promise
   if (delErr) return actionFail(delErr.message);
   const rows = [];
   if (lesson) {
-    rows.push(rowFor(unitId, 1, {
+    rows.push(rowFor(t, 1, {
       kind: 'lesson', lessonId: lesson.id, role: null, skillCodes: null, techniqueIds: null, techniqueSource: 'lesson',
       questionCount: null, minutes: null, skipIfCompleted: true,
     }));
   }
-  rows.push(rowFor(unitId, rows.length + 1, {
+  rows.push(rowFor(t, rows.length + 1, {
     kind: 'drill', lessonId: null, role: 'practice', skillCodes: null, techniqueIds: null, techniqueSource: 'lesson',
     questionCount: DEFAULT_DRILL_COUNT, minutes: null, skipIfCompleted: true,
   }));
   const { error: insErr } = await supabase.from('curriculum_unit_steps').insert(rows);
   if (insErr) return actionFail(insErr.message);
-  await stampAuthored(supabase, unitId, false);
-  revalidateSyllabusSurfaces(unitId);
+  await stampAuthored(supabase, t, false);
+  revalidateSyllabusSurfaces(t);
   return actionOk({ steps: rows.length });
 }
 
 /** The "study plans use these syllabi" switch — feature flag
  *  `unit_syllabus`, read by lib/plan/unit-steps.ts on every plan
- *  generation. Off = every unit falls back to the simple pair. */
+ *  generation. Off = every unit falls back to the simple pair and no
+ *  foundations are front-loaded. */
 export async function setUnitSyllabusFlag({ on }: { on: boolean }): Promise<ActionResult<{ data: { on: boolean } }>> {
   let ctx: AuthContext;
   try {
@@ -356,7 +404,7 @@ export async function setUnitSyllabusFlag({ on }: { on: boolean }): Promise<Acti
         key: UNIT_SYLLABUS_FLAG,
         value: on ? 'on' : 'off',
         description:
-          'Plan generator walks curriculum_unit_steps (lessons in teaching order, drills tied to lessons) instead of the built-in lesson-then-drill pair. on | off.',
+          'Plan generator walks curriculum_unit_steps (section foundations, then lessons in teaching order with drills tied to lessons) instead of the built-in lesson-then-drill pair. on | off.',
         updated_at: new Date().toISOString(),
         updated_by: ctx.user.id,
       },

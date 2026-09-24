@@ -1220,11 +1220,13 @@ export type Database = {
           position: number
           question_count: number | null
           role: string | null
+          section: string | null
           skill_codes: string[] | null
           skip_if_completed: boolean
           technique_ids: string[] | null
           technique_source: string
-          unit_id: string
+          test_type: string
+          unit_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1236,11 +1238,13 @@ export type Database = {
           position: number
           question_count?: number | null
           role?: string | null
+          section?: string | null
           skill_codes?: string[] | null
           skip_if_completed?: boolean
           technique_ids?: string[] | null
           technique_source?: string
-          unit_id: string
+          test_type?: string
+          unit_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1252,11 +1256,13 @@ export type Database = {
           position?: number
           question_count?: number | null
           role?: string | null
+          section?: string | null
           skill_codes?: string[] | null
           skip_if_completed?: boolean
           technique_ids?: string[] | null
           technique_source?: string
-          unit_id?: string
+          test_type?: string
+          unit_id?: string | null
           updated_at?: string
         }
         Relationships: [

@@ -111,10 +111,11 @@ function intInRange(
 
 /** Validate one step's fields. The caller has already resolved lesson /
  *  technique references to ids (the form posts ids). Techniques cut
- *  across skills, so a drill may name any technique in the catalog. */
+ *  across skills, so a drill may name any technique in the catalog.
+ *  `unitSkillCode` is absent for a section foundation syllabus. */
 export function normalizeStepInput(
   input: StepInput,
-  ctx: { unitSkillCode: string; lessonIds: ReadonlySet<string>; techniques: readonly TechniqueRef[] },
+  ctx: { unitSkillCode?: string; lessonIds: ReadonlySet<string>; techniques: readonly TechniqueRef[] },
 ): { ok: true; value: NormalizedStep } | { ok: false; error: string } {
   const kind = String(input.kind ?? '').trim().toLowerCase();
   if (kind !== 'lesson' && kind !== 'drill') {

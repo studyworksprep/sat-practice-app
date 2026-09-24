@@ -1,9 +1,11 @@
-// Client island for one unit's syllabus, written for a non-technical
-// editor: steps are cards in teaching order, every action is a plain
-// button, lessons are picked from a searchable list (never by id), and
-// skills are chosen by name. A "what a student will see" panel runs the
-// generator's own expandUnitSyllabus, so the preview is the task list a
-// plan emits for a student who has completed none of these lessons.
+// Client island for one syllabus — a unit's, or a section's foundation
+// syllabus ("Before Math") — written for a non-technical editor: steps
+// are cards in teaching order, every action is a plain button, lessons
+// are picked from a searchable list (never by id), and skills are
+// chosen by name. A "what a student will see" panel runs the
+// generator's own expandUnitSyllabus / expandSectionSyllabus, so the
+// preview is the task list a plan emits for a student who has
+// completed none of these lessons.
 //
 // Mutations go through ../actions and the list is refetched via
 // router.refresh(), so the order shown is the order the generator
@@ -16,7 +18,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/lib/ui/Button';
 import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import { SAT_TAXONOMY } from '@/lib/practice/sat-taxonomy';
-import { expandUnitSyllabus, type UnitStep } from '@/lib/plan/generate-plan';
+import { expandSectionSyllabus, expandUnitSyllabus, type UnitStep } from '@/lib/plan/generate-plan';
 import { COUNT_MAX, COUNT_MIN, MINUTES_MAX, MINUTES_MIN } from '@/lib/admin/unitSyllabus';
 import { createTechnique } from '@/app/(admin)/admin/techniques/actions';
 import { TechniqueForm, EMPTY_TECHNIQUE_FORM, type TechniqueFormValues } from '@/app/(admin)/admin/techniques/TechniqueForm';
@@ -78,10 +80,17 @@ export interface EditorTechnique {
 }
 
 interface UnitInfo {
+  /** A curriculum unit, or a section's foundation syllabus. */
+  scope: 'unit' | 'section';
+  /** Unit id, or the section key for a section syllabus. */
   id: string;
+  section: 'math' | 'reading_writing';
+  /** Empty for a section syllabus. */
   domainCode: string;
   domainName: string;
+  /** Empty for a section syllabus. */
   skillCode: string;
+  /** The unit's skill name, or the section name. */
   skillName: string;
   title: string;
   expectedMinutes: number;
@@ -117,7 +126,10 @@ interface Composer {
 
 const KIND_LABEL: Record<StepKind, string> = { lesson: 'Lesson', practice: 'Practice', mixed: 'Mixed set' };
 const SKILL_NAME = new Map(SAT_TAXONOMY.flatMap((d) => d.skills.map((s) => [s.code, s.name] as const)));
-const MATH_DOMAINS = new Set(['H', 'P', 'Q', 'S']);
+
+function syllabusTarget(unit: UnitInfo) {
+  return unit.scope === 'unit' ? { unitId: unit.id } : { section: unit.section };
+}
 
 function emptyValues(kind: StepKind, unit: UnitInfo): FormValues {
   return {
@@ -126,7 +138,7 @@ function emptyValues(kind: StepKind, unit: UnitInfo): FormValues {
     skipIfCompleted: true,
     questionCount: '',
     questions: kind === 'practice' ? 'lesson' : 'unit',
-    skillCodes: [unit.skillCode],
+    skillCodes: unit.skillCode ? [unit.skillCode] : [],
     techniqueIds: [],
     minutes: '',
   };
@@ -146,7 +158,7 @@ function valuesFromStep(step: EditorStep, unit: UnitInfo): FormValues {
         : step.role === 'practice' && step.techniqueSource === 'lesson'
           ? 'lesson'
           : 'unit',
-    skillCodes: explicit ? step.skillCodes! : [unit.skillCode],
+    skillCodes: explicit ? step.skillCodes! : unit.skillCode ? [unit.skillCode] : [],
     techniqueIds: step.techniqueSource === 'explicit' ? (step.techniqueIds ?? []) : [],
     minutes: step.minutes == null ? '' : String(step.minutes),
   };
@@ -191,11 +203,14 @@ export function UnitEditor({
   steps,
   lessons,
   techniques,
+  suggestedLabel = 'Tagged to this unit',
 }: {
   unit: UnitInfo;
   steps: EditorStep[];
   lessons: EditorLesson[];
   techniques: EditorTechnique[];
+  /** Heading for the lessons the picker lists first. */
+  suggestedLabel?: string;
 }) {
   const router = useRouter();
   const [confirm, confirmDialog] = useConfirm();
@@ -207,10 +222,12 @@ export function UnitEditor({
 
   const preview = useMemo(
     () =>
-      expandUnitSyllabus(
-        { domainCode: unit.domainCode, skillCode: unit.skillCode, expectedMinutes: unit.expectedMinutes },
-        steps.map(toUnitStep),
-      ),
+      unit.scope === 'section'
+        ? expandSectionSyllabus({ section: unit.section, expectedMinutes: unit.expectedMinutes }, steps.map(toUnitStep))
+        : expandUnitSyllabus(
+            { domainCode: unit.domainCode, skillCode: unit.skillCode, expectedMinutes: unit.expectedMinutes },
+            steps.map(toUnitStep),
+          ),
     [steps, unit],
   );
   const previewMinutes = preview.reduce(
@@ -251,7 +268,7 @@ export function UnitEditor({
     if (composer.mode === 'edit' && composer.stepId) {
       run(() => updateUnitStep({ stepId: composer.stepId!, input }), 'Step saved.');
     } else {
-      run(() => addUnitStep({ unitId: unit.id, input, afterStepId: composer.afterStepId }), 'Step added.');
+      run(() => addUnitStep({ target: syllabusTarget(unit), input, afterStepId: composer.afterStepId }), 'Step added.');
     }
   }
 
@@ -290,16 +307,25 @@ export function UnitEditor({
       <div style={{ flex: '1 1 480px', minWidth: 0 }}>
         <div style={S.toolbar}>
           <span className={f.muted}>
-            {steps.length} step{steps.length === 1 ? '' : 's'} ·{' '}
-            {unit.authoredAt ? (
-              <span style={S.ready}>authored {unit.authoredAt.slice(0, 10)}</span>
-            ) : (
-              <span style={S.default}>default — not yet authored</span>
-            )}
+            {steps.length} step{steps.length === 1 ? '' : 's'}
+            {unit.scope === 'unit' ? (
+              <>
+                {' · '}
+                {unit.authoredAt ? (
+                  <span style={S.ready}>authored {unit.authoredAt.slice(0, 10)}</span>
+                ) : (
+                  <span style={S.default}>default — not yet authored</span>
+                )}
+              </>
+            ) : steps.length === 0 ? (
+              <> · <span style={S.default}>no foundations yet — plans skip straight to the units</span></>
+            ) : null}
           </span>
-          <Button size="sm" variant="secondary" onClick={reset} disabled={pending || steps.length === 0}>
-            Start over with the default
-          </Button>
+          {unit.scope === 'unit' && (
+            <Button size="sm" variant="secondary" onClick={reset} disabled={pending || steps.length === 0}>
+              Start over with the default
+            </Button>
+          )}
         </div>
 
         {notice && (
@@ -309,7 +335,11 @@ export function UnitEditor({
         )}
 
         {steps.length === 0 && (
-          <p className={f.empty}>This unit has no steps yet. Add its first lesson below.</p>
+          <p className={f.empty}>
+            {unit.scope === 'section'
+              ? `No foundations for ${unit.skillName} yet. Add the first tool lesson below.`
+              : 'This unit has no steps yet. Add its first lesson below.'}
+          </p>
         )}
 
         <ol style={S.cards}>
@@ -325,6 +355,7 @@ export function UnitEditor({
                   unit={unit}
                   lessons={lessons}
                   techniques={techniques}
+                  suggestedLabel={suggestedLabel}
                   title={`Edit step ${step.position}`}
                 />
               ) : (
@@ -354,6 +385,7 @@ export function UnitEditor({
                   unit={unit}
                   lessons={lessons}
                   techniques={techniques}
+                  suggestedLabel={suggestedLabel}
                   title={`New ${KIND_LABEL[composer.values.kind].toLowerCase()} after step ${step.position}`}
                 />
               ) : (
@@ -379,6 +411,7 @@ export function UnitEditor({
             unit={unit}
             lessons={lessons}
             techniques={techniques}
+            suggestedLabel={suggestedLabel}
             title={`New ${KIND_LABEL[composer.values.kind].toLowerCase()} at the end`}
           />
         ) : (
@@ -491,10 +524,14 @@ function StepCard({
             : kind === 'mixed'
               ? skills
                 ? `Questions from: ${skills}`
-                : `Questions from everything covered so far in ${unit.domainName}`
+                : unit.scope === 'section'
+                  ? `Questions from all of ${unit.skillName}`
+                  : `Questions from everything covered so far in ${unit.domainName}`
               : skills
                 ? `Questions from: ${skills}`
-                : `Questions on ${unit.skillName}`}
+                : unit.scope === 'section'
+                  ? "Questions from the skills the lesson's techniques apply to"
+                  : `Questions on ${unit.skillName}`}
           {kind === 'lesson' && step.techniqueNames.length > 0 ? ` · Teaches: ${step.techniqueNames.join(', ')}` : ''}
           {step.minutes != null ? ` · about ${step.minutes} min` : ''}
         </div>
@@ -555,6 +592,7 @@ function StepComposer({
   unit,
   lessons,
   techniques,
+  suggestedLabel,
   title,
 }: {
   composer: Composer;
@@ -565,6 +603,7 @@ function StepComposer({
   unit: UnitInfo;
   lessons: EditorLesson[];
   techniques: EditorTechnique[];
+  suggestedLabel: string;
   title: string;
 }) {
   const v = composer.values;
@@ -606,7 +645,7 @@ function StepComposer({
 
       {v.kind === 'lesson' ? (
         <>
-          <LessonPicker lessons={lessons} value={v.lessonId} onPick={(id) => set('lessonId', id)} disabled={pending} />
+          <LessonPicker lessons={lessons} value={v.lessonId} onPick={(id) => set('lessonId', id)} disabled={pending} suggestedLabel={suggestedLabel} />
           <fieldset className={f.fieldset}>
             <legend className={f.legend}>If the student already completed this lesson in an earlier unit</legend>
             <label className={f.row}>
@@ -645,8 +684,9 @@ function StepComposer({
                 <span>
                   Questions for the lesson just taught — its techniques first (recommended)
                   <span className={f.formHint} style={{ display: 'block' }}>
-                    {unit.skillName} questions solved with the techniques of the lesson before this step come first;
-                    the rest of the skill fills the set.
+                    {unit.scope === 'section'
+                      ? 'Questions from the skills the techniques of the lesson before this step apply to, technique questions first.'
+                      : `${unit.skillName} questions solved with the techniques of the lesson before this step come first; the rest of the skill fills the set.`}
                   </span>
                 </span>
               </label>
@@ -655,7 +695,9 @@ function StepComposer({
               <input type="radio" name="questions" checked={v.questions === 'unit'} disabled={pending} onChange={() => set('questions', 'unit')} />
               <span>
                 {v.kind === 'mixed'
-                  ? `Everything covered so far in ${unit.domainName} (automatic — recommended)`
+                  ? unit.scope === 'section'
+                    ? `Everything in ${unit.skillName} (recommended)`
+                    : `Everything covered so far in ${unit.domainName} (automatic — recommended)`
                   : `Any question in ${unit.skillName}`}
               </span>
             </label>
@@ -764,16 +806,16 @@ function TechniquePicker({
   const [values, setValues] = useState<TechniqueFormValues>(EMPTY_TECHNIQUE_FORM);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const unitSection = MATH_DOMAINS.has(unit.domainCode) ? 'math' : 'reading_writing';
+  const unitSection = unit.section;
 
   const ordered = useMemo(() => {
     const rank = (t: EditorTechnique) =>
-      t.skillCodes.includes(unit.skillCode) ? 0 : !t.section || t.section === unitSection ? 1 : 2;
+      unit.skillCode && t.skillCodes.includes(unit.skillCode) ? 0 : !t.section || t.section === unitSection ? 1 : 2;
     return [...techniques].sort((x, y) => rank(x) - rank(y));
   }, [techniques, unit.skillCode, unitSection]);
 
   function openCreate() {
-    setValues({ ...EMPTY_TECHNIQUE_FORM, section: unitSection, skillCodes: [unit.skillCode] });
+    setValues({ ...EMPTY_TECHNIQUE_FORM, section: unitSection, skillCodes: unit.skillCode ? [unit.skillCode] : [] });
     setError(null);
     setCreating(true);
   }
@@ -804,7 +846,7 @@ function TechniquePicker({
       )}
       {ordered.map((t) => {
         const checked = value.includes(t.id);
-        const byDefault = t.skillCodes.includes(unit.skillCode);
+        const byDefault = Boolean(unit.skillCode) && t.skillCodes.includes(unit.skillCode);
         return (
           <label key={t.id} className={f.row} style={{ margin: 0 }} title={t.description}>
             <input
@@ -848,11 +890,13 @@ function LessonPicker({
   value,
   onPick,
   disabled,
+  suggestedLabel,
 }: {
   lessons: EditorLesson[];
   value: string;
   onPick: (id: string) => void;
   disabled: boolean;
+  suggestedLabel: string;
 }) {
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
@@ -909,7 +953,7 @@ function LessonPicker({
       <div style={S.lessonList}>
         {suggested.length > 0 && (
           <>
-            <div style={S.lessonGroup}>Tagged to this unit</div>
+            <div style={S.lessonGroup}>{suggestedLabel}</div>
             {suggested.map((l) => <Row key={l.id} l={l} />)}
           </>
         )}

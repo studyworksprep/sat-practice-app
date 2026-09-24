@@ -257,6 +257,7 @@ export async function runRepaceForStudent(
     targets: composition.targets,
     fullTests: composition.fullTests,
     unitSteps: syllabus?.unitSteps ?? null,
+    sectionSteps: syllabus?.sectionSteps ?? null,
     completedLessonIds: syllabus?.completedLessonIds ?? null,
   });
 
@@ -384,6 +385,7 @@ export async function regenerateRemainingTasks(
     targets: composition.targets,
     fullTests: composition.fullTests,
     unitSteps: syllabus?.unitSteps ?? null,
+    sectionSteps: syllabus?.sectionSteps ?? null,
     completedLessonIds: syllabus?.completedLessonIds ?? null,
     elapsedWeeks: elapsed,
   });

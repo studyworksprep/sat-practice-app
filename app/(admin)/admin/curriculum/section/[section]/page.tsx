@@ -1,19 +1,30 @@
-// Admin · Curriculum · one unit. Loads the unit, its steps, the lesson
-// bank (with each lesson's tagged skills and the other units already
-// using it), and the technique catalog, and hands them to the
-// UnitEditor island.
+// Admin · Curriculum · a section's foundation syllabus — "Before Math"
+// or "Before Reading & Writing" (docs/foundations-and-question-
+// patterns.md §8.1 decision 6, §8.5 step D). Same editor as a unit,
+// scoped to a section: the lessons here are the tools (Desmos
+// regression, the passage strategy) every student gets before the
+// section's first unit; unit lessons are the applications.
 
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { SAT_TAXONOMY } from '@/lib/practice/sat-taxonomy';
-import { UnitEditor, type EditorLesson, type EditorStep, type EditorTechnique } from './UnitEditor';
-import a from '../../../admin.module.css';
+import { UnitEditor, type EditorLesson, type EditorStep, type EditorTechnique } from '../../[unitId]/UnitEditor';
+import a from '../../../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
-const DOMAIN_BY_CODE = new Map(SAT_TAXONOMY.map((d) => [d.code, d]));
-const MATH_DOMAINS = new Set(['H', 'P', 'Q', 'S']);
+const SECTION_TITLE: Record<'math' | 'reading_writing', string> = {
+  math: 'Before Math',
+  reading_writing: 'Before Reading & Writing',
+};
+const SECTION_LABEL: Record<'math' | 'reading_writing', string> = {
+  math: 'Math',
+  reading_writing: 'Reading & Writing',
+};
+/** Default minutes for a foundation step (a tool lesson runs shorter
+ *  than a unit). */
+const FOUNDATION_MINUTES = 30;
 
 function skillName(skillCode: string): string {
   for (const d of SAT_TAXONOMY) {
@@ -23,8 +34,10 @@ function skillName(skillCode: string): string {
   return skillCode;
 }
 
-export default async function CurriculumUnitPage({ params }: { params: Promise<{ unitId: string }> }) {
-  const { unitId } = await params;
+export default async function CurriculumSectionPage({ params }: { params: Promise<{ section: string }> }) {
+  const { section: raw } = await params;
+  if (raw !== 'math' && raw !== 'reading_writing') notFound();
+  const section = raw;
   const { profile, supabase } = await requireUser();
   if (profile.role !== 'admin') {
     if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
@@ -32,19 +45,14 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
     redirect('/');
   }
 
-  const { data: unit } = await supabase
-    .from('curriculum_units')
-    .select('id, domain_code, skill_code, title, sequence, expected_minutes, syllabus_authored_at')
-    .eq('id', unitId)
-    .maybeSingle();
-  if (!unit) notFound();
-
-  const [{ data: stepRows }, { data: lessonRows }, { data: topicRows }, { data: usageRows }, { data: techniqueRows }, { data: allUnits }, { count: questionTotal }, { data: tagRows }] =
+  const [{ data: stepRows }, { data: lessonRows }, { data: topicRows }, { data: usageRows }, { data: techniqueRows }, { data: allUnits }] =
     await Promise.all([
       supabase
         .from('curriculum_unit_steps')
         .select('id, position, kind, lesson_id, role, skill_codes, technique_ids, technique_source, question_count, minutes, skip_if_completed, lesson:lessons(title, status, lesson_techniques(technique_id))')
-        .eq('unit_id', unit.id)
+        .eq('section', section)
+        .eq('test_type', 'sat')
+        .is('unit_id', null)
         .order('position', { ascending: true }),
       supabase
         .from('lessons')
@@ -52,7 +60,7 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
         .in('status', ['published', 'draft'])
         .order('title', { ascending: true }),
       supabase.from('lesson_topics').select('lesson_id, skill_code').not('skill_code', 'is', null),
-      supabase.from('curriculum_unit_steps').select('lesson_id, unit_id').eq('kind', 'lesson'),
+      supabase.from('curriculum_unit_steps').select('lesson_id, unit_id, section').eq('kind', 'lesson'),
       supabase
         .from('techniques')
         .select('id, name, description, section, technique_skills(skill_code)')
@@ -61,29 +69,7 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
         .order('sequence', { ascending: true })
         .order('name', { ascending: true }),
       supabase.from('curriculum_units').select('id, title').eq('test_type', 'sat'),
-      // Tagging progress for the header link (published, unbroken,
-      // standard pool — what the tagging screen lists).
-      supabase
-        .from('questions_v2')
-        .select('id', { count: 'exact', head: true })
-        .eq('skill_code', unit.skill_code)
-        .eq('is_published', true)
-        .eq('is_broken', false)
-        .is('deleted_at', null)
-        .eq('pool', 'standard'),
-      supabase
-        .from('question_techniques')
-        .select('question_id, question:questions_v2!inner(skill_code, is_published, is_broken, deleted_at, pool)')
-        .eq('question.skill_code', unit.skill_code),
     ]);
-  const taggedQuestions = new Set(
-    ((tagRows ?? []) as unknown as Array<{
-      question_id: string;
-      question: { is_published: boolean; is_broken: boolean; deleted_at: string | null; pool: string } | null;
-    }>)
-      .filter((r) => r.question && r.question.is_published && !r.question.is_broken && !r.question.deleted_at && r.question.pool === 'standard')
-      .map((r) => r.question_id),
-  ).size;
 
   const unitTitle = new Map((allUnits ?? []).map((u) => [u.id, u.title]));
   const skillsByLesson = new Map<string, string[]>();
@@ -93,13 +79,19 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
     if (!list.includes(t.skill_code)) list.push(t.skill_code);
     skillsByLesson.set(t.lesson_id, list);
   }
-  const unitsByLesson = new Map<string, string[]>();
+  // "Also in": the units (and the other section) already using a lesson.
+  const usedByLesson = new Map<string, string[]>();
   for (const u of usageRows ?? []) {
-    if (!u.lesson_id || !u.unit_id || u.unit_id === unit.id) continue;
-    const list = unitsByLesson.get(u.lesson_id) ?? [];
-    const title = unitTitle.get(u.unit_id);
-    if (title && !list.includes(title)) list.push(title);
-    unitsByLesson.set(u.lesson_id, list);
+    if (!u.lesson_id) continue;
+    const where = u.unit_id
+      ? unitTitle.get(u.unit_id)
+      : u.section && u.section !== section
+        ? SECTION_TITLE[u.section as 'math' | 'reading_writing']
+        : null;
+    if (!where) continue;
+    const list = usedByLesson.get(u.lesson_id) ?? [];
+    if (!list.includes(where)) list.push(where);
+    usedByLesson.set(u.lesson_id, list);
   }
 
   const techniques: EditorTechnique[] = (techniqueRows ?? []).map((t) => ({
@@ -113,8 +105,6 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
   type LessonEmbed = { title: string; status: string; lesson_techniques: Array<{ technique_id: string }> | null };
   const steps: EditorStep[] = (stepRows ?? []).map((r) => {
     const lesson = (Array.isArray(r.lesson) ? r.lesson[0] : r.lesson) as LessonEmbed | null;
-    // A lesson step carries the techniques its lesson teaches; a drill
-    // step carries its own explicit narrowing (if any).
     const techniqueIds: string[] =
       r.kind === 'lesson'
         ? (lesson?.lesson_techniques ?? []).map((t) => t.technique_id)
@@ -138,6 +128,7 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
       skipIfCompleted: r.skip_if_completed,
     };
   });
+  // Foundation-kind lessons are the natural candidates and list first.
   const lessons: EditorLesson[] = (lessonRows ?? []).map((l) => ({
     id: l.id,
     title: l.title,
@@ -145,11 +136,9 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
     kind: l.kind,
     description: l.description,
     skills: (skillsByLesson.get(l.id) ?? []).map(skillName),
-    taggedToUnit: (skillsByLesson.get(l.id) ?? []).includes(unit.skill_code),
-    otherUnits: unitsByLesson.get(l.id) ?? [],
+    taggedToUnit: l.kind === 'foundation',
+    otherUnits: usedByLesson.get(l.id) ?? [],
   }));
-
-  const domain = DOMAIN_BY_CODE.get(unit.domain_code);
 
   return (
     <main className={a.container}>
@@ -157,38 +146,36 @@ export default async function CurriculumUnitPage({ params }: { params: Promise<{
         <Link href="/admin/curriculum">&larr; Curriculum</Link>
       </nav>
       <header className={a.header}>
-        <div className={a.eyebrow}>
-          Unit {unit.sequence} · {MATH_DOMAINS.has(unit.domain_code) ? 'Math' : 'Reading & Writing'} · {domain?.name ?? unit.domain_code}
-        </div>
-        <h1 className={a.h1}>{unit.title}</h1>
+        <div className={a.eyebrow}>Foundations · {SECTION_LABEL[section]}</div>
+        <h1 className={a.h1}>{SECTION_TITLE[section]}</h1>
         <p className={a.sub}>
-          Build this unit the way you teach it: a lesson, then practice on it, the next lesson, then
-          practice, and a mixed set to finish. Students see the steps in this order.
+          The tools every student learns before their first {SECTION_LABEL[section]}{' '}
+          unit &mdash; how a technique works, taught once. Unit lessons then apply it. Study plans put these steps before
+          the section&rsquo;s first topic and skip any lesson a student has already completed.
         </p>
         <p className={a.sub}>
-          <Link href={`/tutor/tagging/${unit.id}`} className={a.link}>
-            Tag this unit&rsquo;s questions by technique &rarr;
-          </Link>{' '}
-          {taggedQuestions} of {questionTotal ?? 0} tagged.
+          A practice set after a foundation draws from the skills its techniques apply to; a mixed set
+          draws from the whole section.
         </p>
       </header>
 
       <UnitEditor
         unit={{
-          scope: 'unit',
-          id: unit.id,
-          section: MATH_DOMAINS.has(unit.domain_code) ? 'math' : 'reading_writing',
-          domainCode: unit.domain_code,
-          domainName: domain?.name ?? unit.domain_code,
-          skillCode: unit.skill_code,
-          skillName: skillName(unit.skill_code),
-          title: unit.title,
-          expectedMinutes: unit.expected_minutes,
-          authoredAt: unit.syllabus_authored_at,
+          scope: 'section',
+          id: section,
+          section,
+          domainCode: '',
+          domainName: SECTION_LABEL[section],
+          skillCode: '',
+          skillName: SECTION_LABEL[section],
+          title: SECTION_TITLE[section],
+          expectedMinutes: FOUNDATION_MINUTES,
+          authoredAt: null,
         }}
         steps={steps}
         lessons={lessons}
         techniques={techniques}
+        suggestedLabel="Foundation lessons"
       />
     </main>
   );

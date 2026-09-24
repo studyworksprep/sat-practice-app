@@ -532,6 +532,7 @@ export async function regeneratePlanWeek(
     targets: composition.targets,
     fullTests: composition.fullTests,
     unitSteps: syllabus?.unitSteps ?? null,
+    sectionSteps: syllabus?.sectionSteps ?? null,
     completedLessonIds: syllabus?.completedLessonIds ?? null,
   });
 

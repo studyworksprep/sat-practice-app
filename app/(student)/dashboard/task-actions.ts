@@ -150,7 +150,17 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       const domainCode = str(fc, 'domain_code') ?? str(payload, 'domain_code');
       // Syllabus drills (curriculum_unit_steps) may span several skills
       // (a mixed set) and may narrow to techniques.
-      const skillCodes = strList(fc, 'skill_codes') ?? (skillCode ? [skillCode] : null);
+      // A section foundation drill (no unit) names its section; with no
+      // skills of its own it draws across every skill in the section.
+      const section = str(fc, 'section') ?? str(payload, 'section');
+      const sectionSkills =
+        section === 'math' || section === 'reading_writing'
+          ? SAT_TAXONOMY.filter((d) => (d.subjectCode === 'math') === (section === 'math')).flatMap((d) =>
+              d.skills.map((sk) => sk.code),
+            )
+          : null;
+      const skillCodes =
+        strList(fc, 'skill_codes') ?? (skillCode ? [skillCode] : sectionSkills && sectionSkills.length > 0 ? sectionSkills : null);
       const techniqueIds = (strList(fc, 'technique_ids') ?? []).filter((id) => UUID_RE.test(id));
       if (!skillCodes && !domainCode) {
         fail('This drill has no skill attached — ask your tutor to fix it.');
