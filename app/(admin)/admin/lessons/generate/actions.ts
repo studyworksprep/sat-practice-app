@@ -91,7 +91,11 @@ interface SaveGeneratedLessonInput {
   description?: unknown;
   blocks?: unknown;
   scope?: unknown;
+  /** Techniques the lesson teaches (lesson_techniques rows on save). */
+  techniqueIds?: unknown;
 }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Narrow the client-supplied scope; anything malformed is ignored
 // (the save must not fail over a tag).
@@ -210,13 +214,26 @@ export async function saveGeneratedLesson(input: SaveGeneratedLessonInput) {
       } else {
         scopeWarning = `Lesson saved, but "${scope.skillCode}" is not a known skill code — tag it in the editor.`;
       }
-    } else {
-      const { error } = await ctx.supabase.from('lesson_techniques').insert({
-        lesson_id: lesson.id,
-        technique_id: scope.techniqueId,
-      });
-      if (error) scopeWarning = `Lesson saved, but linking the technique failed: ${error.message}`;
     }
+    // A technique scope is linked below, together with the picked ones.
+  }
+
+  // The techniques picked on the page, plus the one the page was
+  // opened for. Same rule as the scope: a link failure is a warning,
+  // never a lost lesson.
+  const techniqueIds = [
+    ...new Set(
+      [
+        ...(Array.isArray(input?.techniqueIds) ? input.techniqueIds : []),
+        ...(scope?.grain === 'technique' ? [scope.techniqueId] : []),
+      ].filter((id): id is string => typeof id === 'string' && UUID_RE.test(id)),
+    ),
+  ];
+  if (techniqueIds.length > 0) {
+    const { error } = await ctx.supabase
+      .from('lesson_techniques')
+      .upsert(techniqueIds.map((technique_id) => ({ lesson_id: lesson.id, technique_id })), { onConflict: 'lesson_id,technique_id' });
+    if (error && !scopeWarning) scopeWarning = `Lesson saved, but linking its techniques failed: ${error.message}`;
   }
 
   revalidatePath('/admin/lessons');

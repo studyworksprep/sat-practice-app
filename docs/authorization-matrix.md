@@ -51,7 +51,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/content/drafts/[draftId]/actions.js` | `saveDraft`, `promoteDraft`, `rejectDraft` | requireRole[admin] |
 | `app/(admin)/admin/content/units/actions.ts` | `updateCurriculumUnitSettings`, `moveCurriculumUnit` | requireRole[admin] |
 | `app/(admin)/admin/curriculum/actions.ts` | `addUnitStep`, `updateUnitStep`, `deleteUnitStep`, `moveUnitStep`, `resetUnitSyllabus`, `setUnitSyllabusFlag` | requireRole[admin] |
-| `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson`, `addLessonTopic`, `removeLessonTopic` | requireRole[admin] |
+| `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson`, `addLessonTopic`, `addLessonTechnique`, `removeLessonTechnique`, `removeLessonTopic` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/import/actions.js` | `importBlocksIntoLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/actions.js` | `createLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/efficacy-actions.ts` | `refreshEfficacy` | requireServiceRole |
@@ -82,7 +82,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/assignments/new/template-actions.ts` | `deleteAssignmentTemplate` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/lesson-packs/actions.ts` | `createPack`, `renamePack`, `deletePack`, `addQuestionToPack`, `removeQuestionFromPack`, `reorderPackQuestions`, `searchQuestions`, `listDomainsAndSkills`, `listConceptTags` | requireUser + rateLimit |
 | `app/(tutor)/tutor/lessons/actions.ts` | `createNewLessonDraft`, `proposeLessonEdit` | requireRole[manager|teacher] + assertWriter |
-| `app/(tutor)/tutor/lessons/drafts/[revisionId]/actions.ts` | `updateRevisionMetadata`, `saveRevisionBlocks`, `addRevisionTopic`, `removeRevisionTopic`, `deleteRevision`, `submitRevision` | requireRole[manager|teacher] + assertWriter |
+| `app/(tutor)/tutor/lessons/drafts/[revisionId]/actions.ts` | `updateRevisionMetadata`, `saveRevisionBlocks`, `addRevisionTopic`, `removeRevisionTopic`, `addRevisionTechnique`, `removeRevisionTechnique`, `deleteRevision`, `submitRevision` | requireRole[manager|teacher] + assertWriter |
 | `app/(tutor)/tutor/roster/actions.ts` | `updateStudentProfile` | requireRole[admin|manager|teacher] + requireServiceRole |
 | `app/(tutor)/tutor/session/[studentId]/actions.ts` | `addTutorNote`, `deleteTutorNote` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/students/[studentId]/actions.js` | `importStudentPracticeHistory`, `addTestRegistration`, `removeTestRegistration`, `addOfficialScore`, `deleteStudentPracticeTest`, `removeOfficialScore` | requireUser + requireServiceRole |

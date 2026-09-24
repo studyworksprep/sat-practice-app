@@ -68,19 +68,13 @@ function toOption(row: TechniqueRow): TechniqueOption {
 }
 
 /**
- * The whole catalog with default skills, in catalog order. Returns
- * null when the caller cannot tag, which hosts use as the "don't
- * render the picker at all" signal (same convention as
- * conceptTagsCatalog). Techniques cut across skills, so there is no
- * per-skill scoping here — the picker itself puts the ones that apply
- * to a question's section first.
+ * The whole catalog with default skills, in catalog order, for any
+ * authenticated reader (techniques are select-for-all): lesson editors
+ * pick from it whatever their role. Techniques cut across skills, so
+ * there is no per-skill scoping here — pickers put the ones that apply
+ * to a question's or unit's section first.
  */
-export async function loadTechniqueCatalog({
-  role,
-}: {
-  role: string | null | undefined;
-}): Promise<TechniqueOption[] | null> {
-  if (!canTagTechniques(role)) return null;
+export async function loadAllTechniques(): Promise<TechniqueOption[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from('techniques')
@@ -90,6 +84,20 @@ export async function loadTechniqueCatalog({
     .order('sequence', { ascending: true })
     .order('name', { ascending: true });
   return ((data ?? []) as unknown as TechniqueRow[]).map(toOption);
+}
+
+/**
+ * The catalog for a tagging surface. Returns null when the caller
+ * cannot tag, which hosts use as the "don't render the picker at all"
+ * signal (same convention as conceptTagsCatalog).
+ */
+export async function loadTechniqueCatalog({
+  role,
+}: {
+  role: string | null | undefined;
+}): Promise<TechniqueOption[] | null> {
+  if (!canTagTechniques(role)) return null;
+  return loadAllTechniques();
 }
 
 /** question id → explicitly tagged technique ids, for a page's questions. */

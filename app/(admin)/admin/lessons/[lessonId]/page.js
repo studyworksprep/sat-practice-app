@@ -11,6 +11,7 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { loadAllTechniques } from '@/lib/practice/load-question-techniques';
 import { EditorClient } from './EditorClient';
 import {
   saveLessonBlocks,
@@ -18,6 +19,8 @@ import {
   deleteLesson,
   addLessonTopic,
   removeLessonTopic,
+  addLessonTechnique,
+  removeLessonTechnique,
 } from './actions';
 import a from '../../../admin.module.css';
 
@@ -34,7 +37,7 @@ export default async function AdminLessonEditPage({ params }) {
     redirect('/');
   }
 
-  const [{ data: lesson }, { data: blocks }, { data: topics }] = await Promise.all([
+  const [{ data: lesson }, { data: blocks }, { data: topics }, { data: techniqueRows }, techniqueCatalog] = await Promise.all([
     supabase
       .from('lessons')
       .select('id, title, description, status, visibility, kind, foundation_sequence, author_id, created_at, updated_at')
@@ -49,7 +52,16 @@ export default async function AdminLessonEditPage({ params }) {
       .from('lesson_topics')
       .select('id, section, domain_name, skill_code')
       .eq('lesson_id', lessonId),
+    supabase
+      .from('lesson_techniques')
+      .select('technique_id, technique:techniques(name)')
+      .eq('lesson_id', lessonId),
+    loadAllTechniques(),
   ]);
+  const techniques = (techniqueRows ?? []).map((r) => {
+    const t = Array.isArray(r.technique) ? r.technique[0] : r.technique;
+    return { technique_id: r.technique_id, name: t?.name ?? 'Technique' };
+  });
 
   if (!lesson) notFound();
 
@@ -75,12 +87,16 @@ export default async function AdminLessonEditPage({ params }) {
         lesson={lesson}
         initialBlocks={blocks ?? []}
         topics={topics ?? []}
+        techniques={techniques}
+        techniqueCatalog={techniqueCatalog}
         actions={{
           updateMetadata: updateLessonMetadata,
           saveBlocks: saveLessonBlocks,
           deleteLesson,
           addTopic: addLessonTopic,
           removeTopic: removeLessonTopic,
+          addTechnique: addLessonTechnique,
+          removeTechnique: removeLessonTechnique,
         }}
       />
     </main>

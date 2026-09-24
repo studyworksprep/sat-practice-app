@@ -83,7 +83,7 @@ export default async function LessonReviewPage({
     redirect('/dashboard');
   }
 
-  const [{ data: revisionData }, { data: proposedBlocksData }, { data: proposedTopicsData }] = await Promise.all([
+  const [{ data: revisionData }, { data: proposedBlocksData }, { data: proposedTopicsData }, { data: proposedTechniqueRows }] = await Promise.all([
     supabase.from('lesson_revisions').select(`
       id, base_lesson_id, base_lesson_updated_at, owner_id, state, title,
       description, kind, foundation_sequence, change_summary, review_note,
@@ -97,6 +97,8 @@ export default async function LessonReviewPage({
       .select('id, source_block_id, sort_order, block_type, content').eq('revision_id', revisionId).order('sort_order'),
     supabase.from('lesson_revision_topics')
       .select('id, source_topic_id, section, domain_name, skill_code').eq('revision_id', revisionId),
+    supabase.from('lesson_revision_techniques')
+      .select('technique_id, technique:techniques(name)').eq('revision_id', revisionId),
   ]);
   if (!revisionData) notFound();
   const revision = revisionData as unknown as Revision;
@@ -105,16 +107,30 @@ export default async function LessonReviewPage({
 
   let baseBlocks: BaseBlock[] = [];
   let baseTopics: LessonTopic[] = [];
+  let baseTechniqueIds: string[] = [];
   if (revision.base_lesson_id) {
-    const [blocksResult, topicsResult] = await Promise.all([
+    const [blocksResult, topicsResult, techniquesResult] = await Promise.all([
       supabase.from('lesson_blocks').select('id, sort_order, block_type, content')
         .eq('lesson_id', revision.base_lesson_id).order('sort_order'),
       supabase.from('lesson_topics').select('id, section, domain_name, skill_code')
         .eq('lesson_id', revision.base_lesson_id),
+      supabase.from('lesson_techniques').select('technique_id').eq('lesson_id', revision.base_lesson_id),
     ]);
     baseBlocks = (blocksResult.data ?? []) as BaseBlock[];
     baseTopics = (topicsResult.data ?? []) as LessonTopic[];
+    baseTechniqueIds = (techniquesResult.data ?? []).map((r) => r.technique_id);
   }
+  // Techniques the draft teaches vs the published lesson's — a link
+  // table, so the diff is the symmetric difference of ids.
+  const proposedTechniques = (proposedTechniqueRows ?? []).map((r) => {
+    const t = Array.isArray(r.technique) ? r.technique[0] : r.technique;
+    return { id: r.technique_id, name: t?.name ?? 'Technique' };
+  });
+  const proposedTechniqueIds = new Set(proposedTechniques.map((t) => t.id));
+  const baseTechniqueSet = new Set(baseTechniqueIds);
+  const techniqueChanges =
+    proposedTechniques.filter((t) => !baseTechniqueSet.has(t.id)).length +
+    baseTechniqueIds.filter((id) => !proposedTechniqueIds.has(id)).length;
 
   const diff = summarizeDiff(revision, proposedBlocks, proposedTopics, baseBlocks, baseTopics);
   const sourceChanged = Boolean(revision.base && revision.base_lesson_updated_at &&
@@ -155,9 +171,13 @@ export default async function LessonReviewPage({
           <Stat label="Blocks changed" value={diff.blocksChanged} />
           <Stat label="Blocks removed" value={diff.blocksRemoved} />
           <Stat label="Topic changes" value={diff.topicChanges} />
+          <Stat label="Technique changes" value={techniqueChanges} />
         </div>
         {diff.metadataChanges.length > 0 && (
           <p className={a.help}>Changed: {diff.metadataChanges.join(', ')}</p>
+        )}
+        {proposedTechniques.length > 0 && (
+          <p className={a.help}>Teaches: {proposedTechniques.map((t) => t.name).join(', ')}</p>
         )}
       </section>
 

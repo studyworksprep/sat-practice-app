@@ -85,6 +85,7 @@ function rowFor(unitId: string, position: number, step: NormalizedStep) {
     role: step.role,
     skill_codes: step.skillCodes,
     technique_ids: step.techniqueIds,
+    technique_source: step.techniqueSource,
     question_count: step.questionCount,
     minutes: step.minutes,
     skip_if_completed: step.skipIfCompleted,
@@ -322,12 +323,12 @@ export async function resetUnitSyllabus({ unitId }: { unitId: string }): Promise
   const rows = [];
   if (lesson) {
     rows.push(rowFor(unitId, 1, {
-      kind: 'lesson', lessonId: lesson.id, role: null, skillCodes: null, techniqueIds: null,
+      kind: 'lesson', lessonId: lesson.id, role: null, skillCodes: null, techniqueIds: null, techniqueSource: 'lesson',
       questionCount: null, minutes: null, skipIfCompleted: true,
     }));
   }
   rows.push(rowFor(unitId, rows.length + 1, {
-    kind: 'drill', lessonId: null, role: 'practice', skillCodes: null, techniqueIds: null,
+    kind: 'drill', lessonId: null, role: 'practice', skillCodes: null, techniqueIds: null, techniqueSource: 'lesson',
     questionCount: DEFAULT_DRILL_COUNT, minutes: null, skipIfCompleted: true,
   }));
   const { error: insErr } = await supabase.from('curriculum_unit_steps').insert(rows);

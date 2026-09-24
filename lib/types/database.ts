@@ -1223,6 +1223,7 @@ export type Database = {
           skill_codes: string[] | null
           skip_if_completed: boolean
           technique_ids: string[] | null
+          technique_source: string
           unit_id: string
           updated_at: string
         }
@@ -1238,6 +1239,7 @@ export type Database = {
           skill_codes?: string[] | null
           skip_if_completed?: boolean
           technique_ids?: string[] | null
+          technique_source?: string
           unit_id: string
           updated_at?: string
         }
@@ -1253,6 +1255,7 @@ export type Database = {
           skill_codes?: string[] | null
           skip_if_completed?: boolean
           technique_ids?: string[] | null
+          technique_source?: string
           unit_id?: string
           updated_at?: string
         }
@@ -1897,6 +1900,36 @@ export type Database = {
             columns: ["revision_id"]
             isOneToOne: false
             referencedRelation: "lesson_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_revision_techniques: {
+        Row: {
+          revision_id: string
+          technique_id: string
+        }
+        Insert: {
+          revision_id: string
+          technique_id: string
+        }
+        Update: {
+          revision_id?: string
+          technique_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_revision_techniques_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_revisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revision_techniques_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "techniques"
             referencedColumns: ["id"]
           },
         ]

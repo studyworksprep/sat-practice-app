@@ -27,7 +27,7 @@ import {
   survivesWeekRegeneration,
 } from './generate-plan';
 import { applyEvidencePriors, mapSkillRow, planCompositionFromRow } from './plan-inputs';
-import { buildSyllabi, loadSyllabusInputs, type UnitStepRow } from './unit-steps';
+import { UNIT_STEP_SELECT, buildSyllabi, loadSyllabusInputs, loadTechniqueNameMap, type UnitStepRow } from './unit-steps';
 import type { ExistingTask, PlanTaskSource, PlanTaskType, SkillState } from './generate-plan';
 import type { PlanInputRow } from './plan-inputs';
 import type { ActionResult, Fail } from '@/lib/types';
@@ -322,13 +322,10 @@ export async function addUnitSyllabusToWeek(
     .maybeSingle();
   if (!unit) return actionFail('That skill is not in the curriculum.');
 
-  const [{ data: stepRows }, { data: done }, { data: tagged }] = await Promise.all([
+  const [{ data: stepRows }, { data: done }, { data: tagged }, techniqueNames] = await Promise.all([
     supabase
       .from('curriculum_unit_steps')
-      .select(
-        'id, position, kind, lesson_id, role, skill_codes, technique_ids, question_count, minutes, skip_if_completed, ' +
-          'unit:curriculum_units!inner(skill_code, test_type), lesson:lessons(title, status)',
-      )
+      .select(UNIT_STEP_SELECT)
       .eq('unit_id', unit.id)
       .order('position', { ascending: true }),
     supabase
@@ -343,9 +340,10 @@ export async function addUnitSyllabusToWeek(
       .eq('skill_code', skillCode)
       .eq('lessons.status', 'published')
       .limit(1),
+    loadTechniqueNameMap(supabase),
   ]);
 
-  let steps = buildSyllabi((stepRows ?? []) as unknown as UnitStepRow[])[skillCode] ?? [];
+  let steps = buildSyllabi((stepRows ?? []) as unknown as UnitStepRow[], techniqueNames)[skillCode] ?? [];
   if (steps.length === 0) {
     steps = defaultUnitSteps({
       domainCode,

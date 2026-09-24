@@ -19,6 +19,7 @@ const VALID_STATUSES = new Set(['draft', 'published', 'archived']);
 const VALID_VISIBILITIES = new Set(['shared', 'private']);
 const VALID_KINDS = new Set(['standard', 'foundation']);
 const VALID_SECTIONS = new Set(['math', 'reading_writing']);
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const QUESTION_CARD_COLUMNS =
   'id, display_code, question_type, domain_name, skill_name, difficulty, score_band, stem_html';
@@ -298,6 +299,77 @@ export async function addLessonTopic(_prev, formData) {
     .eq('id', lessonId);
 
   revalidatePath(`/admin/lessons/${lessonId}`);
+  return actionOk({ savedAt: Date.now() });
+}
+
+// ─── Techniques (lesson_techniques) ──────────────────────────────
+//
+// What the lesson teaches the student to DO. The practice set after
+// this lesson in a unit's syllabus draws questions solved with these
+// techniques first (docs/foundations-and-question-patterns.md §8).
+// Admin-only direct writes; the tutor draft flow keeps its own copy
+// on the revision and publish carries it over.
+
+export async function addLessonTechnique(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await adminCtx();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  const lessonId = formData.get('lesson_id');
+  const techniqueId = formData.get('technique_id');
+  if (typeof lessonId !== 'string' || !lessonId) return actionFail('lesson_id required');
+  if (typeof techniqueId !== 'string' || !UUID_RE.test(techniqueId)) return actionFail('Pick a technique.');
+
+  const { error } = await ctx.supabase
+    .from('lesson_techniques')
+    .insert({ lesson_id: lessonId, technique_id: techniqueId });
+  if (error) {
+    if (error.code === '23505') return actionFail('That technique is already on this lesson.');
+    return actionFail(`Failed to add technique: ${error.message}`);
+  }
+
+  await ctx.supabase
+    .from('lessons')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', lessonId);
+
+  revalidatePath(`/admin/lessons/${lessonId}`);
+  revalidatePath('/admin/curriculum', 'layout');
+  return actionOk({ savedAt: Date.now() });
+}
+
+export async function removeLessonTechnique(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await adminCtx();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  const lessonId = formData.get('lesson_id');
+  const techniqueId = formData.get('technique_id');
+  if (typeof lessonId !== 'string' || !lessonId) return actionFail('lesson_id required');
+  if (typeof techniqueId !== 'string' || !UUID_RE.test(techniqueId)) return actionFail('technique_id required');
+
+  const { error } = await ctx.supabase
+    .from('lesson_techniques')
+    .delete()
+    .eq('lesson_id', lessonId)
+    .eq('technique_id', techniqueId);
+  if (error) return actionFail(`Failed to remove technique: ${error.message}`);
+
+  await ctx.supabase
+    .from('lessons')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', lessonId);
+
+  revalidatePath(`/admin/lessons/${lessonId}`);
+  revalidatePath('/admin/curriculum', 'layout');
   return actionOk({ savedAt: Date.now() });
 }
 

@@ -27,15 +27,21 @@ import { savePromptTemplate, resetPromptTemplate, saveGeneratedLesson } from './
 import { DraftPreview, type DraftBlock } from './DraftPreview';
 import { GraphImageResolver } from './GraphImageResolver';
 import type { LessonScope, PendingGraph } from '@/lib/admin/lessonGenTypes';
+import type { TechniqueOption } from '@/lib/practice/load-question-techniques';
 import f from '../../../forms.module.css';
 
 interface GenerateClientProps {
   initialTemplate: string;
   isCustomized: boolean;
-  /** Scope-aware prefill for the brief (from ?skill= / ?pattern=). */
+  /** Scope-aware prefill for the brief (from ?skill= / ?technique=). */
   initialBrief?: string;
-  /** When set, the save action stamps the matching lesson_topics row. */
+  /** When set, the save action stamps the matching lesson_topics row
+   *  or lesson_techniques link. */
   scope?: LessonScope | null;
+  /** The technique catalog, for "what this lesson teaches". */
+  techniques?: TechniqueOption[];
+  /** Preselected techniques (the ?technique= the page was opened with). */
+  initialTechniqueIds?: string[];
 }
 
 interface ValidationIssue {
@@ -82,9 +88,12 @@ export function GenerateClient({
   isCustomized,
   initialBrief = '',
   scope = null,
+  techniques = [],
+  initialTechniqueIds = [],
 }: GenerateClientProps) {
   const router = useRouter();
   const [brief, setBrief] = useState(initialBrief);
+  const [techniqueIds, setTechniqueIds] = useState<string[]>(initialTechniqueIds);
   const [template, setTemplate] = useState(initialTemplate);
   // The last loaded/saved template text, for the "edited (unsaved)" hint.
   const [baseline, setBaseline] = useState(initialTemplate);
@@ -215,6 +224,7 @@ export function GenerateClient({
       description: draft.description,
       blocks: draft.blocks,
       scope,
+      techniqueIds,
     });
     if (result?.ok && result.data && typeof result.data.lessonId === 'string') {
       // Keep busy='saving' through the navigation so the button
@@ -277,6 +287,32 @@ export function GenerateClient({
             }
           />
         </label>
+        {techniques.length > 0 && (
+          <fieldset className={f.fieldset} style={{ marginTop: 12 }}>
+            <legend className={f.legend}>Techniques this lesson teaches</legend>
+            <p className={f.formHint} style={{ marginTop: 0 }}>
+              Saved with the lesson. In a unit&rsquo;s syllabus, the practice set after this lesson draws
+              questions solved with these techniques first. Mention them in the brief so the worked
+              solutions demonstrate them.
+            </p>
+            <div style={S.techniqueGrid}>
+              {techniques.map((t) => (
+                <label key={t.id} className={f.row} style={{ margin: 0 }} title={t.description}>
+                  <input
+                    type="checkbox"
+                    checked={techniqueIds.includes(t.id)}
+                    onChange={(e) =>
+                      setTechniqueIds((ids) =>
+                        e.target.checked ? [...new Set([...ids, t.id])] : ids.filter((id) => id !== t.id),
+                      )
+                    }
+                  />
+                  <span>{t.name}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
       </section>
 
       <details style={S.card}>
@@ -363,6 +399,7 @@ export function GenerateClient({
 
 const S: Record<string, React.CSSProperties> = {
   col: { display: 'flex', flexDirection: 'column', gap: 16 },
+  techniqueGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '4px 16px', fontSize: 14 },
   card: {
     background: 'var(--card)',
     border: '1px solid var(--border)',

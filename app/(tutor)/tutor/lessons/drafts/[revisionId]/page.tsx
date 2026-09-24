@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import type { CSSProperties } from 'react';
 import { requireUser } from '@/lib/api/auth';
+import { loadAllTechniques } from '@/lib/practice/load-question-techniques';
 import { Button } from '@/lib/ui/Button';
 import type { Json } from '@/lib/types';
 import { LessonSlideshow } from '@/lib/ui/LessonSlideshow';
@@ -10,6 +11,8 @@ import {
   addRevisionTopic,
   deleteRevision,
   removeRevisionTopic,
+  addRevisionTechnique,
+  removeRevisionTechnique,
   saveRevisionBlocks,
   submitRevision,
   updateRevisionMetadata,
@@ -70,7 +73,7 @@ export default async function TutorLessonDraftPage({
   if (profile.role === 'admin') redirect(`/admin/lessons/review/${revisionId}`);
   if (!['teacher', 'manager'].includes(profile.role)) redirect('/dashboard');
 
-  const [{ data: revisionData }, { data: blocks }, { data: topics }] = await Promise.all([
+  const [{ data: revisionData }, { data: blocks }, { data: topics }, { data: techniqueRows }, techniqueCatalog] = await Promise.all([
     supabase.from('lesson_revisions').select(`
       id, base_lesson_id, published_lesson_id, owner_id, state, title, description, kind,
       foundation_sequence, change_summary, review_note, submitted_at,
@@ -82,7 +85,15 @@ export default async function TutorLessonDraftPage({
     supabase.from('lesson_revision_topics')
       .select('id, source_topic_id, section, domain_name, skill_code')
       .eq('revision_id', revisionId),
+    supabase.from('lesson_revision_techniques')
+      .select('technique_id, technique:techniques(name)')
+      .eq('revision_id', revisionId),
+    loadAllTechniques(),
   ]);
+  const techniques = (techniqueRows ?? []).map((r) => {
+    const t = Array.isArray(r.technique) ? r.technique[0] : r.technique;
+    return { technique_id: r.technique_id, name: t?.name ?? 'Technique' };
+  });
   if (!revisionData) notFound();
   const revision = revisionData as unknown as DraftRevision;
 
@@ -134,6 +145,8 @@ export default async function TutorLessonDraftPage({
             lesson={{ ...revision, status: 'draft', visibility: 'private' }}
             initialBlocks={blocks ?? []}
             topics={topics ?? []}
+            techniques={techniques}
+            techniqueCatalog={techniqueCatalog}
             revisionMode
             actions={{
               updateMetadata: updateRevisionMetadata,
@@ -141,6 +154,8 @@ export default async function TutorLessonDraftPage({
               deleteLesson: deleteRevision,
               addTopic: addRevisionTopic,
               removeTopic: removeRevisionTopic,
+              addTechnique: addRevisionTechnique,
+              removeTechnique: removeRevisionTechnique,
             }}
           />
           <section className={a.section} style={S.submitSection}>

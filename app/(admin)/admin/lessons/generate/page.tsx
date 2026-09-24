@@ -15,6 +15,7 @@ import {
   LESSON_GEN_TEMPLATE_NAME,
 } from '@/lib/admin/lessonGenPrompt';
 import { buildSkillBrief, buildTechniqueBrief } from '@/lib/admin/lessonBriefPrefill';
+import { loadAllTechniques } from '@/lib/practice/load-question-techniques';
 import { GenerateClient } from './GenerateClient';
 import a from '../../../admin.module.css';
 
@@ -37,7 +38,7 @@ export default async function AdminLessonsGeneratePage({ searchParams }: Generat
   const skillCode = typeof sp.skill === 'string' ? sp.skill.trim() : '';
   const techniqueId = typeof sp.technique === 'string' ? sp.technique.trim() : '';
 
-  const [{ data: stored }, initialBrief] = await Promise.all([
+  const [{ data: stored }, initialBrief, techniques] = await Promise.all([
     supabase
       .from('ai_prompt_templates')
       .select('template')
@@ -50,6 +51,7 @@ export default async function AdminLessonsGeneratePage({ searchParams }: Generat
       : skillCode
         ? buildSkillBrief(supabase, skillCode)
         : Promise.resolve(null),
+    loadAllTechniques(),
   ]);
 
   return (
@@ -75,6 +77,8 @@ export default async function AdminLessonsGeneratePage({ searchParams }: Generat
         initialTemplate={stored?.template ?? DEFAULT_LESSON_PROMPT_TEMPLATE}
         isCustomized={Boolean(stored)}
         initialBrief={initialBrief ?? ''}
+        techniques={techniques}
+        initialTechniqueIds={techniqueId && initialBrief ? [techniqueId] : []}
         scope={
           techniqueId && initialBrief
             ? { grain: 'technique', techniqueId }

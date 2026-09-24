@@ -1,4 +1,4 @@
-// Unit syllabi loader (docs/foundations-and-question-patterns.md §5).
+// Unit syllabi loader (docs/foundations-and-question-patterns.md §7).
 //
 // One home for "give the generator its syllabi": reads the
 // `unit_syllabus` feature flag and, when it's on, the ordered steps of
@@ -14,11 +14,15 @@
 // user either way.
 //
 // Lesson steps whose lesson is not published are dropped here, so the
-// generator never pins a task to a lesson a student can't open.
+// generator never pins a task to a lesson a student can't open. Each
+// lesson step carries the techniques its lesson teaches
+// (lesson_techniques), which the practice drill after it narrows to by
+// default (§8.5 step C); drill steps carry their technique_source and,
+// for explicit narrowing, their own technique ids.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/types/database';
-import type { DrillRole, UnitStep, UnitSyllabi } from './generate-plan';
+import type { DrillRole, TechniqueSource, UnitStep, UnitSyllabi } from './generate-plan';
 
 export const UNIT_SYLLABUS_FLAG = 'unit_syllabus';
 
@@ -44,6 +48,24 @@ export async function unitSyllabusEnabled(supabase: AnyClient): Promise<boolean>
   }
 }
 
+/** The columns every syllabus reader selects (the generator, the tutor
+ *  editor's "add unit syllabus", the admin editor's preview). */
+export const UNIT_STEP_SELECT =
+  'id, position, kind, lesson_id, role, skill_codes, technique_ids, technique_source, question_count, minutes, skip_if_completed, ' +
+  'unit:curriculum_units!inner(skill_code, test_type), ' +
+  'lesson:lessons(title, status, lesson_techniques(technique_id, technique:techniques(name)))';
+
+interface LessonTechniqueEmbed {
+  technique_id: string;
+  technique: { name: string } | { name: string }[] | null;
+}
+
+interface LessonEmbed {
+  title: string;
+  status: string;
+  lesson_techniques?: LessonTechniqueEmbed[] | null;
+}
+
 /** The shape one syllabus row comes back in (joined to its unit and
  *  lesson). Exported so the pure grouping below is unit-testable. */
 export interface UnitStepRow {
@@ -54,20 +76,30 @@ export interface UnitStepRow {
   role: string | null;
   skill_codes: string[] | null;
   technique_ids: string[] | null;
+  technique_source?: string | null;
   question_count: number | null;
   minutes: number | null;
   skip_if_completed: boolean;
   unit: { skill_code: string } | { skill_code: string }[] | null;
-  lesson: { title: string; status: string } | { title: string; status: string }[] | null;
+  lesson: LessonEmbed | LessonEmbed[] | null;
 }
 
-function one<T>(v: T | T[] | null): T | null {
-  return Array.isArray(v) ? (v[0] ?? null) : v;
+function one<T>(v: T | T[] | null | undefined): T | null {
+  return Array.isArray(v) ? (v[0] ?? null) : (v ?? null);
+}
+
+function asSource(v: string | null | undefined): TechniqueSource {
+  return v === 'none' || v === 'explicit' ? v : 'lesson';
 }
 
 /** Group rows into per-skill ordered step lists, dropping lesson steps
- *  whose lesson isn't published. Pure. */
-export function buildSyllabi(rows: readonly UnitStepRow[]): UnitSyllabi {
+ *  whose lesson isn't published. Pure. `techniqueNames` resolves the
+ *  names of explicit drill narrowing (lesson techniques carry their
+ *  own names through the embed). */
+export function buildSyllabi(
+  rows: readonly UnitStepRow[],
+  techniqueNames: ReadonlyMap<string, string> = new Map(),
+): UnitSyllabi {
   const out: Record<string, UnitStep[]> = {};
   for (const r of rows) {
     const unit = one(r.unit);
@@ -78,15 +110,27 @@ export function buildSyllabi(rows: readonly UnitStepRow[]): UnitSyllabi {
     } else if (r.kind !== 'drill') {
       continue;
     }
+    const isLesson = r.kind === 'lesson';
+    const lessonTechniques = isLesson ? (lesson?.lesson_techniques ?? []) : [];
+    const techniqueIds = isLesson
+      ? lessonTechniques.map((t) => t.technique_id)
+      : r.technique_ids && r.technique_ids.length > 0
+        ? r.technique_ids
+        : null;
+    const names = isLesson
+      ? lessonTechniques.map((t) => one(t.technique)?.name ?? techniqueNames.get(t.technique_id) ?? '')
+      : (techniqueIds ?? []).map((id) => techniqueNames.get(id) ?? '');
     const step: UnitStep = {
       id: r.id,
       position: r.position,
       kind: r.kind,
-      lessonId: r.kind === 'lesson' ? r.lesson_id : null,
-      lessonTitle: r.kind === 'lesson' ? (lesson?.title ?? null) : null,
+      lessonId: isLesson ? r.lesson_id : null,
+      lessonTitle: isLesson ? (lesson?.title ?? null) : null,
       role: r.kind === 'drill' ? ((r.role as DrillRole | null) ?? 'practice') : null,
       skillCodes: r.skill_codes && r.skill_codes.length > 0 ? r.skill_codes : null,
-      techniqueIds: r.technique_ids && r.technique_ids.length > 0 ? r.technique_ids : null,
+      techniqueIds: techniqueIds && techniqueIds.length > 0 ? techniqueIds : null,
+      techniqueNames: techniqueIds && techniqueIds.length > 0 && names.every(Boolean) ? names : null,
+      techniqueSource: isLesson ? null : asSource(r.technique_source),
       questionCount: r.question_count,
       minutes: r.minutes,
       skipIfCompleted: r.skip_if_completed,
@@ -95,6 +139,13 @@ export function buildSyllabi(rows: readonly UnitStepRow[]): UnitSyllabi {
   }
   for (const steps of Object.values(out)) steps.sort((a, b) => a.position - b.position);
   return out;
+}
+
+/** id → name for the whole technique catalog (names for explicit
+ *  narrowing on drill steps). */
+export async function loadTechniqueNameMap(supabase: AnyClient): Promise<Map<string, string>> {
+  const { data } = await supabase.from('techniques').select('id, name');
+  return new Map((data ?? []).map((t) => [t.id, t.name]));
 }
 
 /** Syllabi + completed lessons for a student, or null when the flag is
@@ -106,13 +157,10 @@ export async function loadSyllabusInputs(
 ): Promise<SyllabusInputs | null> {
   if (!(await unitSyllabusEnabled(supabase))) return null;
 
-  const [{ data: rows }, { data: done }] = await Promise.all([
+  const [{ data: rows }, { data: done }, techniqueNames] = await Promise.all([
     supabase
       .from('curriculum_unit_steps')
-      .select(
-        'id, position, kind, lesson_id, role, skill_codes, technique_ids, question_count, minutes, skip_if_completed, ' +
-          'unit:curriculum_units!inner(skill_code, test_type), lesson:lessons(title, status)',
-      )
+      .select(UNIT_STEP_SELECT)
       .eq('unit.test_type', testType)
       .order('position', { ascending: true }),
     supabase
@@ -120,10 +168,11 @@ export async function loadSyllabusInputs(
       .select('lesson_id')
       .eq('student_id', studentId)
       .not('completed_at', 'is', null),
+    loadTechniqueNameMap(supabase),
   ]);
 
   return {
-    unitSteps: buildSyllabi((rows ?? []) as unknown as UnitStepRow[]),
+    unitSteps: buildSyllabi((rows ?? []) as unknown as UnitStepRow[], techniqueNames),
     completedLessonIds: (done ?? []).map((r) => r.lesson_id),
   };
 }

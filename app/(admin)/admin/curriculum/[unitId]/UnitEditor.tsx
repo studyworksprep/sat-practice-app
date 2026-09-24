@@ -41,9 +41,14 @@ export interface EditorStep {
   lessonStatus: string | null;
   role: 'practice' | 'mixed' | null;
   skillCodes: string[] | null;
+  /** Lesson steps: the techniques the lesson teaches. Drill steps:
+   *  explicit narrowing (techniqueSource = 'explicit'). */
   techniqueIds: string[] | null;
   /** Names for techniqueIds, same order; deleted techniques dropped. */
   techniqueNames: string[];
+  /** Practice drills: 'lesson' = the preceding lesson's techniques
+   *  first (default), 'none' = the whole skill, 'explicit' = techniqueIds. */
+  techniqueSource: 'lesson' | 'none' | 'explicit';
   questionCount: number | null;
   minutes: number | null;
   skipIfCompleted: boolean;
@@ -85,12 +90,19 @@ interface UnitInfo {
 
 type StepKind = 'lesson' | 'practice' | 'mixed';
 
+/** The practice form's "Which questions?" answer. lesson = the unit's
+ *  skill, the lesson just taught's techniques first (the default);
+ *  unit = the whole skill; choose = skills picked by name; techniques =
+ *  the unit's skill narrowed to techniques picked here. Mixed sets only
+ *  use unit (the domain so far) and choose. */
+type QuestionsMode = 'lesson' | 'unit' | 'choose' | 'techniques';
+
 interface FormValues {
   kind: StepKind;
   lessonId: string;
   skipIfCompleted: boolean;
   questionCount: string;
-  skillMode: 'unit' | 'choose';
+  questions: QuestionsMode;
   skillCodes: string[];
   techniqueIds: string[];
   minutes: string;
@@ -113,7 +125,7 @@ function emptyValues(kind: StepKind, unit: UnitInfo): FormValues {
     lessonId: '',
     skipIfCompleted: true,
     questionCount: '',
-    skillMode: 'unit',
+    questions: kind === 'practice' ? 'lesson' : 'unit',
     skillCodes: [unit.skillCode],
     techniqueIds: [],
     minutes: '',
@@ -127,9 +139,15 @@ function valuesFromStep(step: EditorStep, unit: UnitInfo): FormValues {
     lessonId: step.lessonId ?? '',
     skipIfCompleted: step.skipIfCompleted,
     questionCount: step.questionCount == null ? '' : String(step.questionCount),
-    skillMode: explicit ? 'choose' : 'unit',
+    questions: explicit
+      ? 'choose'
+      : step.techniqueSource === 'explicit'
+        ? 'techniques'
+        : step.role === 'practice' && step.techniqueSource === 'lesson'
+          ? 'lesson'
+          : 'unit',
     skillCodes: explicit ? step.skillCodes! : [unit.skillCode],
-    techniqueIds: step.techniqueIds ?? [],
+    techniqueIds: step.techniqueSource === 'explicit' ? (step.techniqueIds ?? []) : [],
     minutes: step.minutes == null ? '' : String(step.minutes),
   };
 }
@@ -141,8 +159,10 @@ function toInput(v: FormValues): StepFormInput {
   return {
     kind: 'drill',
     role: v.kind,
-    skillCodes: v.skillMode === 'choose' ? v.skillCodes : null,
-    techniqueIds: v.techniqueIds,
+    skillCodes: v.questions === 'choose' ? v.skillCodes : null,
+    techniqueIds: v.questions === 'techniques' ? v.techniqueIds : [],
+    techniqueSource:
+      v.kind === 'mixed' ? 'none' : v.questions === 'lesson' ? 'lesson' : v.questions === 'techniques' ? 'explicit' : 'none',
     questionCount: v.questionCount,
     minutes: v.minutes,
   };
@@ -158,6 +178,8 @@ function toUnitStep(step: EditorStep): UnitStep {
     role: step.role,
     skillCodes: step.skillCodes,
     techniqueIds: step.techniqueIds,
+    techniqueNames: step.techniqueNames,
+    techniqueSource: step.kind === 'drill' ? step.techniqueSource : null,
     questionCount: step.questionCount,
     minutes: step.minutes,
     skipIfCompleted: step.skipIfCompleted,
@@ -256,6 +278,12 @@ export function UnitEditor({
   }
 
   const composerAnchor = composer?.mode === 'edit' ? composer.stepId : composer?.afterStepId ?? 'end';
+  /** The techniques of the lesson step before `index` — what a practice
+   *  set narrows to by default — or null with no lesson before it. */
+  const lessonTechniquesBefore = (index: number): string[] | null => {
+    for (let i = index - 1; i >= 0; i--) if (steps[i].kind === 'lesson') return steps[i].techniqueNames;
+    return null;
+  };
 
   return (
     <div style={S.layout}>
@@ -303,6 +331,7 @@ export function UnitEditor({
                 <StepCard
                   step={step}
                   unit={unit}
+                  precedingLessonTechniques={lessonTechniquesBefore(index)}
                   isFirst={index === 0}
                   isLast={index === steps.length - 1}
                   pending={pending}
@@ -374,6 +403,9 @@ export function UnitEditor({
                 {typeof t.payload.minutes === 'number' && (
                   <span className={f.muted}> · ~{t.payload.minutes} min</span>
                 )}
+                {typeof t.payload.why === 'string' && t.payload.why ? (
+                  <div className={f.muted} style={{ fontSize: '0.78rem' }}>{t.payload.why}</div>
+                ) : null}
               </li>
             ))}
           </ol>
@@ -394,6 +426,7 @@ export function UnitEditor({
 function StepCard({
   step,
   unit,
+  precedingLessonTechniques,
   isFirst,
   isLast,
   pending,
@@ -403,6 +436,8 @@ function StepCard({
 }: {
   step: EditorStep;
   unit: UnitInfo;
+  /** Names of the preceding lesson's techniques; null with no lesson before. */
+  precedingLessonTechniques: string[] | null;
   isFirst: boolean;
   isLast: boolean;
   pending: boolean;
@@ -415,6 +450,21 @@ function StepCard({
     step.skillCodes && step.skillCodes.length > 0
       ? step.skillCodes.map((c) => SKILL_NAME.get(c) ?? c).join(', ')
       : null;
+  // What a practice set narrows to, in the editor's own words.
+  const techniqueNote =
+    kind !== 'practice'
+      ? ''
+      : step.techniqueSource === 'explicit'
+        ? step.techniqueNames.length > 0
+          ? ` · ${step.techniqueNames.join(', ')} first`
+          : ''
+        : step.techniqueSource === 'none'
+          ? ''
+          : precedingLessonTechniques === null
+            ? ' · any technique (no lesson before this step)'
+            : precedingLessonTechniques.length > 0
+              ? ` · ${precedingLessonTechniques.join(', ')} first`
+              : ' · any technique (the lesson before it has no techniques yet)';
   return (
     <div style={S.card}>
       <div style={S.cardNum}>{step.position}</div>
@@ -426,7 +476,7 @@ function StepCard({
           ) : (
             <span>
               {step.questionCount ?? (kind === 'mixed' ? 10 : 8)} questions
-              {step.techniqueNames.length > 0 ? ` · ${step.techniqueNames.join(', ')} first` : ''}
+              {techniqueNote}
             </span>
           )}
           {kind === 'lesson' && step.lessonStatus && step.lessonStatus !== 'published' && (
@@ -445,6 +495,7 @@ function StepCard({
               : skills
                 ? `Questions from: ${skills}`
                 : `Questions on ${unit.skillName}`}
+          {kind === 'lesson' && step.techniqueNames.length > 0 ? ` · Teaches: ${step.techniqueNames.join(', ')}` : ''}
           {step.minutes != null ? ` · about ${step.minutes} min` : ''}
         </div>
       </div>
@@ -518,7 +569,14 @@ function StepComposer({
 }) {
   const v = composer.values;
   const set = <K extends keyof FormValues>(key: K, value: FormValues[K]) => onChange({ ...v, [key]: value });
-  const canSave = v.kind === 'lesson' ? Boolean(v.lessonId) : v.skillMode === 'unit' || v.skillCodes.length > 0;
+  const canSave =
+    v.kind === 'lesson'
+      ? Boolean(v.lessonId)
+      : v.questions === 'choose'
+        ? v.skillCodes.length > 0
+        : v.questions === 'techniques'
+          ? v.techniqueIds.length > 0
+          : true;
 
   return (
     <form
@@ -581,19 +639,31 @@ function StepComposer({
 
           <fieldset className={f.fieldset}>
             <legend className={f.legend}>Which questions?</legend>
+            {v.kind === 'practice' && (
+              <label className={f.row}>
+                <input type="radio" name="questions" checked={v.questions === 'lesson'} disabled={pending} onChange={() => set('questions', 'lesson')} />
+                <span>
+                  Questions for the lesson just taught — its techniques first (recommended)
+                  <span className={f.formHint} style={{ display: 'block' }}>
+                    {unit.skillName} questions solved with the techniques of the lesson before this step come first;
+                    the rest of the skill fills the set.
+                  </span>
+                </span>
+              </label>
+            )}
             <label className={f.row}>
-              <input type="radio" name="skillMode" checked={v.skillMode === 'unit'} disabled={pending} onChange={() => set('skillMode', 'unit')} />
+              <input type="radio" name="questions" checked={v.questions === 'unit'} disabled={pending} onChange={() => set('questions', 'unit')} />
               <span>
                 {v.kind === 'mixed'
                   ? `Everything covered so far in ${unit.domainName} (automatic — recommended)`
-                  : `This unit: ${unit.skillName} (recommended)`}
+                  : `Any question in ${unit.skillName}`}
               </span>
             </label>
             <label className={f.row}>
-              <input type="radio" name="skillMode" checked={v.skillMode === 'choose'} disabled={pending} onChange={() => set('skillMode', 'choose')} />
+              <input type="radio" name="questions" checked={v.questions === 'choose'} disabled={pending} onChange={() => set('questions', 'choose')} />
               <span>Choose the skills myself</span>
             </label>
-            {v.skillMode === 'choose' && (
+            {v.questions === 'choose' && (
               <div style={S.skillGroups}>
                 {SAT_TAXONOMY.map((d) => (
                   <div key={d.code} style={S.skillGroup}>
@@ -623,17 +693,22 @@ function StepComposer({
                 ))}
               </div>
             )}
+            {v.kind === 'practice' && (
+              <label className={f.row}>
+                <input type="radio" name="questions" checked={v.questions === 'techniques'} disabled={pending} onChange={() => set('questions', 'techniques')} />
+                <span>Specific techniques</span>
+              </label>
+            )}
+            {v.kind === 'practice' && v.questions === 'techniques' && (
+              <TechniquePicker
+                unit={unit}
+                techniques={techniques}
+                value={v.techniqueIds}
+                onChange={(ids) => set('techniqueIds', ids)}
+                disabled={pending}
+              />
+            )}
           </fieldset>
-
-          {v.kind === 'practice' && (
-            <TechniquePicker
-              unit={unit}
-              techniques={techniques}
-              value={v.techniqueIds}
-              onChange={(ids) => set('techniqueIds', ids)}
-              disabled={pending}
-            />
-          )}
         </>
       )}
 
@@ -664,12 +739,13 @@ function StepComposer({
   );
 }
 
-// Optional technique narrowing for a practice set: questions that use
-// the chosen techniques (tagged, or in one of a technique's default
-// skills) come first and the rest of the skill fills the set. Techniques
-// that already apply to this unit by default are listed first; a new
-// technique can be created right here, with this unit's skill as its
-// default, so the editor never has to leave the syllabus.
+// Explicit technique narrowing for a practice set ("Specific
+// techniques"): questions that use the chosen techniques (tagged, or in
+// one of a technique's default skills) come first and the rest of the
+// skill fills the set. Techniques that already apply to this unit by
+// default are listed first; a new technique can be created right here,
+// with this unit's skill as its default, so the editor never has to
+// leave the syllabus.
 function TechniquePicker({
   unit,
   techniques,
@@ -718,9 +794,7 @@ function TechniquePicker({
 
   return (
     <fieldset className={f.fieldset}>
-      <legend className={f.legend}>
-        Which techniques? <span className={f.muted}>(optional)</span>
-      </legend>
+      <legend className={f.legend}>Which techniques?</legend>
       <p className={f.formHint} style={{ marginTop: 0 }}>
         Questions solved with these techniques come first; the rest of the skill fills the set when there are
         not enough of them.
