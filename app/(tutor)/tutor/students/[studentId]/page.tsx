@@ -7,11 +7,12 @@
 // every table uses can_view(), so the page returns 404 if the
 // caller can't see this student.
 //
-// Read-only on the tutor side — mutations live elsewhere
+// Mostly read-only on the tutor side — mutations live elsewhere
 // (assignments/new for new work; the runner pages for the
-// student themselves). The single Server Action used here is
-// importStudentPracticeHistory, kept on the existing
-// ImportPracticeHistoryButton client island.
+// student themselves). The Server Actions used here sit on small
+// client islands: the practice-history import, registrations and
+// official scores, the step-back switch, and the Foundations
+// card's "covered in session" mark.
 
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -25,6 +26,12 @@ import { resolveDetoursEnabled } from '@/lib/practice/detour-preference.mjs';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import { buildArchiveSummary } from '@/lib/practice/superscore';
 import {
+  buildFoundationRows,
+  foundationSyllabusTitle,
+  loadFoundationLessons,
+  summarizeFoundations,
+} from '@/lib/lesson/foundations';
+import {
   InboxIcon,
   PencilIcon,
   PerformanceIcon,
@@ -33,6 +40,8 @@ import {
 import { IconTile } from '@/lib/ui/IconTile';
 import { DeletePracticeTestButton } from './DeletePracticeTestButton';
 import { EditTargetStartButton } from './EditTargetStartModal';
+import { FoundationsCard } from './FoundationsCard';
+import type { FoundationCardGroup } from './FoundationsCard';
 import { OfficialScoresCard } from './OfficialScoresCard';
 import { ScoreProgressChart } from './ScoreProgressChart';
 import { StepBackOffersCard } from './StepBackOffersCard';
@@ -53,7 +62,7 @@ interface PageProps {
 
 export default async function TutorStudentDetailPage({ params }: PageProps) {
   const { studentId } = await params;
-  const { profile, supabase } = await requireUser();
+  const { user, profile, supabase } = await requireUser();
 
   // Role gate. The (tutor) layout already enforces this; the
   // belt-and-suspenders guard here keeps direct-URL hits safe if
@@ -84,6 +93,8 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     planState,
     { data: coverageRows },
     { data: tutorLinks },
+    foundationLessons,
+    { data: foundationProgressRows },
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -189,6 +200,14 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .select('teacher_id')
       .eq('student_id', studentId)
       .limit(1),
+    // Foundations (foundations doc §3.2, §4 step 5): the section
+    // syllabi's lesson steps, and every lesson_progress row this student
+    // has — the few rows are cheaper than a dependent second round trip.
+    loadFoundationLessons(supabase, 'sat'),
+    supabase
+      .from('lesson_progress')
+      .select('lesson_id, completed_at, covered_by, covered_at')
+      .eq('student_id', studentId),
   ]);
 
   if (rpcErr) {
@@ -393,6 +412,47 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     }
     return { total: rows.length, started, mastered, decayed };
   })();
+
+  // Foundations (foundations doc §3.2, §4 step 5): where the student
+  // stands on each foundation lesson, grouped by syllabus. The name of
+  // whoever recorded a covered-in-session mark comes from profile_cards,
+  // so a co-instructor's mark shows a name only to someone who can see
+  // that co-instructor (managers, admins); the card falls back to
+  // "by you" or no name.
+  const foundationRows = buildFoundationRows(foundationLessons, foundationProgressRows ?? []);
+  const foundationSummary = summarizeFoundations(foundationLessons, foundationProgressRows ?? []);
+  const coveredByIds = [
+    ...new Set(foundationRows.map((r) => r.coveredBy).filter((id): id is string => Boolean(id))),
+  ];
+  const coveredByNames = new Map<string, string>();
+  if (coveredByIds.length > 0) {
+    const { data: cards } = await supabase
+      .from('profile_cards')
+      .select('id, first_name, last_name, tutor_name')
+      .in('id', coveredByIds);
+    for (const c of cards ?? []) {
+      const name =
+        (c.tutor_name ?? '').trim() || [c.first_name, c.last_name].filter(Boolean).join(' ').trim();
+      if (c.id && name) coveredByNames.set(c.id, name);
+    }
+  }
+  const foundationGroups: FoundationCardGroup[] = (['math', 'reading_writing'] as const)
+    .map((section) => ({
+      section,
+      title: foundationSyllabusTitle(section),
+      rows: foundationRows
+        .filter((r) => r.section === section)
+        .map((r) => ({
+          lessonId: r.lessonId,
+          title: r.title,
+          status: r.status,
+          completedAt: r.completedAt,
+          coveredAt: r.coveredAt,
+          coveredByName: r.coveredBy ? (coveredByNames.get(r.coveredBy) ?? null) : null,
+          coveredByMe: r.coveredBy === user.id,
+        })),
+    }))
+    .filter((g) => g.rows.length > 0);
 
   return (
     <main className={s.container}>
@@ -845,6 +905,18 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         </div>
 
         <aside className={s.colSide}>
+          {/* Foundations (foundations doc §3.2, §4 step 5): mark what was
+              covered live so the plan skips it. Hidden until a section
+              syllabus has a published lesson. */}
+          {foundationLessons.length > 0 && (
+            <FoundationsCard
+              studentId={student.id}
+              groups={foundationGroups}
+              covered={foundationSummary.covered}
+              total={foundationSummary.total}
+            />
+          )}
+
           {/* Score progress chart — compact glance only renders when
               we have at least one official score on file. The
               target value sits in the section header so the chart

@@ -146,6 +146,11 @@
 .plan_not_started { background: var(--color-slate-100, #f1f5f9); color: var(--fg3, #999); }
 .planDraft { background: #fffbeb; color: #b45309; margin-left: 4px; }
 
+/* ── Foundations covered chip (foundations doc §3.2) ── */
+.foundations_done { background: #ecfdf5; color: #047857; }
+.foundations_partial { background: #fffbeb; color: #b45309; }
+.foundations_none { background: var(--color-slate-100, #f1f5f9); color: var(--fg3, #999); }
+
 .nameLink {
   color: var(--color-app-accent);
   text-decoration: none;

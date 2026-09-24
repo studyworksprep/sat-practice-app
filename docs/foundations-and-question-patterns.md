@@ -2,12 +2,15 @@
 
 > **Status: Living — adopted design, in delivery.** Written 2026-07-26
 > from the owner's pedagogical observations; last verified against the
-> codebase 2026-09-23 (§8 added: **question patterns retired in favor
+> codebase 2026-09-24 (§8 added: **question patterns retired in favor
 > of techniques**; all four steps shipped — A (schema + rename), B (the
 > per-unit tagging screen), C (lesson technique pickers +
 > technique-first practice steps) and D (section foundation syllabi,
 > 2026-09-24). All three migrations — A's, C's and D's — are in
-> production as of 2026-09-24). §3.4
+> production as of 2026-09-24; the tutor "covered in session" action and
+> the roster foundations signal, §3.2, shipped 2026-09-24 behind
+> migration `20260924180000` — applied to dev, production on the owner's
+> go-ahead). §3.4
 > step 1 (schema) and step 2 (lesson scope/kind fields, scoped generate
 > prefills) landed in July–August as the *pattern* layer; that layer is
 > gone — the tables, columns, RPC and admin surfaces it introduced were
@@ -150,6 +153,21 @@ null), domain-level (`domain_name` set, `skill_code` null), skill-level
 'reading_writing'`, matching `get_plan_inputs`. `lesson_revision_topics`
 mirrors the same shape for the tutor draft flow.
 
+**`lesson_progress.covered_by` / `covered_at`** — the tutor's "covered
+in session" record (migration `20260924180000`; dev 2026-09-24,
+production on the owner's go-ahead): who recorded a lesson as covered
+live and when, both null for a completion the student earned in the
+app. Written only through `mark_lesson_covered(student, lesson)` and
+`unmark_lesson_covered(student, lesson)` — SECURITY DEFINER, gated on
+`is_teacher()` (teacher, manager or admin) and `can_view(student)`; a
+trigger keeps the two columns off-limits to anyone but staff and the
+service role, so a student's own RLS-scoped progress writes cannot
+forge attribution. The mark upserts a completed row (the first mark
+wins; a student's earlier completion is kept); the undo deletes a row
+the mark created outright or, when the student had started the lesson,
+keeps their progress and withdraws only the mark's completion stamp.
+The generator's skip rule reads `completed_at` either way.
+
 Do **not** repurpose `concept_tags` for any of this — it is a free-form
 staff notebook with manager/admin-only RLS; a pedagogical join key
 needs a controlled vocabulary and student-readable rows.
@@ -164,7 +182,7 @@ needs a controlled vocabulary and student-readable rows.
 | Dynamic detours (upgrade plan §3.2) | Prefer an easier same-technique question over same-skill; when a skill has no tagged lesson, the section foundation is the fallback "step back" offer. |
 | `feature_efficacy` (§3.5) | Scoped tags expand to member skills for pre/post measurement: a section-tagged foundation is measured across the whole section's skills. Technique-level efficacy is a later addition (§8.7). |
 | `/welcome` wizard + Today | A new student's first plan opens with foundations — the digitized version of the owner's first one-on-one sessions. |
-| Tutor roster | "Foundations covered" becomes a visible per-student signal, plus a one-click **mark covered in session** action (writes a completed `lesson_progress` row) for work done live. |
+| Tutor roster + student page | **Shipped 2026-09-24.** The roster's Foundations column — "Covered", or "n of N", with a *fewest covered first* sort — counts the section syllabi's published lesson steps a student has done, completed in the app or covered in session alike, and links to the student page's Foundations card. There, grouped "Before Math" / "Before Reading & Writing", each lesson shows where the student stands (not yet · started in the app · completed in the app · covered in session, with who and when) and **Mark covered** records a lesson taught live through `mark_lesson_covered()`; **Undo** withdraws it. Nothing shows until a section syllabus has a published lesson. Loader and pure helpers: `lib/lesson/foundations.ts`. |
 
 ### 3.3 Deliberate non-changes (guardrails)
 
@@ -215,7 +233,8 @@ needs a controlled vocabulary and student-readable rows.
    and pickers (§8.5 steps B–C) → section foundations (§8.5 step D) →
    `recommend.ts` chain → detours → efficacy expansion →
    wizard/Today/roster surfaces.
-4. Tutor "mark covered" action + roster foundations signal.
+4. Tutor "mark covered" action + roster foundations signal —
+   **landed 2026-09-24** (migration `20260924180000`; §3.1, §3.2).
 5. Each step behind normal review; user-facing changes ride
    `feature_flags` if staged rollout is warranted (foundations
    front-load changes every new plan — it rides the `unit_syllabus`
@@ -339,6 +358,13 @@ actually delivered. Un-marked students get the foundation front-loaded
 into their next plan regeneration — which is exactly right for anyone
 who joined recently and skipped it. Assign this sweep explicitly to
 each co-instructor for their own roster; it's minutes per student.
+
+In the app (since 2026-09-24): Roster → sort by *Foundations (fewest
+covered first)* → open a student → the **Foundations** card → **Mark
+covered** on each lesson delivered live (Undo withdraws a slip). The
+column and the card appear once a section syllabus has a published
+lesson, and they do not wait for the syllabus switch — the sweep is
+meant to happen before it goes on.
 
 ### Step 6 — Watch efficacy and iterate **[in-app]**
 
@@ -548,9 +574,11 @@ sidebar gains **Curriculum** (`/admin/curriculum`):
 
 ### 7.5 Still to build
 
-1. Tutor "covered in session" (writes a completed `lesson_progress`
+1. ~~Tutor "covered in session" (writes a completed `lesson_progress`
    row) and a roster "foundations covered" signal (§3.2), so tutors can
-   backfill students who did the foundations live (§4 step 5).
+   backfill students who did the foundations live (§4 step 5).~~
+   **Shipped 2026-09-24** — §3.1 (schema), §3.2 (surfaces), §4 step 5
+   (how to run the sweep).
 2. Focus-phase lesson reassignment from per-drill outcomes.
 3. Pacing copy: a syllabus unit is ~2.5 hours, so at 5 hours/week the
    coverage phase covers ~2 units/week and short runways will not fit
@@ -709,7 +737,7 @@ practice session's `filter_criteria` records `technique_ids` and
   section syllabus. Two "Before …" syllabi on the Curriculum home and a
   section editor (§7.4); the generator front-load per decision 6 (§7.3)
   with a rationale sentence; the launcher's section fallback. The
-  optional tutor "covered in session" action is not built (§7.5).
+  tutor "covered in session" action followed the same day (§3.2, §7.5).
 
 ### 8.6 Guardrails
 

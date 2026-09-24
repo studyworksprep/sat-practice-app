@@ -20,6 +20,11 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { adherenceSummaryLine, ADHERENCE_LABELS, computeAdherence } from '@/lib/plan/adherence';
 import { buildArchiveSummary } from '@/lib/practice/superscore';
+import {
+  loadFoundationLessons,
+  loadFoundationProgress,
+  summarizeFoundations,
+} from '@/lib/lesson/foundations';
 import { RosterInteractive } from './RosterInteractive';
 import s from './Roster.module.css';
 
@@ -56,6 +61,23 @@ export default async function TutorRosterPage() {
     .select('student_id, status, plan_tasks(status, scheduled_date)')
     .in('status', ['active', 'draft'])
     .eq('test_type', 'sat');
+
+  // Foundations covered (foundations doc §3.2, §4 step 5): the section
+  // syllabi's lesson steps, and each visible student's rows on them —
+  // completed in the app or marked covered in session, either counts.
+  // Nothing to show until a foundation syllabus has a published lesson,
+  // so the column and its sort only appear then.
+  const foundationLessons = await loadFoundationLessons(supabase, 'sat');
+  const foundationRows = await loadFoundationProgress(
+    supabase,
+    foundationLessons.map((f) => f.lessonId),
+  );
+  const foundationRowsByStudent = new Map();
+  for (const r of foundationRows) {
+    const arr = foundationRowsByStudent.get(r.student_id) ?? [];
+    arr.push(r);
+    foundationRowsByStudent.set(r.student_id, arr);
+  }
 
   const today = new Date().toISOString().slice(0, 10);
   const adherenceByStudent = new Map();
@@ -95,6 +117,10 @@ export default async function TutorRosterPage() {
       isActive: p.is_active !== false, // null → treat as active
       plan: adherenceByStudent.get(p.id) ?? null,
       hasPlanDraft: draftStudents.has(p.id),
+      foundations:
+        foundationLessons.length > 0
+          ? summarizeFoundations(foundationLessons, foundationRowsByStudent.get(p.id) ?? [])
+          : null,
     };
   });
 
@@ -169,7 +195,11 @@ export default async function TutorRosterPage() {
           with their starting / final score summary.
         </p>
       </header>
-      <RosterInteractive students={students} canEdit={['teacher', 'manager', 'admin'].includes(profile.role)} />
+      <RosterInteractive
+        students={students}
+        canEdit={['teacher', 'manager', 'admin'].includes(profile.role)}
+        showFoundations={foundationLessons.length > 0}
+      />
     </main>
   );
 }

@@ -1758,6 +1758,8 @@ export type Database = {
           check_answers: Json
           completed_at: string | null
           completed_blocks: string[]
+          covered_at: string | null
+          covered_by: string | null
           lesson_id: string
           started_at: string | null
           student_id: string
@@ -1766,6 +1768,8 @@ export type Database = {
           check_answers?: Json
           completed_at?: string | null
           completed_blocks?: string[]
+          covered_at?: string | null
+          covered_by?: string | null
           lesson_id: string
           started_at?: string | null
           student_id: string
@@ -1774,11 +1778,34 @@ export type Database = {
           check_answers?: Json
           completed_at?: string | null
           completed_blocks?: string[]
+          covered_at?: string | null
+          covered_by?: string | null
           lesson_id?: string
           started_at?: string | null
           student_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lesson_progress_covered_by_fkey"
+            columns: ["covered_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_covered_by_fkey"
+            columns: ["covered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_covered_by_fkey"
+            columns: ["covered_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "lesson_progress_lesson_id_fkey"
             columns: ["lesson_id"]
@@ -5174,6 +5201,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      mark_lesson_covered: {
+        Args: { p_lesson: string; p_student: string }
+        Returns: Json
+      }
       mastery_weight: {
         Args: { p_difficulty: number; p_score_band: number }
         Returns: number
@@ -5255,6 +5286,10 @@ export type Database = {
       teacher_can_view_student: {
         Args: { target_student_id: string }
         Returns: boolean
+      }
+      unmark_lesson_covered: {
+        Args: { p_lesson: string; p_student: string }
+        Returns: Json
       }
     }
     Enums: {
