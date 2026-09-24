@@ -5,8 +5,14 @@
 //
 // Two table shapes share the surface:
 //
-//   Active view    — Name / Email / Target / School / Class / Status / Actions
+//   Active view    — Name / Email / Target / Plan / [Foundations] / School / Class / Actions
 //   Archived view  — Name / Starting / Final / Impact / Target / Reach / Actions
+//
+// The Foundations column (foundations doc §3.2) appears once a section
+// syllabus has a published lesson: how many foundation lessons the
+// student has done — completed in the app or marked covered in session —
+// linking to the student page's Foundations card, where the tutor
+// marks what was covered live.
 //
 // The archived view's columns are the only signals a tutor cares
 // about for past students: where they started, where they ended,
@@ -47,6 +53,19 @@ const ACTIVE_SORTS = {
   graduationDesc: { label: 'Class (newest)', cmp: (a, b) => (b.graduationYear ?? 0) - (a.graduationYear ?? 0) },
 };
 
+// Only offered while the Foundations column shows: the backfill sweep
+// (foundations doc §4 step 5) wants the students with the most left
+// to mark at the top.
+const ACTIVE_SORTS_WITH_FOUNDATIONS = {
+  ...ACTIVE_SORTS,
+  foundations: {
+    label: 'Foundations (fewest covered first)',
+    cmp: (a, b) =>
+      (a.foundations?.covered ?? 0) - (b.foundations?.covered ?? 0)
+      || nameOf(a).localeCompare(nameOf(b)),
+  },
+};
+
 // Sort definitions for the archived view. Different cohort, so
 // "best impact first" / "highest final" make more sense than
 // "name A→Z" — though name remains as the default for predictable
@@ -74,7 +93,7 @@ function nameOf(st) {
     || '—';
 }
 
-export function RosterInteractive({ students, canEdit }) {
+export function RosterInteractive({ students, canEdit, showFoundations = false }) {
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('active'); // active | inactive | all
   const [activeSort, setActiveSort] = useState('name');
@@ -83,7 +102,11 @@ export function RosterInteractive({ students, canEdit }) {
 
   const showingArchived = statusFilter === 'inactive';
   const sort = showingArchived ? archivedSort : activeSort;
-  const SORTS = showingArchived ? ARCHIVED_SORTS : ACTIVE_SORTS;
+  const SORTS = showingArchived
+    ? ARCHIVED_SORTS
+    : showFoundations
+      ? ACTIVE_SORTS_WITH_FOUNDATIONS
+      : ACTIVE_SORTS;
 
   const trimmed = query.trim().toLowerCase();
 
@@ -155,7 +178,12 @@ export function RosterInteractive({ students, canEdit }) {
       ) : showingArchived ? (
         <ArchivedTable students={view} canEdit={canEdit} />
       ) : (
-        <ActiveTable students={view} canEdit={canEdit} onEdit={setEditing} />
+        <ActiveTable
+          students={view}
+          canEdit={canEdit}
+          onEdit={setEditing}
+          showFoundations={showFoundations}
+        />
       )}
 
       {editing && (
@@ -170,7 +198,7 @@ export function RosterInteractive({ students, canEdit }) {
 
 // ──────────────────────────────────────────────────────────────
 
-function ActiveTable({ students, canEdit, onEdit }) {
+function ActiveTable({ students, canEdit, onEdit, showFoundations }) {
   return (
     <div className={s.tableWrap}>
       <table className={s.table}>
@@ -180,6 +208,7 @@ function ActiveTable({ students, canEdit, onEdit }) {
             <th className={s.th}>Email</th>
             <th className={s.thNum}>Target</th>
             <th className={s.th}>Plan</th>
+            {showFoundations && <th className={s.th}>Foundations</th>}
             <th className={s.th}>School</th>
             <th className={s.thNum}>Class</th>
             <th className={s.thAction} aria-label="Actions" />
@@ -216,6 +245,13 @@ function ActiveTable({ students, canEdit, onEdit }) {
                 ) : null}
                 {!st.plan && !st.hasPlanDraft ? <span className={s.muted}>—</span> : null}
               </td>
+              {showFoundations && (
+                <td className={s.td}>
+                  {st.foundations
+                    ? <FoundationsChip studentId={st.id} summary={st.foundations} />
+                    : <span className={s.muted}>—</span>}
+                </td>
+              )}
               <td className={s.td}>{st.highSchool ?? <span className={s.muted}>—</span>}</td>
               <td className={s.tdNum}>{st.graduationYear ?? '—'}</td>
               <td className={s.tdAction}>
@@ -296,6 +332,24 @@ function ArchivedTable({ students, canEdit }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+// "Covered" once every foundation lesson is done; "n of N" on the way
+// there. Links to the student page's Foundations card, where the mark
+// lives.
+function FoundationsChip({ studentId, summary }) {
+  const { covered, total } = summary;
+  const done = total > 0 && covered >= total;
+  const tone = done ? s.foundations_done : covered > 0 ? s.foundations_partial : s.foundations_none;
+  return (
+    <Link
+      href={`/tutor/students/${studentId}#foundations`}
+      className={`${s.planChip} ${tone}`}
+      title={`${covered} of ${total} foundation lesson${total === 1 ? '' : 's'} completed or covered in session — open the student to mark what you covered live`}
+    >
+      {done ? 'Covered' : `${covered} of ${total}`}
+    </Link>
   );
 }
 
