@@ -3,11 +3,11 @@
 > **Status: Living — adopted design, in delivery.** Written 2026-07-26
 > from the owner's pedagogical observations; last verified against the
 > codebase 2026-09-23 (§8 added: **question patterns retired in favor
-> of techniques**; steps A (schema + rename), B (the per-unit tagging
-> screen) and C (lesson technique pickers + technique-first practice
-> steps, 2026-09-24) of four shipped; A's migration is in production,
-> C's migration `20260924120000` is in dev pending the owner's
-> go-ahead). §3.4
+> of techniques**; all four steps shipped — A (schema + rename), B (the
+> per-unit tagging screen), C (lesson technique pickers +
+> technique-first practice steps) and D (section foundation syllabi,
+> 2026-09-24). A's and C's migrations are in production; D's migration
+> `20260924150000` is in dev pending the owner's go-ahead). §3.4
 > step 1 (schema) and step 2 (lesson scope/kind fields, scoped generate
 > prefills) landed in July–August as the *pattern* layer; that layer is
 > gone — the tables, columns, RPC and admin surfaces it introduced were
@@ -420,8 +420,11 @@ elements are the examples (owner note 2026-09-22).
 
 `curriculum_unit_steps` — an ordered syllabus per unit (migration
 `20260922120000_curriculum_unit_steps.sql`, applied to dev and
-production 2026-09-22). Units stay at skill grain (§3.3); the syllabus
-is intra-unit detail.
+production 2026-09-22), and since step D (migration `20260924150000`)
+also the two section foundation syllabi: rows with a `section`
+(`math` | `reading_writing`) and no `unit_id`, exactly one of the two
+per row, positions unique per syllabus, `test_type` on the row. Units
+stay at skill grain (§3.3); the syllabus is intra-unit detail.
 
 | Column | Meaning |
 |---|---|
@@ -433,6 +436,7 @@ is intra-unit detail.
 | `technique_ids` | the explicit list when `technique_source = 'explicit'`, else null. Matching questions (tagged, or default-applicable by skill) are drawn first and the launcher tops up from the skills when short; the task's why-line says so and names the techniques. |
 | `question_count`, `minutes` | null = 8 (practice) / 10 (mixed) and the unit's minutes |
 | `skip_if_completed` | lesson steps: skip when `lesson_progress.completed_at` is set (default true) |
+| `section`, `test_type` | a section foundation syllabus ("Before Math" / "Before Reading & Writing") instead of a unit. A foundation's practice step draws across the skills the preceding lesson's techniques apply to (`technique_skills`), technique questions first; a mixed set draws from the whole section. |
 
 `curriculum_units.syllabus_authored_at` marks a human-authored
 syllabus; every SAT unit was backfilled with a **default two-step
@@ -461,6 +465,19 @@ regeneration, tutor week regeneration) passes them through. With them:
   first unclaimed lesson ("Learn it first"), else cycles the unit's
   drills. Reassigning the specific lesson whose drill went worst needs
   per-drill outcomes and is a follow-up.
+- **Foundations** (step D): a section's foundation syllabus is walked
+  to exhaustion before the first task of that section in any phase —
+  in coverage before the section's first unit, in targeted /
+  self-directed plans before the section's first focus or target task
+  — the pool's own walk holding still meanwhile. Completed or
+  already-scheduled foundation lessons are skipped (their practice
+  step still runs), each foundation is scheduled once, and the plan
+  rationale says how many come first per section. Foundation payloads
+  carry `section` and `foundation: true`, no skill; "Foundation: <lesson
+  title>" / "Practice: <lesson title>" / "Mixed practice: <section>",
+  why-line "Foundations first: taught before your first Math topic."
+  The launcher opens the pinned lesson and, for a drill with no skills
+  of its own, draws across every skill in the section.
 - Payloads: lesson tasks carry `lesson_id` + the lesson's own title
   ("Lesson: Solve Equations by Graphing…"); drills carry
   `skill_codes`, `drill_role`, optional `technique_ids`, the
@@ -477,11 +494,14 @@ Built for a non-technical editor working entirely inside the admin
 account (owner direction 2026-09-22: no spreadsheet or CSV path). The
 sidebar gains **Curriculum** (`/admin/curriculum`):
 
-- **Curriculum home**: every SAT unit in teaching order, grouped Math
-  then Reading & Writing, with its syllabus outline and a status the
-  editor can act on (Authored · Default — not yet authored · needs
-  attention: no steps / no lesson / an unpublished lesson). A "How to
-  build a unit" note states the teaching sequence in plain words.
+- **Curriculum home**: a "Before the units" block with the two
+  foundation syllabi ("Before Math", "Before Reading & Writing":
+  outline, status, Build/Edit), then every SAT unit in teaching order,
+  grouped Math then Reading & Writing, with its syllabus outline and a
+  status the editor can act on (Authored · Default — not yet authored ·
+  needs attention: no steps / no lesson / an unpublished lesson). A
+  "How to build a unit" note states the teaching sequence in plain
+  words, foundations included.
 - **The switch**: "Study plans use these syllabi: On/Off" flips the
   `unit_syllabus` flag through a Server Action (feature_flags'
   `ff_write` policy is `is_admin()`), with a confirm that says what
@@ -508,6 +528,14 @@ sidebar gains **Curriculum** (`/admin/curriculum`):
   exact task list a plan emits, why-lines included. "Start over with
   the default" resets the unit. Every edit stamps
   `syllabus_authored_at`.
+- **Section editor** (`/admin/curriculum/section/<math|reading_writing>`,
+  step D): the same editor scoped to a section. Foundation-kind lessons
+  list first in the picker; a practice set's "Which questions?" reads
+  "the skills the lesson's techniques apply to" / "any question in
+  Math" / chosen skills / specific techniques, and a mixed set is the
+  whole section; the preview runs `expandSectionSyllabus`. No default to
+  reset to — empty means no foundations, and plans go straight to the
+  units.
 - **Tutor editor**: "Unit syllabus" in the add-task type list drops a
   unit's whole syllabus into a week as tutor tasks (completed lessons
   skipped, one step per day), not gated on the flag.
@@ -520,8 +548,9 @@ sidebar gains **Curriculum** (`/admin/curriculum`):
 
 ### 7.5 Still to build
 
-1. The technique layer's step D (§8.5): the section foundation
-   syllabi.
+1. Tutor "covered in session" (writes a completed `lesson_progress`
+   row) and a roster "foundations covered" signal (§3.2), so tutors can
+   backfill students who did the foundations live (§4 step 5).
 2. Focus-phase lesson reassignment from per-drill outcomes.
 3. Pacing copy: a syllabus unit is ~2.5 hours, so at 5 hours/week the
    coverage phase covers ~2 units/week and short runways will not fit
@@ -673,11 +702,14 @@ practice session's `filter_criteria` records `technique_ids` and
   coverage/targets code yields to it. The launcher (step A) draws
   technique-matching questions first, tops up from the skills and
   records `technique_matched`.
-- **D. Section foundations.** `curriculum_unit_steps` rows scoped to a
-  section (nullable `unit_id` + `section`, exactly one set), two
-  "Before …" syllabi in the Curriculum home and editor, the generator
-  front-load per decision 6, optional tutor "covered in session", plan
-  rationale copy.
+- **D. Section foundations — shipped 2026-09-24.** Migration
+  `20260924150000` (dev; production on the owner's go-ahead):
+  `curriculum_unit_steps.unit_id` nullable, `section` + `test_type`
+  columns, exactly one of unit/section per row, positions unique per
+  section syllabus. Two "Before …" syllabi on the Curriculum home and a
+  section editor (§7.4); the generator front-load per decision 6 (§7.3)
+  with a rationale sentence; the launcher's section fallback. The
+  optional tutor "covered in session" action is not built (§7.5).
 
 ### 8.6 Guardrails
 

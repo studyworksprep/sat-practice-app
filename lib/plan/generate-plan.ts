@@ -94,6 +94,10 @@ export interface UnitStep {
   techniqueIds?: readonly string[] | null;
   /** Names for techniqueIds, same order, for titles and why-lines. */
   techniqueNames?: readonly string[] | null;
+  /** kind = lesson: the skills its techniques apply to by default
+   *  (technique_skills, union) — what a foundation's practice step draws
+   *  across when the step names no skills of its own. */
+  techniqueSkillCodes?: readonly string[] | null;
   /** kind = drill: 'lesson' (default) narrows a practice drill to the
    *  preceding lesson step's techniques; 'none' draws the whole skill;
    *  'explicit' uses this step's techniqueIds. Mixed sets never narrow. */
@@ -108,6 +112,13 @@ export interface UnitStep {
 
 /** Syllabi keyed by the unit's skill code. */
 export type UnitSyllabi = Readonly<Record<string, readonly UnitStep[]>>;
+
+/** Section foundation syllabi (docs §8.1 decision 6): "Before Math" and
+ *  "Before Reading & Writing", walked before the section's first task.
+ *  Lesson steps carry the foundation lessons (skipped when completed);
+ *  drill steps are practice across the skills the lesson's techniques
+ *  apply to (or a mixed set across the section). */
+export type SectionSyllabi = Readonly<Partial<Record<PlanSection, readonly UnitStep[]>>>;
 
 /** One skill's current state — the shape get_student_coverage (§1.3)
  *  joined with curriculum_units (§1.2) + skill_learnability provides. */
@@ -156,6 +167,9 @@ export interface PlanInput {
   elapsedWeeks?: number;
   /** Per-unit syllabi (flag `unit_syllabus`). See UnitStep. */
   unitSteps?: UnitSyllabi | null;
+  /** Section foundation syllabi (same flag). Walked before the
+   *  section's first task in every phase; absent = no foundations. */
+  sectionSteps?: SectionSyllabi | null;
   /** Lessons the student has completed (lesson_progress.completed_at);
    *  their lesson steps are skipped wherever they appear. */
   completedLessonIds?: readonly string[] | null;
@@ -382,6 +396,125 @@ export function buildLessonStepPayload(
     minutes: step.minutes ?? s.expectedMinutes ?? AVG_TASK_MINUTES,
     why,
   };
+}
+
+// ── Section foundations (docs §8.1 decision 6) ──────────────────────
+
+export interface SectionRef {
+  section: PlanSection;
+  expectedMinutes?: number;
+}
+
+export function sectionDisplayName(section: PlanSection): string {
+  return section === 'math' ? 'Math' : 'Reading & Writing';
+}
+
+/** The why-line every foundation task carries. */
+export function foundationWhy(section: PlanSection): string {
+  return `Foundations first: taught before your first ${sectionDisplayName(section)} topic.`;
+}
+
+/** A foundation lesson step. No skill identity — the task belongs to a
+ *  section; the launcher opens the pinned lesson. */
+export function buildFoundationLessonPayload(
+  sec: SectionRef,
+  step: UnitStep,
+  why: string = foundationWhy(sec.section),
+): Record<string, unknown> {
+  const label = sectionDisplayName(sec.section);
+  return {
+    section: sec.section,
+    foundation: true,
+    ...(step.lessonId ? { lesson_id: step.lessonId } : {}),
+    ...(step.id ? { unit_step_id: step.id } : {}),
+    ...(step.techniqueNames && step.techniqueNames.length > 0
+      ? { technique_names: [...step.techniqueNames] }
+      : {}),
+    title: step.lessonTitle ? `Foundation: ${step.lessonTitle}` : `Foundation: ${label}`,
+    minutes: step.minutes ?? sec.expectedMinutes ?? AVG_TASK_MINUTES,
+    why,
+  };
+}
+
+/** A foundation drill step: practice across the skills the preceding
+ *  lesson's techniques apply to (or the step's own skills), technique
+ *  questions first; a mixed set spans the whole section. With no skills
+ *  at all the launcher falls back to every skill in the section. */
+export function buildFoundationDrillPayload(
+  sec: SectionRef,
+  step: UnitStep,
+  why: string = foundationWhy(sec.section),
+  opts: { lesson?: UnitStep | null } = {},
+): Record<string, unknown> {
+  const label = sectionDisplayName(sec.section);
+  const role: DrillRole = step.role ?? 'practice';
+  const skillCodes: string[] =
+    step.skillCodes && step.skillCodes.length > 0
+      ? [...step.skillCodes]
+      : role === 'practice' && opts.lesson?.techniqueSkillCodes && opts.lesson.techniqueSkillCodes.length > 0
+        ? [...opts.lesson.techniqueSkillCodes]
+        : [];
+  const count = step.questionCount ?? MIXED_SET_QUESTION_COUNT;
+  const narrowing = resolveTechniqueNarrowing(step, opts.lesson);
+  const narrowed = narrowing.ids.length > 0;
+  const title =
+    role === 'mixed'
+      ? `Mixed practice: ${label}`
+      : opts.lesson?.lessonTitle
+        ? `Practice: ${opts.lesson.lessonTitle}`
+        : `Practice: ${label} foundations`;
+  const techniqueWhy = narrowed
+    ? narrowing.names.length > 0
+      ? `Questions solved by ${joinNames(narrowing.names)} come first, across the skills they apply to.`
+      : "Questions for the lesson's techniques come first, across the skills they apply to."
+    : null;
+  return {
+    section: sec.section,
+    foundation: true,
+    ...(skillCodes.length > 0 ? { skill_codes: skillCodes } : {}),
+    filter_criteria: {
+      section: sec.section,
+      ...(skillCodes.length > 0 ? { skill_codes: skillCodes } : {}),
+      count,
+      ...(narrowed ? { technique_ids: narrowing.ids } : {}),
+    },
+    ...(narrowed && narrowing.names.length > 0 ? { technique_names: narrowing.names } : {}),
+    title,
+    minutes: step.minutes ?? Math.min(sec.expectedMinutes ?? AVG_TASK_MINUTES, AVG_TASK_MINUTES),
+    why: techniqueWhy ? `${why} ${techniqueWhy}` : why,
+    drill_role: role,
+    ...(step.id ? { unit_step_id: step.id } : {}),
+    ...(opts.lesson?.lessonId ? { lesson_id: opts.lesson.lessonId } : {}),
+  };
+}
+
+/** A section syllabus expanded into tasks, in order — the same rules
+ *  the generator's front-load applies (completed lessons skipped, a
+ *  practice drill titled after the lesson before it). Used by the admin
+ *  editor's "student sees" preview. */
+export function expandSectionSyllabus(
+  sec: SectionRef,
+  steps: readonly UnitStep[],
+  opts: { completedLessonIds?: readonly string[] | null } = {},
+): ExpandedSyllabusTask[] {
+  const completed = new Set(opts.completedLessonIds ?? []);
+  const out: ExpandedSyllabusTask[] = [];
+  let lastLesson: UnitStep | null = null;
+  for (const step of steps) {
+    if (step.kind === 'lesson') {
+      lastLesson = step;
+      if (!step.lessonId || ((step.skipIfCompleted ?? true) && completed.has(step.lessonId))) continue;
+      out.push({ taskType: 'lesson', payload: buildFoundationLessonPayload(sec, step) });
+      continue;
+    }
+    out.push({
+      taskType: 'drill',
+      payload: buildFoundationDrillPayload(sec, step, foundationWhy(sec.section), {
+        lesson: step.role === 'mixed' ? null : lastLesson,
+      }),
+    });
+  }
+  return out;
 }
 
 /** "A and B", "A, B, and C". */
@@ -694,6 +827,49 @@ export function generatePlan(input: PlanInput): PlanDraft {
     coverage: { unit: 0, step: 0 },
     targets: { unit: 0, step: 0 },
   };
+  /** Section foundations: where each section's front-load stands. A
+   *  section's syllabus is walked to exhaustion before the first task
+   *  of that section in any phase (docs §8.1 decision 6). */
+  const sectionSyllabi = input.sectionSteps ?? null;
+  const sectionWalks: Record<PlanSection, number> = { math: 0, reading_writing: 0 };
+  const foundationLessonBefore = (steps: readonly UnitStep[], index: number): UnitStep | null => {
+    for (let i = index - 1; i >= 0; i--) if (steps[i].kind === 'lesson') return steps[i];
+    return null;
+  };
+  /** The next foundation task for a section, or null once its syllabus
+   *  is exhausted. Completed or already-scheduled lessons are skipped;
+   *  their practice drill still runs. */
+  const nextFoundation = (w: number, section: PlanSection): SlotTask | null => {
+    const steps = sectionSyllabi?.[section];
+    if (!steps || steps.length === 0) return null;
+    const sec: SectionRef = { section };
+    while (sectionWalks[section] < steps.length) {
+      const idx = sectionWalks[section]++;
+      const step = steps[idx];
+      if (step.kind === 'lesson') {
+        const id = step.lessonId ?? null;
+        if (!id) continue;
+        if ((step.skipIfCompleted ?? true) && completedLessons.has(id)) continue;
+        if (lessonsEmitted.has(id)) continue;
+        lessonsEmitted.add(id);
+        return {
+          weekIndex: w,
+          taskType: 'lesson',
+          source: 'generated',
+          payload: buildFoundationLessonPayload(sec, step),
+        };
+      }
+      return {
+        weekIndex: w,
+        taskType: 'drill',
+        source: 'generated',
+        payload: buildFoundationDrillPayload(sec, step, foundationWhy(section), {
+          lesson: step.role === 'mixed' ? null : foundationLessonBefore(steps, idx),
+        }),
+      };
+    }
+    return null;
+  };
   /** Skills walked so far per domain — the default draw for a mixed set. */
   const walkedByDomain = new Map<string, string[]>();
   const focusDrillCursor = new Map<string, number>();
@@ -786,6 +962,10 @@ export function generatePlan(input: PlanInput): PlanDraft {
         st.step = 0;
         continue;
       }
+      // The section's foundations come before its first unit task; the
+      // pool's own walk holds still until they are exhausted.
+      const foundation = nextFoundation(w, s.section);
+      if (foundation) return foundation;
       const step = steps[st.step++];
       if (step.kind === 'lesson') {
         if (!takeLessonStep(s, step)) continue;
@@ -907,6 +1087,10 @@ export function generatePlan(input: PlanInput): PlanDraft {
       if (ranked.length > 0) {
         // focus, rehearsal, or a coverage/targets phase with nothing to draw.
         const s = ranked[cursors.focus % ranked.length];
+        // Foundations precede a section's first task here too (targeted
+        // plans start in focus), without spending the skill's turn.
+        const foundation = nextFoundation(w, s.section);
+        if (foundation) return foundation;
         cursors.focus++;
         if (syllabi) return focusPickFromSyllabus(w, s);
         if (s.hasLesson && isWeak(s) && !isStrong(s) && !lessonsScheduled.has(s.skillCode)) {
@@ -963,6 +1147,10 @@ export function generatePlan(input: PlanInput): PlanDraft {
     topSkills: ranked.slice(0, 3).map((s) => skillDisplayName(s.domainCode, s.skillCode)),
     targetCount: targetPool.length,
     syllabus: syllabi != null,
+    foundations: {
+      math: (sectionSyllabi?.math ?? []).filter((st) => st.kind === 'lesson').length,
+      reading_writing: (sectionSyllabi?.reading_writing ?? []).filter((st) => st.kind === 'lesson').length,
+    },
   });
 
   return { weeks, tasks, rationale, mode, phases };
@@ -988,6 +1176,8 @@ function buildRationale(args: {
   /** Units were walked by syllabus (several lessons per unit) rather
    *  than the built-in lesson-then-drill pair. */
   syllabus?: boolean;
+  /** Foundation lessons per section (0 = none authored). */
+  foundations?: Record<PlanSection, number>;
 }): string {
   const total = args.weeks + args.elapsed;
   const gapText =
@@ -1014,6 +1204,18 @@ function buildRationale(args: {
     } else {
       parts.push(`${cap(range)} are test rehearsal: a full-length test each week with targeted review.`);
     }
+  }
+  const foundationParts: string[] = [];
+  for (const section of ['math', 'reading_writing'] as PlanSection[]) {
+    const n = args.foundations?.[section] ?? 0;
+    if (n > 0) {
+      foundationParts.push(
+        `${n === 1 ? 'one foundation lesson comes' : `${n} foundation lessons come`} before your first ${sectionDisplayName(section)} topic`,
+      );
+    }
+  }
+  if (foundationParts.length > 0) {
+    parts.push(`${cap(foundationParts.join(', and '))} — the tools the section's lessons build on; ones you have already completed are skipped.`);
   }
   if (args.fullTests) {
     parts.push(`Full practice tests every ${args.cadence} weeks before that as checkpoints.`);
@@ -1074,6 +1276,8 @@ export interface RepaceInput {
   fullTests?: boolean;
   /** Unit syllabi + completed lessons (flag `unit_syllabus`); see PlanInput. */
   unitSteps?: UnitSyllabi | null;
+  /** Section foundation syllabi (same flag). */
+  sectionSteps?: SectionSyllabi | null;
   completedLessonIds?: readonly string[] | null;
 }
 
@@ -1164,6 +1368,7 @@ export function repacePlan(input: RepaceInput): RepaceResult {
     targets: input.targets,
     fullTests: input.fullTests,
     unitSteps: input.unitSteps,
+    sectionSteps: input.sectionSteps,
     completedLessonIds: input.completedLessonIds,
     // Keep the plan in the phase it has reached: phases are laid over
     // the original horizon, this draft covers the remaining weeks.
@@ -1230,6 +1435,8 @@ export interface RegenerateWeekInput {
   fullTests?: boolean;
   /** Unit syllabi + completed lessons (flag `unit_syllabus`); see PlanInput. */
   unitSteps?: UnitSyllabi | null;
+  /** Section foundation syllabi (same flag). */
+  sectionSteps?: SectionSyllabi | null;
   completedLessonIds?: readonly string[] | null;
 }
 
@@ -1262,6 +1469,7 @@ export function regenerateWeekTasks(input: RegenerateWeekInput): PlanTaskDraft[]
     targets: input.targets,
     fullTests: input.fullTests,
     unitSteps: input.unitSteps,
+    sectionSteps: input.sectionSteps,
     completedLessonIds: input.completedLessonIds,
   });
 

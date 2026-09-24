@@ -24,7 +24,9 @@ const DOMAIN_BY_CODE = new Map(SAT_TAXONOMY.map((d) => [d.code, d]));
 const MATH_DOMAINS = new Set(['H', 'P', 'Q', 'S']);
 
 interface StepRow {
-  unit_id: string;
+  unit_id: string | null;
+  /** Section foundation rows carry a section and no unit. */
+  section: string | null;
   position: number;
   kind: string;
   role: string | null;
@@ -61,17 +63,50 @@ export default async function AdminCurriculumPage() {
       .order('sequence', { ascending: true }),
     supabase
       .from('curriculum_unit_steps')
-      .select('unit_id, position, kind, role, lesson:lessons(title, status)')
+      .select('unit_id, section, position, kind, role, lesson:lessons(title, status)')
+      .eq('test_type', 'sat')
       .order('position', { ascending: true }),
     supabase.from('feature_flags').select('value').eq('key', UNIT_SYLLABUS_FLAG).maybeSingle(),
   ]);
 
   const stepsByUnit = new Map<string, StepRow[]>();
+  const stepsBySection = new Map<string, StepRow[]>();
   for (const r of (stepRows ?? []) as StepRow[]) {
-    const list = stepsByUnit.get(r.unit_id) ?? [];
-    list.push(r);
-    stepsByUnit.set(r.unit_id, list);
+    const key = r.unit_id ?? null;
+    if (key) {
+      const list = stepsByUnit.get(key) ?? [];
+      list.push(r);
+      stepsByUnit.set(key, list);
+    } else if (r.section) {
+      const list = stepsBySection.get(r.section) ?? [];
+      list.push(r);
+      stepsBySection.set(r.section, list);
+    }
   }
+
+  // The two foundation syllabi (docs §8.1 decision 6): no backfilled
+  // default, so "built" is simply "has steps".
+  const foundations = (['math', 'reading_writing'] as const).map((section) => {
+    const steps = stepsBySection.get(section) ?? [];
+    const lessonOf = (r: StepRow) => (Array.isArray(r.lesson) ? r.lesson[0] : r.lesson);
+    const lessonCount = steps.filter((r) => r.kind === 'lesson').length;
+    const unpublished = steps.some((r) => r.kind === 'lesson' && lessonOf(r)?.status !== 'published');
+    return {
+      section,
+      title: section === 'math' ? 'Before Math' : 'Before Reading & Writing',
+      outline: steps.map((r) =>
+        r.kind === 'lesson' ? `Foundation: ${lessonOf(r)?.title ?? 'missing lesson'}` : r.role === 'mixed' ? 'Mixed set' : 'Practice',
+      ),
+      lessonCount,
+      status: (steps.length === 0 ? 'default' : unpublished ? 'attention' : 'ready') as UnitView['status'],
+      statusNote:
+        steps.length === 0
+          ? 'No foundations yet'
+          : unpublished
+            ? 'Has an unpublished lesson'
+            : `${lessonCount} foundation lesson${lessonCount === 1 ? '' : 's'}`,
+    };
+  });
 
   const units: UnitView[] = (unitRows ?? []).map((u) => {
     const steps = stepsByUnit.get(u.id) ?? [];
@@ -143,6 +178,57 @@ export default async function AdminCurriculumPage() {
 
       <SyllabusFlagSwitch on={flagOn} authored={authored} total={units.length} />
 
+      <section className={a.section}>
+        <h2 className={a.h2}>Before the units</h2>
+        <p className={a.sub} style={{ marginBottom: '0.75rem' }}>
+          Foundations: the tools every student learns before a section&rsquo;s first unit &mdash; Desmos
+          regression, the reading passage strategy. Plans put them first and skip any lesson a student has
+          already completed. Unit lessons then apply the tools.
+        </p>
+        <Table style={{ fontSize: '0.86rem' }}>
+          <thead>
+            <tr>
+              <Th>Syllabus</Th>
+              <Th>Steps</Th>
+              <Th style={{ whiteSpace: 'nowrap' }}>Status</Th>
+              <Th style={{ width: '1%' }}></Th>
+            </tr>
+          </thead>
+          <tbody>
+            {foundations.map((fnd) => (
+              <tr key={fnd.section}>
+                <Td style={{ verticalAlign: 'top' }}>
+                  <Link href={`/admin/curriculum/section/${fnd.section}`} style={{ fontWeight: 600, color: 'inherit', textDecoration: 'none' }}>
+                    {fnd.title}
+                  </Link>
+                </Td>
+                <Td style={{ verticalAlign: 'top' }}>
+                  {fnd.outline.length === 0 ? (
+                    <span style={{ color: 'var(--fg3, #6b7280)' }}>Nothing yet</span>
+                  ) : (
+                    <ol style={S.outline}>
+                      {fnd.outline.map((line, i) => (
+                        <li key={i}>{line}</li>
+                      ))}
+                    </ol>
+                  )}
+                </Td>
+                <Td style={{ verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                  <span style={fnd.status === 'ready' ? S.ready : fnd.status === 'attention' ? S.attention : S.default}>
+                    {fnd.statusNote}
+                  </span>
+                </Td>
+                <Td style={{ verticalAlign: 'top', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  <Link href={`/admin/curriculum/section/${fnd.section}`} className={a.link}>
+                    {fnd.outline.length > 0 ? 'Edit' : 'Build'} &rarr;
+                  </Link>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </section>
+
       <details className={a.section} style={S.help}>
         <summary style={S.helpSummary}>How to build a unit</summary>
         <ol style={S.helpList}>
@@ -151,6 +237,7 @@ export default async function AdminCurriculumPage() {
           <li>Repeat for each technique in the unit, in the order you teach them.</li>
           <li>Finish with a mixed set: homework across everything in the unit so far.</li>
           <li>A lesson you use in several units is taught once. Later units skip it for students who already completed it.</li>
+          <li>Tools that every unit relies on (Desmos regression, the passage strategy) go in the section&rsquo;s &ldquo;Before &hellip;&rdquo; syllabus above, not in each unit.</li>
         </ol>
       </details>
 
