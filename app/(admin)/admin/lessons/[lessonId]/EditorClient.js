@@ -21,7 +21,7 @@
 
 import { useActionState, useState } from 'react';
 import { Button } from '@/lib/ui/Button';
-import { SAT_TAXONOMY } from '@/lib/practice/sat-taxonomy';
+import { describeLessonTopicRows, untaggedLessonTagOptions } from '@/lib/lesson/catalog';
 import { CanvasEditor } from './CanvasEditor';
 import a from '../../../admin.module.css';
 import f from '../../../forms.module.css';
@@ -201,22 +201,30 @@ function MetadataSection({ lesson, action, revisionMode }) {
 // encodes the grain + value; hidden inputs decode it for the server
 // action. The techniques a lesson teaches are a separate link table
 // (lesson_techniques), not a scope grain.
-
-function topicLabel(topic) {
-  if (topic.section) {
-    return topic.section === 'math' ? 'Math section' : 'Reading & Writing section';
-  }
-  if (topic.skill_code) return `${topic.skill_code} · ${topic.domain_name}`;
-  return topic.domain_name ?? 'Unknown tag';
-}
+//
+// Chips name the skill (its code is the secondary text), in the same
+// words the Add tag menu uses, and the menu leaves out what the lesson
+// already has: the database allows each tag once, and a chip that read
+// "H.A. · Algebra" next to a menu entry "Linear equations in one
+// variable" made a stored tag look missing (lib/lesson/catalog.ts).
 
 function ScopeTagsSection({ lessonId, topics, addAction, removeAction }) {
   const [addState, addFormAction, addPending] = useActionState(addAction, null);
   const [removeState, removeFormAction, removePending] = useActionState(removeAction, null);
   const [choice, setChoice] = useState('');
 
-  // choice encodes grain + value: "section:math" or "skill:<domain>|<code>".
-  const [choiceKind, choiceRest] = choice ? choice.split(/:(.*)/s) : ['', ''];
+  const chips = describeLessonTopicRows(topics);
+  const menu = untaggedLessonTagOptions(topics);
+  // A pick the lesson now has (just added, or added in another tab) is
+  // no longer offered; fall back to the placeholder rather than post it.
+  const offered = new Set([
+    ...menu.sections.map((sec) => `section:${sec.value}`),
+    ...menu.domains.flatMap((domain) => domain.skills.map((skill) => `skill:${domain.name}|${skill.code}`)),
+  ]);
+  const current = offered.has(choice) ? choice : '';
+
+  // current encodes grain + value: "section:math" or "skill:<domain>|<code>".
+  const [choiceKind, choiceRest] = current ? current.split(/:(.*)/s) : ['', ''];
   const [choiceDomain, choiceSkill] = choiceKind === 'skill' ? choiceRest.split('|') : ['', ''];
 
   return (
@@ -229,21 +237,23 @@ function ScopeTagsSection({ lessonId, topics, addAction, removeAction }) {
       </p>
 
       <div style={S.tagRow}>
-        {topics.length === 0 && (
+        {chips.length === 0 && (
           <span className={f.muted} style={{ fontSize: 13 }}>
             No tags yet — untagged lessons don&rsquo;t count toward unit coverage.
           </span>
         )}
-        {topics.map((topic) => (
-          <form key={topic.id} action={removeFormAction} style={S.tagChipForm}>
+        {chips.map((chip) => (
+          <form key={chip.id} action={removeFormAction} style={S.tagChipForm}>
             <input type="hidden" name="lesson_id" value={lessonId} />
-            <input type="hidden" name="topic_id" value={topic.id} />
-            <span style={S.tagChip}>
-              {topicLabel(topic)}
+            <input type="hidden" name="topic_id" value={chip.id} />
+            <span style={S.tagChip} title={chip.title}>
+              {chip.label}
+              {chip.detail && <span style={S.tagDetail}>{chip.detail}</span>}
               <button
                 type="submit"
                 disabled={removePending}
-                title="Remove tag"
+                title={`Remove ${chip.label}`}
+                aria-label={`Remove ${chip.label}`}
                 style={S.tagRemove}
               >
                 ×
@@ -265,27 +275,30 @@ function ScopeTagsSection({ lessonId, topics, addAction, removeAction }) {
         <label className={f.label} style={{ minWidth: 320 }}>
           <span className={f.labelText}>Add tag</span>
           <select
-            value={choice}
+            value={current}
             onChange={(e) => setChoice(e.target.value)}
             className={f.select}
           >
-            <option value="">Pick a section or skill…</option>
-            <option value="section:math">Math section (foundation scope)</option>
-            <option value="section:reading_writing">
-              Reading &amp; Writing section (foundation scope)
+            <option value="">
+              {offered.size === 0 ? 'Every section and skill is already tagged' : 'Pick a section or skill…'}
             </option>
-            {SAT_TAXONOMY.map((domain) => (
+            {menu.sections.map((sec) => (
+              <option key={sec.value} value={`section:${sec.value}`}>
+                {sec.label} section (foundation scope)
+              </option>
+            ))}
+            {menu.domains.map((domain) => (
               <optgroup key={domain.code} label={domain.name}>
                 {domain.skills.map((skill) => (
                   <option key={skill.code} value={`skill:${domain.name}|${skill.code}`}>
-                    {skill.code} {skill.name}
+                    {skill.name} · {skill.code}
                   </option>
                 ))}
               </optgroup>
             ))}
           </select>
         </label>
-        <Button type="submit" variant="secondary" disabled={addPending || !choice}>
+        <Button type="submit" variant="secondary" disabled={addPending || !current}>
           {addPending ? 'Adding…' : 'Add tag'}
         </Button>
         {addState?.ok === false && !addPending && (
@@ -454,6 +467,11 @@ const S = {
     fontWeight: 600,
     background: 'var(--color-slate-100, #f1f5f9)',
     border: '1px solid var(--border, #e2e8f0)',
+  },
+  tagDetail: {
+    color: 'var(--fg3, #6b7280)',
+    fontSize: 12,
+    fontWeight: 500,
   },
   tagRemove: {
     border: 'none',

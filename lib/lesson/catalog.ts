@@ -68,6 +68,43 @@ export interface CatalogTopicRow {
   skill_code: string | null;
 }
 
+/** The tag columns shared by lesson_topics and lesson_revision_topics. */
+export type LessonTopicFields = Pick<CatalogTopicRow, 'section' | 'domain_name' | 'skill_code'>;
+
+/**
+ * One stored tag, the way every tag chip shows it: by the skill's name,
+ * never by its code first. A lesson's chips used to read "H.A. · Algebra"
+ * on the lesson page, and the library lists folded section and domain
+ * names in ahead of skills and cut at four labels, so a stored skill tag
+ * could look missing while the Add tag menu, which lists skills by name,
+ * refused it as a duplicate.
+ */
+export interface LessonTopicChip {
+  /** Stable per tag: grain, section, domain and skill. */
+  key: string;
+  /** Null only for a stored row with no section, domain or skill set. */
+  grain: LessonTopicGrain | null;
+  /** The skill's name for a skill tag, the domain's name for a domain
+   *  tag, "Math section" / "Reading & Writing section" for a section tag. */
+  label: string;
+  /** Secondary text: the skill code (or, for a code outside the
+   *  taxonomy, its domain); null for domain and section tags. */
+  detail: string | null;
+  /** Hover text: the whole tag, name first. */
+  title: string;
+}
+
+/** A tag chip for one stored row, carrying the row id for removal. */
+export interface LessonTopicRowChip extends LessonTopicChip {
+  id: string;
+}
+
+/** Sections and skills the Add tag menu can still offer a lesson. */
+export interface LessonTagMenu {
+  sections: Array<{ value: LessonSection; label: string }>;
+  domains: Array<{ code: string; name: string; skills: Array<{ code: string; name: string }> }>;
+}
+
 const GRAIN_ORDER: Record<LessonTopicGrain, number> = {
   section: 0,
   domain: 1,
@@ -166,16 +203,123 @@ export function getLessonCatalogFacets(
   };
 }
 
-export function getLessonScopeLabels(lesson: LessonCatalogItem): string[] {
-  if (!lesson.isCategorized) return ['Uncategorized'];
-  return unique([
-    ...lesson.topics.map((topic) => topic.sectionLabel),
-    ...lesson.topics.map((topic) => topic.domainName),
-    ...lesson.topics.map((topic) => topic.skillName),
-  ].filter((value): value is string => !!value));
+/** One chip per tag, skills first in curriculum order, then whole
+ *  domains, then whole sections. Empty for an uncategorized lesson. */
+export function getLessonScopeChips(lesson: LessonCatalogItem): LessonTopicChip[] {
+  return [...lesson.topics].sort(compareTopicsForChips).map(topicChip);
 }
 
-function normalizeTopic(row: CatalogTopicRow): LessonCatalogTopic | null {
+/** Describe one stored tag row (lesson_topics or lesson_revision_topics). */
+export function describeLessonTopic(row: LessonTopicFields): LessonTopicChip | null {
+  const topic = normalizeTopic(row);
+  return topic ? topicChip(topic) : null;
+}
+
+/**
+ * The lesson editor's chips: every stored row, in chip order, each with
+ * its row id. A row that names nothing still gets an "Unknown tag" chip
+ * so it can be seen and removed; no stored tag is ever left off.
+ */
+export function describeLessonTopicRows(
+  rows: ReadonlyArray<LessonTopicFields & { id: string }>,
+): LessonTopicRowChip[] {
+  const known: Array<{ id: string; topic: LessonCatalogTopic }> = [];
+  const unknown: LessonTopicRowChip[] = [];
+  for (const row of rows) {
+    const topic = normalizeTopic(row);
+    if (topic) {
+      known.push({ id: row.id, topic });
+    } else {
+      unknown.push({ id: row.id, key: `unknown|${row.id}`, grain: null, label: 'Unknown tag', detail: null, title: 'A tag with no section, domain or skill set' });
+    }
+  }
+  return [
+    ...known
+      .sort((a, b) => compareTopicsForChips(a.topic, b.topic))
+      .map(({ id, topic }) => ({ ...topicChip(topic), id })),
+    ...unknown,
+  ];
+}
+
+/**
+ * What the Add tag menu may still offer: the sections and skills the
+ * lesson is not tagged with yet. The database allows each tag once per
+ * lesson, so offering one it already has can only fail. A skill counts
+ * as tagged whatever its stored domain spelling is.
+ */
+export function untaggedLessonTagOptions(rows: ReadonlyArray<LessonTopicFields>): LessonTagMenu {
+  const taggedSections = new Set<string>();
+  const taggedSkills = new Set<string>();
+  for (const row of rows) {
+    const topic = normalizeTopic(row);
+    if (!topic) continue;
+    if (topic.grain === 'section' && topic.section) taggedSections.add(topic.section);
+    if (topic.grain === 'skill' && topic.skillCode) taggedSkills.add(`${topic.domainCode ?? ''}|${topic.skillCode}`);
+  }
+  return {
+    sections: (['math', 'reading_writing'] as LessonSection[])
+      .filter((section) => !taggedSections.has(section))
+      .map((value) => ({ value, label: sectionLabel(value) })),
+    domains: SAT_TAXONOMY
+      .map((domain) => ({
+        code: domain.code,
+        name: domain.name,
+        skills: domain.skills
+          .filter((skill) => !taggedSkills.has(`${domain.code}|${skill.code}`))
+          .map((skill) => ({ code: skill.code, name: skill.name })),
+      }))
+      .filter((domain) => domain.skills.length > 0),
+  };
+}
+
+function topicChip(topic: LessonCatalogTopic): LessonTopicChip {
+  const key = topicKey(topic);
+  if (topic.grain === 'skill') {
+    const label = topic.skillName ?? topic.skillCode ?? 'Unknown skill';
+    const detail = topic.skillName ? topic.skillCode : topic.domainName;
+    const title = unique([label, topic.domainName, topic.skillCode].filter((v): v is string => !!v)).join(' · ');
+    return { key, grain: 'skill', label, detail, title };
+  }
+  if (topic.grain === 'domain') {
+    const label = topic.domainName ?? 'Unknown domain';
+    return { key, grain: 'domain', label, detail: null, title: `Every skill in ${label}` };
+  }
+  const name = topic.sectionLabel ?? 'Unknown';
+  return { key, grain: 'section', label: `${name} section`, detail: null, title: `Applies to the whole ${name} section` };
+}
+
+/** Curriculum position of each domain and skill, from the taxonomy. */
+const CURRICULUM_RANK = new Map<string, number>();
+SAT_TAXONOMY.forEach((domain, d) => {
+  CURRICULUM_RANK.set(domain.code, d * 100);
+  domain.skills.forEach((skill, s) => CURRICULUM_RANK.set(`${domain.code}|${skill.code}`, d * 100 + s + 1));
+});
+
+const CHIP_GRAIN_ORDER: Record<LessonTopicGrain, number> = { skill: 0, domain: 1, section: 2 };
+
+function curriculumRank(topic: LessonCatalogTopic): number {
+  const rank =
+    topic.grain === 'skill'
+      ? CURRICULUM_RANK.get(`${topic.domainCode ?? ''}|${topic.skillCode ?? ''}`)
+      : topic.grain === 'domain'
+        ? CURRICULUM_RANK.get(topic.domainCode ?? '')
+        : topic.section === 'math' ? 0 : 1;
+  return rank ?? Number.MAX_SAFE_INTEGER;
+}
+
+/** Chip order: skills first in curriculum order, then whole domains,
+ *  then whole sections; tags outside the taxonomy after the rest. */
+function compareTopicsForChips(a: LessonCatalogTopic, b: LessonCatalogTopic): number {
+  return CHIP_GRAIN_ORDER[a.grain] - CHIP_GRAIN_ORDER[b.grain]
+    || curriculumRank(a) - curriculumRank(b)
+    || topicChipLabel(a).localeCompare(topicChipLabel(b));
+}
+
+function topicChipLabel(topic: LessonCatalogTopic): string {
+  return topic.skillName ?? topic.skillCode ?? topic.domainName ?? topic.sectionLabel ?? '';
+}
+
+function normalizeTopic(row: LessonTopicFields): LessonCatalogTopic | null {
   const grain: LessonTopicGrain | null = row.skill_code
     ? 'skill'
     : row.domain_name
@@ -203,7 +347,7 @@ function normalizeTopic(row: CatalogTopicRow): LessonCatalogTopic | null {
   };
 }
 
-function findTopicDomain(row: CatalogTopicRow): SatDomain | null {
+function findTopicDomain(row: LessonTopicFields): SatDomain | null {
   if (row.domain_name) {
     const normalizedName = row.domain_name.toLocaleLowerCase();
     const byName = SAT_TAXONOMY.find((domain) => domain.name.toLocaleLowerCase() === normalizedName);
@@ -238,7 +382,7 @@ function getTopicSearchLabels(topics: LessonCatalogTopic[]): string[] {
 }
 
 function topicKey(topic: LessonCatalogTopic): string {
-  return [topic.grain, topic.section, topic.domainCode, topic.skillCode].join('|');
+  return [topic.grain, topic.section, topic.domainCode ?? topic.domainName, topic.skillCode].join('|');
 }
 
 function compareTopics(a: LessonCatalogTopic, b: LessonCatalogTopic): number {
