@@ -382,6 +382,24 @@ Failures now log (`password_reset_verify_failed`,
 `/auth/update-password?error=invalid_link`, which shows the
 "request a new link" state.
 
+### Admin: send a student a login setup email
+
+Accounts created by Lessonworks provisioning start with a random
+password and no email to the student. The admin user page's **Login**
+section (students and practice accounts) shows the login email, last
+sign-in, and when a password link was last issued, and offers **Send
+login setup email**: `auth.admin.generateLink({ type: 'recovery' })`
+mints the same kind of token as "Forgot password?" (Supabase sends
+nothing), and `lib/email/loginSetup.ts` delivers it through Resend
+pointed at the flow above, so it expires on the same clock as a reset
+link and the email says what to do if it has. A placeholder login
+address (`…@provisioned.studyworks.local`, stamped when Lessonworks had
+no student email) cannot receive it; **Change login email** rewrites
+the auth email (marked confirmed) and mirrors it to `profiles.email`,
+which the profile form alone does not do. Both actions are admin-only
+Server Actions in `app/(admin)/admin/users/[userId]/login-actions.ts`
+and log `admin_login_setup_email` / `admin_login_email_changed`.
+
 ### Dashboard configuration (manual, per environment)
 
 The hosted dashboard has no config-as-code, so after any change to the

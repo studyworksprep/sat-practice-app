@@ -64,6 +64,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/reading-coach/actions.ts` | `importReadingCoachSpec`, `publishReadingCoachVersionAction`, `archiveReadingCoachItemAction` | requireRole[admin] |
 | `app/(admin)/admin/techniques/actions.ts` | `createTechnique`, `updateTechnique`, `deleteTechnique`, `moveTechnique` | requireRole[admin] |
 | `app/(admin)/admin/users/[userId]/actions.js` | `updateProfileFields`, `changeRole`, `toggleActive`, `banUser`, `unbanUser`, `deleteUser`, `assignTeacherStudent`, `unassignTeacherStudent`, `assignManagerTeacher`, `unassignManagerTeacher`, `setTestFlag`, `resetTestStudent` | requireRole[admin] + requireServiceRole + rateLimit |
+| `app/(admin)/admin/users/[userId]/login-actions.ts` | `sendLoginSetupEmail`, `setLoginEmail` | requireServiceRole + rateLimit |
 | `app/(admin)/admin/users/codes/actions.js` | `createTeacherCode`, `revokeTeacherCode`, `inviteStudent`, `revokeStudentInvite` | requireRole[admin] |
 | `app/(student)/assignments/[id]/actions.js` | `startAssignmentPractice` | requireUser + rateLimit |
 | `app/(student)/dashboard/task-actions.ts` | `startPlanTask`, `markTaskDone` | requireUser + rateLimit |
@@ -119,4 +120,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_20 route handlers, 68 server-action modules enumerated._
+_20 route handlers, 69 server-action modules enumerated._

@@ -18,6 +18,7 @@ import { RoleChanger } from './RoleChanger';
 import { StatusActions } from './StatusActions';
 import { Relationships } from './Relationships';
 import { TestingActions } from './TestingActions';
+import { LoginSetup } from './LoginSetup';
 import a from '../../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -35,7 +36,7 @@ export default async function AdminUserDetailPage({ params }) {
   const { data: subject, error } = await supabase
     .from('profiles')
     .select(
-      'id, email, first_name, last_name, role, is_active, banned_at, subscription_exempt, target_sat_score, high_school, graduation_year, tutor_name, sat_test_date, created_at, is_test, is_demo',
+      'id, email, first_name, last_name, role, is_active, banned_at, subscription_exempt, target_sat_score, high_school, graduation_year, tutor_name, sat_test_date, created_at, is_test, is_demo, welcome_email_sent_at, lessonworks_student_id',
     )
     .eq('id', userId)
     .maybeSingle();
@@ -92,6 +93,16 @@ export default async function AdminUserDetailPage({ params }) {
           }}
         />
       </Section>
+
+      {/* Login: how the student gets in. Lessonworks-provisioned accounts
+          start with a random password and no email to the student, so
+          this is where an admin sends the set-your-password link (or
+          fixes a placeholder login address first). */}
+      {(subject.role === 'student' || subject.role === 'practice') && !subject.is_demo && (
+        <Section title="Login">
+          <LoginSetup subject={subject} />
+        </Section>
+      )}
 
       <Section title="Role">
         <RoleChanger userId={subject.id} currentRole={subject.role} />
