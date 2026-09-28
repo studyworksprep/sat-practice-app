@@ -41,30 +41,38 @@ export async function Relationships({ supabase, subject }) {
   return null;
 }
 
+// Managers tutor students directly too: a manager's own roster is a
+// teacher_student_assignments row with the manager as teacher_id (the
+// row can_view reads; the tutor tree, the roster and the invite flow all
+// already treat managers as tutors). The picker used to offer teachers
+// only, so a manager could not be assigned from here.
+const TUTOR_ROLES = ['teacher', 'manager'];
+
 async function StudentRelationships({ supabase, subject }) {
-  const [{ data: tsa }, { data: teachers }] = await Promise.all([
+  const [{ data: tsa }, { data: tutors }] = await Promise.all([
     supabase
       .from('teacher_student_assignments')
-      .select('teacher_id, profiles!teacher_student_assignments_teacher_id_fkey(id, first_name, last_name, email)')
+      .select('teacher_id, profiles!teacher_student_assignments_teacher_id_fkey(id, first_name, last_name, email, role)')
       .eq('student_id', subject.id),
     supabase
       .from('profiles')
-      .select('id, first_name, last_name, email')
-      .eq('role', 'teacher')
+      .select('id, first_name, last_name, email, role')
+      .in('role', TUTOR_ROLES)
+      .order('role', { ascending: false })
       .order('email', { ascending: true })
       .limit(500),
   ]);
 
   const assignedIds = new Set((tsa ?? []).map((a) => a.teacher_id));
-  const availableTeachers = (teachers ?? []).filter((t) => !assignedIds.has(t.id));
+  const availableTutors = (tutors ?? []).filter((t) => !assignedIds.has(t.id));
 
   return (
     <div style={S.section}>
-      <h3 style={S.h3}>Assigned to teachers ({tsa?.length ?? 0})</h3>
+      <h3 style={S.h3}>Assigned to tutors ({tsa?.length ?? 0})</h3>
       <ul style={S.list}>
         {(tsa ?? []).map((row) => (
           <li key={row.teacher_id} style={S.listRow}>
-            <span>{displayName(row.profiles) || row.profiles?.email || row.teacher_id.slice(0, 8)}</span>
+            <span>{tutorLabel(row.profiles) || row.teacher_id.slice(0, 8)}</span>
             <form action={unassignTeacherStudent}>
               <input type="hidden" name="teacher_id" value={row.teacher_id} />
               <input type="hidden" name="student_id" value={subject.id} />
@@ -73,17 +81,17 @@ async function StudentRelationships({ supabase, subject }) {
             </form>
           </li>
         ))}
-        {(tsa ?? []).length === 0 && <li style={S.empty}>No teachers assigned.</li>}
+        {(tsa ?? []).length === 0 && <li style={S.empty}>No tutors assigned.</li>}
       </ul>
 
       <form action={assignTeacherStudent} style={S.addRow}>
         <input type="hidden" name="student_id" value={subject.id} />
         <input type="hidden" name="subject_id" value={subject.id} />
         <select name="teacher_id" required style={S.select}>
-          <option value="">Pick a teacher to assign…</option>
-          {availableTeachers.map((t) => (
+          <option value="">Pick a teacher or manager to assign…</option>
+          {availableTutors.map((t) => (
             <option key={t.id} value={t.id}>
-              {displayName(t) || t.email}
+              {tutorLabel(t)}
             </option>
           ))}
         </select>
@@ -186,7 +194,7 @@ async function TeacherRelationships({ supabase, subject }) {
 }
 
 async function ManagerRelationships({ supabase, subject }) {
-  const [{ data: mta }, { data: teachers }] = await Promise.all([
+  const [{ data: mta }, { data: teachers }, { data: tsaStudents }, { data: students }] = await Promise.all([
     supabase
       .from('manager_teacher_assignments')
       .select('teacher_id, profiles!manager_teacher_assignments_teacher_id_fkey(id, first_name, last_name, email)')
@@ -197,12 +205,60 @@ async function ManagerRelationships({ supabase, subject }) {
       .eq('role', 'teacher')
       .order('email', { ascending: true })
       .limit(500),
+    // Students this manager tutors directly (their own roster), as
+    // opposed to the ones they reach through the teachers they manage.
+    supabase
+      .from('teacher_student_assignments')
+      .select('student_id, profiles!teacher_student_assignments_student_id_fkey(id, first_name, last_name, email)')
+      .eq('teacher_id', subject.id),
+    supabase
+      .from('profiles')
+      .select('id, first_name, last_name, email')
+      .eq('role', 'student')
+      .order('email', { ascending: true })
+      .limit(500),
   ]);
 
   const assignedIds = new Set((mta ?? []).map((a) => a.teacher_id));
   const availableTeachers = (teachers ?? []).filter((t) => !assignedIds.has(t.id));
+  const assignedStudentIds = new Set((tsaStudents ?? []).map((r) => r.student_id));
+  const availableStudents = (students ?? []).filter((s) => !assignedStudentIds.has(s.id));
 
   return (
+    <>
+    <div style={S.section}>
+      <h3 style={S.h3}>My students ({tsaStudents?.length ?? 0})</h3>
+      <p style={S.note}>
+        Students this manager tutors directly. Students of the managed teachers below are
+        visible to the manager without being listed here.
+      </p>
+      <ul style={S.list}>
+        {(tsaStudents ?? []).map((row) => (
+          <li key={row.student_id} style={S.listRow}>
+            <span>{displayName(row.profiles) || row.profiles?.email || row.student_id.slice(0, 8)}</span>
+            <form action={unassignTeacherStudent}>
+              <input type="hidden" name="teacher_id" value={subject.id} />
+              <input type="hidden" name="student_id" value={row.student_id} />
+              <input type="hidden" name="subject_id" value={subject.id} />
+              <Button type="submit" variant="remove" size="sm">Remove</Button>
+            </form>
+          </li>
+        ))}
+        {(tsaStudents ?? []).length === 0 && <li style={S.empty}>No students tutored directly.</li>}
+      </ul>
+      <form action={assignTeacherStudent} style={S.addRow}>
+        <input type="hidden" name="teacher_id" value={subject.id} />
+        <input type="hidden" name="subject_id" value={subject.id} />
+        <select name="student_id" required style={S.select}>
+          <option value="">Pick a student to assign…</option>
+          {availableStudents.map((s) => (
+            <option key={s.id} value={s.id}>{displayName(s) || s.email}</option>
+          ))}
+        </select>
+        <Button type="submit" variant="primary" size="sm">Assign</Button>
+      </form>
+    </div>
+
     <div style={S.section}>
       <h3 style={S.h3}>Managed teachers ({mta?.length ?? 0})</h3>
       <ul style={S.list}>
@@ -232,12 +288,21 @@ async function ManagerRelationships({ supabase, subject }) {
         <Button type="submit" variant="primary" size="sm">Assign</Button>
       </form>
     </div>
+    </>
   );
 }
 
 function displayName(p) {
   if (!p) return null;
   return [p.first_name, p.last_name].filter(Boolean).join(' ');
+}
+
+/** A tutor's name, marked when they are a manager rather than a teacher. */
+function tutorLabel(p) {
+  if (!p) return null;
+  const name = displayName(p) || p.email;
+  if (!name) return null;
+  return p.role === 'manager' ? `${name} (manager)` : name;
 }
 
 const S = {
@@ -273,6 +338,11 @@ const S = {
     color: 'var(--fg3)',
     fontStyle: 'italic',
     fontSize: 13,
+  },
+  note: {
+    margin: '0 0 var(--s2)',
+    color: 'var(--fg3)',
+    fontSize: 12,
   },
   addRow: {
     display: 'flex',

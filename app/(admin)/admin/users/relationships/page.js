@@ -32,25 +32,30 @@ export default async function AdminUserRelationshipsPage() {
 
   // Fan out: candidate lists + current assignments. Admin RLS lets
   // us read everything, so plain queries suffice.
+  // Tutors = teachers and managers: both tutor students directly through
+  // teacher_student_assignments (a manager's own roster), so both belong
+  // in the Tutor → Student picker. Manager → Teacher stays teachers only.
   const [
-    { data: teachers },
+    { data: tutors },
     { data: students },
     { data: managers },
     { data: tsa },
     { data: mta },
   ] = await Promise.all([
-    supabase.from('profiles').select('id, first_name, last_name, email').eq('role', 'teacher').order('email').limit(1000),
+    supabase.from('profiles').select('id, first_name, last_name, email, role').in('role', ['teacher', 'manager']).order('role', { ascending: false }).order('email').limit(1000),
     supabase.from('profiles').select('id, first_name, last_name, email').eq('role', 'student').order('email').limit(2000),
     supabase.from('profiles').select('id, first_name, last_name, email').eq('role', 'manager').order('email').limit(1000),
     supabase
       .from('teacher_student_assignments')
-      .select('teacher_id, student_id, teacher:profiles!teacher_student_assignments_teacher_id_fkey(id, first_name, last_name, email), student:profiles!teacher_student_assignments_student_id_fkey(id, first_name, last_name, email)')
+      .select('teacher_id, student_id, teacher:profiles!teacher_student_assignments_teacher_id_fkey(id, first_name, last_name, email, role), student:profiles!teacher_student_assignments_student_id_fkey(id, first_name, last_name, email)')
       .order('teacher_id'),
     supabase
       .from('manager_teacher_assignments')
       .select('manager_id, teacher_id, manager:profiles!manager_teacher_assignments_manager_id_fkey(id, first_name, last_name, email), teacher:profiles!manager_teacher_assignments_teacher_id_fkey(id, first_name, last_name, email)')
       .order('manager_id'),
   ]);
+
+  const teachers = (tutors ?? []).filter((t) => t.role === 'teacher');
 
   return (
     <main className={a.container}>
@@ -69,12 +74,12 @@ export default async function AdminUserRelationshipsPage() {
 
       <UsersNav current="relationships" />
 
-      <Section title={`Teacher → Student assignments (${tsa?.length ?? 0})`}>
+      <Section title={`Tutor → Student assignments (${tsa?.length ?? 0})`}>
         <form action={assignTeacherStudent} style={S.addRow}>
           <select name="teacher_id" required style={S.select}>
-            <option value="">Teacher…</option>
-            {(teachers ?? []).map((t) => (
-              <option key={t.id} value={t.id}>{displayName(t) || t.email}</option>
+            <option value="">Teacher or manager…</option>
+            {(tutors ?? []).map((t) => (
+              <option key={t.id} value={t.id}>{tutorLabel(t)}</option>
             ))}
           </select>
           <select name="student_id" required style={S.select}>
@@ -88,9 +93,9 @@ export default async function AdminUserRelationshipsPage() {
 
         <AssignmentTable
           rows={tsa ?? []}
-          colA="Teacher"
+          colA="Tutor"
           colB="Student"
-          renderA={(r) => displayLink(r.teacher_id, r.teacher)}
+          renderA={(r) => displayLink(r.teacher_id, r.teacher, tutorLabel(r.teacher))}
           renderB={(r) => displayLink(r.student_id, r.student)}
           renderRemove={(r) => (
             <form action={unassignTeacherStudent}>
@@ -100,7 +105,7 @@ export default async function AdminUserRelationshipsPage() {
             </form>
           )}
           rowKey={(r) => `${r.teacher_id}-${r.student_id}`}
-          emptyText="No teacher-student assignments yet."
+          emptyText="No tutor-student assignments yet."
         />
       </Section>
 
@@ -182,8 +187,16 @@ function displayName(p) {
   return [p.first_name, p.last_name].filter(Boolean).join(' ');
 }
 
-function displayLink(id, profile) {
-  const text = displayName(profile) || profile?.email || id.slice(0, 8);
+/** A tutor's name, marked when they are a manager rather than a teacher. */
+function tutorLabel(p) {
+  if (!p) return null;
+  const name = displayName(p) || p.email;
+  if (!name) return null;
+  return p.role === 'manager' ? `${name} (manager)` : name;
+}
+
+function displayLink(id, profile, label = null) {
+  const text = label || displayName(profile) || profile?.email || id.slice(0, 8);
   return <a href={`/admin/users/${id}`} style={S.userLink}>{text}</a>;
 }
 
