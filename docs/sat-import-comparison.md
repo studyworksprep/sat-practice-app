@@ -1,6 +1,6 @@
 # SAT import comparison
 
-**Living** — last verified 2026-09-16.
+**Living** — last verified 2026-09-28.
 
 Admins open **Questions → Import questions** (`/admin/questions/import`). The screen compares imports and can apply reviewed presentation replacements individually or in a selected batch to a live, published question. It also inserts reviewed new questions into the regular bank or restricted supplemental sets, and holds unanswered questions as unpublished drafts. Every server action and the page require the admin role; all mutation actions reject demo accounts.
 
@@ -21,6 +21,16 @@ Each question retains its own rendering preference, review confirmation, selecti
 Limits: 100 questions, 8 MB compressed export, 1 MB metadata/MMD text, 12 MB expanded archive, 500 archive entries, and 25 MB local PDF. ZIP processing rejects traversal paths and oversized entries. Imported HTML is escaped and previews use the shared sanitizer.
 
 Validation: parser/archive unit tests cover page continuations, multiple accepted numeric strings, legacy IDs, ambiguous matches, table retention, unsafe HTML, missing figures, duplicate IDs, archive limits, and RTF metadata. An admin E2E test covers an unmatched question and review export; the optional pilot-upload test uses `E2E_IMPORT_PILOT=1`. Replacement protection tests cover signed review tampering, expiry, actor binding, and option identity preservation. Supplemental insertion/access tests are opt-in with `E2E_IMPORT_SETS=1`.
+
+## Fetching from the College Board question bank
+
+**Or fetch from the College Board question bank**, below the upload form, takes up to 100 IDs (one per line, or separated by spaces or commas): College Board question IDs (8 hexadecimal characters), external IDs (UUIDs), or bank codes such as `RW-01748`. Metadata is optional and may be the full question-bank listing for a section (it must stay under 1 MB); only the requested records are validated and used. The server resolves each request to a College Board external ID — from the ID itself, from the metadata, or from the bank row that already carries it — and fetches the question from the fixed `get-question` endpoint, five at a time with a 12-second timeout each. Nothing else is contacted, and no request reaches College Board from the browser. Requests that cannot be resolved (an unknown bank code, or an older disclosed-item ID such as `08280-DC` that has no external ID) or fetched are listed as batch warnings; the rest continue.
+
+Fetched questions carry the question bank's own HTML verbatim: underlined portions as “Referenced Content” spans, poem excerpts, paired-text headings, fill-in blanks, inline SVG figures, tables, and character entities. This is the markup every `collegeboard` bank row already stores, so replacing an OCR-derived presentation with a fetched one restores what Mathpix loses (underlines, italics, dashes, quotes, poem lines, blanks). Markup containing scripts, frames, event handlers, or `javascript:` links is rejected before review; the shared sanitizer still runs at render. A response whose external ID differs from the request, an unsupported question type, or a choice count other than four rejects that question. Correct answers come from College Board's answer letters, falling back to its option keys; disagreements, multiple keys, and missing answers or explanations become review warnings, and the answer must still match the bank's before a replacement is offered.
+
+From there the comparison, review, signed tokens, replacement, and insertion behave exactly as for an upload; the imported preview is labelled “College Board”. The import page sets a 60-second Server Action budget for the fetch. Reading questions arrive with their passage already separate, so the reading-layout split is not applied.
+
+Repairing an OCR batch: paste the batch's bank codes (up to 100 per comparison), choose **Prefer imported** on each match — **Select reviewed** and **Import all selected** apply them in one pass — then run the next hundred. Answers, metadata, IDs, and student history are preserved, as for any replacement.
 
 ## Reviewing and importing a selection
 

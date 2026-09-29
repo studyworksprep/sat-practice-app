@@ -7,10 +7,11 @@ import type { Row } from '@/lib/types';
 import { assertWriter, requireRole } from '@/lib/api/auth';
 import { parseQuestions, parseMetadata, mmdToHtml, matchIdentifiers } from '@/lib/sat-import/parse';
 import { readMathpix } from '@/lib/sat-import/archive';
+import { collegeBoardCandidate, fetchCollegeBoardQuestion, parseCollegeBoardIds, resolveCollegeBoardIds, type RequestedId } from '@/lib/sat-import/collegeboard';
 import { renderHtml, renderRow } from '@/lib/content/render-math.mjs';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 
-import { signReview, readReview, mergeOptions, canCombineMathStimulus } from '@/lib/sat-import/review';
+import { signReview, readReview, mergeOptions, canCombineMathStimulus, type ImportCandidate } from '@/lib/sat-import/review';
 import { scorableAnswer } from '@/lib/sat-import/answers';
 import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
@@ -46,22 +47,38 @@ async function mapInGroups<T,R>(values:T[],fn:(value:T)=>Promise<R>):Promise<R[]
 }
 
 type ReferenceSnapshot = { capturedAt: string; rows: Row<'questions_v2'>[] };
-async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, name: string, rawMetadata: string, reference?: ReferenceSnapshot, actor?: string) {
+type CandidateBatch = { candidates: ImportCandidate[]; warnings: string[]; name: string; sourceLabel: string };
+const difficultyLevel = (value: string | null | undefined) => ({ E: 1, M: 2, H: 3 } as Record<string, number>)[value ?? ''] ?? null;
+
+// A Mathpix export becomes HTML candidates here; a College Board fetch already
+// arrives as HTML. Both then go through the same comparison and review signing.
+function mathpixCandidates(bytes: Uint8Array, name: string, rawMetadata: string): CandidateBatch {
   const { mmd, images } = readMathpix(bytes, name);
   const parsed = parseQuestions(mmd, parseMetadata(rawMetadata));
-  const identifiers = [...new Set(parsed.questions.flatMap(q => [q.id, q.originalId, q.metadata.external_id, q.metadata.ibn]).filter(Boolean))];
+  const candidates = parsed.questions.map(q => ({
+    id: q.id, originalId: q.originalId, questionType: q.questionType, answer: q.answer, warnings: q.warnings, metadata: q.metadata, correctAnswer: q.correctAnswer,
+    presentation: {
+      stem_html: mmdToHtml(q.stem, images), stimulus_html: q.stimulus ? mmdToHtml(q.stimulus, images) : null, rationale_html: mmdToHtml(q.rationale, images),
+      options: q.options.map(o => ({ label: o.label, content_html: mmdToHtml(o.mmd, images, { equationAlign: 'left' }) })),
+    },
+  }));
+  return { candidates, warnings: parsed.warnings, name, sourceLabel: 'Your file' };
+}
+
+async function compare(supabase: AuthContext['supabase'], batch: CandidateBatch, reference?: ReferenceSnapshot, actor?: string) {
+  const identifiers = [...new Set(batch.candidates.flatMap(q => [q.id, q.originalId, q.metadata.external_id, q.metadata.ibn]).filter(Boolean))];
   const columns = 'id, display_code, source, source_id, source_external_id, question_type, stem_html, stimulus_html, rationale_html, options, stem_rendered, stimulus_rendered, rationale_rendered, options_rendered, correct_answer, domain_name, skill_name, difficulty, score_band, updated_at, is_published, is_broken, deleted_at';
   // Two parameterized IN queries avoid interpolating imported IDs into filters.
   const results = reference ? [{ data: reference.rows, error: null }] : await Promise.all(['source_id','source_external_id'].map(column => supabase.from('questions_v2').select(columns).in(column, identifiers)));
   if (results.some(r => r.error)) throw new Error('Could not check the question bank. Please retry.');
   const rows = [...new Map(results.flatMap(r => r.data ?? []).map(r => [r.id, r])).values()];
-  const items = await mapInGroups(parsed.questions, async q => {
+  const items = await mapInGroups(batch.candidates, async q => {
     const candidate = {
       id: q.id, question_type: q.questionType,
-      stem_html: mmdToHtml(q.stem, images), stimulus_html: q.stimulus ? mmdToHtml(q.stimulus, images) : null, rationale_html: mmdToHtml(q.rationale, images),
-      options: q.options.map(o => ({ label: o.label, content_html: mmdToHtml(o.mmd, images, { equationAlign: 'left' }) })),
+      stem_html: q.presentation.stem_html, stimulus_html: q.presentation.stimulus_html ?? null, rationale_html: q.presentation.rationale_html,
+      options: q.presentation.options,
       correct_answer: q.correctAnswer, domain_name: q.metadata.primary_class_cd_desc ?? null,
-      skill_name: q.metadata.skill_desc ?? null, difficulty: ({E:1,M:2,H:3} as Record<string, number>)[q.metadata.difficulty ?? ''] ?? null,
+      skill_name: q.metadata.skill_desc ?? null, difficulty: difficultyLevel(q.metadata.difficulty),
       score_band: q.metadata.score_band_range_cd ?? null, source: 'Import preview',
     };
     for (const html of [candidate.stimulus_html ?? '',candidate.stem_html,candidate.rationale_html,...candidate.options.map(o => o.content_html)]) {
@@ -120,7 +137,7 @@ async function compare(supabase: AuthContext['supabase'], bytes: Uint8Array, nam
       }),
     };
   });
-  return { items, warnings: parsed.warnings, name, isSnapshot: !!reference, referenceLabel: reference ? `Production pilot snapshot captured ${reference.capturedAt.slice(0,10)}. Review only; this is not a live bank query.` : 'Compared with both question pools using identifiers and normalized prompt text. Review possible duplicates; matching is not semantic proof.' };
+  return { items, warnings: batch.warnings, name: batch.name, sourceLabel: batch.sourceLabel, isSnapshot: !!reference, referenceLabel: reference ? `Production pilot snapshot captured ${reference.capturedAt.slice(0,10)}. Review only; this is not a live bank query.` : 'Compared with both question pools using identifiers and normalized prompt text. Review possible duplicates; matching is not semantic proof.' };
 }
 
 export async function compareImport(formData: FormData) {
@@ -130,8 +147,39 @@ export async function compareImport(formData: FormData) {
     const metadata = formData.get('metadata');
     if (!(file instanceof File) || file.size > 8_000_000) throw new Error('Choose a Mathpix export under 8 MB.');
     if (metadata instanceof File && metadata.size > 1_000_000) throw new Error('Metadata must be under 1 MB.');
-    return actionOk({ batch: await compare(supabase, new Uint8Array(await file.arrayBuffer()), file.name, metadata instanceof File ? await metadata.text() : '', undefined, user.id), pdf: null as string | null });
+    const batch = mathpixCandidates(new Uint8Array(await file.arrayBuffer()), file.name, metadata instanceof File ? await metadata.text() : '');
+    return actionOk({ batch: await compare(supabase, batch, undefined, user.id), pdf: null as string | null });
   } catch (error) { return actionFail(error instanceof Error ? error : 'Import could not be read.'); }
+}
+
+// Fetches each requested question's published text from College Board and
+// compares it like an upload. Only the fixed question endpoint is contacted,
+// server-side and with timeouts; markup is checked before review and the
+// shared sanitizer still runs at render, as for every bank question.
+export async function compareCollegeBoardImport(formData: FormData) {
+  try {
+    const { supabase, user } = await requireRole(['admin']);
+    const metadata = formData.get('metadata');
+    if (metadata instanceof File && metadata.size > 1_000_000) throw new Error('Metadata must be under 1 MB.');
+    const requested = parseCollegeBoardIds(String(formData.get('ids') ?? ''));
+    const values = (kind: RequestedId['kind']) => requested.filter(r => r.kind === kind).map(r => r.value);
+    // Parameterized IN queries: pasted IDs never reach a filter string.
+    const lookups: Array<['display_code' | 'source_id' | 'source_external_id', string[]]> = [['display_code', values('code')], ['source_id', values('question')], ['source_external_id', values('external')]];
+    const results = await Promise.all(lookups.filter(([, list]) => list.length).map(([column, list]) => supabase.from('questions_v2').select('id, display_code, source_id, source_external_id').in(column, list)));
+    if (results.some(r => r.error)) throw new Error('Could not check the question bank. Please retry.');
+    const bank = [...new Map(results.flatMap(r => r.data ?? []).map(r => [r.id, r])).values()];
+    const known = new Set([...requested.map(r => r.value), ...bank.flatMap(r => [r.source_id, r.source_external_id])].filter((v): v is string => !!v).map(v => v.toLowerCase()));
+    const resolution = resolveCollegeBoardIds(requested, parseMetadata(metadata instanceof File ? await metadata.text() : '', known), bank);
+    const warnings = [...resolution.warnings];
+    const fetched = await mapInGroups(resolution.resolved, async r => {
+      try { return collegeBoardCandidate(await fetchCollegeBoardQuestion(r.externalId), r); }
+      catch (error) { warnings.push(`${r.originalId}: ${error instanceof Error ? error.message : 'could not be fetched.'}`); return null; }
+    });
+    const candidates = fetched.filter((c): c is ImportCandidate => !!c);
+    if (!candidates.length) throw new Error(warnings[0] ?? 'No questions could be fetched from College Board.');
+    const batch = { candidates, warnings, name: `College Board question bank · ${candidates.length} of ${requested.length} requested`, sourceLabel: 'College Board' };
+    return actionOk({ batch: await compare(supabase, batch, undefined, user.id), pdf: null as string | null });
+  } catch (error) { return actionFail(error instanceof Error ? error : 'Questions could not be fetched.'); }
 }
 
 // Convenience for the local pilot. No filesystem path comes from the client;
@@ -149,7 +197,7 @@ export async function loadMathPilot() {
       readFile(join(root, 'Algebra 10 questions and answers.pdf')),
       readFile(join(root, 'analysis/bank-comparison.json'), 'utf8'),
     ]);
-    return actionOk({ batch: await compare(supabase, zip, 'Algebra 10 questions and answers.mmd.zip', metadata, JSON.parse(snapshotText) as ReferenceSnapshot), pdf: pdf.toString('base64') });
+    return actionOk({ batch: await compare(supabase, mathpixCandidates(zip, 'Algebra 10 questions and answers.mmd.zip', metadata), JSON.parse(snapshotText) as ReferenceSnapshot), pdf: pdf.toString('base64') });
   } catch (error) { return actionFail(error instanceof Error && 'code' in error && error.code === 'ENOENT' ? 'Pilot files are not installed here. Please upload your files below.' : error instanceof Error ? error : 'Unable to load pilot.'); }
 }
 

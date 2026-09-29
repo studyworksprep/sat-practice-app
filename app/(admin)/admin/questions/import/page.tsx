@@ -5,6 +5,9 @@ import { ImportComparison } from './ImportComparison';
 import s from './import.module.css';
 
 export const dynamic = 'force-dynamic';
+// Fetching up to 100 questions from College Board plus duplicate checks can
+// exceed the default Server Action budget; applies to this page's actions.
+export const maxDuration = 60;
 
 export default async function ImportPage() {
   await requireRole(['admin']);

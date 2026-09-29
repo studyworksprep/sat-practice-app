@@ -2,7 +2,7 @@
 
 import {useEffect, useRef, useState, type FormEvent} from 'react';
 import {QuestionRenderer} from '@/lib/ui/QuestionRenderer';
-import {compareImport, loadMathPilot, applyImportedPresentation, type ComparisonBatch} from './actions';
+import {compareImport, compareCollegeBoardImport, loadMathPilot, applyImportedPresentation, type ComparisonBatch} from './actions';
 import {ImportSets} from './ImportSets';
 import {insertImportedQuestion, type ImportSetsResult} from './set-actions';
 import {approveBatch, completed, initialChoice, queueProblem, readiness, type ImportChoice, type ImportOutcome} from '@/lib/sat-import/queue';
@@ -26,6 +26,7 @@ export function ImportComparison({showLocalPilot=false,initialSets}:{showLocalPi
   const [filter,setFilter]=useState('all'), [search,setSearch]=useState('');
   const [reveal,setReveal]=useState(true), [sourceOpen,setSourceOpen]=useState(false), [pdfUrl,setPdfUrl]=useState('');
   const [loading,setLoading]=useState(false), [applying,setApplying]=useState(false), [bulkConfirm,setBulkConfirm]=useState(false);
+  const [loadingSource,setLoadingSource]=useState<'files'|'collegeboard'>('files');
   const [error,setError]=useState(''), [notice,setNotice]=useState(''), [progress,setProgress]=useState('');
   const running=useRef(false), pdfRef=useRef('');
   const locked=loading||applying;
@@ -55,15 +56,15 @@ export function ImportComparison({showLocalPilot=false,initialSets}:{showLocalPi
     const c=choiceFor(q);
     return c.preference==='Keep existing'?'Keep existing · no change':q.matches.length&&!c.importAsNew?(c.stimulusIncluded&&matchFor(q)?.requiresStimulusConfirmation?'Replace presentation · combine stimulus into prompt':'Replace presentation'):c.publish?`Publish · ${c.destination==='regular'?'Regular bank':setLabel(c.batchId)}`:`Save draft · ${c.destination==='regular'?'Regular bank':setLabel(c.batchId)}`;
   }
-  async function load(event:FormEvent<HTMLFormElement>|null,pilot=false) {
+  async function load(event:FormEvent<HTMLFormElement>|null,source:'files'|'pilot'|'collegeboard'='files') {
     event?.preventDefault();if(running.current)return;
     const form=event?new FormData(event.currentTarget):null, pdf=form?.get('pdf');
-    setLoading(true);setError('');setNotice('');setBulkConfirm(false);
+    setLoading(true);setLoadingSource(source==='collegeboard'?'collegeboard':'files');setError('');setNotice('');setBulkConfirm(false);
     try {
       if(pdf instanceof File && pdf.size>25_000_000)throw new Error('PDF must be under 25 MB.');
       if(pdf instanceof File && pdf.size && new TextDecoder().decode(await pdf.slice(0,5).arrayBuffer())!=='%PDF-')throw new Error('Choose a valid PDF file.');
       form?.delete('pdf');
-      const result=pilot?await loadMathPilot():await compareImport(form!);
+      const result=source==='pilot'?await loadMathPilot():source==='collegeboard'?await compareCollegeBoardImport(form!):await compareImport(form!);
       if(!result.ok)throw new Error(result.error);
       let file:Blob|null=pdf instanceof File&&pdf.size?pdf:null;
       if(result.data.pdf)file=new Blob([Uint8Array.from(atob(result.data.pdf),c=>c.charCodeAt(0))],{type:'application/pdf'});
@@ -110,17 +111,25 @@ export function ImportComparison({showLocalPilot=false,initialSets}:{showLocalPi
     const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='sat-import-review.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   return <>
-    <ol className={s.steps} aria-label="Import workflow"><li><b>1</b><span>Upload files<small>Prepare a comparison</small></span></li><li><b>2</b><span>Review questions<small>Review individually or approve a selection</small></span></li><li><b>3</b><span>Import selected<small>Check the results individually</small></span></li></ol>
+    <ol className={s.steps} aria-label="Import workflow"><li><b>1</b><span>Upload files or fetch IDs<small>Prepare a comparison</small></span></li><li><b>2</b><span>Review questions<small>Review individually or approve a selection</small></span></li><li><b>3</b><span>Import selected<small>Check the results individually</small></span></li></ol>
     <section className={s.upload} aria-label="Import files">
-      <details open={!batch} className={s.uploadDetails}><summary><span>1. Choose your files</span><small>{batch?`${batch.name} · change files`:'Mathpix export required · metadata and source PDF optional'}</small></summary>
+      <details open={!batch} className={s.uploadDetails}><summary><span>1. Choose your files</span><small>{batch?`${batch.name} · change files`:'Mathpix export or College Board IDs · metadata and source PDF optional'}</small></summary>
         <p>Upload an MMD file or a Mathpix ZIP containing the text and figures. We’ll compare it with both question pools before changing anything. Your PDF is a visual reference; this page does not run PDF recognition.</p>
         <form onSubmit={load}><fieldset disabled={locked} className={s.files}>
           <label>Mathpix export <span>Required · .zip with images or .mmd · up to 8 MB</span><input required type="file" name="export" accept=".zip,.mmd" /></label>
           <label>Metadata <span>Optional · JSON records in .json, .txt or .rtf · up to 1 MB</span><input type="file" name="metadata" accept=".json,.txt,.rtf" /></label>
           <label>Original PDF <span>Optional · stays in this browser · up to 25 MB</span><input type="file" name="pdf" accept=".pdf" /></label>
-        </fieldset><div className={s.actions}><button className={s.primary} disabled={locked}>{loading?'Preparing comparison…':'Compare with question bank'}</button>{showLocalPilot&&<button type="button" disabled={locked} onClick={()=>load(null,true)}>Load local math pilot</button>}</div></form>
+        </fieldset><div className={s.actions}><button className={s.primary} disabled={locked}>{loading?'Preparing comparison…':'Compare with question bank'}</button>{showLocalPilot&&<button type="button" disabled={locked} onClick={()=>load(null,'pilot')}>Load local math pilot</button>}</div></form>
+        <div className={s.disclosure}>
+          <h3>Or fetch from the College Board question bank</h3>
+          <p>Paste question IDs and we’ll fetch each question’s published passage, prompt, choices, and explanation from College Board, then compare them with the bank exactly like an upload. Use this for Reading &amp; Writing questions: it keeps the underlines, italics, poem lines, and blanks that OCR loses.</p>
+          <form onSubmit={e=>load(e,'collegeboard')}><fieldset disabled={locked} className={s.formGrid}>
+            <label className={s.field}>Question IDs<span className={s.small}>Up to 100 · College Board question IDs (8 characters), external IDs, or bank codes such as RW-01748 · one per line</span><textarea required name="ids" rows={5} placeholder={"37c481f8\nRW-01748"} /></label>
+            <label className={s.field}>Metadata<span className={s.small}>Optional · JSON records in .json, .txt or .rtf · supplies external IDs, topic and difficulty for questions that are not in the bank yet</span><input type="file" name="metadata" accept=".json,.txt,.rtf" /></label>
+          </fieldset><div className={s.actions}><button className={s.primary} disabled={locked}>{loading&&loadingSource==='collegeboard'?'Fetching from College Board…':'Fetch and compare with question bank'}</button></div></form>
+        </div>
         <p className={s.small}>Supported headings include “Question ID” and “## Question 1”. Loading another batch clears this session’s reviews; export your choices first if you want a record.</p>
-      </details>{loading&&<p role="status">Reading files, rendering questions, and checking for duplicates…</p>}
+      </details>{loading&&<p role="status">{loadingSource==='collegeboard'?'Fetching questions from College Board, rendering them, and checking for duplicates…':'Reading files, rendering questions, and checking for duplicates…'}</p>}
     </section>
     <details className={s.setDrawer}><summary>Supplemental sets & student access <small>Create a destination or manage who can practice</small></summary><ImportSets initial={initialSets} disabled={locked} onUpdated={setSets} onSelect={id=>setDefaultBatch(id)}/></details>
     {error&&<p role="alert" className={s.error}>{error}</p>}
@@ -157,7 +166,7 @@ export function ImportComparison({showLocalPilot=false,initialSets}:{showLocalPi
           {sourceOpen&&pdfUrl&&<div className={s.source}><a href={pdfUrl} target="_blank" rel="noreferrer">Open source PDF in a new tab ↗</a><p className={s.small}>An explanation may continue on the next page. Use the PDF controls to navigate.</p><iframe title="Original source PDF" src={pdfUrl}/></div>}
           <div className={s.previews}>
             <section><div className={s.previewHeading}><h4>Existing {match?.code??'question'}</h4><span>Question bank</span></div>{match?<>{batch.isSnapshot?<p className={s.small}>Read-only production snapshot</p>:<a href={`/admin/questions/${match.id}`} target="_blank" rel="noreferrer">Open bank record ↗</a>}<QuestionRenderer key={`existing-${match.id}-${reveal}`} mode="review" layout={match.question.stimulusHtml ? "two-column" : "single"} question={match.question} result={reveal?match.result:null}/></>:<p className={s.empty}>{item.matches.length?'Choose a possible match above to see its rendering.':'No existing rendering matched this question. If it is new, choose “Prefer imported” below.'}</p>}</section>
-            <section><div className={s.previewHeading}><h4>Imported preview</h4><span>Your file</span></div><QuestionRenderer key={`import-${item.id}-${reveal}`} mode="review" layout={item.imported.question.stimulusHtml ? "two-column" : "single"} question={item.imported.question} result={reveal?item.imported.result:null}/></section>
+            <section><div className={s.previewHeading}><h4>Imported preview</h4><span>{batch.sourceLabel}</span></div><QuestionRenderer key={`import-${item.id}-${reveal}`} mode="review" layout={item.imported.question.stimulusHtml ? "two-column" : "single"} question={item.imported.question} result={reveal?item.imported.result:null}/></section>
           </div>
           <section className={s.decisions} aria-label="Question review">
             <h4>Which rendering should we use?</h4><p className={s.small}>This choice belongs to this question. “Keep existing” leaves the bank unchanged; “Needs editing” prevents import until you resolve the issue.</p>

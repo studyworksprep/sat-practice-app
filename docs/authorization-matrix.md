@@ -58,7 +58,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/lessons/generate/actions.ts` | `savePromptTemplate`, `resetPromptTemplate`, `saveGeneratedLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/import/actions.js` | `createLessonFromSpec` | requireRole[admin] |
 | `app/(admin)/admin/lessons/review/[revisionId]/actions.ts` | `requestRevisionChanges`, `rejectRevision`, `publishRevision` | requireRole[admin] + assertWriter |
-| `app/(admin)/admin/questions/import/actions.ts` | `compareImport`, `loadMathPilot`, `applyImportedPresentation` | requireRole[admin] + assertWriter |
+| `app/(admin)/admin/questions/import/actions.ts` | `compareImport`, `compareCollegeBoardImport`, `loadMathPilot`, `applyImportedPresentation` | requireRole[admin] + assertWriter |
 | `app/(admin)/admin/questions/import/set-actions.ts` | `listImportSets`, `createImportSet`, `changeSetAccess`, `insertImportedQuestion`, `publishImportDraft`, `searchImportUsers` | requireRole[admin] + assertWriter |
 | `app/(admin)/admin/questions/new/actions.js` | `listQuestionSources`, `createQuestion` | requireRole[admin] |
 | `app/(admin)/admin/reading-coach/actions.ts` | `importReadingCoachSpec`, `publishReadingCoachVersionAction`, `archiveReadingCoachItemAction` | requireRole[admin] |

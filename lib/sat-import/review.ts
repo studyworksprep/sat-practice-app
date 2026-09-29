@@ -1,5 +1,6 @@
 import type { Json } from '@/lib/types/database';
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import type { ImportMetadata } from './parse.ts';
 
 export type Presentation = { stem_html: string; stimulus_html?: string | null; rationale_html: string; options: Array<Record<string, Json | undefined> & { label: string; content_html: string }> };
 export type ImportDetails = { question_type: 'mcq' | 'spr'; correct_answer: Json; domain_name: string | null; skill_name: string | null; difficulty: number | null; score_band: number | null; source_id: string; original_source_id?: string; source_external_id: string; hasAnswer: boolean };
@@ -39,3 +40,6 @@ export function mergeOptions(existing: unknown, imported: Presentation['options'
 export function canCombineMathStimulus(domain: string | null | undefined): boolean {
   return ['Algebra', 'Advanced Math', 'Problem-Solving and Data Analysis', 'Geometry and Trigonometry'].includes(domain ?? '');
 }
+
+/** One question ready for comparison, from either a Mathpix export or a College Board fetch. */
+export type ImportCandidate = { id: string; originalId: string; questionType: 'mcq' | 'spr'; answer: string; warnings: string[]; metadata: ImportMetadata; correctAnswer: Json; presentation: Presentation };
