@@ -15,7 +15,7 @@ export interface ImportMetadata {
 export const MAX_QUESTIONS = 100;
 export const MAX_TEXT = 1_000_000;
 
-export function parseMetadata(raw = ''): ImportMetadata[] {
+export function parseMetadata(raw = '', only?: ReadonlySet<string>): ImportMetadata[] {
   if (typeof raw !== 'string' || raw.length > MAX_TEXT) throw new Error('Metadata must be under 1 MB.');
   if (!raw.trim()) return [];
   // TextEdit wraps JSON in RTF. Extract only the JSON array, respecting
@@ -27,7 +27,10 @@ export function parseMetadata(raw = ''): ImportMetadata[] {
   }
   let rows;
   try { rows = JSON.parse(raw); } catch { throw new Error('Metadata must contain a JSON array. Export rich text as plain text if conversion fails.'); }
-  if (!Array.isArray(rows) || rows.length > MAX_QUESTIONS) throw new Error('Metadata must be an array of at most 100 questions.');
+  if (!Array.isArray(rows)) throw new Error('Metadata must be an array of at most 100 questions.');
+  // A fetch by ID may arrive with a full bank listing; keep and validate only the requested records.
+  if (only) rows = rows.filter(row => row && typeof row === 'object' && (only.has(String(row.questionId ?? '').toLowerCase()) || only.has(String(row.external_id ?? '').toLowerCase())));
+  if (rows.length > MAX_QUESTIONS) throw new Error('Metadata must be an array of at most 100 questions.');
   const ids = new Set();
   for (const row of rows) {
     if (!row || typeof row.questionId !== 'string' || !/^[a-zA-Z0-9_-]{1,100}$/.test(row.questionId)) throw new Error('Each metadata row needs a valid questionId.');
