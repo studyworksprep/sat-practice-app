@@ -33,6 +33,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Question repair records
+        run: npm run verify-question-repairs
+
       - name: Unit tests
         run: npm run test:unit
 

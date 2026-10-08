@@ -1,0 +1,1250 @@
+{
+  "math_initial_batch": {
+    "questions": 53,
+    "brokenFlagsCleared": 46,
+    "additionalPublishedRepairs": 7,
+    "answerKeysPreserved": 53,
+    "exactContentMatches": 53,
+    "priorSnapshotsVerified": 53,
+    "repairDraftsPromoted": 53,
+    "practiceTestMembershipsUnchanged": 6,
+    "attemptCountsUnchanged": 67,
+    "fullAttemptFingerprintsUnchanged": true,
+    "remainingPublishedStandardBroken": 0,
+    "verifiedAt": "2026-10-07T15:44:30.195Z"
+  },
+  "math_presentation_followup": {
+    "questions": [
+      "M-00438",
+      "M-01684",
+      "M-01704"
+    ],
+    "exactSavedContentAndCaches": true,
+    "proseAndMathematicsPreserved": true,
+    "answerKeysAndUnrelatedQuestionFieldsPreserved": true,
+    "priorPresentationSnapshotsVerified": 3,
+    "draftCopiesMatch": true,
+    "m00704Untouched": true,
+    "verifiedAt": "2026-10-07T18:20:22.477Z"
+  },
+  "math_full_presentation_audit": {
+    "reviewed": 53,
+    "additionalQuestionsCorrected": 26,
+    "mathImageQuestions": 25,
+    "equationImagesConverted": 229,
+    "uniqueExpressionsReviewed": 181,
+    "layoutQuestions": [
+      "M-00387",
+      "M-00420",
+      "M-00430",
+      "M-00729",
+      "M-00769",
+      "M-00944",
+      "M-01008",
+      "M-01185",
+      "M-01347",
+      "M-01647"
+    ],
+    "answerKeysAndUnrelatedQuestionDataPreserved": true,
+    "exactSavedContentAndCaches": true,
+    "priorPresentationSnapshotsVerified": 26,
+    "draftCopiesMatch": true,
+    "remainingEquationImages": 0,
+    "browserPreviewsPassed": 53,
+    "verifiedAt": "2026-10-07T20:23:24.458Z"
+  },
+  "reading_writing": {
+    "verifiedAt": "2026-10-08T12:47:48.556Z",
+    "correctedQuestions": 131,
+    "correctedFields": 236,
+    "untouchedQuestions": 44,
+    "officialFiguresRestored": 2,
+    "answerKeysVerified": 175,
+    "priorVersionsVerified": 131,
+    "promotedDraftsVerified": 131,
+    "browserPagesVerified": 131,
+    "relatedRecordsUnchanged": true,
+    "typecheck": "passed",
+    "checks": [
+      {
+        "code": "RW-01688",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01690",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01692",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01693",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01695",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01696",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01697",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01699",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01700",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01701",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01702",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01703",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01705",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01706",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01707",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01708",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01710",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01713",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01714",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01715",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01716",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01717",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01718",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01719",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01720",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01721",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01722",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01723",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01724",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01725",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01726",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01727",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01728",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01729",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01730",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01731",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01732",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01733",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01734",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01735",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01736",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01737",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01738",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01739",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01740",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01741",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01742",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01743",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01744",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01745",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01747",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01749",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01750",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01751",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01753",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01756",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01757",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01758",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01759",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01761",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01762",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01763",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01764",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01765",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01766",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01768",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01769",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01770",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01771",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01773",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01774",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01775",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01776",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01777",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01779",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01780",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01781",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01782",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01783",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01786",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01788",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01789",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01790",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01791",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01792",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01793",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01794",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01795",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01798",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01800",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01801",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01803",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01804",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01805",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01806",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01807",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01808",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01809",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01810",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01811",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01812",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01813",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01814",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01816",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01817",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01819",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01821",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01824",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01827",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01828",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01831",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01832",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01835",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01836",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01841",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01842",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01843",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01844",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01845",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01847",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01848",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01849",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01850",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01851",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01853",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01854",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01857",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01859",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01861",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01862",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      },
+      {
+        "code": "RW-01864",
+        "savedContentVerified": true,
+        "sourceTextAndFormattingVerified": true,
+        "answerAndChoiceIdentityPreserved": true,
+        "priorVersionVerified": true,
+        "promotedDraftVerified": true,
+        "renderingVerified": true
+      }
+    ]
+  }
+}

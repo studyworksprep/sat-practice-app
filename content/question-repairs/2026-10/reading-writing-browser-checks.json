@@ -1,0 +1,1450 @@
+{
+  "stage": "prepared-content",
+  "checked": 131,
+  "checks": [
+    {
+      "choices": 4,
+      "code": "RW-01688",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01690",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01692",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01693",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01695",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01696",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01697",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01699",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "As the movement spread beyond Chile, the breadth of musical traditions incorporated into its foundation also expanded."
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01700",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01701",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01702",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01703",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "Moreover, the LCOE differential grew from 18.8% to 31.3% when the modeled cell lifetime was reduced by two-thirds."
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01705",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01706",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01707",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01708",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01710",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01713",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01714",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01715",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01716",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01717",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01718",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01719",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "Since it was first introduced, Baxandall’s period eye has significantly influenced the practice of art history."
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01720",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01721",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01722",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01723",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01724",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01725",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01726",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01727",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01728",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01729",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01730",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01731",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01732",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01733",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01734",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01735",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01736",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01737",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01738",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01739",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01740",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01741",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01742",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01743",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01744",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01745",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01747",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "a period coinciding with extremely arid conditions and slightly negative population growth"
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01749",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01750",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01751",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01753",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01756",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "What if India had started the Industrial Revolution? What if Soviet cosmonauts had been first to land on the moon?"
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01757",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01758",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "reserve"
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01759",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01761",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "When considering automation, therefore, companies—especially those specializing in products of symbolic value—should weigh trade-offs between efficiency gains and consumer preferences."
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01762",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01763",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "Bitter’s feet were singing the news."
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01764",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01765",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "People tend to assume that being happy is the ideal emotional state and should be an ongoing aspiration"
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01766",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01768",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01769",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01770",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01771",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "adopting such a regimen would run counter to the ecological promise of the pellicle approach."
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01773",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": [
+        {
+          "style": "underline",
+          "text": "consideration"
+        }
+      ]
+    },
+    {
+      "choices": 4,
+      "code": "RW-01774",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01775",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01776",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01777",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01779",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01780",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01781",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01782",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01783",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01786",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01788",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01789",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01790",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01791",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01792",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01793",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01794",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01795",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01798",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01800",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01801",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01803",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01804",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01805",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01806",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01807",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01808",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01809",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01810",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01811",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01812",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01813",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01814",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01816",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01817",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01819",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01821",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01824",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01827",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01828",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01831",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01832",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01835",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01836",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01841",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01842",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01843",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01844",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01845",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01847",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01848",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01849",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01850",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01851",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01853",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01854",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01857",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01859",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01861",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01862",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    },
+    {
+      "choices": 4,
+      "code": "RW-01864",
+      "math": [],
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false,
+      "underlines": []
+    }
+  ],
+  "scientificChecks": [
+    {
+      "code": "RW-01729",
+      "math": [
+        {
+          "height": 22.2265625,
+          "paths": 8,
+          "width": 92.484375
+        },
+        {
+          "height": 20.078125,
+          "paths": 11,
+          "width": 113.09375
+        },
+        {
+          "height": 0.6875,
+          "paths": 4,
+          "width": 37.0625
+        },
+        {
+          "height": 20.078125,
+          "paths": 10,
+          "width": 111.5546875
+        },
+        {
+          "height": 20.078125,
+          "paths": 10,
+          "width": 111.5546875
+        }
+      ]
+    },
+    {
+      "code": "RW-01733",
+      "math": [
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        },
+        {
+          "height": 20.21875,
+          "paths": 9,
+          "width": 73.6875
+        }
+      ]
+    },
+    {
+      "code": "RW-01751",
+      "math": [
+        {
+          "height": 18.5234375,
+          "paths": 5,
+          "width": 49.015625
+        },
+        {
+          "height": 15.71875,
+          "paths": 3,
+          "width": 34.6015625
+        },
+        {
+          "height": 15.71875,
+          "paths": 3,
+          "width": 34.6015625
+        },
+        {
+          "height": 15.71875,
+          "paths": 3,
+          "width": 34.6015625
+        }
+      ]
+    }
+  ],
+  "visuallyInspected": [
+    "RW-01688",
+    "RW-01721",
+    "RW-01733",
+    "RW-01751",
+    "RW-01758",
+    "RW-01835"
+  ],
+  "savedContentMatchesPrepared": true,
+  "savedPreviewChecks": [
+    {
+      "choices": 4,
+      "code": "RW-01688",
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false
+    },
+    {
+      "choices": 4,
+      "code": "RW-01710",
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false
+    },
+    {
+      "choices": 4,
+      "code": "RW-01729",
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false
+    },
+    {
+      "choices": 4,
+      "code": "RW-01733",
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false
+    },
+    {
+      "choices": 4,
+      "code": "RW-01758",
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false
+    },
+    {
+      "choices": 4,
+      "code": "RW-01835",
+      "mathErrors": 0,
+      "missingImages": 0,
+      "overflow": false
+    }
+  ]
+}

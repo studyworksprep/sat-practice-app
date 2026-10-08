@@ -1,0 +1,2185 @@
+[
+  {
+    "index": 0,
+    "alt": "the fraction with numerator 4, plus 7, plus 1, plus 3, plus 6, and denominator 5, equals 4 point 2",
+    "tex": "\\frac{4+7+1+3+6}{5}=4.2",
+    "instances": [
+      {
+        "code": "M-00051",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 1,
+    "alt": "F equals, 2 point 5 0 x, plus 7 point 0 0 y",
+    "tex": "F=2.50x+7.00y",
+    "instances": [
+      {
+        "code": "M-00315",
+        "field": "stimulus"
+      }
+    ]
+  },
+  {
+    "index": 2,
+    "alt": "2 point 5 0 x, plus 7 point 0 0 y",
+    "tex": "2.50x+7.00y",
+    "instances": [
+      {
+        "code": "M-00315",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 3,
+    "alt": "7 point 0 0 y",
+    "tex": "7.00y",
+    "instances": [
+      {
+        "code": "M-00315",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00315",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 4,
+    "alt": "y equals 1",
+    "tex": "y=1",
+    "instances": [
+      {
+        "code": "M-00315",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 5,
+    "alt": "7 point 0 0 times 1",
+    "tex": "7.00\\times1",
+    "instances": [
+      {
+        "code": "M-00315",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 6,
+    "alt": "2 point 5 0 x",
+    "tex": "2.50x",
+    "instances": [
+      {
+        "code": "M-00315",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 7,
+    "alt": "l",
+    "tex": "\\ell",
+    "instances": [
+      {
+        "code": "M-00353",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00353",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01323",
+        "field": "stem"
+      }
+    ]
+  },
+  {
+    "index": 8,
+    "alt": "f of x equals, m x plus b",
+    "tex": "f(x)=mx+b",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 9,
+    "alt": "eight halves",
+    "tex": "\\frac{8}{2}",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 10,
+    "alt": "x equals 1",
+    "tex": "x=1",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 11,
+    "alt": "f of x equals 5",
+    "tex": "f(x)=5",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 12,
+    "alt": "m equals 4",
+    "tex": "m=4",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 13,
+    "alt": "5 equals, 4 times 1, plus b",
+    "tex": "5=4(1)+b",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 14,
+    "alt": "b equals 1",
+    "tex": "b=1",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 15,
+    "alt": "f of x equals, 4 x plus 1",
+    "tex": "f(x)=4x+1",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00387",
+        "field": "option-C"
+      }
+    ]
+  },
+  {
+    "index": 16,
+    "alt": "x equals 3",
+    "tex": "x=3",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01243",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01243",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01243",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 17,
+    "alt": "f of x equals 13",
+    "tex": "f(x)=13",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 18,
+    "alt": "f of 3 equals, 2 times 3, plus 3",
+    "tex": "f(3)=2(3)+3",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 19,
+    "alt": "f of 3 equals 9",
+    "tex": "f(3)=9",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 20,
+    "alt": "f of 3 equals, 3 times 3, plus 2",
+    "tex": "f(3)=3(3)+2",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 21,
+    "alt": "f of 3 equals 11",
+    "tex": "f(3)=11",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 22,
+    "alt": "f of 3 equals, 5 times 3",
+    "tex": "f(3)=5(3)",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 23,
+    "alt": "f of 3 equals 15",
+    "tex": "f(3)=15",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 24,
+    "alt": "f of x equals, 2 x plus 3",
+    "tex": "f(x)=2x+3",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "option-A"
+      }
+    ]
+  },
+  {
+    "index": 25,
+    "alt": "f of x equals, 3 x plus 2",
+    "tex": "f(x)=3x+2",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "option-B"
+      }
+    ]
+  },
+  {
+    "index": 26,
+    "alt": "f of x equals, 5 x",
+    "tex": "f(x)=5x",
+    "instances": [
+      {
+        "code": "M-00387",
+        "field": "option-D"
+      }
+    ]
+  },
+  {
+    "index": 27,
+    "alt": "x squared",
+    "tex": "x^2",
+    "instances": [
+      {
+        "code": "M-00420",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00420",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01056",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 28,
+    "alt": "y equals, negative 1 point 6 7 4, x squared, plus 19 point 7 6 x, plus 745 point 7 3",
+    "tex": "y=-1.674x^2+19.76x+745.73",
+    "instances": [
+      {
+        "code": "M-00420",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 29,
+    "alt": "y equals 1 point six seven four x squared, plus 19 point seven six x, minus 745 point seven three",
+    "tex": "y=1.674x^2+19.76x-745.73",
+    "instances": [
+      {
+        "code": "M-00420",
+        "field": "option-A"
+      }
+    ]
+  },
+  {
+    "index": 30,
+    "alt": "y equals negative 1 point six seven four x squared, minus 19 point seven six x, minus 745 point seven three",
+    "tex": "y=-1.674x^2-19.76x-745.73",
+    "instances": [
+      {
+        "code": "M-00420",
+        "field": "option-B"
+      }
+    ]
+  },
+  {
+    "index": 31,
+    "alt": "y equals 1 point six seven four x squared, plus 19 point seven six x, plus 745 point seven three",
+    "tex": "y=1.674x^2+19.76x+745.73",
+    "instances": [
+      {
+        "code": "M-00420",
+        "field": "option-C"
+      }
+    ]
+  },
+  {
+    "index": 32,
+    "alt": "y equals negative 1 point six seven four x squared, plus 19 point seven six x, plus 745 point seven three",
+    "tex": "y=-1.674x^2+19.76x+745.73",
+    "instances": [
+      {
+        "code": "M-00420",
+        "field": "option-D"
+      }
+    ]
+  },
+  {
+    "index": 33,
+    "alt": "x plus y, equals 75",
+    "tex": "x+y=75",
+    "instances": [
+      {
+        "code": "M-00430",
+        "field": "stimulus"
+      }
+    ]
+  },
+  {
+    "index": 34,
+    "alt": "x plus y",
+    "tex": "x+y",
+    "instances": [
+      {
+        "code": "M-00430",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 35,
+    "alt": "x plus y equals 75",
+    "tex": "x+y=75",
+    "instances": [
+      {
+        "code": "M-00430",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 36,
+    "alt": "4 x plus 3 y, equals 24",
+    "tex": "4x+3y=24",
+    "instances": [
+      {
+        "code": "M-00537",
+        "field": "stimulus"
+      }
+    ]
+  },
+  {
+    "index": 37,
+    "alt": "4 x",
+    "tex": "4x",
+    "instances": [
+      {
+        "code": "M-00537",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00537",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 38,
+    "alt": "3 y",
+    "tex": "3y",
+    "instances": [
+      {
+        "code": "M-00537",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00537",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 39,
+    "alt": "4 x plus 3 y",
+    "tex": "4x+3y",
+    "instances": [
+      {
+        "code": "M-00537",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00537",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 40,
+    "alt": "the absolute value of, 4 x minus 3 y, end absolute value",
+    "tex": "|4x-3y|",
+    "instances": [
+      {
+        "code": "M-00537",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 41,
+    "alt": "the point with coordinates 1 comma 6",
+    "tex": "(1,6)",
+    "instances": [
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 42,
+    "alt": "the point with coordinates 2 comma 12",
+    "tex": "(2,12)",
+    "instances": [
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 43,
+    "alt": "the point with coordinates 3 comma 24",
+    "tex": "(3,24)",
+    "instances": [
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 44,
+    "alt": "the point with coordinates 4 comma 48",
+    "tex": "(4,48)",
+    "instances": [
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 45,
+    "alt": "the fraction with numerator y sub 2 minus y sub 1, and denominator x sub 2 minus x sub 1, end fraction",
+    "tex": "\\frac{y_2-y_1}{x_2-x_1}",
+    "instances": [
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 46,
+    "alt": "the fraction with numerator 12 minus 6, and denominator 2 minus 1, end fraction",
+    "tex": "\\frac{12-6}{2-1}",
+    "instances": [
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 47,
+    "alt": "the fraction with numerator 24 minus 12, and denominator 3 minus 2, end fraction",
+    "tex": "\\frac{24-12}{3-2}",
+    "instances": [
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 48,
+    "alt": "the fraction with numerator 48 minus 24, and denominator 4 minus 3, end fraction",
+    "tex": "\\frac{48-24}{4-3}",
+    "instances": [
+      {
+        "code": "M-00613",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 49,
+    "alt": "y equals, m x plus b",
+    "tex": "y=mx+b",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 50,
+    "alt": "m equals, the fraction with numerator y sub 2 minus y sub 1, and denominator x sub 2 minus x sub 1, end fraction",
+    "tex": "m=\\frac{y_2-y_1}{x_2-x_1}",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 51,
+    "alt": "1 comma 4",
+    "tex": "(1,4)",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 52,
+    "alt": "8 comma 26",
+    "tex": "(8,26)",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 53,
+    "alt": "the fraction with numerator 26 minus 4, and denominator 8 minus 1, end fraction, equals the fraction 22 over 7",
+    "tex": "\\frac{26-4}{8-1}=\\frac{22}{7}",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 54,
+    "alt": "the point with coordinates 0 comma 1",
+    "tex": "(0,1)",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00702",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 55,
+    "alt": "0 comma 3",
+    "tex": "(0,3)",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 56,
+    "alt": "0 comma 0 point 8",
+    "tex": "(0,0.8)",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 57,
+    "alt": "y equals, 3 x plus 0 point 8",
+    "tex": "y=3x+0.8",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "option-A"
+      }
+    ]
+  },
+  {
+    "index": 58,
+    "alt": "y equals, 0 point 8 x, plus 3",
+    "tex": "y=0.8x+3",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "option-B"
+      }
+    ]
+  },
+  {
+    "index": 59,
+    "alt": "y equals, negative 0 point 8 x, plus 3",
+    "tex": "y=-0.8x+3",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "option-C"
+      }
+    ]
+  },
+  {
+    "index": 60,
+    "alt": "y equals, negative 3 x plus 0 point 8",
+    "tex": "y=-3x+0.8",
+    "instances": [
+      {
+        "code": "M-00702",
+        "field": "option-D"
+      }
+    ]
+  },
+  {
+    "index": 61,
+    "alt": "P O Q",
+    "tex": "POQ",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "stem"
+      }
+    ]
+  },
+  {
+    "index": 62,
+    "alt": "R O T",
+    "tex": "ROT",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "stem"
+      }
+    ]
+  },
+  {
+    "index": 63,
+    "alt": "Q O R",
+    "tex": "QOR",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "stem"
+      }
+    ]
+  },
+  {
+    "index": 64,
+    "alt": "180 degrees",
+    "tex": "180^\\circ",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00982",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00982",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 65,
+    "alt": "30 degrees",
+    "tex": "30^\\circ",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 66,
+    "alt": "180 degrees minus 30 degrees, minus 30 degrees, equals 120 degrees",
+    "tex": "180^\\circ-30^\\circ-30^\\circ=120^\\circ",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 67,
+    "alt": "360 degrees",
+    "tex": "360^\\circ",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 68,
+    "alt": "2 pi",
+    "tex": "2\\pi",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 69,
+    "alt": "the fraction 360 degrees over 2 pi radians, equals, the fraction 120 degrees over x radians",
+    "tex": "\\frac{360\\text{ degrees}}{2\\pi\\text{ radians}}=\\frac{120\\text{ degrees}}{x\\text{ radians}}",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 70,
+    "alt": "2 pi x",
+    "tex": "2\\pi x",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 71,
+    "alt": "360 x equals 240 pi",
+    "tex": "360x=240\\pi",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 72,
+    "alt": "the fraction 240 over 360 times pi",
+    "tex": "\\frac{240}{360}\\pi",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 73,
+    "alt": "two thirds pi",
+    "tex": "\\frac{2}{3}\\pi",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 74,
+    "alt": "150 degrees",
+    "tex": "150^\\circ",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 75,
+    "alt": "five sixths, pi",
+    "tex": "\\frac{5}{6}\\pi",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "option-A"
+      }
+    ]
+  },
+  {
+    "index": 76,
+    "alt": "three fourths, pi",
+    "tex": "\\frac{3}{4}\\pi",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "option-B"
+      }
+    ]
+  },
+  {
+    "index": 77,
+    "alt": "two thirds, pi",
+    "tex": "\\frac{2}{3}\\pi",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "option-C"
+      }
+    ]
+  },
+  {
+    "index": 78,
+    "alt": "one third, pi",
+    "tex": "\\frac{1}{3}\\pi",
+    "instances": [
+      {
+        "code": "M-00722",
+        "field": "option-D"
+      }
+    ]
+  },
+  {
+    "index": 79,
+    "alt": "6 x plus k, equals, 6 x plus 5",
+    "tex": "6x+k=6x+5",
+    "instances": [
+      {
+        "code": "M-00729",
+        "field": "stimulus"
+      },
+      {
+        "code": "M-00729",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 80,
+    "alt": "6 x",
+    "tex": "6x",
+    "instances": [
+      {
+        "code": "M-00729",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 81,
+    "alt": "k equals 5",
+    "tex": "k=5",
+    "instances": [
+      {
+        "code": "M-00729",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00729",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 82,
+    "alt": "y is less than or equal to, 3 x plus 1",
+    "tex": "y\\le3x+1",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "stimulus"
+      }
+    ]
+  },
+  {
+    "index": 83,
+    "alt": "x minus y is greater than 1",
+    "tex": "x-y>1",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "stimulus"
+      }
+    ]
+  },
+  {
+    "index": 84,
+    "alt": "x is greater than, y plus 1",
+    "tex": "x>y+1",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 85,
+    "alt": "2 is greater than, negative 1 plus 1",
+    "tex": "2>-1+1",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 86,
+    "alt": "with coordinates 2 comma negative 1",
+    "tex": "(2,-1)",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 87,
+    "alt": "the ordered pair 2 comma negative 1",
+    "tex": "(2,-1)",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 88,
+    "alt": "negative 1 is less than or equal to, 3 times 2, plus 1",
+    "tex": "-1\\le3(2)+1",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 89,
+    "alt": "negative 1 is less than or equal to 7",
+    "tex": "-1\\le7",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 90,
+    "alt": "2 minus negative 1, is greater than 1",
+    "tex": "2-(-1)>1",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 91,
+    "alt": "3 is greater than 1",
+    "tex": "3>1",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 92,
+    "alt": "negative 1 is less than or equal to, 3 times negative 2, plus 1",
+    "tex": "-1\\le3(-2)+1",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 93,
+    "alt": "negative 1 is less than or equal to negative 5",
+    "tex": "-1\\le-5",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 94,
+    "alt": "3 is less than or equal to, 3 times negative 1, plus 1",
+    "tex": "3\\le3(-1)+1",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 95,
+    "alt": "3 is less than or equal to negative 2",
+    "tex": "3\\le-2",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 96,
+    "alt": "5 is less than or equal to, 3 times 1, plus 1",
+    "tex": "5\\le3(1)+1",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 97,
+    "alt": "5 is less than or equal to 4",
+    "tex": "5\\le4",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 98,
+    "alt": "negative 2 comma negative 1",
+    "tex": "(-2,-1)",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "option-A"
+      }
+    ]
+  },
+  {
+    "index": 99,
+    "alt": "negative 1 comma 3",
+    "tex": "(-1,3)",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "option-B"
+      }
+    ]
+  },
+  {
+    "index": 100,
+    "alt": "1 comma 5",
+    "tex": "(1,5)",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "option-C"
+      }
+    ]
+  },
+  {
+    "index": 101,
+    "alt": "2 comma negative 1",
+    "tex": "(2,-1)",
+    "instances": [
+      {
+        "code": "M-00769",
+        "field": "option-D"
+      }
+    ]
+  },
+  {
+    "index": 102,
+    "alt": "3 a plus 4 b, equals 25",
+    "tex": "3a+4b=25",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "stimulus"
+      }
+    ]
+  },
+  {
+    "index": 103,
+    "alt": "a, equals 3",
+    "tex": "a=3",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 104,
+    "alt": "3 a, plus 4 b, equals 25",
+    "tex": "3a+4b=25",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 105,
+    "alt": "3 times 3, plus 4 b, equals 25",
+    "tex": "3(3)+4b=25",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 106,
+    "alt": "9 plus 4 b, equals 25",
+    "tex": "9+4b=25",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 107,
+    "alt": "4 b equals 16",
+    "tex": "4b=16",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 108,
+    "alt": "b equals 4",
+    "tex": "b=4",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 109,
+    "alt": "b equals 3",
+    "tex": "b=3",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 110,
+    "alt": "3 a, plus, 4 times 3, equals 25",
+    "tex": "3a+4(3)=25",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 111,
+    "alt": "3 a, plus 12, equals 25",
+    "tex": "3a+12=25",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 112,
+    "alt": "a, equals thirteen thirds",
+    "tex": "a=\\frac{13}{3}",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 113,
+    "alt": "thirteen thirds",
+    "tex": "\\frac{13}{3}",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 114,
+    "alt": "b equals 5",
+    "tex": "b=5",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 115,
+    "alt": "b equals 6",
+    "tex": "b=6",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 116,
+    "alt": "a, equals five thirds",
+    "tex": "a=\\frac{5}{3}",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 117,
+    "alt": "a, equals one third",
+    "tex": "a=\\frac{1}{3}",
+    "instances": [
+      {
+        "code": "M-00947",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 118,
+    "alt": "62 degrees",
+    "tex": "62^\\circ",
+    "instances": [
+      {
+        "code": "M-00982",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 119,
+    "alt": "58 degrees",
+    "tex": "58^\\circ",
+    "instances": [
+      {
+        "code": "M-00982",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 120,
+    "alt": "x degrees",
+    "tex": "x^\\circ",
+    "instances": [
+      {
+        "code": "M-00982",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 121,
+    "alt": "62 plus 58, plus x, equals 180",
+    "tex": "62+58+x=180",
+    "instances": [
+      {
+        "code": "M-00982",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 122,
+    "alt": "x equals 60",
+    "tex": "x=60",
+    "instances": [
+      {
+        "code": "M-00982",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 123,
+    "alt": "60 degrees",
+    "tex": "60^\\circ",
+    "instances": [
+      {
+        "code": "M-00982",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 124,
+    "alt": "side A C",
+    "tex": "\\overline{AC}",
+    "instances": [
+      {
+        "code": "M-00996",
+        "field": "stem"
+      }
+    ]
+  },
+  {
+    "index": 125,
+    "alt": "angle B A C",
+    "tex": "\\angle BAC",
+    "instances": [
+      {
+        "code": "M-00996",
+        "field": "stem"
+      },
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 126,
+    "alt": "angle B C A",
+    "tex": "\\angle BCA",
+    "instances": [
+      {
+        "code": "M-00996",
+        "field": "stem"
+      },
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 127,
+    "alt": "angle B C D",
+    "tex": "\\angle BCD",
+    "instances": [
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      },
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 128,
+    "alt": "110 degrees plus angle B C A, equals 180 degrees",
+    "tex": "110^\\circ+\\angle BCA=180^\\circ",
+    "instances": [
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 129,
+    "alt": "70 degrees, plus 70 degrees, plus x degrees, equals 180 degrees",
+    "tex": "70^\\circ+70^\\circ+x^\\circ=180^\\circ",
+    "instances": [
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 130,
+    "alt": "140 degrees plus x degrees, equals 180 degrees",
+    "tex": "140^\\circ+x^\\circ=180^\\circ",
+    "instances": [
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 131,
+    "alt": "x degrees equals 40 degrees",
+    "tex": "x^\\circ=40^\\circ",
+    "instances": [
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 132,
+    "alt": "x equals 40",
+    "tex": "x=40",
+    "instances": [
+      {
+        "code": "M-00996",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 133,
+    "alt": "y equals, 18, minus 5 x",
+    "tex": "y=18-5x",
+    "instances": [
+      {
+        "code": "M-01008",
+        "field": "stimulus"
+      }
+    ]
+  },
+  {
+    "index": 134,
+    "alt": "with coordinates x comma y",
+    "tex": "(x,y)",
+    "instances": [
+      {
+        "code": "M-01008",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 135,
+    "alt": "y equals, f of x",
+    "tex": "y=f(x)",
+    "instances": [
+      {
+        "code": "M-01056",
+        "field": "stem"
+      }
+    ]
+  },
+  {
+    "index": 136,
+    "alt": "f of x equals, x squared, plus 4",
+    "tex": "f(x)=x^2+4",
+    "instances": [
+      {
+        "code": "M-01056",
+        "field": "stimulus"
+      },
+      {
+        "code": "M-01056",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 137,
+    "alt": "the point with coordinates 0 comma 4",
+    "tex": "(0,4)",
+    "instances": [
+      {
+        "code": "M-01056",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01623",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 138,
+    "alt": "the point with coordinates 0 comma 0",
+    "tex": "(0,0)",
+    "instances": [
+      {
+        "code": "M-01099",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 139,
+    "alt": "the point with coordinates 1 comma 1",
+    "tex": "(1,1)",
+    "instances": [
+      {
+        "code": "M-01099",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 140,
+    "alt": "the point with coordinates 2 comma 8",
+    "tex": "(2,8)",
+    "instances": [
+      {
+        "code": "M-01099",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 141,
+    "alt": "the point with coordinates 3 comma 27",
+    "tex": "(3,27)",
+    "instances": [
+      {
+        "code": "M-01099",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 142,
+    "alt": "with coordinates 1 comma 1",
+    "tex": "(1,1)",
+    "instances": [
+      {
+        "code": "M-01099",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 143,
+    "alt": "y equals 2 x plus 3",
+    "tex": "y=2x+3",
+    "instances": [
+      {
+        "code": "M-01185",
+        "field": "option-A"
+      }
+    ]
+  },
+  {
+    "index": 144,
+    "alt": "y equals 3 x minus 2",
+    "tex": "y=3x-2",
+    "instances": [
+      {
+        "code": "M-01185",
+        "field": "option-B"
+      }
+    ]
+  },
+  {
+    "index": 145,
+    "alt": "y equals 4 x minus one",
+    "tex": "y=4x-1",
+    "instances": [
+      {
+        "code": "M-01185",
+        "field": "option-C"
+      }
+    ]
+  },
+  {
+    "index": 146,
+    "alt": "y equals 5 x",
+    "tex": "y=5x",
+    "instances": [
+      {
+        "code": "M-01185",
+        "field": "option-D"
+      }
+    ]
+  },
+  {
+    "index": 147,
+    "alt": "with coordinates 1 comma 200",
+    "tex": "(1,200)",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 148,
+    "alt": "2 point 5 comma 350",
+    "tex": "(2.5,350)",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 149,
+    "alt": "the fraction with numerator y sub 2, minus y sub 1, and denominator x sub 2, minus x sub 1, end fraction, equals, the fraction with numerator 350 minus 200, and denominator 2 point 5 minus 1, end fraction",
+    "tex": "\\frac{y_2-y_1}{x_2-x_1}=\\frac{350-200}{2.5-1}",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 150,
+    "alt": "y equals, 100 x plus b",
+    "tex": "y=100x+b",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 151,
+    "alt": "200 equals, 100 times 1, plus b",
+    "tex": "200=100(1)+b",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 152,
+    "alt": "b equals 100",
+    "tex": "b=100",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 153,
+    "alt": "y equals, 100 x plus 100",
+    "tex": "y=100x+100",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01234",
+        "field": "option-B"
+      }
+    ]
+  },
+  {
+    "index": 154,
+    "alt": "y equals, 200 x plus 100",
+    "tex": "y=200x+100",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01234",
+        "field": "option-A"
+      }
+    ]
+  },
+  {
+    "index": 155,
+    "alt": "with coordinates 1 comma 300",
+    "tex": "(1,300)",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 156,
+    "alt": "2 comma 500",
+    "tex": "(2,500)",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 157,
+    "alt": "y equals, 50 x plus 100",
+    "tex": "y=50x+100",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01234",
+        "field": "option-C"
+      }
+    ]
+  },
+  {
+    "index": 158,
+    "alt": "with coordinates 1 comma 150",
+    "tex": "(1,150)",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 159,
+    "alt": "2 comma 200",
+    "tex": "(2,200)",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 160,
+    "alt": "y equals, 100 x",
+    "tex": "y=100x",
+    "instances": [
+      {
+        "code": "M-01234",
+        "field": "option-D"
+      }
+    ]
+  },
+  {
+    "index": 161,
+    "alt": "10 equals, 2 x plus 4",
+    "tex": "10=2x+4",
+    "instances": [
+      {
+        "code": "M-01243",
+        "field": "stimulus"
+      }
+    ]
+  },
+  {
+    "index": 162,
+    "alt": "6 equals 2 x",
+    "tex": "6=2x",
+    "instances": [
+      {
+        "code": "M-01243",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 163,
+    "alt": "0 equals 0",
+    "tex": "0=0",
+    "instances": [
+      {
+        "code": "M-01243",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 164,
+    "alt": "l w h",
+    "tex": "\\ell wh",
+    "instances": [
+      {
+        "code": "M-01323",
+        "field": "stem"
+      },
+      {
+        "code": "M-01323",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 165,
+    "alt": "l w h equals, 6 times 2, times 3",
+    "tex": "\\ell wh=(6)(2)(3)",
+    "instances": [
+      {
+        "code": "M-01323",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 166,
+    "alt": "y equals, 120 minus 25 x",
+    "tex": "y=120-25x",
+    "instances": [
+      {
+        "code": "M-01347",
+        "field": "stimulus"
+      }
+    ]
+  },
+  {
+    "index": 167,
+    "alt": "y equals, 4 times, open parenthesis, 2 to the x power, close parenthesis",
+    "tex": "y=4(2^x)",
+    "instances": [
+      {
+        "code": "M-01623",
+        "field": "stimulus"
+      }
+    ]
+  },
+  {
+    "index": 168,
+    "alt": "with coordinates 0 comma b",
+    "tex": "(0,b)",
+    "instances": [
+      {
+        "code": "M-01623",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 169,
+    "alt": "x equals 0",
+    "tex": "x=0",
+    "instances": [
+      {
+        "code": "M-01623",
+        "field": "rationale"
+      },
+      {
+        "code": "M-01623",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 170,
+    "alt": "y equals 4",
+    "tex": "y=4",
+    "instances": [
+      {
+        "code": "M-01623",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 171,
+    "alt": "with coordinates 1 comma 8",
+    "tex": "(1,8)",
+    "instances": [
+      {
+        "code": "M-01623",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 172,
+    "alt": "2 comma 16",
+    "tex": "(2,16)",
+    "instances": [
+      {
+        "code": "M-01623",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 173,
+    "alt": "3 comma 32",
+    "tex": "(3,32)",
+    "instances": [
+      {
+        "code": "M-01623",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 174,
+    "alt": "4 comma 64",
+    "tex": "(4,64)",
+    "instances": [
+      {
+        "code": "M-01623",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 175,
+    "alt": "20 c, plus 10 s, equals 700",
+    "tex": "20c+10s=700",
+    "instances": [
+      {
+        "code": "M-01647",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 176,
+    "alt": "25 c, plus 12 s, equals 850",
+    "tex": "25c+12s=850",
+    "instances": [
+      {
+        "code": "M-01647",
+        "field": "rationale"
+      }
+    ]
+  },
+  {
+    "index": 177,
+    "alt": "This answer choice consists of two equations. 10 c, plus 20 s, equals 700, and, 12 c, plus 25 s, equals 850",
+    "tex": "\\begin{gathered}10c+20s=700\\\\12c+25s=850\\end{gathered}",
+    "instances": [
+      {
+        "code": "M-01647",
+        "field": "option-A"
+      }
+    ]
+  },
+  {
+    "index": 178,
+    "alt": "This answer choice consists of two equations. 20 c, plus 10 s, equals 700, and, 25 c, plus 12 s, equals 850",
+    "tex": "\\begin{gathered}20c+10s=700\\\\25c+12s=850\\end{gathered}",
+    "instances": [
+      {
+        "code": "M-01647",
+        "field": "option-B"
+      }
+    ]
+  },
+  {
+    "index": 179,
+    "alt": "This answer choice consists of two equations. 20 c, plus 700 s, equals 10, and, 25 c, plus 850 s, equals 12",
+    "tex": "\\begin{gathered}20c+700s=10\\\\25c+850s=12\\end{gathered}",
+    "instances": [
+      {
+        "code": "M-01647",
+        "field": "option-C"
+      }
+    ]
+  },
+  {
+    "index": 180,
+    "alt": "This answer choice consists of two equations. 700 c, plus 20 s, equals 10, and, 850 c, plus 25 s, equals 12",
+    "tex": "\\begin{gathered}700c+20s=10\\\\850c+25s=12\\end{gathered}",
+    "instances": [
+      {
+        "code": "M-01647",
+        "field": "option-D"
+      }
+    ]
+  }
+]
