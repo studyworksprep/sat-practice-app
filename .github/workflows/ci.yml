@@ -39,6 +39,9 @@ jobs:
       - name: Unit tests
         run: npm run test:unit
 
+      - name: Content normalization regressions
+        run: npm run test:content-normalization
+
       - name: Code hygiene (TS ratchet + retired terms)
         run: node scripts/check-code-hygiene.mjs
 

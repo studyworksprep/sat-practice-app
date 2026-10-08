@@ -24,7 +24,8 @@
 //   rationale → plain <p>
 //   option    → no wrapper at all; bare inline content / bare LaTeX
 
-export type BankFieldKind = 'stem' | 'stimulus' | 'rationale' | 'option';
+import { BANK_TABLE_CLASS, bankParagraphTag, type BankFieldKind } from './bank-html-conventions.ts';
+export type { BankFieldKind } from './bank-html-conventions.ts';
 
 // Custom node names used by the authoring editor's math extensions.
 export const MATH_INLINE_NODE = 'mathInline';
@@ -141,28 +142,12 @@ function serializeTable(node: PMNode): string {
     }
     rows.push(`<tr>${cells.join('')}</tr>`);
   }
-  return `<table class="stimulus_table">${rows.join('')}</table>`;
+  return `<table class="${BANK_TABLE_CLASS}">${rows.join('')}</table>`;
 }
 
 // ── Block serialization ─────────────────────────────────────────
 function paragraphTag(kind: BankFieldKind): { open: string; openCentered: string; close: string } {
-  switch (kind) {
-    case 'stem':
-      return {
-        open: '<p class="stem_paragraph">',
-        openCentered: '<p class="stem_paragraph" align="Center">',
-        close: '</p>',
-      };
-    case 'stimulus':
-      return {
-        open: '<p class="stimulus_paragraph">',
-        openCentered: '<p class="stimulus_paragraph" align="Center">',
-        close: '</p>',
-      };
-    case 'rationale':
-    default:
-      return { open: '<p>', openCentered: '<p align="Center">', close: '</p>' };
-  }
+  return { open: bankParagraphTag(kind), openCentered: bankParagraphTag(kind, true), close: '</p>' };
 }
 
 // Serialize a full document for one of the prose surfaces (stem /
@@ -177,7 +162,7 @@ function serializeProse(doc: PMNode, kind: BankFieldKind): string {
       out.push(`${tag.open}${inner}${tag.close}`);
     } else if (block.type === MATH_BLOCK_NODE) {
       // Standalone display equation → its own centered paragraph,
-      // matching the bank's `<p class="…" align="Center">\[ … \]</p>`.
+      // Use supported text-align styling; the sanitizer drops p[align].
       const latex = String(block.attrs?.latex ?? '').trim();
       if (latex) out.push(`${tag.openCentered}\\[${latex}\\]${tag.close}`);
     } else if (block.type === 'table') {
