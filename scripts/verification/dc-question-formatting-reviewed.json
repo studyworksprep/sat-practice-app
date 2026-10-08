@@ -1,0 +1,296 @@
+{
+  "reviewed_at": "2026-10-08",
+  "questions": [
+    {
+      "code": "M-00005",
+      "source_external_id": "029899-DC",
+      "official_source_sha256": "00cbafc4e9f0d4e6c3cc68dc189dba5a277835389a0849ceb246a2f9a8f6ced3",
+      "variables": [
+        "x",
+        "y"
+      ],
+      "math_images": [
+        {
+          "src_sha256": "70d841a782269a6cde20c633026f02bee32d2e761f90b31af1ad8a40f307deb9",
+          "alt": "60 x",
+          "tex": "60x"
+        },
+        {
+          "src_sha256": "ef1f47ae54ca3c953504fb655b3b701b26c38309b17802ca00ba12eef996dacb",
+          "alt": "50 y",
+          "tex": "50y"
+        },
+        {
+          "src_sha256": "19834d9e0af06aaef5ba89adc36d1fde37ea0f629091df186b31d9aed9c65fbc",
+          "alt": "60 x plus 50 y, equals 210",
+          "tex": "60x + 50y = 210"
+        },
+        {
+          "src_sha256": "5cf1d0c3ea65c43103209861dee8eabfbe8239acca7a451fb2dc62501bed47c3",
+          "alt": "x equals 1",
+          "tex": "x = 1"
+        },
+        {
+          "src_sha256": "d0ecbc1ae6e57a8e5046da9320b156f0567ed4f804e434cff8db01bcd511ef21",
+          "alt": "60 times 1, plus 50 y, equals 210",
+          "tex": "60(1) + 50y = 210"
+        },
+        {
+          "src_sha256": "b61bfcbe98562751135b0c60c308acca1a9f6e2c42327605cc1e16c6bf54fc75",
+          "alt": "60 plus 50 y, equals 210",
+          "tex": "60 + 50y = 210"
+        },
+        {
+          "src_sha256": "3a6ceb4ba4f8e5f65ee0bc924f97913b40e0a5191b1e4c0799ad09e72cd072d5",
+          "alt": "50 y equals 150",
+          "tex": "50y = 150"
+        },
+        {
+          "src_sha256": "dde400c57628907149c9bc092daf456a1f460b14ad467d4061f1b9c87b60aff6",
+          "alt": "y equals 3.",
+          "tex": "y = 3"
+        }
+      ]
+    },
+    {
+      "code": "M-00006",
+      "source_external_id": "05013-DC",
+      "official_source_sha256": "b4a6e7b1e7a61844b600ab50ef4df91c786ec5ac93f744f425c053322063a714",
+      "variables": [
+        "x"
+      ],
+      "math_images": [
+        {
+          "src_sha256": "d9dd58aaa614ff58ea99a51c70275bedd81c4b085acc250941201112c8cfcd89",
+          "alt": "f of x",
+          "tex": "f(x)"
+        },
+        {
+          "src_sha256": "c899b7f8dbe9d42f04b835d7399dc7bd803622ef0fce87c31666a4b41fec1314",
+          "alt": "6 equals, 4 minus negative 2",
+          "tex": "6 = 4 - (-2)"
+        },
+        {
+          "src_sha256": "d9dd58aaa614ff58ea99a51c70275bedd81c4b085acc250941201112c8cfcd89",
+          "alt": "f of x",
+          "tex": "f(x)"
+        },
+        {
+          "src_sha256": "639ed7a35a4d0f160892a885d394b300d412b3f7f883fe7a36c977de965425b7",
+          "alt": "f of 2, equals 4",
+          "tex": "f(2) = 4"
+        },
+        {
+          "src_sha256": "3ea745ed2d51639505ee120d40b607ce54467fd7c37f252b9eb34f4e596736bc",
+          "alt": "f of, open parenthesis, 2 plus 1, close parenthesis, equals, 4 plus 3, which equals 7",
+          "tex": "f(2+1) = 4+3 = 7"
+        },
+        {
+          "src_sha256": "6344a87f8154abb98b11e037959f2c9100933bc690733685553fd26e2df9939f",
+          "alt": "f of 3, equals 7",
+          "tex": "f(3) = 7"
+        },
+        {
+          "src_sha256": "6194c27e8cee980c13503cbf665768c42a2cba719b40d9cc3f950c1e74eb4956",
+          "alt": "f of 3",
+          "tex": "f(3)"
+        }
+      ]
+    },
+    {
+      "code": "M-00016",
+      "source_external_id": "07714-DC",
+      "official_source_sha256": "096063629241f4bc347075aa41ed57fc3842b38f4a97e401093c33f837c8f62b",
+      "variables": [],
+      "math_images": [
+        {
+          "src_sha256": "190f93bb610c0495cec9f04bfff1ad6127512880dc6ed127ae53fd2e3397a020",
+          "alt": "2 minus 2, equals 0",
+          "tex": "2 - 2 = 0"
+        },
+        {
+          "src_sha256": "bf9616e023fd00716eb9c944d767da373a4aaebb41862f32df542a2509eea645",
+          "alt": "20 minus 8, equals 12",
+          "tex": "20 - 8 = 12"
+        },
+        {
+          "src_sha256": "56c55b31d7d2e5b0090af189603da9d15b720bd1576653a5fad220d0d0d42d7f",
+          "alt": "26 minus 20, equals 6",
+          "tex": "26 - 20 = 6"
+        },
+        {
+          "src_sha256": "703bc6c570569e0e00c3a81644352f6e1293500edee89c773977285b4c2b6fde",
+          "alt": "46 minus 26, equals 20",
+          "tex": "46 - 26 = 20"
+        }
+      ]
+    },
+    {
+      "code": "M-00054",
+      "source_external_id": "029468-DC",
+      "official_source_sha256": "df5d418429318b2369ba166e66d4b832440073f1f246a74ebb9d1448364afb4f",
+      "variables": [],
+      "math_images": [
+        {
+          "src_sha256": "b20b813ade2f9f01ce1b8304202274266b099f25a03c72114129da547e8454d2",
+          "alt": "3 x to the fourth power, plus 2 x cubed",
+          "tex": "3x^{4} + 2x^{3}"
+        },
+        {
+          "src_sha256": "7a1be629b4fa8863c20809f31161c5a89ee0c67bfa5267347753cf9e304c2fe9",
+          "alt": "4 x to the fourth power, plus 7 x cubed",
+          "tex": "4x^{4} + 7x^{3}"
+        },
+        {
+          "src_sha256": "309a1c28cdaa8125f4a132b8061399c1bb74d945a7d101fc5ebaf4f1966bf4d8",
+          "alt": "3 x to the fourth power, plus 2 x to the third power, plus 4 x to the fourth power, plus 7 x to the third power",
+          "tex": "3x^{4} + 2x^{3} + 4x^{4} + 7x^{3}"
+        },
+        {
+          "src_sha256": "ccb6ca799c9e92ff0d5934e92754175b1b559a5904b385ec4ab960c01a259f8f",
+          "alt": "3 x to the fourth power",
+          "tex": "3x^{4}"
+        },
+        {
+          "src_sha256": "96e52753d553772392a9cc39ec6852ac557f520a5df95fb408a0512aa12bffa3",
+          "alt": "4 x to the fourth power",
+          "tex": "4x^{4}"
+        },
+        {
+          "src_sha256": "df27da46320028e2d0202b6d36da907ff226fa586ad26a94ec700c9ea6d8e7fe",
+          "alt": "2 x to the third power",
+          "tex": "2x^{3}"
+        },
+        {
+          "src_sha256": "6b13b12bfa229df1fb24faf3d90061105cac967ca8d690b90956def7d0f8712f",
+          "alt": "7 x to the third power",
+          "tex": "7x^{3}"
+        },
+        {
+          "src_sha256": "5c01458ae15dc2317029bfeaa7d54dabbc2e095793b8e46da70b5ec3f2f59972",
+          "alt": "7 x to the fourth power",
+          "tex": "7x^{4}"
+        },
+        {
+          "src_sha256": "005fc75e4dcf16241362e3a0f7888f2102f75eca0d21155eaa580eeded4f2377",
+          "alt": "9 x to the third power",
+          "tex": "9x^{3}"
+        },
+        {
+          "src_sha256": "4fdc180082472d271710b7795350419a8b1fb3b90e46b2ffa135c678f3cf252b",
+          "alt": "7 x to the fourth power, plus 9 x to the third power",
+          "tex": "7x^{4} + 9x^{3}"
+        },
+        {
+          "src_sha256": "3374118b3ce3f4c229380769b5ee1ca43c41912a5cc6b894a9f6170a688489b6",
+          "alt": "16 x to the fourteenth power",
+          "tex": "16x^{14}"
+        },
+        {
+          "src_sha256": "59ee5d95e0f66e182ad8f63ff3bf017dde2dfc050d293841a5eefe5aad27aa10",
+          "alt": "7 x to the eighth power, plus 9 x to the sixth power",
+          "tex": "7x^{8} + 9x^{6}"
+        },
+        {
+          "src_sha256": "91282ce3df3a3c03c4019e8e6b6ae2a31e2221788d205b5dae0e2f273b45fe66",
+          "alt": "12 x to the fourth power, plus 14 x cubed",
+          "tex": "12x^{4} + 14x^{3}"
+        },
+        {
+          "src_sha256": "4fdc180082472d271710b7795350419a8b1fb3b90e46b2ffa135c678f3cf252b",
+          "alt": "7 x to the fourth power, plus 9 x cubed",
+          "tex": "7x^{4} + 9x^{3}"
+        }
+      ]
+    },
+    {
+      "code": "M-00059",
+      "source_external_id": "070906-DC",
+      "official_source_sha256": "40ddce5cae2e649e05ff04734e234ff62c4d9364e9815203fc89acf046fe6316",
+      "variables": [
+        "p",
+        "x"
+      ],
+      "math_images": [
+        {
+          "src_sha256": "79d90a362da620b70432a88d6a7afb69686430c4710ed404b2362cf9feabb647",
+          "alt": "three fourths",
+          "tex": "\\tfrac{3}{4}"
+        },
+        {
+          "src_sha256": "034f0d08e7ccc43df3d575737ae8bd9da3d94d3a4bf0f6cd029995e2cedcb447",
+          "alt": "p equals 5 x",
+          "tex": "p = 5x"
+        },
+        {
+          "src_sha256": "0179944f0d4817b1f097e2c0e962f4e8b83d88809d216bb0c11bb3bb2c59db24",
+          "alt": "p equals, 0 point 5 x",
+          "tex": "p = 0.5x"
+        },
+        {
+          "src_sha256": "3f7198fa500eae2b3151eb3aad2cb63fffcc73dd1ac53c4e614c442afe7661a5",
+          "alt": "p equals, 5 x",
+          "tex": "p = 5x"
+        },
+        {
+          "src_sha256": "6a0c71abb8caf460dc2014df426f213e0ef7113c24711cbf5a3ff008a0925aa2",
+          "alt": "p equals, open parenthesis, 0 point 0 5, close parenthesis, to the x power",
+          "tex": "p = ( 0.05 )^{x}"
+        },
+        {
+          "src_sha256": "8d7acccaf7a174630fa41d545360b4dc211c3c6d252f41385f837270adc20abd",
+          "alt": "p equals, open parenthesis, 1 point 0 5, close parenthesis, to the x power",
+          "tex": "p = ( 1.05 )^{x}"
+        }
+      ]
+    },
+    {
+      "code": "M-00061",
+      "source_external_id": "08682-DC",
+      "official_source_sha256": "d1ee236a5541ec4345c91af21ea3dc387436c155cf5b928e7393d1734ae8430d",
+      "variables": [
+        "x"
+      ],
+      "math_images": [
+        {
+          "src_sha256": "6662173585a3d02f8019bae2d1c2caeb8edb03300d598d1436868540cc5ac1dd",
+          "alt": "the fraction 4 x over 5, equals 20",
+          "tex": "\\frac{4x}{5} = 20"
+        },
+        {
+          "src_sha256": "a9f1797ba454e135fa0010e37f85f1120d62245e3ba7444e5a6e8f6ad1f4bdc4",
+          "alt": "4 x equals 100",
+          "tex": "4x = 100"
+        },
+        {
+          "src_sha256": "15cad1ea45cf4a0989b9407916dd36102cb4e75e2f24ffd97822b5bb6977b618",
+          "alt": "x equals 25",
+          "tex": "x = 25"
+        }
+      ]
+    },
+    {
+      "code": "M-00211",
+      "source_external_id": "11158-DC",
+      "official_source_sha256": "3b38241fadbebf372f5100fe1fcde327eb9710960b29cdfbc99d8bd03c7dfde8",
+      "variables": [
+        "x",
+        "y"
+      ],
+      "math_images": []
+    },
+    {
+      "code": "M-00340",
+      "source_external_id": "070905-DC",
+      "official_source_sha256": "f4e9fe72ed63463c696a2b3630ac33d1e8996660f453cc40b0547141a0846ad1",
+      "variables": [],
+      "math_images": [
+        {
+          "src_sha256": "91c40f94a76edd2aa1a3205c9c95036e4effe549a8570dd9080e189b5d552b4f",
+          "alt": "100 times open parenthesis, the fraction with numerator 1 point 6 0 minus 1 point 0 0, and denominator 1 point 0 0, close parenthesis, equals 60 percent",
+          "tex": "100\\left(\\frac{1.60 - 1.00}{1.00}\\right) = 60\\%"
+        }
+      ]
+    }
+  ]
+}

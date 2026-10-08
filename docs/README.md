@@ -52,6 +52,8 @@ authorization matrix to prove it's fresh.
 
 | Document | Record of |
 |---|---|
+| `dc-question-normalization-2026-10-08.md` | First eight DC Math questions normalized in production; shared HTML conventions, reviewed formula conversions, and verified content/history preservation |
+| `dc-question-bank-audit-2026-10-08.md` | Official-source audit of 459 five/six-digit DC Math questions; formatting causes, confirmed content defects, and eight reviewed repair examples |
 | `broken-question-repair-plan-2026-10-07.md` | Completed repair of the initial M-00254 question, 46 Broken questions and seven additional questions, including presentation follow-ups |
 | `rw-import-audit-2026-10-07.md` | Audit of 175 September Reading and Writing imports; all 131 identified repairs completed and verified October 8 |
 | `architecture-plan.md` | The v1→v2 rebuild design (shipped) |
