@@ -1,0 +1,56 @@
+{
+  "format_version": 1,
+  "status": "applied-and-verified",
+  "questions": [
+    {
+      "code": "M-00254",
+      "source_id": "c9f8d1e9",
+      "source_external_id": "5466f88b-12d1-4e2d-a8ae-304ba95ffcae",
+      "question_type": "mcq",
+      "correct_answer": {
+        "text": null,
+        "number": null,
+        "tolerance": null,
+        "option_label": "D",
+        "option_labels": null
+      },
+      "source": {
+        "reference": "https://www.mometrix.com/academy/wp-content/uploads/2022/11/SAT-Practice-Test-1-with-Answer-Key-and-Scoring-Info.pdf",
+        "printed_page": 43,
+        "module": 2,
+        "question": 5
+      },
+      "changed_fields": [
+        "stem"
+      ],
+      "content_sha256": "5e9d32d370e7cb4a84663cb8838b4a140dbcd919f69c390753bc502d36980162",
+      "content": {
+        "stem_html": "<figure class=\"image\" style=\"margin: 0 0 1rem;\">\n  <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 250 210\" width=\"333\" height=\"280\" role=\"img\" aria-label=\"Right triangle with vertical leg a, horizontal leg b, hypotenuse c, and a right angle between a and b.\" style=\"display: block; max-width: 100%; height: auto; margin: 0 auto;\">\n    <title>Right triangle with legs a and b and hypotenuse c</title>\n    <path d=\"M 42 24 L 42 169 L 234 169 Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"></path>\n    <path d=\"M 42 157 L 54 157 L 54 169\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\"></path>\n    <g fill=\"currentColor\" font-family=\"Times New Roman, serif\" font-size=\"18\" font-style=\"italic\" text-anchor=\"middle\">\n      <text x=\"28\" y=\"101\">a</text>\n      <text x=\"137\" y=\"188\">b</text>\n      <text x=\"139\" y=\"92\">c</text>\n    </g>\n  </svg>\n  <figcaption style=\"text-align: center;\">Note: Figure not drawn to scale.</figcaption>\n</figure>\n<p>For the right triangle shown, <math><mi>a</mi><mo>=</mo><mn>4</mn></math> and <math><mi>b</mi><mo>=</mo><mn>5</mn></math>. Which expression represents the value of <math><mi>c</mi></math>?</p>",
+        "stimulus_html": null,
+        "rationale_html": "<p>Choice D is correct. By the Pythagorean theorem, if a right triangle has a hypotenuse with length <math alttext=\"c\"><mi>c</mi>\n</math> and legs with lengths <math alttext=\"a\"><mi>a</mi>\n</math> and <math alttext=\"b\"><mi>b</mi>\n</math>, then <math alttext=\"c squared equals a squared plus b squared\"><msup><mi>c</mi><mn>2</mn></msup><mo>=</mo><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup></math>. In the right triangle shown, the hypotenuse has length <math alttext=\"c\"><mi>c</mi>\n</math> and the legs have lengths <math alttext=\"a\"><mi>a</mi>\n</math> and <math alttext=\"b\"><mi>b</mi>\n</math>. It's given that <math alttext=\"a equals 4\"><mi>a</mi><mo>=</mo><mn>4</mn></math> and <math alttext=\"b equals 5\"><mi>b</mi><mo>=</mo><mn>5</mn></math>. Substituting <math alttext=\"4\"><mn>4</mn>\n</math> for <math alttext=\"a\"><mi>a</mi>\n</math> and <math alttext=\"5\"><mn>5</mn>\n</math> for <math alttext=\"b\"><mi>b</mi>\n</math> in the Pythagorean theorem yields <math alttext=\"c squared equals 4 squared plus 5 squared\"><msup><mi>c</mi><mn>2</mn></msup><mo>=</mo><msup><mn>4</mn><mn>2</mn></msup><mo>+</mo><msup><mn>5</mn><mn>2</mn></msup></math>. Taking the square root of both sides of this equation yields <math alttext=\"c equals plus or minus StartRoot 4 squared plus 5 squared EndRoot\"><mi>c</mi><mo>=</mo><mo>±</mo><msqrt><msup><mn>4</mn><mn>2</mn></msup><mo>+</mo><msup><mn>5</mn><mn>2</mn></msup></msqrt></math>. Since the length of a side of a triangle must be positive, the value of <math alttext=\"c\"><mi>c</mi>\n</math> is&nbsp;<math alttext=\"StartRoot 4 squared plus 5 squared EndRoot\"><msqrt><msup><mn>4</mn><mn>2</mn></msup><mo>+</mo><msup><mn>5</mn><mn>2</mn></msup></msqrt></math>.</p>\n<p>Choice A is incorrect and may result from conceptual or calculation errors.</p>\n<p>Choice B is incorrect and may result from conceptual or calculation errors.</p>\n<p>Choice C is incorrect and may result from conceptual or calculation errors.</p>",
+        "options": [
+          {
+            "label": "A",
+            "ordinal": 1,
+            "content_html": "<p style=\"text-align: left;\"><math alttext=\"4 plus 5\"><mrow><mn>4</mn></mrow><mo>+</mo><mrow><mn>5</mn></mrow></math></p>"
+          },
+          {
+            "label": "B",
+            "ordinal": 2,
+            "content_html": "<p style=\"text-align: left;\"><math alttext=\"StartRoot left parenthesis 4 right parenthesis left parenthesis 5 right parenthesis EndRoot\"><msqrt><mfenced><mrow><mn>4</mn></mrow></mfenced><mfenced><mrow><mn>5</mn></mrow></mfenced></msqrt></math></p>"
+          },
+          {
+            "label": "C",
+            "ordinal": 3,
+            "content_html": "<p style=\"text-align: left;\"><math alttext=\"StartRoot 4 plus 5 EndRoot\"><msqrt><mrow><mn>4</mn></mrow><mo>+</mo><mrow><mn>5</mn></mrow></msqrt></math></p>"
+          },
+          {
+            "label": "D",
+            "ordinal": 4,
+            "content_html": "<p style=\"text-align: left;\"><math alttext=\"StartRoot 4 squared plus 5 squared EndRoot\"><msqrt><msup><mrow><mn>4</mn></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mn>5</mn></mrow><mn>2</mn></msup></msqrt></math></p>"
+          }
+        ]
+      }
+    }
+  ]
+}
