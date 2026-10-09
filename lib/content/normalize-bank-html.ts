@@ -4,7 +4,7 @@ import { parseHTML } from 'linkedom';
 import { sanitizeQuestionHtml } from '../sanitize.ts';
 import { BANK_TABLE_CLASS, bankParagraphTag, type BankFieldKind } from './bank-html-conventions.ts';
 
-export interface ReviewedMathImage { alt: string; tex: string }
+export interface ReviewedMathImage { alt: string; tex: string; alternateAlts?: readonly string[] }
 export interface NormalizeBankHtmlOptions {
   // Keyed by exact original src, after the caller verifies source provenance.
   mathImages?: ReadonlyMap<string, ReviewedMathImage>;
@@ -43,17 +43,29 @@ export function normalizeBankHtml(
       if (options.requireReviewedMath) throw new Error(`Unreviewed equation image: ${alt}`);
       continue;
     }
-    if (reviewed.alt !== alt || !reviewed.tex.trim() || /\\[()[\]]/.test(reviewed.tex)) {
+    if ((reviewed.alt !== alt && !reviewed.alternateAlts?.includes(alt)) || !reviewed.tex.trim() || /\\[()[\]]/.test(reviewed.tex)) {
       throw new Error(`Reviewed formula does not match the original image: ${alt}`);
     }
     img.replaceWith(protect(`\\(${reviewed.tex}\\)`));
   }
-  for (const node of [...dom.querySelectorAll('span.italic')]) {
+  for (const node of [...dom.querySelectorAll('span.underline,span[class*="text_decoration:underline"]')].reverse()) {
+    const u = document.createElement('u'); u.innerHTML = node.innerHTML; node.replaceWith(u);
+  }
+  for (const node of [...dom.querySelectorAll('span.italic,span[class*="font_style:italic"],span[style*="font-style:italic"]')].reverse()) {
     if (node.closest('math,svg,mjx-container')) continue;
     const match = node.textContent.match(/^(\s*)([A-Za-z]{1,3})([,.]?)(\s*)$/);
     if (match && options.mathVariables?.has(match[2])) {
       node.replaceWith(match[1] + protect(`\\(${match[2]}\\)`) + match[3] + match[4]);
     } else {
+      // A point label can share its italic wrapper with a coordinate PNG.
+      // Once the image is protected, the wrapper's combined text no longer
+      // matches a variable; format its isolated label without losing either.
+      if (node.textContent.includes(prefix)) for (const child of [...node.childNodes]) {
+        const label = child.nodeType === 3 && child.textContent?.match(/^(\s*)([A-Za-z]{1,3})([,.]?)(\s*)$/);
+        if (label && options.mathVariables?.has(label[2])) {
+          child.textContent = label[1] + protect(`\\(${label[2]}\\)`) + label[3] + label[4];
+        }
+      }
       const em = document.createElement('em'); em.innerHTML = node.innerHTML; node.replaceWith(em);
     }
   }
@@ -62,9 +74,17 @@ export function normalizeBankHtml(
     // Preserve semantic spans/containers. Imported layout-only wrappers
     // have no semantics and are replaced by the bank's paragraph/table tags.
     if (node.hasAttribute('aria-label') || node.hasAttribute('role') || node.hasAttribute('data-q')) continue;
-    if (node.localName === 'div' && [...node.childNodes].some(n => n.nodeType === 3 && n.textContent?.trim())) {
-      const p = document.createElement('p'); p.innerHTML = node.innerHTML; node.replaceWith(p);
+    // Unwrap mixed block/inline containers. Wrapping a div containing a table
+    // or paragraph in another paragraph produces invalid, browser-repaired HTML.
+    if (node.localName === 'div' && !node.querySelector('p,table,div,figure,ul,ol,blockquote,h1,h2,h3') && node.textContent.trim()) {
+      const p = document.createElement('p'); p.innerHTML = node.innerHTML;
+      const alignment = node.getAttribute('align')?.toLowerCase() ?? (node as HTMLElement).style.textAlign;
+      if (['center','left','right'].includes(alignment ?? '')) p.setAttribute('style', `text-align:${alignment};`);
+      node.replaceWith(p);
     } else node.replaceWith(...node.childNodes);
+  }
+  for (const node of [...dom.querySelectorAll('p')]) {
+    if (node.querySelector('table,div,p,figure,ul,ol')) node.replaceWith(...node.childNodes);
   }
   for (const node of dom.querySelectorAll('*')) {
     if (node.closest('math,svg,mjx-container')) continue;
@@ -112,6 +132,9 @@ export function normalizeBankHtml(
     }
   }
   let result = sanitizeQuestionHtml(dom.innerHTML);
+  // Linkedom serializes col with an end tag, although it is an HTML void
+  // element. MathJax's HTML adaptor rejects that invalid table markup.
+  result = result.replace(/<\/col>/g, '');
   result = result.replace(new RegExp(`${prefix}(\\d+)END`, 'g'), (_, index) => formulas[Number(index)]);
-  return result.trim() ? result : null;
+  return result.trim() || null;
 }
