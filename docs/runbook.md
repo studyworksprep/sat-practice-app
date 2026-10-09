@@ -387,18 +387,39 @@ Failures now log (`password_reset_verify_failed`,
 Accounts created by Lessonworks provisioning start with a random
 password and no email to the student. The admin user page's **Login**
 section (students and practice accounts) shows the login email, last
-sign-in, and when a password link was last issued, and offers **Send
-login setup email**: `auth.admin.generateLink({ type: 'recovery' })`
-mints the same kind of token as "Forgot password?" (Supabase sends
-nothing), and `lib/email/loginSetup.ts` delivers it through Resend
-pointed at the flow above, so it expires on the same clock as a reset
-link and the email says what to do if it has. A placeholder login
-address (`…@provisioned.studyworks.local`, stamped when Lessonworks had
-no student email) cannot receive it; **Change login email** rewrites
-the auth email (marked confirmed) and mirrors it to `profiles.email`,
-which the profile form alone does not do. Both actions are admin-only
-Server Actions in `app/(admin)/admin/users/[userId]/login-actions.ts`
-and log `admin_login_setup_email` / `admin_login_email_changed`.
+sign-in, when a setup link was last sent and used, and when a password
+reset was last issued, and offers **Send login setup email**.
+
+The link is **valid for 48 hours** and is our own token, not a
+Supabase one. Supabase's recovery/magic-link lifetime is the
+project-wide email OTP expiry, shared with "Forgot password?" and
+capped at 24 hours, so a first-sign-in link that has to survive a
+weekend in an inbox cannot be a raw recovery token. Instead
+`lib/email/loginSetup.ts` signs an HMAC token (user id, login email,
+a nonce, 48-hour expiry; key `LOGIN_SETUP_SECRET`, falling back to the
+service-role key like the import review tokens) and emails
+`/auth/setup?token=…` through Resend. That page is an inert
+interstitial like `/auth/confirm`; its button POSTs to
+`/auth/setup/verify`, which checks the token against the nonce stored
+in the auth user's `app_metadata.login_setup`, then mints a recovery
+token with `auth.admin.generateLink` and spends it in the same request
+via `verifyOtp({ token_hash })` (the `/auth/demo` pattern), so the
+student lands on `/auth/update-password` with a session exactly as a
+reset does. The Supabase token lives for seconds inside that request;
+the OTP expiry setting no longer affects setup links. Verifying clears
+the nonce, so a link works once; resending stores a new nonce, so only
+the newest link works; changing the login email retires outstanding
+links too, since the email is in the signed payload. Failures redirect
+to the reset page's "link expired" state and log
+`login_setup_verify_failed` with a reason.
+
+A placeholder login address (`…@provisioned.studyworks.local`, stamped
+when Lessonworks had no student email) cannot receive the email;
+**Change login email** rewrites the auth email (marked confirmed) and
+mirrors it to `profiles.email`, which the profile form alone does not
+do. Both actions are admin-only Server Actions in
+`app/(admin)/admin/users/[userId]/login-actions.ts` and log
+`admin_login_setup_email` / `admin_login_email_changed`.
 
 ### Dashboard configuration (manual, per environment)
 
@@ -412,7 +433,9 @@ canonical template at `supabase/templates/recovery.html`:
    (the HTML comment header can be omitted).
 4. **Authentication → Sessions / Rate limits**: keep the email OTP expiry at
    30–60 minutes (default 1 hour is acceptable; shorter is better) and leave
-   Supabase's built-in per-email rate limit on.
+   Supabase's built-in per-email rate limit on. This governs "Forgot
+   password?" links only; the admin-sent setup links carry their own
+   48-hour token (see above) and are unaffected.
 
 If the dashboard template ever reverts to `{{ .ConfirmationURL }}`, the
 same-browser PKCE failure mode comes back. The signal that this happened:

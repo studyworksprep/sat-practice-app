@@ -21,9 +21,14 @@ import { rateLimit } from '@/lib/api/rateLimit';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import { siteUrl as canonicalSiteUrl } from '@/lib/config/site';
 import {
+  LOGIN_SETUP_METADATA_KEY,
   buildLoginSetupUrl,
   isPlaceholderEmail,
+  loginSetupSecret,
+  newLoginSetupNonce,
   sendLoginSetupEmail as deliverLoginSetupEmail,
+  signLoginSetupToken,
+  type LoginSetupMetadata,
 } from '@/lib/email/loginSetup';
 import { getResend } from '@/lib/email/client';
 import type { ActionResult, Fail } from '@/lib/types';
@@ -74,9 +79,13 @@ function emailSiteUrl(): string {
 }
 
 /**
- * Email the student a set-your-password link: a recovery token from
- * auth.admin.generateLink (nothing is sent by Supabase), delivered by
- * our own email so the copy fits a first sign-in. Form: user_id.
+ * Email the student a set-your-password link: our own signed token,
+ * valid 48 hours, that /auth/setup/verify turns into a Supabase
+ * recovery session when clicked (lib/email/loginSetup.ts explains why
+ * the recovery token is not emailed directly). The nonce behind the
+ * link is stored in the auth user's app_metadata, so sending again
+ * retires every earlier link. Delivered by our own email so the copy
+ * fits a first sign-in. Form: user_id.
  */
 export async function sendLoginSetupEmail(
   _prev: ActionResult | null,
@@ -89,6 +98,10 @@ export async function sendLoginSetupEmail(
   if (!getResend()) {
     return actionFail('The email service is not configured on this server (RESEND_API_KEY), so nothing was sent.');
   }
+  const secret = loginSetupSecret();
+  if (!secret) {
+    return actionFail('The server has no signing key for setup links (LOGIN_SETUP_SECRET), so nothing was sent.');
+  }
 
   const { data: userData, error: userErr } = await ctx.service.auth.admin.getUserById(target.id);
   if (userErr || !userData?.user) {
@@ -100,27 +113,32 @@ export async function sendLoginSetupEmail(
     return actionFail('This account still has the placeholder address from Lessonworks. Set the student’s real email first.');
   }
 
-  const { data: link, error: linkErr } = await ctx.service.auth.admin.generateLink({
-    type: 'recovery',
-    email: loginEmail,
+  // Record the nonce before sending: a link whose nonce is not on
+  // file is dead, so an email that goes out without the record would
+  // never work, while a record without an email only waits for the
+  // next send to replace it.
+  const sentAt = new Date().toISOString();
+  const nonce = newLoginSetupNonce();
+  const meta: LoginSetupMetadata = { sent_at: sentAt, nonce, used_at: null };
+  const { error: metaErr } = await ctx.service.auth.admin.updateUserById(target.id, {
+    app_metadata: { [LOGIN_SETUP_METADATA_KEY]: meta },
   });
-  const hashedToken = link?.properties?.hashed_token;
-  if (linkErr || !hashedToken) {
-    return actionFail(`Could not create the password link: ${linkErr?.message ?? 'no token returned'}`);
+  if (metaErr) {
+    return actionFail(`Could not prepare the setup link: ${metaErr.message}`);
   }
 
+  const token = signLoginSetupToken({ userId: target.id, email: loginEmail, nonce }, secret);
   const site = emailSiteUrl();
   const sent = await deliverLoginSetupEmail({
     to: loginEmail,
     firstName: target.first_name,
-    setupUrl: buildLoginSetupUrl(site, hashedToken),
+    setupUrl: buildLoginSetupUrl(site, token),
     loginUrl: `${site.replace(/\/+$/, '')}/login`,
   });
   if (!sent) {
     return actionFail('The email could not be sent. The student can still use “Forgot password?” on the login page.');
   }
 
-  const sentAt = new Date().toISOString();
   logger.info(
     { event: 'admin_login_setup_email', admin_id: ctx.user.id, user_id: target.id },
     'admin_login_setup_email',
