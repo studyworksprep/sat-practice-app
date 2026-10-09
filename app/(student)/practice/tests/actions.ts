@@ -19,13 +19,21 @@
 //     flow when the session is an ACT practice test. Reads the
 //     student's act_attempts inside the session window, computes
 //     raw correct per section, looks up scaled scores in
-//     act_score_conversion (returns null when the lookup is empty),
+//     act_score_conversion (null when the form has no table yet),
 //     upserts an act_practice_test_attempts row, returns the
 //     attempt id so the client can redirect to the results page.
 //
-// act_score_conversion is empty on prod today. The finalize path
-// writes raw counts and leaves scaled fields null; the results
-// page degrades gracefully with a "scaled scores pending" note.
+// act_score_conversion is populated per form via the admin
+// score-conversion editor (app/(admin)/admin/act/score-conversion)
+// or the scale importer; forms without a table get null scaled
+// fields and the results page shows a "scaled score pending" note.
+//
+// The runner treats these sessions as test mode (see
+// lib/practice/load-question.ts + session-actions.ts): no per-
+// question grading reaches the client, and the student may change
+// an answer until submit — the single act_attempts row per question
+// is updated in place, so "first attempt" and "last attempt" are the
+// same row here.
 
 'use server';
 
@@ -212,34 +220,41 @@ export async function finalizeActPracticeTest(
   const rawCorrect: Record<string, number> = {
     english: 0, math: 0, reading: 0, science: 0,
   };
+  // Sections the form actually contains. Drives which scaled scores
+  // to look up — a section with zero correct still has a scale
+  // entry (raw 0 → 1), and a section absent from the form must not.
+  const rawTotal: Record<string, number> = {
+    english: 0, math: 0, reading: 0, science: 0,
+  };
   for (const qid of questionIds) {
     const sec = sectionByQid.get(qid);
-    const a = firstByQid.get(qid);
-    if (sec && a?.is_correct && sec in rawCorrect) {
-      rawCorrect[sec] += 1;
-    }
+    if (!sec || !(sec in rawCorrect)) continue;
+    rawTotal[sec] += 1;
+    if (firstByQid.get(qid)?.is_correct) rawCorrect[sec] += 1;
   }
 
-  // Look up scaled scores. act_score_conversion is empty on prod
-  // today — every lookup returns null and the corresponding scaled
-  // column stays null. The results page reads these and shows
-  // "scaled scores pending" inline.
+  // Look up scaled scores for every section present on the form.
+  // Forms without a conversion table yield null and the results
+  // page shows "scaled score pending" for that section.
   const scaled: Record<string, number | null> = {
     english: null, math: null, reading: null, science: null,
   };
-  for (const sec of ['english', 'math', 'reading', 'science'] as const) {
-    if (rawCorrect[sec] === 0) continue;
-    const { data } = await supabase
-      .from('act_score_conversion')
-      .select('scaled_score')
-      .eq('source_test', sourceTest)
-      .eq('section', sec)
-      .eq('raw_score', rawCorrect[sec])
-      .maybeSingle();
-    if (data?.scaled_score != null) {
-      scaled[sec] = Number(data.scaled_score);
-    }
-  }
+  await Promise.all(
+    (['english', 'math', 'reading', 'science'] as const)
+      .filter((sec) => rawTotal[sec] > 0)
+      .map(async (sec) => {
+        const { data } = await supabase
+          .from('act_score_conversion')
+          .select('scaled_score')
+          .eq('source_test', sourceTest)
+          .eq('section', sec)
+          .eq('raw_score', rawCorrect[sec])
+          .maybeSingle();
+        if (data?.scaled_score != null) {
+          scaled[sec] = Number(data.scaled_score);
+        }
+      }),
+  );
 
   // Composite — rounded average of the four section scales. Only
   // computable when all four are present; otherwise leave null so
@@ -284,6 +299,9 @@ export async function finalizeActPracticeTest(
         user_id: userId,
         source_test: sourceTest,
         status: 'completed',
+        // The session row is the start of the test — without this
+        // started_at would default to the finish time.
+        started_at: session.created_at ?? new Date().toISOString(),
         finished_at: new Date().toISOString(),
         english_scaled: scaled.english,
         math_scaled: scaled.math,

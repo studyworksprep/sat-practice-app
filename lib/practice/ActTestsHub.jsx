@@ -12,7 +12,7 @@
 
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import { startActPracticeTest } from '@/app/(student)/practice/tests/actions';
@@ -120,15 +120,19 @@ export function ActTestsHub({ forms, attempts, resumeInfo, tabs }) {
 
 function TestFormCard({ form, completed }) {
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState(null);
   function onStart() {
     const fd = new FormData();
     fd.set('source_test', form.sourceTest);
+    setError(null);
     startTransition(async () => {
-      await startActPracticeTest(null, fd);
-      // startActPracticeTest redirects on success; on failure it
-      // returns an actionFail result we currently swallow because
-      // the card doesn't yet have an inline error slot. Failures
-      // here are rare (rate-limit only) and the next click retries.
+      // startActPracticeTest redirects on success (which throws
+      // internally — Next's redirect — so we never see a return
+      // value); on failure it returns an actionFail result.
+      const res = await startActPracticeTest(null, fd);
+      if (res && res.ok === false) {
+        setError(res.error ?? 'Could not start this test. Please try again.');
+      }
     });
   }
 
@@ -161,6 +165,9 @@ function TestFormCard({ form, completed }) {
       >
         {pending ? 'Starting…' : 'Start'}
       </button>
+      {error && (
+        <p role="alert" className={s.testCardError}>{error}</p>
+      )}
     </li>
   );
 }

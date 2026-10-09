@@ -84,6 +84,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     { data: assignmentJunctions },
     { data: testAttemptRows },
     { data: completedTestRowsForScore },
+    { data: actTestAttemptRows },
     { data: sessionRows },
     { data: registrations },
     { data: officialScores },
@@ -144,6 +145,19 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .select('started_at, finished_at, composite_score, rw_scaled, math_scaled')
       .eq('user_id', studentId)
       .eq('status', 'completed'),
+    // ACT practice-test attempts — cached section + composite scales
+    // written at finalize (app/(student)/practice/tests/actions.ts).
+    // RLS: can_view(user_id). Merged into the same "Recent practice
+    // tests" list as the SAT attempts below.
+    supabase
+      .from('act_practice_test_attempts')
+      .select(`
+        id, status, source_test, started_at, finished_at,
+        english_scaled, math_scaled, reading_scaled, science_scaled, composite_score
+      `)
+      .eq('user_id', studentId)
+      .order('finished_at', { ascending: false })
+      .limit(RECENT_TESTS_LIMIT),
     // Self-guided sessions for this student, SAT + ACT. Includes
     // review-mode Weak Questions Drills — a drill is just a practice
     // session built from the weak-questions scheme, so it surfaces
@@ -299,7 +313,8 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
 
   // Test attempts — keep status-aware, surface scores on completed
   // ones, link by status.
-  const testRows = (testAttemptRows ?? []).map((r) => ({
+  const satTestRows = (testAttemptRows ?? []).map((r) => ({
+    kind: 'sat' as const,
     id: r.id,
     status: r.status,
     timestamp: r.finished_at ?? r.started_at,
@@ -310,6 +325,27 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     testName: (r.practice_test as { name?: string } | null)?.name ?? 'Practice test',
     testCode: (r.practice_test as { code?: string } | null)?.code ?? '',
   }));
+  // ACT rows share the list and the results URL shape; the tutor
+  // results route falls through to the ACT loader for these ids.
+  const actTestRows = (actTestAttemptRows ?? []).map((r) => ({
+    kind: 'act' as const,
+    id: r.id,
+    status: r.status,
+    timestamp: r.finished_at ?? r.started_at,
+    composite: r.composite_score,
+    sections: [
+      ['English', r.english_scaled],
+      ['Math', r.math_scaled],
+      ['Reading', r.reading_scaled],
+      ['Science', r.science_scaled],
+    ] as Array<[string, number | null]>,
+    sectionsOnly: null as string | null,
+    testName: r.source_test,
+    testCode: 'ACT',
+  }));
+  const testRows = [...satTestRows, ...actTestRows]
+    .sort((a, b) => (b.timestamp ?? '').localeCompare(a.timestamp ?? ''))
+    .slice(0, RECENT_TESTS_LIMIT);
 
   // Practice sessions — adjusted for tutor view: link to the
   // student's session report when completed, no Resume because
@@ -833,6 +869,16 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                       <div className={s.testRowScores}>
                         {t.status !== 'completed' ? (
                           <span className={s.muted}>—</span>
+                        ) : t.kind === 'act' ? (
+                          <>
+                            <ScorePill label="Composite" value={t.composite} />
+                            {t.sections.map(([label, value]) => (
+                              <ScorePill key={label} label={label} value={value} />
+                            ))}
+                            {t.composite == null && t.sections.every(([, v]) => v == null) && (
+                              <span className={s.muted}>Scaled pending</span>
+                            )}
+                          </>
                         ) : t.composite != null ? (
                           <>
                             <ScorePill label="Total" value={t.composite} />
@@ -848,11 +894,13 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                         )}
                       </div>
                     </Link>
-                    <DeletePracticeTestButton
-                      studentId={student.id}
-                      attemptId={t.id}
-                      testName={t.testName}
-                    />
+                    {t.kind === 'sat' && (
+                      <DeletePracticeTestButton
+                        studentId={student.id}
+                        attemptId={t.id}
+                        testName={t.testName}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>

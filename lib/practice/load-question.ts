@@ -58,7 +58,10 @@ import type { UserRole } from '@/lib/types';
 const DESMOS_DOMAINS = new Set(['H', 'P', 'Q', 'S', 'math']);
 
 export type SessionMode = 'practice' | 'training' | 'review';
-export type MapItemStatus = 'unanswered' | 'correct' | 'incorrect' | 'removed';
+// 'answered' is the test-mode value (ACT practice tests): the student
+// saved an answer but correctness is withheld until the set is
+// submitted. Mirrors lib/types/practice.ts.
+export type MapItemStatus = 'unanswered' | 'answered' | 'correct' | 'incorrect' | 'removed';
 
 export interface MapItem {
   position: number;
@@ -109,7 +112,9 @@ export interface QuestionVM {
 }
 
 export interface InitialAttempt {
-  isCorrect: boolean;
+  /** Null in test mode (ACT practice tests): the answer is on file
+   *  but the runner must not learn whether it was right. */
+  isCorrect: boolean | null;
   selectedOptionId: string | null;
   responseText: string | null;
   submittedAt: string;
@@ -181,10 +186,14 @@ export interface QuestionPayload {
    *  session row. Drives the runner's toggle-button highlight. */
   marked: boolean;
   /** ACT practice-test session — null for everything else. When set,
-   *  the runner renders a SectionTimer pegged to deadlineIso and
-   *  auto-submits the set on expiry; on Submit Set the action returns
-   *  an act_practice_test_attempts id and the runner routes to the
-   *  ACT results page. See docs/architecture-plan.md §3.4. */
+   *  the runner is in test mode: it renders a SectionTimer pegged to
+   *  deadlineIso (when the form is single-section), withholds per-
+   *  question correctness (this payload's initialAttempt and mapItems
+   *  are already stripped server-side), lets answers be changed until
+   *  submit, and auto-submits the set on expiry; on Submit Set the
+   *  action returns an act_practice_test_attempts id and the runner
+   *  routes to the ACT results page. See docs/architecture-plan.md
+   *  §3.4. */
   practiceTest: {
     deadlineIso: string | null;
     sectionLabel: string | null;
@@ -333,6 +342,12 @@ export async function loadQuestion(
   // Same shape comes out the other side so the per-question side-fetches
   // below + the QuestionPayload return shape are unchanged.
   const isAct = session.test_type === 'act';
+  // ACT practice tests carry kind='practice_test' on filter_criteria
+  // (app/(student)/practice/tests/actions.ts). Test mode withholds
+  // grading from the payload — see the ACT branch below.
+  const fcAny = session.filter_criteria as Record<string, unknown> | null;
+  const fcKind = typeof fcAny?.kind === 'string' ? fcAny.kind : null;
+  const isPracticeTest = isAct && fcKind === 'practice_test';
   const since = isFreshAttemptSession ? sessionCreatedAt : null;
   // The pre-fill lookup is always scoped to the session window —
   // even in training, a runner should never open a question with a
@@ -358,6 +373,15 @@ export async function loadQuestion(
     ]);
 
     mapItems = buildActMapItems({ questionIds, publishedById, attempts: sessionAttempts, markedSet });
+    // Test mode: the navigator shows answered vs not, never right
+    // vs wrong — same contract as a real section.
+    if (isPracticeTest) {
+      mapItems = mapItems.map((it) =>
+        it.status === 'correct' || it.status === 'incorrect'
+          ? { ...it, status: 'answered' as const }
+          : it,
+      );
+    }
 
     if (!contentResult || contentResult.isRemoved) {
       return { kind: 'removed', mapItems, total: questionIds.length, sessionMode };
@@ -366,14 +390,17 @@ export async function loadQuestion(
     questionVM = contentResult.vm;
     desmosEligible = isCalculatorEligible(questionVM.taxonomy.domain_code);
 
+    // Test mode never ships the reveal payload (correct option +
+    // rationale) to the client: only the student's own selection
+    // comes back so the runner can pre-fill it.
     let reviewData: Awaited<ReturnType<typeof loadActReviewData>> = null;
-    if (lastAttempt) {
+    if (lastAttempt && !isPracticeTest) {
       reviewData = await loadActReviewData(supabase, userId, questionId);
     }
 
     initialAttempt = lastAttempt
       ? {
-          isCorrect: lastAttempt.is_correct,
+          isCorrect: isPracticeTest ? null : lastAttempt.is_correct,
           selectedOptionId: lastAttempt.selected_option_id,
           responseText: null, // ACT is MCQ-only — no typed response.
           submittedAt: lastAttempt.created_at,
@@ -576,14 +603,11 @@ export async function loadQuestion(
       }
     : null;
 
-  // Extract the practice-test payload off the session row's
-  // filter_criteria. ACT practice tests carry kind='practice_test'
-  // + source_test + sectionsOnly + deadlineAt; the runner reads
+  // Practice-test payload off the session row's filter_criteria
+  // (source_test + sectionsOnly + deadlineAt); the runner reads
   // these to render a SectionTimer and route Submit Set to the ACT
-  // results page (PR 7).
-  const fcAny = session.filter_criteria as Record<string, unknown> | null;
-  const fcKind = typeof fcAny?.kind === 'string' ? fcAny.kind : null;
-  const isPracticeTest = isAct && fcKind === 'practice_test';
+  // results page (PR 7). isPracticeTest is computed above, next to
+  // the ACT branch that strips grading from the payload.
   const practiceTest = isPracticeTest
     ? {
         deadlineIso: typeof fcAny?.deadlineAt === 'string' ? fcAny.deadlineAt : null,

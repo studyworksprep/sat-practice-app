@@ -31,7 +31,10 @@ import { gradeSprAnswer } from '@/lib/practice/spr-grade.mjs';
 import type { ActionResult, QuestionType } from '@/lib/types';
 
 type SubmitAnswerResult = ActionResult<{
-  isCorrect: boolean;
+  /** Null in test mode (ACT practice tests): the answer is recorded
+   *  but correctness, the correct option and the rationale are all
+   *  withheld until the set is submitted. */
+  isCorrect: boolean | null;
   questionType: QuestionType;
   correctOptionId: string | null;
   correctAnswerDisplay: string | null;
@@ -167,6 +170,10 @@ export async function submitAnswer(
   }
   const questionId = questionIds[position];
   const isAct = session.test_type === 'act';
+  // ACT practice tests run the shared runner in test mode: answers
+  // can be changed until the set is submitted (last answer wins, as
+  // on the real test) and no grading leaves the server per question.
+  const isTestMode = isAct && sessionCriteria(session.filter_criteria)?.kind === 'practice_test';
   const sessionFloor = session.created_at ?? '1970-01-01T00:00:00Z';
 
   let isCorrect = false;
@@ -216,11 +223,39 @@ export async function submitAnswer(
         question_id: questionId,
         selected_option_id: String(selectedOptionId),
         is_correct: isCorrect,
-        source: 'practice',
+        source: isTestMode ? 'practice_test' : 'practice',
         time_spent_ms: timeSpentMs > 0 ? timeSpentMs : null,
       });
       if (insertErr) {
         return actionFail(`Failed to record attempt: ${insertErr.message}`);
+      }
+    } else if (isTestMode) {
+      // Test mode: the student changed their answer before
+      // submitting the set. Overwrite in place so the single row per
+      // (question, session window) reflects the final choice — the
+      // finalize step, the results page and the session review all
+      // read that one row. Time still accumulates.
+      // .select() so a row the policy filters out surfaces as a
+      // failure instead of a silent zero-row update.
+      const { data: updated, error: updateErr } = await supabase
+        .from('act_attempts')
+        .update({
+          selected_option_id: String(selectedOptionId),
+          is_correct: isCorrect,
+        })
+        .eq('id', existing.id)
+        .select('id');
+      if (updateErr) {
+        return actionFail(`Failed to record attempt: ${updateErr.message}`);
+      }
+      if (!updated || updated.length === 0) {
+        return actionFail('Failed to record attempt: answer could not be updated.');
+      }
+      if (timeSpentMs > 0) {
+        await supabase.rpc('increment_act_attempt_time', {
+          p_attempt_id: existing.id,
+          p_delta_ms: timeSpentMs,
+        });
       }
     } else if (timeSpentMs > 0) {
       // Re-submit inside the session window: first-attempt-wins keeps
@@ -346,6 +381,18 @@ export async function submitAnswer(
         }
       });
     }
+  }
+
+  if (isTestMode) {
+    // Nothing that reveals the answer leaves the server mid-test.
+    return {
+      ok: true,
+      isCorrect: null,
+      questionType,
+      correctOptionId: null,
+      correctAnswerDisplay: null,
+      rationaleHtml: null,
+    };
   }
 
   return {

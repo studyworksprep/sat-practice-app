@@ -13,23 +13,26 @@
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
-import type { ActionResult, Json } from '@/lib/types';
+import type { ActionResult, Json, TestType } from '@/lib/types';
 
-// desmos_saved_states.question_id is FK'd to questions_v2 (see
-// migration 20260505000001). Verify the v2 row exists so a stale id
-// doesn't trip the FK and surface as a generic 500.
-async function resolveQuestionV2Id(
+// desmos_saved_states holds SAT (questions_v2) and ACT (act_questions)
+// rows side by side, told apart by test_type. Resolve which table
+// the id lives in so the stamp matches what the loaders filter on,
+// and reject ids that exist in neither (a stale id would otherwise
+// surface as a generic 500).
+async function resolveQuestion(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   qid: string,
-): Promise<string | null> {
+): Promise<{ id: string; testType: TestType } | null> {
   if (!qid) return null;
-  const { data: v2 } = await supabase
-    .from('questions_v2')
-    .select('id')
-    .eq('id', qid)
-    .maybeSingle();
-  return v2?.id ? (v2.id as string) : null;
+  const [{ data: v2 }, { data: act }] = await Promise.all([
+    supabase.from('questions_v2').select('id').eq('id', qid).maybeSingle(),
+    supabase.from('act_questions').select('id').eq('id', qid).maybeSingle(),
+  ]);
+  if (v2?.id) return { id: v2.id as string, testType: 'sat' };
+  if (act?.id) return { id: act.id as string, testType: 'act' };
+  return null;
 }
 
 /** Save (upsert) a Desmos calculator state for a question.
@@ -56,20 +59,20 @@ export async function saveDesmosState({
     throw e;
   }
 
-  const v2Id = await resolveQuestionV2Id(supabase, questionId);
-  if (!v2Id) return actionFail('question not found');
+  const resolved = await resolveQuestion(supabase, questionId);
+  if (!resolved) return actionFail('question not found');
 
   const { error } = await supabase
     .from('desmos_saved_states')
     .upsert(
       {
-        question_id: v2Id,
+        question_id: resolved.id,
         // Desmos getState() output is plain JSON-serializable data;
         // the cast narrows Record<string, unknown> to the column type.
         state_json: stateJson as Json,
         saved_by: profile.id,
         updated_at: new Date().toISOString(),
-        test_type: 'sat',
+        test_type: resolved.testType,
       },
       { onConflict: 'question_id' },
     );
@@ -98,14 +101,15 @@ export async function deleteDesmosState({
     throw e;
   }
 
-  const v2Id = await resolveQuestionV2Id(supabase, questionId);
-  if (!v2Id) return actionFail('question not found');
+  const resolved = await resolveQuestion(supabase, questionId);
+  if (!resolved) return actionFail('question not found');
 
+  // question_id is unique on this table, so no test_type filter is
+  // needed to find the row.
   const { error } = await supabase
     .from('desmos_saved_states')
     .delete()
-    .eq('question_id', v2Id)
-    .eq('test_type', 'sat');
+    .eq('question_id', resolved.id);
 
   if (error) return actionFail(error.message);
   revalidatePath('/practice', 'layout');

@@ -279,3 +279,13 @@
   color: var(--color-app-accent);
   white-space: nowrap;
 }
+
+/* Inline launch failure (rate limit, empty form). Wraps under the
+   card's title + CTA row. */
+.testCard { flex-wrap: wrap; }
+.testCardError {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-danger);
+}

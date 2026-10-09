@@ -19,6 +19,7 @@ import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import type { ActionResult, UserRole } from '@/lib/types';
+import { resolveQuestionTestType } from './question-test-type';
 
 const TUTOR_ROLES: UserRole[] = ['teacher', 'manager', 'admin'];
 
@@ -61,16 +62,21 @@ export async function addQuestionNote({
   }
 
   // Author profile fetched here so the returned note carries the
-  // display name + role the client renders next to it.
-  const { data: authorProfile } = await supabase
-    .from('profiles')
-    .select('first_name, last_name, email, role')
-    .eq('id', user.id)
-    .maybeSingle();
+  // display name + role the client renders next to it. The test
+  // type is derived from the id: the same table holds SAT and ACT
+  // notes and the loaders filter on it.
+  const [{ data: authorProfile }, testType] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('first_name, last_name, email, role')
+      .eq('id', user.id)
+      .maybeSingle(),
+    resolveQuestionTestType(supabase, questionId),
+  ]);
 
   const { data, error } = await supabase
     .from('question_notes')
-    .insert({ question_id: questionId, author_id: user.id, content: trimmed, test_type: 'sat' })
+    .insert({ question_id: questionId, author_id: user.id, content: trimmed, test_type: testType })
     .select('id, question_id, author_id, content, created_at, updated_at')
     .single();
   if (error) return actionFail(error.message);
