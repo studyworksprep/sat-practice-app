@@ -116,6 +116,11 @@
   background: var(--color-danger-bg);
   border-color: var(--color-danger);
 }
+.legendDot.legendAnswered {
+  background: var(--color-navy-900);
+  border-color: var(--color-navy-900);
+  opacity: 0.55;
+}
 .legendDot.legendUnanswered {
   background: var(--bg-white);
   border-color: var(--border-strong);
@@ -199,6 +204,16 @@
   background: var(--color-danger-bg);
   border-color: var(--color-danger);
   color: var(--color-diff-hard-fg);
+}
+
+/* Test mode — the student has saved an answer; right/wrong is
+   withheld until the set is submitted. Neutral navy fill, lighter
+   than the current-position cell so "here" still stands out. */
+.cellAnswered {
+  background: var(--color-navy-900);
+  border-color: var(--color-navy-900);
+  color: var(--bg-white);
+  opacity: 0.55;
 }
 
 .cellRemoved {

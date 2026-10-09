@@ -1,11 +1,16 @@
 // Server Actions for the student-private Error Log feature.
 //
-// Storage shape: one row per (user, question_v2) in
+// Storage shape: one row per (user, question) in
 // public.question_error_notes. Owner-only RLS (see migration
 // 20240101000038). The Practice runner uses these actions to
 // load + save the current question's note; the Review tree's
 // /review/error-log page uses the loadErrorNotes helper to
 // render the full history.
+//
+// SAT and ACT notes share the table, told apart by `test_type`
+// (questions_v2 vs act_questions keys). The type is derived from
+// the question id server-side — readers filter on it, so a wrong
+// stamp would make the note vanish on reload.
 //
 // Legacy "Error Log" lived on question_status.notes (v1-keyed)
 // — that path is left untouched so legacy users keep working
@@ -17,6 +22,7 @@
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import type { ActionResult } from '@/lib/types';
+import { resolveQuestionTestType } from './question-test-type';
 
 const MAX_BODY_LEN = 10_000;
 
@@ -52,16 +58,18 @@ export async function saveErrorNote(
   const { user, supabase } = ctx;
 
   const trimmed = (payload?.body ?? '').trim();
+  const testType = await resolveQuestionTestType(supabase, questionId);
 
   // Empty body → delete. Lets the student clear a stale note
-  // without bloating the public surface area.
+  // without bloating the public surface area. No test_type filter:
+  // the row is unique per (user, question), and a stale stamp from
+  // before the type was derived should still be clearable.
   if (trimmed === '') {
     const { error } = await supabase
       .from('question_error_notes')
       .delete()
       .eq('user_id', user.id)
-      .eq('question_id', questionId)
-      .eq('test_type', 'sat');
+      .eq('question_id', questionId);
     if (error) return actionFail(`Could not clear note: ${error.message}`);
     return { ok: true, note: null };
   }
@@ -73,7 +81,10 @@ export async function saveErrorNote(
   const { data, error } = await supabase
     .from('question_error_notes')
     .upsert(
-      { user_id: user.id, question_id: questionId, body: trimmed, test_type: 'sat' },
+      { user_id: user.id, question_id: questionId, body: trimmed, test_type: testType },
+      // Conflict on (user, question) also rewrites test_type, so a
+      // row mis-stamped before the derivation existed self-heals on
+      // the next save.
       { onConflict: 'user_id,question_id' },
     )
     .select('body, updated_at')
@@ -104,12 +115,14 @@ export async function getErrorNote(
   }
   const { user, supabase } = ctx;
 
+  // (user, question) is unique, so no test_type filter is needed
+  // to find the row — and skipping it keeps a mis-stamped legacy
+  // row readable until its next save corrects the stamp.
   const { data, error } = await supabase
     .from('question_error_notes')
     .select('body, updated_at')
     .eq('user_id', user.id)
     .eq('question_id', questionId)
-    .eq('test_type', 'sat')
     .maybeSingle();
 
   if (error) return actionFail(`Could not load note: ${error.message}`);

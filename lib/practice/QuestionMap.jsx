@@ -39,7 +39,8 @@ import s from './QuestionMap.module.css';
  * @param {number} props.currentPosition      — 0-indexed
  * @param {Array<{
  *   position: number,
- *   status: 'unanswered' | 'correct' | 'incorrect' | 'removed'
+ *   status: 'unanswered' | 'answered' | 'correct' | 'incorrect' | 'removed'
+ *   ('answered' is the test-mode value — saved, correctness withheld)
  * }>} props.items
  * @param {boolean} [props.canSubmit=true] — hide the Submit button
  *   when the page doesn't own the session (review mode), etc.
@@ -49,7 +50,19 @@ import s from './QuestionMap.module.css';
  *   any caller (e.g. the soft "removed" page render) that doesn't
  *   have an in-page state machine to drive.
  */
-export function QuestionMap({ basePath, sessionId, currentPosition, items, canSubmit = true, onJump }) {
+export function QuestionMap({
+  basePath,
+  sessionId,
+  currentPosition,
+  items,
+  canSubmit = true,
+  onJump,
+  // Test mode (ACT practice tests): legend collapses to answered /
+  // unanswered, and Finish defers to the runner's own submit flow
+  // when onFinish is provided.
+  testMode = false,
+  onFinish = null,
+}) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -64,6 +77,10 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
       confirmLabel: 'Finish',
     });
     if (!ok) return;
+    if (onFinish) {
+      onFinish();
+      return;
+    }
     startTransition(async () => {
       const fd = new FormData();
       fd.set('sessionId', sessionId);
@@ -94,12 +111,16 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
     : null;
 
   // Live counts feed the strip header. "Answered" includes
-  // correct + incorrect (the student has submitted); "Remaining"
-  // is everything else (unanswered + removed).
+  // correct + incorrect (the student has submitted) and the
+  // test-mode 'answered' status; "Remaining" is everything else
+  // (unanswered + removed).
   const answeredCount = items.filter(
-    (it) => it.status === 'correct' || it.status === 'incorrect',
+    (it) => it.status === 'correct' || it.status === 'incorrect' || it.status === 'answered',
   ).length;
   const remainingCount = items.length - answeredCount;
+  // Test mode (ACT practice tests) never shows right/wrong, so the
+  // legend collapses to answered / unanswered.
+  const withholdGrading = testMode;
 
   const finishPill = canSubmit ? (
     <button
@@ -141,14 +162,23 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
           <span className={`${s.legendDot} ${s.legendCurrent}`} />
           Current
         </span>
-        <span className={s.legendItem}>
-          <span className={`${s.legendDot} ${s.legendCorrect}`} />
-          Correct
-        </span>
-        <span className={s.legendItem}>
-          <span className={`${s.legendDot} ${s.legendIncorrect}`} />
-          Incorrect
-        </span>
+        {withholdGrading ? (
+          <span className={s.legendItem}>
+            <span className={`${s.legendDot} ${s.legendAnswered}`} />
+            Answered
+          </span>
+        ) : (
+          <>
+            <span className={s.legendItem}>
+              <span className={`${s.legendDot} ${s.legendCorrect}`} />
+              Correct
+            </span>
+            <span className={s.legendItem}>
+              <span className={`${s.legendDot} ${s.legendIncorrect}`} />
+              Incorrect
+            </span>
+          </>
+        )}
         <span className={s.legendItem}>
           <span className={`${s.legendDot} ${s.legendUnanswered}`} />
           Unanswered
@@ -201,6 +231,7 @@ function Cell({ item, isCurrent, href, onClick }) {
   const statusClass =
     item.status === 'correct'   ? s.cellCorrect   :
     item.status === 'incorrect' ? s.cellIncorrect :
+    item.status === 'answered'  ? s.cellAnswered  :
     item.status === 'removed'   ? s.cellRemoved   :
     s.cellUnanswered;
   const cellClass = [

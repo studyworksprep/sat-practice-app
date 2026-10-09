@@ -30,7 +30,16 @@ export default async function StudentErrorLogManagePage() {
   if (profile.role === 'admin') redirect('/admin');
   if (profile.role === 'practice') redirect('/subscribe');
 
-  const rows = await loadErrorNotes({ supabase, userId: user.id });
+  // SAT and ACT entries share question_error_notes, scoped by
+  // test_type. Pull both and merge newest-first — same unified
+  // surface as /review/error-log (§3.4).
+  const [satRows, actRows] = await Promise.all([
+    loadErrorNotes({ supabase, userId: user.id, testType: 'sat' }),
+    loadErrorNotes({ supabase, userId: user.id, testType: 'act' }),
+  ]);
+  const rows = [...satRows, ...actRows].sort(
+    (a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''),
+  );
 
   // Counts for the header strip.
   const totalNotes = rows.length;

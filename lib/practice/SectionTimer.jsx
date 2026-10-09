@@ -47,6 +47,11 @@ export function SectionTimer({ deadlineIso, onExpire, label = 'Section' }) {
       return undefined;
     }
 
+    // Re-sync immediately on mount: the server rendered its own
+    // Date.now(), and the seconds that elapsed before hydration would
+    // otherwise show as a stale value until the first tick.
+    setRemainingMs(Math.max(0, deadlineMs - Date.now()));
+
     const t = setInterval(() => {
       const rem = Math.max(0, deadlineMs - Date.now());
       setRemainingMs(rem);
@@ -91,7 +96,10 @@ export function SectionTimer({ deadlineIso, onExpire, label = 'Section' }) {
       aria-label={`${label} time remaining`}
     >
       <span className={s.label}>{label}</span>
-      <span className={s.value}>{display}</span>
+      {/* Server and client compute the countdown from different
+          Date.now() readings, so the text legitimately differs at
+          hydration; the mount effect above corrects it right away. */}
+      <span className={s.value} suppressHydrationWarning>{display}</span>
     </div>
   );
 }

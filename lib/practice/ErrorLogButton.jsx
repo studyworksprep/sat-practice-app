@@ -25,7 +25,8 @@ import s from './ErrorLogButton.module.css';
 
 /**
  * @param {object} props
- * @param {string}  props.questionId — v2 questions_v2(id)
+ * @param {string}  props.questionId — questions_v2(id) or act_questions(id);
+ *   the save action derives the test type from the id
  * @param {{ body: string, updatedAt: string } | null} [props.initialNote]
  * @param {string}  [props.buttonClassName] — optional override
  * @param {() => void} [props.onSaved] — fires after a successful

@@ -15,6 +15,7 @@ export type {
   TestAttemptStatus,
   MapItemStatus,
   SessionMode,
+  TestType,
 } from './practice';
 export type {
   NoteDoc,

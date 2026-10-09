@@ -27,8 +27,15 @@ export type SessionStatus = 'in_progress' | 'completed' | 'abandoned';
 /** Practice-test attempt lifecycle status. */
 export type TestAttemptStatus = 'in_progress' | 'completed' | 'abandoned';
 
-/** Per-position status the QuestionMap renders. */
-export type MapItemStatus = 'unanswered' | 'correct' | 'incorrect' | 'removed';
+/** Per-position status the QuestionMap renders. 'answered' is the
+ *  test-mode value: the student has saved an answer, but correctness
+ *  is withheld until the set is submitted (ACT practice tests). */
+export type MapItemStatus = 'unanswered' | 'answered' | 'correct' | 'incorrect' | 'removed';
+
+/** Which exam a row belongs to. Mirrors the `test_type` check
+ *  constraint on practice_sessions and the shared tables
+ *  (docs/architecture-plan.md §3.4 "Cross-test data model"). */
+export type TestType = 'sat' | 'act';
 
 /** Practice-session mode — disambiguates real practice from
  *  tutor training and review re-runs that share the runner. */
