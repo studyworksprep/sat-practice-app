@@ -6,7 +6,11 @@
 // than taking the whole user page down.
 
 import { requireServiceRole } from '@/lib/api/auth';
-import { isPlaceholderEmail } from '@/lib/email/loginSetup';
+import {
+  LOGIN_SETUP_METADATA_KEY,
+  isPlaceholderEmail,
+  type LoginSetupMetadata,
+} from '@/lib/email/loginSetup';
 import { LoginSetupCard, type LoginState } from './LoginSetupCard';
 
 interface LoginSetupProps {
@@ -30,12 +34,15 @@ export async function LoginSetup({ subject }: LoginSetupProps) {
       loadError = error?.message ?? 'No login account found for this profile.';
     } else {
       const u = data.user;
+      const setup = (u.app_metadata?.[LOGIN_SETUP_METADATA_KEY] ?? null) as LoginSetupMetadata | null;
       state = {
         loginEmail: u.email ?? null,
         placeholder: isPlaceholderEmail(u.email),
         emailConfirmedAt: u.email_confirmed_at ?? null,
         lastSignInAt: u.last_sign_in_at ?? null,
         recoverySentAt: u.recovery_sent_at ?? null,
+        setupSentAt: setup?.sent_at ?? null,
+        setupUsedAt: setup?.used_at ?? null,
       };
     }
   } catch (err) {

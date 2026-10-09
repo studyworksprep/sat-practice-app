@@ -9,6 +9,7 @@ import { useActionState, useState } from 'react';
 import { Button } from '@/lib/ui/Button';
 import { Card } from '@/lib/ui/Card';
 import { formatDate } from '@/lib/formatters';
+import { LOGIN_SETUP_LINK_TTL_LABEL } from '@/lib/email/loginSetupLink';
 import { sendLoginSetupEmail, setLoginEmail } from './login-actions';
 import s from '../../../forms.module.css';
 
@@ -19,9 +20,14 @@ export interface LoginState {
   placeholder: boolean;
   emailConfirmedAt: string | null;
   lastSignInAt: string | null;
-  /** When a password link was last issued, by this button or by the
-   *  student's own "Forgot password?". */
+  /** When the student's own "Forgot password?" link was last issued
+   *  (or when a setup link was used — spending one mints a recovery
+   *  token too). */
   recoverySentAt: string | null;
+  /** When this page last sent a setup email, and whether that link has
+   *  been used (null while it is still live or has lapsed unused). */
+  setupSentAt: string | null;
+  setupUsedAt: string | null;
 }
 
 interface LoginSetupCardProps {
@@ -85,12 +91,24 @@ export function LoginSetupCard({
           </dd>
         </div>
         <div style={S.fact}>
-          <dt style={S.dt}>Password link</dt>
+          <dt style={S.dt}>Setup link</dt>
+          <dd style={S.dd}>
+            {state
+              ? state.setupSentAt
+                ? `Sent ${formatDate(state.setupSentAt)}${
+                    state.setupUsedAt ? ` · used ${formatDate(state.setupUsedAt)}` : ''
+                  }`
+                : 'None sent yet'
+              : '—'}
+          </dd>
+        </div>
+        <div style={S.fact}>
+          <dt style={S.dt}>Password reset</dt>
           <dd style={S.dd}>
             {state
               ? state.recoverySentAt
-                ? `Sent ${formatDate(state.recoverySentAt)}`
-                : 'None sent yet'
+                ? `Last ${formatDate(state.recoverySentAt)}`
+                : 'Never'
               : '—'}
           </dd>
         </div>
@@ -127,13 +145,15 @@ export function LoginSetupCard({
           {fromLessonworks
             ? 'Lessonworks created this account with no email to the student. '
             : ''}
-          Emails a set-your-password link, which expires within about an hour. Safe to resend.
+          Emails a set-your-password link that works for {LOGIN_SETUP_LINK_TTL_LABEL}. Safe to
+          resend; only the newest link works.
         </span>
       </form>
       {sendState?.ok && (
         <p className={s.ok} role="status">
-          Sent to {sendState.data.sentTo}. If the link expires before they open it, they can use
-          &ldquo;Forgot password?&rdquo; on the login page with that address, or you can send again.
+          Sent to {sendState.data.sentTo}. The link works for {LOGIN_SETUP_LINK_TTL_LABEL}. If it
+          lapses, they can use &ldquo;Forgot password?&rdquo; on the login page with that address,
+          or you can send again.
         </p>
       )}
       {sendState?.ok === false && !sendPending && (

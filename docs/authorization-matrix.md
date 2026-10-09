@@ -37,6 +37,7 @@ Runs on every matched request. Detected: session refresh only.
 | `/auth/callback` | GET | ⚠️ **none detected** |
 | `/auth/confirm/verify` | POST | ⚠️ **none detected** |
 | `/auth/demo/[persona]` | GET | service client (RLS bypass) |
+| `/auth/setup/verify` | POST | rateLimit + service client (RLS bypass) |
 
 ## Server Actions
 
@@ -120,4 +121,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_20 route handlers, 69 server-action modules enumerated._
+_21 route handlers, 69 server-action modules enumerated._
