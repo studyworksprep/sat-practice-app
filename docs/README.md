@@ -52,6 +52,7 @@ authorization matrix to prove it's fresh.
 
 | Document | Record of |
 |---|---|
+| `dc-question-normalization-rest-2026-10-09.md` | Remaining 451 DC Math questions normalized in production; complete 459-question cohort, reviewed formula transcriptions, mobile table containment, and verified preservation |
 | `dc-question-normalization-2026-10-08.md` | First eight DC Math questions normalized in production; shared HTML conventions, reviewed formula conversions, and verified content/history preservation |
 | `dc-question-bank-audit-2026-10-08.md` | Official-source audit of 459 five/six-digit DC Math questions; formatting causes, confirmed content defects, and eight reviewed repair examples |
 | `broken-question-repair-plan-2026-10-07.md` | Completed repair of the initial M-00254 question, 46 Broken questions and seven additional questions, including presentation follow-ups |

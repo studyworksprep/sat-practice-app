@@ -12,7 +12,7 @@ interface BrowserCheck {
   brokenImages?: number; legacyClasses?: number;
 }
 const root = resolve(process.argv[2] ?? 'tmp/dc-question-audit-2026-10-08');
-const registry = JSON.parse(await readFile('scripts/verification/dc-question-formatting-reviewed.json', 'utf8'));
+const registry = JSON.parse(await readFile(process.argv[3] ?? 'scripts/verification/dc-question-formatting-reviewed.json', 'utf8'));
 const codes: string[] = registry.questions.map((q: { code: string }) => q.code);
 await mkdir(resolve(root, 'screenshots'), { recursive: true });
 const browser = await chromium.launch({ headless: true });
@@ -26,7 +26,8 @@ try {
     results.push({ code, viewport: 1440, ...await page.locator('#after').evaluate(el => ({
       mathImages: el.querySelectorAll('img[role="math"],img.math-img').length,
       mathErrors: el.querySelectorAll('merror,[data-mjx-error],[data-mml-node="merror"]').length,
-      mathSvg: el.querySelectorAll('mjx-container svg').length,
+      // The shared sanitizer unwraps mjx-container; the SVG remains inline.
+      mathSvg: el.querySelectorAll('svg[viewBox]').length,
       overflow: el.scrollWidth > el.clientWidth + 1,
       brokenImages: [...el.querySelectorAll('img')].filter(n => !n.complete || !n.naturalWidth).length,
       legacyClasses: el.querySelectorAll('.italic,.math-container,[class*="tcp-"]').length,
@@ -37,6 +38,7 @@ try {
       overflow: el.scrollWidth > el.clientWidth + 1,
       pageOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
       mathErrors: el.querySelectorAll('merror,[data-mjx-error],[data-mml-node="merror"]').length,
+      brokenImages: [...el.querySelectorAll('img')].filter(n => !n.complete || !n.naturalWidth).length,
     })) });
     await page.setViewportSize({ width: 1440, height: 1000 });
   }

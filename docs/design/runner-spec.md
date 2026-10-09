@@ -7,6 +7,10 @@
 > resemblance to College Board's Bluebook app is **deliberate product
 > intent**, not legacy residue.
 
+Question content containment verified 2026-10-08: wide tables scroll within
+their stimulus or stem region in single-column cards, as they already do
+in passage columns. They must not enlarge the card or the page on phones.
+
 ## Why the runners look the way they do
 
 Students take the real SAT in Bluebook. Practicing inside a layout that

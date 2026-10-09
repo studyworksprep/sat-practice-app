@@ -42,7 +42,7 @@ test('only a reviewed equation image is converted; other equations and figures s
 });
 
 test('table captions, cell spans and data remain intact while imported presentation is removed', () => {
-  const html = '<div class="qti-wrapper"><table width="120" class="old-table"><caption>Residents</caption><tr><th colspan="2">Percent</th></tr><tr><td rowspan="2">A</td><td>21.9</td></tr><tr><td>27.9</td></tr></table></div>';
+  const html = '\n<div class="qti-wrapper"><table width="120" class="old-table"><caption>Residents</caption><colgroup><col><col></colgroup><tr><th colspan="2">Percent</th></tr><tr><td rowspan="2">A</td><td>21.9</td></tr><tr><td>27.9</td></tr></table></div>\n';
   const normalized = normalizeBankHtml(html, 'stimulus')!;
   const dom = parseHTML('<html><body>' + normalized + '</body></html>').document.body;
   assert.equal(dom.querySelector('caption')?.textContent, 'Residents');
@@ -52,6 +52,10 @@ test('table captions, cell spans and data remain intact while imported presentat
   assert.equal(dom.querySelector('table')?.getAttribute('class'), 'stimulus_table');
   assert.doesNotMatch(normalized, /qti-wrapper|width=|old-table/);
   assert.equal(normalizeBankHtml(normalized, 'stimulus'), normalized);
+  assert.doesNotMatch(normalized, /<\/col>/);
+  assert.ok(renderHtml(normalized).includes('21.9'));
+  const formerlyNested = normalizeBankHtml('<p><table><tr><td>21.9</td></tr></table></p>', 'stimulus')!;
+  assert.ok(formerlyNested.startsWith('<table'));
 });
 
 test('reviewed variables receive math formatting and prose italics remain semantic emphasis', () => {
@@ -63,4 +67,21 @@ test('reviewed variables receive math formatting and prose italics remain semant
   assert.equal(normalizeBankHtml('<p>60%</p>', 'option'), '\\(60\\%\\)');
   assert.equal(normalizeBankHtml('   ', 'rationale'), null);
   assert.throws(() => normalizeBankHtml('<span data-ae_invis="true">actual content</span>', 'stem'), /Invisible source node/);
+});
+
+test('mixed block containers preserve prose, tables, emphasis and mathematical variables', () => {
+  const html = '<div>Before<table><tr><td>1</td></tr></table><p>After <span class="underline">not</span> <span class="formatted_text font_style:italic"><span class="italic">x</span>, <span class="italic">y</span></span></p></div>';
+  const normalized = normalizeBankHtml(html, 'stem', { mathVariables: new Set(['x','y']) })!;
+  assert.doesNotMatch(normalized, /<p[^>]*>[^<]*<table|class="(?:underline|italic|formatted_text)/);
+  assert.match(normalized, /<u>not<\/u>/);
+  assert.ok(normalized.includes('\\(x\\), \\(y\\)'));
+  assert.equal(normalizeBankHtml(normalized, 'stem'), normalized);
+  const src='data:image/png;base64,AAA';
+  assert.ok(normalizeBankHtml(`<img role="math" src="${src}" alt="other reviewed description">`, 'option', {
+    mathImages: new Map([[src,{alt:'first description',alternateAlts:['other reviewed description'],tex:'x'}]]), requireReviewedMath:true,
+  })?.includes('\\(x\\)'));
+  const label = normalizeBankHtml(`<span class="italic">P <span class="math-container"><img role="math" src="${src}" alt="coordinates"></span></span>`, 'stem', {
+    mathImages: new Map([[src,{alt:'coordinates',tex:'(10,-5)'}]]),mathVariables:new Set(['P']),requireReviewedMath:true,
+  });
+  assert.ok(label?.includes('\\(P\\) \\((10,-5)\\)'));
 });

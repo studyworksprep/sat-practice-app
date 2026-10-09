@@ -42,7 +42,12 @@
 
 /* ---------- Stimulus (single-column variant) ---------- */
 
+/* Match passage-column containment on phones and review cards: a wide
+   table stays readable through local scrolling without widening the page. */
+
 .stimulus {
+  overflow-x: auto;
+  min-width: 0;
   padding: var(--s4) var(--s5);
   background: var(--color-slate-50);
   border: 1px solid var(--border);
@@ -333,7 +338,11 @@
 
 /* ---------- Stem ---------- */
 
+/* Some published prompts include their data table in the stem field. */
+
 .stem {
+  overflow-x: auto;
+  min-width: 0;
   font-size: 16px;
   line-height: 1.6;
   color: var(--fg1);
