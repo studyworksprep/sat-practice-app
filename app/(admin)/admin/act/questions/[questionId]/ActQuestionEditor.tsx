@@ -365,7 +365,7 @@ function FieldPreview({
   return (
     <div className={s.preview}>
       <div className={s.previewLabel}>{label}</div>
-      <div ref={ref} className={`${s.previewBody} sw-prose`} dangerouslySetInnerHTML={{ __html: safe }} />
+      <div ref={ref} className={`${s.previewBody} sw-prose`} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safe }} />
     </div>
   );
 }
@@ -375,6 +375,6 @@ function OptionContent({ html, depKey }: { html: string; depKey: string }) {
   const safe = sanitizeQuestionHtml(html ?? '');
   useMathTypeset(ref, depKey);
   return (
-    <span ref={ref} className={`${s.optionContent} sw-option-content`} dangerouslySetInnerHTML={{ __html: safe }} />
+    <span ref={ref} className={`${s.optionContent} sw-option-content`} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safe }} />
   );
 }
