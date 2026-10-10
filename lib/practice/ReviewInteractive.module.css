@@ -773,8 +773,8 @@
   scroll-padding-inline: 24px;
 }
 
-/* Keep dates aligned to their day columns. Short ranges show every date;
-   longer ranges retain daily bars and readable weekly ticks while scrolling. */
+/* Date labels adapt to the available column width. Keep daily bars readable
+   and scroll the plot when the full timeline cannot fit at its minimum width. */
 .dailyChart {
   display: grid;
   grid-template-columns: repeat(var(--daily-days), minmax(0, 1fr));
@@ -851,8 +851,8 @@
   color: var(--fg3);
 }
 
-.dailyChart[data-date-labels='weekly'] .dailyBarCol:first-child .dailyBarDate { text-align: left; }
-.dailyChart[data-date-labels='weekly'] .dailyBarCol:last-child .dailyBarDate { text-align: right; }
+.dailyChart:not([data-date-labels='daily']) .dailyBarCol:first-child .dailyBarDate { text-align: left; }
+.dailyChart:not([data-date-labels='daily']) .dailyBarCol:last-child .dailyBarDate { text-align: right; }
 
 .dailyChartHint {
   margin: 6px 0 0;
