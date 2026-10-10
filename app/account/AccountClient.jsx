@@ -130,7 +130,7 @@ function ProfileSection({ profile, user, updateProfileAction, updateEmailAction 
           label="SAT test date"
           name="sat_test_date"
           type="date"
-          defaultValue={profile.sat_test_date ?? ''}
+          defaultValue={profile.sat_test_date?.slice(0, 10) ?? ''}
           help="Your personal target test date. Tutor-added registrations override this on the dashboard."
         />
 

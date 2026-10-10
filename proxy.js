@@ -120,22 +120,38 @@ export async function proxy(request) {
     return NextResponse.redirect(url, 308);
   }
 
-  const requestHeaders = new Headers(request.headers);
-  const cookiesToSet = [];
+  const cookiesToSet = new Map();
+  const authHeaders = new Headers();
+
+  // Every response path must retain session-cookie updates, including
+  // redirects and rejected demo writes. Otherwise a rotated refresh token
+  // is lost and the browser keeps sending the old one.
+  function withAuthCookies(response) {
+    for (const { name, value, options } of cookiesToSet.values()) {
+      response.cookies.set(name, value, options);
+    }
+    authHeaders.forEach((value, name) => response.headers.set(name, value));
+    return response;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
-        get(name) {
-          return request.cookies.get(name)?.value;
+        getAll() {
+          return request.cookies.getAll();
         },
-        set(name, value, options) {
-          cookiesToSet.push({ name, value, ...options });
-        },
-        remove(name, options) {
-          cookiesToSet.push({ name, value: '', ...options });
+        setAll(updates, headers) {
+          for (const cookie of updates) {
+            const { name, value } = cookie;
+            if (value) request.cookies.set(name, value);
+            else request.cookies.delete(name);
+            cookiesToSet.set(name, cookie);
+          }
+          for (const [name, value] of Object.entries(headers ?? {})) {
+            authHeaders.set(name, value);
+          }
         },
       },
     }
@@ -143,6 +159,10 @@ export async function proxy(request) {
 
   // Refresh session if expired — important for Server Components
   const { data: { user } } = await supabase.auth.getUser();
+
+  // Snapshot after refresh/cleanup so Server Components read the updated
+  // Cookie header and do not retry the same stale refresh token.
+  const requestHeaders = new Headers(request.headers);
 
   if (user) {
     requestHeaders.set('x-user-id', user.id);
@@ -169,10 +189,10 @@ export async function proxy(request) {
       request.method !== 'GET' &&
       request.method !== 'HEAD';
     if (isApiMutation) {
-      return new NextResponse(
+      return withAuthCookies(new NextResponse(
         JSON.stringify({ error: 'Demo accounts are read-only' }),
         { status: 403, headers: { 'content-type': 'application/json' } },
-      );
+      ));
     }
   }
 
@@ -205,7 +225,7 @@ export async function proxy(request) {
       if (needsRoleCheck && role === 'practice') {
         const url = request.nextUrl.clone();
         url.pathname = '/practice/start';
-        return NextResponse.redirect(url);
+        return withAuthCookies(NextResponse.redirect(url));
       }
 
       // Access rule (owner policy, 2026-07-16): admin/manager are staff and
@@ -247,7 +267,7 @@ export async function proxy(request) {
         if (denied) {
           const url = request.nextUrl.clone();
           url.pathname = '/subscribe';
-          return NextResponse.redirect(url);
+          return withAuthCookies(NextResponse.redirect(url));
         }
       }
     }
@@ -257,12 +277,7 @@ export async function proxy(request) {
     request: { headers: requestHeaders },
   });
 
-  // Apply auth cookies (refresh tokens etc.) to the response
-  for (const cookie of cookiesToSet) {
-    response.cookies.set(cookie);
-  }
-
-  return response;
+  return withAuthCookies(response);
 }
 
 export const config = {

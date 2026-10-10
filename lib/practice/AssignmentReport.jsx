@@ -44,6 +44,7 @@ import { subjectFromDomainCode } from './DomainBreakdownCard';
 import { SkillBreakdownCard } from './SkillBreakdownCard';
 import { ReportHero } from './ReportHero';
 import { formatDuration } from './format-duration';
+import { formatDate } from '@/lib/formatters';
 import s from './AssignmentReport.module.css';
 
 // Domain codes that get the math toolkit (Desmos + reference
@@ -821,13 +822,10 @@ function formatAttemptTimestamp(iso) {
 }
 
 function formatSessionDate(iso) {
-  if (!iso) return 'Practice session';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return 'Practice session';
-  return d.toLocaleDateString(undefined, {
+  return formatDate(iso, {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  });
+  }) || 'Practice session';
 }

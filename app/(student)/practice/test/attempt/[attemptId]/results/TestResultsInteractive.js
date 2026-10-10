@@ -32,6 +32,7 @@ import { QuestionNotes } from '@/lib/practice/QuestionNotes';
 import { StudentQuestionNotes } from '@/lib/practice/StudentQuestionNotes';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import { formatDuration } from '@/lib/practice/format-duration';
+import { formatDate } from '@/lib/formatters';
 import { QuestionMapGrid } from '@/lib/practice/QuestionMapGrid';
 import { BookmarkIcon, CorrectIcon, IncorrectIcon, NotesIcon, TimeSpentIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
@@ -208,11 +209,9 @@ export function TestResultsInteractive({
           <div className={s.sub}>
             {testCode && <span className={s.testCode}>{testCode}</span>}
             {testCode && ' · '}
-            {finishedAt
-              ? new Date(finishedAt).toLocaleDateString(undefined, {
-                  year: 'numeric', month: 'long', day: 'numeric',
-                })
-              : '—'}
+            {formatDate(finishedAt, {
+              year: 'numeric', month: 'long', day: 'numeric',
+            }) || '—'}
             {sectionsOnly && (
               <span className={s.sectionsOnlyBadge}>
                 {sectionsOnly === 'RW' ? 'R&W only' : 'Math only'}

@@ -22,7 +22,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { formatDate } from '@/lib/formatters';
+import { formatCalendarDate } from '@/lib/formatters';
 import { loadDashboardAggregate } from './load-dashboard-aggregate';
 import { SkillBreakdownCard } from './SkillBreakdownCard';
 import { WeeklyTrendChart } from './WeeklyTrendChart';
@@ -199,7 +199,7 @@ export async function StudentStatsView({
         />
         <StatTile
           label="Test date"
-          value={row.sat_test_date ? formatDate(row.sat_test_date) ?? '—' : '—'}
+          value={formatCalendarDate(row.sat_test_date) || '—'}
         />
         <StatTile label="Target" value={row.target_sat_score ?? '—'} />
       </section>
