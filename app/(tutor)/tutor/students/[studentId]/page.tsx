@@ -17,7 +17,7 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
-import { formatDate, formatRelativeShort, isPastDueDate } from '@/lib/formatters';
+import { formatCalendarDate, formatDate, formatRelativeShort, isPastDueDate } from '@/lib/formatters';
 import { adherenceSummaryLine, ADHERENCE_LABELS } from '@/lib/plan/adherence';
 import { loadStudentPlanState } from '@/lib/plan/load-plan-state';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
@@ -555,7 +555,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                   label={daysToTest >= 0 ? 'Days to test' : 'Test date'}
                   value={daysToTest >= 0 ? daysToTest : 'Past'}
                   sub={student.satTestDate
-                    ? formatDate(student.satTestDate) ?? undefined
+                    ? formatCalendarDate(student.satTestDate) || undefined
                     : undefined}
                 />
               )}
