@@ -32,6 +32,7 @@ import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
+import { visibleActQuestions } from '@/lib/practice/act-visibility';
 
 const MAX_SESSION_SIZE = 50;
 
@@ -464,10 +465,9 @@ async function loadActCandidateIds(supabase, filters) {
     if (sections.length) {
       anyBranchRan = true;
       const rows = await fetchAll((from, to) => {
-        let q = supabase
+        let q = visibleActQuestions(supabase
           .from('act_questions')
-          .select('id')
-          .eq('is_broken', false)
+          .select('id'))
           .in('section', sections);
         q = applyDifficulty(q);
         return q.range(from, to);
@@ -478,10 +478,9 @@ async function loadActCandidateIds(supabase, filters) {
     if (categories.length) {
       anyBranchRan = true;
       const rows = await fetchAll((from, to) => {
-        let q = supabase
+        let q = visibleActQuestions(supabase
           .from('act_questions')
-          .select('id')
-          .eq('is_broken', false)
+          .select('id'))
           .in('category', categories);
         q = applyDifficulty(q);
         return q.range(from, to);
@@ -492,10 +491,9 @@ async function loadActCandidateIds(supabase, filters) {
     if (subcategories && subcategories.length) {
       anyBranchRan = true;
       const rows = await fetchAll((from, to) => {
-        let q = supabase
+        let q = visibleActQuestions(supabase
           .from('act_questions')
-          .select('id')
-          .eq('is_broken', false)
+          .select('id'))
           .in('subcategory', subcategories);
         q = applyDifficulty(q);
         return q.range(from, to);
@@ -509,10 +507,9 @@ async function loadActCandidateIds(supabase, filters) {
       // Matches the behavior before this change for the
       // empty-filter case.
       const rows = await fetchAll((from, to) => {
-        let q = supabase
+        let q = visibleActQuestions(supabase
           .from('act_questions')
-          .select('id')
-          .eq('is_broken', false);
+          .select('id'));
         q = applyDifficulty(q);
         return q.range(from, to);
       });

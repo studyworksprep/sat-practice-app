@@ -19,6 +19,7 @@
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import { isStillWeak } from '@/lib/practice/weak-queue';
+import { isActQuestionVisible } from '@/lib/practice/act-visibility';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const IN_CHUNK_SIZE = 400;
@@ -41,15 +42,15 @@ async function resolveActQuestionMeta(supabase: any, qids: string[]) {
     const rows = await fetchAll((from, to) =>
       supabase
         .from('act_questions')
-        .select('id, difficulty, category, section, is_broken')
+        .select('id, difficulty, category, section, is_broken, deleted_at')
         .in('id', chunk)
         .range(from, to),
     );
     for (const r of rows as Array<{
       id: string; difficulty: number | null; category: string | null;
-      section: string; is_broken: boolean;
+      section: string; is_broken: boolean; deleted_at: string | null;
     }>) {
-      if (!r.is_broken) out.set(r.id, r);
+      if (isActQuestionVisible(r)) out.set(r.id, r);
     }
   }
   return out;

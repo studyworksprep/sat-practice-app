@@ -22,6 +22,7 @@ import {
   createSession, countAvailable,
   createActSession, countAvailableAct,
 } from './actions';
+import { visibleActQuestions } from '@/lib/practice/act-visibility';
 import { searchQuestions } from '@/lib/practice/question-search-actions';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
 import { StartInteractiveAct } from '@/lib/practice/StartInteractiveAct';
@@ -202,11 +203,11 @@ async function ActLauncher({ user, supabase }) {
   // small (~231 today) — one paginated query is overkill but matches
   // the SAT loader's shape and stays safe as the bank grows.
   const actRows = await fetchAll((from, to) =>
-    supabase
-      .from('act_questions')
-      .select('section, category, subcategory')
-      .eq('is_broken', false)
-      .range(from, to),
+    visibleActQuestions(
+      supabase
+        .from('act_questions')
+        .select('section, category, subcategory'),
+    ).range(from, to),
   );
 
   // Bucket per (section, category, subcategory). The canonical

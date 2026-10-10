@@ -305,7 +305,9 @@ export type Database = {
           category: string
           category_code: string | null
           created_at: string
+          deleted_at: string | null
           difficulty: number | null
+          difficulty_source: string | null
           external_id: string | null
           highlight_ref: number | null
           id: string
@@ -320,12 +322,16 @@ export type Database = {
           stimulus_html: string | null
           subcategory: string | null
           subcategory_code: string | null
+          updated_at: string
+          updated_by: string | null
         }
         Insert: {
           category: string
           category_code?: string | null
           created_at?: string
+          deleted_at?: string | null
           difficulty?: number | null
+          difficulty_source?: string | null
           external_id?: string | null
           highlight_ref?: number | null
           id?: string
@@ -340,12 +346,16 @@ export type Database = {
           stimulus_html?: string | null
           subcategory?: string | null
           subcategory_code?: string | null
+          updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           category?: string
           category_code?: string | null
           created_at?: string
+          deleted_at?: string | null
           difficulty?: number | null
+          difficulty_source?: string | null
           external_id?: string | null
           highlight_ref?: number | null
           id?: string
@@ -360,6 +370,8 @@ export type Database = {
           stimulus_html?: string | null
           subcategory?: string | null
           subcategory_code?: string | null
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
