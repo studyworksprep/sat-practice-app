@@ -128,6 +128,10 @@ const HTML_TAGS = [
 
 const QUESTION_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [...HTML_TAGS, ...MATHML_TAGS, ...NOTE_TAGS],
+  // Earlier math-rendered caches contain lowercase SVG clipping tags.
+  // Canonicalize this known SVG element before the allowlist is applied;
+  // its attributes still pass through the same security filtering.
+  transformTags: { clippath: 'clipPath' },
   allowedAttributes: {
     // `data-q` carries the ACT question-reference marker the
     // renderer uses to highlight the relevant portion of a
