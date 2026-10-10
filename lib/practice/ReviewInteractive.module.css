@@ -706,6 +706,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--s3);
+  min-width: 0;
 }
 
 .dailyMapRange {
@@ -728,31 +729,85 @@
   font-weight: 500;
 }
 
-/* Bar chart. Each day = one column with a height-encoded bar
-   above and a tabular numeric label of attempts on top. The
-   chart scrolls horizontally if the assignment ran for too
-   many days to fit (~30+); for shorter runs the columns
-   stretch to fill. */
-.dailyChart {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  min-height: 132px;
-  padding: 8px 4px 6px;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
+.dailyChartFrame {
+  position: relative;
+  min-width: 0;
 }
 
-.dailyBarCol {
-  flex: 1 1 14px;
-  min-width: 14px;
-  max-width: 36px;
+.dailyActivitySummary {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  font-size: 12px;
+  color: var(--fg2);
+}
+
+/* Render immediately above the plot, outside its scroll viewport. */
+.dailyChartTooltip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  width: 220px;
+  max-width: calc(100% - 12px);
+  min-height: 48px;
+  padding: 6px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  height: 110px;
+  justify-content: center;
+  gap: 2px;
+  background: var(--color-navy-900);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  z-index: 2;
+  box-shadow: var(--shadow-sm);
+}
+
+.dailyChartScroll {
+  overflow-x: auto;
+  min-width: 0;
+  padding: 4px 2px;
+  scroll-padding-inline: 24px;
+}
+
+/* Keep dates aligned to their day columns. Short ranges show every date;
+   longer ranges retain daily bars and readable weekly ticks while scrolling. */
+.dailyChart {
+  display: grid;
+  grid-template-columns: repeat(var(--daily-days), minmax(0, 1fr));
   gap: 4px;
+  width: 100%;
+  min-width: calc(var(--daily-days) * (var(--daily-day-width) + 4px) - 4px);
+}
+
+.dailyBarCol {
+  display: grid;
+  grid-template-rows: 12px 112px 36px;
+  justify-items: center;
+  align-items: end;
+  gap: 6px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.dailyBarCol:focus-visible {
+  outline: 2px solid var(--color-navy-900);
+  outline-offset: 1px;
+}
+
+.dailyBarCol:hover .dailyBarTrack,
+.dailyBarCol[aria-describedby] .dailyBarTrack {
+  outline: 2px solid var(--color-slate-400);
+  outline-offset: 1px;
 }
 
 .dailyBarValue {
@@ -766,12 +821,43 @@
 
 .dailyBarTrack {
   width: 100%;
+  max-width: 40px;
   height: 100%;
   display: flex;
   align-items: flex-end;
   background: var(--color-slate-100);
   border-radius: 4px 4px 0 0;
   overflow: hidden;
+}
+
+.dailyBarDate {
+  width: 100%;
+  height: 36px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg2);
+  white-space: nowrap;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.dailyBarWeekday {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--fg3);
+}
+
+.dailyChart[data-date-labels='weekly'] .dailyBarCol:first-child .dailyBarDate { text-align: left; }
+.dailyChart[data-date-labels='weekly'] .dailyBarCol:last-child .dailyBarDate { text-align: right; }
+
+.dailyChartHint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--fg3);
 }
 
 .dailyBarFill {
