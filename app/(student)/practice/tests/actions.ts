@@ -42,6 +42,7 @@ import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import type { ActionResult } from '@/lib/types';
+import { visibleActQuestions } from '@/lib/practice/act-visibility';
 
 // Per-section time limits in milliseconds. Matches the standard
 // administration of the ACT today; the enhanced 2025 ACT shortens
@@ -92,12 +93,12 @@ export async function startActPracticeTest(
 
   // Build the deterministic slice. Order is source_ordinal ascending —
   // that's the natural sequence the test was administered in.
-  const { data: questionRows, error: queryErr } = await supabase
-    .from('act_questions')
-    .select('id, section, source_ordinal')
-    .eq('source_test', sourceTest)
-    .eq('is_broken', false)
-    .order('source_ordinal', { ascending: true });
+  const { data: questionRows, error: queryErr } = await visibleActQuestions(
+    supabase
+      .from('act_questions')
+      .select('id, section, source_ordinal')
+      .eq('source_test', sourceTest),
+  ).order('source_ordinal', { ascending: true });
   if (queryErr) {
     return actionFail(`Could not load test questions: ${queryErr.message}`);
   }

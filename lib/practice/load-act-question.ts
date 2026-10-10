@@ -28,6 +28,7 @@
 import { applyWatermark } from '@/lib/content/watermark';
 import { inferActLayoutMode } from '@/lib/practice/act-taxonomy';
 import type { MapItem, QuestionTaxonomy, QuestionVM } from '@/lib/practice/load-question';
+import { isActQuestionVisible } from '@/lib/practice/act-visibility';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -244,10 +245,15 @@ export async function loadActPublishedFlags(
   if (questionIds.length === 0) return out;
   const { data } = await supabase
     .from('act_questions')
-    .select('id, is_broken, section')
+    .select('id, is_broken, deleted_at, section')
     .in('id', questionIds);
-  for (const r of (data ?? []) as Array<{ id: string; is_broken: boolean; section: string | null }>) {
-    out.set(r.id, { is_broken: r.is_broken, section: r.section });
+  // A retired question (deleted_at) lands in the same "removed"
+  // bucket as a broken one — the map cell greys out and the runner
+  // skips it, while the row itself stays for history.
+  for (const r of (data ?? []) as Array<{
+    id: string; is_broken: boolean; deleted_at: string | null; section: string | null;
+  }>) {
+    out.set(r.id, { is_broken: !isActQuestionVisible(r), section: r.section });
   }
   return out;
 }

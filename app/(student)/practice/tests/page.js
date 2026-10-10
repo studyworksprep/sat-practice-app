@@ -23,6 +23,7 @@ import { TestLauncher } from '@/lib/practice/TestLauncher';
 import { ActTestsHub } from '@/lib/practice/ActTestsHub';
 import { HelpButton } from '@/app/(student)/help/HelpButton';
 import s from './PracticeTestsPage.module.css';
+import { visibleActQuestions } from '@/lib/practice/act-visibility';
 
 export const dynamic = 'force-dynamic';
 
@@ -527,11 +528,11 @@ async function ActPracticeTestsPage({ user, supabase }) {
     { data: attemptRows },
     { data: inProgress },
   ] = await Promise.all([
-    supabase
-      .from('act_questions')
-      .select('source_test, section, source_ordinal')
-      .eq('is_broken', false)
-      .not('source_test', 'is', null),
+    visibleActQuestions(
+      supabase
+        .from('act_questions')
+        .select('source_test, section, source_ordinal'),
+    ).not('source_test', 'is', null),
     supabase
       .from('act_practice_test_attempts')
       .select('id, source_test, status, started_at, finished_at, english_scaled, math_scaled, reading_scaled, science_scaled, composite_score')
