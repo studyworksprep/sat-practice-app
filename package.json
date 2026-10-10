@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "validate-lessons": "node scripts/validate-lessons.mjs",
     "typecheck": "tsc --noEmit",
-    "test:unit": "node --test 'lib/**/*.test.mjs'",
+    "test:unit": "node --test 'lib/**/*.test.mjs' lib/content/svg-clipping.test.ts",
     "test:content-normalization": "node --test lib/content/normalize-bank-html.test.ts lib/content/parse-bounded-math-speech.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium",
