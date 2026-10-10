@@ -375,6 +375,71 @@ export type Database = {
         }
         Relationships: []
       }
+      act_rationale_drafts: {
+        Row: {
+          answer_letter: string | null
+          confidence: string | null
+          created_at: string
+          generated_by: string | null
+          id: string
+          model: string
+          model_notes: string | null
+          needs_review: boolean
+          prompt_version: string
+          question_id: string
+          rationale_html: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          warnings: Json
+        }
+        Insert: {
+          answer_letter?: string | null
+          confidence?: string | null
+          created_at?: string
+          generated_by?: string | null
+          id?: string
+          model: string
+          model_notes?: string | null
+          needs_review?: boolean
+          prompt_version: string
+          question_id: string
+          rationale_html: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          warnings?: Json
+        }
+        Update: {
+          answer_letter?: string | null
+          confidence?: string | null
+          created_at?: string
+          generated_by?: string | null
+          id?: string
+          model?: string
+          model_notes?: string | null
+          needs_review?: boolean
+          prompt_version?: string
+          question_id?: string
+          rationale_html?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "act_rationale_drafts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "act_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       act_score_conversion: {
         Row: {
           created_at: string

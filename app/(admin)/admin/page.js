@@ -219,6 +219,7 @@ export default async function AdminLandingPage() {
           <NavCard href="/admin/content" title="Score conversions + thresholds" desc="Test-level config + curves." />
           <NavCard href="/admin/bluebook-batch" title="Batch Bluebook upload" desc="Upload several Bluebook score reports at once." />
           <NavCard href="/admin/act/questions" title="ACT questions" desc="Browse, edit, flag, and retire ACT questions." />
+          <NavCard href="/admin/act/rationales" title="ACT rationales" desc="Generate and review answer explanations for ACT questions." />
           <NavCard href="/admin/act/score-conversion" title="ACT score conversion" desc="Raw → scaled tables per ACT form." />
           <NavCard href="/admin/act/imports" title="ACT test imports" desc="Upload ACT PDFs, parse, review, approve." />
           <NavCard href="/admin/users/relationships" title="User relationships" desc="Teacher ↔ student assignments." />
