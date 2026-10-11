@@ -1,0 +1,199 @@
+{
+  "project_id": "noqtadytxyslkoetchrs",
+  "date": "2026-10-10",
+  "baseline_total_tags": 427,
+  "batches": [
+    {
+      "batch": 1,
+      "questions": 100,
+      "added_tags": 113,
+      "total_tags": 540
+    },
+    {
+      "batch": 2,
+      "questions": 100,
+      "added_tags": 117,
+      "total_tags": 657
+    },
+    {
+      "batch": 3,
+      "questions": 100,
+      "added_tags": 113,
+      "total_tags": 770
+    },
+    {
+      "batch": 4,
+      "questions": 100,
+      "added_tags": 111,
+      "total_tags": 881
+    },
+    {
+      "batch": 5,
+      "questions": 100,
+      "added_tags": 121,
+      "total_tags": 1002
+    },
+    {
+      "batch": 6,
+      "questions": 100,
+      "added_tags": 122,
+      "total_tags": 1124
+    },
+    {
+      "batch": 7,
+      "questions": 100,
+      "added_tags": 119,
+      "total_tags": 1243
+    },
+    {
+      "batch": 8,
+      "questions": 100,
+      "added_tags": 123,
+      "total_tags": 1366
+    },
+    {
+      "batch": 9,
+      "questions": 100,
+      "added_tags": 116,
+      "total_tags": 1482
+    },
+    {
+      "batch": 10,
+      "questions": 100,
+      "added_tags": 117,
+      "total_tags": 1599
+    },
+    {
+      "batch": 11,
+      "questions": 100,
+      "added_tags": 121,
+      "total_tags": 1720
+    },
+    {
+      "batch": 12,
+      "questions": 100,
+      "added_tags": 121,
+      "total_tags": 1841
+    },
+    {
+      "batch": 13,
+      "questions": 100,
+      "added_tags": 120,
+      "total_tags": 1961
+    },
+    {
+      "batch": 14,
+      "questions": 100,
+      "added_tags": 122,
+      "total_tags": 2083
+    },
+    {
+      "batch": 15,
+      "questions": 100,
+      "added_tags": 121,
+      "total_tags": 2204
+    },
+    {
+      "batch": 16,
+      "questions": 100,
+      "added_tags": 105,
+      "total_tags": 2309
+    },
+    {
+      "batch": 17,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 2409
+    },
+    {
+      "batch": 18,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 2509
+    },
+    {
+      "batch": 19,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 2609
+    },
+    {
+      "batch": 20,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 2709
+    },
+    {
+      "batch": 21,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 2809
+    },
+    {
+      "batch": 22,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 2909
+    },
+    {
+      "batch": 23,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 3009
+    },
+    {
+      "batch": 24,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 3109
+    },
+    {
+      "batch": 25,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 3209
+    },
+    {
+      "batch": 26,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 3309
+    },
+    {
+      "batch": 27,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 3409
+    },
+    {
+      "batch": 28,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 3509
+    },
+    {
+      "batch": 29,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 3609
+    },
+    {
+      "batch": 30,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 3709
+    },
+    {
+      "batch": 31,
+      "questions": 100,
+      "added_tags": 100,
+      "total_tags": 3809
+    },
+    {
+      "batch": 32,
+      "questions": 33,
+      "added_tags": 33,
+      "total_tags": 3842
+    }
+  ]
+}

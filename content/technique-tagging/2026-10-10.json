@@ -1,0 +1,1723 @@
+{
+  "review_date": "2026-10-10",
+  "project_id": "noqtadytxyslkoetchrs",
+  "selection_criteria": "Published, nonbroken, nondeleted SAT questions in the standard pool; individually reviewed against each technique description and process. A technique may be a reasonable alternative rather than the fastest method. Existing technique tags are retained.",
+  "existing_default_applicability": {
+    "Multiple Percent Equations": [
+      "Q.B."
+    ]
+  },
+  "tagged_by": null,
+  "attribution_note": "Applied by Codex through the authorized Supabase connection; no human profile is impersonated.",
+  "techniques": [
+    {
+      "technique_id": "c17f093e-c470-44bb-a5ac-8da617814b58",
+      "technique_name": "Multiple Percent Equations",
+      "tagged_count_before": 0,
+      "questions": [
+        {
+          "question_id": "eb38912b-1ac4-41b2-9fb5-2bec3c011722",
+          "display_code": "M-00083",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [
+            "Translate percent relationships into equations"
+          ],
+          "application": "Define sale = 11.70(1 - 80%); regress sale ~ cost(1 + 30%). Recover the store cost, 1.80 dollars, rather than the sale price.",
+          "correct_answer_at_review": {
+            "text": "[\"1.8\", \"9/5\"]",
+            "number": 1.8,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "8c6dc3d0d677905fb7eee4944ac883286c0ffd41dcb25bf3395f1d14633c8617"
+        },
+        {
+          "question_id": "d4ac330e-d0f1-4139-aa59-7ff3af59a404",
+          "display_code": "M-00123",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [
+            "Solve multiple equations with list regression"
+          ],
+          "application": "Set c = 100, define b = 83%c and a = 2241%(b + c), then regress a ~ p%b. The scale-independent answer is 4941%.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "b05aba39e20a28a26a504a50cac0bfb3f4dbe4e64621763658ff1be94e29fed9"
+        },
+        {
+          "question_id": "19975f4b-c590-45c5-b942-95ff41278b9a",
+          "display_code": "M-00170",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Set b = 100, define a = b(1 - 70%) and c = a(1 + 80%), then compute c/b = 0.54. Each change uses its stated base.",
+          "correct_answer_at_review": {
+            "text": "[\".54\", \"27/50\"]",
+            "number": 0.54,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "7790b0bcc74b499f5616748ea815bf2abe5bb87a426fe081aaa711e20480594a"
+        },
+        {
+          "question_id": "d7c734db-7371-4bc3-bf03-237d51dd614f",
+          "display_code": "M-00432",
+          "skill_code": "Q.B.",
+          "difficulty": 2,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Define second = 72%(1250), then third = 36%second. The two linked attendance equations give 324 people at all three sessions.",
+          "correct_answer_at_review": {
+            "text": "[\"324\"]",
+            "number": 324,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "edd11735b34aafd12f23c4612058d86cff566cf9ef97032d4d6ce3bdabb6e2cd"
+        },
+        {
+          "question_id": "73b5c33b-fcfe-4a1d-b677-52b8d025ff5d",
+          "display_code": "M-00508",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Define the first growth percent as twice the second; regress 5880 ~ 5600(1 + 2p%). Then define next = 5880(1 + p%) to obtain 6027 subscriptions.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "a167c2194b8b0d14163eaeb0d3b869e2d69ffbd1c291931ada49f2b93ae092a2"
+        },
+        {
+          "question_id": "54705557-5b43-48dd-a0c8-ff3a53840f68",
+          "display_code": "M-00568",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Define parents = 15%n, teachers = 45%n, and administrators = 25%n; regress 6 ~ n - parents - teachers - administrators. With n = 40, teachers - administrators = 8.",
+          "correct_answer_at_review": {
+            "text": "[\"8\"]",
+            "number": 8,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "8428af2618944233178a25f3b6d80507fe5d1442fb1bf7a2a800a48e8ce14ba0"
+        },
+        {
+          "question_id": "413be83c-a24b-47c2-a112-efd4dfbc7aa1",
+          "display_code": "M-00609",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [
+            "Translate percent relationships into equations"
+          ],
+          "application": "Define consumer = 270%(5), then discount = consumer(1 - 70%). These linked price equations give 4.05 dollars.",
+          "correct_answer_at_review": {
+            "text": "[\"4.05\", \"81/20\"]",
+            "number": 4.05,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "4e02b78de6d7f7ce1fb7f955f5555ab79288f79f9d659028c2a64466cdfa9a70"
+        },
+        {
+          "question_id": "1cd22c60-697e-4c6e-82bd-a0c1ab802ef0",
+          "display_code": "M-00800",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Define z = 50(1 - 55%), then w = z(1 + 110%). The second change is based on z, giving w = 47.25.",
+          "correct_answer_at_review": {
+            "text": "[\"189/4\", \"47.25\"]",
+            "number": 47.25,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "83010b29d0a5689f9b5841356f2b6afe3110b7bec7004c1c7e97de394be450e0"
+        },
+        {
+          "question_id": "ad09b3af-49f0-4d74-8622-871670966782",
+          "display_code": "M-00845",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [
+            "Translate percent relationships into equations"
+          ],
+          "application": "Choose an original value of 100, define next = 100(1 + 167%) and final = next(1 - 16%), then compare final with the original. The net increase is 124.28%.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "bd3d4c639f153902d5d14cb55e4ef2ccb94230c3dd0a699a2cdffee39aa9dedd"
+        },
+        {
+          "question_id": "bc6f4b35-2d43-493d-a7b4-13da85e13495",
+          "display_code": "M-00848",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [
+            "Solve multiple equations with list regression"
+          ],
+          "application": "Set B = 100 and define A = 468%B; regress A ~ 0.780%C. Then compute 100C/B = 60000, keeping 0.780% distinct from 0.780.",
+          "correct_answer_at_review": {
+            "text": "[\"60000\"]",
+            "number": 60000,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "670f59b8e6ef8286a9c4c90917a21680bf34e12b0410a757428f82c8826920d5"
+        },
+        {
+          "question_id": "7c83eb73-eacd-4084-ab77-d2f572db7d29",
+          "display_code": "M-00955",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Define b = 24(1 - 80%), then a = b(1 + 190%). The linked equations give a = 13.92.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "a84523aabbc7f5f4bf423693f78c0b997d999bbe50f62431bb3cb184c940c332"
+        },
+        {
+          "question_id": "4cbd1a7a-8f95-4228-b70d-81594644285a",
+          "display_code": "M-01010",
+          "skill_code": "Q.B.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Set total = 100, define red = 40%total and striped = 30%red, then compute 100striped/total = 12%. The second percentage is of the red subgroup.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "f720970ac10c673becd7173689f215aa67d03f88a8c83d4f7a6c2a6f5a9decac"
+        },
+        {
+          "question_id": "1858f647-d19e-40ca-a8c3-675a63063c46",
+          "display_code": "M-01047",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [
+            "Solve multiple equations with list regression"
+          ],
+          "application": "Set b = 100, define a = 230%b, and regress a ~ 60%c. Compute 100c/b = 383.333..., selecting the choice closest to 383.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "457291fd25b7e25efecfa33874f31feddc47f938ae2ccfae745ab789e26b3c56"
+        },
+        {
+          "question_id": "d52a39ee-34ea-4208-a952-2e3ab574dfaa",
+          "display_code": "M-01122",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Set total = 100; define green = 37%total, rectangles = 37%green, and metal = 42%rectangles. The requested complement is 100 - metal = 94.2502%, closest to 94.25%.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "f1007a836c5b96664acf6a191a514239e3f78a47e80582cb4b320ca1bc087839"
+        },
+        {
+          "question_id": "ae1c18ac-e55a-4a96-830a-0ae2ec57d5a1",
+          "display_code": "M-01147",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Define retail = 290%(7), then discounted = retail(1 - 80%). The two price relationships give 4.06 dollars.",
+          "correct_answer_at_review": {
+            "text": "[\"203/50\", \"4.06\"]",
+            "number": 4.06,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "0aa0dd7ba52741827bbd06fb6df3dcde257df20d37b859db1e3ae35144c8a8a1"
+        },
+        {
+          "question_id": "7906e0eb-7433-4857-a54c-15f1ed07747f",
+          "display_code": "M-01373",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Set the 2007 earnings to 100, define the 2008 earnings as 114% of that amount and 2009 earnings as 104% of 2008. The requested ratio is 1.1856.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "67f2befb43ced88030fe6f3cdabdd1f79db688d63b2f0e2b407e36791a2f9189"
+        },
+        {
+          "question_id": "2e997f15-47de-49d2-9ac6-a5c99e0db1e9",
+          "display_code": "M-01656",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Set b = 100, define a = b(1 + 60%) and c = a(1 - 45%). Compute c/b = 0.88.",
+          "correct_answer_at_review": {
+            "text": "[\".88\", \"22/25\"]",
+            "number": 0.88,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "efccd88f66f1cc8ebf69ecbc2e2babe96e40f0788f9fc92e091d49b433f493d1"
+        },
+        {
+          "question_id": "43e058e9-d786-4173-bf8b-e3a5c4892556",
+          "display_code": "M-01785",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [
+            "Choose My Numbers"
+          ],
+          "application": "Choose c = 100, define a = 5900%c, and regress c ~ 0.008%b. Compute (a + b)/c = 12559, identifying the expression 12559c.",
+          "correct_answer_at_review": {
+            "option_label": "D"
+          },
+          "content_sha256": "e3becc0395b428ea1ce74255319420ea8d71b85b16a979b8574e36a5d82bd2a9"
+        },
+        {
+          "question_id": "43f57c8f-1fb3-456f-936a-6184dce48943",
+          "display_code": "M-01792",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Define b = 160(1 + 320%), then a = b(1 - 55%). These two percent-change equations give a = 302.4.",
+          "correct_answer_at_review": {
+            "text": "[\"1512/5\",\"302.4\"]"
+          },
+          "content_sha256": "ffb9105d6b9f344739e697b2072d9b751e53cb03036f5e1131cbcb3c7e33f6ab"
+        },
+        {
+          "question_id": "e6ae0e9f-de92-4e3b-bc5a-b4f33a836e34",
+          "display_code": "M-01804",
+          "skill_code": "Q.B.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Regress 0.1152 ~ 0.08%b and define b = 25%c, or first fit b and then fit c. The linked relationships give c = 576.",
+          "correct_answer_at_review": {
+            "text": "[\"576\"]"
+          },
+          "content_sha256": "d70d19187bcde463ceb49d4e3278a4b835e802d5b51ef2ed33210d80a9a34953"
+        }
+      ]
+    },
+    {
+      "technique_id": "bb7d123b-b6b6-4788-8ae2-cab3db66bf87",
+      "technique_name": "Graph Match: equivalent expressions by graphing",
+      "tagged_count_before": 0,
+      "questions": [
+        {
+          "question_id": "253fe436-ea35-483b-bc95-584dd365c220",
+          "display_code": "M-00066",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph (2x + 3) - (x - 7) and each choice; x + 10 matches across the graph. This checks the subtraction grouping directly.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "eb78c67d97431680f8b60c5b9f5ff7356d798485424e21fed8515d17cfd604c4"
+        },
+        {
+          "question_id": "a1d3d6b6-405a-4d7d-9649-2d2f70d116a8",
+          "display_code": "M-00114",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Define p(x) = 3x + 4 and v(x) = x + 5; graph p(x)v(x) - 2p(x) + v(x). It matches 3x^2 + 14x + 17.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "f7dece8d4b0249da5a49981ba170fef7aa48fb816625954bbd809c4cbd889b67"
+        },
+        {
+          "question_id": "9a3979a8-84cf-4106-922b-363a0e2eae2c",
+          "display_code": "M-00119",
+          "skill_code": "P.A.",
+          "difficulty": 1,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Compare the graph of x^2 + 3x - 40 with the four factored forms. The matching curve is (x - 5)(x + 8).",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "559f092c096ea3c55527650000d110c6c138fffa1881f287f4f7cbb92a19103e"
+        },
+        {
+          "question_id": "df85c8b8-1eeb-444b-b178-6ac8a811bb98",
+          "display_code": "M-00140",
+          "skill_code": "P.A.",
+          "difficulty": 1,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Rename w to x in every expression and graph 15x^2 + 8x. It matches x(15x + 8), so this is a single-input graph comparison.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "be0cbcb32779d4e906af9e9962477afc9b92881dc7be698fde5272b554711d12"
+        },
+        {
+          "question_id": "7d3c20e3-b244-429d-8c2e-e8807b5811b8",
+          "display_code": "M-00163",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph the full expression (2x + 5)^2 - (x - 2) + 2(x + 3) and each choice. The matching curve is 4x^2 + 21x + 33.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "5b7d40afef83c80ca4351129256f791ac552e0c11579231aa23bb0426e53e755"
+        },
+        {
+          "question_id": "b8ad40fc-8e9f-407d-9c7f-ab94ca7e13c0",
+          "display_code": "M-00243",
+          "skill_code": "P.A.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Define f and g, then graph f(x)/g(x) and each candidate, comparing only x > 3. The match is x(x + 3)/(x + 1).",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "8f8f7385790a6736aa8bcaed8d41dd98a9791e7aed2facf7ee8134bbe3cfc466"
+        },
+        {
+          "question_id": "2e683e76-2b6b-4c07-b8dd-fe3c08447e36",
+          "display_code": "M-00426",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph the fourth root of x^2 + 8x + 16 and every choice for x > 0. It matches (x + 4)^(1/2); differences outside the specified positive region do not disqualify it.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "1b60442e6155756e230c282b3e169df841b12d7483ef69b0d3b50dc8237cc6c5"
+        },
+        {
+          "question_id": "5fe6c428-7b36-4ead-bde8-522a572a5703",
+          "display_code": "M-00499",
+          "skill_code": "P.A.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph (x^2 - 2x - 5)/(x - 3) and each rewritten rational expression, respecting x != 3. It matches x + 1 - 2/(x - 3).",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "ba0920033dc132d83a91018ef075213feb196e986ddc2f7d97bac042614714df"
+        },
+        {
+          "question_id": "70271211-91c9-4e15-99ba-b38bc1ada345",
+          "display_code": "M-00533",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Define g(x) = (3/5)x + 7/6 and h(x) = 6x - 5, hide their individual curves, and graph g(x)h(x). It matches (18/5)x^2 + 4x - 35/6.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "01d127e9cf2882a705ae896e2da2fdeebaf8df452845ccef15044db7b7f055a1"
+        },
+        {
+          "question_id": "1bcd6ab0-a45e-42e5-80f6-7356a793e87e",
+          "display_code": "M-00565",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Compare x^2 - 5 with the candidate curves. The matching form is (x + sqrt(5))(x - sqrt(5)), including the radical constants as given.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "31d25f20b7f1bda8ea07ce9930aa846aa27bd9515f492ccb4a7737e71f5df87e"
+        },
+        {
+          "question_id": "76a5b19e-0ee6-453f-a4c6-430ce6733cd7",
+          "display_code": "M-00749",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Rename a to x and compare x^(11/12) with each radical form for x > 0. The 144th root of x^132 matches.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "7453e3c57551906f7a74d45c38870a2e168584662a7cc59c570ac26e871951a5"
+        },
+        {
+          "question_id": "edc88fe5-a0e5-41a5-a664-08cc80141514",
+          "display_code": "M-00781",
+          "skill_code": "P.A.",
+          "difficulty": 1,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Rename a to x and graph 2x^2(x + 3) against the four choices. The matching curve is 2x^3 + 6x^2.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "85470e41f5ddcd696f3e7b225129cc6465cafde8c982843e7def03b435b8d1dc"
+        },
+        {
+          "question_id": "4e4fc14f-60f2-46f0-a614-17a7aea225e7",
+          "display_code": "M-00812",
+          "skill_code": "P.A.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph 4/(4x - 5) - 1/(x + 1) and the four rational choices on allowed inputs. The match is 9/((x + 1)(4x - 5)); retain both excluded denominator values.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "a082eed328561abca1acc54786347e9f29c9aa426358bd17e93c616b751f52fd"
+        },
+        {
+          "question_id": "47b3e2aa-d73f-45d4-b5a6-6edec02d4f36",
+          "display_code": "M-00962",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Rename d to x and graph (x - 6)(8x^2 - 3). The matching cubic is 8x^3 - 48x^2 - 3x + 18.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "a055fb8275e41db2555779eb175e9d2026243217109c3a4dcaebce10c8c4ed7c"
+        },
+        {
+          "question_id": "a2165095-6897-428b-b5fe-3e83eed3ad5e",
+          "display_code": "M-01016",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph ((1/2)x + 3) - ((2/3)x - 5) and each choice. It matches -(1/6)x + 8, so graphing can check both fractional slope and grouping.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "f9c83532329fb5b344ba60997f5ec7325713ed01f2596f7cc936906057bdad6d"
+        },
+        {
+          "question_id": "a7e69018-adcc-49aa-b7d2-aa35b369c510",
+          "display_code": "M-01044",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Compare (x^2 + 11)^2 + (x - 5)(x + 5) with each polynomial. The matching quartic is x^4 + 23x^2 + 96; zoom to include the vertical range.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "143a69dd0a6e2399d682c3d7e584c15a93e295ff7f5935cdc8f75ed54a374ecb"
+        },
+        {
+          "question_id": "383bc001-792f-4e5f-8c9a-49279f5a85d0",
+          "display_code": "M-01046",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph the complete rational expression and all choices for x > 7. The matching expression is (8x - 3)/2; the cancelled point lies outside the comparison region.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "f262600567691973a521271859a14ec8940774f2a956feda8e9aa776ea945b06"
+        },
+        {
+          "question_id": "e23bdb30-0a1f-43b7-85b2-3b3a7311d889",
+          "display_code": "M-01292",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph (1.5x - 2.4)^2 - (5.2x^2 - 6.4) and each choice. The matching curve is -2.95x^2 - 7.2x + 12.16, avoiding hand expansion with decimal coefficients.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "ec3472c3731fe5be3aa817ed239e83dabd6571e2545f5eae6642b36fdf2f9f99"
+        },
+        {
+          "question_id": "4c0ee100-c119-4673-a673-f1f8bbefa448",
+          "display_code": "M-01626",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Rename p to x and graph (1 - x)(1 + x + x^2 + x^3 + x^4 + x^5 + x^6). Compare across an interval, including values besides 0 and 1; the match is 1 - x^7.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "0f6fff0bb965ce4a6101fcdcf4edd03d0825073ce39dafe9b5107a462fcb8c3d"
+        },
+        {
+          "question_id": "577ce5ad-d40f-429b-82fd-c2652dd0a167",
+          "display_code": "M-01841",
+          "skill_code": "P.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph (4x + 1)/(x - 9) and each candidate for x > 9. The matching form is 4 + 37/(x - 9); pan right of the vertical asymptote.",
+          "correct_answer_at_review": {
+            "option_label": "A"
+          },
+          "content_sha256": "aaba47e2f85d30445cfe33f34921fba0a9a57bebcf07b812019c37b7b84354fe"
+        }
+      ]
+    },
+    {
+      "technique_id": "b7d8cbf7-cecf-443e-90b2-abb9650236c8",
+      "technique_name": "Translate, Graph, Read: linear inequalities",
+      "tagged_count_before": 0,
+      "questions": [
+        {
+          "question_id": "fe397522-6755-4c18-9e55-f9d19df80eb3",
+          "display_code": "M-00103",
+          "skill_code": "H.E.",
+          "difficulty": 1,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Translate the red bead counts as 0.3x + 0.7y >= 400. The technique's translation step identifies the model; graphing is optional because the question asks only for the inequality.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "4f3bc0350087879a67b8b644b069c02eaa48497d42c62f2596c93409a3756e57"
+        },
+        {
+          "question_id": "70e8c044-cfa8-416c-b968-c26df63b98b8",
+          "display_code": "M-00175",
+          "skill_code": "H.E.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Compare walking time with the complete bus time: w + 5 > 20 makes walking faster. Graph the strict inequality while retaining 0 <= w <= 30.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "0411c315c073f162b969aa3bc54c5808a6bc0b8b0add266e83dc941e85eb0531"
+        },
+        {
+          "question_id": "7c4b4383-064d-451a-b6b2-4969182b31cd",
+          "display_code": "M-00257",
+          "skill_code": "H.E.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Translate at most 2 less than 3y as x <= 3y - 2. Substitute y = -4 and read the included endpoint, x = -14.",
+          "correct_answer_at_review": {
+            "text": "[\"-14\"]",
+            "number": -14,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "1eec09954a88136a665f0a502cdaa0337b05f955b85f08ea93e74d8dac369b06"
+        },
+        {
+          "question_id": "0baae83c-6a18-419f-ba1a-7c6253ef7d56",
+          "display_code": "M-00327",
+          "skill_code": "H.E.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph 0.90(80 + 10x) >= 270, where x is the remaining hours. The lower boundary is x = 22, which answers the requested remaining-hours minimum.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "5487d1c2c805016a7740f21925bd50ef09a442013f678515d9f8e982d87c559d"
+        },
+        {
+          "question_id": "d14683b1-75fa-4dd4-a083-bedf544b8401",
+          "display_code": "M-00333",
+          "skill_code": "H.E.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Translate 0.5 <= p <= 0.85 through H = 120p + 60. Read the included heart-rate range 120 <= H <= 162.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "7dd75329a54172496262db280578e7954fc181f79d769e9fd82adf2931e2875e"
+        },
+        {
+          "question_id": "373b3889-ebb4-4ded-b658-60dd4099063d",
+          "display_code": "M-00344",
+          "skill_code": "H.E.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph 500 + 120x <= 4600 with x a nonnegative whole-number box count. The boundary is 34.166..., so the largest allowed count is 34.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "a7f74e82eba5ee4b003f2a83c3155f3098e2013b5834ebed4972a5020840e3b8"
+        },
+        {
+          "question_id": "41935d3e-648b-488b-83f3-a74b80e7b75f",
+          "display_code": "M-00383",
+          "skill_code": "H.E.",
+          "difficulty": 2,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Graph 35 + 10.25x <= 200 with x a nonnegative whole-number attendance count. Read the largest allowed integer, 16, rather than rounding the boundary up.",
+          "correct_answer_at_review": {
+            "text": "[\"16\"]",
+            "number": 16,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "12716bd5a732af52c95bbf95c139e486a188244fdd94e7a1fcd89603f9630bb9"
+        },
+        {
+          "question_id": "e76da76b-5739-4bd3-aed0-53e7ba48eb3c",
+          "display_code": "M-00433",
+          "skill_code": "H.E.",
+          "difficulty": 1,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Translate both requirements as x + y >= 20 and 3x + 4y <= 80. The translation step identifies the model; their shaded overlap represents feasible orders.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "d532c7b331d3415e576ee7ee368b93e1a3f8779e356235dfc7c974fa8e3491dd"
+        },
+        {
+          "question_id": "fe91f5f3-44dc-4f11-9c40-a6d436cc19bd",
+          "display_code": "M-00437",
+          "skill_code": "H.E.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph y < x and x < 22, then plot every row of each table. Only the table with (19,18), (20,19), and (21,20) lies wholly in the strict overlap.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "5b358090a543de7f737197e1e2ad9db4c2648fd97aabe46662bdd96a6ce0851e"
+        },
+        {
+          "question_id": "72502869-da14-459b-a52c-f3604969fdaa",
+          "display_code": "M-00487",
+          "skill_code": "H.E.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Translate the three triangle inequalities into x < 18, x > 6, and x > -6. Read their overlap, 6 < x < 18, with both endpoints excluded.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "84e764fb1ebe9c4ff17d7b04cb3d076cefd26a07668c6e4415e1eca144398e31"
+        },
+        {
+          "question_id": "d19ee415-9a13-4e2f-b665-ac01a9862c7f",
+          "display_code": "M-00629",
+          "skill_code": "H.E.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph x + y >= 10 and 100x + 120y <= 1100 for nonnegative integer package counts. Read the largest feasible y: 5, achieved with x = 5.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "4693f05282540d5b034b516bfa9e07ca4678ebf3c3ecd2eaa04ef2b4234650e4"
+        },
+        {
+          "question_id": "75a495fb-b11c-4e13-9e53-91026b86efbf",
+          "display_code": "M-00695",
+          "skill_code": "H.E.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph y > 2x - 1 and 2x > 5. Project the feasible overlap onto the y-axis to obtain y > 4; the boundary y = 4 is excluded.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "4a506581af14f8d78086888e296c60c0979dae9af59ddf07422e614af1ea4b90"
+        },
+        {
+          "question_id": "eba4bd46-586f-4d90-8e73-07aa813f9f6b",
+          "display_code": "M-00699",
+          "skill_code": "H.E.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph y < 6x + 2 and plot every row of each candidate table. The rows (3,16), (5,28), and (7,40) all lie below the dashed boundary; boundary points fail.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "8d5ef0502075116b163d675f89d88291054f7d89be2771000d7a38844df4940c"
+        },
+        {
+          "question_id": "df1fac0e-d68f-494d-99e2-04b06df24811",
+          "display_code": "M-00701",
+          "skill_code": "H.E.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph each candidate inequality and compare its dashed boundary through (-1,2) and (0,-1), plus the side shaded in the supplied diagram. The match is y > -1 - 3x.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "ce139bc247500e3bf831e70e4140e85512adf97e44a1dbd444ba9a5781df19f5"
+        },
+        {
+          "question_id": "a6fbd145-3e5d-4e21-9d74-84365e37a974",
+          "display_code": "M-00711",
+          "skill_code": "H.E.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Use the highest individual-trip fare for the earliest possible savings: graph 95 < 3.50x. The smallest permitted whole-number trip count is 28; the word could makes this the correct extreme.",
+          "correct_answer_at_review": {
+            "text": "[\"28\"]",
+            "number": 28,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "9e2ced0b149e6626891f4ee52ddddb34910e741fd6731aa349b006e2768ce83f"
+        },
+        {
+          "question_id": "527eab2c-ca76-4b0f-b8b2-2ebe37864338",
+          "display_code": "M-00769",
+          "skill_code": "H.E.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph y <= 3x + 1 and x - y > 1, then plot all four ordered pairs. Only (2,-1) is in the overlap.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "590c7397457fff8a6ee97a392dff775a7deadbcf3d8591b8757247f2f00cb49b"
+        },
+        {
+          "question_id": "3aa59949-0165-46dd-b45b-4c14b678f85e",
+          "display_code": "M-00813",
+          "skill_code": "H.E.",
+          "difficulty": 1,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Translate the mean requirement as (G + 85 + 78 + 98)/4 >= 90. The technique's translation step identifies the correct inequality model.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "bf64eb87fddca058ef9301e291144029b41d5b946fbb24418eb4986a637a2667"
+        },
+        {
+          "question_id": "e0d4f678-7ca4-44b7-8988-c35322ab84e0",
+          "display_code": "M-01115",
+          "skill_code": "H.E.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Substitute each candidate r into ry < 60 and graph it. Only r = -15 gives the supplied dashed boundary y = -4 with shading above it.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "ce90d40360ee0e5ad481a2d405200d6a9500f78db5e1f89e239c52eb73023b66"
+        },
+        {
+          "question_id": "90a9d9d5-1003-401c-8e8b-d88cd9491757",
+          "display_code": "M-01702",
+          "skill_code": "H.E.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Graph small + large >= 200 and 4.90small + 11.60large <= 2200 with nonnegative integer counts. The largest feasible large count is 182, achieved with 18 small candles.",
+          "correct_answer_at_review": {
+            "text": "[\"182\"]",
+            "number": 182,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "bbf9b6ac1b3363986931aedfb593d6c676931d69308c28aea0cce73ef536486c"
+        },
+        {
+          "question_id": "2a11ed87-ab70-411d-9e92-a3b543ab4988",
+          "display_code": "M-01758",
+          "skill_code": "H.E.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph 5x - 7y > 35 and inspect the permitted region. It contains no points with x < 0 and y > 0, because both terms on the left would be negative there.",
+          "correct_answer_at_review": {
+            "option_label": "D"
+          },
+          "content_sha256": "a4fa3ab1437099eead22f1361226e110bf198e1bedfb2e125358d9008aa3656e"
+        }
+      ]
+    },
+    {
+      "technique_id": "c63e0dc5-986a-4732-862c-5c3a605a0667",
+      "technique_name": "Circle geometric relationships",
+      "tagged_count_before": 0,
+      "questions": [
+        {
+          "question_id": "a811ce81-e3e5-4568-ba89-da68b3097736",
+          "display_code": "M-00202",
+          "skill_code": "S.D.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Use the two diameters to partition a semicircle and the 2:1 arc relationship. The 144pi circumference gives arcs PQ = 24pi, PS = 48pi, and QR = 48pi.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "c4f3c2d83a9e5b7c457bee4522ef0abae5e17c0054b7694576113a4ac52605bc"
+        },
+        {
+          "question_id": "a71d4ae3-ef7a-4d75-be13-c9cf5c26082b",
+          "display_code": "M-00295",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Equal tangents give MH = NH = (3856 - 2(168))/2 = 1760. A radius is perpendicular to its tangent, so GH = sqrt(168^2 + 1760^2) = 1768.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "e49a407b73125688f03dbe3427c33bbb98b35a641f94afd0f538282fc1992f8b"
+        },
+        {
+          "question_id": "7ad4797c-ba5f-4323-baa3-5620c04c944f",
+          "display_code": "M-00346",
+          "skill_code": "S.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Use the whole-circle area formula A = pi r^2 with r = 43. The area is 1849pi square meters; this question is filed under Area and Volume.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "dade9d0b90ff6fdaba19aae8107b54828ed7e80737d2a74c419821885cefa5dc"
+        },
+        {
+          "question_id": "2658fb4a-9333-494a-b67c-e7f139d29678",
+          "display_code": "M-00445",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Arc AB is 45/360 = 1/8 of the circumference. Its 3-inch length gives a 24-inch circumference.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "ba41b0ed461986819a85c826c82e3b9e3e1abddfa61977fc38aa06b01b858e9a"
+        },
+        {
+          "question_id": "1f26532b-a9e6-42b4-a675-2b8e19f7a8d4",
+          "display_code": "M-00572",
+          "skill_code": "S.A.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Equate the square's area to the circle's area: side^2 = pi(2^2). The side is 2sqrt(pi), connecting a circle formula with the requested square measurement.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "d7af5c50eeade603cd2e6a0f6926c427ec86dcc3b68106e1e41b2599fbedb0fc"
+        },
+        {
+          "question_id": "ca14bca5-88f1-4c97-b899-e26bbe659abd",
+          "display_code": "M-00720",
+          "skill_code": "S.C.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "The inscribed square's diagonal is the circle's diameter. With radius 10sqrt(2), the diagonal is 20sqrt(2), and the 45-45-90 relationship gives side 20.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "4d4284cb851abd4cc97289096489b3fbfc3e109c54f681c92cc1e636613185c4"
+        },
+        {
+          "question_id": "86e5b66c-e8fd-4474-a39e-7e968751158c",
+          "display_code": "M-00728",
+          "skill_code": "S.A.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Compare areas using pi(129n)^2 / pi(3n)^2. The common n and pi cancel, so the larger circle has 1849 times the area.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "7f0b34cbf3f8534dedaf5c37984bbb71762aff84e6b36952be5c77715fbdef27"
+        },
+        {
+          "question_id": "22d994db-67e0-4956-ac98-afcafd51f309",
+          "display_code": "M-00811",
+          "skill_code": "S.D.",
+          "difficulty": 1,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "The two radii form a right central angle, so the minor arc is 1/4 of the 36-unit circumference: 9. The actual diagram was inspected.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "7eba75e2fa5a91575bd84ca43bb996bfdd4b5b433fd7ebc9bcf6db4ad6d0cca8"
+        },
+        {
+          "question_id": "f5e199b9-0d7c-4de0-93a1-5f9da922689a",
+          "display_code": "M-00850",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Mark PQ and PR as equal 9-inch radii. Subtract them from the 31-inch triangle perimeter to obtain chord QR = 13 inches.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "8440d7acfbd51fbb142f5892a28a21c356dcd02b4dee7b0500d2866210e81527"
+        },
+        {
+          "question_id": "80b031af-4dad-470a-a9ab-d4157052500e",
+          "display_code": "M-00860",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "OA = OB = OC = 18 makes triangle OAB isosceles. Base angles are 30 degrees, so the central angle is 120 degrees and arc AB is (120/360)(2pi(18)) = 12pi. The actual diagram was inspected.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "260fb2fb62e3db3e31aa95444affda1537f963c3b28f52380a64a1d52431c5aa"
+        },
+        {
+          "question_id": "cc0b855e-7d34-4e29-853e-e31387de752d",
+          "display_code": "M-00952",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Use circumference 2pi(1) and divide the pi/3 arc length by it. The arc is 1/6 of the circle's circumference.",
+          "correct_answer_at_review": {
+            "text": "[\"1/6\", \".1666\", \".1667\", \"0.166\", \"0.167\"]",
+            "number": 0.16666666666666666,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "e20c579fdcfcff2e18034c418bf2242e4467bdfab8e0467df0d6495d51274de3"
+        },
+        {
+          "question_id": "c86416c7-3edb-4e6d-bc41-540b8e10473c",
+          "display_code": "M-01060",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "The inspected diagram places x = 100 degrees on minor arc ADC. The complementary arc ABC is 260 degrees, giving its length (260/100)(5pi) = 13pi.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "45016789f691a83d4064ee0932a754ad9d6a9c70a283869b88456506ee246fa0"
+        },
+        {
+          "question_id": "90392610-f97a-4c39-ab2d-90b9b89547be",
+          "display_code": "M-01200",
+          "skill_code": "S.A.",
+          "difficulty": 2,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Use circumference = pi times diameter. A circumference of 31pi centimeters gives diameter 31 centimeters.",
+          "correct_answer_at_review": {
+            "text": "[\"31\"]",
+            "number": 31,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "a0901e4ec3860ff823dbf1df59188b3847242feb7f25b60f6465c52a62f1c89f"
+        },
+        {
+          "question_id": "b22ef144-3055-408f-8271-246d35b4e3b4",
+          "display_code": "M-01363",
+          "skill_code": "S.D.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "The minor arc MN and major arc MPN complete the circle. Add their lengths, 39 + 195, to obtain circumference 234 centimeters.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "c97660b4da61abe1ac57854c7ecdd19a7b5df9c0a8d2611ae3ad1ccd13bf9fbf"
+        },
+        {
+          "question_id": "f950959d-5ed8-48de-8a83-cce22609f29e",
+          "display_code": "M-01459",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "The measure of an arc equals the measure of its associated central angle. Arc RS = 100 degrees therefore gives angle ROS = 100 degrees.",
+          "correct_answer_at_review": {
+            "text": "[\"100\"]",
+            "number": 100,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "2e34812a932bddeb55ac71f3f76d711c87a6c9503e5b2b772711aeaf9453207b"
+        },
+        {
+          "question_id": "eb336806-d901-4e8d-aebe-40ae8f815dcf",
+          "display_code": "M-01479",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "OR and OS are equal radii, so triangle ORS is isosceles. Each base angle is (180 - 88)/2 = 46 degrees.",
+          "correct_answer_at_review": {
+            "text": "[\"46\"]",
+            "number": 46,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "1dc89d18048979d8ed8e0db6901619ed42515b5c75566b869f9677786a11807c"
+        },
+        {
+          "question_id": "7eca763c-aa7d-4d0d-9e01-ffe7e6e55c6f",
+          "display_code": "M-01551",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "The center-to-A offsets give radius^2 = 1^2 + (sqrt(102))^2 = 103. The right central angle makes the chord the hypotenuse of two equal radii, giving AB = sqrt(206).",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "e889e8d9bd4be80fa0c46ec8935eb9ab70f44b20ce2001bd3721db044dc834f6"
+        },
+        {
+          "question_id": "d5f6b3d6-61e3-4789-8e34-3aa949a549a1",
+          "display_code": "M-01891",
+          "skill_code": "S.D.",
+          "difficulty": 1,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Use the whole-circle diameter relationship d = 2r. A 12.6-centimeter diameter gives radius 6.3 centimeters.",
+          "correct_answer_at_review": {
+            "text": "[\"6.3\",\"63/10\"]"
+          },
+          "content_sha256": "2398d21c98536c647046a56a3de5bcea9f33742d2b52314c9472ff389a11da6e"
+        },
+        {
+          "question_id": "66f9ab78-4415-487a-8e54-c9bc0a54e318",
+          "display_code": "M-01904",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "A 45-degree arc is 1/8 of the circumference. Its 4pi length gives circumference 32pi, hence radius 16.",
+          "correct_answer_at_review": {
+            "text": "[\"16\"]"
+          },
+          "content_sha256": "0c7db20a4af83f32049b8ac27678b6135bbf5515736539dc92b197fb39e11958"
+        },
+        {
+          "question_id": "b042b77a-8799-4ac1-a59f-eca06c0b12c3",
+          "display_code": "M-01920",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "The tangent radii make two congruent right triangles. Each tangent is sqrt(510^2 - 78^2) = 504; the quadrilateral's area is twice (1/2)(78)(504) = 39312 square centimeters.",
+          "correct_answer_at_review": {
+            "text": "[\"39312\"]"
+          },
+          "content_sha256": "7748ca160ca488eaa20108a32b83d687cf81c5b80b03c030f0a866cc9c455ced"
+        }
+      ]
+    },
+    {
+      "technique_id": "cabdb007-25b3-4172-8678-25c55adb8c31",
+      "technique_name": "Circle graphs",
+      "tagged_count_before": 0,
+      "questions": [
+        {
+          "question_id": "dc453b23-afba-4ee6-846c-2185b8245494",
+          "display_code": "M-00045",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Read circle A's center (-5,5) and radius 2 from standard form. Double the radius to 4, so circle B's squared-radius constant is 16.",
+          "correct_answer_at_review": {
+            "text": "[\"16\"]",
+            "number": 16,
+            "option_id": null,
+            "tolerance": null,
+            "option_ids": null
+          },
+          "content_sha256": "6460b52e5a2df9616bf533921f91e2d8c72b69620def050108d49c2ad6483c8a"
+        },
+        {
+          "question_id": "36ebf221-183f-4609-8da2-97a7ceb16490",
+          "display_code": "M-00068",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph the circle centered at (-3,1) with radius 5 and all four points. (3,2) is outside, while the other points are interior; substitution confirms squared distance 37 > 25.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "f11a9cdc46b2ba7c397271c9dfbfb7e874d4cda0c11d0a87e7128faf3f36a510"
+        },
+        {
+          "question_id": "5828cf44-aa01-4ed8-8b21-5ecfadeba4f7",
+          "display_code": "M-00101",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "The horizontal translation preserves the radius and right-side constant a = 7. The requested expression 4a is therefore 28.",
+          "correct_answer_at_review": {
+            "text": "[\"28\"]",
+            "number": 28,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "962a372807337669a9af2a133fd38aa158ed2a84506af701da94537b124ced04"
+        },
+        {
+          "question_id": "5fdc5f13-6f70-4b19-a76a-7e09bd9160b2",
+          "display_code": "M-00141",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Read center (-2,0) and radius 3. Shift the center down to (-2,-6) and double the radius to 6, giving (x + 2)^2 + (y + 6)^2 = 36.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "14014fb40422ab3f41806d0bac163a7815373f5b8aa4c46c48cf1f0eb332bd0c"
+        },
+        {
+          "question_id": "0ea0d6ab-fa0a-478a-a9e3-aa2662166829",
+          "display_code": "M-00173",
+          "skill_code": "S.D.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Build standard form from center (-8,6) and radius 5: (x + 8)^2 + (y - 6)^2 = 25. The graph verifies signs and radius.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "e25b0e385a2252af68b61c63680f8574988c55511aa01c77316ee2f736b31079"
+        },
+        {
+          "question_id": "f4c1dde3-7640-46b3-bb48-9361f0ab2b20",
+          "display_code": "M-00258",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph the circle with center (-4,19) and radius 11. Its horizontal extent is -15 <= x <= 7, so -14 is the only listed possible x-coordinate.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "677bed818ef99aad2270216ec0e3a062565cc29f0cc9c630ef475f62c841c65f"
+        },
+        {
+          "question_id": "b245dd2e-8d9c-4ac9-9f40-2779e07194da",
+          "display_code": "M-00457",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Read center (0,2) and radius 6, then move the center down 4 units to (0,-2). The matching equation is x^2 + (y + 2)^2 = 36.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "66384bbce24220a4ba7951d0303a16cdebbc9b724575a418cf0f71bd1cd1de66"
+        },
+        {
+          "question_id": "cde60a05-5782-44c4-a9a1-1dc792da0770",
+          "display_code": "M-00506",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph each circle and the y-axis, checking one-point tangency rather than two crossings or no crossing. Center (4,9) with radius 4 gives the required tangent circle.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "851ae6ff4d8cc829dc9da1732a0b409a2813379ceee09d59096cb13ec3cdc40c"
+        },
+        {
+          "question_id": "017987a5-0708-47bb-8c02-acff4ea3d7e2",
+          "display_code": "M-00592",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Read or graph the circle centered at (-6,-3), whose squared radius is 121. Its radius is 11.",
+          "correct_answer_at_review": {
+            "text": "[\"11\"]",
+            "number": 11,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "bccacb3ff4949d2c87122b3ee2acdaa4ff0647e488c3ed4336c92797d232b545"
+        },
+        {
+          "question_id": "3d15ddbc-c880-406c-813b-314f5768eca9",
+          "display_code": "M-00657",
+          "skill_code": "S.D.",
+          "difficulty": 2,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Graph the circle with center (3,5) and radius 3, then x = 6. This line touches the rightmost point (6,5), so c = 5.",
+          "correct_answer_at_review": {
+            "text": "[\"5\"]",
+            "number": 5,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "0d7aa480c665d97e0d9f40383e70da17964c4b446e71bd3b151e6515459db2f7"
+        },
+        {
+          "question_id": "41d6d1f5-0846-4555-a652-64dd4f819b8d",
+          "display_code": "M-00693",
+          "skill_code": "S.D.",
+          "difficulty": 1,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Read center (6,3) and squared radius 81 from standard form. The radius, or half the graphed diameter, is 9.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "17f1f4f4bb273e9af67937bbfb79927ad62b714d1f9f800965bd1db3e2f09155"
+        },
+        {
+          "question_id": "b71186a1-24e0-43f1-bcb3-d96f1dd2e714",
+          "display_code": "M-00904",
+          "skill_code": "S.D.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Plot center (-4,5) and the point (-8,8). Their distance is 5, giving (x + 4)^2 + (y - 5)^2 = 25.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "D",
+            "option_labels": null
+          },
+          "content_sha256": "11f58c3f3e5acff243e4af24f3f1dfdcf6b15fef293b25773ea84acfb97a1d38"
+        },
+        {
+          "question_id": "8e1c6ac9-fae5-4374-b5a5-dbb9b49d853c",
+          "display_code": "M-00973",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Read center (7,-3) and radius 1, then shift the center right 4 units. Circle B is (x - 11)^2 + (y + 3)^2 = 1.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "265e222b635d857ed4ae7348b1f4f030eee171c85a9283feb0aaff23bff5d2c8"
+        },
+        {
+          "question_id": "42cb3013-0fac-4112-b370-b22f40b48f5a",
+          "display_code": "M-01144",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Plot the diameter endpoints (2,4) and (2,14). Their midpoint is (2,9), the diameter is 10, and the radius is 5.",
+          "correct_answer_at_review": {
+            "text": "[\"5\"]",
+            "number": 5,
+            "tolerance": null,
+            "option_label": null,
+            "option_labels": null
+          },
+          "content_sha256": "56bbf628d17767bfc832b094a83dbf5686b5808ff23781efdc4afa5f2a354c3c"
+        },
+        {
+          "question_id": "c684641d-50b8-4a6b-b03e-6dd18702bb05",
+          "display_code": "M-01182",
+          "skill_code": "S.D.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Read the symbolic standard form directly: center (13,k) and radius sqrt(64) = 8. This uses the technique's standard-form step without estimating a value for k.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "ca7d18632e092bc6f9d13d9b2bc83bd7b98d755a57b7e67c25f87ab4fa5eeee5"
+        },
+        {
+          "question_id": "cf8877a0-2bce-412b-a7ae-b0558f19dcb0",
+          "display_code": "M-01685",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph or read the circle's radius sqrt(16) = 4, then answer the actual request for diameter: 8.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "B",
+            "option_labels": null
+          },
+          "content_sha256": "d6a5120c3663dc9f8a1cc8018ee0a5e4802886f3c89c54328e90079f4dd47ea8"
+        },
+        {
+          "question_id": "c7be68c6-1906-417f-9144-43ba8a9017b9",
+          "display_code": "M-01690",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Plot the circle centered at (6,-5) and the diameter endpoint P = (10,-5). Reflect P through the center to the opposite extreme Q = (2,-5).",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "A",
+            "option_labels": null
+          },
+          "content_sha256": "bf129b5b8891e32937a9a7f1e6a406288ffcabb2df8d9033f5c87aabc80e224a"
+        },
+        {
+          "question_id": "4925f4d7-7fab-4bc3-8a65-1377c03f4561",
+          "display_code": "M-01695",
+          "skill_code": "S.D.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Read the center from (x - 1)^2 + (y + 7)^2 = 1: (1,-7). Graphing confirms the signs of the offsets.",
+          "correct_answer_at_review": {
+            "text": null,
+            "number": null,
+            "tolerance": null,
+            "option_label": "C",
+            "option_labels": null
+          },
+          "content_sha256": "2d90cab1759e61af4742f5dacdbb8736c762cc53f5121be42f8bc489fb451608"
+        },
+        {
+          "question_id": "daf30213-30bb-4901-a9d8-b107a4a1350a",
+          "display_code": "M-01864",
+          "skill_code": "S.D.",
+          "difficulty": 2,
+          "question_type": "mcq",
+          "existing_techniques": [],
+          "application": "Graph the circle centered at (3,-16) with radius 17. Its horizontal extent is -14 <= x <= 20, making -17 the only listed impossible q-coordinate.",
+          "correct_answer_at_review": {
+            "option_label": "A"
+          },
+          "content_sha256": "591bee6bc94cf438c1ee033edda021f8dc0a9fa2c4e0944079ca556f7a524273"
+        },
+        {
+          "question_id": "7fbb6ff3-bdb0-4def-96ee-994e79c1939f",
+          "display_code": "M-01919",
+          "skill_code": "S.D.",
+          "difficulty": 3,
+          "question_type": "spr",
+          "existing_techniques": [],
+          "application": "Read circle F's center (-8,-8) and radius 5. Increasing the radius by 2 gives radius 7 and squared-radius constant p = 49 for circle G.",
+          "correct_answer_at_review": {
+            "text": "[\"49\"]"
+          },
+          "content_sha256": "6482c566a1b320a7c804e33b08602b168cd73e57bb0292882d26f78aea27e8df"
+        }
+      ]
+    }
+  ]
+}
