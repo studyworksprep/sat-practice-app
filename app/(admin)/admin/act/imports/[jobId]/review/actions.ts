@@ -1,6 +1,6 @@
 // Server Actions for the ACT-import draft review surface.
 //
-// Five actions cover the review lifecycle:
+// Six actions cover the review lifecycle:
 //
 //   saveDraft        — patch the editable fields on a draft row
 //                      (stem/stimulus/rationale html, options
@@ -8,18 +8,32 @@
 //   approveDraft     — promote a single draft to act_questions
 //                      + act_answer_options. Sets draft.status =
 //                      'approved' and stamps approved_to_id so
-//                      re-promoting is idempotent.
+//                      re-promoting is idempotent. "Fill gaps": when
+//                      a live question already exists for the
+//                      draft's (source_test, section, source_ordinal)
+//                      the draft is linked to it instead of inserting
+//                      a duplicate, and linked_existing records which
+//                      path ran. Re-importing a partially parsed form
+//                      therefore only adds what is missing; retire a
+//                      question first if the re-parse should replace
+//                      it (the unique index exempts retired rows).
 //   bulkApprove      — approve every 'ready_for_review' draft in
-//                      a section (or the whole job) that passes
-//                      the same validation single-approve uses.
-//                      Skips drafts with no category, no correct
-//                      option, or already-approved.
+//                      a section (or the whole job). Drafts that
+//                      insert must pass the same validation
+//                      single-approve uses (category, correct option,
+//                      stem); drafts that link to an existing question
+//                      are not validated — nothing of theirs is
+//                      written.
 //   unapproveDraft   — undo. Deletes the promoted act_questions
 //                      row (cascade clears its options + any
-//                      stray attempts in dev) and flips the
-//                      draft back to 'ready_for_review'.
+//                      stray attempts in dev) unless the draft only
+//                      linked to a pre-existing question, in which
+//                      case the question stays and the link is
+//                      cleared. Flips the draft back to
+//                      'ready_for_review'.
 //   rejectDraft      — mark a draft 'rejected' without touching
-//                      act_questions.
+//                      act_questions; an already-approved draft is
+//                      unwound under the same linked_existing rule.
 //   finalizeJob      — mark the job 'completed' when every draft
 //                      is approved or rejected.
 
@@ -53,7 +67,13 @@ interface DraftRow {
   options_json: OptionShape[] | null;
   status: string;
   approved_to_id: string | null;
+  linked_existing: boolean;
 }
+
+const DRAFT_COLUMNS =
+  'id, import_job_id, source_test, section, source_ordinal, stimulus_html, stem_html, ' +
+  'rationale_html, difficulty, category, category_code, subcategory, subcategory_code, ' +
+  'options_json, status, approved_to_id, linked_existing';
 
 // ─── Admin gate ──────────────────────────────────────────────────
 
@@ -160,11 +180,64 @@ export async function saveDraft(
 
 // ─── approveDraft ───────────────────────────────────────────────
 
+interface ApproveOutcome {
+  approvedId: string;
+  /** True when the draft was linked to a question that already
+   *  existed rather than inserting one. */
+  linked: boolean;
+}
+
+/** The live act_questions row that already carries this draft's
+ *  (source_test, section, source_ordinal), if any. Retired rows don't
+ *  count — the partial unique index exempts them for the same reason. */
+async function findExistingLiveQuestion(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  draft: DraftRow,
+): Promise<string | null> {
+  if (!draft.source_test || draft.source_ordinal == null) return null;
+  const { data, error } = await supabase
+    .from('act_questions')
+    .select('id')
+    .eq('source_test', draft.source_test)
+    .eq('section', draft.section)
+    .eq('source_ordinal', draft.source_ordinal)
+    .is('deleted_at', null)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(`Lookup of existing question failed: ${error.message}`);
+  return data ? (data as { id: string }).id : null;
+}
+
+async function markDraftApproved(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  draftId: string,
+  questionId: string,
+  linked: boolean,
+): Promise<string | null> {
+  const { error } = await supabase
+    .from('act_question_drafts')
+    .update({ status: 'approved', approved_to_id: questionId, linked_existing: linked })
+    .eq('id', draftId);
+  return error ? (error.message as string) : null;
+}
+
 async function approveOne(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   draft: DraftRow,
-): Promise<{ approvedId: string }> {
+): Promise<ApproveOutcome> {
+  // Fill gaps: an existing live question wins and the draft just
+  // points at it. Nothing of the draft is written, so it isn't
+  // validated either.
+  const existingId = await findExistingLiveQuestion(supabase, draft);
+  if (existingId) {
+    const linkErr = await markDraftApproved(supabase, draft.id, existingId, true);
+    if (linkErr) throw new Error(`Update draft status failed: ${linkErr}`);
+    return { approvedId: existingId, linked: true };
+  }
+
   const validation = validateBeforeApprove(draft);
   if (validation) throw new Error(validation);
 
@@ -179,6 +252,7 @@ async function approveOne(
       subcategory: draft.subcategory,
       subcategory_code: draft.subcategory_code,
       difficulty: draft.difficulty,
+      difficulty_source: draft.difficulty == null ? null : 'import',
       stimulus_html: draft.stimulus_html,
       stem_html: draft.stem_html,
       rationale_html: draft.rationale_html,
@@ -188,6 +262,16 @@ async function approveOne(
     .select('id')
     .single();
   if (qErr || !q) {
+    // Lost a race with another approve of the same number: the
+    // partial unique index rejected the insert, so link instead.
+    if (qErr?.code === '23505') {
+      const raced = await findExistingLiveQuestion(supabase, draft);
+      if (raced) {
+        const linkErr = await markDraftApproved(supabase, draft.id, raced, true);
+        if (linkErr) throw new Error(`Update draft status failed: ${linkErr}`);
+        return { approvedId: raced, linked: true };
+      }
+    }
     throw new Error(`Insert act_questions failed: ${qErr?.message ?? 'unknown'}`);
   }
   const questionId = (q as { id: string }).id;
@@ -210,16 +294,13 @@ async function approveOne(
     }
   }
 
-  const { error: dErr } = await supabase
-    .from('act_question_drafts')
-    .update({ status: 'approved', approved_to_id: questionId })
-    .eq('id', draft.id);
+  const dErr = await markDraftApproved(supabase, draft.id, questionId, false);
   if (dErr) {
     await supabase.from('act_questions').delete().eq('id', questionId);
-    throw new Error(`Update draft status failed: ${dErr.message}`);
+    throw new Error(`Update draft status failed: ${dErr}`);
   }
 
-  return { approvedId: questionId };
+  return { approvedId: questionId, linked: false };
 }
 
 export async function approveDraft(
@@ -237,24 +318,21 @@ export async function approveDraft(
 
   const { data: draft, error: loadErr } = await supabase
     .from('act_question_drafts')
-    .select(
-      'id, import_job_id, source_test, section, source_ordinal, stimulus_html, stem_html, ' +
-      'rationale_html, difficulty, category, category_code, subcategory, subcategory_code, ' +
-      'options_json, status, approved_to_id',
-    )
+    .select(DRAFT_COLUMNS)
     .eq('id', draftId)
     .maybeSingle();
   if (loadErr || !draft) return actionFail('draft not found');
   if (draft.status === 'approved') return actionFail('already approved');
 
+  let outcome: ApproveOutcome;
   try {
-    await approveOne(supabase, draft as DraftRow);
+    outcome = await approveOne(supabase, draft as DraftRow);
   } catch (err) {
     return actionFail((err as Error).message);
   }
 
   revalidatePath(`/admin/act/imports/${draft.import_job_id}/review`);
-  return actionOk();
+  return actionOk({ linked: outcome.linked, questionId: outcome.approvedId });
 }
 
 // ─── bulkApprove ────────────────────────────────────────────────
@@ -275,11 +353,7 @@ export async function bulkApprove(
 
   let query = supabase
     .from('act_question_drafts')
-    .select(
-      'id, import_job_id, source_test, section, source_ordinal, stimulus_html, stem_html, ' +
-      'rationale_html, difficulty, category, category_code, subcategory, subcategory_code, ' +
-      'options_json, status, approved_to_id',
-    )
+    .select(DRAFT_COLUMNS)
     .eq('import_job_id', jobId)
     .eq('status', 'ready_for_review')
     .order('section', { ascending: true })
@@ -290,16 +364,13 @@ export async function bulkApprove(
   if (error) return actionFail(`Could not load drafts: ${error.message}`);
 
   let approved = 0;
+  let linked = 0;
   const skipped: Array<{ ordinal: number; section: string; reason: string }> = [];
   for (const d of (drafts ?? []) as DraftRow[]) {
-    const validation = validateBeforeApprove(d);
-    if (validation) {
-      skipped.push({ ordinal: d.source_ordinal, section: d.section, reason: validation });
-      continue;
-    }
     try {
-      await approveOne(supabase, d);
+      const outcome = await approveOne(supabase, d);
       approved += 1;
+      if (outcome.linked) linked += 1;
     } catch (err) {
       skipped.push({
         ordinal: d.source_ordinal,
@@ -310,10 +381,23 @@ export async function bulkApprove(
   }
 
   revalidatePath(`/admin/act/imports/${jobId}/review`);
-  return actionOk({ approved, skipped: skipped.length, skippedDetails: skipped.slice(0, 10) });
+  return actionOk({ approved, linked, skipped: skipped.length, skippedDetails: skipped.slice(0, 10) });
 }
 
 // ─── unapproveDraft ─────────────────────────────────────────────
+
+/** Undo a promotion. A question the import inserted is deleted; a
+ *  question the draft merely linked to stays, because the import never
+ *  created it. */
+async function unwindPromotion(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  draft: { approved_to_id: string | null; linked_existing: boolean },
+) {
+  if (draft.approved_to_id && !draft.linked_existing) {
+    await supabase.from('act_questions').delete().eq('id', draft.approved_to_id);
+  }
+}
 
 export async function unapproveDraft(
   _prev: ActionResult | null,
@@ -330,17 +414,15 @@ export async function unapproveDraft(
 
   const { data: draft } = await supabase
     .from('act_question_drafts')
-    .select('id, import_job_id, approved_to_id, status')
+    .select('id, import_job_id, approved_to_id, status, linked_existing')
     .eq('id', draftId)
     .maybeSingle();
   if (!draft) return actionFail('draft not found');
 
-  if (draft.approved_to_id) {
-    await supabase.from('act_questions').delete().eq('id', draft.approved_to_id);
-  }
+  await unwindPromotion(supabase, draft);
   const { error } = await supabase
     .from('act_question_drafts')
-    .update({ status: 'ready_for_review', approved_to_id: null })
+    .update({ status: 'ready_for_review', approved_to_id: null, linked_existing: false })
     .eq('id', draftId);
   if (error) return actionFail(`unapproveDraft: ${error.message}`);
 
@@ -365,20 +447,18 @@ export async function rejectDraft(
 
   const { data: draft } = await supabase
     .from('act_question_drafts')
-    .select('id, import_job_id, status, approved_to_id')
+    .select('id, import_job_id, status, approved_to_id, linked_existing')
     .eq('id', draftId)
     .maybeSingle();
   if (!draft) return actionFail('draft not found');
 
   // Rejecting an already-approved draft also unwinds the promoted
   // question — keeps the listing's "approved count" honest.
-  if (draft.approved_to_id) {
-    await supabase.from('act_questions').delete().eq('id', draft.approved_to_id);
-  }
+  await unwindPromotion(supabase, draft);
 
   const { error } = await supabase
     .from('act_question_drafts')
-    .update({ status: 'rejected', approved_to_id: null })
+    .update({ status: 'rejected', approved_to_id: null, linked_existing: false })
     .eq('id', draftId);
   if (error) return actionFail(`rejectDraft: ${error.message}`);
 

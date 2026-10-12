@@ -25,11 +25,22 @@ import s from '../Imports.module.css';
 export const dynamic = 'force-dynamic';
 
 export default async function NewImportPage() {
+  let supabase;
   try {
-    await requireRole(['admin']);
+    ({ supabase } = await requireRole(['admin']));
   } catch {
     redirect('/');
   }
+
+  // Forms already in the bank, offered as autocomplete so a fill-gaps
+  // re-import lands on the exact existing name.
+  const { data: formRows } = await supabase
+    .from('act_questions')
+    .select('source_test')
+    .not('source_test', 'is', null);
+  const knownForms = Array.from(
+    new Set((formRows ?? []).map((r) => r.source_test).filter(Boolean)),
+  ).sort();
 
   return (
     <main className={s.container}>
@@ -46,7 +57,7 @@ export default async function NewImportPage() {
         </p>
       </header>
 
-      <UploadForm createAction={createImportJob} />
+      <UploadForm createAction={createImportJob} knownForms={knownForms} />
     </main>
   );
 }
