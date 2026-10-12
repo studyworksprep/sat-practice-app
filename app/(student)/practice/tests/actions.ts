@@ -109,11 +109,11 @@ export async function startActPracticeTest(
     return actionFail('This test form has no questions yet.');
   }
 
-  // ACT forms seeded today are single-section. Pick the section the
-  // first question carries; if a form ever ships with multiple
-  // sections, the practice-test page will need to either split into
-  // section-by-section attempts or use a section-aware timer per
-  // batch — out of scope for PR 7 since no such form exists.
+  // Single-section forms get that section's timer. A multi-section
+  // form (ACT-2025-Oct, English + Math, since the Phase 2 PR C rename)
+  // starts untimed: per-section timing with breaks, form-keyed
+  // timings for the enhanced ACT, and a composite over four sections
+  // are the Phase 3 multi-section test mode.
   const sections = new Set<string>(
     (questionRows ?? []).map((r: { section: string }) => r.section),
   );

@@ -58,13 +58,27 @@ export default async function ReviewPage({ params, searchParams }) {
     .select(
       'id, section, source_ordinal, stimulus_html, stem_html, rationale_html, ' +
       'difficulty, category, category_code, subcategory, subcategory_code, ' +
-      'options_json, needs_figure, parse_warnings, status, approved_to_id',
+      'options_json, needs_figure, parse_warnings, status, approved_to_id, linked_existing',
     )
     .eq('import_job_id', jobId)
     .order('section', { ascending: true })
     .order('source_ordinal', { ascending: true });
 
   const all = drafts ?? [];
+
+  // Live questions already in the bank for this form, keyed by
+  // section:number. A pending draft with a match links to that
+  // question on approve instead of inserting a duplicate (fill-gaps
+  // re-import — see review/actions.ts approveOne).
+  const { data: existingRows } = await supabase
+    .from('act_questions')
+    .select('id, section, source_ordinal')
+    .eq('source_test', job.source_test)
+    .is('deleted_at', null);
+  const existingByKey = new Map(
+    (existingRows ?? []).map((r) => [`${r.section}:${r.source_ordinal}`, r.id]),
+  );
+  const existingFor = (d) => existingByKey.get(`${d.section}:${d.source_ordinal}`) ?? null;
 
   // Counts across the whole job — used for the filter chips +
   // the "X of Y" header on each section.
@@ -74,8 +88,12 @@ export default async function ReviewPage({ params, searchParams }) {
     approved: 0,
     rejected: 0,
     parsing: 0,
+    inBank: 0,
   };
-  for (const d of all) counts[d.status] = (counts[d.status] ?? 0) + 1;
+  for (const d of all) {
+    counts[d.status] = (counts[d.status] ?? 0) + 1;
+    if (d.status !== 'approved' && existingFor(d)) counts.inBank += 1;
+  }
 
   // Filter for the visible subset.
   const visible = filter === 'all' ? all : all.filter((d) => d.status === filter);
@@ -102,6 +120,9 @@ export default async function ReviewPage({ params, searchParams }) {
               {counts.all} draft{counts.all === 1 ? '' : 's'} ·{' '}
               {counts.approved} approved · {counts.ready_for_review} pending ·{' '}
               {counts.rejected} rejected
+              {counts.inBank > 0
+                ? ` · ${counts.inBank} already in the bank (approve links instead of duplicating)`
+                : ''}
             </p>
           </div>
           {allDone && job.status !== 'completed' && (
@@ -143,6 +164,7 @@ export default async function ReviewPage({ params, searchParams }) {
                     <DraftCard
                       jobId={jobId}
                       draft={d}
+                      existingQuestionId={existingFor(d)}
                       statusLabel={STATUS_LABEL[d.status] ?? d.status}
                       saveAction={saveDraft}
                       approveAction={approveDraft}

@@ -225,6 +225,7 @@ export type Database = {
           difficulty: number | null
           id: string
           import_job_id: string
+          linked_existing: boolean
           needs_figure: boolean
           options_json: Json
           parse_warnings: Json
@@ -247,6 +248,7 @@ export type Database = {
           difficulty?: number | null
           id?: string
           import_job_id: string
+          linked_existing?: boolean
           needs_figure?: boolean
           options_json?: Json
           parse_warnings?: Json
@@ -269,6 +271,7 @@ export type Database = {
           difficulty?: number | null
           id?: string
           import_job_id?: string
+          linked_existing?: boolean
           needs_figure?: boolean
           options_json?: Json
           parse_warnings?: Json

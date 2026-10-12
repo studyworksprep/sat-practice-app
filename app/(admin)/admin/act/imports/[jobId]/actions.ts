@@ -250,7 +250,7 @@ export async function parseScaleAction(
   });
 
   try {
-    const { inserted, warnings } = await parseScale({
+    const { inserted, removed, warnings } = await parseScale({
       supabase,
       scalePath: job.scale_url,
       sourceTest: job.source_test,
@@ -260,12 +260,12 @@ export async function parseScaleAction(
       section: 'scale',
       level: warnings.length > 0 ? 'warn' : 'info',
       message: `Parse completed: ${inserted} rows upserted${
-        warnings.length > 0 ? ` · ${warnings.length} warnings` : ''
-      }`,
+        removed > 0 ? `, ${removed} stale rows removed` : ''
+      }${warnings.length > 0 ? ` · ${warnings.length} warnings` : ''}`,
     });
     await maybePromoteJobStatus(supabase, jobId);
     revalidatePath(`/admin/act/imports/${jobId}`);
-    return actionOk({ inserted, warnings: warnings.length });
+    return actionOk({ inserted, removed, warnings: warnings.length });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await setSectionStatus(supabase, jobId, 'scale', 'failed');

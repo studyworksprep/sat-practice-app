@@ -12,6 +12,7 @@
 'use client';
 
 import { useRef, useState, useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/browser';
 import { sanitizeQuestionHtml } from '@/lib/sanitize';
@@ -29,6 +30,10 @@ const STATUS_TONE = {
 export function DraftCard({
   jobId,
   draft,
+  // Live act_questions row that already carries this draft's
+  // form/section/number, when one exists. Approving such a draft
+  // links it to that question instead of inserting a duplicate.
+  existingQuestionId = null,
   statusLabel,
   saveAction,
   approveAction,
@@ -117,7 +122,9 @@ export function DraftCard({
   async function onUnapprove() {
     const ok = await confirm({
       title: `Unapprove draft Q${draft.source_ordinal}?`,
-      body: 'The promoted question will be deleted from act_questions.',
+      body: draft.linked_existing
+        ? 'This draft only links to a question that already existed; unapproving clears the link and leaves the question in place.'
+        : 'The promoted question will be deleted from act_questions.',
       confirmLabel: 'Unapprove',
       tone: 'danger',
     });
@@ -153,10 +160,30 @@ export function DraftCard({
           <span className={s.cardCaret}>{expanded ? '▾' : '▸'}</span>
         </button>
         <div className={s.cardActions}>
+          {draft.status !== 'approved' && existingQuestionId && (
+            <Link
+              href={`/admin/act/questions/${existingQuestionId}`}
+              className={s.cardLinkBadge}
+              title="A live question with this form, section and number already exists. Approving links this draft to it."
+            >
+              in bank ↗
+            </Link>
+          )}
+          {draft.status === 'approved' && draft.approved_to_id && (
+            <Link
+              href={`/admin/act/questions/${draft.approved_to_id}`}
+              className={s.cardLinkBadge}
+              title={draft.linked_existing
+                ? 'Linked to a question that existed before this import.'
+                : 'Open the question this draft created.'}
+            >
+              {draft.linked_existing ? 'linked to existing ↗' : 'open question ↗'}
+            </Link>
+          )}
           {draft.status === 'ready_for_review' && (
             <>
               <button type="button" className={s.btnPrimary} onClick={onApprove} disabled={pending}>
-                Approve
+                {existingQuestionId ? 'Link to existing' : 'Approve'}
               </button>
               <button type="button" className={s.btnGhost} onClick={onReject} disabled={pending}>
                 Reject

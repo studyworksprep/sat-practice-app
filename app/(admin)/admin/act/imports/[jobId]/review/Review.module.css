@@ -232,6 +232,20 @@
   border-radius: var(--radius-sm);
 }
 
+/* "in bank" / "linked" marker: this draft maps onto a question that
+   already exists, so approve links rather than inserts. */
+.cardLinkBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tile-navy-fg, #243b53);
+  background: var(--tile-navy-bg, #f0f4f8);
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.cardLinkBadge:hover { text-decoration: underline; }
+
 .cardCaret {
   margin-left: auto;
   color: var(--fg3);

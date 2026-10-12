@@ -38,8 +38,13 @@ export function BulkApproveButton({ jobId, section, action, disabled }) {
     startTransition(async () => {
       const res = await action(null, fd);
       if (res?.ok) {
-        const { approved = 0, skipped = 0, skippedDetails: details = [] } = res.data ?? {};
-        setMessage(`Approved ${approved}${skipped ? ` · skipped ${skipped}` : ''}.`);
+        const { approved = 0, linked = 0, skipped = 0, skippedDetails: details = [] } = res.data ?? {};
+        setMessage(
+          `Approved ${approved}`
+          + (linked ? ` (${linked} linked to existing questions)` : '')
+          + (skipped ? ` · skipped ${skipped}` : '')
+          + '.',
+        );
         // Surface the first batch of skip reasons inline so the
         // admin can act on them without digging into network /
         // server logs. The action caps the array at 10 already.

@@ -137,7 +137,7 @@ function TestFormCard({ form, completed }) {
   }
 
   // Single-section form label: "Math · 45 questions". Multi-section
-  // form (none seeded today): "English 40 · Math 60 · 100 total".
+  // form (ACT-2025-Oct): "English 40 · Math 41 · 81 total".
   const isSingleSection = form.sections.length === 1;
   const headlineSection = isSingleSection ? sectionLabel(form.sections[0].section) : null;
 
