@@ -24,6 +24,8 @@ import { ActTestsHub } from '@/lib/practice/ActTestsHub';
 import { HelpButton } from '@/app/(student)/help/HelpButton';
 import s from './PracticeTestsPage.module.css';
 import { visibleActQuestions } from '@/lib/practice/act-visibility';
+import { sectionLabel } from '@/lib/practice/act-taxonomy';
+import { isActFormat, parsePlan } from '@/lib/practice/act-test-plan';
 
 export const dynamic = 'force-dynamic';
 
@@ -513,20 +515,22 @@ function TestTypeTabs({ current }) {
 }
 
 // ──────────────────────────────────────────────────────────────
-// ACT hub. Loads the distinct ACT forms (one card per source_test),
-// the student's past ACT practice-test attempts, and any in-progress
-// ACT practice-test session. Hands data to ActTestsHub.
+// ACT hub. Loads the distinct ACT forms (one card per source_test,
+// with the form's format from act_forms), the student's completed
+// attempts, and any attempt still in progress (Phase 3: the attempt
+// row is the unit of work; its section plan says where the student
+// is). Hands data to ActTestsHub.
 // ──────────────────────────────────────────────────────────────
 
 async function ActPracticeTestsPage({ user, supabase }) {
-  // Pull every non-broken ACT question. Buckets by source_test ×
-  // section so the hub can render "Math · 45 questions" per card,
-  // even on a form that ships multiple sections. The volume is small
-  // (~231 today); a single paginated read covers it.
+  // Pull every visible ACT question. Buckets by source_test ×
+  // section so the hub can render per-section counts and timings on
+  // each card. The volume is small (~600 rows); one read covers it.
   const [
     { data: questionRows },
     { data: attemptRows },
     { data: inProgress },
+    { data: formRows },
   ] = await Promise.all([
     visibleActQuestions(
       supabase
@@ -535,22 +539,27 @@ async function ActPracticeTestsPage({ user, supabase }) {
     ).not('source_test', 'is', null),
     supabase
       .from('act_practice_test_attempts')
-      .select('id, source_test, status, started_at, finished_at, english_scaled, math_scaled, reading_scaled, science_scaled, composite_score')
+      .select('id, source_test, status, started_at, finished_at, english_scaled, math_scaled, reading_scaled, science_scaled, composite_score, format, time_multiplier')
       .eq('user_id', user.id)
       .eq('status', 'completed')
       .order('finished_at', { ascending: false }),
     supabase
-      .from('practice_sessions')
-      .select('id, current_position, question_ids, last_activity_at, filter_criteria')
+      .from('act_practice_test_attempts')
+      .select('id, source_test, sections, current_section_index, started_at')
       .eq('user_id', user.id)
-      .eq('test_type', 'act')
       .eq('status', 'in_progress')
-      .filter('filter_criteria->>kind', 'eq', 'practice_test')
-      .gt('expires_at', new Date().toISOString())
-      .order('last_activity_at', { ascending: false })
+      .order('started_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from('act_forms')
+      .select('source_test, format'),
   ]);
+
+  const formatByForm = new Map();
+  for (const r of formRows ?? []) {
+    if (isActFormat(r.format)) formatByForm.set(r.source_test, r.format);
+  }
 
   // Bucket per (source_test, section).
   const formAcc = new Map();
@@ -567,6 +576,7 @@ async function ActPracticeTestsPage({ user, supabase }) {
   const forms = Array.from(formAcc.values())
     .map((f) => ({
       sourceTest: f.source_test,
+      format: formatByForm.get(f.source_test) ?? 'classic',
       total: f.total,
       sections: Array.from(f.sectionCounts.entries())
         .sort((a, b) => a[0].localeCompare(b[0]))
@@ -574,15 +584,21 @@ async function ActPracticeTestsPage({ user, supabase }) {
     }))
     .sort((a, b) => a.sourceTest.localeCompare(b.sourceTest));
 
-  const resumeInfo = inProgress
-    ? {
-        sessionId: inProgress.id,
-        position: inProgress.current_position,
-        total: Array.isArray(inProgress.question_ids) ? inProgress.question_ids.length : 0,
-        sourceTest: inProgress.filter_criteria?.source_test ?? null,
-        deadlineAt: inProgress.filter_criteria?.deadlineAt ?? null,
-      }
-    : null;
+  let resumeInfo = null;
+  if (inProgress) {
+    const plan = parsePlan(inProgress.sections);
+    const idx = Math.min(inProgress.current_section_index ?? 0, Math.max(0, plan.length - 1));
+    const cur = plan[idx] ?? null;
+    resumeInfo = {
+      attemptId: inProgress.id,
+      sourceTest: inProgress.source_test,
+      sectionIndex: idx,
+      sectionCount: plan.length,
+      sectionLabel: cur ? sectionLabel(cur.section) : null,
+      sectionStatus: cur ? cur.status : null,
+      startedAt: inProgress.started_at ?? null,
+    };
+  }
 
   return (
     <ActTestsHub

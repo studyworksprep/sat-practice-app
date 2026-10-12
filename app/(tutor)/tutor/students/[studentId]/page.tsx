@@ -156,6 +156,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         english_scaled, math_scaled, reading_scaled, science_scaled, composite_score
       `)
       .eq('user_id', studentId)
+      .eq('status', 'completed')
       .order('finished_at', { ascending: false })
       .limit(RECENT_TESTS_LIMIT),
     // Self-guided sessions for this student, SAT + ACT. Includes
