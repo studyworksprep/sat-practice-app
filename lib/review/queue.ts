@@ -28,9 +28,15 @@ import {
   masteryToResult,
   nextSchedule,
 } from './schedule';
-import type { ReviewItemType, ReviewScheduleState } from './schedule';
+import type { QuestionItemType, ReviewItemType, ReviewScheduleState } from './schedule';
 import type { TypedSupabaseClient } from '@/lib/supabase/server';
 import { rankLeastRecentlyAttempted } from '@/lib/practice/rank-by-attempt.mjs';
+import { visibleActQuestions } from '@/lib/practice/act-visibility';
+
+/** Which review_queue question type a session's test_type feeds. */
+export function questionItemTypeFor(testType: 'sat' | 'act'): QuestionItemType {
+  return testType === 'act' ? 'act_question' : 'question';
+}
 
 const QUEUE_CONFLICT_KEY = 'student_id,item_type,item_ref';
 
@@ -124,6 +130,8 @@ async function upsertSchedule(
  * Queue bookkeeping for a newly recorded practice attempt. Only called
  * when submitAnswer actually inserted an attempt (first-attempt-wins),
  * so repeated answers inside one session can't inflate the schedule.
+ * `itemType` says which bank the id belongs to: 'question'
+ * (questions_v2, SAT) or 'act_question' (act_questions).
  */
 export async function recordQuestionOutcome(
   supabase: TypedSupabaseClient,
@@ -131,11 +139,12 @@ export async function recordQuestionOutcome(
   questionId: string,
   isCorrect: boolean,
   nowIso: string,
+  itemType: QuestionItemType = 'question',
 ): Promise<void> {
-  const existing = await fetchItem(supabase, userId, 'question', questionId);
+  const existing = await fetchItem(supabase, userId, itemType, questionId);
   if (!existing && isCorrect) return;
   await upsertSchedule(
-    supabase, userId, 'question', questionId,
+    supabase, userId, itemType, questionId,
     existing?.state ?? null,
     isCorrect ? 'good' : 'again',
     nowIso,
@@ -275,7 +284,10 @@ export async function getDueReviewItems(
 }
 
 export interface DueSummary {
+  /** SAT questions (questions_v2). */
   questions: number;
+  /** ACT questions (act_questions). */
+  actQuestions: number;
   skills: number;
   flashcards: number;
   lessons: number;
@@ -284,10 +296,11 @@ export interface DueSummary {
 
 export function summarizeDue(items: readonly ReviewQueueItem[]): DueSummary {
   const questions = items.filter((i) => i.itemType === 'question').length;
+  const actQuestions = items.filter((i) => i.itemType === 'act_question').length;
   const skills = items.filter((i) => i.itemType === 'skill').length;
   const flashcards = items.filter((i) => i.itemType === 'flashcard').length;
   const lessons = items.filter((i) => i.itemType === 'lesson_check').length;
-  return { questions, skills, flashcards, lessons, total: items.length };
+  return { questions, actQuestions, skills, flashcards, lessons, total: items.length };
 }
 
 /**
@@ -306,9 +319,36 @@ export async function buildReviewSessionQuestionIds(
   userId: string,
   dueItems: readonly ReviewQueueItem[],
   size: number,
+  testType: 'sat' | 'act' = 'sat',
 ): Promise<string[]> {
   const chosen: string[] = [];
   const seen = new Set<string>();
+
+  // ACT (Phase 4): due act_question items, validated against the
+  // student-visible act_questions gate. ACT has no coverage model or
+  // lesson topics yet, so there are no skill / lesson legs — the
+  // session is exactly the questions that came due.
+  if (testType === 'act') {
+    const actRefs = dueItems
+      .filter((i) => i.itemType === 'act_question')
+      .map((i) => i.itemRef);
+    if (actRefs.length === 0) return chosen;
+    const { data: valid } = await visibleActQuestions(
+      supabase
+        .from('act_questions')
+        .select('id')
+        .in('id', actRefs.slice(0, Math.max(size * 2, 50))),
+    );
+    const validSet = new Set((valid ?? []).map((r) => r.id));
+    for (const ref of actRefs) {
+      if (chosen.length >= size) break;
+      if (validSet.has(ref) && !seen.has(ref)) {
+        chosen.push(ref);
+        seen.add(ref);
+      }
+    }
+    return chosen;
+  }
 
   const questionRefs = dueItems
     .filter((i) => i.itemType === 'question')

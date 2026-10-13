@@ -344,10 +344,18 @@ export default async function StudentReviewPage() {
 // ──────────────────────────────────────────────────────────────
 
 function DueReviewCard({ summary }) {
+  // SAT items share one session (questions + skill / lesson
+  // micro-drills); ACT items run as their own test_type='act'
+  // session. Flashcards review in their own flip flow.
   const drillable = summary.questions + summary.skills + summary.lessons;
+  const actDrillable = summary.actQuestions;
+  const bothBanks = drillable > 0 && actDrillable > 0;
   const parts = [];
   if (summary.questions > 0) {
-    parts.push(`${summary.questions} question${summary.questions === 1 ? '' : 's'}`);
+    parts.push(`${summary.questions} ${bothBanks || summary.actQuestions > 0 ? 'SAT ' : ''}question${summary.questions === 1 ? '' : 's'}`);
+  }
+  if (summary.actQuestions > 0) {
+    parts.push(`${summary.actQuestions} ACT question${summary.actQuestions === 1 ? '' : 's'}`);
   }
   if (summary.skills > 0) {
     parts.push(`${summary.skills} slipping skill${summary.skills === 1 ? '' : 's'}`);
@@ -388,8 +396,21 @@ function DueReviewCard({ summary }) {
       ) : (
         <>
           <div className={s.cardHint}>{parts.join(' · ')} due today.</div>
-          {drillable > 0 && <DueReviewLauncher createAction={createDueReviewSession} />}
-          {drillable === 0 && summary.flashcards > 0 && (
+          {drillable > 0 && (
+            <DueReviewLauncher
+              createAction={createDueReviewSession}
+              testType="sat"
+              label={bothBanks ? 'Start SAT reviews →' : 'Start reviews →'}
+            />
+          )}
+          {actDrillable > 0 && (
+            <DueReviewLauncher
+              createAction={createDueReviewSession}
+              testType="act"
+              label={bothBanks ? 'Start ACT reviews →' : 'Start reviews →'}
+            />
+          )}
+          {drillable === 0 && actDrillable === 0 && summary.flashcards > 0 && (
             <div className={s.cardHint}>
               Head to <Link href="/notes/flashcards">your flashcards</Link> to
               review the due cards.

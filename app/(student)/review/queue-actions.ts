@@ -28,8 +28,12 @@ const REVIEW_SESSION_SIZE = 10;
 
 export async function createDueReviewSession(
   _prev: unknown,
-  _formData: FormData,
+  formData: FormData,
 ): Promise<ActionResult<never>> {
+  // Which bank's due items to run. One session is one test type
+  // (the runner forks on practice_sessions.test_type), so the Review
+  // hub offers a launcher per test type that has items due.
+  const testType = String(formData?.get?.('test_type') ?? 'sat') === 'act' ? 'act' : 'sat';
   let ctx;
   try {
     ctx = await requireUser();
@@ -48,19 +52,23 @@ export async function createDueReviewSession(
   }
 
   const nowIso = new Date().toISOString();
-  try {
-    await syncDecayedSkillReviews(supabase, user.id);
-  } catch {
-    // Best-effort — a stale skill list just means this session leans
-    // on question items; the next visit reconciles.
+  if (testType === 'sat') {
+    try {
+      await syncDecayedSkillReviews(supabase, user.id);
+    } catch {
+      // Best-effort — a stale skill list just means this session leans
+      // on question items; the next visit reconciles.
+    }
   }
   const due = await getDueReviewItems(supabase, user.id, nowIso);
   const questionIds = await buildReviewSessionQuestionIds(
-    supabase, user.id, due, REVIEW_SESSION_SIZE,
+    supabase, user.id, due, REVIEW_SESSION_SIZE, testType,
   );
   if (questionIds.length === 0) {
     return actionFail(
-      'Nothing due for review right now. Missed questions and slipping skills queue up here automatically as you practice.',
+      testType === 'act'
+        ? 'Nothing due for ACT review right now. ACT questions you miss in practice queue up here automatically.'
+        : 'Nothing due for review right now. Missed questions and slipping skills queue up here automatically as you practice.',
     );
   }
 
@@ -68,7 +76,7 @@ export async function createDueReviewSession(
     .from('practice_sessions')
     .insert({
       user_id: user.id,
-      test_type: 'sat',
+      test_type: testType,
       mode: 'review',
       question_ids: questionIds,
       current_position: 0,
