@@ -2,7 +2,8 @@
 
 > **Status: Living document.** Last verified against code: 2026-07-12
 > (question-bank write policies re-verified against production
-> 2026-09-01; attempt-stat read paths re-verified 2026-09-06).
+> 2026-09-01; attempt-stat read paths re-verified 2026-09-06; ACT union of
+> those paths verified against production 2026-10-13).
 
 Short runbook for anything that touches the Supabase database.
 
@@ -187,6 +188,19 @@ every row, matching `get_question_stats`: a blank test response
 (placeholder row, `is_correct = false`) counts as an incorrect attempt,
 test-scoring style. The admin landing tile "Practice attempts" keeps
 its practice-only filter deliberately.
+
+**Student stat tiles count ACT attempts too (2026-10-13).**
+`student_practice_stats`, `get_practice_streak`,
+`get_roster_weekly_trend` and the `by_day` series of
+`get_student_extended_stats` union `act_attempts` with `attempts`
+(migration `20261013100000`), so an ACT-only student no longer reads
+as inactive on the dashboard, the tutor roster trend or `/stats`.
+The per-domain and per-skill breakdowns stay SAT-only; the ACT
+breakdown (section → category, difficulty 1–5) comes from
+`get_act_student_stats(p_user_id, p_week_ago, p_lookback_start)`
+(SECURITY INVOKER, granted to `authenticated`). The same migration
+lets `review_queue.item_type` carry `act_question`, so missed ACT
+questions enter the spaced-repetition queue like SAT ones.
 
 **Practice-test first touch is on-conflict safe (2026-09-06).** The
 answer save, the mark-for-review toggle and the time-ping beacon all
