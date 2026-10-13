@@ -54,7 +54,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
       .from('assignments_v2')
       .select(`
         id, assignment_type, title, description, due_date, archived_at, deleted_at,
-        created_at, question_ids
+        created_at, question_ids, test_type
       `)
       .eq('id', assignmentId)
       .maybeSingle(),
@@ -80,6 +80,19 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
         title={assignment.title ?? 'Assignment'}
         backHref={`/tutor/assignments/${assignmentId}`}
         body="Group reports are only available for question-pool assignments."
+      />
+    );
+  }
+
+  // The cohort aggregator reads SAT content (questions_v2 + attempts).
+  // ACT question sets (Phase 4B) report per student from the
+  // assignment page instead.
+  if (assignment.test_type === 'act') {
+    return (
+      <EmptyReport
+        title={assignment.title ?? 'Assignment'}
+        backHref={`/tutor/assignments/${assignmentId}`}
+        body="Group reports cover SAT question sets today. Open a student's row on the assignment page for their ACT report."
       />
     );
   }

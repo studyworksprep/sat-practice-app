@@ -51,7 +51,7 @@ export async function reassignAssignment(
   const { data: source } = await supabase
     .from('assignments_v2')
     .select(
-      'id, assignment_type, title, description, question_ids, filter_criteria, practice_test_id, lesson_pack_id, lesson_id, test_type, deleted_at',
+      'id, assignment_type, title, description, question_ids, filter_criteria, practice_test_id, act_source_test, lesson_pack_id, lesson_id, test_type, deleted_at',
     )
     .eq('id', assignmentId)
     .maybeSingle();
@@ -68,6 +68,7 @@ export async function reassignAssignment(
       question_ids: source.question_ids,
       filter_criteria: source.filter_criteria,
       practice_test_id: source.practice_test_id,
+      act_source_test: source.act_source_test ?? null,
       lesson_pack_id: source.lesson_pack_id,
       lesson_id: source.lesson_id,
       test_type: source.test_type ?? 'sat',

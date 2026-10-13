@@ -64,7 +64,7 @@ export async function addAssignmentMembers(_prev, formData) {
   // junction insert would produce.
   const { data: assignment } = await ctx.supabase
     .from('assignments_v2')
-    .select('id')
+    .select('id, test_type')
     .eq('id', assignmentId)
     .maybeSingle();
   if (!assignment) return actionFail('Assignment not found.');
@@ -72,7 +72,9 @@ export async function addAssignmentMembers(_prev, formData) {
   const rows = userIds.map((uid) => ({
     assignment_id: assignmentId,
     student_id: uid,
-    test_type: 'sat',
+    // Denormalized from the parent so "what is pending?" reads can
+    // filter by bank without a join.
+    test_type: assignment.test_type === 'act' ? 'act' : 'sat',
   }));
 
   // Upsert with ignoreDuplicates so re-adding someone who's
@@ -127,7 +129,7 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
   ] = await Promise.all([
     ctx.supabase
       .from('assignments_v2')
-      .select('id, assignment_type, question_ids, created_at')
+      .select('id, assignment_type, question_ids, created_at, test_type')
       .eq('id', assignmentId)
       .maybeSingle(),
     ctx.supabase
@@ -144,6 +146,8 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
   ]);
   if (!assignment) return actionFail('Assignment not found.');
   if (!junction) return actionFail('Student is not on this assignment.');
+  // ACT question sets (Phase 4B) live in act_attempts / ACT sessions.
+  const testType = assignment.test_type === 'act' ? 'act' : 'sat';
 
   // Find the latest in-progress / completed practice session for
   // this student on this assignment. Falling back to in-progress
@@ -153,7 +157,7 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
     .from('practice_sessions')
     .select('id, status')
     .eq('user_id', studentId)
-    .eq('test_type', 'sat')
+    .eq('test_type', testType)
     .eq('filter_criteria->>assignment_id', assignmentId)
     .neq('status', 'abandoned')
     .order('created_at', { ascending: false })
@@ -191,7 +195,9 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
 
     let createdAtIso = assignment.created_at ?? new Date().toISOString();
     if (questionIds.length > 0) {
-      const { allIds } = await expandToAttemptIds(ctx.supabase, questionIds);
+      const { allIds } = testType === 'act'
+        ? { allIds: questionIds }
+        : await expandToAttemptIds(ctx.supabase, questionIds);
       if (allIds.length > 0) {
         // Earliest attempt the student has on any of the
         // assignment's questions becomes the synthetic
@@ -199,7 +205,7 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
         // buildSessionReview's "attempts since session.created_at"
         // filter scoops up everything that should count.
         const { data: earliest } = await ctx.supabase
-          .from('attempts')
+          .from(testType === 'act' ? 'act_attempts' : 'attempts')
           .select('created_at')
           .eq('user_id', studentId)
           .in('question_id', allIds)
@@ -222,7 +228,7 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
       .from('practice_sessions')
       .insert({
         user_id: studentId,
-        test_type: 'sat',
+        test_type: testType,
         mode,
         question_ids: questionIds,
         current_position: Math.max(0, questionIds.length - 1),
