@@ -294,3 +294,9 @@
 .pctGood { color: var(--color-diff-easy-fg); }
 .pctOk   { color: var(--color-diff-med-fg); }
 .pctBad  { color: var(--color-diff-hard-fg); }
+
+/* ACT section label inside the ACT performance table (Phase 4). */
+.subjectAct {
+  font-weight: 600;
+  color: var(--color-gold-700, #92400e);
+}

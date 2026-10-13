@@ -237,6 +237,25 @@ export async function submitAnswer(
       if (insertErr) {
         return actionFail(`Failed to record attempt: ${insertErr.message}`);
       }
+
+      // Spaced-repetition intake for ACT (Phase 4) — the same rule as
+      // the SAT branch below: a wrong first answer enqueues the
+      // question, a correct one advances it if it was queued. Test
+      // mode is excluded: no feedback is shown and the answer can
+      // still change until the section closes, so a test-mode first
+      // insert is not an outcome.
+      if (!isTestMode) {
+        const answeredAt = new Date().toISOString();
+        after(async () => {
+          try {
+            await recordQuestionOutcome(
+              supabase, user.id, questionId, isCorrect, answeredAt, 'act_question',
+            );
+          } catch {
+            // Swallow — the attempt is recorded either way.
+          }
+        });
+      }
     } else if (isTestMode) {
       // Test mode: the student changed their answer before
       // submitting the set. Overwrite in place so the single row per

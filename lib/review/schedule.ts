@@ -15,12 +15,19 @@
 // syncDecayedSkillReviews deletes skill rows whose unit is no longer
 // decayed, which would sweep a lesson's retrieval item before it came
 // due. See the 20260901120000 migration.
+// 'act_question' (ACT parity Phase 4) is an act_questions uuid. It is
+// its own type rather than 'question' because the two id spaces live
+// in different tables and a review session runs one test type.
 export type ReviewItemType =
   | 'question'
+  | 'act_question'
   | 'skill'
   | 'flashcard'
   | 'vocab'
   | 'lesson_check';
+
+/** The two question item types, keyed by the test they belong to. */
+export type QuestionItemType = 'question' | 'act_question';
 
 /** The three outcomes a review can have:
  *  again — missed it (a lapse; interval resets to the floor)

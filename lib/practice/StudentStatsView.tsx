@@ -23,6 +23,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { formatCalendarDate } from '@/lib/formatters';
+import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import { loadDashboardAggregate } from './load-dashboard-aggregate';
 import { SkillBreakdownCard } from './SkillBreakdownCard';
 import { WeeklyTrendChart } from './WeeklyTrendChart';
@@ -63,15 +64,18 @@ export async function StudentStatsView({
 }: Props) {
   const supabase = await createClient();
 
+  const nowMs = Date.now();
   const lookbackStart = new Date(
-    Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000,
+    nowMs - LOOKBACK_DAYS * 24 * 60 * 60 * 1000,
   ).toISOString();
+  const sevenDaysAgo = new Date(nowMs - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const [
     { data: studentRows },
     aggregate,
     { data: trendRows },
     { data: extendedRows },
+    { data: actRows },
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -84,6 +88,14 @@ export async function StudentStatsView({
     }),
     supabase.rpc('get_student_extended_stats', {
       p_user_id: userId,
+      p_lookback_start: lookbackStart,
+    }),
+    // ACT counterpart (Phase 4): totals, per-section → per-category
+    // accuracy, 1–5 difficulty split. Rendered as its own block
+    // when the student has any ACT attempts.
+    supabase.rpc('get_act_student_stats', {
+      p_user_id: userId,
+      p_week_ago: sevenDaysAgo,
       p_lookback_start: lookbackStart,
     }),
   ]);
@@ -134,6 +146,46 @@ export async function StudentStatsView({
     correct:   Number(r.correct  ?? 0),
   }));
 
+  // ACT block. The view's totals / accuracy / weekly trend / daily
+  // activity already count ACT attempts (migration 20261013100000);
+  // this is the ACT-shaped breakdown — sections and categories, not
+  // domains and skills — plus the ACT 1–5 difficulty split.
+  const act = (actRows as Array<{
+    total_attempts: number | string;
+    correct_attempts: number | string;
+    week_attempts: number | string;
+    per_section: Array<{
+      section: string;
+      correct: number | string;
+      total: number | string;
+      categories: Array<{ category: string; correct: number | string; total: number | string }> | null;
+    }> | null;
+    by_difficulty: Array<{ difficulty: number; attempts: number | string; correct: number | string }> | null;
+  }> | null)?.[0];
+  const actTotal   = Number(act?.total_attempts ?? 0);
+  const actCorrect = Number(act?.correct_attempts ?? 0);
+  const actWeek    = Number(act?.week_attempts ?? 0);
+  const actAccuracy = actTotal > 0 ? Math.round((actCorrect / actTotal) * 100) : null;
+  const actSections = (act?.per_section ?? []).map((sec) => ({
+    section: sec.section,
+    label: sectionLabel(sec.section),
+    correct: Number(sec.correct ?? 0),
+    total: Number(sec.total ?? 0),
+    categories: (sec.categories ?? [])
+      .map((c) => ({
+        name: c.category,
+        correct: Number(c.correct ?? 0),
+        total: Number(c.total ?? 0),
+      }))
+      // Weakest first inside the section, like the SAT skill table.
+      .sort((a, b) => a.correct / a.total - b.correct / b.total),
+  }));
+  const actByDifficulty = (act?.by_difficulty ?? []).map((r) => ({
+    difficulty: r.difficulty,
+    attempts:   Number(r.attempts ?? 0),
+    correct:    Number(r.correct  ?? 0),
+  }));
+
   // Flatten every (domain, skill) row across both subjects for
   // the weakest-first table at the bottom. Skills with fewer
   // than SKILL_MIN_ATTEMPTS are excluded as noise — a 0/1 would
@@ -180,7 +232,11 @@ export async function StudentStatsView({
 
       {/* ---------- Stat strip ---------- */}
       <section className={s.statsRow}>
-        <StatTile label="Total attempts" value={totalAttempts.toLocaleString()} />
+        <StatTile
+          label="Total attempts"
+          value={totalAttempts.toLocaleString()}
+          sub={actTotal > 0 ? `${(totalAttempts - actTotal).toLocaleString()} SAT · ${actTotal.toLocaleString()} ACT` : undefined}
+        />
         <StatTile
           label="Accuracy"
           value={overallAccuracy == null ? '—' : `${overallAccuracy}%`}
@@ -224,6 +280,82 @@ export async function StudentStatsView({
               domains={toBreakdownDomains(aggregate.performance.rw.domains)}
             />
           </div>
+        </section>
+      )}
+
+      {/* ---------- ACT performance (Phase 4) ---------- */}
+      {actTotal > 0 && (
+        <section className={s.card}>
+          <div className={s.cardHead}>
+            <div className={s.sectionLabel}>
+              <IconTile icon={PerformanceIcon} palette="amber" size="sm" />
+              ACT performance
+            </div>
+            <p className={s.cardHint}>
+              ACT practice is scored by section and category.{' '}
+              {actTotal.toLocaleString()} attempt{actTotal === 1 ? '' : 's'}
+              {actAccuracy != null ? ` · ${actAccuracy}% accuracy` : ''}
+              {' · '}{actWeek} in the last 7 days. Sections and categories
+              below cover the last {LOOKBACK_DAYS} days, weakest category
+              first inside each section.
+            </p>
+          </div>
+          {actSections.length > 0 && (
+            <table className={s.skillTable}>
+              <thead>
+                <tr>
+                  <th className={s.skillTh}>Section · category</th>
+                  <th className={s.skillThR}>Attempts</th>
+                  <th className={s.skillThR}>Correct</th>
+                  <th className={s.skillThR}>Accuracy</th>
+                </tr>
+              </thead>
+              <tbody>
+                {actSections.map((sec) => {
+                  const secPct = sec.total > 0 ? Math.round((sec.correct / sec.total) * 100) : 0;
+                  return [
+                    <tr key={sec.section}>
+                      <td><div className={s.skillName}>{sec.label}</div></td>
+                      <td className={s.skillTd}>{sec.total}</td>
+                      <td className={s.skillTd}>{sec.correct}</td>
+                      <td className={`${s.skillTd} ${pctToneClass(secPct)}`}>{secPct}%</td>
+                    </tr>,
+                    ...sec.categories.map((cat) => {
+                      const pct = cat.total > 0 ? Math.round((cat.correct / cat.total) * 100) : 0;
+                      return (
+                        <tr key={`${sec.section}-${cat.name}`}>
+                          <td>
+                            <div className={s.skillSub}>
+                              <span className={s.subjectAct}>{sec.label}</span>
+                              {' · '}
+                              {cat.name}
+                            </div>
+                          </td>
+                          <td className={s.skillTd}>{cat.total}</td>
+                          <td className={s.skillTd}>{cat.correct}</td>
+                          <td className={`${s.skillTd} ${pctToneClass(pct)}`}>{pct}%</td>
+                        </tr>
+                      );
+                    }),
+                  ];
+                })}
+              </tbody>
+            </table>
+          )}
+          {actByDifficulty.length > 0 && (
+            <div className={s.diffRow} style={{ marginTop: 'var(--s3)' }}>
+              {actByDifficulty.map((d) => {
+                const pct = d.attempts > 0 ? Math.round((d.correct / d.attempts) * 100) : null;
+                return (
+                  <div key={d.difficulty} className={`${s.diffTile} ${actDiffClass(d.difficulty)}`}>
+                    <div className={s.diffLabel}>Difficulty {d.difficulty}</div>
+                    <div className={s.diffValue}>{d.correct} / {d.attempts}</div>
+                    {pct != null && <div className={s.diffPct}>{pct}%</div>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
 
@@ -466,6 +598,13 @@ function diffClass(d: number): string {
   if (d === 2) return s.diffMed;
   if (d === 3) return s.diffHard;
   return '';
+}
+
+/** ACT difficulty is 1–5: 1–2 read as easy, 3 as medium, 4–5 as hard. */
+function actDiffClass(d: number): string {
+  if (d <= 2) return s.diffEasy;
+  if (d === 3) return s.diffMed;
+  return s.diffHard;
 }
 
 function pctToneClass(pct: number): string {

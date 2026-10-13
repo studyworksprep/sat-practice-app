@@ -5091,6 +5091,20 @@ export type Database = {
           id: string
         }[]
       }
+      get_act_student_stats: {
+        Args: {
+          p_lookback_start: string
+          p_user_id: string
+          p_week_ago: string
+        }
+        Returns: {
+          by_difficulty: Json
+          correct_attempts: number
+          per_section: Json
+          total_attempts: number
+          week_attempts: number
+        }[]
+      }
       get_plan_inputs: {
         Args: { p_student: string; p_test_type?: string }
         Returns: {
