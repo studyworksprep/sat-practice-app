@@ -71,7 +71,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/users/[userId]/actions.js` | `updateProfileFields`, `changeRole`, `toggleActive`, `banUser`, `unbanUser`, `deleteUser`, `assignTeacherStudent`, `unassignTeacherStudent`, `assignManagerTeacher`, `unassignManagerTeacher`, `setTestFlag`, `resetTestStudent` | requireRole[admin] + requireServiceRole + rateLimit |
 | `app/(admin)/admin/users/[userId]/login-actions.ts` | `sendLoginSetupEmail`, `setLoginEmail` | requireServiceRole + rateLimit |
 | `app/(admin)/admin/users/codes/actions.js` | `createTeacherCode`, `revokeTeacherCode`, `inviteStudent`, `revokeStudentInvite` | requireRole[admin] |
-| `app/(student)/assignments/[id]/actions.js` | `startAssignmentPractice` | requireUser + rateLimit |
+| `app/(student)/assignments/[id]/actions.js` | `startAssignmentPractice`, `startAssignmentActTest` | requireUser + rateLimit |
 | `app/(student)/dashboard/task-actions.ts` | `startPlanTask`, `markTaskDone` | requireUser + rateLimit |
 | `app/(student)/learn/[lessonId]/actions.js` | `markBlockComplete`, `submitCheckAnswer`, `submitDesmosResult`, `markLessonComplete`, `createLessonPracticeDrill` | requireUser + rateLimit |
 | `app/(student)/notes/actions.ts` | `createNote`, `updateNote`, `deleteNote`, `upsertNoteForQuestion` | requireUser |

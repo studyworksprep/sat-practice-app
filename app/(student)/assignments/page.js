@@ -337,6 +337,8 @@ async function loadAssignmentsData(supabase, userId) {
         question_ids,
         lesson_id,
         practice_test_id,
+        test_type,
+        act_source_test,
         filter_criteria,
         lesson:lessons (title),
         practice_test:practice_tests_v2 (name, code)
@@ -356,13 +358,13 @@ async function loadAssignmentsData(supabase, userId) {
   const questionRows = rows.filter(
     (r) => r.assignment_type === 'questions' || r.assignment_type === 'lesson_pack',
   );
-  const allQuestionIds = Array.from(
-    new Set(
-      questionRows.flatMap((r) =>
-        Array.isArray(r.question_ids) ? r.question_ids : [],
-      ),
-    ),
-  );
+  // SAT and ACT question sets read different tables (Phase 4B); the
+  // id spaces never collide, so the per-qid maps below can be shared.
+  const idsOf = (list) => Array.from(new Set(
+    list.flatMap((r) => (Array.isArray(r.question_ids) ? r.question_ids : [])),
+  ));
+  const allQuestionIds = idsOf(questionRows.filter((r) => r.test_type !== 'act'));
+  const actQuestionIds = idsOf(questionRows.filter((r) => r.test_type === 'act'));
   const assignmentIds = rows.map((r) => r.id);
 
   // Expand the v2 question_ids to include any legacy v1 ids that
@@ -382,7 +384,7 @@ async function loadAssignmentsData(supabase, userId) {
   //  (4) practice sessions that carry filter_criteria.assignment_id
   //      for any of this student's assignments (to resolve the
   //      "View report" link per completed tile).
-  const [teachersRes, attemptsRes, questionsRes, sessionsRes] = await Promise.all([
+  const [teachersRes, attemptsRes, questionsRes, sessionsRes, actAttemptsRes, actQuestionsRes] = await Promise.all([
     teacherIds.length
       ? supabase
           .from('profile_cards')
@@ -406,22 +408,37 @@ async function loadAssignmentsData(supabase, userId) {
     assignmentIds.length
       ? supabase
           .from('practice_sessions')
-          // Per-assignment "View report" lookup. SAT-only — assignments
-          // is a SAT surface today (§3.4 forward-wires ACT assignments).
+          // Per-assignment "View report" lookup. The assignment_id
+          // match pins the bank, so SAT and ACT sessions both resolve.
           .select('id, created_at, filter_criteria')
           .eq('user_id', userId)
-          .eq('test_type', 'sat')
           .in(
             'filter_criteria->>assignment_id',
             assignmentIds,
           )
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),
+    // ACT question sets (Phase 4B): same two reads against the ACT
+    // tables. ACT has no legacy id era, so no expansion.
+    actQuestionIds.length
+      ? supabase
+          .from('act_attempts')
+          .select('question_id, is_correct, created_at')
+          .eq('user_id', userId)
+          .in('question_id', actQuestionIds)
+          .order('created_at', { ascending: true })
+      : Promise.resolve({ data: [] }),
+    actQuestionIds.length
+      ? supabase
+          .from('act_questions')
+          .select('id, difficulty')
+          .in('id', actQuestionIds)
+      : Promise.resolve({ data: [] }),
   ]);
 
   const teacherById = new Map((teachersRes.data ?? []).map((t) => [t.id, t]));
   const difficultyById = new Map(
-    (questionsRes.data ?? []).map((q) => [q.id, q.difficulty]),
+    [...(questionsRes.data ?? []), ...(actQuestionsRes.data ?? [])].map((q) => [q.id, q.difficulty]),
   );
 
   // Bucket attempts by qid (re-keying any legacy v1 ids to the v2
@@ -434,7 +451,7 @@ async function loadAssignmentsData(supabase, userId) {
   // before the assignment existed (the bug this scoping fixes;
   // matches the floor the detail page already uses, e3115ef).
   const attemptsByQid = new Map();
-  for (const a of attemptsRes.data ?? []) {
+  for (const a of [...(attemptsRes.data ?? []), ...(actAttemptsRes.data ?? [])]) {
     const key = v2ByLegacy.get(a.question_id) ?? a.question_id;
     let arr = attemptsByQid.get(key);
     if (!arr) {
@@ -550,7 +567,10 @@ async function loadAssignmentsData(supabase, userId) {
 function displayTitle(row) {
   if (row.title) return row.title;
   if (row.assignment_type === 'lesson') return row.lesson?.title ?? 'Lesson';
-  if (row.assignment_type === 'practice_test') return row.practice_test?.name ?? 'Practice Test';
+  if (row.assignment_type === 'practice_test') {
+    return row.practice_test?.name
+      ?? (row.act_source_test ? `ACT practice test · ${row.act_source_test}` : 'Practice Test');
+  }
   return 'Assignment';
 }
 
@@ -561,6 +581,7 @@ function displaySubtitle(row) {
     return n === 0 ? null : `${n} question${n === 1 ? '' : 's'}`;
   }
   if (row.assignment_type === 'practice_test') {
+    if (row.test_type === 'act') return 'ACT · timed, section by section';
     const sections = row.filter_criteria?.sections;
     if (sections && sections !== 'both') return `${sections.toUpperCase()} only`;
     return null;

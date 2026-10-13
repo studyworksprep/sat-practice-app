@@ -613,6 +613,7 @@ export type Database = {
           id: string
           name: string
           teacher_id: string
+          test_type: string
           updated_at: string
         }
         Insert: {
@@ -622,6 +623,7 @@ export type Database = {
           id?: string
           name: string
           teacher_id: string
+          test_type?: string
           updated_at?: string
         }
         Update: {
@@ -631,12 +633,14 @@ export type Database = {
           id?: string
           name?: string
           teacher_id?: string
+          test_type?: string
           updated_at?: string
         }
         Relationships: []
       }
       assignments_v2: {
         Row: {
+          act_source_test: string | null
           archived_at: string | null
           assignment_type: string
           created_at: string
@@ -657,6 +661,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          act_source_test?: string | null
           archived_at?: string | null
           assignment_type: string
           created_at?: string
@@ -677,6 +682,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          act_source_test?: string | null
           archived_at?: string | null
           assignment_type?: string
           created_at?: string

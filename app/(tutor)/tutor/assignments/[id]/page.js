@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
+import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate, isPastDueDate } from '@/lib/formatters';
 import { buildLessonCheckRollup, resolveLessonProgress, tallyFirstTry } from '@/lib/lesson/progress-report.mjs';
@@ -43,6 +44,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
       .select(`
         id, assignment_type, title, description, due_date, archived_at, deleted_at,
         created_at, question_ids, filter_criteria, lesson_id, practice_test_id,
+        test_type, act_source_test,
         teacher:profiles!assignments_v2_teacher_id_fkey (id, first_name, last_name),
         lesson:lessons (id, title),
         practice_test:practice_tests_v2 (id, code, name)
@@ -81,14 +83,16 @@ export default async function TutorAssignmentDetailPage({ params }) {
       ? assignment.question_ids
       : [];
   const studentIds = (junctionRows ?? []).map((r) => r.student_id);
+  // ACT assignments (Phase 4B) read act_questions / act_attempts and
+  // have no legacy id era.
+  const isAct = assignment.test_type === 'act';
 
   // Expand the v2 question_ids to also cover legacy v1 ids so
   // students' pre-cutover attempts on these questions count toward
   // the cohort stats below.
-  const { allIds: attemptQuestionIds, v2ByLegacy } = await expandToAttemptIds(
-    supabase,
-    questionIds,
-  );
+  const { allIds: attemptQuestionIds, v2ByLegacy } = isAct
+    ? { allIds: questionIds, v2ByLegacy: new Map() }
+    : await expandToAttemptIds(supabase, questionIds);
 
   // Floor: every attempt at-or-after the assignment's created_at on
   // one of its questions counts toward this student's progress on
@@ -106,7 +110,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
   const [attemptRowsRes, questionMetaRes, sessionRowsRes, lessonBlocksRes, lessonProgressRes] = await Promise.all([
     attemptQuestionIds.length > 0 && studentIds.length > 0
       ? supabase
-          .from('attempts')
+          .from(isAct ? 'act_attempts' : 'attempts')
           .select('user_id, question_id, is_correct, created_at')
           .in('user_id', studentIds)
           .in('question_id', attemptQuestionIds)
@@ -114,10 +118,15 @@ export default async function TutorAssignmentDetailPage({ params }) {
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),
     questionIds.length > 0
-      ? supabase
-          .from('questions_v2')
-          .select('id, display_code, domain_name, skill_name, score_band')
-          .in('id', questionIds)
+      ? (isAct
+          ? supabase
+              .from('act_questions')
+              .select('id, section, category, source_test, source_ordinal')
+              .in('id', questionIds)
+          : supabase
+              .from('questions_v2')
+              .select('id, display_code, domain_name, skill_name, score_band')
+              .in('id', questionIds))
       : Promise.resolve({ data: [] }),
     // Latest practice session per student for this assignment.
     // Powers the per-row "Report" link: when a student has at
@@ -128,7 +137,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
           .from('practice_sessions')
           .select('id, user_id, status, created_at')
           .in('user_id', studentIds)
-          .eq('test_type', 'sat')
+          .eq('test_type', assignment.test_type ?? 'sat')
           .eq('filter_criteria->>assignment_id', assignmentId)
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),
@@ -150,8 +159,23 @@ export default async function TutorAssignmentDetailPage({ params }) {
       : Promise.resolve({ data: [] }),
   ]);
   const attemptRows = attemptRowsRes.data ?? [];
+  // ACT rows are shaped like the SAT meta (code / "domain" / "skill")
+  // so the Questions section below renders both the same way.
   const questionMeta = new Map(
-    (questionMetaRes.data ?? []).map((q) => [q.id, q]),
+    (questionMetaRes.data ?? []).map((q) => [
+      q.id,
+      isAct
+        ? {
+            id: q.id,
+            display_code: q.source_test
+              ? `${q.source_test} · Q${q.source_ordinal ?? '?'}`
+              : q.id.slice(0, 8),
+            domain_name: sectionLabel(q.section),
+            skill_name: q.category ?? null,
+            score_band: null,
+          }
+        : q,
+    ]),
   );
   // Drives the per-row "Report" link. Prefers a completed session
   // if any exist, otherwise falls back to the most recent in-progress
@@ -339,6 +363,9 @@ export default async function TutorAssignmentDetailPage({ params }) {
   const title = assignment.title
     ?? (assignment.assignment_type === 'lesson' ? assignment.lesson?.title : null)
     ?? (assignment.assignment_type === 'practice_test' ? assignment.practice_test?.name : null)
+    ?? (assignment.assignment_type === 'practice_test' && assignment.act_source_test
+      ? `ACT practice test · ${assignment.act_source_test}`
+      : null)
     ?? 'Assignment';
 
   const totalQuestions = questionIds.length;
@@ -386,7 +413,9 @@ export default async function TutorAssignmentDetailPage({ params }) {
         {assignment.description && (
           <p className={s.description}>{assignment.description}</p>
         )}
-        {isQuestionLike && students.length > 0 && (
+        {/* The cohort report aggregates SAT question content; ACT
+            question sets use the per-student reports below. */}
+        {isQuestionLike && !isAct && students.length > 0 && (
           <div className={s.headerActions}>
             <Link
               href={`/tutor/assignments/${assignment.id}/report`}
