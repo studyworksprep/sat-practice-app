@@ -21,6 +21,7 @@ import { after } from 'next/server';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
+import { completeActSection, finalizeLegacyActSession } from '@/lib/practice-test/act-attempt';
 import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 import { gradeActMcq } from '@/lib/practice/load-act-question';
@@ -47,6 +48,10 @@ type SessionLifecycleResult = ActionResult<{
   // to route to the ACT results page rather than the standard
   // session-review page.
   actAttemptId?: string | null;
+  // Where the runner should send the student next when the server
+  // knows better than the client: a multi-section ACT test goes to
+  // the attempt page between sections and to results after the last.
+  redirectTo?: string | null;
 }>;
 
 // practice_sessions.filter_criteria is jsonb; these are the keys the
@@ -55,6 +60,9 @@ type SessionLifecycleResult = ActionResult<{
 type SessionFilterCriteria = {
   assignment_id?: string;
   kind?: string;
+  // Phase 3 multi-section ACT tests: the attempt a section session
+  // belongs to (lib/practice-test/act-attempt.ts).
+  attempt_id?: string;
 } | null;
 
 function sessionCriteria(raw: unknown): SessionFilterCriteria {
@@ -489,22 +497,28 @@ export async function submitPracticeSession(
     });
   }
 
-  // ACT practice tests: cache the scaled-score snapshot to
-  // act_practice_test_attempts. The runner client checks for
-  // `actAttemptId` on the result and routes the student to the
-  // ACT results page when present. See docs/architecture-plan.md
+  // ACT practice tests. A Phase 3 section session (filter_criteria
+  // carries attempt_id) scores its section onto the attempt and the
+  // runner is told where to go next (the attempt page between
+  // sections, results after the last). A pre-Phase-3 whole-form
+  // session finalizes the legacy single-session attempt. See
+  // lib/practice-test/act-attempt.ts and docs/architecture-plan.md
   // §3.4 "ACT practice tests as virtual constructs."
   let actAttemptId: string | null = null;
-  if (
-    session.test_type === 'act'
-    && sessionCriteria(session.filter_criteria)?.kind === 'practice_test'
-  ) {
+  let redirectTo: string | null = null;
+  const fc = sessionCriteria(session.filter_criteria);
+  if (session.test_type === 'act' && fc?.kind === 'practice_test') {
     try {
-      const { finalizeActPracticeTest } = await import(
-        '@/app/(student)/practice/tests/actions'
-      );
-      const res = await finalizeActPracticeTest(supabase, user.id, sessionId);
-      if (res.ok) actAttemptId = res.attemptId;
+      if (typeof fc.attempt_id === 'string' && fc.attempt_id) {
+        const res = await completeActSection(supabase, user.id, sessionId);
+        if (res.ok) {
+          actAttemptId = res.attemptId;
+          redirectTo = res.redirectTo;
+        }
+      } else {
+        const res = await finalizeLegacyActSession(supabase, user.id, sessionId);
+        if (res.ok) actAttemptId = res.attemptId;
+      }
     } catch {
       // Best-effort. The session is completed; the worst case is the
       // student lands on the regular session-review page instead of
@@ -512,7 +526,7 @@ export async function submitPracticeSession(
     }
   }
 
-  return { ok: true, sessionId, actAttemptId };
+  return { ok: true, sessionId, actAttemptId, redirectTo };
 }
 
 /**

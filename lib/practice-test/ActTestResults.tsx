@@ -1,24 +1,36 @@
 // ACT practice-test results view. Server Component shared by the
-// student and tutor routes — the loader (load-act-test-results.js)
+// student and tutor routes — the loader (load-act-test-results.ts)
 // does the reads; this renders the composite + per-section tiles and
-// links to the question-by-question review.
+// links to the question-by-question review of each section.
 //
-// Composite is only reported when all four section scales exist,
-// which today needs a four-section form with a conversion table.
-// Single-section forms show their one section and explain why the
-// composite is blank.
+// The composite follows the form's format: all four sections on the
+// classic ACT, English/Math/Reading on the enhanced ACT (Science is
+// reported separately). Forms that lack a section or a conversion
+// table show why the composite is blank.
 
 import Link from 'next/link';
 import { formatDate } from '@/lib/formatters';
+import { sectionLabel } from '@/lib/practice/act-taxonomy';
+import {
+  ACT_FORMAT_LABELS,
+  compositeDescription,
+  compositeSectionsFor,
+} from '@/lib/practice/act-test-plan';
 import type { ActSectionRow, ActTestResultsAttempt } from './load-act-test-results';
 import s from './ActResults.module.css';
+
+export interface ReviewLink {
+  label: string;
+  href: string;
+}
 
 interface ActTestResultsProps {
   attempt: ActTestResultsAttempt;
   sectionRows: ActSectionRow[];
-  /** Where "Open review report" goes (student: /practice/review/<sid>;
-   *  tutor: /tutor/sessions/<sid>). Null hides the link. */
-  reviewHref: string | null;
+  /** One "open review" link per section session (student:
+   *  /practice/review/<sid>; tutor: /tutor/sessions/<sid>). Empty
+   *  hides the review card's links. */
+  reviewLinks: ReviewLink[];
   /** Optional breadcrumb target + label. */
   backHref?: string | null;
   backLabel?: string;
@@ -30,12 +42,18 @@ interface ActTestResultsProps {
 export function ActTestResults({
   attempt,
   sectionRows,
-  reviewHref,
+  reviewLinks,
   backHref = null,
   backLabel = '← Back',
   viewerNote = null,
 }: ActTestResultsProps) {
   const anyScaledMissing = sectionRows.some((r) => r.scaled == null);
+  const needed = compositeSectionsFor(attempt.format);
+  const present = new Set(sectionRows.map((r) => r.section));
+  const missingSections = needed.filter((sec) => !present.has(sec));
+  const pendingSections = needed.filter(
+    (sec) => present.has(sec) && sectionRows.find((r) => r.section === sec)?.scaled == null,
+  );
 
   return (
     <main className={s.container}>
@@ -46,7 +64,9 @@ export function ActTestResults({
         <div className={s.eyebrow}>ACT practice test</div>
         <h1 className={s.h1}>{attempt.sourceTest}</h1>
         <p className={s.sub}>
-          Finished {formatDate(attempt.finishedAt)}
+          {ACT_FORMAT_LABELS[attempt.format]}
+          {' · '}Finished {formatDate(attempt.finishedAt)}
+          {attempt.timeMultiplier > 1 ? ` · ${attempt.timeMultiplier}× time` : ''}
           {viewerNote ? ` · ${viewerNote}` : ''}
         </p>
       </header>
@@ -55,15 +75,15 @@ export function ActTestResults({
         <section className={s.compositeCard}>
           <div className={s.compositeLabel}>Composite</div>
           <div className={s.compositeValue}>{attempt.compositeScore}</div>
-          <div className={s.compositeSub}>Out of 36 · rounded average of the four section scales</div>
+          <div className={s.compositeSub}>{compositeDescription(attempt.format)}</div>
         </section>
-      ) : sectionRows.length < 4 ? (
+      ) : missingSections.length > 0 ? (
         <section className={s.compositeCard}>
           <div className={s.compositeLabel}>Composite</div>
           <div className={s.compositeValueMissing}>—</div>
           <div className={s.compositeSub}>
-            Composite is the average of all four section scales. This
-            attempt covered {sectionRows.length === 1 ? 'one section' : `${sectionRows.length} sections`},
+            {compositeDescription(attempt.format).replace(/^Out of 36 · /, 'The composite is the ')}.
+            This attempt did not include {missingSections.map(sectionLabel).join(', ')},
             so the composite isn&apos;t reported.
           </div>
         </section>
@@ -72,8 +92,8 @@ export function ActTestResults({
           <div className={s.compositeLabel}>Composite</div>
           <div className={s.compositeValueMissing}>—</div>
           <div className={s.compositeSub}>
-            Composite needs a scaled score for all four sections; at
-            least one is still pending for this form.
+            Composite needs a scaled score for {needed.map(sectionLabel).join(', ')};
+            {' '}{pendingSections.length === 1 ? `${sectionLabel(pendingSections[0])} is` : 'some are'} still pending for this form.
           </div>
         </section>
       )}
@@ -114,12 +134,18 @@ export function ActTestResults({
         <div className={s.h2}>Review</div>
         <p className={s.reviewBody}>
           The question-by-question review (rationales, answers, time per
-          question) lives on the session review page.
+          question) lives on each section&apos;s review page.
         </p>
-        {reviewHref && (
-          <Link className={s.reviewLink} href={reviewHref}>
-            Open review report →
-          </Link>
+        {reviewLinks.length > 0 && (
+          <ul className={s.reviewList}>
+            {reviewLinks.map((l) => (
+              <li key={l.href}>
+                <Link className={s.reviewLink} href={l.href}>
+                  {l.label} →
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </main>

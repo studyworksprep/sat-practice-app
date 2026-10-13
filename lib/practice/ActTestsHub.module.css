@@ -289,3 +289,64 @@
   font-size: 13px;
   color: var(--color-danger);
 }
+
+/* Phase 3: format badge, per-section timing lines, timing select,
+   resume-card actions. */
+.formatBadge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--tile-navy-bg, #f0f4f8);
+  color: var(--tile-navy-fg, #243b53);
+  vertical-align: middle;
+}
+.sectionLines {
+  list-style: none;
+  margin: 6px 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--fg2);
+}
+.timingRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--fg2);
+}
+.timingLabel { font-weight: 600; color: var(--fg1); }
+.timingSelect {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  color: var(--fg1);
+}
+.resumeActions {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+.abandonBtn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--fg3);
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+}
+.abandonBtn:hover:not(:disabled) { color: var(--color-diff-hard-fg, #b91c1c); }
+.abandonBtn:disabled { opacity: 0.6; cursor: not-allowed; }

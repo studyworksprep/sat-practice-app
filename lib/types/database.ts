@@ -97,6 +97,27 @@ export type Database = {
           },
         ]
       }
+      act_forms: {
+        Row: {
+          format: string
+          source_test: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          format?: string
+          source_test: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          format?: string
+          source_test?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       act_import_jobs: {
         Row: {
           answer_key_url: string | null
@@ -161,48 +182,60 @@ export type Database = {
         Row: {
           composite_score: number | null
           created_at: string
+          current_section_index: number
           english_scaled: number | null
           finished_at: string | null
+          format: string
           id: string
           math_scaled: number | null
           practice_session_id: string | null
           reading_scaled: number | null
           science_scaled: number | null
+          sections: Json
           source_test: string
           started_at: string
           status: string
+          time_multiplier: number
           updated_at: string
           user_id: string
         }
         Insert: {
           composite_score?: number | null
           created_at?: string
+          current_section_index?: number
           english_scaled?: number | null
           finished_at?: string | null
+          format?: string
           id?: string
           math_scaled?: number | null
           practice_session_id?: string | null
           reading_scaled?: number | null
           science_scaled?: number | null
+          sections?: Json
           source_test: string
           started_at?: string
           status?: string
+          time_multiplier?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           composite_score?: number | null
           created_at?: string
+          current_section_index?: number
           english_scaled?: number | null
           finished_at?: string | null
+          format?: string
           id?: string
           math_scaled?: number | null
           practice_session_id?: string | null
           reading_scaled?: number | null
           science_scaled?: number | null
+          sections?: Json
           source_test?: string
           started_at?: string
           status?: string
+          time_multiplier?: number
           updated_at?: string
           user_id?: string
         }

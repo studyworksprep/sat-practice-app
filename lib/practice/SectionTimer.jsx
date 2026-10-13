@@ -31,6 +31,15 @@ export function SectionTimer({ deadlineIso, onExpire, label = 'Section' }) {
   // each tick. We hold `expired` as a ref to make sure onExpire
   // fires exactly once even if the parent re-renders us.
   const expiredRef = useRef(false);
+  // Always fire the parent's LATEST onExpire. The runner re-creates
+  // submitSetAndRoute whenever the selected answer changes (its
+  // save-if-dirty step closes over the selection); calling the
+  // mount-time reference would submit with the selection the student
+  // had at mount — i.e. drop the answer on screen when time runs out.
+  const onExpireRef = useRef(onExpire);
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
   const [remainingMs, setRemainingMs] = useState(() => {
     if (!deadlineMs) return 0;
     return Math.max(0, deadlineMs - Date.now());
@@ -43,29 +52,33 @@ export function SectionTimer({ deadlineIso, onExpire, label = 'Section' }) {
     // (e.g. the student reloaded after the section ended).
     if (deadlineMs <= Date.now() && !expiredRef.current) {
       expiredRef.current = true;
-      onExpire();
+      onExpireRef.current();
       return undefined;
     }
 
-    // Re-sync immediately on mount: the server rendered its own
-    // Date.now(), and the seconds that elapsed before hydration would
-    // otherwise show as a stale value until the first tick.
-    setRemainingMs(Math.max(0, deadlineMs - Date.now()));
-
-    const t = setInterval(() => {
+    const tick = () => {
       const rem = Math.max(0, deadlineMs - Date.now());
       setRemainingMs(rem);
       if (rem === 0 && !expiredRef.current) {
         expiredRef.current = true;
-        onExpire();
+        onExpireRef.current();
       }
-    }, 1000);
-    return () => clearInterval(t);
-    // onExpire is intentionally not in the dep list — we want the
-    // initial callback reference to be the one that fires. If the
-    // parent re-creates it on every render, useRef + the
-    // expiredRef guard above keeps the call exactly-once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    };
+    // Re-sync right after mount: the server rendered its own
+    // Date.now(), and the seconds that elapsed before hydration would
+    // otherwise show as a stale value until the first tick. Scheduled
+    // on the next frame rather than synchronously in the effect body.
+    const raf = requestAnimationFrame(tick);
+    const t = setInterval(tick, 1000);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearInterval(t);
+    };
+    // onExpire is intentionally not in the dep list — the interval is
+    // keyed to the deadline alone and reads the callback through
+    // onExpireRef, so a parent that re-creates it on every render
+    // neither restarts the clock nor fires a stale closure; the
+    // expiredRef guard keeps the call exactly-once.
   }, [deadlineMs]);
 
   if (!deadlineMs) return null;

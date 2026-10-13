@@ -43,6 +43,7 @@ Runs on every matched request. Detected: session refresh only.
 
 | Module | Exported actions | Guards (file-level) |
 |---|---|---|
+| `app/(admin)/admin/act/forms/actions.ts` | `setActFormFormat` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/[jobId]/actions.ts` | `parseEnglish`, `parseMath`, `parseReading`, `parseScience`, `parseScaleAction`, `addJobFile` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/[jobId]/review/actions.ts` | `saveDraft`, `approveDraft`, `bulkApprove`, `unapproveDraft`, `rejectDraft`, `finalizeJob` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/actions.ts` | `createImportJob`, `deleteImportJob` | requireRole[admin] |
@@ -77,7 +78,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(student)/plan/actions.ts` | `adjustPlanAction`, `rebuildPlanAction` | requireUser |
 | `app/(student)/practice/start/actions.js` | `countAvailable`, `createSession`, `countAvailableAct`, `createActSession` | requireUser + rateLimit |
 | `app/(student)/practice/test/actions.js` | `startTestAttempt`, `recordItemAnswer`, `toggleMarkForReview`, `pauseTestModule`, `resumeTestModule`, `finishModule` | requireUser + rateLimit |
-| `app/(student)/practice/tests/actions.ts` | `startActPracticeTest`, `finalizeActPracticeTest` | requireUser + rateLimit |
+| `app/(student)/practice/tests/actions.ts` | `startActPracticeTest`, `startActSection`, `abandonActPracticeTest` | requireUser + rateLimit |
 | `app/(student)/review/actions.js` | `createWeakQueueDrill`, `createSkillDrill`, `createActWeakQueueDrill`, `createActCategoryDrill` | requireUser + rateLimit |
 | `app/(student)/review/queue-actions.ts` | `createDueReviewSession` | requireUser + rateLimit |
 | `app/(student)/welcome/actions.ts` | `startIntakeAction`, `saveAnswerAction`, `saveTargetsAction`, `saveAssessmentAction`, `buildPlanAction`, `activateFirstPlanAction`, `setAsideAction` | requireUser |
@@ -124,4 +125,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_21 route handlers, 72 server-action modules enumerated._
+_21 route handlers, 73 server-action modules enumerated._

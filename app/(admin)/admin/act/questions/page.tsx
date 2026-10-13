@@ -147,6 +147,7 @@ export default async function AdminActQuestionsPage({
         <div className={s.titleRow}>
           <h1 className={s.h1}>ACT questions</h1>
           <div className={s.actions}>
+            <Link href="/admin/act/forms" className={s.btnSecondary}>Forms</Link>
             <Link href="/admin/act/rationales" className={s.btnSecondary}>Rationales</Link>
             <Link href="/admin/act/imports" className={s.btnSecondary}>Imports</Link>
             <Link href="/admin/act/score-conversion" className={s.btnSecondary}>Score conversion</Link>

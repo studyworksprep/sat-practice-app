@@ -173,3 +173,13 @@
   text-decoration: none;
   color: var(--color-app-accent);
 }
+
+/* Per-section review links (Phase 3: one session per section). */
+.reviewList {
+  list-style: none;
+  margin: var(--s2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s4);
+}
