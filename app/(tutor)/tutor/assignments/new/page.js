@@ -18,6 +18,9 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
+import { fetchAll } from '@/lib/supabase/fetchAll';
+import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
+import { ACT_FORMAT_LABELS, isActFormat } from '@/lib/practice/act-test-plan';
 import { createAssignment } from './actions';
 import { deleteAssignmentTemplate } from './template-actions';
 import { NewAssignmentInteractive } from './NewAssignmentInteractive';
@@ -66,6 +69,8 @@ export default async function NewAssignmentPage({ searchParams }) {
     { data: teacherJunctions },
     lessonCatalog,
     { data: templateRows },
+    actQuestionRows,
+    { data: actFormRows },
   ] = await Promise.all([
     // The picker needs names/emails only, so read profiles directly.
     // (This used to select from student_practice_stats, whose
@@ -118,9 +123,23 @@ export default async function NewAssignmentPage({ searchParams }) {
     // explicit filter keeps admins from seeing a cross-tutor menu.
     supabase
       .from('assignment_templates')
-      .select('id, name, assignment_type, filter_criteria')
+      .select('id, name, assignment_type, test_type, filter_criteria')
       .eq('teacher_id', user.id)
       .order('created_at', { ascending: false }),
+    // ACT bank (Phase 4B): live questions, grouped below into
+    // section → category with counts for the picker, plus each
+    // form's question count for the practice-test picker. Paged via
+    // fetchAll — a full set of forms is past PostgREST's silent
+    // 1,000-row cap.
+    fetchAll((from, to) =>
+      supabase
+        .from('act_questions')
+        .select('section, category, difficulty, source_test')
+        .eq('is_broken', false)
+        .is('deleted_at', null)
+        .range(from, to),
+    ),
+    supabase.from('act_forms').select('source_test, format'),
   ]);
 
   // Bucket junction rows by pack id so the picker shows "12
@@ -187,6 +206,41 @@ export default async function NewAssignmentPage({ searchParams }) {
     }));
   const difficulties = Array.from(difficultiesSet).sort((a, b) => a - b);
 
+  // ACT taxonomy + forms (Phase 4B). Categories are free text on
+  // act_questions, so the picker shows whatever the bank carries.
+  const actFormatByForm = new Map();
+  for (const f of actFormRows ?? []) {
+    if (isActFormat(f.format)) actFormatByForm.set(f.source_test, f.format);
+  }
+  const actCounts = new Map();
+  const actDiffSet = new Set();
+  const actFormCounts = new Map();
+  for (const r of actQuestionRows ?? []) {
+    if (!r.section) continue;
+    const cat = (r.category ?? '').trim() || '—';
+    const key = `${r.section}|${cat}`;
+    actCounts.set(key, (actCounts.get(key) ?? 0) + 1);
+    if (Number.isInteger(r.difficulty)) actDiffSet.add(r.difficulty);
+    if (r.source_test) {
+      actFormCounts.set(r.source_test, (actFormCounts.get(r.source_test) ?? 0) + 1);
+    }
+  }
+  const actTaxonomy = ACT_SECTIONS.map((section) => ({
+    section,
+    label: sectionLabel(section),
+    categories: Array.from(actCounts.entries())
+      .filter(([key]) => key.startsWith(`${section}|`))
+      .map(([key, count]) => ({ name: key.slice(section.length + 1), count }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  })).filter((sec) => sec.categories.length > 0);
+  const actDifficulties = Array.from(actDiffSet).sort((a, b) => a - b);
+  const actForms = Array.from(actFormCounts.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([sourceTest, count]) => ({
+      sourceTest,
+      label: `${sourceTest} · ${ACT_FORMAT_LABELS[actFormatByForm.get(sourceTest) ?? 'classic']} · ${count} question${count === 1 ? '' : 's'}`,
+    }));
+
   // ── One-click prefill (§4.3) ──────────────────────────────────
   // Resolved server-side so deep links stay short and the weak-skill
   // computation reuses the same RPC the session workspace trusts.
@@ -201,9 +255,21 @@ export default async function NewAssignmentPage({ searchParams }) {
   if (templateParam) {
     const t = (templateRows ?? []).find((row) => row.id === templateParam);
     const fc = t?.filter_criteria;
-    if (t && fc && Array.isArray(fc.skillSelections)) {
+    if (t && fc && t.test_type === 'act' && Array.isArray(fc.actSelections)) {
+      // ACT recipe (Phase 4B): section + category buckets.
       prefill = {
         label: `Template · ${t.name}`,
+        testType: 'act',
+        skills: [],
+        actSelections: fc.actSelections,
+        difficulties: Array.isArray(fc.difficulties) ? fc.difficulties : [],
+        size: typeof fc.size === 'number' ? fc.size : null,
+        unansweredOnly: fc.unansweredOnly === true,
+      };
+    } else if (t && fc && Array.isArray(fc.skillSelections)) {
+      prefill = {
+        label: `Template · ${t.name}`,
+        testType: 'sat',
         skills: fc.skillSelections,
         difficulties: Array.isArray(fc.difficulties) ? fc.difficulties : [],
         size: typeof fc.size === 'number' ? fc.size : null,
@@ -245,7 +311,11 @@ export default async function NewAssignmentPage({ searchParams }) {
     }
   }
 
-  const templates = (templateRows ?? []).map((t) => ({ id: t.id, name: t.name }));
+  const templates = (templateRows ?? []).map((t) => ({
+    id: t.id,
+    name: t.test_type === 'act' ? `${t.name} · ACT` : t.name,
+    testType: t.test_type === 'act' ? 'act' : 'sat',
+  }));
   const lessons = lessonCatalog;
 
   return (
@@ -257,7 +327,7 @@ export default async function NewAssignmentPage({ searchParams }) {
         <div className={styles.eyebrow}>Assignment · New</div>
         <h1 className={styles.h1}>New assignment</h1>
         <p className={styles.sub}>
-          Give your students a question set, a practice test, or one of your lesson packs.
+          Give your students a question set, a practice test, or one of your lesson packs — SAT or ACT.
         </p>
       </header>
 
@@ -276,6 +346,9 @@ export default async function NewAssignmentPage({ searchParams }) {
         lessonPacks={lessonPacks}
         lessons={lessons}
         templates={templates}
+        actTaxonomy={actTaxonomy}
+        actDifficulties={actDifficulties}
+        actForms={actForms}
         prefill={prefill}
         createAction={createAssignment}
         deleteTemplateAction={deleteAssignmentTemplate}

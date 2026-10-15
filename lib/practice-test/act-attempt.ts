@@ -254,7 +254,42 @@ export async function finalizeActAttempt(
     .select('id');
   if (error) return { ok: false, error: error.message };
   if (!updated || updated.length === 0) return { ok: false, error: 'Attempt is no longer in progress' };
+
+  await markActTestAssignmentsCompleted(supabase, attempt.user_id, attempt.source_test);
   return { ok: true };
+}
+
+/**
+ * ACT practice-test assignments (Phase 4B): finishing any attempt of
+ * the assigned form completes every open assignment of that form for
+ * the student — the same contract as SAT's
+ * markPracticeTestAssignmentsCompletedIfDone. Best-effort: a
+ * bookkeeping failure never fails the finalize that triggered it.
+ */
+async function markActTestAssignmentsCompleted(
+  supabase: Db,
+  userId: string,
+  sourceTest: string,
+): Promise<void> {
+  try {
+    const { data: matching } = await supabase
+      .from('assignments_v2')
+      .select('id')
+      .eq('assignment_type', 'practice_test')
+      .eq('test_type', 'act')
+      .eq('act_source_test', sourceTest)
+      .is('deleted_at', null);
+    const ids = ((matching ?? []) as Array<{ id: string }>).map((a) => a.id);
+    if (ids.length === 0) return;
+    await supabase
+      .from('assignment_students_v2')
+      .update({ completed_at: new Date().toISOString() })
+      .eq('student_id', userId)
+      .in('assignment_id', ids)
+      .is('completed_at', null);
+  } catch {
+    // Swallow — the attempt is finalized either way.
+  }
 }
 
 /**

@@ -36,7 +36,8 @@ import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { formatDate, isPastDueDate } from '@/lib/formatters';
 import { Button } from '@/lib/ui/Button';
-import { startAssignmentPractice } from './actions';
+import { sectionLabel } from '@/lib/practice/act-taxonomy';
+import { startAssignmentActTest, startAssignmentPractice } from './actions';
 import { StartAssignmentButton } from './AssignmentInteractive';
 
 export const dynamic = 'force-dynamic';
@@ -74,6 +75,8 @@ export default async function AssignmentDetailPage({ params }) {
         filter_criteria,
         lesson_id,
         practice_test_id,
+        test_type,
+        act_source_test,
         lesson:lessons (id, title, description),
         practice_test:practice_tests_v2 (id, code, name)
       `)
@@ -90,14 +93,12 @@ export default async function AssignmentDetailPage({ params }) {
     // resolves to a finished session if one exists. Powers the
     // "View report" button when the student has already run the
     // set and the "Redo" path replaces "Start" but keeps the old
-    // report reachable.
-    // SAT-only — ACT assignments are forward-wired (§3.4) but no
-    // ACT assignment surface exists today.
+    // report reachable. The assignment_id match already pins the
+    // bank (an ACT assignment's sessions are ACT sessions).
     supabase
       .from('practice_sessions')
       .select('id, status, created_at')
       .eq('user_id', user.id)
-      .eq('test_type', 'sat')
       .eq('filter_criteria->>assignment_id', assignmentId)
       .order('status', { ascending: true })
       .order('created_at', { ascending: false })
@@ -145,20 +146,27 @@ export default async function AssignmentDetailPage({ params }) {
   if (assignment.assignment_type === 'questions' || assignment.assignment_type === 'lesson_pack') {
     const questionIds = Array.isArray(assignment.question_ids) ? assignment.question_ids : [];
     if (questionIds.length > 0) {
+      // ACT question sets (Phase 4B) read act_questions / act_attempts;
+      // ACT has no legacy id era, so no expansion.
+      const isAct = assignment.test_type === 'act';
       // Expand to include legacy v1 ids so attempts predating the
       // v2 copy still count toward this assignment's progress.
-      const { allIds: attemptQuestionIds, v2ByLegacy } = await expandToAttemptIds(
-        supabase,
-        questionIds,
-      );
+      const { allIds: attemptQuestionIds, v2ByLegacy } = isAct
+        ? { allIds: questionIds, v2ByLegacy: new Map() }
+        : await expandToAttemptIds(supabase, questionIds);
       const assignmentFloor = assignment.created_at ?? '1970-01-01T00:00:00Z';
       const [qRes, aRes] = await Promise.all([
+        isAct
+          ? supabase
+              .from('act_questions')
+              .select('id, section, category, difficulty')
+              .in('id', questionIds)
+          : supabase
+              .from('questions_v2')
+              .select('id, domain_name, skill_name, difficulty')
+              .in('id', questionIds),
         supabase
-          .from('questions_v2')
-          .select('id, domain_name, skill_name, difficulty')
-          .in('id', questionIds),
-        supabase
-          .from('attempts')
+          .from(isAct ? 'act_attempts' : 'attempts')
           .select('question_id, is_correct, created_at')
           .eq('user_id', user.id)
           .in('question_id', attemptQuestionIds)
@@ -177,8 +185,10 @@ export default async function AssignmentDetailPage({ params }) {
         return {
           ordinal: i + 1,
           question_id: qid,
-          domain_name: q.domain_name ?? null,
-          skill_name: q.skill_name ?? null,
+          // ACT rows render section as the "domain" and category as
+          // the "skill" so the list markup is shared.
+          domain_name: isAct ? (q.section ? sectionLabel(q.section) : null) : (q.domain_name ?? null),
+          skill_name: isAct ? (q.category ?? null) : (q.skill_name ?? null),
           difficulty: q.difficulty ?? null,
           is_done: latest != null,
           is_correct: latest?.is_correct ?? null,
@@ -187,6 +197,28 @@ export default async function AssignmentDetailPage({ params }) {
     } else {
       questionRows = [];
     }
+  }
+
+  // ACT practice-test assignment (Phase 4B): the latest completed
+  // attempt of the assigned form since the assignment was created
+  // is the student's result for it.
+  let actResultsHref = null;
+  if (
+    assignment.assignment_type === 'practice_test'
+    && assignment.test_type === 'act'
+    && assignment.act_source_test
+  ) {
+    const { data: actAttempt } = await supabase
+      .from('act_practice_test_attempts')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('source_test', assignment.act_source_test)
+      .eq('status', 'completed')
+      .gte('started_at', assignment.created_at ?? '1970-01-01T00:00:00Z')
+      .order('finished_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (actAttempt?.id) actResultsHref = `/practice/test/act/attempt/${actAttempt.id}/results`;
   }
 
   const teacherName = assignment.teacher
@@ -237,10 +269,11 @@ export default async function AssignmentDetailPage({ params }) {
             rows={questionRows ?? []}
             completed={enrolled.completed_at != null}
             latestSessionId={latestSession?.id ?? null}
+            testType={assignment.test_type === 'act' ? 'act' : 'sat'}
           />
         )}
         {assignment.assignment_type === 'practice_test' && (
-          <PracticeTestView assignment={assignment} />
+          <PracticeTestView assignment={assignment} actResultsHref={actResultsHref} />
         )}
         {assignment.assignment_type === 'lesson' && (
           <LessonView assignment={assignment} />
@@ -250,7 +283,7 @@ export default async function AssignmentDetailPage({ params }) {
   );
 }
 
-function QuestionsView({ assignment, rows, completed, latestSessionId }) {
+function QuestionsView({ assignment, rows, completed, latestSessionId, testType = 'sat' }) {
   if (rows.length === 0) {
     return <p style={{ color: '#6b7280' }}>This assignment has no questions.</p>;
   }
@@ -322,9 +355,9 @@ function QuestionsView({ assignment, rows, completed, latestSessionId }) {
             {r.difficulty != null && (
               <span style={{
                 fontSize: '0.7rem', padding: '0.1rem 0.4rem', borderRadius: 999,
-                background: difficultyColor(r.difficulty), color: 'white',
+                background: difficultyColor(r.difficulty, testType), color: 'white',
               }}>
-                {difficultyLabel(r.difficulty)}
+                {difficultyLabel(r.difficulty, testType)}
               </span>
             )}
           </li>
@@ -334,7 +367,38 @@ function QuestionsView({ assignment, rows, completed, latestSessionId }) {
   );
 }
 
-function PracticeTestView({ assignment }) {
+function PracticeTestView({ assignment, actResultsHref = null }) {
+  // ACT (Phase 4B): the form runs through the ACT test mode — one
+  // attempt per form, sections timed one at a time with the format's
+  // official limits. Start creates the attempt; results link to the
+  // latest completed attempt of the form since the assignment.
+  if (assignment.test_type === 'act') {
+    return (
+      <section style={{
+        padding: '1.5rem', border: '1px solid #e5e7eb', borderRadius: 8,
+        display: 'flex', flexDirection: 'column', gap: '0.75rem',
+      }}>
+        <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>
+          {assignment.act_source_test ?? 'ACT practice test'}
+        </h2>
+        <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+          ACT practice test · taken section by section with the official time limits.
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {actResultsHref && (
+            <Button href={actResultsHref}>View results</Button>
+          )}
+          <StartAssignmentButton
+            assignmentId={assignment.id}
+            label={actResultsHref ? 'Take it again' : 'Start practice test'}
+            disabled={false}
+            startAction={startAssignmentActTest}
+          />
+        </div>
+      </section>
+    );
+  }
+
   const pt = assignment.practice_test;
   const sections = assignment.filter_criteria?.sections;
   // Propagate the assignment's section preference to the launch
@@ -407,14 +471,24 @@ function Stat({ label, value }) {
 function displayTitle(a) {
   if (a.title) return a.title;
   if (a.assignment_type === 'lesson') return a.lesson?.title ?? 'Lesson';
-  if (a.assignment_type === 'practice_test') return a.practice_test?.name ?? 'Practice Test';
+  if (a.assignment_type === 'practice_test') {
+    return a.practice_test?.name
+      ?? (a.act_source_test ? `ACT practice test · ${a.act_source_test}` : 'Practice Test');
+  }
   return 'Assignment';
 }
 
-function difficultyLabel(d) {
+// SAT difficulty is 1–3; ACT is 1–5 (1–2 easy, 3 medium, 4–5 hard).
+function difficultyLabel(d, testType = 'sat') {
+  if (testType === 'act') return Number.isInteger(d) ? `Level ${d}` : '?';
   return { 1: 'Easy', 2: 'Medium', 3: 'Hard' }[d] ?? '?';
 }
 
-function difficultyColor(d) {
+function difficultyColor(d, testType = 'sat') {
+  if (testType === 'act') {
+    if (d <= 2) return '#10b981';
+    if (d === 3) return '#f59e0b';
+    return '#ef4444';
+  }
   return { 1: '#10b981', 2: '#f59e0b', 3: '#ef4444' }[d] ?? '#9ca3af';
 }

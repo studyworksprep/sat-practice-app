@@ -388,21 +388,23 @@ export async function submitAnswer(
     }
   }
 
-  // Assignment auto-completion. SAT-only path today — ACT assignments
-  // are forward-wired but no surface ships yet, so markAssignment...
-  // is keyed off the SAT attempts table.
+  // Assignment auto-completion. The attempts table follows the
+  // session's test type (SAT `attempts`, ACT `act_attempts`, Phase 4B);
+  // everything else about the check is the same.
   //
   // Deferred via after(): this bookkeeping chain is 4 more DB
   // round-trips and the student's Correct/Incorrect feedback must not
   // wait on it. It was already best-effort (errors swallowed);
   // after() keeps the same semantics but runs it once the response
   // has been sent.
-  if (!isAct) {
+  {
     const assignmentId = sessionCriteria(session.filter_criteria)?.assignment_id;
     if (assignmentId) {
       after(async () => {
         try {
-          await markAssignmentCompletedIfDone(supabase, user.id, assignmentId, sessionFloor);
+          await markAssignmentCompletedIfDone(
+            supabase, user.id, assignmentId, sessionFloor, isAct ? 'act_attempts' : 'attempts',
+          );
         } catch {
           // Swallow — the student's attempt is recorded either way.
         }
@@ -959,6 +961,11 @@ async function markAssignmentCompletedIfDone(
   userId: string,
   assignmentId: string,
   sessionFloor: string,
+  // Which bank the assignment's question_ids live in: SAT
+  // `attempts` (questions_v2 ids) or ACT `act_attempts`
+  // (act_questions ids). The ids never collide, so the table is
+  // the only thing that differs.
+  attemptsTable: 'attempts' | 'act_attempts' = 'attempts',
 ): Promise<void> {
   const { data: assignment } = await supabase
     .from('assignments_v2')
@@ -983,7 +990,7 @@ async function markAssignmentCompletedIfDone(
   if (questionIds.length === 0) return;
 
   const { data: attempted } = await supabase
-    .from('attempts')
+    .from(attemptsTable)
     .select('question_id')
     .eq('user_id', userId)
     .in('question_id', questionIds)

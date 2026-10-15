@@ -79,7 +79,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       // question-joining reads (loader-fork pattern, §3.4).
       .select('id, user_id, question_ids, created_at, mode, filter_criteria, status, marked_positions, test_type')
       .eq('user_id', studentId)
-      .eq('test_type', 'sat')
+      .in('test_type', ['sat', 'act'])
       .eq('filter_criteria->>assignment_id', assignmentId)
       .eq('status', 'completed')
       .order('created_at', { ascending: false })

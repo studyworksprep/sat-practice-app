@@ -127,21 +127,20 @@ export default async function StudentDashboardPage({ searchParams }) {
       .eq('status', 'completed')
       .order('finished_at', { ascending: false })
       .limit(RECENT_FINISHED_PER_TYPE),
-    // Assignments (pending + recently-completed — split in memory).
-    // SAT-only; an ACT assignments inbox is a later phase.
+    // Assignments (pending + recently-completed — split in memory),
+    // SAT and ACT (Phase 4B).
     supabase
       .from('assignment_students_v2')
       .select(`
         completed_at,
         assignment:assignments_v2 (
           id, assignment_type, title, due_date, created_at, archived_at, deleted_at,
-          question_ids,
+          question_ids, act_source_test,
           lesson:lessons (title),
           practice_test:practice_tests_v2 (name)
         )
       `)
-      .eq('student_id', user.id)
-      .eq('test_type', 'sat'),
+      .eq('student_id', user.id),
     // Active session for the Resume link in the banner. SAT-only.
     supabase
       .from('practice_sessions')
@@ -492,6 +491,9 @@ function assignmentTitle(a) {
   return a.title
     ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
     ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
+    ?? (a.assignment_type === 'practice_test' && a.act_source_test
+      ? `ACT practice test · ${a.act_source_test}`
+      : null)
     ?? 'Assignment';
 }
 
