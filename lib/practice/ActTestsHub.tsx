@@ -104,9 +104,12 @@ export function ActTestsHub({
           <div>
             <div className={s.h2}>Available tests</div>
             <div className={s.cardHint}>
-              Each card is one ACT form, taken section by section with
-              the official time limits for its format. You start each
-              section&apos;s clock yourself; it does not pause once it runs.
+              Each card is one ACT form, taken section by section at the
+              official pace for its format. Released forms leave out the
+              unscored questions, so a shorter section gets proportionally
+              less time (40 English questions in 28 minutes is the same
+              pace as 50 in 35). You start each section&apos;s clock
+              yourself; it does not pause once it runs.
             </div>
           </div>
           <label className={s.timingRow}>

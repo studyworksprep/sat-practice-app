@@ -14,10 +14,16 @@
 //             schedules list 10–15 minutes; 15 here); composite =
 //             rounded mean of English, Math and Reading.
 //
-// A section with fewer questions than the official count (partial
-// imports, question-bank practice sets) gets a pro-rated limit so
-// pacing stays realistic; the multiplier is the extended-time
-// accommodation (1, 1.5, 2) applied on top.
+// Released forms omit the unscored field-test items, so a complete
+// released enhanced form has English 40, Math 41, Reading 27 and
+// Science 34 questions, not 50/45/36/40 (the classic ACT carried its
+// field-test items in a separate fifth section, so classic released
+// forms have the full 75/60/40/40). Timing keeps the official pace:
+// a section gets minutes × (its question count / the administered
+// count), so 40 released English questions get 28 minutes — the same
+// 42 seconds per question as 50 in 35. Question-bank practice sets
+// with other counts pro-rate the same way; the multiplier is the
+// extended-time accommodation (1, 1.5, 2) applied on top.
 
 import { ACT_SECTIONS, type ActSection } from './act-taxonomy.ts';
 
@@ -35,8 +41,13 @@ export function isActFormat(v: unknown): v is ActFormat {
 }
 
 export interface SectionSpec {
-  /** Official question count for the section. */
+  /** Questions administered on test day, unscored field-test items
+   *  included. The pacing denominator. */
   questions: number;
+  /** Questions in a released form of the section: the administered
+   *  count minus the unscored items. A form with at least this many
+   *  live questions is complete. */
+  released: number;
   /** Official minutes for the section. */
   minutes: number;
 }
@@ -53,10 +64,10 @@ export interface FormatSpec {
 export const ACT_FORMAT_SPECS: Record<ActFormat, FormatSpec> = {
   classic: {
     sections: {
-      english: { questions: 75, minutes: 45 },
-      math:    { questions: 60, minutes: 60 },
-      reading: { questions: 40, minutes: 35 },
-      science: { questions: 40, minutes: 35 },
+      english: { questions: 75, released: 75, minutes: 45 },
+      math:    { questions: 60, released: 60, minutes: 60 },
+      reading: { questions: 40, released: 40, minutes: 35 },
+      science: { questions: 40, released: 40, minutes: 35 },
     },
     breakAfter: 'math',
     breakMinutes: 10,
@@ -64,10 +75,10 @@ export const ACT_FORMAT_SPECS: Record<ActFormat, FormatSpec> = {
   },
   enhanced: {
     sections: {
-      english: { questions: 50, minutes: 35 },
-      math:    { questions: 45, minutes: 50 },
-      reading: { questions: 36, minutes: 40 },
-      science: { questions: 40, minutes: 40 },
+      english: { questions: 50, released: 40, minutes: 35 },
+      math:    { questions: 45, released: 41, minutes: 50 },
+      reading: { questions: 36, released: 27, minutes: 40 },
+      science: { questions: 40, released: 34, minutes: 40 },
     },
     breakAfter: 'math',
     breakMinutes: 15,
@@ -85,9 +96,10 @@ export function parseTimeMultiplier(v: unknown): ActTimeMultiplier {
 
 const MINUTE_MS = 60_000;
 
-/** Time limit for one section in ms. Pro-rated when the section is
- *  short of the official count, scaled by the multiplier, rounded to
- *  a half minute so the clock reads clean, never under one minute. */
+/** Time limit for one section in ms. Pro-rated against the
+ *  administered count so a released form keeps the official pace,
+ *  scaled by the multiplier, rounded to a half minute so the clock
+ *  reads clean, never under one minute. */
 export function sectionTimeLimitMs(
   format: ActFormat,
   section: ActSection,
@@ -100,6 +112,16 @@ export function sectionTimeLimitMs(
     : 1;
   const base = spec.minutes * MINUTE_MS * ratio * multiplier;
   return Math.max(MINUTE_MS, Math.round(base / (MINUTE_MS / 2)) * (MINUTE_MS / 2));
+}
+
+/** True when a section has at least the released-form question count
+ *  for its format, i.e. nothing is missing from the import. */
+export function isSectionComplete(
+  format: ActFormat,
+  section: ActSection,
+  questionCount: number,
+): boolean {
+  return questionCount >= ACT_FORMAT_SPECS[format].sections[section].released;
 }
 
 export type PlanSectionStatus = 'pending' | 'in_progress' | 'completed';
