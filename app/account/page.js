@@ -20,10 +20,11 @@ import { userHasAccess } from '@/lib/subscription';
 import {
   updateProfile,
   updateEmail,
-  updateDetourPreference,
+  updateDetourPreference, updateTimeAccommodation,
   addTeacherCode,
 } from './actions';
 import { AccountClient } from './AccountClient';
+import { parseTimeAccommodation } from '@/lib/practice/time-accommodation';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +45,7 @@ export default async function AccountPage() {
     supabase
       .from('profiles')
       .select(
-        'first_name, last_name, email, high_school, graduation_year, target_sat_score, sat_test_date, role, user_type, subscription_exempt, teacher_invite_code, practice_detours_enabled',
+        'first_name, last_name, email, high_school, graduation_year, target_sat_score, sat_test_date, role, user_type, subscription_exempt, teacher_invite_code, practice_detours_enabled, time_accommodation',
       )
       .eq('id', user.id)
       .maybeSingle(),
@@ -96,6 +97,8 @@ export default async function AccountPage() {
       updateProfileAction={updateProfile}
       updateEmailAction={updateEmail}
       updateDetourPreferenceAction={updateDetourPreference}
+      timeAccommodation={parseTimeAccommodation(profile?.time_accommodation)}
+      updateTimeAccommodationAction={updateTimeAccommodation}
       addTeacherCodeAction={addTeacherCode}
     />
   );

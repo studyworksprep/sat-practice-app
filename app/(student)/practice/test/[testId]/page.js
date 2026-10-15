@@ -12,6 +12,7 @@ import { redirect, notFound } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { startTestAttempt } from '../actions';
 import { LaunchInteractive } from './LaunchInteractive';
+import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,10 @@ export default async function PracticeTestLaunchPage({ params, searchParams }) {
   // be taking a test here.
   if (profile.role === 'admin') redirect('/admin');
   if (profile.role === 'practice') redirect('/subscribe');
+
+  // Standing extended-time accommodation pre-selects the launch
+  // page's controls (a ?ext/?mult hint from the compact launcher wins).
+  const timeAccommodation = await loadTimeAccommodation(supabase, user.id);
 
   const { data: test } = await supabase
     .from('practice_tests_v2')
@@ -88,6 +93,7 @@ export default async function PracticeTestLaunchPage({ params, searchParams }) {
         ? { attemptId: inProgress.id, sameTest: inProgress.practice_test_id === test.id }
         : null}
       initialSections={initialSections}
+      defaultMultiplier={timeAccommodation}
       startTestAttemptAction={startTestAttempt}
     />
   );

@@ -100,18 +100,21 @@ export type Database = {
       act_forms: {
         Row: {
           format: string
+          kind: string
           source_test: string
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           format?: string
+          kind?: string
           source_test: string
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           format?: string
+          kind?: string
           source_test?: string
           updated_at?: string
           updated_by?: string | null
@@ -2911,6 +2914,7 @@ export type Database = {
           subscription_exempt: boolean
           target_sat_score: number | null
           teacher_invite_code: string | null
+          time_accommodation: number
           tutor_name: string | null
           user_type: string | null
           welcome_email_sent_at: string | null
@@ -2937,6 +2941,7 @@ export type Database = {
           subscription_exempt?: boolean
           target_sat_score?: number | null
           teacher_invite_code?: string | null
+          time_accommodation?: number
           tutor_name?: string | null
           user_type?: string | null
           welcome_email_sent_at?: string | null
@@ -2963,6 +2968,7 @@ export type Database = {
           subscription_exempt?: boolean
           target_sat_score?: number | null
           teacher_invite_code?: string | null
+          time_accommodation?: number
           tutor_name?: string | null
           user_type?: string | null
           welcome_email_sent_at?: string | null

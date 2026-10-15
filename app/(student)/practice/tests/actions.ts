@@ -49,6 +49,7 @@ import {
   finalizeActAttempt,
   loadOwnActAttempt,
 } from '@/lib/practice-test/act-attempt';
+import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
 
 async function studentCtx() {
   try {
@@ -85,7 +86,13 @@ export async function startActPracticeTest(
 
   const sourceTest = String(formData.get('source_test') ?? '').trim();
   if (!sourceTest) return actionFail('Pick a test form.');
-  const multiplier = parseTimeMultiplier(formData.get('time_multiplier'));
+  // An explicit field wins (the hub always sends one); a start with no
+  // field — an assignment's Start button — uses the student's standing
+  // accommodation from the Account page.
+  const multiplierField = formData.get('time_multiplier');
+  const multiplier = multiplierField == null
+    ? await loadTimeAccommodation(supabase, user.id)
+    : parseTimeMultiplier(multiplierField);
 
   const { data: open } = await supabase
     .from('act_practice_test_attempts')

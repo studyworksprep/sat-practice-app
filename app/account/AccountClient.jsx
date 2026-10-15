@@ -8,6 +8,7 @@
 
 import { useActionState, useState, useTransition } from 'react';
 import { DETOUR_COPY } from '@/lib/practice/detour-preference.mjs';
+import { TIME_ACCOMMODATIONS, TIME_ACCOMMODATION_LABELS } from '@/lib/practice/time-accommodation';
 import { Button } from '@/lib/ui/Button';
 import { Card } from '@/lib/ui/Card';
 import { Toggle } from '@/lib/ui/Toggle';
@@ -33,6 +34,8 @@ export function AccountClient({
   updateProfileAction,
   updateEmailAction,
   updateDetourPreferenceAction,
+  timeAccommodation = 1,
+  updateTimeAccommodationAction,
   addTeacherCodeAction,
 }) {
   // /account is shared with staff roles; the practice settings only
@@ -57,6 +60,8 @@ export function AccountClient({
         <PracticeExperienceSection
           detours={detours}
           updateDetourPreferenceAction={updateDetourPreferenceAction}
+          timeAccommodation={timeAccommodation}
+          updateTimeAccommodationAction={updateTimeAccommodationAction}
         />
       )}
 
@@ -175,7 +180,12 @@ function ProfileSection({ profile, user, updateProfileAction, updateEmailAction 
 // Practice experience
 // ─────────────────────────────────────────────────────────────
 
-function PracticeExperienceSection({ detours, updateDetourPreferenceAction }) {
+function PracticeExperienceSection({
+  detours,
+  updateDetourPreferenceAction,
+  timeAccommodation,
+  updateTimeAccommodationAction,
+}) {
   // Optimistic local state so the switch moves under the finger; the
   // server value returns on the next render and takes over. Reverts
   // if the write fails.
@@ -183,6 +193,32 @@ function PracticeExperienceSection({ detours, updateDetourPreferenceAction }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(false);
+
+  // Standing extended-time accommodation. Same optimistic shape; its
+  // own pending/error state so the two controls don't talk over each
+  // other.
+  const [accommodation, setAccommodation] = useState(timeAccommodation);
+  const [timePending, startTimeTransition] = useTransition();
+  const [timeError, setTimeError] = useState(null);
+  const [timeSaved, setTimeSaved] = useState(false);
+
+  function onAccommodation(next) {
+    const prev = accommodation;
+    setAccommodation(next);
+    setTimeError(null);
+    setTimeSaved(false);
+    const fd = new FormData();
+    fd.set('time_accommodation', String(next));
+    startTimeTransition(async () => {
+      const res = await updateTimeAccommodationAction(null, fd);
+      if (!res?.ok) {
+        setAccommodation(prev);
+        setTimeError(res?.error ?? 'Could not save');
+        return;
+      }
+      setTimeSaved(true);
+    });
+  }
 
   function onToggle(next) {
     setEnabled(next);
@@ -205,7 +241,7 @@ function PracticeExperienceSection({ detours, updateDetourPreferenceAction }) {
     <Card className={s.card}>
       <SectionHeader
         title="Practice experience"
-        subtitle="What happens when a practice set gets rough."
+        subtitle="What happens when a practice set gets rough, and how timed tests are clocked."
       />
 
       <div className={s.toggleRow}>
@@ -233,6 +269,32 @@ function PracticeExperienceSection({ detours, updateDetourPreferenceAction }) {
         {error && <span className={s.errorMsg}>{error}</span>}
         {!error && pending && <span className={s.help}>Saving…</span>}
         {!error && !pending && saved && <span className={s.successMsg}>Saved.</span>}
+      </div>
+
+      <fieldset className={s.radioGroup} disabled={timePending}>
+        <legend className={s.toggleLabel}>Extended time on practice tests</legend>
+        <span className={s.help}>
+          Pre-selected whenever you launch a timed SAT or ACT practice
+          test, and used as-is when a tutor&apos;s assignment starts one.
+          You can still change it for a single test.
+        </span>
+        {TIME_ACCOMMODATIONS.map((m) => (
+          <label key={m} className={s.radioRow}>
+            <input
+              type="radio"
+              name="time_accommodation"
+              value={String(m)}
+              checked={accommodation === m}
+              onChange={() => onAccommodation(m)}
+            />
+            <span>{TIME_ACCOMMODATION_LABELS[m]}</span>
+          </label>
+        ))}
+      </fieldset>
+      <div className={s.formActions}>
+        {timeError && <span className={s.errorMsg}>{timeError}</span>}
+        {!timeError && timePending && <span className={s.help}>Saving…</span>}
+        {!timeError && !timePending && timeSaved && <span className={s.successMsg}>Saved.</span>}
       </div>
     </Card>
   );

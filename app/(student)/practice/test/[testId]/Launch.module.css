@@ -251,3 +251,11 @@
   width: 100%;
   margin: var(--s2) 0 0;
 }
+
+/* Hint under the accommodation checkbox when the standing setting
+   from the Account page pre-selected it. */
+.accomHint {
+  margin: 6px 0 0 26px;
+  font-size: 13px;
+  color: var(--fg2);
+}

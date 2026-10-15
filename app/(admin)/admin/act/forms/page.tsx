@@ -1,9 +1,10 @@
 // Admin → ACT → Forms. One row per form in the bank with the setting
 // that drives Phase 3 test mode — classic vs enhanced format — next
 // to the facts an admin needs to pick it: live question count per
-// section against the format's released count (released forms omit
-// the unscored field-test items), the resulting section time limits,
-// and whether the form has a score-conversion table.
+// section judged by the form's kind (a released exam omits the
+// unscored field-test items; an online practice test may carry them),
+// the resulting section time limits, and whether the form has a
+// score-conversion table.
 //
 // Forms with no act_forms row run as classic; the select saves a row
 // on first change.
@@ -15,12 +16,15 @@ import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import {
   ACT_FORMAT_SPECS,
   isActFormat,
-  isSectionComplete,
+  isActFormKind,
   minutesLabel,
+  sectionCompleteness,
   sectionTimeLimitMs,
   type ActFormat,
+  type ActFormKind,
 } from '@/lib/practice/act-test-plan';
 import { FormatSelect } from './FormatSelect';
+import { KindSelect } from './KindSelect';
 import s from '../questions/ActQuestions.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -28,6 +32,7 @@ export const dynamic = 'force-dynamic';
 interface FormRow {
   sourceTest: string;
   format: ActFormat;
+  kind: ActFormKind;
   hasRow: boolean;
   counts: Record<string, number>;
   scaleRows: Record<string, number>;
@@ -48,13 +53,15 @@ export default async function AdminActFormsPage() {
       .is('deleted_at', null)
       .eq('is_broken', false)
       .not('source_test', 'is', null),
-    supabase.from('act_forms').select('source_test, format'),
+    supabase.from('act_forms').select('source_test, format, kind'),
     supabase.from('act_score_conversion').select('source_test, section'),
   ]);
 
   const formatByForm = new Map<string, ActFormat>();
-  for (const r of (formRows ?? []) as Array<{ source_test: string; format: string }>) {
+  const kindByForm = new Map<string, ActFormKind>();
+  for (const r of (formRows ?? []) as Array<{ source_test: string; format: string; kind: string }>) {
     if (isActFormat(r.format)) formatByForm.set(r.source_test, r.format);
+    if (isActFormKind(r.kind)) kindByForm.set(r.source_test, r.kind);
   }
   const scaleByForm = new Map<string, Record<string, number>>();
   for (const r of (scaleRows ?? []) as Array<{ source_test: string; section: string }>) {
@@ -69,6 +76,7 @@ export default async function AdminActFormsPage() {
       row = {
         sourceTest: r.source_test,
         format: formatByForm.get(r.source_test) ?? 'classic',
+        kind: kindByForm.get(r.source_test) ?? 'released',
         hasRow: formatByForm.has(r.source_test),
         counts: {},
         scaleRows: scaleByForm.get(r.source_test) ?? {},
@@ -97,13 +105,15 @@ export default async function AdminActFormsPage() {
           60q/60 min, Reading 40q/35 min, Science 40q/35 min, composite
           over four. Enhanced (2025+): English 50q/35 min, Math 45q/50
           min, Reading 36q/40 min, Science 40q/40 min, composite over
-          English, Math and Reading. Released forms omit the unscored
-          field-test items, so a complete released enhanced form has
-          English 40, Math 41, Reading 27 and Science 34 questions
-          (classic released forms carry all 75/60/40/40). Each section
-          is timed at the official pace, so 40 released English
-          questions get 28 minutes; a section short of the released
-          count is flagged partial.
+          English, Math and Reading. Three kinds of form exist: classic
+          forms carry every question (75/60/40/40); in the new format a
+          released exam omits the unscored field-test items, so a
+          complete one has English 40, Math 41, Reading 27 and Science
+          34, while an online practice test may include them (up to
+          50/45/36/40). Every section is timed at the official pace for
+          its question count, so 40 released English questions get 28
+          minutes and 50 get 35. A section short of the released count
+          is flagged partial.
         </p>
       </header>
 
@@ -116,6 +126,7 @@ export default async function AdminActFormsPage() {
               <tr>
                 <th className={s.th}>Form</th>
                 <th className={s.th}>Format</th>
+                <th className={s.th}>Kind</th>
                 {ACT_SECTIONS.map((sec) => (
                   <th key={sec} className={s.th}>{sectionLabel(sec)}</th>
                 ))}
@@ -135,15 +146,20 @@ export default async function AdminActFormsPage() {
                     <td className={s.td}>
                       <FormatSelect sourceTest={row.sourceTest} format={row.format} hasRow={row.hasRow} />
                     </td>
+                    <td className={s.td}>
+                      <KindSelect sourceTest={row.sourceTest} kind={row.kind} hasRow={row.hasRow} />
+                    </td>
                     {ACT_SECTIONS.map((sec) => {
                       const n = row.counts[sec] ?? 0;
                       if (n === 0) return <td key={sec} className={s.td} style={{ color: 'var(--fg3)' }}>—</td>;
                       const released = spec.sections[sec].released;
-                      const complete = isSectionComplete(row.format, sec, n);
+                      const status = sectionCompleteness(row.format, row.kind, sec, n);
                       return (
                         <td key={sec} className={s.td} style={{ whiteSpace: 'nowrap' }}>
-                          {complete ? n : `${n}/${released}`}
-                          {complete ? null : <span className={`${s.pill} ${s.pillWarn}`}>partial</span>}
+                          {status === 'partial' ? `${n}/${released}` : n}
+                          {status === 'partial' && <span className={`${s.pill} ${s.pillWarn}`}>partial</span>}
+                          {status === 'full_length' && <span className={`${s.pill} ${s.pillMuted}`}>incl. unscored</span>}
+                          {status === 'scored_only' && <span className={`${s.pill} ${s.pillMuted}`}>scored items only</span>}
                           <div className={s.fieldHint}>{minutesLabel(sectionTimeLimitMs(row.format, sec, n))}</div>
                         </td>
                       );
