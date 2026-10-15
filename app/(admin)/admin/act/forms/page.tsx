@@ -1,8 +1,9 @@
 // Admin → ACT → Forms. One row per form in the bank with the setting
 // that drives Phase 3 test mode — classic vs enhanced format — next
 // to the facts an admin needs to pick it: live question count per
-// section against the format's official count, the resulting section
-// time limits, and whether the form has a score-conversion table.
+// section against the format's released count (released forms omit
+// the unscored field-test items), the resulting section time limits,
+// and whether the form has a score-conversion table.
 //
 // Forms with no act_forms row run as classic; the select saves a row
 // on first change.
@@ -14,6 +15,7 @@ import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import {
   ACT_FORMAT_SPECS,
   isActFormat,
+  isSectionComplete,
   minutesLabel,
   sectionTimeLimitMs,
   type ActFormat,
@@ -95,8 +97,13 @@ export default async function AdminActFormsPage() {
           60q/60 min, Reading 40q/35 min, Science 40q/35 min, composite
           over four. Enhanced (2025+): English 50q/35 min, Math 45q/50
           min, Reading 36q/40 min, Science 40q/40 min, composite over
-          English, Math and Reading. A section short of the official
-          count gets a pro-rated limit.
+          English, Math and Reading. Released forms omit the unscored
+          field-test items, so a complete released enhanced form has
+          English 40, Math 41, Reading 27 and Science 34 questions
+          (classic released forms carry all 75/60/40/40). Each section
+          is timed at the official pace, so 40 released English
+          questions get 28 minutes; a section short of the released
+          count is flagged partial.
         </p>
       </header>
 
@@ -131,11 +138,12 @@ export default async function AdminActFormsPage() {
                     {ACT_SECTIONS.map((sec) => {
                       const n = row.counts[sec] ?? 0;
                       if (n === 0) return <td key={sec} className={s.td} style={{ color: 'var(--fg3)' }}>—</td>;
-                      const official = spec.sections[sec].questions;
+                      const released = spec.sections[sec].released;
+                      const complete = isSectionComplete(row.format, sec, n);
                       return (
                         <td key={sec} className={s.td} style={{ whiteSpace: 'nowrap' }}>
-                          {n}/{official}
-                          {n < official ? <span className={`${s.pill} ${s.pillWarn}`}>partial</span> : null}
+                          {complete ? n : `${n}/${released}`}
+                          {complete ? null : <span className={`${s.pill} ${s.pillWarn}`}>partial</span>}
                           <div className={s.fieldHint}>{minutesLabel(sectionTimeLimitMs(row.format, sec, n))}</div>
                         </td>
                       );
