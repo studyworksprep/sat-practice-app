@@ -147,6 +147,40 @@ export async function updateDetourPreference(_prev, formData) {
 }
 
 /**
+ * Standing extended-time accommodation for timed practice tests — see
+ * lib/practice/time-accommodation.ts. Pre-selects the SAT launch page
+ * and the ACT hub's timing select and applies outright to starts that
+ * offer no choice (an ACT practice-test assignment); each attempt
+ * still records the multiplier it ran with.
+ */
+export async function updateTimeAccommodation(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+
+  const raw = String(formData.get('time_accommodation') ?? '');
+  if (raw !== '1' && raw !== '1.5' && raw !== '2') {
+    return actionFail('Invalid value');
+  }
+  const value = Number(raw);
+
+  const { error } = await ctx.supabase
+    .from('profiles')
+    .update({ time_accommodation: value })
+    .eq('id', ctx.user.id);
+
+  if (error) return actionFail(`Failed to save: ${error.message}`);
+
+  revalidatePath('/account');
+  revalidatePath('/practice/tests');
+  return actionOk({ value });
+}
+
+/**
  * Begin an email change. Supabase sends a confirmation link to
  * the NEW address; the change does not take effect until the
  * user clicks it. profiles.email is not updated here — the

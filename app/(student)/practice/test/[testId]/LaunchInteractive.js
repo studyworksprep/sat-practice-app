@@ -16,6 +16,7 @@ export function LaunchInteractive({
   summary,
   inProgress,
   initialSections = 'both',
+  defaultMultiplier = 1,
   startTestAttemptAction,
 }) {
   const router = useRouter();
@@ -29,9 +30,14 @@ export function LaunchInteractive({
   // means "open the launch page with 1.5× already selected". Times
   // shown in the module summary below are scaled by the current
   // multiplier so the student sees the clock they'll actually get.
-  const initialExt = searchParams?.get('ext') === '1';
+  // With no query hint, the student's standing accommodation (Account
+  // page) pre-selects the controls; ?ext=0 from the compact launcher
+  // means they switched it off for this test.
+  const standing = defaultMultiplier === 2 || defaultMultiplier === 1.5 ? defaultMultiplier : 1;
+  const extParam = searchParams?.get('ext');
+  const initialExt = extParam == null ? standing > 1 : extParam === '1';
   const rawMult = Number(searchParams?.get('mult'));
-  const initialMult = rawMult === 2 || rawMult === 1.5 ? rawMult : 1.5;
+  const initialMult = rawMult === 2 || rawMult === 1.5 ? rawMult : standing > 1 ? standing : 1.5;
   const [accommodationOn, setAccommodationOn] = useState(initialExt);
   const [multiplier, setMultiplier] = useState(initialMult);
 
@@ -73,9 +79,9 @@ export function LaunchInteractive({
     const fd = new FormData();
     fd.set('testId', test.id);
     if (sections !== 'both') fd.set('sections', sections);
-    if (accommodationOn && multiplier > 1) {
-      fd.set('timeMultiplier', String(multiplier));
-    }
+    // Always explicit: a 1 here overrides the standing accommodation
+    // the action would otherwise fall back to.
+    fd.set('timeMultiplier', String(accommodationOn && multiplier > 1 ? multiplier : 1));
     try {
       const res = await startTestAttemptAction(null, fd);
       if (!res?.ok) {
@@ -200,6 +206,12 @@ export function LaunchInteractive({
           />
           <span>I have an approved extra-time accommodation</span>
         </label>
+        {standing > 1 && (
+          <div className={s.accomHint}>
+            Pre-selected from your Account page. Untick it to take this
+            test at standard time.
+          </div>
+        )}
         {accommodationOn && (
           <div className={s.accomOptions}>
             <label className={s.radioRow}>

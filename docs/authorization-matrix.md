@@ -43,7 +43,7 @@ Runs on every matched request. Detected: session refresh only.
 
 | Module | Exported actions | Guards (file-level) |
 |---|---|---|
-| `app/(admin)/admin/act/forms/actions.ts` | `setActFormFormat` | requireRole[admin] |
+| `app/(admin)/admin/act/forms/actions.ts` | `setActFormFormat`, `setActFormKind` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/[jobId]/actions.ts` | `parseEnglish`, `parseMath`, `parseReading`, `parseScience`, `parseScaleAction`, `addJobFile` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/[jobId]/review/actions.ts` | `saveDraft`, `approveDraft`, `bulkApprove`, `unapproveDraft`, `rejectDraft`, `finalizeJob` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/actions.ts` | `createImportJob`, `deleteImportJob` | requireRole[admin] |
@@ -98,7 +98,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/training/assignments/[id]/actions.js` | `startTrainingAssignment` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/practice/actions.js` | `createTrainingSession`, `countAvailable` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/review/actions.js` | `createTrainingWeakQueueDrill`, `createTrainingSkillDrill` | requireUser + rateLimit |
-| `app/account/actions.js` | `updateProfile`, `updateDetourPreference`, `updateEmail`, `addTeacherCode` | requireUser |
+| `app/account/actions.js` | `updateProfile`, `updateDetourPreference`, `updateTimeAccommodation`, `updateEmail`, `addTeacherCode` | requireUser |
 | `lib/bluebook/submission-actions.ts` | `crossCheckAttempt`, `loadAttemptEntryView`, `createHtmlUploadSubmission`, `createAttemptLinkedSubmission`, `createManualGridSubmission`, `reviewSubmission`, `artifactDownloadUrl`, `promoteSubmission` | requireRole[...CONTRIBUTOR_ROLES|...STAFF_ROLES] + requireServiceRole |
 | `lib/lesson/editor-question-actions.ts` | `searchLessonEditorQuestions`, `getLessonEditorQuestion` | requireRole[admin|manager|teacher] |
 | `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan`, `proposeRepace` | requireUser |

@@ -43,6 +43,9 @@ const ALLOWED_FIELDS = [
   // §3.2 step-back offers, driven from the student-detail page.
   // Tri-state — see lib/practice/detour-preference.mjs.
   'practice_detours_enabled',
+  // Standing extended-time accommodation for timed practice tests —
+  // see lib/practice/time-accommodation.ts.
+  'time_accommodation',
 ] as const;
 
 export interface UpdateStudentProfileInput {
@@ -104,6 +107,13 @@ export async function updateStudentProfile(
       if (value !== null && typeof value !== 'boolean') {
         return actionFail('practice_detours_enabled must be true, false, or null');
       }
+    }
+    if (key === 'time_accommodation') {
+      const n = Number(value);
+      if (n !== 1 && n !== 1.5 && n !== 2) {
+        return actionFail('time_accommodation must be 1, 1.5 or 2');
+      }
+      value = n;
     }
     updates[key] = value;
   }
