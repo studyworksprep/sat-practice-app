@@ -40,6 +40,26 @@ export function isActFormat(v: unknown): v is ActFormat {
   return v === 'classic' || v === 'enhanced';
 }
 
+/** How a form relates to the administered test (act_forms.kind).
+ *  A released exam (Test Information Release) omits the enhanced
+ *  ACT's unscored field-test items, so a complete one has 40/41/27/34
+ *  questions; an online practice test in the new format may include
+ *  them (up to 50/45/36/40). Classic forms carry every question either
+ *  way. Timing is pace-based regardless; the kind drives completeness
+ *  checks and the label students see. */
+export type ActFormKind = 'released' | 'practice';
+
+export const ACT_FORM_KINDS: readonly ActFormKind[] = ['released', 'practice'] as const;
+
+export const ACT_FORM_KIND_LABELS: Record<ActFormKind, string> = {
+  released: 'Released exam',
+  practice: 'Online practice test',
+};
+
+export function isActFormKind(v: unknown): v is ActFormKind {
+  return v === 'released' || v === 'practice';
+}
+
 export interface SectionSpec {
   /** Questions administered on test day, unscored field-test items
    *  included. The pacing denominator. */
@@ -114,14 +134,35 @@ export function sectionTimeLimitMs(
   return Math.max(MINUTE_MS, Math.round(base / (MINUTE_MS / 2)) * (MINUTE_MS / 2));
 }
 
-/** True when a section has at least the released-form question count
- *  for its format, i.e. nothing is missing from the import. */
+export type SectionCompleteness = 'partial' | 'complete' | 'scored_only' | 'full_length';
+
+/** Completeness of a section's import against what its kind of form
+ *  can contain. Any form is partial below the released count. A
+ *  released exam is complete at that count; an online practice test
+ *  is complete there too (the unscored items are optional) and
+ *  reports whether it carries them — 'full_length' at the administered
+ *  count, 'scored_only' in between. Classic forms have no unscored
+ *  items, so they are simply complete or partial. */
+export function sectionCompleteness(
+  format: ActFormat,
+  kind: ActFormKind,
+  section: ActSection,
+  questionCount: number,
+): SectionCompleteness {
+  const spec = ACT_FORMAT_SPECS[format].sections[section];
+  if (questionCount < spec.released) return 'partial';
+  if (kind === 'released' || spec.released === spec.questions) return 'complete';
+  return questionCount >= spec.questions ? 'full_length' : 'scored_only';
+}
+
+/** True when nothing is missing from the section's import. */
 export function isSectionComplete(
   format: ActFormat,
   section: ActSection,
   questionCount: number,
+  kind: ActFormKind = 'released',
 ): boolean {
-  return questionCount >= ACT_FORMAT_SPECS[format].sections[section].released;
+  return sectionCompleteness(format, kind, section, questionCount) !== 'partial';
 }
 
 export type PlanSectionStatus = 'pending' | 'in_progress' | 'completed';

@@ -25,7 +25,8 @@ import { HelpButton } from '@/app/(student)/help/HelpButton';
 import s from './PracticeTestsPage.module.css';
 import { visibleActQuestions } from '@/lib/practice/act-visibility';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
-import { isActFormat, parsePlan } from '@/lib/practice/act-test-plan';
+import { isActFormat, isActFormKind, parsePlan } from '@/lib/practice/act-test-plan';
+import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,13 +42,18 @@ export default async function PracticeTestsPage({ searchParams }) {
   const testParam = typeof sp.test === 'string' ? sp.test.toLowerCase() : '';
   const testType = testParam === 'act' ? 'act' : 'sat';
 
+  // Standing extended-time accommodation (Account page). Pre-selects
+  // the SAT launcher's accommodation controls and the ACT hub's
+  // timing select; either can still be changed for one test.
+  const timeAccommodation = await loadTimeAccommodation(supabase, user.id);
+
   if (testType === 'act') {
-    return <ActPracticeTestsPage user={user} supabase={supabase} />;
+    return <ActPracticeTestsPage user={user} supabase={supabase} timeAccommodation={timeAccommodation} />;
   }
-  return <SatPracticeTestsPage user={user} supabase={supabase} />;
+  return <SatPracticeTestsPage user={user} supabase={supabase} timeAccommodation={timeAccommodation} />;
 }
 
-async function SatPracticeTestsPage({ user, supabase }) {
+async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
 
   const [
     { data: completedRows },
@@ -144,12 +150,14 @@ async function SatPracticeTestsPage({ user, supabase }) {
           <div>
             <div className={s.h2}>Launch a test</div>
             <div className={s.cardHint}>
-              Pick a test, choose your accommodation, and jump in.
-              You&apos;ll see the module summary before the timer starts.
+              Pick a test and jump in. Your extended-time setting from
+              the Account page is pre-selected; change it here for a
+              single test. You&apos;ll see the module summary before the
+              timer starts.
             </div>
           </div>
         </div>
-        <TestLauncher tests={testOptions} basePath="/practice" />
+        <TestLauncher tests={testOptions} basePath="/practice" defaultMultiplier={timeAccommodation} />
       </section>
 
       {recentForChart.length >= 2 && (
@@ -522,7 +530,7 @@ function TestTypeTabs({ current }) {
 // is). Hands data to ActTestsHub.
 // ──────────────────────────────────────────────────────────────
 
-async function ActPracticeTestsPage({ user, supabase }) {
+async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
   // Pull every visible ACT question. Buckets by source_test ×
   // section so the hub can render per-section counts and timings on
   // each card. The volume is small (~600 rows); one read covers it.
@@ -553,12 +561,14 @@ async function ActPracticeTestsPage({ user, supabase }) {
       .maybeSingle(),
     supabase
       .from('act_forms')
-      .select('source_test, format'),
+      .select('source_test, format, kind'),
   ]);
 
   const formatByForm = new Map();
+  const kindByForm = new Map();
   for (const r of formRows ?? []) {
     if (isActFormat(r.format)) formatByForm.set(r.source_test, r.format);
+    if (isActFormKind(r.kind)) kindByForm.set(r.source_test, r.kind);
   }
 
   // Bucket per (source_test, section).
@@ -577,6 +587,7 @@ async function ActPracticeTestsPage({ user, supabase }) {
     .map((f) => ({
       sourceTest: f.source_test,
       format: formatByForm.get(f.source_test) ?? 'classic',
+      kind: kindByForm.get(f.source_test) ?? 'released',
       total: f.total,
       sections: Array.from(f.sectionCounts.entries())
         .sort((a, b) => a[0].localeCompare(b[0]))
@@ -606,6 +617,7 @@ async function ActPracticeTestsPage({ user, supabase }) {
       attempts={attemptRows ?? []}
       resumeInfo={resumeInfo}
       tabs={<TestTypeTabs current="act" />}
+      defaultMultiplier={timeAccommodation}
     />
   );
 }

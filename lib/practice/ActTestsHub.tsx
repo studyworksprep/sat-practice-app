@@ -20,11 +20,13 @@ import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import { sectionLabel, type ActSection } from '@/lib/practice/act-taxonomy';
 import {
   ACT_FORMAT_LABELS,
+  ACT_FORM_KIND_LABELS,
   ACT_TIME_MULTIPLIERS,
   buildSectionPlan,
   minutesLabel,
   parseTimeMultiplier,
   type ActFormat,
+  type ActFormKind,
   type ActTimeMultiplier,
 } from '@/lib/practice/act-test-plan';
 import {
@@ -36,6 +38,7 @@ import s from './ActTestsHub.module.css';
 export interface HubForm {
   sourceTest: string;
   format: ActFormat;
+  kind: ActFormKind;
   total: number;
   sections: Array<{ section: ActSection; count: number }>;
 }
@@ -73,6 +76,7 @@ export function ActTestsHub({
   attempts,
   resumeInfo,
   tabs,
+  defaultMultiplier = 1,
 }: {
   forms: HubForm[];
   attempts: HubAttempt[];
@@ -80,9 +84,12 @@ export function ActTestsHub({
   /** Tabs nav rendered above the header so the test-type slice is
    *  the first thing visible. */
   tabs: React.ReactNode;
+  /** Standing accommodation (profiles.time_accommodation); pre-selects
+   *  the Timing control. */
+  defaultMultiplier?: number;
 }) {
   const completedTests = new Set(attempts.map((a) => a.source_test));
-  const [multiplier, setMultiplier] = useState<ActTimeMultiplier>(1);
+  const [multiplier, setMultiplier] = useState<ActTimeMultiplier>(parseTimeMultiplier(defaultMultiplier));
 
   return (
     <main className={s.container}>
@@ -270,6 +277,9 @@ function TestFormCard({
         <div className={s.testCardTitle}>
           {form.sourceTest}
           <span className={s.formatBadge}>{ACT_FORMAT_LABELS[form.format]}</span>
+          {form.format === 'enhanced' && (
+            <span className={s.formatBadge}>{ACT_FORM_KIND_LABELS[form.kind]}</span>
+          )}
           {completed && <span className={s.testCardCompleted}>✓ Completed</span>}
         </div>
         <ul className={s.sectionLines}>
