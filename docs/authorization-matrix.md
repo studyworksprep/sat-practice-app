@@ -43,7 +43,7 @@ Runs on every matched request. Detected: session refresh only.
 
 | Module | Exported actions | Guards (file-level) |
 |---|---|---|
-| `app/(admin)/admin/act/forms/actions.ts` | `setActFormFormat`, `setActFormKind` | requireRole[admin] |
+| `app/(admin)/admin/act/forms/actions.ts` | `setActFormFormat`, `setActFormKind`, `setActFormDisplayName` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/[jobId]/actions.ts` | `parseEnglish`, `parseMath`, `parseReading`, `parseScience`, `parseScaleAction`, `addJobFile` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/[jobId]/review/actions.ts` | `saveDraft`, `approveDraft`, `bulkApprove`, `unapproveDraft`, `rejectDraft`, `finalizeJob` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/actions.ts` | `createImportJob`, `deleteImportJob` | requireRole[admin] |

@@ -27,6 +27,7 @@ import { visibleActQuestions } from '@/lib/practice/act-visibility';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import { isActFormat, isActFormKind, parsePlan } from '@/lib/practice/act-test-plan';
 import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
+import { actFormDetail, actFormNamer } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -561,7 +562,7 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
       .maybeSingle(),
     supabase
       .from('act_forms')
-      .select('source_test, format, kind'),
+      .select('source_test, format, kind, display_name'),
   ]);
 
   const formatByForm = new Map();
@@ -570,6 +571,9 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
     if (isActFormat(r.format)) formatByForm.set(r.source_test, r.format);
     if (isActFormKind(r.kind)) kindByForm.set(r.source_test, r.kind);
   }
+  // Readable names: the admin's display_name or a default derived
+  // from the key ("April 2026 ACT", "Online Multiple Choice Test 1").
+  const nameOf = actFormNamer(formRows);
 
   // Bucket per (source_test, section).
   const formAcc = new Map();
@@ -586,6 +590,8 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
   const forms = Array.from(formAcc.values())
     .map((f) => ({
       sourceTest: f.source_test,
+      name: nameOf(f.source_test),
+      detail: actFormDetail(f.source_test),
       format: formatByForm.get(f.source_test) ?? 'classic',
       kind: kindByForm.get(f.source_test) ?? 'released',
       total: f.total,
@@ -603,6 +609,7 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
     resumeInfo = {
       attemptId: inProgress.id,
       sourceTest: inProgress.source_test,
+      name: nameOf(inProgress.source_test),
       sectionIndex: idx,
       sectionCount: plan.length,
       sectionLabel: cur ? sectionLabel(cur.section) : null,
@@ -614,7 +621,7 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
   return (
     <ActTestsHub
       forms={forms}
-      attempts={attemptRows ?? []}
+      attempts={(attemptRows ?? []).map((a) => ({ ...a, name: nameOf(a.source_test) }))}
       resumeInfo={resumeInfo}
       tabs={<TestTypeTabs current="act" />}
       defaultMultiplier={timeAccommodation}

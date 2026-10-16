@@ -62,8 +62,9 @@ export function ActTestResults({
           <Link href={backHref} className={s.reviewLink}>{backLabel}</Link>
         )}
         <div className={s.eyebrow}>ACT practice test</div>
-        <h1 className={s.h1}>{attempt.sourceTest}</h1>
+        <h1 className={s.h1}>{attempt.formName}</h1>
         <p className={s.sub}>
+          {attempt.formDetail ? `${attempt.formDetail} · ` : ''}
           {ACT_FORMAT_LABELS[attempt.format]}
           {' · '}Finished {formatDate(attempt.finishedAt)}
           {attempt.timeMultiplier > 1 ? ` · ${attempt.timeMultiplier}× time` : ''}

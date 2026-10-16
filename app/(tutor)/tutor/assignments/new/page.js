@@ -21,6 +21,7 @@ import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import { ACT_FORMAT_LABELS, isActFormat } from '@/lib/practice/act-test-plan';
+import { actFormNamer } from '@/lib/practice/act-form-names';
 import { createAssignment } from './actions';
 import { deleteAssignmentTemplate } from './template-actions';
 import { NewAssignmentInteractive } from './NewAssignmentInteractive';
@@ -139,7 +140,7 @@ export default async function NewAssignmentPage({ searchParams }) {
         .is('deleted_at', null)
         .range(from, to),
     ),
-    supabase.from('act_forms').select('source_test, format'),
+    supabase.from('act_forms').select('source_test, format, display_name'),
   ]);
 
   // Bucket junction rows by pack id so the picker shows "12
@@ -212,6 +213,7 @@ export default async function NewAssignmentPage({ searchParams }) {
   for (const f of actFormRows ?? []) {
     if (isActFormat(f.format)) actFormatByForm.set(f.source_test, f.format);
   }
+  const nameActForm = actFormNamer(actFormRows);
   const actCounts = new Map();
   const actDiffSet = new Set();
   const actFormCounts = new Map();
@@ -238,7 +240,7 @@ export default async function NewAssignmentPage({ searchParams }) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([sourceTest, count]) => ({
       sourceTest,
-      label: `${sourceTest} · ${ACT_FORMAT_LABELS[actFormatByForm.get(sourceTest) ?? 'classic']} · ${count} question${count === 1 ? '' : 's'}`,
+      label: `${nameActForm(sourceTest)} · ${ACT_FORMAT_LABELS[actFormatByForm.get(sourceTest) ?? 'classic']} · ${count} question${count === 1 ? '' : 's'}`,
     }));
 
   // ── One-click prefill (§4.3) ──────────────────────────────────
