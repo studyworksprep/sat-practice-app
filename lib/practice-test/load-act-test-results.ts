@@ -19,6 +19,7 @@
 
 import { ACT_SECTIONS, sectionLabel, type ActSection } from '@/lib/practice/act-taxonomy';
 import { parsePlan, type ActFormat } from '@/lib/practice/act-test-plan';
+import { actFormDetail, actFormName } from '@/lib/practice/act-form-names';
 import {
   ACT_ATTEMPT_COLUMNS,
   attemptFormat,
@@ -30,6 +31,10 @@ export interface ActTestResultsAttempt {
   id: string;
   userId: string;
   sourceTest: string;
+  /** Student-facing name (act_forms.display_name or the derived default). */
+  formName: string;
+  /** "Form E25"-style detail, or null. */
+  formDetail: string | null;
   status: string;
   format: ActFormat;
   timeMultiplier: number;
@@ -54,11 +59,13 @@ export type ActTestResultsLoad =
   | { ok: false; code: 'in-progress'; attempt: ActTestResultsAttempt }
   | { ok: true; attempt: ActTestResultsAttempt; sectionRows: ActSectionRow[] };
 
-function toAttempt(row: ActAttemptRow): ActTestResultsAttempt {
+function toAttempt(row: ActAttemptRow, displayName: string | null | undefined): ActTestResultsAttempt {
   return {
     id: row.id,
     userId: row.user_id,
     sourceTest: row.source_test,
+    formName: actFormName(row.source_test, displayName),
+    formDetail: actFormDetail(row.source_test),
     status: row.status,
     format: attemptFormat(row),
     timeMultiplier: Number(row.time_multiplier ?? 1) || 1,
@@ -84,7 +91,12 @@ export async function loadActTestResults({
     .maybeSingle();
   if (!data) return { ok: false, code: 'not-found' };
   const row = data as ActAttemptRow;
-  const attempt = toAttempt(row);
+  const { data: formRow } = await supabase
+    .from('act_forms')
+    .select('display_name')
+    .eq('source_test', row.source_test)
+    .maybeSingle();
+  const attempt = toAttempt(row, (formRow as { display_name?: string | null } | null)?.display_name);
   if (row.status !== 'completed') return { ok: false, code: 'in-progress', attempt };
 
   const scaledFor = (sec: ActSection): number | null => {

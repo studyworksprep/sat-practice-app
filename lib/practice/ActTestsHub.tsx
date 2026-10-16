@@ -37,6 +37,10 @@ import s from './ActTestsHub.module.css';
 
 export interface HubForm {
   sourceTest: string;
+  /** Student-facing name (act_forms.display_name or the derived default). */
+  name: string;
+  /** Secondary detail such as "Form E25"; null when there is none. */
+  detail: string | null;
   format: ActFormat;
   kind: ActFormKind;
   total: number;
@@ -46,6 +50,8 @@ export interface HubForm {
 export interface HubAttempt {
   id: string;
   source_test: string;
+  /** Student-facing name of the form; falls back to source_test. */
+  name?: string;
   finished_at: string | null;
   english_scaled: number | null;
   math_scaled: number | null;
@@ -58,6 +64,7 @@ export interface HubAttempt {
 export interface HubResumeInfo {
   attemptId: string;
   sourceTest: string;
+  name: string;
   sectionIndex: number;
   sectionCount: number;
   sectionLabel: string | null;
@@ -186,7 +193,7 @@ function ResumeCard({ info }: { info: HubResumeInfo }) {
 
   async function onAbandon() {
     const ok = await confirm({
-      title: `Abandon ${info.sourceTest}?`,
+      title: `Abandon ${info.name}?`,
       body: 'Sections you finished stay on your record, but this attempt will not get a score and cannot be resumed.',
       confirmLabel: 'Abandon test',
       tone: 'danger',
@@ -210,7 +217,7 @@ function ResumeCard({ info }: { info: HubResumeInfo }) {
     <div className={s.resumeCard} role="status">
       <div>
         <strong>You have a test in progress:</strong>{' '}
-        {info.sourceTest}
+        {info.name}
         {' · '}
         {where}
         {error && <div className={s.testCardError} role="alert">{error}</div>}
@@ -275,7 +282,7 @@ function TestFormCard({
     <li className={s.testCard}>
       <div className={s.testCardBody}>
         <div className={s.testCardTitle}>
-          {form.sourceTest}
+          {form.name}
           <span className={s.formatBadge}>{ACT_FORMAT_LABELS[form.format]}</span>
           {form.format === 'enhanced' && (
             <span className={s.formatBadge}>{ACT_FORM_KIND_LABELS[form.kind]}</span>
@@ -290,6 +297,7 @@ function TestFormCard({
           ))}
         </ul>
         <div className={s.testCardMeta}>
+          {form.detail ? `${form.detail} · ` : ''}
           {plan.length === 1 ? 'One section' : `${plan.length} sections`} · {minutesLabel(totalMs)}
           {breakMs > 0 ? ` + ${minutesLabel(breakMs)} break` : ''}
         </div>
@@ -329,7 +337,7 @@ function ActHistoryTable({ attempts }: { attempts: HubAttempt[] }) {
           {attempts.map((a) => (
             <tr key={a.id}>
               <td className={s.td}>
-                {a.source_test}
+                {a.name ?? a.source_test}
                 {a.time_multiplier != null && Number(a.time_multiplier) > 1
                   ? ` · ${Number(a.time_multiplier)}× time`
                   : ''}

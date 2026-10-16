@@ -13,6 +13,7 @@ import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import type { ActionResult } from '@/lib/types';
 import { isActFormat, isActFormKind } from '@/lib/practice/act-test-plan';
+import { defaultActFormName } from '@/lib/practice/act-form-names';
 
 export async function setActFormFormat(
   _prev: ActionResult | null,
@@ -91,4 +92,46 @@ export async function setActFormKind(
   revalidatePath('/admin/act/forms');
   revalidatePath('/practice/tests');
   return actionOk();
+}
+
+/** Student-facing name. Blank (or the derived default itself) clears
+ *  the override so the form follows lib/practice/act-form-names.ts. */
+export async function setActFormDisplayName(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult<{ data: { name: string; custom: boolean } }>> {
+  let ctx;
+  try {
+    ctx = await requireRole(['admin']);
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { supabase, user } = ctx as { supabase: any; user: { id: string } };
+
+  const sourceTest = String(formData.get('source_test') ?? '').trim();
+  const raw = String(formData.get('display_name') ?? '').trim().replace(/\s+/g, ' ');
+  if (!sourceTest) return actionFail('source_test required');
+  if (raw.length > 80) return actionFail('Keep the name under 80 characters.');
+  const fallback = defaultActFormName(sourceTest);
+  const displayName = raw && raw !== fallback ? raw : null;
+
+  const { count } = await supabase
+    .from('act_questions')
+    .select('id', { count: 'exact', head: true })
+    .eq('source_test', sourceTest);
+  if (!count) return actionFail('No questions carry that form name.');
+
+  const { error } = await supabase
+    .from('act_forms')
+    .upsert(
+      { source_test: sourceTest, display_name: displayName, updated_at: new Date().toISOString(), updated_by: user.id },
+      { onConflict: 'source_test' },
+    );
+  if (error) return actionFail(error.message);
+
+  revalidatePath('/admin/act/forms');
+  revalidatePath('/practice/tests');
+  return actionOk({ name: displayName ?? fallback, custom: displayName != null });
 }
