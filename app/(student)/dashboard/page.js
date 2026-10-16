@@ -26,6 +26,7 @@ import { buildTodayView } from '@/lib/plan/today';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
 import { DashboardView } from './DashboardView';
+import { defaultActFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -492,7 +493,7 @@ function assignmentTitle(a) {
     ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
     ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
     ?? (a.assignment_type === 'practice_test' && a.act_source_test
-      ? `ACT practice test · ${a.act_source_test}`
+      ? defaultActFormName(a.act_source_test)
       : null)
     ?? 'Assignment';
 }

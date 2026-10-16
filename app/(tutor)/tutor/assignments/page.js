@@ -35,6 +35,7 @@ import { ArchiveButton } from './ArchiveButton';
 import { AssignmentsToolbar } from './AssignmentsToolbar';
 import { filterAndSort, paginate } from './helpers';
 import s from './AssignmentsList.module.css';
+import { defaultActFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -455,7 +456,7 @@ function AssignmentRow({ row, nowMs, archived = false }) {
     ?? (row.assignment_type === 'lesson' ? row.lesson?.title : null)
     ?? (row.assignment_type === 'practice_test' ? row.practice_test?.name : null)
     ?? (row.assignment_type === 'practice_test' && row.act_source_test
-      ? `ACT practice test · ${row.act_source_test}`
+      ? defaultActFormName(row.act_source_test)
       : null)
     ?? 'Assignment';
   const subtitle = displaySubtitle(row);

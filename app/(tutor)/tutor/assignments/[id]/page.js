@@ -24,6 +24,7 @@ import { LessonChecksRollupSection } from './LessonProgressSections';
 import { ReassignPanel } from './ReassignPanel';
 import { SubmitOnBehalfButton } from './SubmitOnBehalfButton';
 import s from './AssignmentDetail.module.css';
+import { actFormNamer, defaultActFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -107,7 +108,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
   // section below can show display_code + skill + per-question
   // cohort accuracy. Skipped when the assignment has no question
   // pool (lesson / practice-test types).
-  const [attemptRowsRes, questionMetaRes, sessionRowsRes, lessonBlocksRes, lessonProgressRes] = await Promise.all([
+  const [attemptRowsRes, questionMetaRes, sessionRowsRes, lessonBlocksRes, lessonProgressRes, actFormRowsRes] = await Promise.all([
     attemptQuestionIds.length > 0 && studentIds.length > 0
       ? supabase
           .from(isAct ? 'act_attempts' : 'attempts')
@@ -157,8 +158,13 @@ export default async function TutorAssignmentDetailPage({ params }) {
           .eq('lesson_id', assignment.lesson_id)
           .in('student_id', studentIds)
       : Promise.resolve({ data: [] }),
+    // ACT: readable form names for the question codes below.
+    isAct
+      ? supabase.from('act_forms').select('source_test, display_name')
+      : Promise.resolve({ data: [] }),
   ]);
   const attemptRows = attemptRowsRes.data ?? [];
+  const nameActForm = actFormNamer(actFormRowsRes.data ?? []);
   // ACT rows are shaped like the SAT meta (code / "domain" / "skill")
   // so the Questions section below renders both the same way.
   const questionMeta = new Map(
@@ -168,7 +174,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
         ? {
             id: q.id,
             display_code: q.source_test
-              ? `${q.source_test} · Q${q.source_ordinal ?? '?'}`
+              ? `${nameActForm(q.source_test)} · Q${q.source_ordinal ?? '?'}`
               : q.id.slice(0, 8),
             domain_name: sectionLabel(q.section),
             skill_name: q.category ?? null,
@@ -364,7 +370,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
     ?? (assignment.assignment_type === 'lesson' ? assignment.lesson?.title : null)
     ?? (assignment.assignment_type === 'practice_test' ? assignment.practice_test?.name : null)
     ?? (assignment.assignment_type === 'practice_test' && assignment.act_source_test
-      ? `ACT practice test · ${assignment.act_source_test}`
+      ? defaultActFormName(assignment.act_source_test)
       : null)
     ?? 'Assignment';
 
