@@ -775,3 +775,18 @@
   outline: 2px solid var(--color-app-accent);
   outline-offset: 2px;
 }
+/* Scroll long ACT passages independently of the question and navigator. */
+.passagePane {
+  max-height: clamp(240px, calc(100dvh - 300px), 760px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  align-self: start;
+}
+.passagePane:focus-visible {
+  outline: 2px solid var(--accent, #2563eb);
+  outline-offset: -3px;
+}
+@media (max-width: 819px) {
+  .passagePane { max-height: 55dvh; min-height: 200px; }
+}

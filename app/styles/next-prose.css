@@ -247,3 +247,18 @@ math[display="block"] {
   text-decoration-color: var(--color-warning-border, #f59e0b);
   text-decoration-thickness: 2px;
 }
+/* Imported ACT passage pages share their exact bounds with qref overlays.
+   Unlike diagrams, they need a consistent width and no height cap. */
+.sw-prose div:has(> img[alt*="original PDF page"]) {
+  position: relative;
+  width: 100%;
+  padding: 0;
+}
+.sw-prose div > img[alt*="original PDF page"] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  margin: 0;
+}
