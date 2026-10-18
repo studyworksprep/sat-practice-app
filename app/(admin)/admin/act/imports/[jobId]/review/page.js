@@ -1,4 +1,4 @@
-import { assessActQuestions } from '@/lib/practice/act-format-detection';
+import { assessActQuestions, combineActFormQuestions } from '@/lib/practice/act-format-detection';
 import { ACT_FORMAT_LABELS } from '@/lib/practice/act-test-plan';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 // Admin → ACT → Imports → [jobId] → Review.
@@ -67,7 +67,7 @@ export default async function ReviewPage({ params, searchParams }) {
   // re-import — see review/actions.ts approveOne).
   const { data: existingRows, error: existingError } = await supabase
     .from('act_questions')
-    .select('id, section, source_ordinal')
+    .select('id, section, source_ordinal, is_broken')
     .eq('source_test', job.source_test)
     .is('deleted_at', null)
     .abortSignal(AbortSignal.timeout(15000));
@@ -93,7 +93,7 @@ export default async function ReviewPage({ params, searchParams }) {
     supabase.from('act_forms').select('format, kind').eq('source_test', job.source_test).maybeSingle(),
   ]);
   if (formSettings.error) throw new Error('Could not load ACT format settings', { cause: formSettings.error });
-  const detection = assessActQuestions(draftIdentities, formSettings.data ?? {});
+  const detection = assessActQuestions(combineActFormQuestions((existingRows ?? []).filter(q => !q.is_broken), draftIdentities), formSettings.data ?? {});
   const allDone = counts.ready_for_review === 0 && counts.parsing === 0 && counts.all > 0;
 
   return (
@@ -112,7 +112,7 @@ export default async function ReviewPage({ params, searchParams }) {
               {inBank > 0 ? ` · ${inBank} on this page already in the bank (approve links instead of duplicating)` : ''}
             </p>
           </div>
-          {allDone && !detection.reviewReason && job.status !== 'completed' && (
+          {allDone && job.status !== 'completed' && (
             <FinalizeJobButton jobId={jobId} action={finalizeJob} />
           )}
         </div>
@@ -120,8 +120,9 @@ export default async function ReviewPage({ params, searchParams }) {
       </header>
 
       <p role="status">
-        {detection.reviewReason ? 'Needs review: ' + detection.reviewReason : 'Detected format: ' + ACT_FORMAT_LABELS[detection.format]}
+        {detection.reviewReason ? 'Timed test needs review: ' + detection.reviewReason : 'Detected format: ' + ACT_FORMAT_LABELS[detection.format]}
         {' '}<Link href="/admin/act/forms">Review form settings</Link>
+        {allDone && detection.reviewReason && ' You can finalize this reviewed import; timed tests remain unavailable until the form is complete and consistent.'}
       </p>
       {total > 0 && (
         <nav className={s.chips} aria-label="Draft pages">
