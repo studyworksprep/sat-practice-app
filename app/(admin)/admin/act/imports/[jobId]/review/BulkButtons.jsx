@@ -26,7 +26,7 @@ export function BulkApproveButton({ jobId, section, action, disabled }) {
   async function onClick() {
     const ok = await confirm({
       title: `Approve every pending ${section} draft?`,
-      body: 'Skipped drafts (no correct answer, no category, etc.) will stay pending so you can fix them.',
+      body: 'This includes pending drafts on every page of this section. Skipped drafts (no correct answer, no category, etc.) will stay pending so you can fix them.',
       confirmLabel: 'Approve all',
     });
     if (!ok) return;
@@ -64,7 +64,7 @@ export function BulkApproveButton({ jobId, section, action, disabled }) {
         disabled={disabled || pending}
         className={s.btnSecondary}
       >
-        {pending ? 'Approving…' : 'Approve all pending'}
+        {pending ? 'Approving…' : 'Approve all pending in section'}
       </button>
       {message && <div className={s.bulkMessage}>{message}</div>}
       {skippedDetails.length > 0 && (
