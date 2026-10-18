@@ -17,13 +17,13 @@
 // practice_sessions is readable by the student's tutors. Callers add
 // their own ownership check where the viewer must be the owner.
 
-import { ACT_SECTIONS, sectionLabel, type ActSection } from '@/lib/practice/act-taxonomy';
+import { sectionLabel, type ActSection } from '@/lib/practice/act-taxonomy';
+import { buildActSectionRows } from './act-report.ts';
 import { parsePlan, type ActFormat } from '@/lib/practice/act-test-plan';
 import { actFormDetail, actFormName } from '@/lib/practice/act-form-names';
 import {
   ACT_ATTEMPT_COLUMNS,
   attemptFormat,
-  sectionRawScore,
   type ActAttemptRow,
 } from './act-attempt';
 
@@ -50,6 +50,9 @@ export interface ActSectionRow {
   label: string;
   raw: { total: number; correct: number };
   scaled: number | null;
+  attempted: number;
+  timeMs: number;
+  categories: Array<{ name: string; correct: number; total: number }>;
   /** The practice_sessions row that ran this section (review link). */
   sessionId: string | null;
 }
@@ -99,86 +102,62 @@ export async function loadActTestResults({
   const attempt = toAttempt(row, (formRow as { display_name?: string | null } | null)?.display_name);
   if (row.status !== 'completed') return { ok: false, code: 'in-progress', attempt };
 
-  const scaledFor = (sec: ActSection): number | null => {
-    const v = (row as unknown as Record<string, unknown>)[`${sec}_scaled`];
-    return typeof v === 'number' ? v : null;
-  };
-
   const plan = parsePlan(row.sections);
-  if (plan.length > 0) {
-    // Raw scores were stored at section completion; recompute only
-    // for a plan entry that somehow lacks them.
-    const missing = plan.filter((p) => p.raw_total == null && p.session_id);
-    const createdAt = new Map<string, string | null>();
-    if (missing.length > 0) {
-      const { data: sessions } = await supabase
-        .from('practice_sessions')
-        .select('id, created_at')
-        .in('id', missing.map((p) => p.session_id));
-      for (const s of (sessions ?? []) as Array<{ id: string; created_at: string | null }>) {
-        createdAt.set(s.id, s.created_at);
-      }
-    }
-    const sectionRows: ActSectionRow[] = [];
-    for (const p of plan) {
-      let raw = { correct: p.raw_correct ?? 0, total: p.raw_total ?? 0 };
-      if (p.raw_total == null && p.session_id) {
-        raw = await sectionRawScore(
-          supabase,
-          row.user_id,
-          p.question_ids,
-          createdAt.get(p.session_id) ?? null,
-        );
-      }
-      sectionRows.push({
-        section: p.section,
-        label: sectionLabel(p.section),
-        raw,
-        scaled: scaledFor(p.section),
-        sessionId: p.session_id,
+  const sessionIds = plan.length
+    ? plan.flatMap((section) => section.session_id ? [section.session_id] : [])
+    : row.practice_session_id ? [row.practice_session_id] : [];
+  const { data: sessions, error: sessionsError } = sessionIds.length
+    ? await supabase.from('practice_sessions')
+        .select('id, question_ids, created_at').in('id', sessionIds)
+    : { data: [], error: null };
+  if (sessionsError) throw new Error('Unable to load ACT report sessions.');
+  const sessionById = new Map<string, { question_ids: string[]; created_at: string }>(
+    (sessions ?? []).map((session: { id: string; question_ids: string[]; created_at: string }) => [session.id, session]),
+  );
+  const entries = plan.length ? plan : [{
+    section: null,
+    session_id: row.practice_session_id,
+    question_ids: sessionById.get(row.practice_session_id ?? '')?.question_ids ?? [],
+    finished_at: row.finished_at,
+    raw_correct: null,
+    raw_total: null,
+  }];
+  const sectionRows: ActSectionRow[] = [];
+  for (const entry of entries) {
+    const session = sessionById.get(entry.session_id ?? '');
+    const questionIds = entry.question_ids;
+    const [{ data: questions, error: questionError }, { data: answers, error: answerError }] = await Promise.all([
+      questionIds.length
+        ? supabase.from('act_questions').select('id, section, category').in('id', questionIds)
+        : Promise.resolve({ data: [], error: null }),
+      questionIds.length && session
+        ? supabase.from('act_attempts').select('question_id, is_correct, created_at, time_spent_ms')
+            .eq('user_id', row.user_id).in('question_id', questionIds)
+            .gte('created_at', session.created_at)
+            .lte('created_at', entry.finished_at ?? row.finished_at)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (questionError || answerError) throw new Error('Unable to load ACT report answers.');
+    const rows = buildActSectionRows(
+      questionIds, questions ?? [], answers ?? [], row as unknown as Record<string, unknown>,
+      entry.finished_at ?? row.finished_at,
+    );
+    if (entry.section && !rows.some((section) => section.section === entry.section)) {
+      rows.push({
+        section: entry.section, label: sectionLabel(entry.section),
+        raw: { correct: 0, total: questionIds.length }, attempted: 0, timeMs: 0,
+        scaled: row[`${entry.section}_scaled`], categories: [],
       });
     }
-    return { ok: true, attempt, sectionRows };
-  }
-
-  // Legacy single-session attempt.
-  let questionIds: string[] = [];
-  let sessionCreatedAt: string | null = null;
-  if (row.practice_session_id) {
-    const { data: session } = await supabase
-      .from('practice_sessions')
-      .select('id, question_ids, created_at')
-      .eq('id', row.practice_session_id)
-      .maybeSingle();
-    if (session) {
-      questionIds = Array.isArray(session.question_ids) ? session.question_ids : [];
-      sessionCreatedAt = session.created_at ?? null;
+    for (const section of rows) {
+      sectionRows.push({
+        ...section,
+        raw: entry.raw_total != null
+          ? { correct: entry.raw_correct ?? 0, total: entry.raw_total }
+          : section.raw,
+        sessionId: entry.session_id,
+      });
     }
-  }
-  const { data: meta } = questionIds.length > 0
-    ? await supabase.from('act_questions').select('id, section').in('id', questionIds)
-    : { data: [] };
-  const bySection: Partial<Record<ActSection, string[]>> = {};
-  const isSection = (v: string): v is ActSection => (ACT_SECTIONS as readonly string[]).includes(v);
-  const sectionByQid = new Map<string, string>();
-  for (const r of (meta ?? []) as Array<{ id: string; section: string }>) sectionByQid.set(r.id, r.section);
-  for (const qid of questionIds) {
-    const sec = sectionByQid.get(qid);
-    if (!sec || !isSection(sec)) continue;
-    (bySection[sec] ??= []).push(qid);
-  }
-  const sectionRows: ActSectionRow[] = [];
-  for (const sec of ACT_SECTIONS) {
-    const ids = bySection[sec];
-    if (!ids || ids.length === 0) continue;
-    const raw = await sectionRawScore(supabase, row.user_id, ids, sessionCreatedAt);
-    sectionRows.push({
-      section: sec,
-      label: sectionLabel(sec),
-      raw,
-      scaled: scaledFor(sec),
-      sessionId: row.practice_session_id,
-    });
   }
   return { ok: true, attempt, sectionRows };
 }

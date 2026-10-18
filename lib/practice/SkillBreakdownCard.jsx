@@ -29,6 +29,7 @@ import s from './SkillBreakdownCard.module.css';
  * @param {object} props
  * @param {string} props.title - card heading (e.g. "Reading & Writing")
  * @param {'rw'|'math'} props.tone
+ * @param {boolean} [props.showPriorityLegend]
  * @param {Array<{
  *   name: string,
  *   correct: number,
@@ -50,7 +51,7 @@ import s from './SkillBreakdownCard.module.css';
  * }>} [props.opportunities] - already filtered to this subject and
  *   sorted by opportunity_index DESC. The card slices the top 3.
  */
-export function SkillBreakdownCard({ title, tone, domains, opportunities = [] }) {
+export function SkillBreakdownCard({ title, tone, domains, opportunities = [], showPriorityLegend = true }) {
   if (!domains || domains.length === 0) return null;
 
   let sectCorrect = 0;
@@ -77,8 +78,10 @@ export function SkillBreakdownCard({ title, tone, domains, opportunities = [] })
         <span className={`${s.legendDot} ${s.bucketLow}`} />{' < 50% '}
         <span className={`${s.legendDot} ${s.bucketMid}`} />{' 50–74% '}
         <span className={`${s.legendDot} ${s.bucketHigh}`} />{' 75%+ '}
-        <span className={s.legendSep}>·</span>
-        <span className={s.legendPriority}>🎯 priority skill</span>
+        {showPriorityLegend && <>
+          <span className={s.legendSep}>·</span>
+          <span className={s.legendPriority}>🎯 priority skill</span>
+        </>}
       </div>
       <ul className={s.domainList}>
         {domains.map((d) => {
