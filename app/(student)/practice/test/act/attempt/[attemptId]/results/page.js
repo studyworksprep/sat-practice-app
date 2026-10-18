@@ -38,6 +38,7 @@ export default async function ActPracticeTestResultsPage({ params }) {
     .filter((r) => r.sessionId)
     .map((r) => ({
       label: `${r.label} review`,
+      section: r.section,
       href: actSectionReviewPath(attemptId, r.section),
     }));
 

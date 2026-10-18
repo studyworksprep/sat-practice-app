@@ -21,10 +21,12 @@ import {
 } from '@/lib/practice/act-test-plan';
 import type { ActSectionRow, ActTestResultsAttempt } from './load-act-test-results';
 import s from './ActResults.module.css';
+import { findActSectionReviewLink } from './act-review-navigation';
 
 export interface ReviewLink {
   label: string;
   href: string;
+  section?: string;
 }
 
 function sectionReviewHref(href: string, section: string) {
@@ -129,7 +131,7 @@ export function ActTestResults({
         </div>
         <div className={s.sectionGrid}>
           {sectionRows.map((row) => {
-            const reviewLink = reviewLinks.find((link) => row.sessionId && link.href.includes(row.sessionId));
+            const reviewLink = findActSectionReviewLink(reviewLinks, row.section, row.sessionId);
             return (
             <div key={row.section} className={s.sectionTile}>
               <div className={s.sectionTileLabel}>{row.label}</div>
