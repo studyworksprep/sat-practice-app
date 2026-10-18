@@ -42,6 +42,7 @@ import { ReviewDailyMap } from './ReviewDailyMap';
 import { ReviewTimingBand } from './ReviewTimingBand';
 import { subjectFromDomainCode } from './DomainBreakdownCard';
 import { SkillBreakdownCard } from './SkillBreakdownCard';
+import { ActBreakdownCards } from './ActBreakdownCards';
 import { ReportHero } from './ReportHero';
 import { formatDuration } from './format-duration';
 import { formatDate } from '@/lib/formatters';
@@ -57,6 +58,7 @@ const MATH_DOMAIN_CODES_FOR_CALC = new Set(['H', 'P', 'Q', 'S', 'math']);
 
 export function AssignmentReport({
   sessionMeta,
+  initialSection = null,
   items,
   metrics,
   timing = null,
@@ -109,7 +111,9 @@ export function AssignmentReport({
     [items],
   );
 
-  const firstReal = items.find((it) => !it.missing) ?? items[0];
+  const isAct = sessionMeta.testType === 'act';
+  const firstReal = items.find((item) => item.taxonomy?.domain_code === initialSection)
+    ?? items.find((it) => !it.missing) ?? items[0];
   const [selectedPosition, setSelectedPosition] = useState(
     firstReal ? firstReal.position : 0,
   );
@@ -168,6 +172,9 @@ export function AssignmentReport({
       )}
 
       <header className={s.header}>
+        {sessionMeta.scoreReportHref && (
+          <Link href={sessionMeta.scoreReportHref}>← Back to ACT score report</Link>
+        )}
         <div className={s.headerMain}>
           <div className={s.eyebrow}>
             {assignment ? 'Assignment report' : 'Session report'}
@@ -287,7 +294,8 @@ export function AssignmentReport({
         </section>
       )}
 
-      {(rwDomains.length > 0 || mathDomains.length > 0) && (
+      {isAct && <section className={s.cardRow}><ActBreakdownCards domains={metrics.byDomain ?? []} /></section>}
+      {!isAct && (rwDomains.length > 0 || mathDomains.length > 0) && (
         <section className={s.cardRow}>
           {rwDomains.length > 0 && (
             <SkillBreakdownCard
@@ -491,7 +499,7 @@ export function AssignmentReport({
                 />
               )}
               {/* Reference sheet + floating calculator — math only. */}
-              {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
+              {!isAct && !selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
                 <ReferenceSheetButton
                   open={refOpen}
                   onOpenChange={setRefOpen}

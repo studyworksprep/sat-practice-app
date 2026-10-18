@@ -10,6 +10,9 @@
 
 import Link from 'next/link';
 import { formatDate } from '@/lib/formatters';
+import { ReportHero } from '@/lib/practice/ReportHero';
+import { ActBreakdownCards } from '@/lib/practice/ActBreakdownCards';
+import { formatDuration } from '@/lib/practice/format-duration';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import {
   ACT_FORMAT_LABELS,
@@ -22,6 +25,13 @@ import s from './ActResults.module.css';
 export interface ReviewLink {
   label: string;
   href: string;
+}
+
+function sectionReviewHref(href: string, section: string) {
+  const [path, query] = href.split('?');
+  const params = new URLSearchParams(query);
+  params.set('section', section);
+  return `${path}?${params}`;
 }
 
 interface ActTestResultsProps {
@@ -48,6 +58,10 @@ export function ActTestResults({
   viewerNote = null,
 }: ActTestResultsProps) {
   const anyScaledMissing = sectionRows.some((r) => r.scaled == null);
+  const total = sectionRows.reduce((sum, row) => sum + row.raw.total, 0);
+  const correct = sectionRows.reduce((sum, row) => sum + row.raw.correct, 0);
+  const answered = sectionRows.reduce((sum, row) => sum + row.attempted, 0);
+  const timeMs = sectionRows.reduce((sum, row) => sum + row.timeMs, 0);
   const needed = compositeSectionsFor(attempt.format);
   const present = new Set(sectionRows.map((r) => r.section));
   const missingSections = needed.filter((sec) => !present.has(sec));
@@ -61,7 +75,7 @@ export function ActTestResults({
         {backHref && (
           <Link href={backHref} className={s.reviewLink}>{backLabel}</Link>
         )}
-        <div className={s.eyebrow}>ACT practice test</div>
+        <div className={s.eyebrow}>ACT score report</div>
         <h1 className={s.h1}>{attempt.formName}</h1>
         <p className={s.sub}>
           {attempt.formDetail ? `${attempt.formDetail} · ` : ''}
@@ -99,27 +113,49 @@ export function ActTestResults({
         </section>
       )}
 
+      <ReportHero
+        primary={{ label: 'Questions correct', value: total ? `${Math.round(correct / total * 100)}%` : '—', sub: `${correct} of ${total} correct` }}
+        tiles={[
+          { label: 'Answered', value: `${answered} / ${total}`, sub: `${Math.max(0, total - answered)} unanswered` },
+          { label: 'Incorrect', value: String(Math.max(0, answered - correct)), sub: 'Review these answers below' },
+          { label: 'Recorded time', value: timeMs > 0 ? formatDuration(timeMs) : '—', sub: 'Time spent on questions' },
+        ]}
+      />
+
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div className={s.h2}>Section scores</div>
         </div>
         <div className={s.sectionGrid}>
-          {sectionRows.map((row) => (
+          {sectionRows.map((row) => {
+            const reviewLink = reviewLinks.find((link) => row.sessionId && link.href.includes(row.sessionId));
+            return (
             <div key={row.section} className={s.sectionTile}>
               <div className={s.sectionTileLabel}>{row.label}</div>
               <div className={s.sectionTileScaled}>
                 {row.scaled != null ? row.scaled : '—'}
               </div>
               <div className={s.sectionTileRaw}>
+                {row.scaled != null && 'Out of 36 · '}
                 {row.raw.correct} of {row.raw.total} correct
               </div>
+              <div className={s.sectionTileRaw}>
+                {Math.max(0, row.attempted - row.raw.correct)} incorrect · {Math.max(0, row.raw.total - row.attempted)} unanswered
+              </div>
+              {row.timeMs > 0 && <div className={s.sectionTileRaw}>{formatDuration(row.timeMs)} recorded time</div>}
               {row.scaled == null && (
                 <div className={s.scaledPending}>
                   Scaled score pending
                 </div>
               )}
+              {reviewLink && (
+                <Link className={s.reviewLink} href={sectionReviewHref(reviewLink.href, row.section)}>
+                  Review {row.label} →
+                </Link>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
         {anyScaledMissing && (
           <div className={s.scaledNote}>
@@ -131,11 +167,18 @@ export function ActTestResults({
         )}
       </section>
 
+      <section aria-label="Performance by ACT category" className={s.breakdownGrid}>
+        <ActBreakdownCards domains={sectionRows.map((row) => ({
+          code: row.section, name: row.label, correct: row.raw.correct,
+          total: row.raw.total, skills: row.categories,
+        }))} />
+      </section>
+
       <section className={s.card}>
-        <div className={s.h2}>Review</div>
+        <div className={s.h2}>Review your answers</div>
         <p className={s.reviewBody}>
-          The question-by-question review (rationales, answers, time per
-          question) lives on each section&apos;s review page.
+          Choose a section to review your answers, explanations, flagged
+          questions, and time spent on each question.
         </p>
         {reviewLinks.length > 0 && (
           <ul className={s.reviewList}>

@@ -4,7 +4,7 @@
 ============================================================= */
 
 .container {
-  max-width: 880px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 32px 24px 64px;
   display: flex;
@@ -172,6 +172,18 @@
   font-weight: 600;
   text-decoration: none;
   color: var(--color-app-accent);
+}
+
+.breakdownGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+}
+
+.reviewLink:hover { text-decoration: underline; }
+.reviewLink:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 4px;
 }
 
 /* Per-section review links (Phase 3: one session per section). */

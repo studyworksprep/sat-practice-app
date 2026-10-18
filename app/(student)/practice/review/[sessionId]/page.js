@@ -24,8 +24,9 @@ import { buildSessionReview } from '@/lib/practice/build-session-review';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PracticeReviewPage({ params }) {
+export default async function PracticeReviewPage({ params, searchParams }) {
   const { sessionId } = await params;
+  const { section } = await searchParams;
   const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'admin') redirect('/admin');
@@ -65,6 +66,7 @@ export default async function PracticeReviewPage({ params }) {
   return (
     <ReviewInteractive
       sessionMeta={sessionMeta}
+      initialSection={section ?? null}
       items={items}
       metrics={metrics}
       timing={timing}
@@ -79,7 +81,8 @@ export default async function PracticeReviewPage({ params }) {
       questionNotesCanView={questionNotesCanView}
       questionNotesIsAdmin={questionNotesIsAdmin}
       currentUserId={currentUserId}
-      footerBackHref={isAct ? '/practice/history?test=act' : '/practice/history'}
+      footerBackHref={sessionMeta.scoreReportHref ?? (isAct ? '/practice/history?test=act' : '/practice/history')}
+      footerBackLabel={sessionMeta.scoreReportHref ? '← Back to ACT score report' : '← All practice sessions'}
       footerNextHref={isAct ? '/practice/start?test=act' : '/practice/start'}
     />
   );
