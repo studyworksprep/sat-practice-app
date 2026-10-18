@@ -7,6 +7,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { loadActTestResults } from '@/lib/practice-test/load-act-test-results';
 import { ActTestResults } from '@/lib/practice-test/ActTestResults';
+import { actSectionReviewPath } from '@/lib/practice-test/act-review-navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +38,8 @@ export default async function ActPracticeTestResultsPage({ params }) {
     .filter((r) => r.sessionId)
     .map((r) => ({
       label: `${r.label} review`,
-      href: `/practice/review/${r.sessionId}`,
+      section: r.section,
+      href: actSectionReviewPath(attemptId, r.section),
     }));
 
   return (

@@ -21,13 +21,16 @@ import {
 } from '@/lib/practice/act-test-plan';
 import type { ActSectionRow, ActTestResultsAttempt } from './load-act-test-results';
 import s from './ActResults.module.css';
+import { findActSectionReviewLink } from './act-review-navigation';
 
 export interface ReviewLink {
   label: string;
   href: string;
+  section?: string;
 }
 
 function sectionReviewHref(href: string, section: string) {
+  if (href.startsWith('/practice/test/act/')) return href;
   const [path, query] = href.split('?');
   const params = new URLSearchParams(query);
   params.set('section', section);
@@ -38,7 +41,7 @@ interface ActTestResultsProps {
   attempt: ActTestResultsAttempt;
   sectionRows: ActSectionRow[];
   /** One "open review" link per section session (student:
-   *  /practice/review/<sid>; tutor: /tutor/sessions/<sid>). Empty
+   *  /practice/test/act/attempt/<id>/review/<section>; tutor: /tutor/sessions/<sid>). Empty
    *  hides the review card's links. */
   reviewLinks: ReviewLink[];
   /** Optional breadcrumb target + label. */
@@ -128,7 +131,7 @@ export function ActTestResults({
         </div>
         <div className={s.sectionGrid}>
           {sectionRows.map((row) => {
-            const reviewLink = reviewLinks.find((link) => row.sessionId && link.href.includes(row.sessionId));
+            const reviewLink = findActSectionReviewLink(reviewLinks, row.section, row.sessionId);
             return (
             <div key={row.section} className={s.sectionTile}>
               <div className={s.sectionTileLabel}>{row.label}</div>
