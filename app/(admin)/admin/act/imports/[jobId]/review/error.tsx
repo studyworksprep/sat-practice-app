@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import s from './Review.module.css';
 
-export default function ReviewError({ reset }) {
+export default function ReviewError({ reset }: { reset: () => void }) {
   const { jobId } = useParams();
   return (
     <main className={s.container}>
