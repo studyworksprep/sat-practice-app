@@ -65,3 +65,10 @@ export function assessActQuestions(rows: Array<{ section: string; source_ordinal
   // retaining their original numbering. Duplicates and missing identities are not.
   return invalid ? { ...result, reviewReason: 'Question numbers are missing, invalid, or duplicated. Review the import before starting a timed test.' } : result;
 }
+
+/** A re-import can cover only some sections. Drafts replace their bank
+ * identities for preview; duplicates within the draft batch remain detectable. */
+export function combineActFormQuestions<T extends { section: string; source_ordinal?: number | null }>(bank: T[], drafts: T[]): T[] {
+  const draftKeys = new Set(drafts.map(q => q.section + ':' + q.source_ordinal));
+  return [...bank.filter(q => !draftKeys.has(q.section + ':' + q.source_ordinal)), ...drafts];
+}

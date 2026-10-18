@@ -40,7 +40,7 @@
 'use server';
 
 import { assessActQuestions } from '@/lib/practice/act-format-detection';
-import { fetchAll } from '@/lib/supabase/fetchAll';
+import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
@@ -499,16 +499,16 @@ export async function finalizeJob(
   if (jobError || !job) return actionFail('Could not load import job.');
   let identities;
   try {
-    identities = await fetchAll<{ section: string; source_ordinal: number | null }>((from, to) => supabase.from('act_question_drafts')
-      .select('section, source_ordinal').eq('import_job_id', jobId).neq('status', 'rejected').order('id').range(from, to));
+    ({ data: identities } = await loadActFormQuestions(supabase, job.source_test));
   } catch { return actionFail('Could not check section counts. Please retry.'); }
   const { data: settings, error: settingsError } = await supabase.from('act_forms')
     .select('format, kind').eq('source_test', job.source_test).maybeSingle();
   if (settingsError) return actionFail('Could not load ACT format settings.');
   const detection = assessActQuestions(identities, settings ?? {});
-  if (!detection.format || detection.reviewReason) return actionFail('Import needs review: ' + detection.reviewReason);
+  // Completing a reviewed import does not certify a full timed test.
+  // Partial/re-import jobs may be completed; launch checks still enforce readiness.
   // Save newly detected settings only. Never overwrite a concurrent admin edit.
-  if (!settings) {
+  if (!settings && detection.format && !detection.reviewReason) {
     const { error: saveError } = await supabase.from('act_forms').upsert({
       source_test: job.source_test, format: detection.format, kind: detection.kind,
       updated_at: new Date().toISOString(), updated_by: ctx.user.id,
