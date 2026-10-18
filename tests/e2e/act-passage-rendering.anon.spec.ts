@@ -13,6 +13,7 @@ let QuestionRenderer: ComponentType<Record<string, unknown>>;
 test.beforeAll(async () => {
   let source = readFileSync(resolve('lib/ui/QuestionRenderer.js'), 'utf8');
   source = source.replace("'@/lib/sanitize'", JSON.stringify(resolve('lib/sanitize.ts')))
+    .replace("'@/lib/content/act-passage'", JSON.stringify(resolve('lib/content/act-passage.ts')))
     .replace("'@/lib/ui/preview-effects'", JSON.stringify(resolve('lib/ui/preview-effects.js')))
     .replace("import s from './QuestionRenderer.module.css';", 'const s = new Proxy({}, { get: (_, key) => key });');
   await loadBindings();
@@ -99,3 +100,20 @@ if (process.env.ACT_PASSAGE_FIXTURE) {
     await page.screenshot({path:'tmp/passage-fixed.png'});
   });
 }
+
+test('digital passage text reflows consistently and keeps inline highlights attached',async({page})=>{
+  const html='<h3 style="font-size:8px">A passage title</h3><p style="font-size:9px;width:150px;text-indent:5em">'+
+    'This is a paragraph of readable passage text. '.repeat(9)+
+    '<span class="qref qref-active" data-q="2" style="font-size:6px">these words stay highlighted across a line break</span>.</p><p>A second paragraph.</p>';
+  for(const width of [390,1246]) {
+    await page.setViewportSize({width,height:800});
+    await page.setContent(passageFixture('english',html));
+    const result=await page.locator('.sw-act-passage').evaluate(root=>{
+      const p=root.querySelector('p')!, marker=root.querySelector('.qref')!;
+      return {size:getComputedStyle(p).fontSize,markerSize:getComputedStyle(marker).fontSize,
+        indent:getComputedStyle(p).textIndent,words:marker.textContent,position:getComputedStyle(marker).position,
+        images:root.querySelectorAll('img').length,paragraphs:root.querySelectorAll('p').length};
+    });
+    expect(result).toEqual({size:'17px',markerSize:'17px',indent:'0px',words:'these words stay highlighted across a line break',position:'static',images:0,paragraphs:2});
+  }
+});

@@ -13,6 +13,7 @@ let QuestionRenderer: ComponentType<Record<string, unknown>>;
 test.beforeAll(async () => {
   let source = readFileSync(resolve('lib/ui/QuestionRenderer.js'), 'utf8');
   source = source.replace("'@/lib/sanitize'", JSON.stringify(resolve('lib/sanitize.ts')))
+    .replace("'@/lib/content/act-passage'", JSON.stringify(resolve('lib/content/act-passage.ts')))
     .replace("'@/lib/ui/preview-effects'", JSON.stringify(resolve('lib/ui/preview-effects.js')))
     .replace("import s from './QuestionRenderer.module.css';", 'const s = new Proxy({}, { get: (_, key) => key });');
   await loadBindings();

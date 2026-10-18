@@ -12,6 +12,7 @@
 // Server Action) is responsible for the actual insert, status
 // updates, and log entries so this stays a pure transform.
 
+import { isRasterActPassage, normalizeActPassageHtml } from '@/lib/content/act-passage';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { callClaude, parseClaudeJson, type ContentBlock } from './anthropic';
 import { downloadAsBase64, downloadAsText } from './storage';
@@ -247,6 +248,13 @@ export async function parseSection(input: ParseSectionInput): Promise<ParseSecti
       passageIndex1Based = p.index;
     } else if (typeof q.passage_index === 'number') {
       passageIndex1Based = q.passage_index;
+    }
+
+    if (section !== 'math' && resolvedStimulus) {
+      if (isRasterActPassage(resolvedStimulus)) {
+        throw new Error('Passage text must be transcribed as HTML, not stored as a page image. Reparse this section.');
+      }
+      resolvedStimulus = normalizeActPassageHtml(resolvedStimulus);
     }
 
     if (section === 'math') {
