@@ -39,6 +39,7 @@ import {
 } from '@/lib/practice-test/act-attempt';
 import { abandonActPracticeTest, startActSection } from '@/app/(student)/practice/tests/actions';
 import { ActAttemptPanel } from './ActAttemptPanel';
+import { actFormDetail, actFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -113,10 +114,24 @@ export default async function ActAttemptEntryPage({
   const breakLeftMs = previous ? breakRemainingMs(previous) : 0;
   const format = attemptFormat(attempt);
 
+  // Readable form name: the admin's display_name or the default
+  // derived from the key ("April 2026 ACT").
+  const { data: formRow } = await supabase
+    .from('act_forms')
+    .select('display_name')
+    .eq('source_test', attempt.source_test)
+    .maybeSingle();
+  const formName = actFormName(
+    attempt.source_test,
+    (formRow as { display_name?: string | null } | null)?.display_name,
+  );
+  const formDetail = actFormDetail(attempt.source_test);
+
   return (
     <ActAttemptPanel
       attemptId={attemptId}
-      sourceTest={attempt.source_test}
+      formName={formName}
+      formDetail={formDetail}
       formatLabel={ACT_FORMAT_LABELS[format]}
       timeMultiplier={Number(attempt.time_multiplier ?? 1)}
       sections={plan.map((s) => ({

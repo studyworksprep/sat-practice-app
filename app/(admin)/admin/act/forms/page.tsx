@@ -25,6 +25,8 @@ import {
 } from '@/lib/practice/act-test-plan';
 import { FormatSelect } from './FormatSelect';
 import { KindSelect } from './KindSelect';
+import { NameInput } from './NameInput';
+import { defaultActFormName } from '@/lib/practice/act-form-names';
 import s from '../questions/ActQuestions.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +35,8 @@ interface FormRow {
   sourceTest: string;
   format: ActFormat;
   kind: ActFormKind;
+  /** Saved student-facing name, or null when the derived default applies. */
+  displayName: string | null;
   hasRow: boolean;
   counts: Record<string, number>;
   scaleRows: Record<string, number>;
@@ -53,15 +57,17 @@ export default async function AdminActFormsPage() {
       .is('deleted_at', null)
       .eq('is_broken', false)
       .not('source_test', 'is', null),
-    supabase.from('act_forms').select('source_test, format, kind'),
+    supabase.from('act_forms').select('source_test, format, kind, display_name'),
     supabase.from('act_score_conversion').select('source_test, section'),
   ]);
 
   const formatByForm = new Map<string, ActFormat>();
   const kindByForm = new Map<string, ActFormKind>();
-  for (const r of (formRows ?? []) as Array<{ source_test: string; format: string; kind: string }>) {
+  const nameByForm = new Map<string, string>();
+  for (const r of (formRows ?? []) as Array<{ source_test: string; format: string; kind: string; display_name: string | null }>) {
     if (isActFormat(r.format)) formatByForm.set(r.source_test, r.format);
     if (isActFormKind(r.kind)) kindByForm.set(r.source_test, r.kind);
+    if (r.display_name && r.display_name.trim()) nameByForm.set(r.source_test, r.display_name.trim());
   }
   const scaleByForm = new Map<string, Record<string, number>>();
   for (const r of (scaleRows ?? []) as Array<{ source_test: string; section: string }>) {
@@ -77,6 +83,7 @@ export default async function AdminActFormsPage() {
         sourceTest: r.source_test,
         format: formatByForm.get(r.source_test) ?? 'classic',
         kind: kindByForm.get(r.source_test) ?? 'released',
+        displayName: nameByForm.get(r.source_test) ?? null,
         hasRow: formatByForm.has(r.source_test),
         counts: {},
         scaleRows: scaleByForm.get(r.source_test) ?? {},
@@ -113,7 +120,9 @@ export default async function AdminActFormsPage() {
           50/45/36/40). Every section is timed at the official pace for
           its question count, so 40 released English questions get 28
           minutes and 50 get 35. A section short of the released count
-          is flagged partial.
+          is flagged partial. The name is what students see on the
+          tests hub, attempt and results pages and in assignments; leave
+          it blank to use the default derived from the key.
         </p>
       </header>
 
@@ -125,6 +134,7 @@ export default async function AdminActFormsPage() {
             <thead>
               <tr>
                 <th className={s.th}>Form</th>
+                <th className={s.th}>Name</th>
                 <th className={s.th}>Format</th>
                 <th className={s.th}>Kind</th>
                 {ACT_SECTIONS.map((sec) => (
@@ -142,6 +152,13 @@ export default async function AdminActFormsPage() {
                       <Link href={`/admin/act/questions?form=${encodeURIComponent(row.sourceTest)}`} className={s.rowLink}>
                         {row.sourceTest}
                       </Link>
+                    </td>
+                    <td className={s.td}>
+                      <NameInput
+                        sourceTest={row.sourceTest}
+                        displayName={row.displayName}
+                        defaultName={defaultActFormName(row.sourceTest)}
+                      />
                     </td>
                     <td className={s.td}>
                       <FormatSelect sourceTest={row.sourceTest} format={row.format} hasRow={row.hasRow} />

@@ -99,6 +99,7 @@ export type Database = {
       }
       act_forms: {
         Row: {
+          display_name: string | null
           format: string
           kind: string
           source_test: string
@@ -106,6 +107,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          display_name?: string | null
           format?: string
           kind?: string
           source_test: string
@@ -113,6 +115,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          display_name?: string | null
           format?: string
           kind?: string
           source_test?: string

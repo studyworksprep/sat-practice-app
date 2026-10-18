@@ -36,6 +36,7 @@ import { fetchAll } from '@/lib/supabase/fetchAll';
 import type { ActionResult } from '@/lib/types';
 import { isActSection, type ActSection } from '@/lib/practice/act-taxonomy';
 import { visibleActQuestions } from '@/lib/practice/act-visibility';
+import { actFormName } from '@/lib/practice/act-form-names';
 
 const MAX_QUESTIONS = 50;
 const MAX_STUDENTS_PER_ASSIGNMENT = 200;
@@ -168,9 +169,16 @@ export async function createAssignment(
   }
 
   // ACT practice tests have no practice_tests_v2 row to join for a
-  // name, so the form itself is the default title.
+  // name, so the form's student-facing name is the default title
+  // (act_forms.display_name, else derived from the key).
   if (assignmentType === 'practice_test' && testType === 'act' && !title) {
-    title = `ACT practice test · ${typePayload.row.act_source_test ?? ''}`.trim();
+    const sourceTest = String(typePayload.row.act_source_test ?? '');
+    const { data: formRow } = await supabase
+      .from('act_forms')
+      .select('display_name')
+      .eq('source_test', sourceTest)
+      .maybeSingle();
+    title = actFormName(sourceTest, (formRow as { display_name?: string | null } | null)?.display_name);
   }
 
   // Same default-title convention for lesson assignments (§4.3):
