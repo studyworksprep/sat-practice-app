@@ -1,0 +1,194 @@
+{
+  "source_test": "ACT-2025-Oct",
+  "source_file": "ACT-202510-Form-J08.pdf",
+  "source_sha256": "5e0af8a6ae77e1b425fae43defd35d93d77a4fb125c4a04547884795107f3ded",
+  "applied_on": "2026-10-18",
+  "live_questions_updated": 61,
+  "draft_questions_updated": 61,
+  "validation": {
+    "shared_browser_suite_passed": 89,
+    "refined_table_browser_checks_passed": 6,
+    "viewports": [
+      390,
+      1246
+    ],
+    "english_source_characters_and_reference_targets_preserved": true,
+    "reading_source_line_markers_preserved": true,
+    "every_science_table_word_and_value_verified": true,
+    "non_passage_fields_unchanged": true,
+    "database_readback_hashes_match": true,
+    "full_page_raster_passages_remaining": 0
+  },
+  "passages": [
+    {
+      "section": "reading",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "source_pages": [
+        25
+      ],
+      "old_md5": "f667e94920974d466ceb102ce36dbd54",
+      "new_md5": "a56eb8cf1b953cf2cce143a123efb4c4",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "source_pages": [
+        27
+      ],
+      "old_md5": "cde19697caffda3f184fb9359894c768",
+      "new_md5": "971ffd50126112cf01198a99a043b8f7",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "source_pages": [
+        29
+      ],
+      "old_md5": "e9cab8f5904effa8d3d081087870e2bb",
+      "new_md5": "4ece3e753f941b67ca967cfa5ac5e024",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "source_pages": [
+        31
+      ],
+      "old_md5": "46488146b0faddcd8ed3935e467b6867",
+      "new_md5": "60dd425e8aaaa951dbd73b0a0ed742a7",
+      "figure_count": 2,
+      "table_count": 1
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "source_pages": [
+        33
+      ],
+      "old_md5": "55a0842a0596ebb6e72fee4785c197d4",
+      "new_md5": "b795062f9b6299301974a9ade8289de1",
+      "figure_count": 2,
+      "table_count": 1
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "source_pages": [
+        35
+      ],
+      "old_md5": "9ca61183043dce1168afc1d66c80ce17",
+      "new_md5": "76f9f76d7f719809d2b33234ee5e46b5",
+      "figure_count": 1,
+      "table_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "source_pages": [
+        37
+      ],
+      "old_md5": "cdb54d59e912b27822ef756b1b2aee85",
+      "new_md5": "1749e34863b54410492e21c768fe1ab4",
+      "figure_count": 3,
+      "table_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "source_pages": [
+        39
+      ],
+      "old_md5": "14d19ee20cd51ac190829b5216582479",
+      "new_md5": "96f32bdc2e70b36431ef98ddc85a36a3",
+      "figure_count": 1,
+      "table_count": 4
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        30,
+        31,
+        32,
+        33,
+        34
+      ],
+      "source_pages": [
+        41,
+        42
+      ],
+      "old_md5": "c6c6761f1f84d85f746f88cb3d962d3d",
+      "new_md5": "c9ff32325525b0cd21f74f482af4a6a8",
+      "figure_count": 3,
+      "table_count": 1
+    }
+  ]
+}
