@@ -29,6 +29,31 @@ test.beforeAll(async () => {
 
 const css = ['app/styles/next-tokens.css', 'app/styles/next-prose.css', 'lib/ui/QuestionRenderer.module.css']
   .map(file => readFileSync(resolve(file), 'utf8')).join('\n');
+
+// Local source-verified repair manifests are deliberately kept out of Git.
+if (process.env.ACT_PASSAGES_FIXTURE) {
+  const passages = JSON.parse(readFileSync(process.env.ACT_PASSAGES_FIXTURE, 'utf8')) as Array<{section:string;first_q:number;html:string}>;
+  for (const passage of passages) for (const width of [390, 1246]) {
+    test(`converted ${passage.section} ${passage.first_q} at ${width}px`, async ({page}) => {
+      await page.setViewportSize({width,height:800});
+      await page.setContent(passageFixture(passage.section,passage.html));
+      await page.locator('img').evaluateAll(async nodes => Promise.all(nodes.map(n=>(n as HTMLImageElement).decode())));
+      const result = await page.evaluate(() => {
+        const pane=document.querySelector<HTMLElement>('.passagePane')!;
+        return {overflow:document.documentElement.scrollWidth>innerWidth+1,
+          fonts:[...pane.querySelectorAll('p')].map(p=>getComputedStyle(p).fontSize),
+          positions:[...pane.querySelectorAll('.qref')].map(p=>getComputedStyle(p).position),
+          legacy:pane.querySelectorAll('img[alt*="original PDF"]').length};
+      });
+      expect(result.overflow).toBe(false);
+      expect(result.fonts.every(f=>f==='17px')).toBe(true);
+      expect(result.positions.every(p=>p==='static')).toBe(true);
+      expect(result.legacy).toBe(0);
+      if(passage.section!=='science') await expect(page.locator('img')).toHaveCount(0);
+      if(width===1246) await page.screenshot({path:`tmp/mc5-preview-${passage.section}-${passage.first_q}.png`});
+    });
+  }
+}
 function passageImage(height: number, section: string) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="672" height="${height}"><rect width="672" height="${height}" fill="white"/><text x="10" y="40" font-size="24">Passage text at a consistent size</text></svg>`;
   return `<div style="position:relative;margin-bottom:1em"><img alt="${section} passage 1, original PDF page 4" src="data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}" style="display:block;width:100%;max-width:100%;height:auto"/><span class="qref qref-active" data-q="2" style="position:absolute;left:10%;top:40%;width:30%;height:3%"></span></div>`;
