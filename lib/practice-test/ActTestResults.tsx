@@ -28,6 +28,7 @@ export interface ReviewLink {
 }
 
 function sectionReviewHref(href: string, section: string) {
+  if (href.startsWith('/practice/test/act/')) return href;
   const [path, query] = href.split('?');
   const params = new URLSearchParams(query);
   params.set('section', section);
@@ -38,7 +39,7 @@ interface ActTestResultsProps {
   attempt: ActTestResultsAttempt;
   sectionRows: ActSectionRow[];
   /** One "open review" link per section session (student:
-   *  /practice/review/<sid>; tutor: /tutor/sessions/<sid>). Empty
+   *  /practice/test/act/attempt/<id>/review/<section>; tutor: /tutor/sessions/<sid>). Empty
    *  hides the review card's links. */
   reviewLinks: ReviewLink[];
   /** Optional breadcrumb target + label. */

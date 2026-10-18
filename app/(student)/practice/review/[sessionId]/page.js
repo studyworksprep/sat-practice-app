@@ -21,6 +21,8 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { ReviewInteractive } from '@/lib/practice/ReviewInteractive';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
+import { actSectionReviewPath } from '@/lib/practice-test/act-review-navigation';
+import { isActSection } from '@/lib/practice/act-taxonomy';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +58,13 @@ export default async function PracticeReviewPage({ params, searchParams }) {
     techniqueCatalog, techniquesCanTag,
     questionNotesCanView, questionNotesIsAdmin, currentUserId,
   } = await buildSessionReview({ supabase, user, role: profile.role, session });
+
+  if (session.test_type === 'act' && sessionMeta.testAttemptId) {
+    const reviewSection = isActSection(section) ? section : items[0]?.taxonomy?.domain_code;
+    if (isActSection(reviewSection)) {
+      redirect(actSectionReviewPath(sessionMeta.testAttemptId, reviewSection));
+    }
+  }
 
   // Footer links follow the session's test type. ReviewInteractive
   // defaults both to the SAT routes, which would bounce an ACT
