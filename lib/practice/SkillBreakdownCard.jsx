@@ -29,6 +29,7 @@ import s from './SkillBreakdownCard.module.css';
  * @param {object} props
  * @param {string} props.title - card heading (e.g. "Reading & Writing")
  * @param {'rw'|'math'} props.tone
+ * @param {boolean} [props.showPriorityLegend]
  * @param {Array<{
  *   name: string,
  *   correct: number,

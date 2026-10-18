@@ -1,7 +1,10 @@
 import { ACT_SECTIONS, sectionLabel } from './act-taxonomy';
 import { SkillBreakdownCard } from './SkillBreakdownCard';
 
-export function ActBreakdownCards({ domains }) {
+type CategoryMetric = { name: string; correct: number; total: number };
+type SectionMetric = CategoryMetric & { code: string; skills?: CategoryMetric[] };
+
+export function ActBreakdownCards({ domains }: { domains: SectionMetric[] }) {
   return ACT_SECTIONS.map((section) => {
     const domain = domains.find((entry) => entry.code === section);
     if (!domain) return null;
