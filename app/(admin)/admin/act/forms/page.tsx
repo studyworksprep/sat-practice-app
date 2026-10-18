@@ -1,3 +1,5 @@
+import { assessActQuestions } from '@/lib/practice/act-format-detection';
+import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 // Admin → ACT → Forms. One row per form in the bank with the setting
 // that drives Phase 3 test mode — classic vs enhanced format — next
 // to the facts an admin needs to pick it: live question count per
@@ -6,8 +8,8 @@
 // the resulting section time limits, and whether the form has a
 // score-conversion table.
 //
-// Forms with no act_forms row run as classic; the select saves a row
-// on first change.
+// Forms without settings are detected from complete section counts.
+// Incomplete or conflicting forms need review before timed tests.
 
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -33,7 +35,8 @@ export const dynamic = 'force-dynamic';
 
 interface FormRow {
   sourceTest: string;
-  format: ActFormat;
+  format: ActFormat | null;
+  reviewReason: string | null;
   kind: ActFormKind;
   /** Saved student-facing name, or null when the derived default applies. */
   displayName: string | null;
@@ -50,16 +53,13 @@ export default async function AdminActFormsPage() {
     redirect('/');
   }
 
-  const [{ data: questionRows }, { data: formRows }, { data: scaleRows }] = await Promise.all([
-    supabase
-      .from('act_questions')
-      .select('source_test, section')
-      .is('deleted_at', null)
-      .eq('is_broken', false)
-      .not('source_test', 'is', null),
+  const [{ data: questionRows }, { data: formRows, error: formError }, { data: scaleRows }] = await Promise.all([
+    loadActFormQuestions(supabase),
     supabase.from('act_forms').select('source_test, format, kind, display_name'),
     supabase.from('act_score_conversion').select('source_test, section'),
   ]);
+
+  if (formError) throw new Error('Could not load ACT form settings', { cause: formError });
 
   const formatByForm = new Map<string, ActFormat>();
   const kindByForm = new Map<string, ActFormKind>();
@@ -81,7 +81,8 @@ export default async function AdminActFormsPage() {
     if (!row) {
       row = {
         sourceTest: r.source_test,
-        format: formatByForm.get(r.source_test) ?? 'classic',
+        format: formatByForm.get(r.source_test) ?? null,
+        reviewReason: null,
         kind: kindByForm.get(r.source_test) ?? 'released',
         displayName: nameByForm.get(r.source_test) ?? null,
         hasRow: formatByForm.has(r.source_test),
@@ -91,6 +92,12 @@ export default async function AdminActFormsPage() {
       rowsByForm.set(r.source_test, row);
     }
     row.counts[r.section] = (row.counts[r.section] ?? 0) + 1;
+  }
+  for (const row of rowsByForm.values()) {
+    const detected = assessActQuestions((questionRows ?? []).filter(q => q.source_test === row.sourceTest), {
+      format: formatByForm.get(row.sourceTest), kind: kindByForm.get(row.sourceTest),
+    });
+    Object.assign(row, detected);
   }
   const rows = Array.from(rowsByForm.values()).sort((a, b) => a.sourceTest.localeCompare(b.sourceTest));
 
@@ -106,7 +113,7 @@ export default async function AdminActFormsPage() {
           </div>
         </div>
         <p className={s.sub}>
-          The format decides each section&apos;s time limit, the break
+          Consistent section counts automatically determine the format. Incomplete or conflicting counts need review. The format decides each section&apos;s time limit, the break
           after Math and the composite rule when a student takes the
           form as a timed test. Classic: English 75q/45 min, Math
           60q/60 min, Reading 40q/35 min, Science 40q/35 min, composite
@@ -145,7 +152,7 @@ export default async function AdminActFormsPage() {
             </thead>
             <tbody>
               {rows.map((row) => {
-                const spec = ACT_FORMAT_SPECS[row.format];
+                const spec = row.format ? ACT_FORMAT_SPECS[row.format] : null;
                 return (
                   <tr key={row.sourceTest}>
                     <td className={`${s.td} ${s.mono}`}>
@@ -161,7 +168,9 @@ export default async function AdminActFormsPage() {
                       />
                     </td>
                     <td className={s.td}>
-                      <FormatSelect sourceTest={row.sourceTest} format={row.format} hasRow={row.hasRow} />
+                      <FormatSelect sourceTest={row.sourceTest} format={formatByForm.get(row.sourceTest) ?? row.format} hasRow={row.hasRow} />
+                      {row.reviewReason && <div role="status" className={s.fieldHint}>Needs review: {row.reviewReason}</div>}
+                      {!row.hasRow && row.format && !row.reviewReason && <div className={s.fieldHint}>Detected from section counts</div>}
                     </td>
                     <td className={s.td}>
                       <KindSelect sourceTest={row.sourceTest} kind={row.kind} hasRow={row.hasRow} />
@@ -169,6 +178,7 @@ export default async function AdminActFormsPage() {
                     {ACT_SECTIONS.map((sec) => {
                       const n = row.counts[sec] ?? 0;
                       if (n === 0) return <td key={sec} className={s.td} style={{ color: 'var(--fg3)' }}>—</td>;
+                      if (!row.format || row.reviewReason || !spec) return <td key={sec} className={s.td}>{n}<div className={s.fieldHint}>Timing needs review</div></td>;
                       const released = spec.sections[sec].released;
                       const status = sectionCompleteness(row.format, row.kind, sec, n);
                       return (

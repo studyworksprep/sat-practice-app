@@ -8,6 +8,8 @@
 
 'use server';
 
+import { assessActQuestions } from '@/lib/practice/act-format-detection';
+import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
@@ -79,12 +81,22 @@ export async function setActFormKind(
     .eq('source_test', sourceTest);
   if (!count) return actionFail('No questions carry that form name.');
 
-  // Upsert so a form without a settings row gets one (format keeps its
-  // classic default on insert).
+  let inferredFormat;
+  const { data: existing, error: settingsError } = await supabase.from('act_forms')
+    .select('format').eq('source_test', sourceTest).maybeSingle();
+  if (settingsError) return actionFail('Could not load ACT format settings.');
+  if (!existing) {
+    try {
+      const { data: questions } = await loadActFormQuestions(supabase, sourceTest);
+      const detection = assessActQuestions(questions);
+      if (!detection.format || detection.reviewReason) return actionFail('Review the format before saving the kind.');
+      inferredFormat = detection.format;
+    } catch { return actionFail('Could not check ACT counts.'); }
+  }
   const { error } = await supabase
     .from('act_forms')
     .upsert(
-      { source_test: sourceTest, kind, updated_at: new Date().toISOString(), updated_by: user.id },
+      { source_test: sourceTest, kind, ...(inferredFormat ? { format: inferredFormat } : {}), updated_at: new Date().toISOString(), updated_by: user.id },
       { onConflict: 'source_test' },
     );
   if (error) return actionFail(error.message);
@@ -123,10 +135,22 @@ export async function setActFormDisplayName(
     .eq('source_test', sourceTest);
   if (!count) return actionFail('No questions carry that form name.');
 
+  let inferredFormat;
+  const { data: existing, error: settingsError } = await supabase.from('act_forms')
+    .select('format').eq('source_test', sourceTest).maybeSingle();
+  if (settingsError) return actionFail('Could not load ACT format settings.');
+  if (!existing) {
+    try {
+      const { data: questions } = await loadActFormQuestions(supabase, sourceTest);
+      const detection = assessActQuestions(questions);
+      if (!detection.format || detection.reviewReason) return actionFail('Review the format before saving the name.');
+      inferredFormat = detection.format;
+    } catch { return actionFail('Could not check ACT counts.'); }
+  }
   const { error } = await supabase
     .from('act_forms')
     .upsert(
-      { source_test: sourceTest, display_name: displayName, updated_at: new Date().toISOString(), updated_by: user.id },
+      { source_test: sourceTest, display_name: displayName, ...(inferredFormat ? { format: inferredFormat } : {}), updated_at: new Date().toISOString(), updated_by: user.id },
       { onConflict: 'source_test' },
     );
   if (error) return actionFail(error.message);

@@ -1,3 +1,6 @@
+import { assessActQuestions } from '@/lib/practice/act-format-detection';
+import { ACT_FORMAT_LABELS } from '@/lib/practice/act-test-plan';
+import { fetchAll } from '@/lib/supabase/fetchAll';
 // Admin → ACT → Imports → [jobId] → Review.
 //
 // Listing of every draft produced by the per-section parsers
@@ -83,6 +86,14 @@ export default async function ReviewPage({ params, searchParams }) {
     bySection.get(d.section).push(d);
   }
 
+  const [draftIdentities, formSettings] = await Promise.all([
+    fetchAll((from, to) => supabase.from('act_question_drafts')
+      .select('section, source_ordinal').eq('import_job_id', jobId).neq('status', 'rejected')
+      .order('id').range(from, to)),
+    supabase.from('act_forms').select('format, kind').eq('source_test', job.source_test).maybeSingle(),
+  ]);
+  if (formSettings.error) throw new Error('Could not load ACT format settings', { cause: formSettings.error });
+  const detection = assessActQuestions(draftIdentities, formSettings.data ?? {});
   const allDone = counts.ready_for_review === 0 && counts.parsing === 0 && counts.all > 0;
 
   return (
@@ -101,13 +112,17 @@ export default async function ReviewPage({ params, searchParams }) {
               {inBank > 0 ? ` · ${inBank} on this page already in the bank (approve links instead of duplicating)` : ''}
             </p>
           </div>
-          {allDone && job.status !== 'completed' && (
+          {allDone && !detection.reviewReason && job.status !== 'completed' && (
             <FinalizeJobButton jobId={jobId} action={finalizeJob} />
           )}
         </div>
         <FilterChips jobId={jobId} active={filter} counts={counts} />
       </header>
 
+      <p role="status">
+        {detection.reviewReason ? 'Needs review: ' + detection.reviewReason : 'Detected format: ' + ACT_FORMAT_LABELS[detection.format]}
+        {' '}<Link href="/admin/act/forms">Review form settings</Link>
+      </p>
       {total > 0 && (
         <nav className={s.chips} aria-label="Draft pages">
           {page > 1 && <Link className={s.chip} prefetch={false} href={`?status=${filter}&page=${page - 1}`}>← Previous</Link>}
