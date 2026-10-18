@@ -31,15 +31,14 @@ import { requireUser } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import type { ActionResult } from '@/lib/types';
-import { visibleActQuestions } from '@/lib/practice/act-visibility';
+import { assessActQuestions } from '@/lib/practice/act-format-detection';
+import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 import { isActSection, type ActSection } from '@/lib/practice/act-taxonomy';
 import {
   buildSectionPlan,
-  isActFormat,
   parsePlan,
   parseTimeMultiplier,
   sectionOverdue,
-  type ActFormat,
 } from '@/lib/practice/act-test-plan';
 import {
   attemptPath,
@@ -107,27 +106,28 @@ export async function startActPracticeTest(
 
   // The deterministic slice: every visible question of the form, in
   // source_ordinal order, bucketed by section.
-  const [{ data: questionRows, error: queryErr }, { data: formRow }] = await Promise.all([
-    visibleActQuestions(
-      supabase
-        .from('act_questions')
-        .select('id, section, source_ordinal')
-        .eq('source_test', sourceTest),
-    ).order('source_ordinal', { ascending: true, nullsFirst: false }),
-    supabase
-      .from('act_forms')
-      .select('format')
-      .eq('source_test', sourceTest)
-      .maybeSingle(),
-  ]);
-  if (queryErr) return actionFail(`Could not load test questions: ${queryErr.message}`);
+  let questionRows;
+  let formRow;
+  try {
+    const [questions, settings] = await Promise.all([
+      loadActFormQuestions(supabase, sourceTest),
+      supabase.from('act_forms').select('format, kind').eq('source_test', sourceTest).maybeSingle(),
+    ]);
+    if (settings.error) throw settings.error;
+    questionRows = questions.data.sort((a, b) => (a.source_ordinal ?? 0) - (b.source_ordinal ?? 0));
+    formRow = settings.data;
+  } catch {
+    return actionFail('Could not load ACT questions and format settings. Please retry.');
+  }
+  const detection = assessActQuestions(questionRows, formRow ?? {});
+  if (!detection.format || detection.reviewReason) return actionFail('This ACT import needs admin review. ' + detection.reviewReason);
 
   const questionsBySection: Partial<Record<ActSection, string[]>> = {};
   for (const r of (questionRows ?? []) as Array<{ id: string; section: string }>) {
     if (!isActSection(r.section)) continue;
     (questionsBySection[r.section] ??= []).push(r.id);
   }
-  const format: ActFormat = isActFormat(formRow?.format) ? formRow.format : 'classic';
+  const format = detection.format;
   const plan = buildSectionPlan({ format, multiplier, questionsBySection });
   if (plan.length === 0) return actionFail('This test form has no questions yet.');
 

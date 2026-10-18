@@ -285,13 +285,13 @@ export function breakRemainingMs(section: PlanSection, nowMs: number = Date.now(
   return Math.max(0, end - nowMs);
 }
 
-/** "35 min", "1 h 15 min". */
+/** Exact display of the timer, including its half-minute precision. */
 export function minutesLabel(ms: number): string {
-  const totalMin = Math.round(ms / MINUTE_MS);
-  if (totalMin < 60) return `${totalMin} min`;
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  return m === 0 ? `${h} h` : `${h} h ${m} min`;
+  const seconds = Math.max(0, Math.round(ms / 1000));
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const sec = seconds % 60;
+  return [h ? h + ' h' : '', m ? m + ' min' : '', sec ? sec + ' sec' : ''].filter(Boolean).join(' ') || '0 min';
 }
 
 /** True once an in-progress section's deadline has passed. */

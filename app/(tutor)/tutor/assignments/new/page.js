@@ -1,3 +1,4 @@
+import { assessActQuestions } from '@/lib/practice/act-format-detection';
 // Teacher assignment-creation page. Server Component loads the data
 // the form needs (the teacher's students, the taxonomy for the
 // question filters, the practice tests, published lessons, lesson
@@ -135,10 +136,10 @@ export default async function NewAssignmentPage({ searchParams }) {
     fetchAll((from, to) =>
       supabase
         .from('act_questions')
-        .select('section, category, difficulty, source_test')
+        .select('section, category, difficulty, source_test, source_ordinal')
         .eq('is_broken', false)
         .is('deleted_at', null)
-        .range(from, to),
+        .order('id').range(from, to),
     ),
     supabase.from('act_forms').select('source_test, format, display_name'),
   ]);
@@ -237,10 +238,11 @@ export default async function NewAssignmentPage({ searchParams }) {
   })).filter((sec) => sec.categories.length > 0);
   const actDifficulties = Array.from(actDiffSet).sort((a, b) => a - b);
   const actForms = Array.from(actFormCounts.entries())
+    .filter(([sourceTest]) => !assessActQuestions(actQuestionRows.filter(q => q.source_test === sourceTest), { format: actFormatByForm.get(sourceTest) }).reviewReason)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([sourceTest, count]) => ({
       sourceTest,
-      label: `${nameActForm(sourceTest)} · ${ACT_FORMAT_LABELS[actFormatByForm.get(sourceTest) ?? 'classic']} · ${count} question${count === 1 ? '' : 's'}`,
+      label: `${nameActForm(sourceTest)} · ${ACT_FORMAT_LABELS[assessActQuestions(actQuestionRows.filter(q => q.source_test === sourceTest), { format: actFormatByForm.get(sourceTest) }).format]} · ${count} question${count === 1 ? '' : 's'}`,
     }));
 
   // ── One-click prefill (§4.3) ──────────────────────────────────

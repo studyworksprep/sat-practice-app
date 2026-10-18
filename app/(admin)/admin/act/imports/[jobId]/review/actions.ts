@@ -39,6 +39,8 @@
 
 'use server';
 
+import { assessActQuestions } from '@/lib/practice/act-format-detection';
+import { fetchAll } from '@/lib/supabase/fetchAll';
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
@@ -481,14 +483,37 @@ export async function finalizeJob(
   const jobId = String(formData.get('job_id') ?? '');
   if (!jobId) return actionFail('job_id required');
 
-  const { count: openCount } = await supabase
+  const { count: openCount, error: countError } = await supabase
     .from('act_question_drafts')
     .select('id', { count: 'exact', head: true })
     .eq('import_job_id', jobId)
     .in('status', ['parsing', 'ready_for_review']);
 
-  if ((openCount ?? 0) > 0) {
+  if (countError || openCount == null) return actionFail('Could not check remaining drafts. Please retry.');
+  if (openCount > 0) {
     return actionFail(`${openCount} drafts still need review.`);
+  }
+
+  const { data: job, error: jobError } = await supabase.from('act_import_jobs')
+    .select('source_test').eq('id', jobId).maybeSingle();
+  if (jobError || !job) return actionFail('Could not load import job.');
+  let identities;
+  try {
+    identities = await fetchAll<{ section: string; source_ordinal: number | null }>((from, to) => supabase.from('act_question_drafts')
+      .select('section, source_ordinal').eq('import_job_id', jobId).neq('status', 'rejected').order('id').range(from, to));
+  } catch { return actionFail('Could not check section counts. Please retry.'); }
+  const { data: settings, error: settingsError } = await supabase.from('act_forms')
+    .select('format, kind').eq('source_test', job.source_test).maybeSingle();
+  if (settingsError) return actionFail('Could not load ACT format settings.');
+  const detection = assessActQuestions(identities, settings ?? {});
+  if (!detection.format || detection.reviewReason) return actionFail('Import needs review: ' + detection.reviewReason);
+  // Save newly detected settings only. Never overwrite a concurrent admin edit.
+  if (!settings) {
+    const { error: saveError } = await supabase.from('act_forms').upsert({
+      source_test: job.source_test, format: detection.format, kind: detection.kind,
+      updated_at: new Date().toISOString(), updated_by: ctx.user.id,
+    }, { onConflict: 'source_test', ignoreDuplicates: true });
+    if (saveError) return actionFail('Could not save detected format: ' + saveError.message);
   }
 
   const { error } = await supabase
@@ -499,6 +524,8 @@ export async function finalizeJob(
 
   revalidatePath(`/admin/act/imports/${jobId}`);
   revalidatePath(`/admin/act/imports/${jobId}/review`);
+  revalidatePath('/admin/act/forms');
+  revalidatePath('/practice/tests');
   revalidatePath('/admin/act/imports');
   return actionOk();
 }

@@ -16,8 +16,8 @@ export function FormatSelect({
   hasRow,
 }: {
   sourceTest: string;
-  format: ActFormat;
-  /** False when the form has no act_forms row yet (runs as classic). */
+  format: ActFormat | null;
+  /** False when the form has no act_forms row yet (uses automatic detection). */
   hasRow: boolean;
 }) {
   const router = useRouter();
@@ -40,17 +40,18 @@ export function FormatSelect({
     <div>
       <select
         className={s.select}
-        value={format}
+        value={format ?? ''}
         onChange={(e) => onChange(e.target.value)}
         disabled={pending}
         aria-label={`Format for ${sourceTest}`}
       >
+        <option value="" disabled>Needs review</option>
         {ACT_FORMATS.map((f) => (
           <option key={f} value={f}>{ACT_FORMAT_LABELS[f]}</option>
         ))}
       </select>
       {!hasRow && !pending && (
-        <div className={s.fieldHint}>default — not saved yet</div>
+        <div className={s.fieldHint}>not manually saved</div>
       )}
       {error && <div className={s.error} role="alert">{error}</div>}
     </div>

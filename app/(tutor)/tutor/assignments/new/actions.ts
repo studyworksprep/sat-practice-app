@@ -27,6 +27,8 @@
 
 'use server';
 
+import { assessActQuestions } from '@/lib/practice/act-format-detection';
+import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 import { redirect } from 'next/navigation';
 import { lessonCompletionByStudent } from '@/lib/lesson/assignment-completion';
 import { requireUser } from '@/lib/api/auth';
@@ -696,10 +698,15 @@ async function buildActPracticeTestPayload(
   const sourceTest = String(formData.get('act_source_test') || '').trim();
   if (!sourceTest) return { ok: false, error: 'Select an ACT form.' };
 
-  const { count } = await visibleActQuestions(
-    supabase.from('act_questions').select('id', { count: 'exact', head: true }),
-  ).eq('source_test', sourceTest);
-  if (!count) return { ok: false, error: 'That ACT form has no questions.' };
+  try {
+    const [questions, settings] = await Promise.all([
+      loadActFormQuestions(supabase, sourceTest),
+      supabase.from('act_forms').select('format, kind').eq('source_test', sourceTest).maybeSingle(),
+    ]);
+    if (settings.error) throw settings.error;
+    const detection = assessActQuestions(questions.data, settings.data ?? {});
+    if (!detection.format || detection.reviewReason) return { ok: false, error: 'ACT import needs review: ' + detection.reviewReason };
+  } catch { return { ok: false, error: 'Could not check ACT form. Please retry.' }; }
 
   return {
     ok: true,

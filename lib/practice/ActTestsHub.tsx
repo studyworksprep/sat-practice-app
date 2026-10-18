@@ -41,7 +41,8 @@ export interface HubForm {
   name: string;
   /** Secondary detail such as "Form E25"; null when there is none. */
   detail: string | null;
-  format: ActFormat;
+  format: ActFormat | null;
+  reviewReason: string | null;
   kind: ActFormKind;
   total: number;
   sections: Array<{ section: ActSection; count: number }>;
@@ -274,7 +275,7 @@ function TestFormCard({
   for (const sec of form.sections) {
     questionsBySection[sec.section] = Array.from({ length: sec.count }, (_, i) => `${sec.section}-${i}`);
   }
-  const plan = buildSectionPlan({ format: form.format, multiplier, questionsBySection });
+  const plan = form.format && !form.reviewReason ? buildSectionPlan({ format: form.format, multiplier, questionsBySection }) : [];
   const totalMs = plan.reduce((acc, p) => acc + p.time_limit_ms, 0);
   const breakMs = plan.reduce((acc, p) => acc + p.break_after_ms, 0);
 
@@ -283,12 +284,13 @@ function TestFormCard({
       <div className={s.testCardBody}>
         <div className={s.testCardTitle}>
           {form.name}
-          <span className={s.formatBadge}>{ACT_FORMAT_LABELS[form.format]}</span>
+          <span className={s.formatBadge}>{form.format ? ACT_FORMAT_LABELS[form.format] : 'Format needs review'}</span>
           {form.format === 'enhanced' && (
             <span className={s.formatBadge}>{ACT_FORM_KIND_LABELS[form.kind]}</span>
           )}
           {completed && <span className={s.testCardCompleted}>✓ Completed</span>}
         </div>
+        {form.reviewReason && <p role="status">This import needs review before it can be taken as a timed test.</p>}
         <ul className={s.sectionLines}>
           {plan.map((p) => (
             <li key={p.section}>
@@ -298,7 +300,7 @@ function TestFormCard({
         </ul>
         <div className={s.testCardMeta}>
           {form.detail ? `${form.detail} · ` : ''}
-          {plan.length === 1 ? 'One section' : `${plan.length} sections`} · {minutesLabel(totalMs)}
+          {form.reviewReason ? 'Timing pending review' : `${plan.length} sections · ${minutesLabel(totalMs)}`}
           {breakMs > 0 ? ` + ${minutesLabel(breakMs)} break` : ''}
         </div>
       </div>
@@ -306,7 +308,7 @@ function TestFormCard({
         type="button"
         className={s.testCardCta}
         onClick={onStart}
-        disabled={pending}
+        disabled={pending || (!resuming && (!form.format || !!form.reviewReason))}
       >
         {pending ? 'Opening…' : resuming ? 'Continue' : 'Start'}
       </button>

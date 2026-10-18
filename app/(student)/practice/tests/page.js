@@ -1,3 +1,5 @@
+import { assessActQuestions } from '@/lib/practice/act-format-detection';
+import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 // Student → practice-tests hub.
 //
 // Landing this page shows, at a glance:
@@ -23,7 +25,6 @@ import { TestLauncher } from '@/lib/practice/TestLauncher';
 import { ActTestsHub } from '@/lib/practice/ActTestsHub';
 import { HelpButton } from '@/app/(student)/help/HelpButton';
 import s from './PracticeTestsPage.module.css';
-import { visibleActQuestions } from '@/lib/practice/act-visibility';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import { isActFormat, isActFormKind, parsePlan } from '@/lib/practice/act-test-plan';
 import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
@@ -534,18 +535,14 @@ function TestTypeTabs({ current }) {
 async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
   // Pull every visible ACT question. Buckets by source_test ×
   // section so the hub can render per-section counts and timings on
-  // each card. The volume is small (~600 rows); one read covers it.
+  // each card. Page through every row so growing imports are not truncated.
   const [
     { data: questionRows },
     { data: attemptRows },
     { data: inProgress },
-    { data: formRows },
+    { data: formRows, error: formError },
   ] = await Promise.all([
-    visibleActQuestions(
-      supabase
-        .from('act_questions')
-        .select('source_test, section, source_ordinal'),
-    ).not('source_test', 'is', null),
+    loadActFormQuestions(supabase),
     supabase
       .from('act_practice_test_attempts')
       .select('id, source_test, status, started_at, finished_at, english_scaled, math_scaled, reading_scaled, science_scaled, composite_score, format, time_multiplier')
@@ -565,6 +562,7 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
       .select('source_test, format, kind, display_name'),
   ]);
 
+  if (formError) throw new Error('Could not load ACT form settings', { cause: formError });
   const formatByForm = new Map();
   const kindByForm = new Map();
   for (const r of formRows ?? []) {
@@ -592,8 +590,9 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
       sourceTest: f.source_test,
       name: nameOf(f.source_test),
       detail: actFormDetail(f.source_test),
-      format: formatByForm.get(f.source_test) ?? 'classic',
-      kind: kindByForm.get(f.source_test) ?? 'released',
+      ...assessActQuestions(questionRows.filter(q => q.source_test === f.source_test), {
+        format: formatByForm.get(f.source_test), kind: kindByForm.get(f.source_test),
+      }),
       total: f.total,
       sections: Array.from(f.sectionCounts.entries())
         .sort((a, b) => a[0].localeCompare(b[0]))
