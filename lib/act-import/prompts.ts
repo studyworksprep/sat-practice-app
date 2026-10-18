@@ -26,6 +26,13 @@ ANSWER KEY DOCUMENT (if attached as a second PDF):
 - The answer key uses letters (A/B/C/D or sometimes F/G/H/J for even-numbered math questions). Normalize F→A, G→B, H→C, J→D, K→E.
 - Mark the matching option is_correct: true. All others is_correct: false.
 
+DIGITAL PASSAGES (REQUIRED):
+- Transcribe all passage prose as real, selectable HTML text. NEVER use a page screenshot or an image of text as a passage.
+- Use a bold title and semantic <p> paragraphs. Join PDF line wraps and page/column continuations; preserve actual paragraph boundaries, wording, punctuation, italics, and meaningful insertion/paragraph labels.
+- Do not reproduce PDF page numbers, running headers, decorative spacing, columns, inline font sizes, fixed widths, absolute positioning, or empty coordinate-based highlight overlays.
+- Question-reference spans must wrap the actual referenced words, so highlights reflow with the text. Preserve references needed by questions.
+- Keep diagrams, graphs, maps, and other genuine figures as separate images beside the relevant prose; tables should be HTML where possible.
+
 IMAGES / FIGURES:
 - For tables you can reconstruct as HTML, embed them inline (<table>…</table>).
 - If a Mathpix HTML export is attached alongside the test PDF, its <img src="https://…"> tags point at figures already uploaded to a public bucket. COPY each question's figure <img> verbatim into the matching stem_html (or option content_html, or stimulus_html if the figure is shared). These URLs are stable and renderable as-is; do NOT replace them with placeholders.
