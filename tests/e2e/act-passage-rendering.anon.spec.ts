@@ -32,11 +32,15 @@ const css = ['app/styles/next-tokens.css', 'app/styles/next-prose.css', 'lib/ui/
 
 // Local source-verified repair manifests are deliberately kept out of Git.
 if (process.env.ACT_PASSAGES_FIXTURE) {
-  const passages = JSON.parse(readFileSync(process.env.ACT_PASSAGES_FIXTURE, 'utf8')) as Array<{section:string;first_q:number;html:string}>;
+  const passages = JSON.parse(readFileSync(process.env.ACT_PASSAGES_FIXTURE, 'utf8')) as Array<{label?:string;section:string;first_q:number;html:string}>;
   for (const passage of passages) for (const width of [390, 1246]) {
-    test(`converted ${passage.section} ${passage.first_q} at ${width}px`, async ({page}) => {
+    test(`converted ${passage.label ?? 'mc5'} ${passage.section} ${passage.first_q} at ${width}px`, async ({page}) => {
       await page.setViewportSize({width,height:800});
       await page.setContent(passageFixture(passage.section,passage.html));
+      if(passage.html.includes('data-mml-node')) {
+        await expect(page.locator('.passagePane svg')).toHaveCount((passage.html.match(/<svg /g)||[]).length);
+        await expect(page.locator('[data-mjx-error]')).toHaveCount(0);
+      }
       await page.locator('img').evaluateAll(async nodes => Promise.all(nodes.map(n=>(n as HTMLImageElement).decode())));
       const result = await page.evaluate(() => {
         const pane=document.querySelector<HTMLElement>('.passagePane')!;
@@ -50,7 +54,14 @@ if (process.env.ACT_PASSAGES_FIXTURE) {
       expect(result.positions.every(p=>p==='static')).toBe(true);
       expect(result.legacy).toBe(0);
       if(passage.section!=='science') await expect(page.locator('img')).toHaveCount(0);
-      if(width===1246) await page.screenshot({path:`tmp/mc5-preview-${passage.section}-${passage.first_q}.png`});
+      if(width===1246) {
+        const prefix=`tmp/${passage.label ?? 'mc5'}-preview-${passage.section}-${passage.first_q}`;
+        await page.screenshot({path:`${prefix}.png`});
+        for(let i=0;i<await page.locator('table').count();i++) {
+          await page.locator('table').nth(i).scrollIntoViewIfNeeded();
+          await page.screenshot({path:`${prefix}-table-${i+1}.png`});
+        }
+      }
     });
   }
 }

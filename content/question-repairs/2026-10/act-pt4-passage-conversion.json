@@ -1,0 +1,314 @@
+{
+  "source_test": "ACT-Online-Practice-Test-4",
+  "source_file": "ACT-Test-Prep-ACT-Practice-Test-4-Form.pdf",
+  "source_sha256": "141c8073889bc0fe21539e485ee09d78b961eb4b10981bc0a3f62ad313d09fe2",
+  "applied_on": "2026-10-18",
+  "live_questions_updated": 67,
+  "draft_questions_updated": 101,
+  "validation": {
+    "shared_browser_suite_passed": 95,
+    "viewports": [
+      390,
+      1246
+    ],
+    "english_source_characters_and_reference_targets_preserved": true,
+    "reading_source_line_markers_preserved": true,
+    "every_science_table_cell_verified": true,
+    "non_passage_fields_unchanged": true,
+    "full_page_raster_passages_remaining": 0
+  },
+  "passages": [
+    {
+      "section": "english",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "source_pages": [
+        4,
+        5,
+        6
+      ],
+      "old_md5": "a3c5d259f83848dca7da8d9489029bd5",
+      "new_md5": "38d9ff80591735bb25a89a31318dafd5",
+      "figure_count": 0,
+      "table_count": 0,
+      "math_equation_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "source_pages": [
+        6,
+        7
+      ],
+      "old_md5": "fb7961412e467a105a4e182e151d8fbb",
+      "new_md5": "df3b849c6f42022d3c3a7945f0f8f396",
+      "figure_count": 0,
+      "table_count": 0,
+      "math_equation_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "source_pages": [
+        7,
+        8,
+        9
+      ],
+      "old_md5": "6893ae9d81b4613d37c662099549b427",
+      "new_md5": "a53b874496a3f2383ed0939b1810673e",
+      "figure_count": 0,
+      "table_count": 0,
+      "math_equation_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "source_pages": [
+        10
+      ],
+      "old_md5": "819d5997d2c46b214e1cecc1d0e4e6ea",
+      "new_md5": "74c26dfabb192b49b6f1ef443feee472",
+      "figure_count": 0,
+      "table_count": 0,
+      "math_equation_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "source_pages": [
+        13,
+        14,
+        15
+      ],
+      "old_md5": "cd42ebcd41d4c1a6a5310aafe66785d4",
+      "new_md5": "660aa30fe6aca073da7b16f4a8a50bbd",
+      "figure_count": 0,
+      "table_count": 0,
+      "math_equation_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "source_pages": [
+        28,
+        29
+      ],
+      "old_md5": "dfe4cdbf654a60f2d3fb4c9cb88d724c",
+      "new_md5": "fe9faf27c423d16f2c71706d95f95e3d",
+      "figure_count": 0,
+      "table_count": 0,
+      "math_equation_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "source_pages": [
+        30
+      ],
+      "old_md5": "d67a78a2014a1b2dbcaf3a39d88de516",
+      "new_md5": "60b4d890563ea9c07c12d29e7ba4ebe7",
+      "figure_count": 0,
+      "table_count": 0,
+      "math_equation_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "source_pages": [
+        34
+      ],
+      "old_md5": "89b44ca8d0d9cbdf5d28ee405a551af7",
+      "new_md5": "672e2fe8be14b0529fe158a22b0fe482",
+      "figure_count": 0,
+      "table_count": 0,
+      "math_equation_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "source_pages": [
+        36
+      ],
+      "old_md5": "d637fbf51bde9ccdda4b28ff4cd1cadb",
+      "new_md5": "b1a2e013114cafab55b99cea57cf03bb",
+      "figure_count": 0,
+      "table_count": 2,
+      "math_equation_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "source_pages": [
+        40
+      ],
+      "old_md5": "01dcdfe8debb49c86dd3748efe3e6d43",
+      "new_md5": "ec760455905bcb50b78b60f7013f3ace",
+      "figure_count": 0,
+      "table_count": 2,
+      "math_equation_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "source_pages": [
+        42
+      ],
+      "old_md5": "5ada13c1302dc70d0ad8239ed7ee1936",
+      "new_md5": "68a966f5db2932c35e37b8df74cd4d17",
+      "figure_count": 1,
+      "table_count": 1,
+      "math_equation_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "source_pages": [
+        44,
+        45
+      ],
+      "old_md5": "90c9473dccd1aa0e4a7ed3fb8ed99c34",
+      "new_md5": "747a399ed917ac44d4e8db283de54eed",
+      "figure_count": 4,
+      "table_count": 0,
+      "math_equation_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        29,
+        30,
+        31,
+        32,
+        33,
+        34
+      ],
+      "source_pages": [
+        46
+      ],
+      "old_md5": "30eac8223eddf32e9d02c447f692ba1e",
+      "new_md5": "6e0eaa64bba964a348272e6f7cef00e3",
+      "figure_count": 0,
+      "table_count": 0,
+      "math_equation_count": 4
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "source_pages": [
+        48
+      ],
+      "old_md5": "42e3820b6d39acdf82024335891611db",
+      "new_md5": "4c002713a7a3df42f53d064212adf2c2",
+      "figure_count": 0,
+      "table_count": 1,
+      "math_equation_count": 0
+    }
+  ]
+}

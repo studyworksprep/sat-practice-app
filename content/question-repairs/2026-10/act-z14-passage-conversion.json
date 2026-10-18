@@ -1,0 +1,368 @@
+{
+  "source_test": "ACT-2025-February-FormZ14",
+  "source_file": "ACT-202502-Form-Z14.pdf",
+  "source_sha256": "0b483843ac159982e087abe46e814b0bc9f993766c3c7bff911140042e7a7511",
+  "applied_on": "2026-10-18",
+  "live_questions_updated": 155,
+  "draft_questions_updated": 155,
+  "validation": {
+    "shared_browser_suite_passed": 89,
+    "refined_table_browser_checks_passed": 6,
+    "viewports": [
+      390,
+      1246
+    ],
+    "english_source_characters_and_reference_targets_preserved": true,
+    "reading_source_line_markers_preserved": true,
+    "every_science_table_word_and_value_verified": true,
+    "non_passage_fields_unchanged": true,
+    "database_readback_hashes_match": true,
+    "full_page_raster_passages_remaining": 0
+  },
+  "passages": [
+    {
+      "section": "english",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "source_pages": [
+        3,
+        4,
+        5
+      ],
+      "old_md5": "4dfaf0464952686cf15dfa27d2143c1b",
+      "new_md5": "9d6c609ac0cb80c0e58e5ed613d96e05",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "source_pages": [
+        5,
+        6,
+        7
+      ],
+      "old_md5": "748e17e363be34f8efe591db907b25c3",
+      "new_md5": "0a21948a97b4884f832bbb48c1c00371",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45
+      ],
+      "source_pages": [
+        7,
+        8,
+        9
+      ],
+      "old_md5": "718792a3c4f6005549cd5f7edf8139ec",
+      "new_md5": "f762bfa39b4e3ac4038894ed51f2a94d",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "source_pages": [
+        10,
+        11
+      ],
+      "old_md5": "fa2284fdd2a21a0cee84b86d526a551b",
+      "new_md5": "deb190cdbe397e5bf2fade695cf4ec7a",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75
+      ],
+      "source_pages": [
+        12,
+        13,
+        14
+      ],
+      "old_md5": "621b10e85beb73e14b60753494a5864e",
+      "new_md5": "26b04a37dd5324fef3717e9bed525d00",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "source_pages": [
+        31
+      ],
+      "old_md5": "064c791f1b0e7954a3d7ca334260c40f",
+      "new_md5": "57a1654ce4f66c77bfcb1308af853c51",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "source_pages": [
+        33
+      ],
+      "old_md5": "369179fabf43cf20cc19fb132cda68ef",
+      "new_md5": "7d13c679ddb110d4ffc4a66aa94ab74c",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "source_pages": [
+        35
+      ],
+      "old_md5": "d9dfbdba04aa0b8a32fdd08299adbad7",
+      "new_md5": "743aaf296f036a0b335bbcc06afcb570",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "source_pages": [
+        37
+      ],
+      "old_md5": "a7d3f1bf19f6390584197d487b5b1840",
+      "new_md5": "b08e95e2f62556ce0b0def2a8e175f42",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "source_pages": [
+        39
+      ],
+      "old_md5": "6d54f3543ecf1f0b54d8f70ba1a38f39",
+      "new_md5": "c0e63256a9373332becdbf959a803843",
+      "figure_count": 2,
+      "table_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "source_pages": [
+        41
+      ],
+      "old_md5": "cb1df2db54f7898bd5c7abd44f21801f",
+      "new_md5": "0139260724f5b02a2d4fb054d46b6b72",
+      "figure_count": 1,
+      "table_count": 1
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "source_pages": [
+        43
+      ],
+      "old_md5": "56a3157aa1ea104d0c77f0e7c1d7cc4e",
+      "new_md5": "000fd7771a15ae8088fceb6783a94240",
+      "figure_count": 0,
+      "table_count": 1
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26
+      ],
+      "source_pages": [
+        45
+      ],
+      "old_md5": "4e2765037e8d234993abeaebd3ac6ded",
+      "new_md5": "1c513572b019f7785e943ec2d1e2e07c",
+      "figure_count": 1,
+      "table_count": 1
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33
+      ],
+      "source_pages": [
+        47
+      ],
+      "old_md5": "73971d81cf4af66ab71507829e21fe6b",
+      "new_md5": "959464969e167330b56fed410b90caa7",
+      "figure_count": 3,
+      "table_count": 1
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "source_pages": [
+        49
+      ],
+      "old_md5": "1cb9d078465109d313fc5b90456a4c67",
+      "new_md5": "9af38927557671a3b26737f9b52f6313",
+      "figure_count": 2,
+      "table_count": 1
+    }
+  ]
+}
