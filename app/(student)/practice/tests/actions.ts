@@ -38,6 +38,7 @@ import {
   buildSectionPlan,
   parsePlan,
   parseTimeMultiplier,
+  parseSectionSelection,
   sectionOverdue,
 } from '@/lib/practice/act-test-plan';
 import {
@@ -85,6 +86,12 @@ export async function startActPracticeTest(
 
   const sourceTest = String(formData.get('source_test') ?? '').trim();
   if (!sourceTest) return actionFail('Pick a test form.');
+  let selectedSections: ActSection[] | undefined;
+  try {
+    selectedSections = parseSectionSelection(formData);
+  } catch (error) {
+    return actionFail(error instanceof Error ? error.message : 'Choose valid ACT sections.');
+  }
   // An explicit field wins (the hub always sends one); a start with no
   // field — an assignment's Start button — uses the student's standing
   // accommodation from the Account page.
@@ -128,7 +135,12 @@ export async function startActPracticeTest(
     (questionsBySection[r.section] ??= []).push(r.id);
   }
   const format = detection.format;
-  const plan = buildSectionPlan({ format, multiplier, questionsBySection });
+  let plan;
+  try {
+    plan = buildSectionPlan({ format, multiplier, questionsBySection, selectedSections });
+  } catch (error) {
+    return actionFail(error instanceof Error ? error.message : 'Could not select these sections.');
+  }
   if (plan.length === 0) return actionFail('This test form has no questions yet.');
 
   const { data: attempt, error: insertErr } = await supabase

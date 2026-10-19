@@ -150,8 +150,8 @@
 
 .testCard {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: 12px;
   padding: 16px;
   border: 1px solid var(--border);
@@ -196,6 +196,7 @@
 }
 
 .testCardCta {
+  margin-top: auto;
   padding: 8px 14px;
   border: 1px solid var(--color-app-accent);
   border-radius: var(--radius-md);
@@ -350,3 +351,29 @@
 }
 .abandonBtn:hover:not(:disabled) { color: var(--color-diff-hard-fg, #b91c1c); }
 .abandonBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.sectionPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  margin: 8px 0;
+  padding: 0;
+  border: 0;
+}
+.sectionPicker legend {
+  padding: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg2);
+}
+.sectionChoice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--fg2);
+}
+@media (max-width: 480px) {
+  .cardGrid { grid-template-columns: minmax(0, 1fr); }
+}
