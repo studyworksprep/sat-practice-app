@@ -13,7 +13,7 @@
 
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useId, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useConfirm } from '@/lib/ui/ConfirmDialog';
@@ -28,6 +28,7 @@ import {
   type ActFormat,
   type ActFormKind,
   type ActTimeMultiplier,
+  type PlanSection,
 } from '@/lib/practice/act-test-plan';
 import {
   abandonActPracticeTest,
@@ -71,6 +72,8 @@ export interface HubResumeInfo {
   sectionLabel: string | null;
   sectionStatus: string | null;
   startedAt: string | null;
+  plan: PlanSection[];
+  timeMultiplier: ActTimeMultiplier;
 }
 
 const MULTIPLIER_LABELS: Record<ActTimeMultiplier, string> = {
@@ -105,8 +108,8 @@ export function ActTestsHub({
         <div className={s.eyebrow}>Practice tests</div>
         <h1 className={s.h1}>Practice tests</h1>
         <p className={s.sub}>
-          Full-length ACT simulations under timed conditions. Pick a
-          form below to start.
+          Take a full ACT practice test or choose sections to focus on.
+          Set your timing before you start.
         </p>
       </header>
 
@@ -119,8 +122,9 @@ export function ActTestsHub({
           <div>
             <div className={s.h2}>Available tests</div>
             <div className={s.cardHint}>
-              Each card is one ACT form, taken section by section at the
-              official pace for its format. Released forms leave out the
+              Choose the sections you want on each form. Each selected
+              section runs at the official pace for its format. Released forms
+              leave out the
               unscored questions, so a shorter section gets proportionally
               less time (40 English questions in 28 minutes is the same
               pace as 50 in 35). You start each section&apos;s clock
@@ -155,9 +159,9 @@ export function ActTestsHub({
               <TestFormCard
                 key={form.sourceTest}
                 form={form}
-                multiplier={multiplier}
+                multiplier={resumeInfo?.sourceTest === form.sourceTest ? resumeInfo.timeMultiplier : multiplier}
                 completed={completedTests.has(form.sourceTest)}
-                resuming={resumeInfo?.sourceTest === form.sourceTest}
+                resumePlan={resumeInfo?.sourceTest === form.sourceTest ? resumeInfo.plan : null}
               />
             ))}
           </ul>
@@ -243,20 +247,30 @@ function TestFormCard({
   form,
   multiplier,
   completed,
-  resuming,
+  resumePlan,
 }: {
   form: HubForm;
   multiplier: ActTimeMultiplier;
   completed: boolean;
-  resuming: boolean;
+  resumePlan: PlanSection[] | null;
 }) {
+  const cardId = useId();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [selectedSections, setSelectedSections] = useState<ActSection[]>(
+    () => form.sections.map((section) => section.section),
+  );
+  const resuming = resumePlan !== null;
+  const sections = resumePlan?.map((section) => section.section) ?? selectedSections;
+  const availableSections = resumePlan?.map((section) => ({ section: section.section, count: section.question_count })) ?? form.sections;
 
   function onStart() {
+    if (sections.length === 0 || pending) return;
     const fd = new FormData();
     fd.set('source_test', form.sourceTest);
     fd.set('time_multiplier', String(multiplier));
+    fd.set('section_selection', 'custom');
+    for (const section of sections) fd.append('sections', section);
     setError(null);
     startTransition(async () => {
       // startActPracticeTest redirects on success (which throws
@@ -275,32 +289,55 @@ function TestFormCard({
   for (const sec of form.sections) {
     questionsBySection[sec.section] = Array.from({ length: sec.count }, (_, i) => `${sec.section}-${i}`);
   }
-  const plan = form.format && !form.reviewReason ? buildSectionPlan({ format: form.format, multiplier, questionsBySection }) : [];
+  const plan = resumePlan ?? (form.format && !form.reviewReason && sections.length > 0
+    ? buildSectionPlan({ format: form.format, multiplier, questionsBySection, selectedSections: sections })
+    : []);
+  const totalQuestions = plan.reduce((total, section) => total + section.question_count, 0);
   const totalMs = plan.reduce((acc, p) => acc + p.time_limit_ms, 0);
   const breakMs = plan.reduce((acc, p) => acc + p.break_after_ms, 0);
 
   return (
-    <li className={s.testCard}>
+    <li className={s.testCard} aria-labelledby={`${cardId}-title`}>
       <div className={s.testCardBody}>
-        <div className={s.testCardTitle}>
+        <div className={s.testCardTitle} id={`${cardId}-title`}>
           {form.name}
           <span className={s.formatBadge}>{form.format ? ACT_FORMAT_LABELS[form.format] : 'Format needs review'}</span>
           {form.format === 'enhanced' && (
             <span className={s.formatBadge}>{ACT_FORM_KIND_LABELS[form.kind]}</span>
           )}
-          {completed && <span className={s.testCardCompleted}>✓ Completed</span>}
+          {completed && <span className={s.testCardCompleted}>✓ Previously taken</span>}
         </div>
         {form.reviewReason && <p role="status">This import needs review before it can be taken as a timed test.</p>}
-        <ul className={s.sectionLines}>
-          {plan.map((p) => (
-            <li key={p.section}>
-              {sectionLabel(p.section)} · {p.question_count} question{p.question_count === 1 ? '' : 's'} · {minutesLabel(p.time_limit_ms)}
-            </li>
-          ))}
-        </ul>
+        <fieldset className={s.sectionPicker} disabled={pending || resuming || !!form.reviewReason}>
+          <legend>Sections</legend>
+          {availableSections.map((section) => {
+            const planned = plan.find((entry) => entry.section === section.section);
+            return (
+              <label key={section.section} className={s.sectionChoice}>
+                <input
+                  type="checkbox"
+                  aria-label={sectionLabel(section.section)}
+                  checked={sections.includes(section.section)}
+                  onChange={(event) => {
+                    const checked = event.target.checked;
+                    setSelectedSections((current) => checked
+                      ? [...current, section.section]
+                      : current.filter((value) => value !== section.section));
+                    setError(null);
+                  }}
+                />
+                <span>
+                  {sectionLabel(section.section)} · {section.count} question{section.count === 1 ? '' : 's'}
+                  {planned ? ` · ${minutesLabel(planned.time_limit_ms)}` : ''}
+                </span>
+              </label>
+            );
+          })}
+        </fieldset>
+        {resuming && <p className={s.testCardMeta}>Continue keeps this attempt&apos;s saved sections and timing ({MULTIPLIER_LABELS[multiplier]}).</p>}
         <div className={s.testCardMeta}>
           {form.detail ? `${form.detail} · ` : ''}
-          {form.reviewReason ? 'Timing pending review' : `${plan.length} sections · ${minutesLabel(totalMs)}`}
+          {form.reviewReason ? 'Timing pending review' : sections.length === 0 ? 'Select at least one section.' : `${plan.length} section${plan.length === 1 ? '' : 's'} · ${totalQuestions} questions · ${minutesLabel(totalMs)}`}
           {breakMs > 0 ? ` + ${minutesLabel(breakMs)} break` : ''}
         </div>
       </div>
@@ -308,7 +345,7 @@ function TestFormCard({
         type="button"
         className={s.testCardCta}
         onClick={onStart}
-        disabled={pending || (!resuming && (!form.format || !!form.reviewReason))}
+        disabled={pending || sections.length === 0 || (!resuming && (!form.format || !!form.reviewReason))}
       >
         {pending ? 'Opening…' : resuming ? 'Continue' : 'Start'}
       </button>

@@ -25,7 +25,7 @@
 // with other counts pro-rate the same way; the multiplier is the
 // extended-time accommodation (1, 1.5, 2) applied on top.
 
-import { ACT_SECTIONS, type ActSection } from './act-taxonomy.ts';
+import { ACT_SECTIONS, isActSection, type ActSection } from './act-taxonomy.ts';
 
 export type ActFormat = 'classic' | 'enhanced';
 
@@ -114,6 +114,18 @@ export function parseTimeMultiplier(v: unknown): ActTimeMultiplier {
   return n === 1.5 || n === 2 ? n : 1;
 }
 
+/** Missing selection preserves full-form starts from assignments and older clients.
+ *  An explicit selection must contain at least one valid ACT section. */
+export function parseSectionSelection(formData: FormData): ActSection[] | undefined {
+  const raw = formData.getAll('sections');
+  if (raw.length === 0) {
+    if (formData.get('section_selection') === 'custom') throw new Error('Select at least one section.');
+    return undefined;
+  }
+  if (!raw.every(isActSection)) throw new Error('Choose valid ACT sections.');
+  return ACT_SECTIONS.filter((section) => raw.includes(section));
+}
+
 const MINUTE_MS = 60_000;
 
 /** Time limit for one section in ms. Pro-rated against the
@@ -192,9 +204,17 @@ export function buildSectionPlan(input: {
   format: ActFormat;
   multiplier: ActTimeMultiplier;
   questionsBySection: Partial<Record<ActSection, string[]>>;
+  selectedSections?: readonly ActSection[];
 }): PlanSection[] {
   const spec = ACT_FORMAT_SPECS[input.format];
-  const present = ACT_SECTIONS.filter((s) => (input.questionsBySection[s] ?? []).length > 0);
+  const selected = input.selectedSections;
+  if (selected?.length === 0) throw new Error('Select at least one section.');
+  if (selected?.some((section) => !(input.questionsBySection[section]?.length))) {
+    throw new Error('A selected section is unavailable on this form. Refresh and try again.');
+  }
+  const present = ACT_SECTIONS.filter((s) =>
+    (input.questionsBySection[s] ?? []).length > 0 && (!selected || selected.includes(s)),
+  );
   return present.map((section, index) => {
     const ids = input.questionsBySection[section] ?? [];
     const hasNext = index < present.length - 1;
