@@ -17,6 +17,7 @@
 // the composite. Attempts started before Phase 3 (plan = []) keep the
 // single-session path in finalizeLegacyActSession.
 
+import { satisfiesActAssignmentScope } from '@/lib/practice/act-assignment-scope';
 import { ACT_SECTIONS, type ActSection } from '@/lib/practice/act-taxonomy';
 import {
   compositeScore,
@@ -255,13 +256,13 @@ export async function finalizeActAttempt(
   if (error) return { ok: false, error: error.message };
   if (!updated || updated.length === 0) return { ok: false, error: 'Attempt is no longer in progress' };
 
-  await markActTestAssignmentsCompleted(supabase, attempt.user_id, attempt.source_test);
+  await markActTestAssignmentsCompleted(supabase, attempt.user_id, attempt.source_test, plan, format);
   return { ok: true };
 }
 
 /**
  * ACT practice-test assignments (Phase 4B): finishing any attempt of
- * the assigned form completes every open assignment of that form for
+ * the assigned form completes matching section or whole-test assignments for
  * the student — the same contract as SAT's
  * markPracticeTestAssignmentsCompletedIfDone. Best-effort: a
  * bookkeeping failure never fails the finalize that triggered it.
@@ -270,16 +271,20 @@ async function markActTestAssignmentsCompleted(
   supabase: Db,
   userId: string,
   sourceTest: string,
+  plan: PlanSection[],
+  format: ActFormat,
 ): Promise<void> {
   try {
     const { data: matching } = await supabase
       .from('assignments_v2')
-      .select('id')
+      .select('id, filter_criteria')
       .eq('assignment_type', 'practice_test')
       .eq('test_type', 'act')
       .eq('act_source_test', sourceTest)
       .is('deleted_at', null);
-    const ids = ((matching ?? []) as Array<{ id: string }>).map((a) => a.id);
+    const ids = ((matching ?? []) as Array<{ id: string; filter_criteria: { sections?: unknown } | null }>)
+      .filter(a => satisfiesActAssignmentScope(plan, format, a.filter_criteria?.sections))
+      .map(a => a.id);
     if (ids.length === 0) return;
     await supabase
       .from('assignment_students_v2')

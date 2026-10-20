@@ -33,6 +33,7 @@ import { rateLimit } from '@/lib/api/rateLimit';
 import type { ActionResult } from '@/lib/types';
 import { assessActQuestions } from '@/lib/practice/act-format-detection';
 import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
+import { matchesActSectionPlan } from '@/lib/practice/act-assignment-scope';
 import { isActSection, type ActSection } from '@/lib/practice/act-taxonomy';
 import {
   buildSectionPlan,
@@ -67,7 +68,7 @@ async function studentCtx() {
  * plan and creates the attempt row, then redirects to the attempt
  * page (section 1's "before you begin" screen — the timer does not
  * start until the student starts the section). An attempt already in
- * progress on the same form is resumed instead of duplicated.
+ * progress on the same form and section scope is resumed instead of duplicated.
  */
 export async function startActPracticeTest(
   _prev: ActionResult | null,
@@ -100,17 +101,6 @@ export async function startActPracticeTest(
     ? await loadTimeAccommodation(supabase, user.id)
     : parseTimeMultiplier(multiplierField);
 
-  const { data: open } = await supabase
-    .from('act_practice_test_attempts')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('source_test', sourceTest)
-    .eq('status', 'in_progress')
-    .order('started_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (open?.id) redirect(attemptPath(open.id as string));
-
   // The deterministic slice: every visible question of the form, in
   // source_ordinal order, bucketed by section.
   let questionRows;
@@ -142,6 +132,16 @@ export async function startActPracticeTest(
     return actionFail(error instanceof Error ? error.message : 'Could not select these sections.');
   }
   if (plan.length === 0) return actionFail('This test form has no questions yet.');
+
+  const { data: open } = await supabase
+    .from('act_practice_test_attempts')
+    .select('id, sections')
+    .eq('user_id', user.id)
+    .eq('source_test', sourceTest)
+    .eq('status', 'in_progress')
+    .order('started_at', { ascending: false });
+  const resumable = open?.find((attempt: { id: string; sections: unknown }) => matchesActSectionPlan(attempt.sections, plan));
+  if (resumable?.id) redirect(attemptPath(resumable.id));
 
   const { data: attempt, error: insertErr } = await supabase
     .from('act_practice_test_attempts')

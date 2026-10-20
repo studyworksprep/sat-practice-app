@@ -1,3 +1,4 @@
+import { satisfiesActAssignmentScope, actAssignmentScopeLabel } from '@/lib/practice/act-assignment-scope';
 // Assignment detail (Server Component). Branches on assignment_type
 // to render the appropriate UI. The product framing from the
 // session handoff:
@@ -209,16 +210,15 @@ export default async function AssignmentDetailPage({ params }) {
     && assignment.test_type === 'act'
     && assignment.act_source_test
   ) {
-    const { data: actAttempt } = await supabase
+    const { data: actAttempts } = await supabase
       .from('act_practice_test_attempts')
-      .select('id')
+      .select('id, sections, format')
       .eq('user_id', user.id)
       .eq('source_test', assignment.act_source_test)
       .eq('status', 'completed')
       .gte('started_at', assignment.created_at ?? '1970-01-01T00:00:00Z')
-      .order('finished_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order('finished_at', { ascending: false });
+    const actAttempt = actAttempts?.find(a => satisfiesActAssignmentScope(a.sections, a.format, assignment.filter_criteria?.sections));
     if (actAttempt?.id) actResultsHref = `/practice/test/act/attempt/${actAttempt.id}/results`;
   }
 
@@ -383,7 +383,7 @@ function PracticeTestView({ assignment, actResultsHref = null }) {
           {assignment.title ?? (assignment.act_source_test ? defaultActFormName(assignment.act_source_test) : 'ACT practice test')}
         </h2>
         <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-          ACT practice test · taken section by section with the official time limits.
+          ACT practice test · {actAssignmentScopeLabel(assignment.filter_criteria?.sections)} · official time limits.
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {actResultsHref && (

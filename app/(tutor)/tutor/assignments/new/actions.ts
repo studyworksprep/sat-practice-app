@@ -36,6 +36,7 @@ import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import type { ActionResult } from '@/lib/types';
+import { parseActAssignmentScope, actAssignmentScopeLabel } from '@/lib/practice/act-assignment-scope';
 import { isActSection, type ActSection } from '@/lib/practice/act-taxonomy';
 import { visibleActQuestions } from '@/lib/practice/act-visibility';
 import { actFormName } from '@/lib/practice/act-form-names';
@@ -181,6 +182,8 @@ export async function createAssignment(
       .eq('source_test', sourceTest)
       .maybeSingle();
     title = actFormName(sourceTest, (formRow as { display_name?: string | null } | null)?.display_name);
+    const scope = typePayload.row.filter_criteria?.sections;
+    if (scope && scope !== 'all') title += ` — ${actAssignmentScopeLabel(scope)}`;
   }
 
   // Same default-title convention for lesson assignments (§4.3):
@@ -697,6 +700,8 @@ async function buildActPracticeTestPayload(
 ): Promise<PayloadResult> {
   const sourceTest = String(formData.get('act_source_test') || '').trim();
   if (!sourceTest) return { ok: false, error: 'Select an ACT form.' };
+  const sections = parseActAssignmentScope(formData.get('act_sections'));
+  if (!sections) return { ok: false, error: 'Invalid ACT section selection.' };
 
   try {
     const [questions, settings] = await Promise.all([
@@ -704,6 +709,9 @@ async function buildActPracticeTestPayload(
       supabase.from('act_forms').select('format, kind').eq('source_test', sourceTest).maybeSingle(),
     ]);
     if (settings.error) throw settings.error;
+    if (sections !== 'all' && !questions.data.some(q => q.section === sections)) {
+      return { ok: false, error: 'This ACT form does not contain the selected section.' };
+    }
     const detection = assessActQuestions(questions.data, settings.data ?? {});
     if (!detection.format || detection.reviewReason) return { ok: false, error: 'ACT import needs review: ' + detection.reviewReason };
   } catch { return { ok: false, error: 'Could not check ACT form. Please retry.' }; }
@@ -716,6 +724,7 @@ async function buildActPracticeTestPayload(
         type: 'practice_test',
         testType: 'act',
         source_test: sourceTest,
+        sections,
       },
     },
   };
