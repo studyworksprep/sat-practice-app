@@ -160,7 +160,7 @@ export async function startAssignmentActTest(_prevState, formData) {
   const [{ data: assignment }, { data: enrolled }] = await Promise.all([
     supabase
       .from('assignments_v2')
-      .select('id, assignment_type, test_type, act_source_test, deleted_at')
+      .select('id, assignment_type, test_type, act_source_test, filter_criteria, deleted_at')
       .eq('id', assignmentId)
       .maybeSingle(),
     supabase
@@ -182,5 +182,7 @@ export async function startAssignmentActTest(_prevState, formData) {
 
   const fd = new FormData();
   fd.set('source_test', assignment.act_source_test);
+  const section = assignment.filter_criteria?.sections;
+  if (section && section !== 'all') fd.set('sections', section);
   return startActPracticeTest(null, fd);
 }

@@ -1154,11 +1154,20 @@ export function NewAssignmentInteractive({
               </select>
             </div>
           )}
+          <div className={styles.fieldRow}>
+            <label className={styles.fieldLabel} htmlFor="act_sections">Sections</label>
+            <select id="act_sections" name="act_sections" className={styles.select} defaultValue="all">
+              <option value="all">Whole test</option>
+              <option value="english">English only</option>
+              <option value="math">Math only</option>
+              <option value="reading">Reading only</option>
+              <option value="science">Science only</option>
+            </select>
+          </div>
           <p className={styles.sectionHint}>
-            The student takes the form section by section with the
-            official time limits for its format and gets scaled scores
-            and a composite. Finishing any attempt of the form completes
-            the assignment.
+            Assign the whole test or one section with its official time limit.
+            Finishing the assigned section completes a section assignment.
+            A composite score requires all core sections.
           </p>
         </section>
       )}

@@ -1,3 +1,4 @@
+import { actAssignmentScopeLabel } from '@/lib/practice/act-assignment-scope';
 // Tutor → assignment detail. Shows the assignment's metadata,
 // the list of enrolled students, and each student's progress
 // (attempts done, accuracy, completion state).
@@ -407,6 +408,9 @@ export default async function TutorAssignmentDetailPage({ params }) {
         <h1 className={s.h1}>{title}</h1>
         <div className={s.metaRow}>
           <AssignmentTypeBadge type={assignment.assignment_type} />
+          {assignment.assignment_type === 'practice_test' && assignment.test_type === 'act' && (
+            <span>{actAssignmentScopeLabel(assignment.filter_criteria?.sections)}</span>
+          )}
           {assignment.due_date && (
             <span className={isOverdue ? s.metaOverdue : s.metaItem}>
               {isOverdue ? 'Overdue' : 'Due'} · {formatDate(assignment.due_date)}
