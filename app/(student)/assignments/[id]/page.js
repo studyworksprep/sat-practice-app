@@ -1,3 +1,4 @@
+import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
 import { satisfiesActAssignmentScope, actAssignmentScopeLabel } from '@/lib/practice/act-assignment-scope';
 // Assignment detail (Server Component). Branches on assignment_type
 // to render the appropriate UI. The product framing from the
@@ -205,11 +206,13 @@ export default async function AssignmentDetailPage({ params }) {
   // attempt of the assigned form since the assignment was created
   // is the student's result for it.
   let actResultsHref = null;
+  let defaultTimeMultiplier = 1;
   if (
     assignment.assignment_type === 'practice_test'
     && assignment.test_type === 'act'
     && assignment.act_source_test
   ) {
+    defaultTimeMultiplier = await loadTimeAccommodation(supabase, user.id);
     const { data: actAttempts } = await supabase
       .from('act_practice_test_attempts')
       .select('id, sections, format')
@@ -274,7 +277,7 @@ export default async function AssignmentDetailPage({ params }) {
           />
         )}
         {assignment.assignment_type === 'practice_test' && (
-          <PracticeTestView assignment={assignment} actResultsHref={actResultsHref} />
+          <PracticeTestView assignment={assignment} actResultsHref={actResultsHref} defaultTimeMultiplier={defaultTimeMultiplier} />
         )}
         {assignment.assignment_type === 'lesson' && (
           <LessonView assignment={assignment} />
@@ -368,7 +371,7 @@ function QuestionsView({ assignment, rows, completed, latestSessionId, testType 
   );
 }
 
-function PracticeTestView({ assignment, actResultsHref = null }) {
+function PracticeTestView({ assignment, actResultsHref = null, defaultTimeMultiplier = 1 }) {
   // ACT (Phase 4B): the form runs through the ACT test mode — one
   // attempt per form, sections timed one at a time with the format's
   // official limits. Start creates the attempt; results link to the
@@ -393,6 +396,7 @@ function PracticeTestView({ assignment, actResultsHref = null }) {
             assignmentId={assignment.id}
             label={actResultsHref ? 'Take it again' : 'Start practice test'}
             disabled={false}
+            defaultTimeMultiplier={defaultTimeMultiplier}
             startAction={startAssignmentActTest}
           />
         </div>

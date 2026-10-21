@@ -700,8 +700,8 @@ async function buildActPracticeTestPayload(
 ): Promise<PayloadResult> {
   const sourceTest = String(formData.get('act_source_test') || '').trim();
   if (!sourceTest) return { ok: false, error: 'Select an ACT form.' };
-  const sections = parseActAssignmentScope(formData.get('act_sections'));
-  if (!sections) return { ok: false, error: 'Invalid ACT section selection.' };
+  const sections = parseActAssignmentScope(formData.getAll('act_sections'));
+  if (!sections) return { ok: false, error: 'Select at least one ACT section.' };
 
   try {
     const [questions, settings] = await Promise.all([
@@ -709,7 +709,7 @@ async function buildActPracticeTestPayload(
       supabase.from('act_forms').select('format, kind').eq('source_test', sourceTest).maybeSingle(),
     ]);
     if (settings.error) throw settings.error;
-    if (sections !== 'all' && !questions.data.some(q => q.section === sections)) {
+    if (sections !== 'all' && (Array.isArray(sections) ? sections : [sections]).some(section => !questions.data.some(q => q.section === section))) {
       return { ok: false, error: 'This ACT form does not contain the selected section.' };
     }
     const detection = assessActQuestions(questions.data, settings.data ?? {});
