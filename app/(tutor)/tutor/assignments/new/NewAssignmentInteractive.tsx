@@ -25,6 +25,7 @@ import { useActionState, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ActionResult } from '@/lib/types';
 import type { LessonCatalogItem } from '@/lib/lesson/catalog';
+import { ACT_SECTIONS, type ActSection } from '@/lib/practice/act-taxonomy';
 import { LessonPicker } from './LessonPicker';
 import styles from './NewAssignmentInteractive.module.css';
 
@@ -50,7 +51,7 @@ type TemplateOption = { id: string; name: string; testType?: 'sat' | 'act' };
 // section; a practice test is a form.
 type ActCategoryOption = { name: string; count: number };
 type ActSectionTaxonomy = { section: string; label: string; categories: ActCategoryOption[] };
-type ActFormOption = { sourceTest: string; label: string };
+type ActFormOption = { sourceTest: string; label: string; sections: ActSection[] };
 
 /** Server-resolved one-click prefill (§4.3): a template or a
  *  student's weak skills. Skills are the persisted shape (no
@@ -140,6 +141,9 @@ export function NewAssignmentInteractive({
     null,
   );
   const router = useRouter();
+  const [actSourceTest, setActSourceTest] = useState('');
+  const [actTestSections, setActTestSections] = useState<ActSection[]>([...ACT_SECTIONS]);
+  const availableActSections = actForms.find(form => form.sourceTest === actSourceTest)?.sections ?? ACT_SECTIONS;
 
   const hasTeachers = teachers.length > 0;
   const [assignmentType, setAssignmentType] = useState<
@@ -1145,7 +1149,11 @@ export function NewAssignmentInteractive({
                 id="act_source_test"
                 name="act_source_test"
                 className={styles.select}
-                defaultValue=""
+                value={actSourceTest}
+                onChange={event => {
+                  setActSourceTest(event.target.value);
+                  setActTestSections(actForms.find(form => form.sourceTest === event.target.value)?.sections ?? []);
+                }}
               >
                 <option value="" disabled>Select an ACT form…</option>
                 {actForms.map((f) => (
@@ -1154,20 +1162,24 @@ export function NewAssignmentInteractive({
               </select>
             </div>
           )}
-          <div className={styles.fieldRow}>
-            <label className={styles.fieldLabel} htmlFor="act_sections">Sections</label>
-            <select id="act_sections" name="act_sections" className={styles.select} defaultValue="all">
-              <option value="all">Whole test</option>
-              <option value="english">English only</option>
-              <option value="math">Math only</option>
-              <option value="reading">Reading only</option>
-              <option value="science">Science only</option>
-            </select>
-          </div>
+          <fieldset className={styles.actSectionList}>
+            <legend className={styles.fieldLabel}>Sections</legend>
+            {ACT_SECTIONS.map(section => {
+              const available = availableActSections.includes(section);
+              return (
+                <label key={section} className={styles.actSectionToggle}>
+                  <span>{section[0].toUpperCase() + section.slice(1)}{!available && ' (unavailable)'}</span>
+                  <input type="checkbox" role="switch" name="act_sections" value={section}
+                    checked={available && actTestSections.includes(section)} disabled={!available}
+                    onChange={event => setActTestSections(current => event.target.checked
+                      ? [...current, section] : current.filter(value => value !== section))} />
+                </label>
+              );
+            })}
+          </fieldset>
           <p className={styles.sectionHint}>
-            Assign the whole test or one section with its official time limit.
-            Finishing the assigned section completes a section assignment.
-            A composite score requires all core sections.
+            Choose one or more sections. The assignment is complete after all selected sections are finished.
+            Students can choose standard or extended time when they start.
           </p>
         </section>
       )}

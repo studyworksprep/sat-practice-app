@@ -20,6 +20,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
+import { parseActAssignmentScope } from '@/lib/practice/act-assignment-scope';
 import { startActPracticeTest } from '@/app/(student)/practice/tests/actions';
 
 export async function startAssignmentPractice(_prevState, formData) {
@@ -182,7 +183,15 @@ export async function startAssignmentActTest(_prevState, formData) {
 
   const fd = new FormData();
   fd.set('source_test', assignment.act_source_test);
-  const section = assignment.filter_criteria?.sections;
-  if (section && section !== 'all') fd.set('sections', section);
+  const scope = parseActAssignmentScope(assignment.filter_criteria?.sections);
+  if (!scope) return actionFail('This assignment has an invalid section selection.');
+  if (scope !== 'all') {
+    for (const section of Array.isArray(scope) ? scope : [scope]) fd.append('sections', section);
+  }
+  const multiplier = formData.get('time_multiplier');
+  if (multiplier != null) {
+    if (!['1', '1.5', '2'].includes(multiplier)) return actionFail('Choose a valid time accommodation.');
+    fd.set('time_multiplier', multiplier);
+  }
   return startActPracticeTest(null, fd);
 }

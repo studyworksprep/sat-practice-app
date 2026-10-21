@@ -242,6 +242,7 @@ export default async function NewAssignmentPage({ searchParams }) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([sourceTest, count]) => ({
       sourceTest,
+      sections: [...new Set(actQuestionRows.filter(q => q.source_test === sourceTest).map(q => q.section))],
       label: `${nameActForm(sourceTest)} · ${ACT_FORMAT_LABELS[assessActQuestions(actQuestionRows.filter(q => q.source_test === sourceTest), { format: actFormatByForm.get(sourceTest) }).format]} · ${count} question${count === 1 ? '' : 's'}`,
     }));
 
