@@ -5,6 +5,7 @@ import { docToBankHtml } from './bank-html.ts';
 import { normalizeBankHtml } from './normalize-bank-html.ts';
 import { sanitizeQuestionHtml } from '../sanitize.ts';
 import { renderHtml } from './render-math.mjs';
+import { parseBoundedMathSpeech } from './parse-bounded-math-speech.ts';
 
 test('authored display equations retain their centering through the application sanitizer', () => {
   const doc = { type: 'doc', content: [{ type: 'mathBlock', attrs: { latex: 'x+y=18' } }] };
@@ -39,6 +40,28 @@ test('only a reviewed equation image is converted; other equations and figures s
   assert.equal(body.querySelector('img:not([role="math"])')?.getAttribute('alt'), 'Graph of a line');
   assert.throws(() => normalizeBankHtml(html, 'stimulus', { mathImages, requireReviewedMath: true }), /Unreviewed equation/);
   assert.throws(() => normalizeBankHtml(html, 'stimulus', { mathImages: new Map([[src, { alt: 'different formula', tex: 'x^2' }]]) }), /does not match/);
+});
+
+test('multiplication speech stays as an image until its visual notation is reviewed', () => {
+  const examples = [
+    { src: 'data:image/png;base64,AAA', alt: 'a times pi', tex: 'a\\pi' },
+    { src: 'data:image/png;base64,BBB', alt: '10 times 16', tex: '10(16)' },
+    { src: 'data:image/png;base64,CCC', alt: 'm times 100', tex: 'm\\cdot100' },
+    { src: 'data:image/png;base64,DDD', alt: '5 point 1 2 times 10 to the power 8', tex: '5.12\\times10^8' },
+  ];
+  const html = examples.map(e => `<img role="math" src="${e.src}" alt="${e.alt}">`).join('');
+  assert.ok(examples.every(e => parseBoundedMathSpeech(e.alt) === null));
+  const preserved = normalizeBankHtml(html, 'stem')!;
+  assert.equal(parseHTML(preserved).document.querySelectorAll('img').length, 4);
+  assert.doesNotMatch(preserved, /\\(?:times|cdot)/);
+  assert.throws(() => normalizeBankHtml(html, 'stem', { requireReviewedMath: true }), /Unreviewed equation/);
+  const mathImages = new Map(examples.map(({ src, alt, tex }) => [src, { alt, tex }]));
+  const normalized = normalizeBankHtml(html, 'stem', { mathImages, requireReviewedMath: true })!;
+  for (const e of examples) assert.ok(normalized.includes(`\\(${e.tex}\\)`));
+  assert.doesNotMatch(normalized, /<img/);
+  // The same alt text on a different image must not reuse the transcription.
+  const different = normalizeBankHtml('<img role="math" src="data:image/png;base64,EEE" alt="a times pi">', 'stem', { mathImages })!;
+  assert.match(different, /<img/);
 });
 
 test('table captions, cell spans and data remain intact while imported presentation is removed', () => {
