@@ -43,6 +43,7 @@ import { ReviewTimingBand } from './ReviewTimingBand';
 import { subjectFromDomainCode } from './DomainBreakdownCard';
 import { SkillBreakdownCard } from './SkillBreakdownCard';
 import { ActBreakdownCards } from './ActBreakdownCards';
+import { ActScoreSummary } from '@/lib/practice-test/ActScoreSummary';
 import { ReportHero } from './ReportHero';
 import { formatDuration } from './format-duration';
 import { formatDate } from '@/lib/formatters';
@@ -171,16 +172,16 @@ export function AssignmentReport({
         <Link href={backHref} className={s.breadcrumb}>{backLabel}</Link>
       )}
 
-      <header className={s.header}>
-        {sessionMeta.scoreReportHref && (
-          <Link href={sessionMeta.scoreReportHref}>← Back to ACT score report</Link>
+      {sessionMeta.scoreReportHref && (
+          <Link className={s.breadcrumb} href={sessionMeta.scoreReportHref}>← Back to ACT score report</Link>
         )}
+      <header className={s.header}>
         <div className={s.headerMain}>
           <div className={s.eyebrow}>
-            {assignment ? 'Assignment report' : 'Session report'}
+            {sessionMeta.actTestReport ? 'ACT practice test report' : assignment ? 'Assignment report' : 'Session report'}
           </div>
           <h1 className={s.h1}>
-            {assignment ? assignment.title : sessionDate}
+            {assignment ? assignment.title : sessionMeta.sourceTest ?? sessionDate}
           </h1>
           <div className={s.subtitleRow}>
             {studentName && (studentHref ? (
@@ -223,7 +224,8 @@ export function AssignmentReport({
            Hero = accuracy %, the headline metric a tutor reads
            first. Supporting tiles repeat the practice-test report's
            visual rhythm: questions answered, correct/wrong, time. */}
-      <ReportHero
+      {sessionMeta.actTestReport ? <ActScoreSummary {...sessionMeta.actTestReport} /> : (
+        <ReportHero
         primary={{
           label: 'Accuracy',
           value: accuracyPct == null ? '—' : `${accuracyPct}%`,
@@ -258,6 +260,7 @@ export function AssignmentReport({
           },
         ]}
       />
+      )}
 
       {/* ---------- Daily distribution ---------- */}
       {assignment?.dailyMap?.days?.length > 0 && (
@@ -280,7 +283,7 @@ export function AssignmentReport({
       )}
 
       {/* ---------- Weak spots + by-domain breakdown ---------- */}
-      {weakSkills.length > 0 && (
+      {!sessionMeta.actTestReport && weakSkills.length > 0 && (
         <section className={s.weakCard}>
           <div className={s.weakLabel}>Weak spots</div>
           <div className={s.weakRow}>
