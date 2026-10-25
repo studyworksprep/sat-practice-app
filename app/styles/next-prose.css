@@ -277,8 +277,25 @@ math[display="block"] {
   line-height: inherit;
 }
 .sw-act-passage p { margin: 0 0 1em; text-indent: 0; }
+/* ACT prints editorial notes in smaller sans-serif type, separate from prose. */
+.sw-act-passage:has(.source-note) {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.sw-act-passage .source-note,
+.sw-act-passage .source-line-help {
+  font-family: var(--font-sans, Arial, sans-serif);
+  font-size: 0.85em;
+  line-height: 1.45;
+  margin: 0 0 0.75rem;
+  text-indent: 0;
+}
+.sw-act-passage .source-note + :not(.source-note) { margin-top: 1.5rem; }
+.sw-act-passage:has(.source-note) > p:not(.source-note):not(.source-line-help) {
+  text-indent: 1.5em;
+}
 .sw-act-passage :is(h1, h2, h3, h4, h5, h6) {
   font: inherit;
+  font-family: var(--font-sans, Arial, sans-serif);
   font-weight: 700;
   margin: 0 0 1em;
 }
