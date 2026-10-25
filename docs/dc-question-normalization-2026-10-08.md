@@ -56,3 +56,11 @@ The comparison gallery (`tmp/dc-question-audit-2026-10-08/previews/index.html`, 
 Do not execute the saved publication statements again: they are guarded against the original timestamps and intentionally reject an already-updated question. New work must capture fresh production content and review its own batch. The original snapshots and `question_content_history` remain available for restoration if needed.
 
 The three content defects identified by the audit and M-00861's incomplete official prompt remain outside this first formatting batch.
+
+## Multiplication notation follow-up (2026-10-25)
+
+Accessibility speech is not a visual transcription. College Board uses “times” for juxtaposition, parenthesized factors, centered dots, and multiplication crosses. Both speech parsers now return `null` for spoken multiplication. The general replacement helper retains the original image; strict normalization requires a visually reviewed transcription instead. Do not replace “times” with a universal `\\times`, `\\cdot`, or empty string: numerical products may require parentheses, and scientific notation can legitimately use a cross.
+
+The source-image SHA-256 registry in `scripts/verification/dc-question-math-transcriptions.json` includes the 399 distinct images verified in the multiplication audit, including the initial spot checks. `prepare-remaining-dc-questions.ts` selects these exact-image overrides before trying the bounded parser. Unrecognized images still require review, even when their alt text matches a previously reviewed image. Existing TeX and MathML are preserved, including explicit multiplication operators. The direct College Board API importer continues to retain the supplied markup verbatim.
+
+`npm run test:content-normalization` covers both parser paths, preservation across all question fields, image-specific reviewed overrides, and legitimate multiplication signs.

@@ -1,5 +1,6 @@
 // Conservative College Board accessibility-math parser for offline repairs.
-// Unknown words or ambiguous boundaries return null, keeping the source PNG.
+// Unknown words, multiplication notation, or ambiguous boundaries return null,
+// keeping the source PNG until an image-bound visual transcription is supplied.
 const digits: Record<string, string> = { zero:'0', one:'1', two:'2', three:'3', four:'4', five:'5', six:'6', seven:'7', eight:'8', nine:'9' };
 const denominators: Record<string, number> = { half:2, halves:2, third:3, thirds:3, fourth:4, fourths:4, quarter:4, quarters:4, fifth:5, fifths:5, sixth:6, sixths:6, seventh:7, sevenths:7, eighth:8, eighths:8, ninth:9, ninths:9, tenth:10, tenths:10 };
 const ordinals: Record<string, string> = { first:'1', second:'2', third:'3', fourth:'4', fifth:'5', sixth:'6', seventh:'7', eighth:'8', ninth:'9', tenth:'10', eleventh:'11', twelfth:'12', thirteenth:'13', fourteenth:'14', fifteenth:'15', sixteenth:'16', twentieth:'20', nth:'n' };
@@ -116,11 +117,13 @@ class SpeechParser {
     let left=this.atom();
     while (this.peek() && !stop.has(this.peek()) && !['PLUS','MINUS','PM','EQ','LE','GE','LT','GT','NE','COMMA','APPROX'].includes(this.peek())) {
       const op=this.peek();
-      if (op==='TIMES'||op==='OVER') {
+      // "times" describes the operation, not its typography. Official PNGs
+      // use juxtaposition, parentheses, a centered dot, or a cross for it.
+      if (op==='TIMES') throw new Error('Multiplication notation needs image review');
+      if (op==='OVER') {
         if(left.type==='unboundedRatio') throw new Error('Unbounded fraction factor');
         this.index++; const right=this.atom();
-        const factor=right.tex.startsWith('-')?'\\left('+right.tex+'\\right)':right.tex;
-        left={tex:op==='OVER'?'\\frac{'+left.tex+'}{'+right.tex+'}':left.tex+' \\times '+factor,type:op==='OVER'?'unboundedRatio':'other'};
+        left={tex:'\\frac{'+left.tex+'}{'+right.tex+'}',type:'unboundedRatio'};
       } else {
         const right=this.atom();
         if (left.type==='number' && right.type==='number') throw new Error('Adjacent numbers');
