@@ -1,6 +1,11 @@
 import { ACT_SECTIONS, sectionLabel } from '../practice/act-taxonomy.ts';
 
-export type ActReportQuestion = { id: string; section: string; category?: string | null };
+export type ActReportQuestion = {
+  id: string;
+  section: string;
+  category?: string | null;
+  subcategory?: string | null;
+};
 export type ActReportAnswer = {
   question_id: string;
   is_correct: boolean;
@@ -37,7 +42,8 @@ export function buildActSectionRows(
       if (answer) attempted += 1;
       if (answer?.is_correct) correct += 1;
       timeMs += Math.max(0, answer?.time_spent_ms ?? 0);
-      const name = question.category || 'Uncategorized';
+      const name = (question.section === 'math' && question.subcategory)
+        || question.category || 'Uncategorized';
       const category = categories.get(name) ?? { name, total: 0, correct: 0 };
       category.total += 1;
       if (answer?.is_correct) category.correct += 1;

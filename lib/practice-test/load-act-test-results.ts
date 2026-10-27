@@ -128,7 +128,7 @@ export async function loadActTestResults({
     const questionIds = entry.question_ids;
     const [{ data: questions, error: questionError }, { data: answers, error: answerError }] = await Promise.all([
       questionIds.length
-        ? supabase.from('act_questions').select('id, section, category').in('id', questionIds)
+        ? supabase.from('act_questions').select('id, section, category, subcategory').in('id', questionIds)
         : Promise.resolve({ data: [], error: null }),
       questionIds.length && session
         ? supabase.from('act_attempts').select('question_id, is_correct, created_at, time_spent_ms')
