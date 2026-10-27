@@ -19,6 +19,7 @@ import { downloadAsBase64, downloadAsText } from './storage';
 import { rehostMathpixFigures } from './mathpix-figures';
 import { mathDifficulty, scienceDifficulty } from './difficulty';
 import { SECTION_PROMPTS } from './prompts';
+import { optionsFromParsedQuestion } from './options';
 import type { ActSection } from '@/lib/practice/act-taxonomy';
 
 export interface RawParsedOption {
@@ -273,19 +274,13 @@ export async function parseSection(input: ParseSectionInput): Promise<ParseSecti
     }
 
     const options = Array.isArray(q.options) ? q.options : [];
-    if (options.length !== expectedOptionCount(section)) {
-      warnings.push(
-        `Q${ordinal}: ${options.length} options, expected ${expectedOptionCount(section)}`,
-      );
+    if (options.length !== 4 && (section !== 'math' || options.length !== 5)) {
+      warnings.push(`Q${ordinal}: ${options.length} options, expected ${section === 'math' ? '4 or 5' : '4'}`);
     }
 
-    const normalizedOptions = options.map((o, i) => ({
-      label: o.label ?? defaultLabel(i),
-      content_html: o.content_html ?? '',
-      is_correct: Boolean(o.is_correct),
-    }));
-    if (!normalizedOptions.some((o) => o.is_correct)) {
-      warnings.push(`Q${ordinal}: no option marked correct`);
+    const normalizedOptions = optionsFromParsedQuestion(section, options);
+    if (normalizedOptions.filter(o => o.is_correct).length !== 1) {
+      warnings.push(`Q${ordinal}: exactly one option must be marked correct`);
     }
 
     return {
@@ -309,12 +304,4 @@ export async function parseSection(input: ParseSectionInput): Promise<ParseSecti
   });
 
   return { drafts, warnings: [...figureWarnings, ...warnings] };
-}
-
-function expectedOptionCount(section: ActSection): number {
-  return section === 'math' ? 5 : 4;
-}
-
-function defaultLabel(zeroIndex: number): string {
-  return ['A', 'B', 'C', 'D', 'E'][zeroIndex] ?? String.fromCharCode(65 + zeroIndex);
 }

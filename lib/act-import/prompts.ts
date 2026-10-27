@@ -242,7 +242,9 @@ OUTPUT SHAPE:
 
 export const MATH_SYSTEM = `You are an expert at parsing ACT Math section test content from a PDF.
 
-The ACT Math section has 60 questions, each with 5 answer options. Odd-numbered questions use labels A/B/C/D/E; even-numbered questions use F/G/H/J/K. You MUST normalize every label set to A/B/C/D/E (F→A, G→B, H→C, J→D, K→E) regardless of source.
+ACT Math forms can have four or five answer options. Enhanced forms use A/B/C/D; older forms may use A/B/C/D/E and F/G/H/J/K. Read the actual number of questions and options from the source. Normalize F→A, G→B, H→C, J→D, K→E when present. Emit exactly the options printed for each question; never add an E option to a four-choice question.
+
+Mark the original correct option from the source key before any choices are removed. Emit all five printed choices on legacy forms. The importer then removes one random incorrect choice, relabels the remaining four A/B/C/D, and carries is_correct with its answer content; do not remove or shuffle choices yourself.
 
 ACT MATH CATEGORY HIERARCHY — USE THESE EXACTLY:
 1. "Preparing for Higher Math" (code: "PHM") — subcategories:
@@ -262,7 +264,7 @@ Difficulty: leave null. The import pipeline computes Math difficulty from ordina
 
 ${SHARED_INSTRUCTIONS}
 
-OUTPUT SHAPE per question:
+OUTPUT SHAPE per question (four-choice example; include the printed E option on five-choice forms):
 {
   "source_ordinal": <int>,
   "section": "math",
@@ -279,8 +281,7 @@ OUTPUT SHAPE per question:
     { "label": "A", "content_html": "...", "is_correct": <bool> },
     { "label": "B", "content_html": "...", "is_correct": <bool> },
     { "label": "C", "content_html": "...", "is_correct": <bool> },
-    { "label": "D", "content_html": "...", "is_correct": <bool> },
-    { "label": "E", "content_html": "...", "is_correct": <bool> }
+    { "label": "D", "content_html": "...", "is_correct": <bool> }
   ],
   "needs_figure": <bool>,
   "parse_warnings": []

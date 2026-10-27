@@ -363,3 +363,19 @@ policies switched onto it in
 `20240101000012_replace_visibility_policies_with_can_view.sql`. The
 script is read-only and kept for regression use; expected output is
 "zero diffs".
+
+## ACT math answer choices
+
+Verified 2026-10-26. The ACT importer reads all printed answer choices and
+marks the original correct answer from the source key. For five-choice Math,
+it removes one random wrong choice, preserves the remaining order, and relabels
+the choices A–D. The correct flag stays attached to its answer content, so its
+new label becomes the bank's answer key. Four-choice Math and other sections
+keep their choices. Missing or ambiguous keys remain intact for correction.
+
+New parsed drafts contain the reduced choices before review. Single and bulk
+approval also normalize older staged five-choice Math drafts before inserting
+the bank question. The reduced options are saved with a condition that the
+original draft choices and review status still match, so retries reuse the
+same removal and concurrent changes require a reload. Source PDFs and offline
+source packages retain their printed choices and official answer keys.
