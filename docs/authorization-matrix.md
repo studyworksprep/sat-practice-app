@@ -27,6 +27,7 @@ Runs on every matched request. Detected: session refresh only.
 | `/api/cron/repace` | — | requireRole[admin] + service client (RLS bypass) |
 | `/api/external/score-report/[attemptId]` | GET | requireExternalApiAccess + service client (RLS bypass) |
 | `/api/practice-test/time-ping` | POST | requireUser |
+| `/api/practice/error-notes` | POST | requireUser |
 | `/api/practice/time-ping` | — | requireUser + rateLimit |
 | `/api/public/students/[studentId]/practice-data` | GET | requireExternalApiAccess + service client (RLS bypass) |
 | `/api/public/students/provision` | POST | requireExternalApiAccess + service client (RLS bypass) |
@@ -125,4 +126,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_21 route handlers, 73 server-action modules enumerated._
+_22 route handlers, 73 server-action modules enumerated._

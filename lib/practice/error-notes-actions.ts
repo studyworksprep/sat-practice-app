@@ -2,10 +2,8 @@
 //
 // Storage shape: one row per (user, question) in
 // public.question_error_notes. Owner-only RLS (see migration
-// 20240101000038). The Practice runner uses these actions to
-// load + save the current question's note; the Review tree's
-// /review/error-log page uses the loadErrorNotes helper to
-// render the full history.
+// 20240101000038). The stable error-notes API endpoint delegates
+// saves here; /review/error-log uses loadErrorNotes for the history.
 //
 // SAT and ACT notes share the table, told apart by `test_type`
 // (questions_v2 vs act_questions keys). The type is derived from

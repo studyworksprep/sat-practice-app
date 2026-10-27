@@ -120,6 +120,8 @@
 
 .saveBtn {
   display: inline-flex;
+  flex-shrink: 0;
+  white-space: nowrap;
   align-items: center;
   padding: 8px 16px;
   background: var(--color-app-accent);
