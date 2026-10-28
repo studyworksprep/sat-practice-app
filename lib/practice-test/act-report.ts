@@ -12,6 +12,8 @@ export type ActReportAnswer = {
   created_at: string | null;
   time_spent_ms?: number | null;
 };
+export type ActReportMetric = { name: string; total: number; correct: number };
+export type ActReportCategory = ActReportMetric & { subcategories?: ActReportMetric[] };
 
 export function buildActSectionRows(
   questionIds: string[],
@@ -29,7 +31,7 @@ export function buildActSectionRows(
     if (!answerById.has(answer.question_id)) answerById.set(answer.question_id, answer);
   }
   return ACT_SECTIONS.map((section) => {
-    const categories = new Map<string, { name: string; total: number; correct: number }>();
+    const categories = new Map<string, ActReportCategory>();
     let total = 0;
     let correct = 0;
     let attempted = 0;
@@ -42,11 +44,20 @@ export function buildActSectionRows(
       if (answer) attempted += 1;
       if (answer?.is_correct) correct += 1;
       timeMs += Math.max(0, answer?.time_spent_ms ?? 0);
-      const name = (question.section === 'math' && question.subcategory)
-        || question.category || 'Uncategorized';
+      const name = question.category || 'Uncategorized';
       const category = categories.get(name) ?? { name, total: 0, correct: 0 };
       category.total += 1;
       if (answer?.is_correct) category.correct += 1;
+      if (section === 'math' && question.subcategory) {
+        const children = category.subcategories ??= [];
+        let child = children.find((entry) => entry.name === question.subcategory);
+        if (!child) {
+          child = { name: question.subcategory, total: 0, correct: 0 };
+          children.push(child);
+        }
+        child.total += 1;
+        if (answer?.is_correct) child.correct += 1;
+      }
       categories.set(name, category);
     }
     const scaled = scores[`${section}_scaled`];
@@ -57,7 +68,10 @@ export function buildActSectionRows(
       attempted,
       timeMs,
       scaled: typeof scaled === 'number' && Number.isFinite(scaled) ? scaled : null,
-      categories: [...categories.values()].sort((left, right) => left.name.localeCompare(right.name)),
+      categories: [...categories.values()].map((category) => ({
+        ...category,
+        ...(category.subcategories ? { subcategories: category.subcategories.sort((left, right) => left.name.localeCompare(right.name)) } : {}),
+      })).sort((left, right) => left.name.localeCompare(right.name)),
     };
   }).filter((row) => row.raw.total > 0);
 }

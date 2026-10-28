@@ -40,6 +40,7 @@ import s from './SkillBreakdownCard.module.css';
  *     total: number,
  *     isPriority?: boolean,
  *   }>,
+ *   subcategories?: Array<{ name: string, correct: number, total: number }>,
  * }>} props.domains
  * @param {Array<{
  *   skill_name: string,
@@ -127,6 +128,21 @@ export function SkillBreakdownCard({ title, tone, domains, opportunities = [], s
                   );
                 })}
               </div>
+              {d.subcategories?.length > 0 && (
+                <ul className={s.subcategoryList} aria-label={`${d.name} subcategories`}>
+                  {d.subcategories.map((subcategory) => {
+                    const accuracy = subcategory.total > 0 ? Math.round((subcategory.correct / subcategory.total) * 100) : 0;
+                    return (
+                      <li key={subcategory.name} className={s.subcategory}>
+                        <span className={s.subcategoryName}>{subcategory.name}</span>
+                        <span className={s.subcategoryStat}>
+                          {subcategory.correct}/{subcategory.total} · <span className={s.domainPct}>{accuracy}%</span>
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </li>
           );
         })}

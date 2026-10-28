@@ -99,6 +99,29 @@
   font-weight: 700;
 }
 
+.subcategoryList {
+  list-style: none;
+  margin: 4px 0 0 10px;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.subcategory {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  font-size: 12px;
+  color: var(--fg2);
+}
+.subcategoryName { min-width: 0; }
+.subcategoryStat {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 /* The bar itself — flex container; segments grow proportional to
    question count via flex-grow set inline. min-height keeps
    single-question segments visible; min-width on segments stops

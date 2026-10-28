@@ -13,6 +13,9 @@ test.beforeAll(async () => {
   directory = mkdtempSync(join(tmpdir(), 'act-options-'));
   const imports: Record<string, string> = {
     './act-taxonomy.ts': './taxonomy.mjs',
+    './act-taxonomy': './taxonomy.mjs',
+    '../practice/act-taxonomy.ts': './taxonomy.mjs',
+    './SkillBreakdownCard': './breakdown-card.mjs',
     '@/lib/practice/act-taxonomy': './taxonomy.mjs',
     '@/lib/practice/act-test-plan': './plan.mjs',
     '@/lib/practice/act-assignment-taxonomy': './assignment-taxonomy.mjs',
@@ -27,6 +30,9 @@ test.beforeAll(async () => {
     'assignment-taxonomy': 'lib/practice/act-assignment-taxonomy.ts',
     hub: 'lib/practice/ActTestsHub.tsx',
     assignment: 'app/(tutor)/tutor/assignments/new/NewAssignmentInteractive.tsx',
+    report: 'lib/practice-test/act-report.ts',
+    breakdown: 'lib/practice/ActBreakdownCards.tsx',
+    'breakdown-card': 'lib/practice/SkillBreakdownCard.jsx',
   };
   for (const [name, path] of Object.entries(files)) {
     let source = readFileSync(resolve(path), 'utf8')
@@ -54,6 +60,8 @@ test.beforeAll(async () => {
     import {NewAssignmentInteractive} from './assignment.mjs';
     import {buildActAssignmentTaxonomy} from './assignment-taxonomy.mjs';
     import {buildSectionPlan} from './plan.mjs';
+    import {buildActSectionRows} from './report.mjs';
+    import {ActBreakdownCards} from './breakdown.mjs';
     const fixture = window.actFixture;
     const plan = buildSectionPlan({format:'classic',multiplier:1,untimed:true,questionsBySection:{math:['m']}});
     const rows = [
@@ -64,7 +72,12 @@ test.beforeAll(async () => {
       {section:'reading',category:'Craft and Structure'},
       {section:'science',category:'Interpretation of Data'},
     ];
-    createRoot(document.getElementById('fixture')).render(fixture.kind==='hub'
+    const questions = rows.map((row, index) => ({...row, id:String(index)}));
+    const sectionRows = buildActSectionRows(questions.map(q=>q.id), questions,
+      questions.map((q,index)=>({question_id:q.id,is_correct:index%2===0,created_at:null})), {}, null);
+    createRoot(document.getElementById('fixture')).render(fixture.kind==='report'
+      ? React.createElement(ActBreakdownCards,{domains:sectionRows.filter(row=>row.section==='math').map(row=>({code:row.section,name:row.label,...row.raw,categories:row.categories}))})
+      : fixture.kind==='hub'
       ? React.createElement(ActTestsHub,{forms:[{sourceTest:'ACT-fixture',name:'ACT fixture',detail:null,format:'classic',kind:'released',total:60,sections:[{section:'math',count:60}]}],attempts:[],tabs:null,
           resumeInfo: fixture.resume ? {attemptId:'resume',sourceTest:'ACT-fixture',name:'ACT fixture',sectionIndex:0,sectionCount:1,sectionLabel:'Math',sectionStatus:'in_progress',plan,timeMultiplier:1} : null})
       : React.createElement(NewAssignmentInteractive,{students:[],domains:[],difficulties:[],practiceTests:[],lessonPacks:[],actTaxonomy:buildActAssignmentTaxonomy(rows),
@@ -83,8 +96,8 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => { if (directory) rmSync(directory, { recursive: true, force: true }); });
 
-async function mount(page: Page, fixture: { kind: 'hub' | 'assignment'; resume?: boolean; selections?: unknown[] }) {
-  const css = ['app/styles/next-tokens.css', fixture.kind === 'hub' ? 'lib/practice/ActTestsHub.module.css' : 'app/(tutor)/tutor/assignments/new/NewAssignmentInteractive.module.css']
+async function mount(page: Page, fixture: { kind: 'hub' | 'assignment' | 'report'; resume?: boolean; selections?: unknown[] }) {
+  const css = ['app/styles/next-tokens.css', fixture.kind === 'report' ? 'lib/practice/SkillBreakdownCard.module.css' : fixture.kind === 'hub' ? 'lib/practice/ActTestsHub.module.css' : 'app/(tutor)/tutor/assignments/new/NewAssignmentInteractive.module.css']
     .map(path => readFileSync(resolve(path), 'utf8')).join('\n');
   await page.setContent(`<style>${css}*{box-sizing:border-box}body{margin:0;font:14px Arial}</style><div id="fixture"></div>`);
   await page.addScriptTag({ content: `window.actFixture=${JSON.stringify(fixture)};\n${bundle}` });
@@ -139,4 +152,27 @@ test('saved subcategory templates rehydrate the exact selected children', async 
   await expect(page.getByRole('checkbox', { name: /^Functions/ })).toBeChecked();
   await expect(page.getByRole('checkbox', { name: /^Geometry/ })).not.toBeChecked();
   await expect(page.getByRole('checkbox', { name: /^Preparing for Higher Math/ })).not.toBeChecked();
+});
+
+test('ACT reports nest five higher math subcategories beneath their parent at desktop and mobile widths', async ({ page }, testInfo) => {
+  await mount(page, { kind: 'report' });
+  const headings = page.locator('.domainList > li > .domainHead');
+  await expect(headings).toHaveText([
+    'Integrating Essential Skills1/1 · 100%',
+    'Preparing for Higher Math5/10 · 50%',
+  ]);
+  const children = page.getByRole('list', { name: 'Preparing for Higher Math subcategories' });
+  await expect(children.getByRole('listitem')).toHaveText([
+    'Algebra1/2 · 50%', 'Functions1/2 · 50%', 'Geometry1/2 · 50%',
+    'Number & Quantity1/2 · 50%', 'Statistics & Probability1/2 · 50%',
+  ]);
+  await expect(page.locator('.titlePctMath')).toHaveText('55%');
+  for (const width of [640, 375]) {
+    await page.setViewportSize({ width, height: 800 });
+    const parentBox = await headings.last().boundingBox();
+    const childBox = await children.boundingBox();
+    expect(childBox!.x).toBeGreaterThan(parentBox!.x);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: testInfo.outputPath(`math-hierarchy-${width}.png`), fullPage: true });
+  }
 });
