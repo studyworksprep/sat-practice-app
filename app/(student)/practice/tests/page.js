@@ -26,7 +26,7 @@ import { ActTestsHub } from '@/lib/practice/ActTestsHub';
 import { HelpButton } from '@/app/(student)/help/HelpButton';
 import s from './PracticeTestsPage.module.css';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
-import { isActFormat, isActFormKind, parsePlan, parseTimeMultiplier } from '@/lib/practice/act-test-plan';
+import { isActFormat, isActFormKind, isUntimedPlan, parsePlan, parseTimeMultiplier } from '@/lib/practice/act-test-plan';
 import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
 import { actFormDetail, actFormNamer } from '@/lib/practice/act-form-names';
 
@@ -545,7 +545,7 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
     loadActFormQuestions(supabase),
     supabase
       .from('act_practice_test_attempts')
-      .select('id, source_test, status, started_at, finished_at, english_scaled, math_scaled, reading_scaled, science_scaled, composite_score, format, time_multiplier')
+      .select('id, source_test, status, started_at, finished_at, english_scaled, math_scaled, reading_scaled, science_scaled, composite_score, format, time_multiplier, sections')
       .eq('user_id', user.id)
       .eq('status', 'completed')
       .order('finished_at', { ascending: false }),
@@ -622,7 +622,7 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
   return (
     <ActTestsHub
       forms={forms}
-      attempts={(attemptRows ?? []).map((a) => ({ ...a, name: nameOf(a.source_test) }))}
+      attempts={(attemptRows ?? []).map(({ sections, ...a }) => ({ ...a, name: nameOf(a.source_test), untimed: isUntimedPlan(sections) }))}
       resumeInfo={resumeInfo}
       tabs={<TestTypeTabs current="act" />}
       defaultMultiplier={timeAccommodation}

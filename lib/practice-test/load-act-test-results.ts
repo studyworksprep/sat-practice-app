@@ -19,7 +19,7 @@
 
 import { sectionLabel, type ActSection } from '@/lib/practice/act-taxonomy';
 import { buildActSectionRows } from './act-report.ts';
-import { parsePlan, type ActFormat } from '@/lib/practice/act-test-plan';
+import { isUntimedPlan, parsePlan, type ActFormat } from '@/lib/practice/act-test-plan';
 import { actFormDetail, actFormName } from '@/lib/practice/act-form-names';
 import {
   ACT_ATTEMPT_COLUMNS,
@@ -38,6 +38,7 @@ export interface ActTestResultsAttempt {
   status: string;
   format: ActFormat;
   timeMultiplier: number;
+  untimed: boolean;
   startedAt: string | null;
   finishedAt: string | null;
   compositeScore: number | null;
@@ -72,6 +73,7 @@ function toAttempt(row: ActAttemptRow, displayName: string | null | undefined): 
     status: row.status,
     format: attemptFormat(row),
     timeMultiplier: Number(row.time_multiplier ?? 1) || 1,
+    untimed: isUntimedPlan(row.sections),
     startedAt: row.started_at,
     finishedAt: row.finished_at,
     compositeScore: row.composite_score,

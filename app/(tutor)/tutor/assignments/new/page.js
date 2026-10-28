@@ -20,9 +20,9 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
 import { fetchAll } from '@/lib/supabase/fetchAll';
-import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import { ACT_FORMAT_LABELS, isActFormat } from '@/lib/practice/act-test-plan';
 import { actFormNamer } from '@/lib/practice/act-form-names';
+import { buildActAssignmentTaxonomy } from '@/lib/practice/act-assignment-taxonomy';
 import { createAssignment } from './actions';
 import { deleteAssignmentTemplate } from './template-actions';
 import { NewAssignmentInteractive } from './NewAssignmentInteractive';
@@ -136,7 +136,7 @@ export default async function NewAssignmentPage({ searchParams }) {
     fetchAll((from, to) =>
       supabase
         .from('act_questions')
-        .select('section, category, difficulty, source_test, source_ordinal')
+        .select('section, category, subcategory, difficulty, source_test, source_ordinal')
         .eq('is_broken', false)
         .is('deleted_at', null)
         .order('id').range(from, to),
@@ -215,27 +215,16 @@ export default async function NewAssignmentPage({ searchParams }) {
     if (isActFormat(f.format)) actFormatByForm.set(f.source_test, f.format);
   }
   const nameActForm = actFormNamer(actFormRows);
-  const actCounts = new Map();
   const actDiffSet = new Set();
   const actFormCounts = new Map();
   for (const r of actQuestionRows ?? []) {
     if (!r.section) continue;
-    const cat = (r.category ?? '').trim() || '—';
-    const key = `${r.section}|${cat}`;
-    actCounts.set(key, (actCounts.get(key) ?? 0) + 1);
     if (Number.isInteger(r.difficulty)) actDiffSet.add(r.difficulty);
     if (r.source_test) {
       actFormCounts.set(r.source_test, (actFormCounts.get(r.source_test) ?? 0) + 1);
     }
   }
-  const actTaxonomy = ACT_SECTIONS.map((section) => ({
-    section,
-    label: sectionLabel(section),
-    categories: Array.from(actCounts.entries())
-      .filter(([key]) => key.startsWith(`${section}|`))
-      .map(([key, count]) => ({ name: key.slice(section.length + 1), count }))
-      .sort((a, b) => a.name.localeCompare(b.name)),
-  })).filter((sec) => sec.categories.length > 0);
+  const actTaxonomy = buildActAssignmentTaxonomy(actQuestionRows ?? []);
   const actDifficulties = Array.from(actDiffSet).sort((a, b) => a - b);
   const actForms = Array.from(actFormCounts.entries())
     .filter(([sourceTest]) => !assessActQuestions(actQuestionRows.filter(q => q.source_test === sourceTest), { format: actFormatByForm.get(sourceTest) }).reviewReason)
