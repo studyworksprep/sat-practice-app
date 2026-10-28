@@ -98,7 +98,7 @@ export function ActTestResults({
       <section aria-label="Performance by ACT category" className={s.breakdownGrid}>
         <ActBreakdownCards domains={sectionRows.map((row) => ({
           code: row.section, name: row.label, correct: row.raw.correct,
-          total: row.raw.total, skills: row.categories,
+          total: row.raw.total, categories: row.categories,
         }))} />
       </section>
 

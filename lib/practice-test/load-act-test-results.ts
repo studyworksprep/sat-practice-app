@@ -18,7 +18,7 @@
 // their own ownership check where the viewer must be the owner.
 
 import { sectionLabel, type ActSection } from '@/lib/practice/act-taxonomy';
-import { buildActSectionRows } from './act-report.ts';
+import { buildActSectionRows, type ActReportCategory } from './act-report.ts';
 import { isUntimedPlan, parsePlan, type ActFormat } from '@/lib/practice/act-test-plan';
 import { actFormDetail, actFormName } from '@/lib/practice/act-form-names';
 import {
@@ -53,7 +53,7 @@ export interface ActSectionRow {
   scaled: number | null;
   attempted: number;
   timeMs: number;
-  categories: Array<{ name: string; correct: number; total: number }>;
+  categories: ActReportCategory[];
   /** The practice_sessions row that ran this section (review link). */
   sessionId: string | null;
 }
