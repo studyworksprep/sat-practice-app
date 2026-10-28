@@ -1,0 +1,1206 @@
+{
+  "source_test": "ACT-2024-Sep",
+  "source_pdf": "content/import/Sept2024/ACT-202409-Form-H11.pdf",
+  "source_sha256": "bf63a2759d1fb71a252497a3e3c8f3d9324f651fee75b4dec2e59d27ad9f5838",
+  "reviewed_on": "2026-10-28",
+  "status": "applied-and-verified",
+  "cause": "All 60 Math rows existed; source ordinals 31, 33, and 34 were hidden by is_broken. The remaining 155 questions were approved and the import job was already completed.",
+  "repairs": [
+    {
+      "ordinal": 4,
+      "reason": "Restore the source decimals 0.003 and 0.014 in two distractors.",
+      "before": {
+        "id": "5f876b4a-1eaa-4027-9768-4c91a423211f",
+        "options": [
+          {
+            "id": "bef57864-72dc-4a52-8443-806723736e6d",
+            "label": "A",
+            "ordinal": 1,
+            "is_correct": false,
+            "question_id": "5f876b4a-1eaa-4027-9768-4c91a423211f",
+            "content_html": "0.3"
+          },
+          {
+            "id": "89feedd8-a392-4a01-b304-ab9ce64296c1",
+            "label": "B",
+            "ordinal": 2,
+            "is_correct": false,
+            "question_id": "5f876b4a-1eaa-4027-9768-4c91a423211f",
+            "content_html": "0.14"
+          },
+          {
+            "id": "33f6aa07-0f77-4b9a-80f0-420b7e39ffa6",
+            "label": "C",
+            "ordinal": 3,
+            "is_correct": true,
+            "question_id": "5f876b4a-1eaa-4027-9768-4c91a423211f",
+            "content_html": "0.200"
+          },
+          {
+            "id": "ca11b692-4048-433b-95f9-ff89fec2f31f",
+            "label": "D",
+            "ordinal": 4,
+            "is_correct": false,
+            "question_id": "5f876b4a-1eaa-4027-9768-4c91a423211f",
+            "content_html": "0.250"
+          }
+        ],
+        "section": "math",
+        "category": "Integrating Essential Skills",
+        "is_broken": false,
+        "stem_html": "On a digital music player there are 153 rap songs, 72 country songs, 14 jazz songs, and 121 rock songs. Given that the player is set to randomly shuffle the song selection, what is the probability, rounded to the nearest thousandth, the 1st song played will be a country song?",
+        "created_at": "2026-03-24T16:58:44.860608+00:00",
+        "deleted_at": null,
+        "difficulty": 1,
+        "updated_at": "2026-10-10T12:47:46.840862+00:00",
+        "updated_by": null,
+        "external_id": "2024-Sep-M-0004",
+        "is_modeling": true,
+        "source_test": "ACT-2024-Sep",
+        "subcategory": null,
+        "category_code": "IES",
+        "highlight_ref": null,
+        "question_type": "mcq",
+        "stimulus_html": null,
+        "rationale_html": null,
+        "source_ordinal": 4,
+        "subcategory_code": null,
+        "difficulty_source": "import"
+      },
+      "after": {
+        "id": "5f876b4a-1eaa-4027-9768-4c91a423211f",
+        "options": [
+          {
+            "id": "bef57864-72dc-4a52-8443-806723736e6d",
+            "label": "A",
+            "ordinal": 1,
+            "is_correct": false,
+            "question_id": "5f876b4a-1eaa-4027-9768-4c91a423211f",
+            "content_html": "0.003"
+          },
+          {
+            "id": "89feedd8-a392-4a01-b304-ab9ce64296c1",
+            "label": "B",
+            "ordinal": 2,
+            "is_correct": false,
+            "question_id": "5f876b4a-1eaa-4027-9768-4c91a423211f",
+            "content_html": "0.014"
+          },
+          {
+            "id": "33f6aa07-0f77-4b9a-80f0-420b7e39ffa6",
+            "label": "C",
+            "ordinal": 3,
+            "is_correct": true,
+            "question_id": "5f876b4a-1eaa-4027-9768-4c91a423211f",
+            "content_html": "0.200"
+          },
+          {
+            "id": "ca11b692-4048-433b-95f9-ff89fec2f31f",
+            "label": "D",
+            "ordinal": 4,
+            "is_correct": false,
+            "question_id": "5f876b4a-1eaa-4027-9768-4c91a423211f",
+            "content_html": "0.250"
+          }
+        ],
+        "section": "math",
+        "category": "Integrating Essential Skills",
+        "is_broken": false,
+        "stem_html": "On a digital music player there are 153 rap songs, 72 country songs, 14 jazz songs, and 121 rock songs. Given that the player is set to randomly shuffle the song selection, what is the probability, rounded to the nearest thousandth, the 1st song played will be a country song?",
+        "created_at": "2026-03-24T16:58:44.860608+00:00",
+        "deleted_at": null,
+        "difficulty": 1,
+        "updated_at": "2026-10-10T12:47:46.840862+00:00",
+        "updated_by": null,
+        "external_id": "2024-Sep-M-0004",
+        "is_modeling": true,
+        "source_test": "ACT-2024-Sep",
+        "subcategory": null,
+        "category_code": "IES",
+        "highlight_ref": null,
+        "question_type": "mcq",
+        "stimulus_html": null,
+        "rationale_html": null,
+        "source_ordinal": 4,
+        "subcategory_code": null,
+        "difficulty_source": "import"
+      },
+      "before_sha256": "f787f59566cfc911485b52a2cbb772374b42b2b50aab1eb5c58a81492d2609dc",
+      "after_sha256": "11ce3a10b76e27d7805af068856454cc9bf02b9f7a56729a8a997313982093a8"
+    },
+    {
+      "ordinal": 31,
+      "reason": "Verify the function tables and composition, use one responsive table, and restore the hidden question.",
+      "before": {
+        "id": "7cb77da5-5cbc-45bc-8588-44e1d48989bc",
+        "options": [
+          {
+            "id": "9ecbe407-a3b9-4ad5-9f7e-2b7714044810",
+            "label": "A",
+            "ordinal": 1,
+            "is_correct": false,
+            "question_id": "7cb77da5-5cbc-45bc-8588-44e1d48989bc",
+            "content_html": "\\(-24\\)"
+          },
+          {
+            "id": "4492fdeb-5377-446a-ba59-49565ce4957f",
+            "label": "B",
+            "ordinal": 2,
+            "is_correct": false,
+            "question_id": "7cb77da5-5cbc-45bc-8588-44e1d48989bc",
+            "content_html": "\\(-6\\)"
+          },
+          {
+            "id": "1fe035e0-9c5d-4887-9c84-781b99cc9a37",
+            "label": "C",
+            "ordinal": 3,
+            "is_correct": true,
+            "question_id": "7cb77da5-5cbc-45bc-8588-44e1d48989bc",
+            "content_html": "\\(-5\\)"
+          },
+          {
+            "id": "98bb818a-8ce9-41a6-8e8e-d142ae814b76",
+            "label": "D",
+            "ordinal": 4,
+            "is_correct": false,
+            "question_id": "7cb77da5-5cbc-45bc-8588-44e1d48989bc",
+            "content_html": "\\(4\\)"
+          }
+        ],
+        "section": "math",
+        "category": "Preparing for Higher Math",
+        "is_broken": true,
+        "stem_html": "Tables of values for the 2 functions \\(f\\) and \\(g\\) are shown below. What is the value of \\(g(f(5))\\)?\n<div style=\"display: flex; gap: 40px; align-items: flex-start;\">\n  \n  <!-- f(x) table -->\n  <table class=\"act-table\">\n    <tr>\n      <th>\\(x\\)</th>\n      <th>\\(f(x)\\)</th>\n    </tr>\n    <tr><td>\\(-6\\)</td><td>\\(7\\)</td></tr>\n    <tr><td>\\(-4\\)</td><td>\\(-6\\)</td></tr>\n    <tr><td>\\(3\\)</td><td>\\(5\\)</td></tr>\n    <tr><td>\\(5\\)</td><td>\\(4\\)</td></tr>\n  </table>\n\n  <!-- g(x) table -->\n  <table class=\"act-table\">\n    <tr>\n      <th>\\(x\\)</th>\n      <th>\\(g(x)\\)</th>\n    </tr>\n    <tr><td>\\(-4\\)</td><td>\\(5\\)</td></tr>\n    <tr><td>\\(3\\)</td><td>\\(-3\\)</td></tr>\n    <tr><td>\\(4\\)</td><td>\\(-5\\)</td></tr>\n    <tr><td>\\(5\\)</td><td>\\(-6\\)</td></tr>\n  </table>\n\n</div>",
+        "created_at": "2026-03-24T16:58:44.860608+00:00",
+        "deleted_at": null,
+        "difficulty": 3,
+        "updated_at": "2026-10-10T12:47:46.840862+00:00",
+        "updated_by": null,
+        "external_id": "2024-Sep-M-0031",
+        "is_modeling": false,
+        "source_test": "ACT-2024-Sep",
+        "subcategory": "Functions",
+        "category_code": "PHM",
+        "highlight_ref": null,
+        "question_type": "mcq",
+        "stimulus_html": null,
+        "rationale_html": null,
+        "source_ordinal": 31,
+        "subcategory_code": "F",
+        "difficulty_source": "import"
+      },
+      "after": {
+        "id": "7cb77da5-5cbc-45bc-8588-44e1d48989bc",
+        "options": [
+          {
+            "id": "9ecbe407-a3b9-4ad5-9f7e-2b7714044810",
+            "label": "A",
+            "ordinal": 1,
+            "is_correct": false,
+            "question_id": "7cb77da5-5cbc-45bc-8588-44e1d48989bc",
+            "content_html": "\\(-24\\)"
+          },
+          {
+            "id": "4492fdeb-5377-446a-ba59-49565ce4957f",
+            "label": "B",
+            "ordinal": 2,
+            "is_correct": false,
+            "question_id": "7cb77da5-5cbc-45bc-8588-44e1d48989bc",
+            "content_html": "\\(-6\\)"
+          },
+          {
+            "id": "1fe035e0-9c5d-4887-9c84-781b99cc9a37",
+            "label": "C",
+            "ordinal": 3,
+            "is_correct": true,
+            "question_id": "7cb77da5-5cbc-45bc-8588-44e1d48989bc",
+            "content_html": "\\(-5\\)"
+          },
+          {
+            "id": "98bb818a-8ce9-41a6-8e8e-d142ae814b76",
+            "label": "D",
+            "ordinal": 4,
+            "is_correct": false,
+            "question_id": "7cb77da5-5cbc-45bc-8588-44e1d48989bc",
+            "content_html": "\\(4\\)"
+          }
+        ],
+        "section": "math",
+        "category": "Preparing for Higher Math",
+        "is_broken": false,
+        "stem_html": "<p>Tables of values for the 2 functions \\(f\\) and \\(g\\) are shown below. What is the value of \\(g(f(5))\\)?</p>\n<table><thead><tr><th>\\(x\\)</th><th>\\(f(x)\\)</th><th>\\(x\\)</th><th>\\(g(x)\\)</th></tr></thead><tbody>\n<tr><td>\\(-6\\)</td><td>\\(7\\)</td><td>\\(-4\\)</td><td>\\(5\\)</td></tr>\n<tr><td>\\(-4\\)</td><td>\\(-6\\)</td><td>\\(3\\)</td><td>\\(-3\\)</td></tr>\n<tr><td>\\(3\\)</td><td>\\(5\\)</td><td>\\(4\\)</td><td>\\(-5\\)</td></tr>\n<tr><td>\\(5\\)</td><td>\\(4\\)</td><td>\\(5\\)</td><td>\\(-6\\)</td></tr>\n</tbody></table>",
+        "created_at": "2026-03-24T16:58:44.860608+00:00",
+        "deleted_at": null,
+        "difficulty": 3,
+        "updated_at": "2026-10-10T12:47:46.840862+00:00",
+        "updated_by": null,
+        "external_id": "2024-Sep-M-0031",
+        "is_modeling": false,
+        "source_test": "ACT-2024-Sep",
+        "subcategory": "Functions",
+        "category_code": "PHM",
+        "highlight_ref": null,
+        "question_type": "mcq",
+        "stimulus_html": null,
+        "rationale_html": "<p>The first table gives \\(f(5)=4\\). Use that output as the input to \\(g\\): the second table gives \\(g(4)=-5\\). Therefore, \\(g(f(5))=-5\\), choice C.</p>",
+        "source_ordinal": 31,
+        "subcategory_code": "F",
+        "difficulty_source": "import"
+      },
+      "before_sha256": "438dd5188f46fc90dc8616bbf1aa8453e7094665c3b068f09ecf06393b15e58c",
+      "after_sha256": "fbaf851c5d9b654befd4f498da3e29b94e66f2527cd700f721781d41548fd380"
+    },
+    {
+      "ordinal": 33,
+      "reason": "Verify the radical expression against the official key and restore the hidden question.",
+      "before": {
+        "id": "483483a4-43d5-47d9-a73c-91725bce1f37",
+        "options": [
+          {
+            "id": "98e70ee5-68c3-4b61-8d2f-f4aaa8bdd832",
+            "label": "A",
+            "ordinal": 1,
+            "is_correct": false,
+            "question_id": "483483a4-43d5-47d9-a73c-91725bce1f37",
+            "content_html": "\\(96\\)"
+          },
+          {
+            "id": "d2b701f8-4f46-4bc3-9c0c-5f1a6b45575f",
+            "label": "B",
+            "ordinal": 2,
+            "is_correct": false,
+            "question_id": "483483a4-43d5-47d9-a73c-91725bce1f37",
+            "content_html": "\\(−2 − 4\\sqrt{7}\\)"
+          },
+          {
+            "id": "9ee2620b-4c40-4524-bbf7-456acfc15770",
+            "label": "C",
+            "ordinal": 3,
+            "is_correct": false,
+            "question_id": "483483a4-43d5-47d9-a73c-91725bce1f37",
+            "content_html": "\\(1 + 2\\sqrt{7}\\)"
+          },
+          {
+            "id": "ddb9bd98-36c0-43c4-8bcc-4e0d79d4c1f8",
+            "label": "D",
+            "ordinal": 4,
+            "is_correct": true,
+            "question_id": "483483a4-43d5-47d9-a73c-91725bce1f37",
+            "content_html": "\\(14 − 2\\sqrt{7}\\)"
+          }
+        ],
+        "section": "math",
+        "category": "Preparing for Higher Math",
+        "is_broken": true,
+        "stem_html": "Which of the following expressions is equal to \\((2\\sqrt{7}+1)(\\sqrt{7}−1)−(\\sqrt{7}−1)\\)?",
+        "created_at": "2026-03-24T16:58:44.860608+00:00",
+        "deleted_at": null,
+        "difficulty": 3,
+        "updated_at": "2026-10-10T12:47:46.840862+00:00",
+        "updated_by": null,
+        "external_id": "2024-Sep-M-0033",
+        "is_modeling": false,
+        "source_test": "ACT-2024-Sep",
+        "subcategory": "Number & Quantity",
+        "category_code": "PHM",
+        "highlight_ref": null,
+        "question_type": "mcq",
+        "stimulus_html": null,
+        "rationale_html": null,
+        "source_ordinal": 33,
+        "subcategory_code": "N",
+        "difficulty_source": "import"
+      },
+      "after": {
+        "id": "483483a4-43d5-47d9-a73c-91725bce1f37",
+        "options": [
+          {
+            "id": "98e70ee5-68c3-4b61-8d2f-f4aaa8bdd832",
+            "label": "A",
+            "ordinal": 1,
+            "is_correct": false,
+            "question_id": "483483a4-43d5-47d9-a73c-91725bce1f37",
+            "content_html": "\\(96\\)"
+          },
+          {
+            "id": "d2b701f8-4f46-4bc3-9c0c-5f1a6b45575f",
+            "label": "B",
+            "ordinal": 2,
+            "is_correct": false,
+            "question_id": "483483a4-43d5-47d9-a73c-91725bce1f37",
+            "content_html": "\\(−2 − 4\\sqrt{7}\\)"
+          },
+          {
+            "id": "9ee2620b-4c40-4524-bbf7-456acfc15770",
+            "label": "C",
+            "ordinal": 3,
+            "is_correct": false,
+            "question_id": "483483a4-43d5-47d9-a73c-91725bce1f37",
+            "content_html": "\\(1 + 2\\sqrt{7}\\)"
+          },
+          {
+            "id": "ddb9bd98-36c0-43c4-8bcc-4e0d79d4c1f8",
+            "label": "D",
+            "ordinal": 4,
+            "is_correct": true,
+            "question_id": "483483a4-43d5-47d9-a73c-91725bce1f37",
+            "content_html": "\\(14 − 2\\sqrt{7}\\)"
+          }
+        ],
+        "section": "math",
+        "category": "Preparing for Higher Math",
+        "is_broken": false,
+        "stem_html": "Which of the following expressions is equal to \\((2\\sqrt{7}+1)(\\sqrt{7}−1)−(\\sqrt{7}−1)\\)?",
+        "created_at": "2026-03-24T16:58:44.860608+00:00",
+        "deleted_at": null,
+        "difficulty": 3,
+        "updated_at": "2026-10-10T12:47:46.840862+00:00",
+        "updated_by": null,
+        "external_id": "2024-Sep-M-0033",
+        "is_modeling": false,
+        "source_test": "ACT-2024-Sep",
+        "subcategory": "Number & Quantity",
+        "category_code": "PHM",
+        "highlight_ref": null,
+        "question_type": "mcq",
+        "stimulus_html": null,
+        "rationale_html": "<p>Factor out \\(\\sqrt{7}-1\\):</p><p>\\[(\\sqrt{7}-1)((2\\sqrt{7}+1)-1).\\]</p><p>The second factor simplifies to \\(2\\sqrt{7}\\), so the expression equals</p><p>\\[2\\sqrt{7}(\\sqrt{7}-1)=14-2\\sqrt{7}.\\]</p><p>This is choice D in the practice test.</p>",
+        "source_ordinal": 33,
+        "subcategory_code": "N",
+        "difficulty_source": "import"
+      },
+      "before_sha256": "cc8293fd5a6cdea222ab8ed0b8adbba55f71f9602c8bfc19cc53c69dd42a3529",
+      "after_sha256": "35c1b062fdba26f7e2bb1f0dd162456f3766f45fae3d884ef4c9fb1c9d6ea652"
+    },
+    {
+      "ordinal": 34,
+      "reason": "Verify complex-number arithmetic against the official key and restore the hidden question.",
+      "before": {
+        "id": "0cc2a41e-ff0b-460a-8828-67ec252fa3bf",
+        "options": [
+          {
+            "id": "41299cd9-5116-4bf1-81a2-70f8b733171f",
+            "label": "A",
+            "ordinal": 1,
+            "is_correct": false,
+            "question_id": "0cc2a41e-ff0b-460a-8828-67ec252fa3bf",
+            "content_html": "\\(−14 − 21i\\)"
+          },
+          {
+            "id": "a2247d83-78ff-4801-bcbc-6c00fb6ad642",
+            "label": "B",
+            "ordinal": 2,
+            "is_correct": false,
+            "question_id": "0cc2a41e-ff0b-460a-8828-67ec252fa3bf",
+            "content_html": "\\(1 − 3i\\)"
+          },
+          {
+            "id": "1e4366b3-af5a-4b42-89c7-68988fc65835",
+            "label": "C",
+            "ordinal": 3,
+            "is_correct": true,
+            "question_id": "0cc2a41e-ff0b-460a-8828-67ec252fa3bf",
+            "content_html": "\\(2 − 21i\\)"
+          },
+          {
+            "id": "0e7b429c-973a-454d-8e60-c35a50592914",
+            "label": "D",
+            "ordinal": 4,
+            "is_correct": false,
+            "question_id": "0cc2a41e-ff0b-460a-8828-67ec252fa3bf",
+            "content_html": "\\(2 + 9i\\)"
+          }
+        ],
+        "section": "math",
+        "category": "Preparing for Higher Math",
+        "is_broken": true,
+        "stem_html": "Given \\(i^2 = −1, −2i(3 + 4i) − 3(2 + 5i) = \\) ?",
+        "created_at": "2026-03-24T16:58:44.860608+00:00",
+        "deleted_at": null,
+        "difficulty": 3,
+        "updated_at": "2026-10-10T12:47:46.840862+00:00",
+        "updated_by": null,
+        "external_id": "2024-Sep-M-0034",
+        "is_modeling": false,
+        "source_test": "ACT-2024-Sep",
+        "subcategory": "Number & Quantity",
+        "category_code": "PHM",
+        "highlight_ref": null,
+        "question_type": "mcq",
+        "stimulus_html": null,
+        "rationale_html": null,
+        "source_ordinal": 34,
+        "subcategory_code": "N",
+        "difficulty_source": "import"
+      },
+      "after": {
+        "id": "0cc2a41e-ff0b-460a-8828-67ec252fa3bf",
+        "options": [
+          {
+            "id": "41299cd9-5116-4bf1-81a2-70f8b733171f",
+            "label": "A",
+            "ordinal": 1,
+            "is_correct": false,
+            "question_id": "0cc2a41e-ff0b-460a-8828-67ec252fa3bf",
+            "content_html": "\\(−14 − 21i\\)"
+          },
+          {
+            "id": "a2247d83-78ff-4801-bcbc-6c00fb6ad642",
+            "label": "B",
+            "ordinal": 2,
+            "is_correct": false,
+            "question_id": "0cc2a41e-ff0b-460a-8828-67ec252fa3bf",
+            "content_html": "\\(1 − 3i\\)"
+          },
+          {
+            "id": "1e4366b3-af5a-4b42-89c7-68988fc65835",
+            "label": "C",
+            "ordinal": 3,
+            "is_correct": true,
+            "question_id": "0cc2a41e-ff0b-460a-8828-67ec252fa3bf",
+            "content_html": "\\(2 − 21i\\)"
+          },
+          {
+            "id": "0e7b429c-973a-454d-8e60-c35a50592914",
+            "label": "D",
+            "ordinal": 4,
+            "is_correct": false,
+            "question_id": "0cc2a41e-ff0b-460a-8828-67ec252fa3bf",
+            "content_html": "\\(2 + 9i\\)"
+          }
+        ],
+        "section": "math",
+        "category": "Preparing for Higher Math",
+        "is_broken": false,
+        "stem_html": "<p>Given \\(i^2=-1\\), \\(-2i(3+4i)-3(2+5i)=\\) ?</p>",
+        "created_at": "2026-03-24T16:58:44.860608+00:00",
+        "deleted_at": null,
+        "difficulty": 3,
+        "updated_at": "2026-10-10T12:47:46.840862+00:00",
+        "updated_by": null,
+        "external_id": "2024-Sep-M-0034",
+        "is_modeling": false,
+        "source_test": "ACT-2024-Sep",
+        "subcategory": "Number & Quantity",
+        "category_code": "PHM",
+        "highlight_ref": null,
+        "question_type": "mcq",
+        "stimulus_html": null,
+        "rationale_html": "<p>Distribute both terms:</p><p>\\[-6i-8i^2-6-15i.\\]</p><p>Since \\(i^2=-1\\), the term \\(-8i^2\\) equals \\(8\\). Combine the real and imaginary parts:</p><p>\\[8-6-21i=2-21i.\\]</p><p>The correct answer is choice C.</p>",
+        "source_ordinal": 34,
+        "subcategory_code": "N",
+        "difficulty_source": "import"
+      },
+      "before_sha256": "167e5254e2bd1f9839f4e08d50428d43ea2cc7e5629003e38086c98172808774",
+      "after_sha256": "4315e3a7d85d5d13653c9f9bb33bd9eb76e90de2b6ce106ab8169ac93a405254"
+    },
+    {
+      "ordinal": 49,
+      "reason": "Restore the missing squared factors in choices A and B, including the correct answer, and fix the word spacing.",
+      "before": {
+        "id": "e84ad346-8087-4f08-aa4d-3e9fef7a9f9f",
+        "options": [
+          {
+            "id": "18904cc9-f99a-495f-808e-e411be36313e",
+            "label": "A",
+            "ordinal": 1,
+            "is_correct": true,
+            "question_id": "e84ad346-8087-4f08-aa4d-3e9fef7a9f9f",
+            "content_html": "\\(y = −5(x − 3)\\)"
+          },
+          {
+            "id": "fb1ac692-c13d-4b83-9237-d666618ff63e",
+            "label": "B",
+            "ordinal": 2,
+            "is_correct": false,
+            "question_id": "e84ad346-8087-4f08-aa4d-3e9fef7a9f9f",
+            "content_html": "\\(y = −5(x + 3)\\)"
+          },
+          {
+            "id": "fff121da-60df-405a-bde8-e29de33f3335",
+            "label": "C",
+            "ordinal": 3,
+            "is_correct": false,
+            "question_id": "e84ad346-8087-4f08-aa4d-3e9fef7a9f9f",
+            "content_html": "\\(y = −5x^2 + 3\\)"
+          },
+          {
+            "id": "fe793970-4bf2-44cf-9a0b-a8359f38a9cb",
+            "label": "D",
+            "ordinal": 4,
+            "is_correct": false,
+            "question_id": "e84ad346-8087-4f08-aa4d-3e9fef7a9f9f",
+            "content_html": "\\(y = \\frac{1}{5}x^2 + 3\\)"
+          }
+        ],
+        "section": "math",
+        "category": "Preparing for Higher Math",
+        "is_broken": false,
+        "stem_html": "In the standard \\((x,y)\\) coordinate plane, the graph of \\(y = 5x^2\\) is reflected over the \\(x\\)-axis and then translated to the right3 coordinate units. The graph of which of the following equations is the result of these 2 transformations?",
+        "created_at": "2026-03-24T16:58:44.860608+00:00",
+        "deleted_at": null,
+        "difficulty": 5,
+        "updated_at": "2026-10-10T12:47:46.840862+00:00",
+        "updated_by": null,
+        "external_id": "2024-Sep-M-0049",
+        "is_modeling": false,
+        "source_test": "ACT-2024-Sep",
+        "subcategory": "Functions",
+        "category_code": "PHM",
+        "highlight_ref": null,
+        "question_type": "mcq",
+        "stimulus_html": null,
+        "rationale_html": null,
+        "source_ordinal": 49,
+        "subcategory_code": "F",
+        "difficulty_source": "import"
+      },
+      "after": {
+        "id": "e84ad346-8087-4f08-aa4d-3e9fef7a9f9f",
+        "options": [
+          {
+            "id": "18904cc9-f99a-495f-808e-e411be36313e",
+            "label": "A",
+            "ordinal": 1,
+            "is_correct": true,
+            "question_id": "e84ad346-8087-4f08-aa4d-3e9fef7a9f9f",
+            "content_html": "\\(y=-5(x-3)^2\\)"
+          },
+          {
+            "id": "fb1ac692-c13d-4b83-9237-d666618ff63e",
+            "label": "B",
+            "ordinal": 2,
+            "is_correct": false,
+            "question_id": "e84ad346-8087-4f08-aa4d-3e9fef7a9f9f",
+            "content_html": "\\(y=-5(x+3)^2\\)"
+          },
+          {
+            "id": "fff121da-60df-405a-bde8-e29de33f3335",
+            "label": "C",
+            "ordinal": 3,
+            "is_correct": false,
+            "question_id": "e84ad346-8087-4f08-aa4d-3e9fef7a9f9f",
+            "content_html": "\\(y = −5x^2 + 3\\)"
+          },
+          {
+            "id": "fe793970-4bf2-44cf-9a0b-a8359f38a9cb",
+            "label": "D",
+            "ordinal": 4,
+            "is_correct": false,
+            "question_id": "e84ad346-8087-4f08-aa4d-3e9fef7a9f9f",
+            "content_html": "\\(y = \\frac{1}{5}x^2 + 3\\)"
+          }
+        ],
+        "section": "math",
+        "category": "Preparing for Higher Math",
+        "is_broken": false,
+        "stem_html": "In the standard \\((x,y)\\) coordinate plane, the graph of \\(y = 5x^2\\) is reflected over the \\(x\\)-axis and then translated to the right 3 coordinate units. The graph of which of the following equations is the result of these 2 transformations?",
+        "created_at": "2026-03-24T16:58:44.860608+00:00",
+        "deleted_at": null,
+        "difficulty": 5,
+        "updated_at": "2026-10-10T12:47:46.840862+00:00",
+        "updated_by": null,
+        "external_id": "2024-Sep-M-0049",
+        "is_modeling": false,
+        "source_test": "ACT-2024-Sep",
+        "subcategory": "Functions",
+        "category_code": "PHM",
+        "highlight_ref": null,
+        "question_type": "mcq",
+        "stimulus_html": null,
+        "rationale_html": "<p>Reflecting \\(y=5x^2\\) over the \\(x\\)-axis gives \\(y=-5x^2\\). Translating right 3 units replaces \\(x\\) with \\(x-3\\), giving \\(y=-5(x-3)^2\\), choice A.</p>",
+        "source_ordinal": 49,
+        "subcategory_code": "F",
+        "difficulty_source": "import"
+      },
+      "before_sha256": "cee68d257b72a015ed148b98caa40a248403359e426e614f28f572556c82a12e",
+      "after_sha256": "86a01d58b2e7b574a044380a8f2d844a356524bbb105b19ebb6a63d4679f7d76"
+    }
+  ],
+  "official_math_key": [
+    {
+      "section": "math",
+      "ordinal": 1,
+      "original_letter": "A",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "<p>\\(-31\\)</p>"
+    },
+    {
+      "section": "math",
+      "ordinal": 2,
+      "original_letter": "K",
+      "category": "PHM-S",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\(\\frac{7}{8}\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 3,
+      "original_letter": "C",
+      "category": "PHM-S,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "43"
+    },
+    {
+      "section": "math",
+      "ordinal": 4,
+      "original_letter": "H",
+      "category": "IES,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "0.200"
+    },
+    {
+      "section": "math",
+      "ordinal": 5,
+      "original_letter": "C",
+      "category": "IES,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "27"
+    },
+    {
+      "section": "math",
+      "ordinal": 6,
+      "original_letter": "H",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "\\(\\sqrt{73}\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 7,
+      "original_letter": "B",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "\\(-16\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 8,
+      "original_letter": "G",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "\\(4\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 9,
+      "original_letter": "D",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "19"
+    },
+    {
+      "section": "math",
+      "ordinal": 10,
+      "original_letter": "G",
+      "category": "PHM-N",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "<div class=\"answer-image\"><img src=\"/images/2024-Sep-M-0010-B.svg\" alt=\"Answer choice B\" style=\"max-width: 100%; height: auto;\" /></div>"
+    },
+    {
+      "section": "math",
+      "ordinal": 11,
+      "original_letter": "E",
+      "category": "PHM-F",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\(r\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 12,
+      "original_letter": "J",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\(73°\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 13,
+      "original_letter": "A",
+      "category": "PHM-A,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "10"
+    },
+    {
+      "section": "math",
+      "ordinal": 14,
+      "original_letter": "G",
+      "category": "PHM-F",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "-36"
+    },
+    {
+      "section": "math",
+      "ordinal": 15,
+      "original_letter": "B",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "5"
+    },
+    {
+      "section": "math",
+      "ordinal": 16,
+      "original_letter": "G",
+      "category": "IES,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "\\(1,097.6\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 17,
+      "original_letter": "C",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "11"
+    },
+    {
+      "section": "math",
+      "ordinal": 18,
+      "original_letter": "F",
+      "category": "PHM-A",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "\\(x − 13\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 19,
+      "original_letter": "B",
+      "category": "PHM-A",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "<div class=\"answer-image\"><img src=\"/images/2024-Sep-M-0019-B.svg\" alt=\"Answer choice B\" style=\"max-width: 100%; height: auto;\" /></div>"
+    },
+    {
+      "section": "math",
+      "ordinal": 20,
+      "original_letter": "G",
+      "category": "PHM-N",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "It is irrational."
+    },
+    {
+      "section": "math",
+      "ordinal": 21,
+      "original_letter": "B",
+      "category": "IES,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "\\(y=-0.1x+1.7\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 22,
+      "original_letter": "H",
+      "category": "PHM-G",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "\\((6,10)\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 23,
+      "original_letter": "A",
+      "category": "PHM-G,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "Cone"
+    },
+    {
+      "section": "math",
+      "ordinal": 24,
+      "original_letter": "G",
+      "category": "PHM-A",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "112"
+    },
+    {
+      "section": "math",
+      "ordinal": 25,
+      "original_letter": "E",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "Reflection over the \\(x\\)-axis and then a translation to the left"
+    },
+    {
+      "section": "math",
+      "ordinal": 26,
+      "original_letter": "G",
+      "category": "PHM-G",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "\\(7\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 27,
+      "original_letter": "D",
+      "category": "PHM-F,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\(y=ax^2+bx+c\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 28,
+      "original_letter": "F",
+      "category": "IES,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "1.5"
+    },
+    {
+      "section": "math",
+      "ordinal": 29,
+      "original_letter": "E",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\(E\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 30,
+      "original_letter": "J",
+      "category": "PHM-A,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\($66,795.00\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 31,
+      "original_letter": "C",
+      "category": "PHM-F",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "\\(-5\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 32,
+      "original_letter": "J",
+      "category": "PHM-G,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "40"
+    },
+    {
+      "section": "math",
+      "ordinal": 33,
+      "original_letter": "E",
+      "category": "PHM-N",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\(14 − 2\\sqrt{7}\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 34,
+      "original_letter": "H",
+      "category": "PHM-N",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "\\(2 − 21i\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 35,
+      "original_letter": "A",
+      "category": "IES,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "0.12"
+    },
+    {
+      "section": "math",
+      "ordinal": 36,
+      "original_letter": "F",
+      "category": "PHM-F",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "<p>\n\\(\n\\begin{cases}\n5 & \\text{for } x < -2 \\\\\n3 & \\text{for } x = -2 \\\\\n2 & \\text{for } x > -2\n\\end{cases}\n\\)\n</p>"
+    },
+    {
+      "section": "math",
+      "ordinal": 37,
+      "original_letter": "B",
+      "category": "PHM-S",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "<p>\\(\\frac{82}{160}\\)</p>"
+    },
+    {
+      "section": "math",
+      "ordinal": 38,
+      "original_letter": "K",
+      "category": "PHM-N",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "<p>\\( \\sqrt[b]{8^a} \\)</p>"
+    },
+    {
+      "section": "math",
+      "ordinal": 39,
+      "original_letter": "C",
+      "category": "PHM-S",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "\\(720\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 40,
+      "original_letter": "J",
+      "category": "PHM-A",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\(7(x − 1)(x + 1)\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 41,
+      "original_letter": "E",
+      "category": "PHM-S,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "Not enough flips were performed to accurately predict whether the coin is unfair. "
+    },
+    {
+      "section": "math",
+      "ordinal": 42,
+      "original_letter": "H",
+      "category": "PHM-G",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "\\(60\\sqrt{3}\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 43,
+      "original_letter": "B",
+      "category": "PHM-G",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "\\(27\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 44,
+      "original_letter": "F",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "slope \\(-6\\); \\(y\\)-intercept \\((0,8)\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 45,
+      "original_letter": "D",
+      "category": "PHM-N",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\(-1 ± i\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 46,
+      "original_letter": "J",
+      "category": "IES,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "75%"
+    },
+    {
+      "section": "math",
+      "ordinal": 47,
+      "original_letter": "E",
+      "category": "IES,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "x < 4,700 or x > 6,300"
+    },
+    {
+      "section": "math",
+      "ordinal": 48,
+      "original_letter": "J",
+      "category": "IES,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "$208"
+    },
+    {
+      "section": "math",
+      "ordinal": 49,
+      "original_letter": "A",
+      "category": "PHM-F",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "\\(y=-5(x-3)^2\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 50,
+      "original_letter": "F",
+      "category": "PHM-A",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "\\(± \\sqrt{3}\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 51,
+      "original_letter": "B",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "B",
+      "bank_correct_html": "1.5"
+    },
+    {
+      "section": "math",
+      "ordinal": 52,
+      "original_letter": "F",
+      "category": "PHM-G,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "16"
+    },
+    {
+      "section": "math",
+      "ordinal": 53,
+      "original_letter": "D",
+      "category": "PHM-A",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\(22\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 54,
+      "original_letter": "K",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "$36 more than it should."
+    },
+    {
+      "section": "math",
+      "ordinal": 55,
+      "original_letter": "C",
+      "category": "IES",
+      "pdf_page": 53,
+      "bank_correct_label": "C",
+      "bank_correct_html": "11.8"
+    },
+    {
+      "section": "math",
+      "ordinal": 56,
+      "original_letter": "K",
+      "category": "PHM-F",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "<p>\\((-\\sqrt{3}, 1)\\)</p>"
+    },
+    {
+      "section": "math",
+      "ordinal": 57,
+      "original_letter": "E",
+      "category": "IES,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "10"
+    },
+    {
+      "section": "math",
+      "ordinal": 58,
+      "original_letter": "J",
+      "category": "PHM-S,MDL",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "278"
+    },
+    {
+      "section": "math",
+      "ordinal": 59,
+      "original_letter": "A",
+      "category": "PHM-F",
+      "pdf_page": 53,
+      "bank_correct_label": "A",
+      "bank_correct_html": "\\(0°\\) and \\(120°\\)"
+    },
+    {
+      "section": "math",
+      "ordinal": 60,
+      "original_letter": "K",
+      "category": "PHM-G",
+      "pdf_page": 53,
+      "bank_correct_label": "D",
+      "bank_correct_html": "\\(32\\sqrt{2}\\)"
+    }
+  ],
+  "verification": {
+    "nonmath_answers_verified": 155,
+    "score_conversions_verified": 219,
+    "math_modeling_flags_verified": 60,
+    "math_modeling_flags_true": 19,
+    "preserved_question_ids": true,
+    "preserved_option_ids": true,
+    "preserved_correct_flags": true,
+    "available_questions": 215,
+    "counts": {
+      "english": 75,
+      "math": 60,
+      "reading": 40,
+      "science": 40
+    },
+    "restored_math_ordinals": [
+      31,
+      33,
+      34
+    ],
+    "questions_changed": 5,
+    "option_texts_changed": 4,
+    "import_job_status": "completed",
+    "import_job_unchanged": true,
+    "approved_drafts_unchanged": 155,
+    "all_question_ids_preserved": 215,
+    "all_option_ids_preserved": 860,
+    "exact_live_readback": true,
+    "format_assessment": {
+      "format": "classic",
+      "kind": "released",
+      "reviewReason": null
+    },
+    "browser_checks": 430,
+    "browser_failures": [],
+    "viewports": [
+      390,
+      1280
+    ],
+    "review_explanation_browser_checks": 8,
+    "unit_tests_passed": 734,
+    "app_typecheck": "passed with pre-existing tmp scratch scripts excluded"
+  },
+  "applied_at": "2026-10-10T12:47:46.840862+00:00"
+}
