@@ -45,6 +45,7 @@ import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import type { ActionResult } from '@/lib/types';
+import { normalizeDraftMathOptions } from '@/lib/act-import/promotion';
 
 interface OptionShape {
   label: string;
@@ -131,7 +132,7 @@ function validateBeforeApprove(d: DraftRow): string | null {
   if (!d.category || d.category.trim() === '') return 'category is required (act_questions.category is NOT NULL)';
   const opts = Array.isArray(d.options_json) ? d.options_json : [];
   if (opts.length < 2) return 'at least 2 options required';
-  if (!opts.some((o) => o.is_correct)) return 'no option is marked correct';
+  if (opts.filter((o) => o.is_correct).length !== 1) return 'exactly one option must be marked correct';
   return null;
 }
 
@@ -242,6 +243,7 @@ async function approveOne(
 
   const validation = validateBeforeApprove(draft);
   if (validation) throw new Error(validation);
+  draft = await normalizeDraftMathOptions(supabase, draft);
 
   // Insert the question row first; act_answer_options FK
   // cascade-deletes if we have to roll back.
