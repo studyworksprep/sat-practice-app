@@ -24,3 +24,9 @@ playwright/.cache/
 
 # Local SAT import source files and production comparison snapshots.
 content/import/pilot/
+
+# Local scratch output and tool caches.
+/tmp/
+__pycache__/
+*.py[cod]
+/supabase/.temp/

@@ -29,6 +29,10 @@ const eslintConfig = [
       ".next/**",
       "out/**",
       "build/**",
+      // Local agent worktrees contain separate checkouts and build output.
+      ".claude/**",
+      // Local audit captures and generated experiments.
+      "tmp/**",
       "next-env.d.ts",
       // Plain Node.js scripts; CommonJS by design.
       "scripts/**",
