@@ -25,6 +25,7 @@ import {
   buildSectionPlan,
   minutesLabel,
   parseTimeMultiplier,
+  isUntimedPlan,
   type ActFormat,
   type ActFormKind,
   type ActTimeMultiplier,
@@ -61,6 +62,7 @@ export interface HubAttempt {
   science_scaled: number | null;
   composite_score: number | null;
   time_multiplier?: number | null;
+  untimed?: boolean;
 }
 
 export interface HubResumeInfo {
@@ -101,6 +103,7 @@ export function ActTestsHub({
 }) {
   const completedTests = new Set(attempts.map((a) => a.source_test));
   const [multiplier, setMultiplier] = useState<ActTimeMultiplier>(parseTimeMultiplier(defaultMultiplier));
+  const [untimed, setUntimed] = useState(false);
 
   return (
     <main className={s.container}>
@@ -122,26 +125,30 @@ export function ActTestsHub({
           <div>
             <div className={s.h2}>Available tests</div>
             <div className={s.cardHint}>
-              Choose the sections you want on each form. Each selected
-              section runs at the official pace for its format. Released forms
+              Choose timed sections at the official pace, or work untimed.
+              Released forms
               leave out the
               unscored questions, so a shorter section gets proportionally
               less time (40 English questions in 28 minutes is the same
               pace as 50 in 35). You start each section&apos;s clock
-              yourself; it does not pause once it runs.
+              yourself when using timed sections; it does not pause once it runs.
             </div>
           </div>
           <label className={s.timingRow}>
             <span className={s.timingLabel}>Timing</span>
             <select
               className={s.timingSelect}
-              value={String(multiplier)}
-              onChange={(e) => setMultiplier(parseTimeMultiplier(e.target.value))}
-              aria-label="Extended-time accommodation"
+              value={untimed ? 'untimed' : String(multiplier)}
+              onChange={(e) => {
+                setUntimed(e.target.value === 'untimed');
+                if (e.target.value !== 'untimed') setMultiplier(parseTimeMultiplier(e.target.value));
+              }}
+              aria-label="ACT test timing"
             >
               {ACT_TIME_MULTIPLIERS.map((m) => (
                 <option key={m} value={String(m)}>{MULTIPLIER_LABELS[m]}</option>
               ))}
+              <option value="untimed">Untimed</option>
             </select>
           </label>
         </div>
@@ -160,6 +167,7 @@ export function ActTestsHub({
                 key={form.sourceTest}
                 form={form}
                 multiplier={resumeInfo?.sourceTest === form.sourceTest ? resumeInfo.timeMultiplier : multiplier}
+                untimed={resumeInfo?.sourceTest === form.sourceTest ? isUntimedPlan(resumeInfo.plan) : untimed}
                 completed={completedTests.has(form.sourceTest)}
                 resumePlan={resumeInfo?.sourceTest === form.sourceTest ? resumeInfo.plan : null}
               />
@@ -215,7 +223,7 @@ function ResumeCard({ info }: { info: HubResumeInfo }) {
   }
 
   const where = info.sectionLabel
-    ? `Section ${info.sectionIndex + 1} of ${info.sectionCount} · ${info.sectionLabel}${info.sectionStatus === 'in_progress' ? ' (clock running)' : ''}`
+    ? `Section ${info.sectionIndex + 1} of ${info.sectionCount} · ${info.sectionLabel}${isUntimedPlan(info.plan) ? ' · Untimed' : info.sectionStatus === 'in_progress' ? ' (clock running)' : ''}`
     : `${info.sectionCount} sections`;
 
   return (
@@ -246,11 +254,13 @@ function ResumeCard({ info }: { info: HubResumeInfo }) {
 function TestFormCard({
   form,
   multiplier,
+  untimed,
   completed,
   resumePlan,
 }: {
   form: HubForm;
   multiplier: ActTimeMultiplier;
+  untimed: boolean;
   completed: boolean;
   resumePlan: PlanSection[] | null;
 }) {
@@ -269,6 +279,7 @@ function TestFormCard({
     const fd = new FormData();
     fd.set('source_test', form.sourceTest);
     fd.set('time_multiplier', String(multiplier));
+    fd.set('timing_mode', untimed ? 'untimed' : 'timed');
     fd.set('section_selection', 'custom');
     for (const section of sections) fd.append('sections', section);
     setError(null);
@@ -290,7 +301,7 @@ function TestFormCard({
     questionsBySection[sec.section] = Array.from({ length: sec.count }, (_, i) => `${sec.section}-${i}`);
   }
   const plan = resumePlan ?? (form.format && !form.reviewReason && sections.length > 0
-    ? buildSectionPlan({ format: form.format, multiplier, questionsBySection, selectedSections: sections })
+    ? buildSectionPlan({ format: form.format, multiplier, questionsBySection, selectedSections: sections, untimed })
     : []);
   const totalQuestions = plan.reduce((total, section) => total + section.question_count, 0);
   const totalMs = plan.reduce((acc, p) => acc + p.time_limit_ms, 0);
@@ -328,16 +339,16 @@ function TestFormCard({
                 />
                 <span>
                   {sectionLabel(section.section)} · {section.count} question{section.count === 1 ? '' : 's'}
-                  {planned ? ` · ${minutesLabel(planned.time_limit_ms)}` : ''}
+                  {planned ? ` · ${planned.time_limit_ms === 0 ? 'Untimed' : minutesLabel(planned.time_limit_ms)}` : ''}
                 </span>
               </label>
             );
           })}
         </fieldset>
-        {resuming && <p className={s.testCardMeta}>Continue keeps this attempt&apos;s saved sections and timing ({MULTIPLIER_LABELS[multiplier]}).</p>}
+        {resuming && <p className={s.testCardMeta}>Continue keeps this attempt&apos;s saved sections and timing ({untimed ? 'Untimed' : MULTIPLIER_LABELS[multiplier]}).</p>}
         <div className={s.testCardMeta}>
           {form.detail ? `${form.detail} · ` : ''}
-          {form.reviewReason ? 'Timing pending review' : sections.length === 0 ? 'Select at least one section.' : `${plan.length} section${plan.length === 1 ? '' : 's'} · ${totalQuestions} questions · ${minutesLabel(totalMs)}`}
+          {form.reviewReason ? 'Timing pending review' : sections.length === 0 ? 'Select at least one section.' : `${plan.length} section${plan.length === 1 ? '' : 's'} · ${totalQuestions} questions · ${untimed ? 'Untimed' : minutesLabel(totalMs)}`}
           {breakMs > 0 ? ` + ${minutesLabel(breakMs)} break` : ''}
         </div>
       </div>
@@ -377,7 +388,7 @@ function ActHistoryTable({ attempts }: { attempts: HubAttempt[] }) {
             <tr key={a.id}>
               <td className={s.td}>
                 {a.name ?? a.source_test}
-                {a.time_multiplier != null && Number(a.time_multiplier) > 1
+                {a.untimed ? ' · Untimed' : a.time_multiplier != null && Number(a.time_multiplier) > 1
                   ? ` · ${Number(a.time_multiplier)}× time`
                   : ''}
               </td>

@@ -837,3 +837,18 @@
 .actSectionToggle input:focus-visible { outline: 2px solid var(--color-app-accent, #2563eb); outline-offset: 3px; }
 .actSectionToggle:has(input:disabled) { opacity: 0.5; cursor: default; }
 .actSectionToggle input:disabled { cursor: default; }
+
+.actTaxonomyList,
+.actTaxonomyList .studentGrid {
+  max-height: none;
+  overflow: visible;
+}
+
+.actSubcategories {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0 16px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}

@@ -184,6 +184,7 @@ export interface PlanSection {
   section: ActSection;
   question_ids: string[];
   question_count: number;
+  /** Zero means untimed; no section deadline or scheduled break. */
   time_limit_ms: number;
   /** Break that follows this section (0 when none). */
   break_after_ms: number;
@@ -205,6 +206,7 @@ export function buildSectionPlan(input: {
   multiplier: ActTimeMultiplier;
   questionsBySection: Partial<Record<ActSection, string[]>>;
   selectedSections?: readonly ActSection[];
+  untimed?: boolean;
 }): PlanSection[] {
   const spec = ACT_FORMAT_SPECS[input.format];
   const selected = input.selectedSections;
@@ -223,8 +225,8 @@ export function buildSectionPlan(input: {
       section,
       question_ids: [...ids],
       question_count: ids.length,
-      time_limit_ms: sectionTimeLimitMs(input.format, section, ids.length, input.multiplier),
-      break_after_ms: hasNext && section === spec.breakAfter ? spec.breakMinutes * MINUTE_MS : 0,
+      time_limit_ms: input.untimed ? 0 : sectionTimeLimitMs(input.format, section, ids.length, input.multiplier),
+      break_after_ms: !input.untimed && hasNext && section === spec.breakAfter ? spec.breakMinutes * MINUTE_MS : 0,
       status: 'pending',
       session_id: null,
       started_at: null,
@@ -237,6 +239,15 @@ export function buildSectionPlan(input: {
 }
 
 const SECTION_SET = new Set<string>(ACT_SECTIONS);
+
+export function sectionDeadlineAt(section: Pick<PlanSection, 'time_limit_ms'>, startedAt: number): string | null {
+  return section.time_limit_ms > 0 ? new Date(startedAt + section.time_limit_ms).toISOString() : null;
+}
+
+export function isUntimedPlan(raw: unknown): boolean {
+  const plan = parsePlan(raw);
+  return plan.length > 0 && plan.every((section) => section.time_limit_ms === 0);
+}
 
 /** Tolerant reader for act_practice_test_attempts.sections. Returns
  *  [] for anything that isn't a well-formed plan (legacy attempts

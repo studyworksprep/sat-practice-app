@@ -41,6 +41,7 @@ import {
   parseTimeMultiplier,
   parseSectionSelection,
   sectionOverdue,
+  sectionDeadlineAt,
 } from '@/lib/practice/act-test-plan';
 import {
   attemptPath,
@@ -100,6 +101,7 @@ export async function startActPracticeTest(
   const multiplier = multiplierField == null
     ? await loadTimeAccommodation(supabase, user.id)
     : parseTimeMultiplier(multiplierField);
+  const untimed = formData.get('timing_mode') === 'untimed';
 
   // The deterministic slice: every visible question of the form, in
   // source_ordinal order, bucketed by section.
@@ -127,7 +129,7 @@ export async function startActPracticeTest(
   const format = detection.format;
   let plan;
   try {
-    plan = buildSectionPlan({ format, multiplier, questionsBySection, selectedSections });
+    plan = buildSectionPlan({ format, multiplier, questionsBySection, selectedSections, untimed });
   } catch (error) {
     return actionFail(error instanceof Error ? error.message : 'Could not select these sections.');
   }
@@ -220,7 +222,7 @@ export async function startActSection(
     destination = attemptPath(attemptId);
   } else {
     const startedAt = Date.now();
-    const deadlineAt = new Date(startedAt + cur.time_limit_ms).toISOString();
+    const deadlineAt = sectionDeadlineAt(cur, startedAt);
     const { data: session, error: insertErr } = await supabase
       .from('practice_sessions')
       .insert({

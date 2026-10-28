@@ -26,6 +26,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { ActionResult } from '@/lib/types';
 import type { LessonCatalogItem } from '@/lib/lesson/catalog';
 import { ACT_SECTIONS, type ActSection } from '@/lib/practice/act-taxonomy';
+import { actSelectionKey as actKey, parseActSelections, type ActSectionTaxonomy } from '@/lib/practice/act-assignment-taxonomy';
 import { LessonPicker } from './LessonPicker';
 import styles from './NewAssignmentInteractive.module.css';
 
@@ -49,8 +50,6 @@ type TemplateOption = { id: string; name: string; testType?: 'sat' | 'act' };
 
 // ACT bank (Phase 4B): the picker groups categories under their
 // section; a practice test is a form.
-type ActCategoryOption = { name: string; count: number };
-type ActSectionTaxonomy = { section: string; label: string; categories: ActCategoryOption[] };
 type ActFormOption = { sourceTest: string; label: string; sections: ActSection[] };
 
 /** Server-resolved one-click prefill (§4.3): a template or a
@@ -61,8 +60,8 @@ type Prefill = {
   /** Which bank the recipe is for; defaults to SAT. */
   testType?: 'sat' | 'act';
   skills: { domain: string; skill: string; scoreBands: number[]; weight: number }[];
-  /** ACT recipes: section + category buckets. */
-  actSelections?: { section: string; category: string }[];
+  /** ACT recipes: whole categories or individual subcategories. */
+  actSelections?: { section: string; category: string; subcategory?: string }[];
   difficulties: number[];
   size: number | null;
   unansweredOnly: boolean;
@@ -156,15 +155,17 @@ export function NewAssignmentInteractive({
   const [testType, setTestType] = useState<'sat' | 'act'>(
     prefill?.testType === 'act' ? 'act' : 'sat',
   );
-  const actKey = (section: string, category: string) => `${section}|${category}`;
   const [actSelected, setActSelected] = useState<Set<string>>(() => {
     if (prefill?.testType !== 'act') return new Set();
     const valid = new Set(
-      actTaxonomy.flatMap((sec) => sec.categories.map((c) => actKey(sec.section, c.name))),
+      actTaxonomy.flatMap((sec) => sec.categories.flatMap((c) => [
+        actKey(sec.section, c.name),
+        ...c.subcategories.map((sub) => actKey(sec.section, c.name, sub.name)),
+      ])),
     );
     return new Set(
-      (prefill.actSelections ?? [])
-        .map((s) => actKey(s.section, s.category))
+      parseActSelections(prefill.actSelections)
+        .map((s) => actKey(s.section, s.category, s.subcategory))
         .filter((k) => valid.has(k)),
     );
   });
@@ -384,12 +385,20 @@ export function NewAssignmentInteractive({
       setAssignmentType('questions');
     }
   };
-  const toggleActCategory = (section: string, category: string) => {
-    const key = actKey(section, category);
+  const toggleActCategory = (section: string, category: string, subcategory?: string) => {
+    const key = actKey(section, category, subcategory);
     setActSelected((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
-      else next.add(key);
+      else {
+        if (!subcategory) {
+          for (const selected of next) {
+            const [s, c] = JSON.parse(selected);
+            if (s === section && c === category) next.delete(selected);
+          }
+        }
+        next.add(key);
+      }
       return next;
     });
   };
@@ -400,6 +409,7 @@ export function NewAssignmentInteractive({
         const key = actKey(sec.section, c.name);
         if (on) next.add(key);
         else next.delete(key);
+        for (const sub of c.subcategories) next.delete(actKey(sec.section, c.name, sub.name));
       }
       return next;
     });
@@ -416,8 +426,8 @@ export function NewAssignmentInteractive({
     () =>
       JSON.stringify(
         Array.from(actSelected).map((key) => {
-          const i = key.indexOf('|');
-          return { section: key.slice(0, i), category: key.slice(i + 1) };
+          const [section, category, subcategory] = JSON.parse(key);
+          return { section, category, ...(subcategory ? { subcategory } : {}) };
         }),
       ),
     [actSelected],
@@ -427,6 +437,9 @@ export function NewAssignmentInteractive({
     for (const sec of actTaxonomy) {
       for (const c of sec.categories) {
         if (actSelected.has(actKey(sec.section, c.name))) n += c.count;
+        else for (const sub of c.subcategories) {
+          if (actSelected.has(actKey(sec.section, c.name, sub.name))) n += sub.count;
+        }
       }
     }
     return n;
@@ -971,9 +984,9 @@ export function NewAssignmentInteractive({
         <section className={styles.card}>
           <div className={styles.sectionLabel}>ACT question pool</div>
           <p className={styles.sectionHint}>
-            Pick the categories to draw from. Questions are sampled
-            evenly across the selected categories; difficulty applies
-            to all of them.
+            Select a category to include all its questions, or choose
+            individual subcategories below it. Questions are sampled evenly
+            across your selections; difficulty applies to all of them.
           </p>
           {prefill?.testType === 'act' && actSelected.size > 0 && (
             <p className={styles.prefillBanner}>
@@ -983,7 +996,7 @@ export function NewAssignmentInteractive({
           {actTaxonomy.length === 0 ? (
             <p className={styles.empty}>No ACT questions in the bank yet.</p>
           ) : (
-            <ul className={styles.domainList}>
+            <ul className={`${styles.domainList} ${styles.actTaxonomyList}`}>
               {actTaxonomy.map((sec) => {
                 const allOn = sec.categories.every((c) =>
                   actSelected.has(actKey(sec.section, c.name)),
@@ -1004,19 +1017,42 @@ export function NewAssignmentInteractive({
                       {sec.categories.map((c) => {
                         const key = actKey(sec.section, c.name);
                         return (
-                          <label key={key} className={styles.studentItem}>
-                            <input
-                              type="checkbox"
-                              checked={actSelected.has(key)}
-                              onChange={() => toggleActCategory(sec.section, c.name)}
-                            />
-                            <span className={styles.studentName}>
-                              {c.name}
-                              <span className={styles.studentEmail}>
-                                {c.count} question{c.count === 1 ? '' : 's'}
+                          <div key={key}>
+                            <label className={styles.studentItem}>
+                              <input
+                                type="checkbox"
+                                checked={actSelected.has(key)}
+                                onChange={() => toggleActCategory(sec.section, c.name)}
+                              />
+                              <span className={styles.studentName}>
+                                {c.name}
+                                <span className={styles.studentEmail}>
+                                  {c.count} question{c.count === 1 ? '' : 's'}
+                                </span>
                               </span>
-                            </span>
-                          </label>
+                            </label>
+                            {c.subcategories.length > 0 && (
+                              <div className={styles.actSubcategories}>
+                                {c.subcategories.map((sub) => {
+                                  const parentSelected = actSelected.has(key);
+                                  return (
+                                    <label key={sub.name} className={styles.studentItem}>
+                                      <input
+                                        type="checkbox"
+                                        checked={parentSelected || actSelected.has(actKey(sec.section, c.name, sub.name))}
+                                        disabled={parentSelected}
+                                        onChange={() => toggleActCategory(sec.section, c.name, sub.name)}
+                                      />
+                                      <span className={styles.studentName}>
+                                        {sub.name}
+                                        <span className={styles.studentEmail}>{sub.count} question{sub.count === 1 ? '' : 's'}</span>
+                                      </span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
@@ -1127,7 +1163,7 @@ export function NewAssignmentInteractive({
             <div className={styles.preview}>
               <span>
                 <span className={styles.previewStrong}>{actSelected.size}</span>{' '}
-                categor{actSelected.size === 1 ? 'y' : 'ies'} selected
+                selection{actSelected.size === 1 ? '' : 's'} selected
               </span>
               <span className={styles.muted}>
                 {actSelectedCount.toLocaleString()} question{actSelectedCount === 1 ? '' : 's'} in the pool before filters

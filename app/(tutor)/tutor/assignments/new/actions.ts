@@ -37,9 +37,9 @@ import { rateLimit } from '@/lib/api/rateLimit';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import type { ActionResult } from '@/lib/types';
 import { parseActAssignmentScope, actAssignmentScopeLabel } from '@/lib/practice/act-assignment-scope';
-import { isActSection, type ActSection } from '@/lib/practice/act-taxonomy';
 import { visibleActQuestions } from '@/lib/practice/act-visibility';
 import { actFormName } from '@/lib/practice/act-form-names';
+import { parseActSelections } from '@/lib/practice/act-assignment-taxonomy';
 
 const MAX_QUESTIONS = 50;
 const MAX_STUDENTS_PER_ASSIGNMENT = 200;
@@ -59,12 +59,6 @@ type PayloadRow = {
   lesson_id?: string;
   lesson_pack_id?: string;
   filter_criteria?: Record<string, unknown>;
-};
-
-/** ACT question-set recipe entry: one (section, category) bucket. */
-type ActSelection = {
-  section: ActSection;
-  category: string;
 };
 
 type PayloadResult =
@@ -586,6 +580,7 @@ async function buildActQuestionsPayload(
         )
           .eq('section', sel.section)
           .eq('category', sel.category);
+        if (sel.subcategory) q = q.eq('subcategory', sel.subcategory);
         if (difficulties.length > 0) {
           q = q.in('difficulty', difficulties);
         }
@@ -665,33 +660,6 @@ async function fetchActAttemptedIds(
     };
   }
   return { ids };
-}
-
-function parseActSelections(raw: FormDataEntryValue | null): ActSelection[] {
-  if (raw == null) return [];
-  const str = String(raw).trim();
-  if (!str) return [];
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(str);
-  } catch {
-    return [];
-  }
-  if (!Array.isArray(parsed)) return [];
-  const out: ActSelection[] = [];
-  const seen = new Set<string>();
-  for (const entry of parsed) {
-    if (!entry || typeof entry !== 'object') continue;
-    const e = entry as Record<string, unknown>;
-    const section = typeof e.section === 'string' ? e.section : '';
-    const category = typeof e.category === 'string' ? e.category.trim() : '';
-    if (!isActSection(section) || !category) continue;
-    const key = `${section}|${category}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push({ section, category });
-  }
-  return out;
 }
 
 async function buildActPracticeTestPayload(

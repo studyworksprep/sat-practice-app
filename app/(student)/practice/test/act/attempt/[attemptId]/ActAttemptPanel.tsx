@@ -57,6 +57,7 @@ export function ActAttemptPanel({
   const [error, setError] = useState<string | null>(null);
 
   const current = sections[currentIndex];
+  const untimed = current.timeLimitMs === 0;
   const isFirst = currentIndex === 0;
   const done = sections.filter((x) => x.status === 'completed').length;
 
@@ -98,7 +99,7 @@ export function ActAttemptPanel({
         <p className={s.sub}>
           {formDetail ? `${formDetail} · ` : ''}
           {formatLabel} · {sections.length} section{sections.length === 1 ? '' : 's'}
-          {timeMultiplier > 1 ? ` · ${timeMultiplier}× time` : ''}
+          {untimed ? ' · Untimed' : timeMultiplier > 1 ? ` · ${timeMultiplier}× time` : ''}
           {done > 0 ? ` · ${done} of ${sections.length} done` : ''}
         </p>
 
@@ -117,7 +118,7 @@ export function ActAttemptPanel({
                 <span className={s.sectionNum}>{sec.index + 1}</span>
                 <span className={s.sectionName}>{sec.label}</span>
                 <span className={s.sectionMeta}>
-                  {sec.questionCount} question{sec.questionCount === 1 ? '' : 's'} · {minutesLabel(sec.timeLimitMs)}
+                  {sec.questionCount} question{sec.questionCount === 1 ? '' : 's'} · {sec.timeLimitMs === 0 ? 'Untimed' : minutesLabel(sec.timeLimitMs)}
                   {sec.breakAfterMs > 0 ? ` · then a ${minutesLabel(sec.breakAfterMs)} break` : ''}
                 </span>
                 <span className={`${s.pill} ${sec.status === 'completed' ? s.pillDone : isCurrent ? s.pillNext : ''}`}>
@@ -131,8 +132,8 @@ export function ActAttemptPanel({
         <div className={s.rulesLabel}>{isFirst ? 'Before you begin' : 'Before you continue'}</div>
         <ul className={s.rules}>
           <li>
-            The {current.label} clock starts when you press Start and does
-            not pause. When it runs out, the section submits itself.
+            {untimed ? `This ${current.label} section is untimed. Work at your own pace and submit the section when you are ready.`
+              : `The ${current.label} clock starts when you press Start and does not pause. When it runs out, the section submits itself.`}
           </li>
           <li>
             Answers save as you move between questions; you can change an
@@ -148,7 +149,7 @@ export function ActAttemptPanel({
           <button type="button" className={s.btnPrimary} onClick={onStart} disabled={pending}>
             {pending
               ? 'Starting…'
-              : `Start ${current.label} · ${minutesLabel(current.timeLimitMs)}`}
+              : `Start ${current.label} · ${untimed ? 'Untimed' : minutesLabel(current.timeLimitMs)}`}
           </button>
           <Link href="/practice/tests?test=act" className={s.btnSecondary}>
             Back to practice tests

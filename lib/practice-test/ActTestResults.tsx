@@ -78,7 +78,7 @@ export function ActTestResults({
           {attempt.formDetail ? `${attempt.formDetail} · ` : ''}
           {ACT_FORMAT_LABELS[attempt.format]}
           {' · '}Finished {formatDate(attempt.finishedAt)}
-          {attempt.timeMultiplier > 1 ? ` · ${attempt.timeMultiplier}× time` : ''}
+          {attempt.untimed ? ' · Untimed' : attempt.timeMultiplier > 1 ? ` · ${attempt.timeMultiplier}× time` : ''}
           {viewerNote ? ` · ${viewerNote}` : ''}
         </p>
       </header>
