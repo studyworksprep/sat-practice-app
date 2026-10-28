@@ -1,0 +1,732 @@
+{
+  "title": "Circle Graphs",
+  "description": "Graph circle equations, read the center and radius from extreme points, and use them to answer coordinate, transformation, point-location, and tangency questions.",
+  "blocks": [
+    {
+      "kind": "raw_block",
+      "id": "graphs_open",
+      "block_type": "text",
+      "content": {
+        "id": "graphs_open",
+        "html": "<h2>An expanded equation can become a picture in one line</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Graph, center, read. Graph the circle, locate its center and radius, then read what the question asks.</p><p><strong>Why it pays:</strong> Desmos can reveal a circle without making you rearrange its squared terms.</p><p><strong>One caution:</strong> The distance across the circle is the diameter. Halve it to get the radius.</p></div><p>The equation \\(x^2-4x+y^2+2y=20\\) is already graphed. Click or tap the curve to reveal gray points, then click its highest and lowest points to show their coordinates. Zoom out with the minus button if either is off screen.</p><p>Use the top and bottom of the curve, not where it crosses an axis.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Click the top and bottom",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "x^2-4x+y^2+2y=20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "extreme_observation",
+      "block_type": "check",
+      "content": {
+        "id": "extreme_observation",
+        "hint": "Subtract the bottom y-coordinate from the top y-coordinate to get the distance across. Then go from diameter to radius.",
+        "input": "numeric",
+        "answer": 5,
+        "prompt": "The top of the circle is \\((2,4)\\), and the bottom is \\((2,-6)\\). What is its radius?",
+        "solution": "The vertical diameter is \\(4-(-6)=10\\).\nThe radius is half of that: \\(10/2=5\\).",
+        "calculator": {
+          "mode": "preset",
+          "title": "Click the top and bottom",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "x^2-4x+y^2+2y=20"
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "The radius is 5. An axis crossing is not generally a diameter endpoint."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "graph_center_read",
+      "block_type": "text",
+      "content": {
+        "id": "graph_center_read",
+        "html": "<h2>Graph, center, read</h2><ol><li><strong>Graph:</strong> enter the complete equation, including both sides and every squared term. Keep the equals sign.</li><li><strong>Center:</strong> click opposite extremes. Their midpoint is the center; half the distance between them is the radius.</li><li><strong>Read:</strong> find the requested coordinate, length, or equation. Add the question&#39;s points or lines when useful.</li></ol><p>For top \\((2,4)\\) and bottom \\((2,-6)\\), the center is \\((2,(4+(-6))/2)=(2,-1)\\).</p><blockquote><p><strong>Pair the extremes:</strong> top with bottom, or left with right. Adjacent extremes do not make a diameter.</p></blockquote><p>For a new problem, remove old circles and points if they crowd the graph. You can zoom out or drag the graph until the whole circle is visible.</p><p>When you enter your own equation, the double chevron beside the expression list hides that list and gives the graph more room. Reopen it when you need to type.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Click the top and bottom",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "x^2-4x+y^2+2y=20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "standard_form_model",
+      "block_type": "text",
+      "content": {
+        "id": "standard_form_model",
+        "html": "<h2>The center and radius also write the equation</h2><p>\\[(x-h)^2+(y-k)^2=r^2\\]</p><p>The center is \\((h,k)\\); the right side is the radius <em>squared</em>. Center \\((2,-1)\\) and radius \\(5\\) give \\((x-2)^2+(y+1)^2=25\\).</p><p>If the question already supplies this form, you can read its center and radius directly, then graph it to check.</p><blockquote><p><strong>Sign check:</strong> the center makes both parentheses zero. In \\((y+1)^2\\), that happens at \\(y=-1\\).</p></blockquote>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "read_standard_form",
+      "block_type": "check",
+      "content": {
+        "id": "read_standard_form",
+        "hint": "Find the coordinates that make both parentheses zero. The right side is the radius squared.",
+        "prompt": "What are the center and radius of \\((x+4)^2+(y-2)^2=36\\)?",
+        "choices": [
+          "Center \\((4,-2)\\); radius \\(6\\)",
+          "Center \\((-4,2)\\); radius \\(6\\)",
+          "Center \\((-4,2)\\); radius \\(36\\)",
+          "Center \\((4,-2)\\); radius \\(36\\)"
+        ],
+        "solution": "The groups become zero at \\(x=-4\\) and \\(y=2\\), so the center is \\((-4,2)\\).\nSince \\(r^2=36\\), the radius is \\(6\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Use your scratch calculator to check",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "allow_retry": true,
+        "explanation": "The center is \\((-4,2)\\), and the radius is \\(6\\). The signs and the square root are separate checks.",
+        "correct_index": 1
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "write_circle_gate",
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "write_circle_gate",
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "type": "desmos_interactive",
+        "title": "Build the circle yourself",
+        "feedback": {
+          "solution_html": "<p>Use \\((x+3)^2\\) for the horizontal shift and \\((y-2)^2\\) for the vertical shift. The radius squared is \\(4^2=16\\).</p><p>Enter \\((x+3)^2+(y-2)^2=16\\).</p>",
+          "targeted_hints": [
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>Keep just your one circle equation, then submit again.</p>"
+            }
+          ],
+          "retry_message_html": "<p>Check which signs make the parentheses zero at the center, and square the radius on the right.</p>",
+          "success_message_html": "<p>The circle is centered at (-3, 2) with radius 4. The equation and the picture agree.</p>",
+          "reveal_solution_after_attempts": 3
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "(x+3)^2+(y-2)^2=16",
+            "(y-2)^2+(x+3)^2=16",
+            "16=(x+3)^2+(y-2)^2",
+            "16=(y-2)^2+(x+3)^2",
+            "(x+3)^2+(y-2)^2=4^2",
+            "(y-2)^2+(x+3)^2=4^2",
+            "4^2=(x+3)^2+(y-2)^2",
+            "4^2=(y-2)^2+(x+3)^2"
+          ],
+          "state_rules": {
+            "max_expressions": 1,
+            "min_expressions": 1,
+            "require_visible_only": true
+          }
+        },
+        "progression": {
+          "require_success": true
+        },
+        "instructions_html": "<p>A circle has center \\((-3,2)\\) and radius \\(4\\). Enter its equation in standard form using one expression row. Then submit.</p><p>Use two squared parentheses and the radius squared on the right.</p>",
+        "initial_expressions": []
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "extremes_ranges",
+      "block_type": "text",
+      "content": {
+        "id": "extremes_ranges",
+        "html": "<h2>The center plus or minus the radius gives the limits</h2><p>From center \\((h,k)\\), move one radius left, right, up, or down:</p><ul><li>x-coordinates run from \\(h-r\\) to \\(h+r\\).</li><li>y-coordinates run from \\(k-r\\) to \\(k+r\\).</li></ul><p>For \\((x+3)^2+(y-2)^2=16\\), the x-values run from \\(-7\\) to \\(1\\), and the y-values run from \\(-2\\) to \\(6\\).</p><blockquote><p><strong>Include the endpoints:</strong> the extreme points themselves are on the circle.</p></blockquote>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Click the four extremes",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "(x+3)^2+(y-2)^2=16"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "coordinate_range_check",
+      "block_type": "check",
+      "content": {
+        "id": "coordinate_range_check",
+        "hint": "Use the leftmost and rightmost points to find the interval of possible horizontal coordinates.",
+        "prompt": "A point \\((a,b)\\) lies on \\((x-2)^2+(y+1)^2=25\\). Which value of \\(a\\) is NOT possible?",
+        "choices": [
+          "\\(-3\\)",
+          "\\(0\\)",
+          "\\(7\\)",
+          "\\(8\\)"
+        ],
+        "solution": "Graph the equation. The leftmost point is \\((-3,-1)\\); the rightmost is \\((7,-1)\\).\nA point on the circle can have any x-coordinate from \\(-3\\) through \\(7\\).\nThe value \\(8\\) is outside that interval.",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Build your own graph",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "allow_retry": true,
+        "explanation": "The horizontal range includes -3 and 7, but stops before 8.",
+        "correct_index": 3
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "center_point_model",
+      "block_type": "text",
+      "content": {
+        "id": "center_point_model",
+        "html": "<h2>A center and a point supply the radius</h2><p>If the center is \\((1,2)\\) and the circle passes through \\((4,6)\\), the changes are \\(3\\) horizontally and \\(4\\) vertically. Those form the legs of a right triangle whose hypotenuse is the radius.</p><p>\\[r^2=3^2+4^2=25.\\]</p><p>Write \\((x-1)^2+(y-2)^2=25\\). Add it to the graph and confirm that it passes through the given point.</p><blockquote><p><strong>Keep the squared distance:</strong> it goes straight on the equation&#39;s right side.</p></blockquote>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Graph your equation through the point",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "label": "Center",
+              "latex": "(1,2)",
+              "showLabel": true
+            },
+            {
+              "id": "e1",
+              "label": "Point",
+              "latex": "(4,6)",
+              "showLabel": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "center_point_check",
+      "block_type": "check",
+      "content": {
+        "id": "center_point_check",
+        "hint": "Keep the given center in the parentheses. Use the horizontal and vertical changes to calculate the squared radius.",
+        "prompt": "A circle has center \\((-2,1)\\) and passes through \\((1,5)\\). Which equation represents it?",
+        "choices": [
+          "\\((x+2)^2+(y-1)^2=25\\)",
+          "\\((x-2)^2+(y+1)^2=25\\)",
+          "\\((x+2)^2+(y-1)^2=5\\)",
+          "\\((x-1)^2+(y-5)^2=25\\)"
+        ],
+        "solution": "The changes from center to point are \\(1-(-2)=3\\) and \\(5-1=4\\).\nThus \\(r^2=3^2+4^2=25\\).\nThe center gives \\((x+2)^2+(y-1)^2=25\\). Graph it with the point to check.",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Graph the equation you choose",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "allow_retry": true,
+        "explanation": "The center fixes the parentheses; the squared distance supplies \\(25\\). The given point is on the circle, not its center.",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "diameter_midpoint",
+      "block_type": "text",
+      "content": {
+        "id": "diameter_midpoint",
+        "html": "<h2>A diameter puts the center halfway between its ends</h2><p>For diameter endpoints \\((-4,3)\\) and \\((6,3)\\), average corresponding coordinates: the center is \\((1,3)\\), and the radius is half of \\(10\\), or \\(5\\).</p><p>If the center and just one endpoint are known, reverse the move from the center to that endpoint to find the other one.</p><p>From center \\((1,3)\\) to \\((6,3)\\), the move is right \\(5\\). The opposite end is left \\(5\\) from the center: \\((-4,3)\\).</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "diameter_endpoint_check",
+      "block_type": "check",
+      "content": {
+        "id": "diameter_endpoint_check",
+        "hint": "Find the move from the center to the given endpoint. Reverse both parts of that move from the center.",
+        "prompt": "A circle has center \\((2,-1)\\). One endpoint of a diameter is \\((5,3)\\). What is the other endpoint?",
+        "choices": [
+          "\\((-3,-4)\\)",
+          "\\((-1,5)\\)",
+          "\\((-1,-5)\\)",
+          "\\((8,7)\\)"
+        ],
+        "solution": "From \\((2,-1)\\) to \\((5,3)\\), move right \\(3\\) and up \\(4\\).\nReverse the move: \\((2-3,-1-4)=(-1,-5)\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Plot the center and endpoints",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "allow_retry": true,
+        "explanation": "The midpoint of \\((5,3)\\) and \\((-1,-5)\\) is \\((2,-1)\\), the given center.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "translation_model",
+      "block_type": "text",
+      "content": {
+        "id": "translation_model",
+        "html": "<h2>Move the center, then write the equation</h2><p>A translation shifts the circle without changing its radius. For \\((x-1)^2+(y+2)^2=9\\), the center is \\((1,-2)\\).</p><p>Shift left \\(4\\) and up \\(3\\): the new center is \\((-3,1)\\). Write the new equation as \\((x+3)^2+(y-1)^2=9\\).</p><blockquote><p><strong>Move the point first:</strong> changing signs inside parentheses by eye is where the SAT catches people.</p></blockquote>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Add the shifted circle",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "(x-1)^2+(y+2)^2=9"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "translation_check",
+      "block_type": "check",
+      "content": {
+        "id": "translation_check",
+        "hint": "Read the original center, apply the two movements to that point, then rebuild the parentheses.",
+        "prompt": "The circle \\((x+2)^2+(y-3)^2=16\\) is shifted right \\(5\\) units and down \\(2\\) units. Which equation represents the result?",
+        "choices": [
+          "\\((x+7)^2+(y-5)^2=16\\)",
+          "\\((x-3)^2+(y-1)^2=16\\)",
+          "\\((x-3)^2+(y-5)^2=16\\)",
+          "\\((x-3)^2+(y-1)^2=64\\)"
+        ],
+        "solution": "The original center is \\((-2,3)\\).\nRight \\(5\\) and down \\(2\\) gives \\((3,1)\\).\nThe radius stays \\(4\\), so the equation is \\((x-3)^2+(y-1)^2=16\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Graph the original and the shift",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "allow_retry": true,
+        "explanation": "The center moves to (3, 1). A translation does not change the radius or the right-side value.",
+        "correct_index": 1
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "radius_scale_model",
+      "block_type": "text",
+      "content": {
+        "id": "radius_scale_model",
+        "html": "<h2>A new radius changes the right side</h2><p>For \\((x-1)^2+(y+2)^2=9\\), the radius is \\(3\\). If a concentric circle has twice the radius, its radius is \\(6\\), so its equation has \\(36\\) on the right.</p><p><strong>Concentric</strong> means the circles have the same center. The parentheses stay the same.</p><blockquote><p><strong>Square the new radius:</strong> multiplying the radius by \\(k\\) multiplies the right side by \\(k^2\\).</p></blockquote><p>The same rule works with a letter: a radius of \\(7k\\) gives \\((7k)^2=49k^2\\) on the right. Square the whole radius, including its coefficient.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "radius_scale_check",
+      "block_type": "check",
+      "content": {
+        "id": "radius_scale_check",
+        "hint": "Read the original radius, add the stated increase, and square the new radius.",
+        "input": "numeric",
+        "answer": "49",
+        "prompt": "A circle has equation \\((x+1)^2+(y-4)^2=25\\). A second circle has the same center and a radius \\(2\\) units greater. What number belongs on the right side of its equation?",
+        "solution": "The original radius is \\(\\sqrt{25}=5\\).\nThe new radius is \\(5+2=7\\).\nThe right side is \\(7^2=49\\).",
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The change is to the radius first: 5 becomes 7. The equation therefore uses 49."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "expanded_fraction_model",
+      "block_type": "text",
+      "content": {
+        "id": "expanded_fraction_model",
+        "html": "<h2>Fractions do not change the graphing process</h2><p>Enter \\(x^2+3x+y^2-y=27/2\\) exactly as written. Zoom out if needed. Click the top and bottom: \\((-1.5,4.5)\\) and \\((-1.5,-3.5)\\).</p><p>The diameter is \\(4.5-(-3.5)=8\\), so the radius is \\(4\\). The midpoint gives center \\((-1.5,0.5)\\).</p><blockquote><p><strong>Read the graph:</strong> the equation can stay expanded. You do not need to manufacture squared parentheses.</p></blockquote>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Click the extreme points",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "x^2+3x+y^2-y=27/2"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "expanded_graph_check",
+      "block_type": "check",
+      "content": {
+        "id": "expanded_graph_check",
+        "hint": "Enter the full equation with its equals sign. Click top and bottom, subtract their y-values, and halve the result.",
+        "input": "numeric",
+        "answer": "5",
+        "prompt": "The graph of \\(2x^2+4x+2y^2-8y=40\\) is a circle. What is its radius?",
+        "solution": "Enter \\(2x^2+4x+2y^2-8y=40\\).\nClick the top \\((-1,7)\\) and bottom \\((-1,-3)\\); zoom out if needed.\nThe diameter is \\(7-(-3)=10\\), so the radius is \\(5\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Build your own graph",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "allow_retry": true,
+        "explanation": "The graph gives diameter 10 and radius 5 without rearranging or dividing the equation."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "radical_choice_model",
+      "block_type": "text",
+      "content": {
+        "id": "radical_choice_model",
+        "html": "<h2>Compare decimal readings with exact choices</h2><p>A graph label may contain decimals while the choices use square roots. Calculate the radius from the extreme points, then type the exact choices into new calculator rows to compare their decimal values.</p><p>For \\(x^2-2x+y^2+4y=8\\), the top and bottom have y-values about \\(1.605551\\) and \\(-5.605551\\), giving radius about \\(3.605551\\). Typing \\(\\sqrt{13}\\) gives the matching decimal.</p><blockquote><p><strong>Keep precision:</strong> use the displayed digits. Do not round both measurements to whole numbers before subtracting.</p></blockquote>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare the radius and a square root",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "x^2-2x+y^2+4y=8"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "radical_radius_check",
+      "block_type": "check",
+      "content": {
+        "id": "radical_radius_check",
+        "hint": "Graph the full equation and calculate half the vertical diameter. Evaluate the square-root choices in separate rows.",
+        "prompt": "The graph of \\(x^2+4x+y^2-6y=6\\) is a circle. What is its radius?",
+        "choices": [
+          "\\(\\sqrt6\\)",
+          "\\(\\sqrt{13}\\)",
+          "\\(\\sqrt{32}\\)",
+          "\\(\\sqrt{19}\\)"
+        ],
+        "solution": "Graph \\(x^2+4x+y^2-6y=6\\).\nThe top and bottom y-values are about \\(7.358899\\) and \\(-1.358899\\).\nHalf their difference is about \\(4.358899\\).\nEvaluate the choices: \\(\\sqrt{19}\\) matches that decimal.",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Graph, then evaluate the choices",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "allow_retry": true,
+        "explanation": "The radius is about \\(4.358899\\), which matches \\(\\sqrt{19}\\). The constant by itself is not the squared radius in an expanded equation.",
+        "correct_index": 3
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "point_location",
+      "block_type": "text",
+      "content": {
+        "id": "point_location",
+        "html": "<h2>Add a point to test its location</h2><p>Graph \\((x+2)^2+(y-1)^2=25\\), then enter \\((-2,6)\\) on a new row. It lands on the top of the circle. A point at the center is inside; a point beyond the edge is outside.</p><p>If the graph is too close to distinguish, substitute the point into the two squared groups. A total smaller than \\(25\\) means inside, equal to \\(25\\) means on, and larger means outside.</p><blockquote><p><strong>On is exact:</strong> a point that looks close may need the substitution check.</p></blockquote><p><strong>Interior</strong> means strictly inside. A point on the circle is <em>not in its interior</em>, even though it is not outside.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Add the point on a new row",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "(x+2)^2+(y-1)^2=25"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "point_location_check",
+      "block_type": "check",
+      "content": {
+        "id": "point_location_check",
+        "hint": "Graph the circle and plot the candidate points. If needed, check the squared distance from the center.",
+        "prompt": "Which point lies on the circle \\((x-1)^2+(y+2)^2=25\\)?",
+        "choices": [
+          "\\((1,3)\\)",
+          "\\((1,-2)\\)",
+          "\\((6,3)\\)",
+          "\\((1,23)\\)"
+        ],
+        "solution": "Graph the equation and the points. The top point is \\((1,3)\\).\nIt is \\(5\\) units above the center \\((1,-2)\\).\nSubstitution confirms \\((1-1)^2+(3+2)^2=25\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Plot the candidate points",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "allow_retry": true,
+        "explanation": "The top point (1, 3) is on the circle. The center is inside, and the other two points are outside.",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "axis_tangency",
+      "block_type": "text",
+      "content": {
+        "id": "axis_tangency",
+        "html": "<h2>Touching an axis fixes the radius</h2><p>If the circle touches an axis at exactly one point, it is <strong>tangent</strong> to that axis. Its radius equals the center&#39;s distance from the axis.</p><ul><li>For the x-axis, use the center&#39;s vertical distance: \\(|k|\\).</li><li>For the y-axis, use the center&#39;s horizontal distance: \\(|h|\\).</li></ul><p>Center \\((-2,3)\\) and tangency to the x-axis give radius \\(3\\), so the equation is \\((x+2)^2+(y-3)^2=9\\). Graph it to see the single touch.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Find the one-point touch",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "(x+2)^2+(y-3)^2=9"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "axis_tangency_check",
+      "block_type": "check",
+      "content": {
+        "id": "axis_tangency_check",
+        "hint": "The y-axis is vertical. Find the center’s horizontal distance from it, then square that radius.",
+        "prompt": "A circle has center \\((4,-2)\\) and is tangent to the y-axis. Which equation represents it?",
+        "choices": [
+          "\\((x-4)^2+(y+2)^2=4\\)",
+          "\\((x+4)^2+(y-2)^2=16\\)",
+          "\\((x-4)^2+(y+2)^2=16\\)",
+          "\\((x-4)^2+(y+2)^2=36\\)"
+        ],
+        "solution": "The center is \\(4\\) units horizontally from the y-axis, so the radius is \\(4\\).\nUse center \\((4,-2)\\) and \\(r^2=16\\): \\((x-4)^2+(y+2)^2=16\\).\nThe graph touches the y-axis at \\((0,-2)\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Check the axis touch",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "allow_retry": true,
+        "explanation": "The horizontal distance supplies radius 4. The vertical distance of 2 would describe tangency to the other axis.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "tangent_slope_model",
+      "block_type": "text",
+      "content": {
+        "id": "tangent_slope_model",
+        "html": "<h2>For a tangent slope, use the radius direction</h2><p>The radius to the contact point is perpendicular to the tangent. Find its slope using rise over run, then use the negative reciprocal for the tangent.</p><p>Center \\((1,1)\\), contact point \\((5,3)\\): radius slope \\((3-1)/(5-1)=1/2\\), so tangent slope \\(-2\\).</p><blockquote><p><strong>Axis exception:</strong> a horizontal radius has a vertical tangent; a vertical radius has a horizontal tangent. Do not divide by zero.</p></blockquote><p>The graph shows that radius and its tangent. To test another point on the tangent, use \\(y-3=-2(x-5)\\). For instance, setting \\(x=6\\) gives \\(y=1\\), so \\((6,1)\\) is also on the line.</p>",
+        "calculator": {
+          "display": "open",
+          "mode": "preset",
+          "title": "Compare the radius and tangent directions",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "(x-1)^2+(y-1)^2=20",
+              "color": "#64748b"
+            },
+            {
+              "id": "e1",
+              "latex": "y=(x+1)/2\\{1<=x<=5\\}",
+              "color": "#2563eb",
+              "lineWidth": 4
+            },
+            {
+              "id": "e2",
+              "latex": "y=-2x+13",
+              "color": "#c74440"
+            },
+            {
+              "id": "e3",
+              "latex": "(1,1)",
+              "label": "Center",
+              "showLabel": true
+            },
+            {
+              "id": "e4",
+              "latex": "(5,3)",
+              "label": "Contact",
+              "showLabel": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "tangent_slope_check",
+      "block_type": "check",
+      "content": {
+        "id": "tangent_slope_check",
+        "hint": "Find the slope from the center to the contact point, then use the perpendicular direction.",
+        "input": "numeric",
+        "answer": -3,
+        "prompt": "A circle has center \\((-1,2)\\). A tangent touches it at \\((2,3)\\). What is the slope of the tangent?",
+        "solution": "The radius slope is \\((3-2)/(2-(-1))=1/3\\).\nThe negative reciprocal is \\(-3\\), the tangent slope.",
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The tangent slope is -3. The slope 1/3 belongs to the radius, and -1/3 changes only the sign."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "id": "final_retrieval",
+        "prompt": "An expanded circle equation asks for its radius. Which Graph, center, read workflow gives the requested length?",
+        "choices": [
+          "Graph the complete equation; click top and bottom; subtract their y-values; report the full difference.",
+          "Graph the complete equation; click top and bottom; subtract their y-values; report half the difference.",
+          "Graph the complete equation; click top and bottom; add their y-values; report half the sum.",
+          "Graph the complete equation; click the x-axis crossings; subtract their x-values; report half the difference."
+        ],
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": false,
+        "explanation": "Opposite extremes give a diameter. Half its length is the radius; half the sum would locate the center, and axis crossings need not be diameter endpoints.",
+        "correct_index": 1
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "graph_independent_setup",
+      "block_type": "text",
+      "content": {
+        "id": "graph_independent_setup",
+        "html": "<h2>Build the evidence yourself</h2><p>Clear any old expressions from your scratch calculator before the last problem. Enter the given equation, choose the points you need, and report the requested measurement.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "id": "authentic_item",
+        "input": "numeric",
+        "answer": "12",
+        "prompt": "In the xy-plane, the graph of \\(x^2-x+y^2+3y=67/2\\) is a circle. What is the diameter of this circle?",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Build your own graph",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "allow_retry": false,
+        "explanation": "Graph the equation. Its top is \\((0.5,4.5)\\), and its bottom is \\((0.5,-7.5)\\). The vertical diameter is \\(4.5-(-7.5)=12\\). This question asks for the full distance across, so do not halve it."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "graphs_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "id": "graphs_finish",
+        "html": "<h2>Put the equation on the graph.</h2><p>Let the center and the extreme points do the measuring.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}

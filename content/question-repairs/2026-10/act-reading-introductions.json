@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-25",
+  "scope": "Shared ACT passage renderer; no database text replacements",
+  "reference": "June 2026 Form A1D, testbooklet.pdf, printed Reading Passage III",
+  "changes": [
+    "Restore smaller sans-serif attribution and editorial notes, with separation before serif passage prose",
+    "Recognize legacy genre attribution paragraphs and adjacent known editorial introductions",
+    "Restore spaces omitted after bold genre labels",
+    "Preserve passage wording, meaningful hyphens, question reference spans, and figures"
+  ],
+  "validation": {
+    "distinct_reading_passages": 37,
+    "forms": 11,
+    "viewport_widths": [390, 1246],
+    "browser_checks_passed": 74,
+    "normalization_idempotent": true,
+    "non_whitespace_text_unchanged": true,
+    "source_word_join_screening": ["ACT-2026-June-FormA1D", "ACT-2024-Sep", "ACT-2025-February-FormZ14", "ACT-2025-Oct", "ACT-25MC1", "ACT-Online-Practice-Test-3", "ACT-Online-Practice-Test-4"],
+    "limitations": "Word-join screening against available PDFs is not a complete source transcription audit. No speculative spelling or hyphen changes were made."
+  }
+}

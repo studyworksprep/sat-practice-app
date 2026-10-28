@@ -26,6 +26,13 @@ ANSWER KEY DOCUMENT (if attached as a second PDF):
 - The answer key uses letters (A/B/C/D or sometimes F/G/H/J for even-numbered math questions). Normalize F→A, G→B, H→C, J→D, K→E.
 - Mark the matching option is_correct: true. All others is_correct: false.
 
+DIGITAL PASSAGES (REQUIRED):
+- Transcribe all passage prose as real, selectable HTML text. NEVER use a page screenshot or an image of text as a passage.
+- Use a bold title and semantic <p> paragraphs. Join PDF line wraps and page/column continuations; preserve actual paragraph boundaries, wording, punctuation, italics, and meaningful insertion/paragraph labels.
+- Do not reproduce PDF page numbers, running headers, decorative spacing, columns, inline font sizes, fixed widths, absolute positioning, or empty coordinate-based highlight overlays.
+- Question-reference spans must wrap the actual referenced words, so highlights reflow with the text. Preserve references needed by questions.
+- Keep diagrams, graphs, maps, and other genuine figures as separate images beside the relevant prose; tables should be HTML where possible.
+
 IMAGES / FIGURES:
 - For tables you can reconstruct as HTML, embed them inline (<table>…</table>).
 - If a Mathpix HTML export is attached alongside the test PDF, its <img src="https://…"> tags point at figures already uploaded to a public bucket. COPY each question's figure <img> verbatim into the matching stem_html (or option content_html, or stimulus_html if the figure is shared). These URLs are stable and renderable as-is; do NOT replace them with placeholders.
@@ -235,7 +242,9 @@ OUTPUT SHAPE:
 
 export const MATH_SYSTEM = `You are an expert at parsing ACT Math section test content from a PDF.
 
-The ACT Math section has 60 questions, each with 5 answer options. Odd-numbered questions use labels A/B/C/D/E; even-numbered questions use F/G/H/J/K. You MUST normalize every label set to A/B/C/D/E (F→A, G→B, H→C, J→D, K→E) regardless of source.
+ACT Math forms can have four or five answer options. Enhanced forms use A/B/C/D; older forms may use A/B/C/D/E and F/G/H/J/K. Read the actual number of questions and options from the source. Normalize F→A, G→B, H→C, J→D, K→E when present. Emit exactly the options printed for each question; never add an E option to a four-choice question.
+
+Mark the original correct option from the source key before any choices are removed. Emit all five printed choices on legacy forms. The importer then removes one random incorrect choice, relabels the remaining four A/B/C/D, and carries is_correct with its answer content; do not remove or shuffle choices yourself.
 
 ACT MATH CATEGORY HIERARCHY — USE THESE EXACTLY:
 1. "Preparing for Higher Math" (code: "PHM") — subcategories:
@@ -255,7 +264,7 @@ Difficulty: leave null. The import pipeline computes Math difficulty from ordina
 
 ${SHARED_INSTRUCTIONS}
 
-OUTPUT SHAPE per question:
+OUTPUT SHAPE per question (four-choice example; include the printed E option on five-choice forms):
 {
   "source_ordinal": <int>,
   "section": "math",
@@ -272,8 +281,7 @@ OUTPUT SHAPE per question:
     { "label": "A", "content_html": "...", "is_correct": <bool> },
     { "label": "B", "content_html": "...", "is_correct": <bool> },
     { "label": "C", "content_html": "...", "is_correct": <bool> },
-    { "label": "D", "content_html": "...", "is_correct": <bool> },
-    { "label": "E", "content_html": "...", "is_correct": <bool> }
+    { "label": "D", "content_html": "...", "is_correct": <bool> }
   ],
   "needs_figure": <bool>,
   "parse_warnings": []

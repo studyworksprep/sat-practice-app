@@ -320,3 +320,20 @@
   color: #166534;
   line-height: 1.6;
 }
+
+/* Extended-time accommodation radios (Practice experience card). */
+.radioGroup {
+  border: 0;
+  padding: 0;
+  margin: 18px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.radioRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--fg1);
+}

@@ -26,6 +26,32 @@
   padding: var(--s5) var(--s5) 0;
 }
 
+.testSections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.testSections a {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--color-navy-900);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.testSections a:hover,
+.testSections a:focus-visible {
+  background: var(--bg-tint);
+}
+
+.testSections a[aria-current="page"] {
+  background: var(--color-navy-900);
+  color: white;
+}
+
 .eyebrow {
   font-size: 11px;
   font-weight: 700;
@@ -441,7 +467,7 @@
    review surfaces share one layout. */
 .reviewLayout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s4);
 }
 
@@ -465,6 +491,7 @@
 }
 
 .questionCard {
+  min-width: 0;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);

@@ -2,7 +2,8 @@
 
 > **Status: Living document.** Last verified against code: 2026-07-12
 > (question-bank write policies re-verified against production
-> 2026-09-01; attempt-stat read paths re-verified 2026-09-06).
+> 2026-09-01; attempt-stat read paths re-verified 2026-09-06; ACT union of
+> those paths verified against production 2026-10-13).
 
 Short runbook for anything that touches the Supabase database.
 
@@ -188,6 +189,19 @@ every row, matching `get_question_stats`: a blank test response
 test-scoring style. The admin landing tile "Practice attempts" keeps
 its practice-only filter deliberately.
 
+**Student stat tiles count ACT attempts too (2026-10-13).**
+`student_practice_stats`, `get_practice_streak`,
+`get_roster_weekly_trend` and the `by_day` series of
+`get_student_extended_stats` union `act_attempts` with `attempts`
+(migration `20261013100000`), so an ACT-only student no longer reads
+as inactive on the dashboard, the tutor roster trend or `/stats`.
+The per-domain and per-skill breakdowns stay SAT-only; the ACT
+breakdown (section → category, difficulty 1–5) comes from
+`get_act_student_stats(p_user_id, p_week_ago, p_lookback_start)`
+(SECURITY INVOKER, granted to `authenticated`). The same migration
+lets `review_queue.item_type` carry `act_question`, so missed ACT
+questions enter the spaced-repetition queue like SAT ones.
+
 **Practice-test first touch is on-conflict safe (2026-09-06).** The
 answer save, the mark-for-review toggle and the time-ping beacon all
 create the per-question `attempts` row + `practice_test_item_attempts_v2`
@@ -349,3 +363,19 @@ policies switched onto it in
 `20240101000012_replace_visibility_policies_with_can_view.sql`. The
 script is read-only and kept for regression use; expected output is
 "zero diffs".
+
+## ACT math answer choices
+
+Verified 2026-10-26. The ACT importer reads all printed answer choices and
+marks the original correct answer from the source key. For five-choice Math,
+it removes one random wrong choice, preserves the remaining order, and relabels
+the choices A–D. The correct flag stays attached to its answer content, so its
+new label becomes the bank's answer key. Four-choice Math and other sections
+keep their choices. Missing or ambiguous keys remain intact for correction.
+
+New parsed drafts contain the reduced choices before review. Single and bulk
+approval also normalize older staged five-choice Math drafts before inserting
+the bank question. The reduced options are saved with a condition that the
+original draft choices and review status still match, so retries reuse the
+same removal and concurrent changes require a reload. Source PDFs and offline
+source packages retain their printed choices and official answer keys.

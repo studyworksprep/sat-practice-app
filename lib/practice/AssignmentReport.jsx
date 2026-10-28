@@ -42,6 +42,8 @@ import { ReviewDailyMap } from './ReviewDailyMap';
 import { ReviewTimingBand } from './ReviewTimingBand';
 import { subjectFromDomainCode } from './DomainBreakdownCard';
 import { SkillBreakdownCard } from './SkillBreakdownCard';
+import { ActBreakdownCards } from './ActBreakdownCards';
+import { ActScoreSummary } from '@/lib/practice-test/ActScoreSummary';
 import { ReportHero } from './ReportHero';
 import { formatDuration } from './format-duration';
 import { formatDate } from '@/lib/formatters';
@@ -57,6 +59,7 @@ const MATH_DOMAIN_CODES_FOR_CALC = new Set(['H', 'P', 'Q', 'S', 'math']);
 
 export function AssignmentReport({
   sessionMeta,
+  initialSection = null,
   items,
   metrics,
   timing = null,
@@ -109,7 +112,9 @@ export function AssignmentReport({
     [items],
   );
 
-  const firstReal = items.find((it) => !it.missing) ?? items[0];
+  const isAct = sessionMeta.testType === 'act';
+  const firstReal = items.find((item) => item.taxonomy?.domain_code === initialSection)
+    ?? items.find((it) => !it.missing) ?? items[0];
   const [selectedPosition, setSelectedPosition] = useState(
     firstReal ? firstReal.position : 0,
   );
@@ -167,13 +172,16 @@ export function AssignmentReport({
         <Link href={backHref} className={s.breadcrumb}>{backLabel}</Link>
       )}
 
+      {sessionMeta.scoreReportHref && (
+          <Link className={s.breadcrumb} href={sessionMeta.scoreReportHref}>← Back to ACT score report</Link>
+        )}
       <header className={s.header}>
         <div className={s.headerMain}>
           <div className={s.eyebrow}>
-            {assignment ? 'Assignment report' : 'Session report'}
+            {sessionMeta.actTestReport ? 'ACT practice test report' : assignment ? 'Assignment report' : 'Session report'}
           </div>
           <h1 className={s.h1}>
-            {assignment ? assignment.title : sessionDate}
+            {assignment ? assignment.title : sessionMeta.sourceTest ?? sessionDate}
           </h1>
           <div className={s.subtitleRow}>
             {studentName && (studentHref ? (
@@ -216,7 +224,8 @@ export function AssignmentReport({
            Hero = accuracy %, the headline metric a tutor reads
            first. Supporting tiles repeat the practice-test report's
            visual rhythm: questions answered, correct/wrong, time. */}
-      <ReportHero
+      {sessionMeta.actTestReport ? <ActScoreSummary {...sessionMeta.actTestReport} /> : (
+        <ReportHero
         primary={{
           label: 'Accuracy',
           value: accuracyPct == null ? '—' : `${accuracyPct}%`,
@@ -251,6 +260,7 @@ export function AssignmentReport({
           },
         ]}
       />
+      )}
 
       {/* ---------- Daily distribution ---------- */}
       {assignment?.dailyMap?.days?.length > 0 && (
@@ -273,7 +283,7 @@ export function AssignmentReport({
       )}
 
       {/* ---------- Weak spots + by-domain breakdown ---------- */}
-      {weakSkills.length > 0 && (
+      {!sessionMeta.actTestReport && weakSkills.length > 0 && (
         <section className={s.weakCard}>
           <div className={s.weakLabel}>Weak spots</div>
           <div className={s.weakRow}>
@@ -287,7 +297,8 @@ export function AssignmentReport({
         </section>
       )}
 
-      {(rwDomains.length > 0 || mathDomains.length > 0) && (
+      {isAct && <section className={s.cardRow}><ActBreakdownCards domains={metrics.byDomain ?? []} /></section>}
+      {!isAct && (rwDomains.length > 0 || mathDomains.length > 0) && (
         <section className={s.cardRow}>
           {rwDomains.length > 0 && (
             <SkillBreakdownCard
@@ -491,7 +502,7 @@ export function AssignmentReport({
                 />
               )}
               {/* Reference sheet + floating calculator — math only. */}
-              {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
+              {!isAct && !selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
                 <ReferenceSheetButton
                   open={refOpen}
                   onOpenChange={setRefOpen}

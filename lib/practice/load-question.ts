@@ -198,6 +198,9 @@ export interface QuestionPayload {
     deadlineIso: string | null;
     sectionLabel: string | null;
     sourceTest: string | null;
+    attemptId: string | null;
+    sectionIndex: number | null;
+    sectionCount: number | null;
   } | null;
 }
 
@@ -244,10 +247,16 @@ export async function loadQuestion(
         : '/practice/start?expired=1',
     };
   }
+  // A finished section of a multi-section ACT test goes back to the
+  // attempt page (next section / results), never to the review page,
+  // which would show the key while the test is still running.
+  const fcForRedirect = session.filter_criteria as Record<string, unknown> | null;
+  const actAttemptId = typeof fcForRedirect?.attempt_id === 'string' ? fcForRedirect.attempt_id : null;
+
   if (session.status === 'completed') {
     return {
       kind: 'completed',
-      redirectTo: completedRedirect(sessionMode, sessionId, expectedMode),
+      redirectTo: completedRedirect(sessionMode, sessionId, expectedMode, actAttemptId),
     };
   }
   if (session.status === 'abandoned') {
@@ -275,7 +284,7 @@ export async function loadQuestion(
       .eq('status', 'in_progress');
     return {
       kind: 'past_end',
-      redirectTo: completedRedirect(sessionMode, sessionId, expectedMode),
+      redirectTo: completedRedirect(sessionMode, sessionId, expectedMode, actAttemptId),
     };
   }
 
@@ -613,6 +622,11 @@ export async function loadQuestion(
         deadlineIso: typeof fcAny?.deadlineAt === 'string' ? fcAny.deadlineAt : null,
         sectionLabel: typeof fcAny?.sectionsOnly === 'string' ? fcAny.sectionsOnly : null,
         sourceTest: typeof fcAny?.source_test === 'string' ? fcAny.source_test : null,
+        // Phase 3 multi-section attempts: which section of how many
+        // this session is, for the timer label.
+        attemptId: typeof fcAny?.attempt_id === 'string' ? fcAny.attempt_id : null,
+        sectionIndex: typeof fcAny?.section_index === 'number' ? fcAny.section_index : null,
+        sectionCount: typeof fcAny?.section_count === 'number' ? fcAny.section_count : null,
       }
     : null;
 
@@ -641,9 +655,13 @@ function completedRedirect(
   mode: SessionMode,
   sessionId: string,
   expectedMode: 'training' | null,
+  actAttemptId: string | null = null,
 ): string {
   if (expectedMode === 'training') {
     return `/tutor/training/practice/review/${sessionId}`;
+  }
+  if (actAttemptId) {
+    return `/practice/test/act/attempt/${actAttemptId}`;
   }
   return mode === 'review'
     ? '/review?complete=1'

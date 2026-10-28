@@ -47,14 +47,22 @@ export default async function TutorPracticeTestResultsPage({ params }) {
     // studentId check keeps a URL from pairing one student's path
     // with another student's attempt.
     const act = await loadActTestResults({ supabase, attemptId });
+    if (!act.ok && act.code === 'in-progress' && act.attempt.userId === studentId) {
+      // Same treatment as a running SAT attempt: nothing to show yet.
+      redirect(`/tutor/students/${studentId}`);
+    }
     if (act.ok && act.attempt.userId === studentId) {
+      const reviewLinks = act.sectionRows
+        .filter((r) => r.sessionId)
+        .map((r) => ({
+          label: `${r.label} review`,
+          href: `/tutor/sessions/${r.sessionId}`,
+        }));
       return (
         <ActTestResults
           attempt={act.attempt}
           sectionRows={act.sectionRows}
-          reviewHref={act.attempt.practiceSessionId
-            ? `/tutor/sessions/${act.attempt.practiceSessionId}`
-            : null}
+          reviewLinks={reviewLinks}
           backHref={`/tutor/students/${studentId}`}
           backLabel="← Back to student"
         />

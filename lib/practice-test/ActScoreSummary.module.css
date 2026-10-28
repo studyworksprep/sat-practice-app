@@ -1,0 +1,20 @@
+.summary { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: var(--card, white); }
+.overview { display: grid; grid-template-columns: minmax(210px, 1fr) 3fr; }
+.score { background: var(--color-navy-900, #112d45); color: white; padding: 28px; }
+.score h2 { margin: 0 0 14px; font-size: 15px; font-weight: 600; }
+.value { font-size: 64px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
+.value span { font-size: 20px; font-weight: 400; opacity: .8; }
+.score p { font-size: 13px; margin: 12px 0 0; opacity: .85; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 0; padding: 28px; align-items: center; }
+.stats dt { font-size: 13px; color: var(--fg2); }
+.stats dd { margin: 12px 0 8px; font-size: 28px; font-weight: 700; color: var(--fg1); font-variant-numeric: tabular-nums; }
+.stats small, .sectionScore small { font-size: 15px; color: var(--fg3); font-weight: 400; }
+.stats p, .section p { font-size: 13px; color: var(--fg2); margin: 0; line-height: 1.5; }
+.sections { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; border-top: 1px solid var(--border); padding: 24px 28px; }
+.section h3 { margin: 0 0 10px; font-size: 15px; }
+.sectionScore { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+.section a, .review { color: var(--color-app-accent); font-size: 14px; font-weight: 600; display: block; margin-top: 12px; }
+.review { padding: 0 28px 20px; }
+.note { margin: 0; padding: 16px 28px; border-top: 1px solid var(--border); color: var(--fg2); font-size: 13px; line-height: 1.5; }
+@media (max-width: 760px) { .overview { grid-template-columns: 1fr; } .stats { gap: 16px; padding: 24px; } .stats dd { font-size: 23px; } }
+@media (max-width: 440px) { .stats { grid-template-columns: 1fr; } .stats div + div { border-top: 1px solid var(--border); padding-top: 16px; } }

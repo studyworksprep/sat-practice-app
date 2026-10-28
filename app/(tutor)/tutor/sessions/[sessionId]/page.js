@@ -26,8 +26,9 @@ import { AssignmentReport } from '@/lib/practice/AssignmentReport';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TutorSessionReviewPage({ params }) {
+export default async function TutorSessionReviewPage({ params, searchParams }) {
   const { sessionId } = await params;
+  const { section } = await searchParams;
   const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'student' || profile.role === 'practice') {
@@ -107,6 +108,7 @@ export default async function TutorSessionReviewPage({ params }) {
   return (
     <AssignmentReport
       sessionMeta={sessionMeta}
+      initialSection={section ?? null}
       items={items}
       metrics={metrics}
       timing={timing}

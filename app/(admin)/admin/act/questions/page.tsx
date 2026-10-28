@@ -21,9 +21,13 @@ import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
+import { DifficultyControls } from './DifficultyControls';
 import s from './ActQuestions.module.css';
 
 export const dynamic = 'force-dynamic';
+// The difficulty backfill runs inside this page's Server Action; the
+// rationale page and the SAT generator route use the same ceiling.
+export const maxDuration = 60;
 
 const PAGE_SIZE = 50;
 
@@ -103,7 +107,7 @@ export default async function AdminActQuestionsPage({
   if (filters.difficulty === 'missing') query = query.is('difficulty', null);
   if (filters.q) query = query.ilike('stem_html', `%${filters.q.replace(/[%_]/g, '')}%`);
 
-  const [{ data: rows, count, error }, { data: formRows }] = await Promise.all([
+  const [{ data: rows, count, error }, { data: formRows }, { data: missingRows }] = await Promise.all([
     query
       .order('source_test', { ascending: true, nullsFirst: false })
       .order('section', { ascending: true })
@@ -113,11 +117,24 @@ export default async function AdminActQuestionsPage({
       .from('act_questions')
       .select('source_test')
       .not('source_test', 'is', null),
+    // Live rows with no difficulty, per section — drives the backfill
+    // card. English/Reading arrive from the importer without one.
+    supabase
+      .from('act_questions')
+      .select('section')
+      .is('deleted_at', null)
+      .is('difficulty', null),
   ]);
 
   const forms = Array.from(
     new Set(((formRows ?? []) as Array<{ source_test: string | null }>).map((r) => r.source_test).filter(Boolean) as string[]),
   ).sort();
+
+  const missingBySection: Record<string, number> = {};
+  for (const r of (missingRows ?? []) as Array<{ section: string }>) {
+    missingBySection[r.section] = (missingBySection[r.section] ?? 0) + 1;
+  }
+  const missingTotal = Object.values(missingBySection).reduce((a, b) => a + b, 0);
 
   const total = count ?? 0;
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -130,6 +147,7 @@ export default async function AdminActQuestionsPage({
         <div className={s.titleRow}>
           <h1 className={s.h1}>ACT questions</h1>
           <div className={s.actions}>
+            <Link href="/admin/act/forms" className={s.btnSecondary}>Forms</Link>
             <Link href="/admin/act/rationales" className={s.btnSecondary}>Rationales</Link>
             <Link href="/admin/act/imports" className={s.btnSecondary}>Imports</Link>
             <Link href="/admin/act/score-conversion" className={s.btnSecondary}>Score conversion</Link>
@@ -141,6 +159,8 @@ export default async function AdminActQuestionsPage({
             : `${total.toLocaleString()} question${total === 1 ? '' : 's'} match · page ${page} of ${lastPage}`}
         </p>
       </header>
+
+      {missingTotal > 0 && <DifficultyControls missing={missingBySection} forms={forms} />}
 
       <FilterBar filters={filters} forms={forms} />
 

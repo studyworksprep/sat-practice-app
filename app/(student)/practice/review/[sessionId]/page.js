@@ -21,11 +21,14 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { ReviewInteractive } from '@/lib/practice/ReviewInteractive';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
+import { actSectionReviewPath } from '@/lib/practice-test/act-review-navigation';
+import { isActSection } from '@/lib/practice/act-taxonomy';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PracticeReviewPage({ params }) {
+export default async function PracticeReviewPage({ params, searchParams }) {
   const { sessionId } = await params;
+  const { section } = await searchParams;
   const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'admin') redirect('/admin');
@@ -56,6 +59,13 @@ export default async function PracticeReviewPage({ params }) {
     questionNotesCanView, questionNotesIsAdmin, currentUserId,
   } = await buildSessionReview({ supabase, user, role: profile.role, session });
 
+  if (session.test_type === 'act' && sessionMeta.testAttemptId) {
+    const reviewSection = isActSection(section) ? section : items[0]?.taxonomy?.domain_code;
+    if (isActSection(reviewSection)) {
+      redirect(actSectionReviewPath(sessionMeta.testAttemptId, reviewSection));
+    }
+  }
+
   // Footer links follow the session's test type. ReviewInteractive
   // defaults both to the SAT routes, which would bounce an ACT
   // student into the SAT history list (where the report they just
@@ -65,6 +75,7 @@ export default async function PracticeReviewPage({ params }) {
   return (
     <ReviewInteractive
       sessionMeta={sessionMeta}
+      initialSection={section ?? null}
       items={items}
       metrics={metrics}
       timing={timing}
@@ -79,7 +90,8 @@ export default async function PracticeReviewPage({ params }) {
       questionNotesCanView={questionNotesCanView}
       questionNotesIsAdmin={questionNotesIsAdmin}
       currentUserId={currentUserId}
-      footerBackHref={isAct ? '/practice/history?test=act' : '/practice/history'}
+      footerBackHref={sessionMeta.scoreReportHref ?? (isAct ? '/practice/history?test=act' : '/practice/history')}
+      footerBackLabel={sessionMeta.scoreReportHref ? '← Back to ACT score report' : '← All practice sessions'}
       footerNextHref={isAct ? '/practice/start?test=act' : '/practice/start'}
     />
   );

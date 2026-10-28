@@ -1,0 +1,230 @@
+/* ACT attempt intermission panel. Same hero-card shell as the SAT
+   resume panel (app/(student)/practice/test/attempt/[attemptId]/
+   ResumeTestPanel.module.css). Tokens from [data-tree="next"]. */
+
+.shell {
+  min-height: calc(100vh - var(--s5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s5) var(--s4);
+  background: var(--bg);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 32px 36px;
+  max-width: 620px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  left: 36px; top: 30px;
+  width: 40px; height: 3px;
+  background: var(--color-gold-500);
+  border-radius: 2px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  padding-top: 14px;
+  margin-bottom: var(--s2);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+
+.sub {
+  color: var(--fg2);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 var(--s4);
+}
+
+.breakCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50, #f8fafc);
+  padding: var(--s3) var(--s4);
+  margin-bottom: var(--s4);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: var(--s4);
+  align-items: center;
+}
+.breakLabel {
+  grid-column: 1;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+.breakValue {
+  grid-column: 1;
+  font-variant-numeric: tabular-nums;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+  line-height: 1.1;
+}
+.breakSub {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  font-size: 13px;
+  color: var(--fg2);
+  line-height: 1.5;
+}
+
+.sectionList {
+  list-style: none;
+  margin: 0 0 var(--s4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sectionRow {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: var(--s2);
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+}
+.sectionRowCurrent {
+  border-color: var(--color-app-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-app-accent) 18%, transparent);
+}
+.sectionRowDone { opacity: 0.75; }
+.sectionNum {
+  grid-row: 1 / span 2;
+  width: 24px; height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--color-slate-100, #f1f5f9);
+  color: var(--fg2);
+}
+.sectionName { font-weight: 600; color: var(--fg1); font-size: 14px; }
+.sectionMeta { grid-column: 2; font-size: 12px; color: var(--fg3); }
+.pill {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-slate-100, #f1f5f9);
+  color: var(--fg3);
+  white-space: nowrap;
+}
+.pillDone { background: var(--color-success-bg, #dcfce7); color: var(--color-diff-easy-fg, #166534); }
+.pillNext { background: var(--tile-navy-bg, #f0f4f8); color: var(--tile-navy-fg, #243b53); }
+
+.rulesLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+  margin-bottom: var(--s2);
+}
+.rules {
+  margin: 0 0 var(--s4);
+  padding-left: 18px;
+  color: var(--fg2);
+  font-size: 13px;
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.error {
+  margin-bottom: var(--s3);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-danger-bg, #fee2e2);
+  color: var(--color-diff-hard-fg, #b91c1c);
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  gap: var(--s2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btnPrimary,
+.btnSecondary,
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+}
+.btnPrimary {
+  background: var(--color-app-accent);
+  color: #fff;
+  border-color: var(--color-app-accent);
+}
+.btnPrimary:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+.btnPrimary:disabled { opacity: 0.7; cursor: not-allowed; }
+.btnSecondary {
+  background: var(--bg-white);
+  color: var(--fg1);
+  border-color: var(--border-strong);
+}
+.btnSecondary:hover { background: var(--color-slate-50); }
+.btnGhost {
+  background: transparent;
+  color: var(--fg3);
+  margin-left: auto;
+}
+.btnGhost:hover:not(:disabled) { color: var(--color-diff-hard-fg, #b91c1c); }
+
+@media (max-width: 560px) {
+  .card { padding: 24px 18px; }
+  .breakCard { grid-template-columns: 1fr; }
+  .breakSub { grid-column: 1; grid-row: auto; }
+  .btnGhost { margin-left: 0; }
+}

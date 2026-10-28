@@ -1,3 +1,5 @@
+import { assessActQuestions } from '@/lib/practice/act-format-detection';
+import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 // Student → practice-tests hub.
 //
 // Landing this page shows, at a glance:
@@ -23,7 +25,10 @@ import { TestLauncher } from '@/lib/practice/TestLauncher';
 import { ActTestsHub } from '@/lib/practice/ActTestsHub';
 import { HelpButton } from '@/app/(student)/help/HelpButton';
 import s from './PracticeTestsPage.module.css';
-import { visibleActQuestions } from '@/lib/practice/act-visibility';
+import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
+import { isActFormat, isActFormKind, isUntimedPlan, parsePlan, parseTimeMultiplier } from '@/lib/practice/act-test-plan';
+import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
+import { actFormDetail, actFormNamer } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,13 +44,18 @@ export default async function PracticeTestsPage({ searchParams }) {
   const testParam = typeof sp.test === 'string' ? sp.test.toLowerCase() : '';
   const testType = testParam === 'act' ? 'act' : 'sat';
 
+  // Standing extended-time accommodation (Account page). Pre-selects
+  // the SAT launcher's accommodation controls and the ACT hub's
+  // timing select; either can still be changed for one test.
+  const timeAccommodation = await loadTimeAccommodation(supabase, user.id);
+
   if (testType === 'act') {
-    return <ActPracticeTestsPage user={user} supabase={supabase} />;
+    return <ActPracticeTestsPage user={user} supabase={supabase} timeAccommodation={timeAccommodation} />;
   }
-  return <SatPracticeTestsPage user={user} supabase={supabase} />;
+  return <SatPracticeTestsPage user={user} supabase={supabase} timeAccommodation={timeAccommodation} />;
 }
 
-async function SatPracticeTestsPage({ user, supabase }) {
+async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
 
   const [
     { data: completedRows },
@@ -142,12 +152,14 @@ async function SatPracticeTestsPage({ user, supabase }) {
           <div>
             <div className={s.h2}>Launch a test</div>
             <div className={s.cardHint}>
-              Pick a test, choose your accommodation, and jump in.
-              You&apos;ll see the module summary before the timer starts.
+              Pick a test, choose your sections, and jump in. Your extended-time
+              setting from the Account page is pre-selected; change it here for a
+              single test. You&apos;ll see the module summary before the
+              timer starts.
             </div>
           </div>
         </div>
-        <TestLauncher tests={testOptions} basePath="/practice" />
+        <TestLauncher tests={testOptions} basePath="/practice" defaultMultiplier={timeAccommodation} />
       </section>
 
       {recentForChart.length >= 2 && (
@@ -513,44 +525,53 @@ function TestTypeTabs({ current }) {
 }
 
 // ──────────────────────────────────────────────────────────────
-// ACT hub. Loads the distinct ACT forms (one card per source_test),
-// the student's past ACT practice-test attempts, and any in-progress
-// ACT practice-test session. Hands data to ActTestsHub.
+// ACT hub. Loads the distinct ACT forms (one card per source_test,
+// with the form's format from act_forms), the student's completed
+// attempts, and any attempt still in progress (Phase 3: the attempt
+// row is the unit of work; its section plan says where the student
+// is). Hands data to ActTestsHub.
 // ──────────────────────────────────────────────────────────────
 
-async function ActPracticeTestsPage({ user, supabase }) {
-  // Pull every non-broken ACT question. Buckets by source_test ×
-  // section so the hub can render "Math · 45 questions" per card,
-  // even on a form that ships multiple sections. The volume is small
-  // (~231 today); a single paginated read covers it.
+async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
+  // Pull every visible ACT question. Buckets by source_test ×
+  // section so the hub can render per-section counts and timings on
+  // each card. Page through every row so growing imports are not truncated.
   const [
     { data: questionRows },
     { data: attemptRows },
     { data: inProgress },
+    { data: formRows, error: formError },
   ] = await Promise.all([
-    visibleActQuestions(
-      supabase
-        .from('act_questions')
-        .select('source_test, section, source_ordinal'),
-    ).not('source_test', 'is', null),
+    loadActFormQuestions(supabase),
     supabase
       .from('act_practice_test_attempts')
-      .select('id, source_test, status, started_at, finished_at, english_scaled, math_scaled, reading_scaled, science_scaled, composite_score')
+      .select('id, source_test, status, started_at, finished_at, english_scaled, math_scaled, reading_scaled, science_scaled, composite_score, format, time_multiplier, sections')
       .eq('user_id', user.id)
       .eq('status', 'completed')
       .order('finished_at', { ascending: false }),
     supabase
-      .from('practice_sessions')
-      .select('id, current_position, question_ids, last_activity_at, filter_criteria')
+      .from('act_practice_test_attempts')
+      .select('id, source_test, sections, current_section_index, started_at, time_multiplier')
       .eq('user_id', user.id)
-      .eq('test_type', 'act')
       .eq('status', 'in_progress')
-      .filter('filter_criteria->>kind', 'eq', 'practice_test')
-      .gt('expires_at', new Date().toISOString())
-      .order('last_activity_at', { ascending: false })
+      .order('started_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from('act_forms')
+      .select('source_test, format, kind, display_name'),
   ]);
+
+  if (formError) throw new Error('Could not load ACT form settings', { cause: formError });
+  const formatByForm = new Map();
+  const kindByForm = new Map();
+  for (const r of formRows ?? []) {
+    if (isActFormat(r.format)) formatByForm.set(r.source_test, r.format);
+    if (isActFormKind(r.kind)) kindByForm.set(r.source_test, r.kind);
+  }
+  // Readable names: the admin's display_name or a default derived
+  // from the key ("April 2026 ACT", "Online Multiple Choice Test 1").
+  const nameOf = actFormNamer(formRows);
 
   // Bucket per (source_test, section).
   const formAcc = new Map();
@@ -567,29 +588,44 @@ async function ActPracticeTestsPage({ user, supabase }) {
   const forms = Array.from(formAcc.values())
     .map((f) => ({
       sourceTest: f.source_test,
+      name: nameOf(f.source_test),
+      detail: actFormDetail(f.source_test),
+      ...assessActQuestions(questionRows.filter(q => q.source_test === f.source_test), {
+        format: formatByForm.get(f.source_test), kind: kindByForm.get(f.source_test),
+      }),
       total: f.total,
       sections: Array.from(f.sectionCounts.entries())
-        .sort((a, b) => a[0].localeCompare(b[0]))
+        .sort((a, b) => ACT_SECTIONS.indexOf(a[0]) - ACT_SECTIONS.indexOf(b[0]))
         .map(([section, count]) => ({ section, count })),
     }))
     .sort((a, b) => a.sourceTest.localeCompare(b.sourceTest));
 
-  const resumeInfo = inProgress
-    ? {
-        sessionId: inProgress.id,
-        position: inProgress.current_position,
-        total: Array.isArray(inProgress.question_ids) ? inProgress.question_ids.length : 0,
-        sourceTest: inProgress.filter_criteria?.source_test ?? null,
-        deadlineAt: inProgress.filter_criteria?.deadlineAt ?? null,
-      }
-    : null;
+  let resumeInfo = null;
+  if (inProgress) {
+    const plan = parsePlan(inProgress.sections);
+    const idx = Math.min(inProgress.current_section_index ?? 0, Math.max(0, plan.length - 1));
+    const cur = plan[idx] ?? null;
+    resumeInfo = {
+      attemptId: inProgress.id,
+      sourceTest: inProgress.source_test,
+      name: nameOf(inProgress.source_test),
+      sectionIndex: idx,
+      sectionCount: plan.length,
+      plan,
+      timeMultiplier: parseTimeMultiplier(inProgress.time_multiplier),
+      sectionLabel: cur ? sectionLabel(cur.section) : null,
+      sectionStatus: cur ? cur.status : null,
+      startedAt: inProgress.started_at ?? null,
+    };
+  }
 
   return (
     <ActTestsHub
       forms={forms}
-      attempts={attemptRows ?? []}
+      attempts={(attemptRows ?? []).map(({ sections, ...a }) => ({ ...a, name: nameOf(a.source_test), untimed: isUntimedPlan(sections) }))}
       resumeInfo={resumeInfo}
       tabs={<TestTypeTabs current="act" />}
+      defaultMultiplier={timeAccommodation}
     />
   );
 }

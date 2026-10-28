@@ -105,7 +105,7 @@ const STUDENT_PRACTICE: NavLink = {
 // page and the runner/results live under the singular
 // /practice/test — both need to keep this tab highlighted.
 const STUDENT_TESTS: NavLink = {
-  href: '/practice/tests', label: 'Practice tests', icon: 'test',
+  href: '/practice/tests', label: 'Practice Tests', icon: 'test',
   matchPrefix: ['/practice/tests', '/practice/test'],
 };
 const STUDENT_ASSIGNMENTS: NavLink = {

@@ -20,6 +20,8 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
+import { parseActAssignmentScope } from '@/lib/practice/act-assignment-scope';
+import { startActPracticeTest } from '@/app/(student)/practice/tests/actions';
 
 export async function startAssignmentPractice(_prevState, formData) {
   let ctx;
@@ -49,12 +51,16 @@ export async function startAssignmentPractice(_prevState, formData) {
   // missing row here means "not mine" — same user-visible treatment.
   const { data: assignment } = await supabase
     .from('assignments_v2')
-    .select('id, assignment_type, question_ids, deleted_at')
+    .select('id, assignment_type, question_ids, deleted_at, test_type')
     .eq('id', assignmentId)
     .maybeSingle();
   if (!assignment || assignment.deleted_at) {
     return actionFail('Assignment not found');
   }
+  // The session runs in the assignment's bank (Phase 4B): ACT question
+  // sets carry act_questions ids and the runner forks on
+  // practice_sessions.test_type.
+  const testType = assignment.test_type === 'act' ? 'act' : 'sat';
   // 'lesson_pack' assignments materialize their pack's question
   // ids into the same question_ids column at creation time, so
   // they take the same start-a-session path as 'questions'.
@@ -99,7 +105,7 @@ export async function startAssignmentPractice(_prevState, formData) {
     .from('practice_sessions')
     .select('id, current_position')
     .eq('user_id', user.id)
-    .eq('test_type', 'sat')
+    .eq('test_type', testType)
     .eq('status', 'in_progress')
     .eq('filter_criteria->>assignment_id', assignmentId)
     .order('created_at', { ascending: true })
@@ -113,7 +119,7 @@ export async function startAssignmentPractice(_prevState, formData) {
     .from('practice_sessions')
     .insert({
       user_id: user.id,
-      test_type: 'sat',
+      test_type: testType,
       mode: 'practice',
       question_ids: questionIds,
       current_position: 0,
@@ -127,4 +133,65 @@ export async function startAssignmentPractice(_prevState, formData) {
   }
 
   redirect(`/practice/s/${session.id}/0`);
+}
+
+/**
+ * ACT practice-test assignments (Phase 4B). The assignment names an
+ * ACT form; starting it is exactly the ACT tests hub's Start — one
+ * attempt per form, sections timed one at a time (Phase 3). Finishing
+ * any attempt of the form completes the assignment
+ * (lib/practice-test/act-attempt.ts). Enrollment is re-checked here
+ * so a non-member can't use the assignment to pick a form.
+ */
+export async function startAssignmentActTest(_prevState, formData) {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase } = ctx;
+
+  const assignmentId = formData?.get?.('assignment_id');
+  if (!assignmentId || typeof assignmentId !== 'string') {
+    return actionFail('Invalid assignment id');
+  }
+
+  const [{ data: assignment }, { data: enrolled }] = await Promise.all([
+    supabase
+      .from('assignments_v2')
+      .select('id, assignment_type, test_type, act_source_test, filter_criteria, deleted_at')
+      .eq('id', assignmentId)
+      .maybeSingle(),
+    supabase
+      .from('assignment_students_v2')
+      .select('student_id')
+      .eq('assignment_id', assignmentId)
+      .eq('student_id', user.id)
+      .maybeSingle(),
+  ]);
+  if (!assignment || assignment.deleted_at) return actionFail('Assignment not found');
+  if (!enrolled) return actionFail('You are not assigned to this assignment.');
+  if (
+    assignment.assignment_type !== 'practice_test'
+    || assignment.test_type !== 'act'
+    || !assignment.act_source_test
+  ) {
+    return actionFail('This assignment is not an ACT practice test.');
+  }
+
+  const fd = new FormData();
+  fd.set('source_test', assignment.act_source_test);
+  const scope = parseActAssignmentScope(assignment.filter_criteria?.sections);
+  if (!scope) return actionFail('This assignment has an invalid section selection.');
+  if (scope !== 'all') {
+    for (const section of Array.isArray(scope) ? scope : [scope]) fd.append('sections', section);
+  }
+  const multiplier = formData.get('time_multiplier');
+  if (multiplier != null) {
+    if (!['1', '1.5', '2'].includes(multiplier)) return actionFail('Choose a valid time accommodation.');
+    fd.set('time_multiplier', multiplier);
+  }
+  return startActPracticeTest(null, fd);
 }

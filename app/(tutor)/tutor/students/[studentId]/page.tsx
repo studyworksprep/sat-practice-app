@@ -23,6 +23,7 @@ import { loadStudentPlanState } from '@/lib/plan/load-plan-state';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
 import { resolveDetoursEnabled } from '@/lib/practice/detour-preference.mjs';
+import { parseTimeAccommodation } from '@/lib/practice/time-accommodation';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import { buildArchiveSummary } from '@/lib/practice/superscore';
 import {
@@ -45,6 +46,7 @@ import type { FoundationCardGroup } from './FoundationsCard';
 import { OfficialScoresCard } from './OfficialScoresCard';
 import { ScoreProgressChart } from './ScoreProgressChart';
 import { StepBackOffersCard } from './StepBackOffersCard';
+import { ExtendedTimeCard } from './ExtendedTimeCard';
 import { TestRegistrationsCard } from './TestRegistrationsCard';
 import { UploadBluebookCard } from './UploadBluebookCard';
 import s from './StudentDetail.module.css';
@@ -103,7 +105,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId),
     supabase
       .from('profiles')
-      .select('created_at, start_date, practice_detours_enabled')
+      .select('created_at, start_date, practice_detours_enabled, time_accommodation')
       .eq('id', studentId)
       .maybeSingle(),
     // Assignments inbox for this student. Includes both SAT and
@@ -156,6 +158,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         english_scaled, math_scaled, reading_scaled, science_scaled, composite_score
       `)
       .eq('user_id', studentId)
+      .eq('status', 'completed')
       .order('finished_at', { ascending: false })
       .limit(RECENT_TESTS_LIMIT),
     // Self-guided sessions for this student, SAT + ACT. Includes
@@ -246,6 +249,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     start_date?: string | null;
     created_at?: string | null;
     practice_detours_enabled?: boolean | null;
+    time_accommodation?: number | string | null;
   } | null;
   const startDateRaw = studentProfile?.start_date ?? null;
   const effectiveStartDate = startDateRaw ?? studentProfile?.created_at ?? null;
@@ -258,6 +262,8 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     preference: detourPreference,
     hasAssignedTutor,
   });
+  // Standing extended-time accommodation (shared with /account).
+  const timeAccommodation = parseTimeAccommodation(studentProfile?.time_accommodation);
 
   const student = {
     id: row.user_id ?? studentId,
@@ -1022,6 +1028,10 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
             isExplicit={typeof detourPreference === 'boolean'}
             hasAssignedTutor={hasAssignedTutor}
           />
+
+          {/* Standing extended-time accommodation — the same setting the
+              student sees under Account → Practice experience. */}
+          <ExtendedTimeCard studentId={student.id} value={timeAccommodation} />
         </aside>
       </div>
     </main>

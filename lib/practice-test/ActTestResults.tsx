@@ -1,24 +1,48 @@
 // ACT practice-test results view. Server Component shared by the
-// student and tutor routes — the loader (load-act-test-results.js)
+// student and tutor routes — the loader (load-act-test-results.ts)
 // does the reads; this renders the composite + per-section tiles and
-// links to the question-by-question review.
+// links to the question-by-question review of each section.
 //
-// Composite is only reported when all four section scales exist,
-// which today needs a four-section form with a conversion table.
-// Single-section forms show their one section and explain why the
-// composite is blank.
+// The composite follows the form's format: all four sections on the
+// classic ACT, English/Math/Reading on the enhanced ACT (Science is
+// reported separately). Forms that lack a section or a conversion
+// table show why the composite is blank.
 
 import Link from 'next/link';
 import { formatDate } from '@/lib/formatters';
+import { ActScoreSummary } from './ActScoreSummary';
+import { ActBreakdownCards } from '@/lib/practice/ActBreakdownCards';
+import { sectionLabel } from '@/lib/practice/act-taxonomy';
+import {
+  ACT_FORMAT_LABELS,
+  compositeDescription,
+  compositeSectionsFor,
+} from '@/lib/practice/act-test-plan';
 import type { ActSectionRow, ActTestResultsAttempt } from './load-act-test-results';
 import s from './ActResults.module.css';
+import { findActSectionReviewLink } from './act-review-navigation';
+
+export interface ReviewLink {
+  label: string;
+  href: string;
+  section?: string;
+}
+
+function sectionReviewHref(href: string, section: string) {
+  if (href.startsWith('/practice/test/act/')) return href;
+  const [path, query] = href.split('?');
+  const params = new URLSearchParams(query);
+  params.set('section', section);
+  return `${path}?${params}`;
+}
 
 interface ActTestResultsProps {
   attempt: ActTestResultsAttempt;
   sectionRows: ActSectionRow[];
-  /** Where "Open review report" goes (student: /practice/review/<sid>;
-   *  tutor: /tutor/sessions/<sid>). Null hides the link. */
-  reviewHref: string | null;
+  /** One "open review" link per section session (student:
+   *  /practice/test/act/attempt/<id>/review/<section>; tutor: /tutor/sessions/<sid>). Empty
+   *  hides the review card's links. */
+  reviewLinks: ReviewLink[];
   /** Optional breadcrumb target + label. */
   backHref?: string | null;
   backLabel?: string;
@@ -30,12 +54,17 @@ interface ActTestResultsProps {
 export function ActTestResults({
   attempt,
   sectionRows,
-  reviewHref,
+  reviewLinks,
   backHref = null,
   backLabel = '← Back',
   viewerNote = null,
 }: ActTestResultsProps) {
-  const anyScaledMissing = sectionRows.some((r) => r.scaled == null);
+  const needed = compositeSectionsFor(attempt.format);
+  const present = new Set(sectionRows.map((r) => r.section));
+  const missingSections = needed.filter((sec) => !present.has(sec));
+  const pendingSections = needed.filter(
+    (sec) => present.has(sec) && sectionRows.find((r) => r.section === sec)?.scaled == null,
+  );
 
   return (
     <main className={s.container}>
@@ -43,83 +72,52 @@ export function ActTestResults({
         {backHref && (
           <Link href={backHref} className={s.reviewLink}>{backLabel}</Link>
         )}
-        <div className={s.eyebrow}>ACT practice test</div>
-        <h1 className={s.h1}>{attempt.sourceTest}</h1>
+        <div className={s.eyebrow}>ACT score report</div>
+        <h1 className={s.h1}>{attempt.formName}</h1>
         <p className={s.sub}>
-          Finished {formatDate(attempt.finishedAt)}
+          {attempt.formDetail ? `${attempt.formDetail} · ` : ''}
+          {ACT_FORMAT_LABELS[attempt.format]}
+          {' · '}Finished {formatDate(attempt.finishedAt)}
+          {attempt.untimed ? ' · Untimed' : attempt.timeMultiplier > 1 ? ` · ${attempt.timeMultiplier}× time` : ''}
           {viewerNote ? ` · ${viewerNote}` : ''}
         </p>
       </header>
 
-      {Number.isFinite(attempt.compositeScore) ? (
-        <section className={s.compositeCard}>
-          <div className={s.compositeLabel}>Composite</div>
-          <div className={s.compositeValue}>{attempt.compositeScore}</div>
-          <div className={s.compositeSub}>Out of 36 · rounded average of the four section scales</div>
-        </section>
-      ) : sectionRows.length < 4 ? (
-        <section className={s.compositeCard}>
-          <div className={s.compositeLabel}>Composite</div>
-          <div className={s.compositeValueMissing}>—</div>
-          <div className={s.compositeSub}>
-            Composite is the average of all four section scales. This
-            attempt covered {sectionRows.length === 1 ? 'one section' : `${sectionRows.length} sections`},
-            so the composite isn&apos;t reported.
-          </div>
-        </section>
-      ) : (
-        <section className={s.compositeCard}>
-          <div className={s.compositeLabel}>Composite</div>
-          <div className={s.compositeValueMissing}>—</div>
-          <div className={s.compositeSub}>
-            Composite needs a scaled score for all four sections; at
-            least one is still pending for this form.
-          </div>
-        </section>
-      )}
+      <ActScoreSummary
+        sectionRows={sectionRows}
+        compositeScore={attempt.compositeScore}
+        scoreDescription={Number.isFinite(attempt.compositeScore) ? compositeDescription(attempt.format)
+          : missingSections.length ? 'Composite requires ' + missingSections.map(sectionLabel).join(', ') + '.'
+          : 'Composite pending scaled scores for ' + pendingSections.map(sectionLabel).join(', ') + '.'}
+        sectionReviewHrefs={Object.fromEntries(sectionRows.flatMap(row => {
+          const link = findActSectionReviewLink(reviewLinks, row.section, row.sessionId);
+          return link ? [[row.section, sectionReviewHref(link.href, row.section)]] : [];
+        }))}
+      />
 
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div className={s.h2}>Section scores</div>
-        </div>
-        <div className={s.sectionGrid}>
-          {sectionRows.map((row) => (
-            <div key={row.section} className={s.sectionTile}>
-              <div className={s.sectionTileLabel}>{row.label}</div>
-              <div className={s.sectionTileScaled}>
-                {row.scaled != null ? row.scaled : '—'}
-              </div>
-              <div className={s.sectionTileRaw}>
-                {row.raw.correct} of {row.raw.total} correct
-              </div>
-              {row.scaled == null && (
-                <div className={s.scaledPending}>
-                  Scaled score pending
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        {anyScaledMissing && (
-          <div className={s.scaledNote}>
-            Scaled scores come from the official raw-to-scaled
-            conversion table for each ACT form. This form doesn&apos;t
-            have one loaded yet, so only raw counts are shown for the
-            sections marked pending.
-          </div>
-        )}
+      <section aria-label="Performance by ACT category" className={s.breakdownGrid}>
+        <ActBreakdownCards domains={sectionRows.map((row) => ({
+          code: row.section, name: row.label, correct: row.raw.correct,
+          total: row.raw.total, skills: row.categories,
+        }))} />
       </section>
 
       <section className={s.card}>
-        <div className={s.h2}>Review</div>
+        <div className={s.h2}>Review your answers</div>
         <p className={s.reviewBody}>
-          The question-by-question review (rationales, answers, time per
-          question) lives on the session review page.
+          Choose a section to review your answers, explanations, flagged
+          questions, and time spent on each question.
         </p>
-        {reviewHref && (
-          <Link className={s.reviewLink} href={reviewHref}>
-            Open review report →
-          </Link>
+        {reviewLinks.length > 0 && (
+          <ul className={s.reviewList}>
+            {reviewLinks.map((l) => (
+              <li key={l.href}>
+                <Link className={s.reviewLink} href={l.href}>
+                  {l.label} →
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </main>

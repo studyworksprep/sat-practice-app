@@ -280,3 +280,66 @@
   font-size: 13px;
   color: var(--fg3);
 }
+
+/* =============================================================
+   SAT / ACT test-type tabs — same folder-tab treatment as the
+   Practice page (PracticeStart.module.css) so the two toggles read
+   as one control. TestTypeTabs in page.js renders these classes.
+   ============================================================= */
+
+.tabs {
+  /* Centered, capped at the launcher's max-width so the tabs
+     sit above the filter card rather than hugging the body
+     edge on wide screens. */
+  max-width: 1180px;
+  margin: 0 auto -1px;
+  padding: 12px 24px 0;
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std),
+              box-shadow var(--dur-fast) var(--ease-std);
+}
+
+.tab:hover {
+  color: var(--fg1);
+  background: var(--color-slate-50);
+}
+
+.tabActive {
+  background: var(--bg-white);
+  border-color: var(--border);
+  color: var(--fg1);
+  /* Pull the active tab down one pixel so it overlaps the
+     tabs-row bottom border — the classic folder-tab effect
+     that visually connects the tab to the card below. */
+  margin-bottom: -1px;
+  /* Subtle lift so the tab reads as a paper edge, not a flat
+     button. The shadow is asymmetric (stronger on top and
+     sides, none below) so the bottom edge can dissolve into
+     the card. */
+  box-shadow: 0 -1px 2px rgba(15, 23, 42, 0.04),
+              -1px 0 2px rgba(15, 23, 42, 0.03),
+              1px 0 2px rgba(15, 23, 42, 0.03);
+}
+
+.tabActive:hover {
+  background: var(--bg-white);
+}

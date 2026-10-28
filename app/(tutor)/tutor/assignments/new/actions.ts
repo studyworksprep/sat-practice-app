@@ -27,6 +27,8 @@
 
 'use server';
 
+import { assessActQuestions } from '@/lib/practice/act-format-detection';
+import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 import { redirect } from 'next/navigation';
 import { lessonCompletionByStudent } from '@/lib/lesson/assignment-completion';
 import { requireUser } from '@/lib/api/auth';
@@ -34,6 +36,10 @@ import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import type { ActionResult } from '@/lib/types';
+import { parseActAssignmentScope, actAssignmentScopeLabel } from '@/lib/practice/act-assignment-scope';
+import { visibleActQuestions } from '@/lib/practice/act-visibility';
+import { actFormName } from '@/lib/practice/act-form-names';
+import { parseActSelections } from '@/lib/practice/act-assignment-taxonomy';
 
 const MAX_QUESTIONS = 50;
 const MAX_STUDENTS_PER_ASSIGNMENT = 200;
@@ -48,6 +54,8 @@ type SkillSelection = {
 type PayloadRow = {
   question_ids?: string[];
   practice_test_id?: string;
+  /** ACT practice_test assignments: the form (act_questions.source_test). */
+  act_source_test?: string;
   lesson_id?: string;
   lesson_pack_id?: string;
   filter_criteria?: Record<string, unknown>;
@@ -92,6 +100,13 @@ export async function createAssignment(
   if (!['questions', 'practice_test', 'lesson', 'lesson_pack'].includes(assignmentType)) {
     return actionFail('Select an assignment type.');
   }
+  // Which bank (Phase 4B). ACT assignments are question sets sampled
+  // from act_questions or a timed ACT form; lessons and lesson packs
+  // are SAT content.
+  const testType: 'sat' | 'act' = String(formData.get('test_type') || 'sat') === 'act' ? 'act' : 'sat';
+  if (testType === 'act' && !['questions', 'practice_test'].includes(assignmentType)) {
+    return actionFail('ACT assignments can be question sets or practice tests.');
+  }
 
   let title = String(formData.get('title') || '').trim() || null;
   const description = String(formData.get('description') || '').trim() || null;
@@ -118,9 +133,13 @@ export async function createAssignment(
 
   let typePayload: PayloadResult;
   if (assignmentType === 'questions') {
-    typePayload = await buildQuestionsPayload(supabase, formData, studentIds);
+    typePayload = testType === 'act'
+      ? await buildActQuestionsPayload(supabase, formData, studentIds)
+      : await buildQuestionsPayload(supabase, formData, studentIds);
   } else if (assignmentType === 'practice_test') {
-    typePayload = await buildPracticeTestPayload(supabase, formData);
+    typePayload = testType === 'act'
+      ? await buildActPracticeTestPayload(supabase, formData)
+      : await buildPracticeTestPayload(supabase, formData);
   } else if (assignmentType === 'lesson_pack') {
     typePayload = await buildLessonPackPayload(supabase, formData, user.id);
   } else {
@@ -144,6 +163,21 @@ export async function createAssignment(
         .maybeSingle();
       if (pack?.name) title = pack.name;
     }
+  }
+
+  // ACT practice tests have no practice_tests_v2 row to join for a
+  // name, so the form's student-facing name is the default title
+  // (act_forms.display_name, else derived from the key).
+  if (assignmentType === 'practice_test' && testType === 'act' && !title) {
+    const sourceTest = String(typePayload.row.act_source_test ?? '');
+    const { data: formRow } = await supabase
+      .from('act_forms')
+      .select('display_name')
+      .eq('source_test', sourceTest)
+      .maybeSingle();
+    title = actFormName(sourceTest, (formRow as { display_name?: string | null } | null)?.display_name);
+    const scope = typePayload.row.filter_criteria?.sections;
+    if (scope && scope !== 'all') title += ` — ${actAssignmentScopeLabel(scope)}`;
   }
 
   // Same default-title convention for lesson assignments (§4.3):
@@ -170,7 +204,7 @@ export async function createAssignment(
       due_date: dueDate,
       created_by: user.id,
       updated_by: user.id,
-      test_type: 'sat',
+      test_type: testType,
       ...typePayload.row,
     })
     .select('id')
@@ -197,7 +231,7 @@ export async function createAssignment(
   const junctionRows = studentIds.map((sid) => ({
     assignment_id: assignment.id,
     student_id: sid,
-    test_type: 'sat',
+    test_type: testType,
     completed_at: alreadyDone.get(sid) ?? null,
   }));
   const { error: studentsErr } = await supabase
@@ -226,6 +260,7 @@ export async function createAssignment(
         teacher_id: user.id,
         name: templateName,
         assignment_type: 'questions',
+        test_type: testType,
         filter_criteria: typePayload.row.filter_criteria,
       });
     }
@@ -332,32 +367,8 @@ async function buildQuestionsPayload(
   // allocation, the overflow is passed to the next skill with
   // remaining capacity. That keeps the total close to `size` even
   // when the tutor picks a very narrow skill.
-  const picked = new Set<string>();
-  const perSkillPicks: string[][] = selections.map(() => []);
-  let deficit = 0;
-
-  for (let i = 0; i < selections.length; i += 1) {
-    const ids = [...candidatePools[i].ids].filter((id) => !picked.has(id));
-    shuffleInPlace(ids);
-    const want = allocations[i] + deficit;
-    const take = ids.slice(0, Math.min(want, ids.length));
-    take.forEach((id) => picked.add(id));
-    perSkillPicks[i] = take;
-    deficit = want - take.length;
-  }
-
-  // If still under size after a first pass, top up from any pool
-  // that had spare candidates. This is rare.
-  if (picked.size < size && deficit > 0) {
-    for (let i = 0; i < selections.length && picked.size < size; i += 1) {
-      const leftovers = candidatePools[i].ids.filter((id: string) => !picked.has(id));
-      shuffleInPlace(leftovers);
-      const want = size - picked.size;
-      leftovers.slice(0, want).forEach((id: string) => picked.add(id));
-    }
-  }
-
-  if (picked.size === 0) {
+  const questionIds = samplePools(candidatePools.map((p) => p.ids), allocations, size);
+  if (questionIds.length === 0) {
     return {
       ok: false,
       error: unansweredOnly
@@ -365,9 +376,6 @@ async function buildQuestionsPayload(
         : 'No questions match those filters.',
     };
   }
-
-  const questionIds = Array.from(picked);
-  shuffleInPlace(questionIds);
 
   return {
     ok: true,
@@ -496,6 +504,198 @@ function shuffleInPlace<T>(arr: T[]): void {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+}
+
+// Draw `allocations[i]` ids from `pools[i]` (shuffled), passing any
+// shortfall on to the next pool, then top up from leftovers so the
+// result sits as close to `size` as the pools allow. Shared by the
+// SAT (per-skill) and ACT (per-category) question-set builders.
+function samplePools(pools: string[][], allocations: number[], size: number): string[] {
+  const picked = new Set<string>();
+  let deficit = 0;
+
+  for (let i = 0; i < pools.length; i += 1) {
+    const ids = pools[i].filter((id) => !picked.has(id));
+    shuffleInPlace(ids);
+    const want = (allocations[i] ?? 0) + deficit;
+    const take = ids.slice(0, Math.min(want, ids.length));
+    take.forEach((id) => picked.add(id));
+    deficit = want - take.length;
+  }
+
+  // If still under size after a first pass, top up from any pool
+  // that had spare candidates. This is rare.
+  if (picked.size < size && deficit > 0) {
+    for (let i = 0; i < pools.length && picked.size < size; i += 1) {
+      const leftovers = pools[i].filter((id) => !picked.has(id));
+      shuffleInPlace(leftovers);
+      const want = size - picked.size;
+      leftovers.slice(0, want).forEach((id) => picked.add(id));
+    }
+  }
+
+  const out = Array.from(picked);
+  shuffleInPlace(out);
+  return out;
+}
+
+// ──────────────────────────────────────────────────────────────
+// ACT payloads (Phase 4B). A question set samples per (section,
+// category) bucket with equal weights — ACT has no score bands and
+// its categories are coarse enough that per-bucket weights would be
+// noise; difficulty (1–5) is assignment-wide like SAT. A practice
+// test points at an act_questions form; the student runs it through
+// the Phase 3 multi-section test mode.
+// ──────────────────────────────────────────────────────────────
+
+async function buildActQuestionsPayload(
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  formData: FormData,
+  studentIds: string[],
+): Promise<PayloadResult> {
+  const selections = parseActSelections(formData.get('act_selections'));
+  const difficulties = formData
+    .getAll('difficulty')
+    .map((d) => Number(d))
+    .filter((d) => Number.isInteger(d) && d >= 1 && d <= 5);
+
+  const rawSize = Number(formData.get('size') ?? 10);
+  const size = Math.min(
+    Math.max(Number.isFinite(rawSize) ? Math.floor(rawSize) : 10, 1),
+    MAX_QUESTIONS,
+  );
+  const unansweredOnly = String(formData.get('unanswered_only') || '') === '1';
+
+  if (selections.length === 0) {
+    return { ok: false, error: 'Pick at least one ACT category.' };
+  }
+
+  const allocations = allocateByWeight(selections.map(() => 1), size);
+
+  const [candidatePools, attempted] = await Promise.all([
+    Promise.all(
+      selections.map(async (sel) => {
+        let q = visibleActQuestions(
+          supabase.from('act_questions').select('id'),
+        )
+          .eq('section', sel.section)
+          .eq('category', sel.category);
+        if (sel.subcategory) q = q.eq('subcategory', sel.subcategory);
+        if (difficulties.length > 0) {
+          q = q.in('difficulty', difficulties);
+        }
+        const { data, error } = await q.limit(500);
+        if (error) return { ids: [] as string[], error: error.message };
+        return { ids: (data ?? []).map((r: { id: string }) => r.id) };
+      }),
+    ),
+    unansweredOnly
+      ? fetchActAttemptedIds(supabase, studentIds)
+      : Promise.resolve<{ ids: Set<string>; error?: string }>({
+          ids: new Set<string>(),
+        }),
+  ]);
+
+  const firstErr = candidatePools.find((p) => p.error);
+  if (firstErr) {
+    return { ok: false, error: `Failed to load questions: ${firstErr.error}` };
+  }
+  if (attempted.error) {
+    return { ok: false, error: `Failed to check attempt history: ${attempted.error}` };
+  }
+  if (unansweredOnly && attempted.ids.size > 0) {
+    for (const pool of candidatePools) {
+      pool.ids = pool.ids.filter((id: string) => !attempted.ids.has(id));
+    }
+  }
+
+  const questionIds = samplePools(candidatePools.map((p) => p.ids), allocations, size);
+  if (questionIds.length === 0) {
+    return {
+      ok: false,
+      error: unansweredOnly
+        ? 'No unattempted ACT questions match those filters — every matching question has already been attempted by one of the selected students.'
+        : 'No ACT questions match those filters.',
+    };
+  }
+
+  return {
+    ok: true,
+    row: {
+      question_ids: questionIds,
+      filter_criteria: {
+        testType: 'act',
+        actSelections: selections,
+        difficulties,
+        size,
+        unansweredOnly,
+      },
+    },
+  };
+}
+
+// Every act_questions id any of the given students has an act_attempts
+// row for. RLS: act_attempts_select_visible (can_view) already grants a
+// tutor their own students' rows.
+async function fetchActAttemptedIds(
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  studentIds: string[],
+): Promise<{ ids: Set<string>; error?: string }> {
+  const ids = new Set<string>();
+  if (studentIds.length === 0) return { ids };
+  try {
+    const rows = await fetchAll<{ question_id: string }>((from: number, to: number) =>
+      supabase
+        .from('act_attempts')
+        .select('question_id')
+        .in('user_id', studentIds)
+        .order('id', { ascending: true })
+        .range(from, to),
+    );
+    for (const r of rows) ids.add(r.question_id);
+  } catch (err) {
+    return {
+      ids,
+      error: err instanceof Error ? err.message : 'Failed to load attempt history.',
+    };
+  }
+  return { ids };
+}
+
+async function buildActPracticeTestPayload(
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  formData: FormData,
+): Promise<PayloadResult> {
+  const sourceTest = String(formData.get('act_source_test') || '').trim();
+  if (!sourceTest) return { ok: false, error: 'Select an ACT form.' };
+  const sections = parseActAssignmentScope(formData.getAll('act_sections'));
+  if (!sections) return { ok: false, error: 'Select at least one ACT section.' };
+
+  try {
+    const [questions, settings] = await Promise.all([
+      loadActFormQuestions(supabase, sourceTest),
+      supabase.from('act_forms').select('format, kind').eq('source_test', sourceTest).maybeSingle(),
+    ]);
+    if (settings.error) throw settings.error;
+    if (sections !== 'all' && (Array.isArray(sections) ? sections : [sections]).some(section => !questions.data.some(q => q.section === section))) {
+      return { ok: false, error: 'This ACT form does not contain the selected section.' };
+    }
+    const detection = assessActQuestions(questions.data, settings.data ?? {});
+    if (!detection.format || detection.reviewReason) return { ok: false, error: 'ACT import needs review: ' + detection.reviewReason };
+  } catch { return { ok: false, error: 'Could not check ACT form. Please retry.' }; }
+
+  return {
+    ok: true,
+    row: {
+      act_source_test: sourceTest,
+      filter_criteria: {
+        type: 'practice_test',
+        testType: 'act',
+        source_test: sourceTest,
+        sections,
+      },
+    },
+  };
 }
 
 // ──────────────────────────────────────────────────────────────

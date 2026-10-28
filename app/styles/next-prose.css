@@ -247,3 +247,61 @@ math[display="block"] {
   text-decoration-color: var(--color-warning-border, #f59e0b);
   text-decoration-thickness: 2px;
 }
+/* Imported ACT passage pages share their exact bounds with qref overlays.
+   Unlike diagrams, they need a consistent width and no height cap. */
+.sw-prose div:has(> img[alt*="original PDF page"]) {
+  position: relative;
+  width: 100%;
+  padding: 0;
+}
+.sw-prose div > img[alt*="original PDF page"] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  margin: 0;
+}
+/* Digital ACT passages share one readable text style, independent of PDF
+   fonts, columns, page breaks, or import-specific spacing. */
+.sw-prose.sw-act-passage {
+  font-family: var(--font-sans, Arial, sans-serif);
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--fg1);
+  text-align: left;
+}
+.sw-act-passage :is(p, div, span, blockquote) {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+.sw-act-passage p { margin: 0 0 1em; text-indent: 0; }
+/* ACT prints editorial notes in smaller sans-serif type, separate from prose. */
+.sw-act-passage:has(.source-note) {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.sw-act-passage .source-note,
+.sw-act-passage .source-line-help {
+  font-family: var(--font-sans, Arial, sans-serif);
+  font-size: 0.85em;
+  line-height: 1.45;
+  margin: 0 0 0.75rem;
+  text-indent: 0;
+}
+.sw-act-passage .source-note + :not(.source-note) { margin-top: 1.5rem; }
+.sw-act-passage:has(.source-note) > p:not(.source-note):not(.source-line-help) {
+  text-indent: 1.5em;
+}
+.sw-act-passage :is(h1, h2, h3, h4, h5, h6) {
+  font: inherit;
+  font-family: var(--font-sans, Arial, sans-serif);
+  font-weight: 700;
+  margin: 0 0 1em;
+}
+.sw-act-passage .qref-active {
+  background: #fff59d;
+  box-shadow: none;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}

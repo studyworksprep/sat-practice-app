@@ -1,7 +1,8 @@
 // Error Log toggle + inline panel for the practice runner. Same
 // shape as the legacy "Add to Error Log" UI on the v1 practice page,
 // re-implemented against the v2-keyed question_error_notes table
-// via the saveErrorNote / getErrorNote Server Actions.
+// via the stable /api/practice/error-notes endpoint. Unlike a Server
+// Action reference, that URL survives deployments during an open session.
 //
 // Why a popover rather than the existing tutorTools strip pattern:
 //  - the strip area is already crowded with ConceptTags
@@ -20,7 +21,6 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { NotesIcon } from '@/lib/ui/icons';
 import { ToolButton } from '@/lib/ui/ToolButton';
-import { saveErrorNote } from './error-notes-actions';
 import s from './ErrorLogButton.module.css';
 
 /**
@@ -86,22 +86,31 @@ export function ErrorLogButton({
     setError(null);
     setSavedFlash(false);
     startTransition(async () => {
-      const res = await saveErrorNote(questionId, { body: draft });
-      if (!res?.ok) {
-        setError(res?.error ?? 'Could not save note');
-        return;
+      try {
+        const response = await fetch('/api/practice/error-notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questionId, body: draft }),
+        });
+        const res = await response.json().catch(() => null);
+        if (!response.ok || !res?.ok) {
+          setError(typeof res?.error === 'string'
+            ? res.error
+            : 'Could not save note. Your text is still here; please try again.');
+          return;
+        }
+        const savedNote = res.data?.note ?? null;
+        setNote(savedNote);
+        setDraft(savedNote?.body ?? '');
+        setSavedFlash(true);
+        // Invalidate prefetched snapshots so navigation reloads this note.
+        onSaved?.();
+        setTimeout(() => setSavedFlash(false), 1800);
+      } catch {
+        // A dropped connection or failed response must not reach the route's
+        // error boundary and replace the editor (and the student's draft).
+        setError('Could not save note. Your text is still here; please try again.');
       }
-      setNote(res.note);
-      setDraft(res.note?.body ?? '');
-      setSavedFlash(true);
-      // Tell the parent so it can drop any prefetched payload
-      // that captured the pre-save errorNote (otherwise navigating
-      // off this question and back via the cache would silently
-      // restore the old / missing note).
-      onSaved?.();
-      // Hide the saved flash after a moment so the affordance
-      // doesn't stick around forever.
-      setTimeout(() => setSavedFlash(false), 1800);
     });
   }
 
@@ -138,6 +147,7 @@ export function ErrorLogButton({
           </p>
           <textarea
             className={s.textarea}
+            aria-label="Error log note"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="What did you get wrong, and why?"
@@ -145,7 +155,7 @@ export function ErrorLogButton({
             disabled={pending}
           />
           <div className={s.actions}>
-            {error && <span className={s.error}>{error}</span>}
+            {error && <span className={s.error} role="alert">{error}</span>}
             {savedFlash && !error && <span className={s.saved}>Saved ✓</span>}
             <button
               type="button"

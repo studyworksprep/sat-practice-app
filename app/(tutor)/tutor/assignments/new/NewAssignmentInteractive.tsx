@@ -25,6 +25,8 @@ import { useActionState, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ActionResult } from '@/lib/types';
 import type { LessonCatalogItem } from '@/lib/lesson/catalog';
+import { ACT_SECTIONS, type ActSection } from '@/lib/practice/act-taxonomy';
+import { actSelectionKey as actKey, parseActSelections, type ActSectionTaxonomy } from '@/lib/practice/act-assignment-taxonomy';
 import { LessonPicker } from './LessonPicker';
 import styles from './NewAssignmentInteractive.module.css';
 
@@ -44,14 +46,22 @@ type DomainTaxonomy = {
 type PersonOption = { id: string; name: string; email: string | null };
 type PracticeTestOption = { id: string; label: string };
 type LessonPackOption = { id: string; name: string; questionCount: number };
-type TemplateOption = { id: string; name: string };
+type TemplateOption = { id: string; name: string; testType?: 'sat' | 'act' };
+
+// ACT bank (Phase 4B): the picker groups categories under their
+// section; a practice test is a form.
+type ActFormOption = { sourceTest: string; label: string; sections: ActSection[] };
 
 /** Server-resolved one-click prefill (§4.3): a template or a
  *  student's weak skills. Skills are the persisted shape (no
  *  availableBands/Count) — rehydrated against `domains` below. */
 type Prefill = {
   label: string;
+  /** Which bank the recipe is for; defaults to SAT. */
+  testType?: 'sat' | 'act';
   skills: { domain: string; skill: string; scoreBands: number[]; weight: number }[];
+  /** ACT recipes: whole categories or individual subcategories. */
+  actSelections?: { section: string; category: string; subcategory?: string }[];
   difficulties: number[];
   size: number | null;
   unansweredOnly: boolean;
@@ -81,6 +91,9 @@ interface Props {
   lessonPacks: LessonPackOption[];
   lessons?: LessonCatalogItem[];
   templates?: TemplateOption[];
+  actTaxonomy?: ActSectionTaxonomy[];
+  actDifficulties?: number[];
+  actForms?: ActFormOption[];
   prefill?: Prefill | null;
   createAction: CreateAction;
   deleteTemplateAction?: TemplateDeleteAction;
@@ -115,6 +128,9 @@ export function NewAssignmentInteractive({
   lessonPacks,
   lessons = [],
   templates = [],
+  actTaxonomy = [],
+  actDifficulties = [],
+  actForms = [],
   prefill = null,
   createAction,
   deleteTemplateAction,
@@ -124,11 +140,42 @@ export function NewAssignmentInteractive({
     null,
   );
   const router = useRouter();
+  const [actSourceTest, setActSourceTest] = useState('');
+  const [actTestSections, setActTestSections] = useState<ActSection[]>([...ACT_SECTIONS]);
+  const availableActSections = actForms.find(form => form.sourceTest === actSourceTest)?.sections ?? ACT_SECTIONS;
 
   const hasTeachers = teachers.length > 0;
   const [assignmentType, setAssignmentType] = useState<
     'questions' | 'practice_test' | 'lesson' | 'lesson_pack'
   >('questions');
+
+  // Which bank (Phase 4B). ACT offers question sets and practice
+  // tests; lessons and lesson packs are SAT content, so switching to
+  // ACT with one of those selected falls back to a question set.
+  const [testType, setTestType] = useState<'sat' | 'act'>(
+    prefill?.testType === 'act' ? 'act' : 'sat',
+  );
+  const [actSelected, setActSelected] = useState<Set<string>>(() => {
+    if (prefill?.testType !== 'act') return new Set();
+    const valid = new Set(
+      actTaxonomy.flatMap((sec) => sec.categories.flatMap((c) => [
+        actKey(sec.section, c.name),
+        ...c.subcategories.map((sub) => actKey(sec.section, c.name, sub.name)),
+      ])),
+    );
+    return new Set(
+      parseActSelections(prefill.actSelections)
+        .map((s) => actKey(s.section, s.category, s.subcategory))
+        .filter((k) => valid.has(k)),
+    );
+  });
+  const [actDiffs, setActDiffs] = useState<Set<number>>(() =>
+    new Set(
+      prefill?.testType === 'act'
+        ? (prefill.difficulties ?? []).filter((d) => actDifficulties.includes(d))
+        : [],
+    ),
+  );
 
   // Deep-link support:
   //   ?target=trainees&teacher=<id> — manager flow from the teacher
@@ -202,7 +249,11 @@ export function NewAssignmentInteractive({
     return out;
   });
   const [globalDifficulties, setGlobalDifficulties] = useState<Set<number>>(
-    () => new Set((prefill?.difficulties ?? []).filter((d) => difficulties.includes(d))),
+    () => new Set(
+      prefill?.testType === 'act'
+        ? []
+        : (prefill?.difficulties ?? []).filter((d) => difficulties.includes(d)),
+    ),
   );
   const [skillSearch, setSkillSearch] = useState('');
   // When on, the Server Action drops any question a selected student
@@ -327,6 +378,73 @@ export function NewAssignmentInteractive({
     });
   };
 
+  // ── ACT picker state (Phase 4B) ─────────────────────────────────
+  const switchTestType = (next: 'sat' | 'act') => {
+    setTestType(next);
+    if (next === 'act' && (assignmentType === 'lesson' || assignmentType === 'lesson_pack')) {
+      setAssignmentType('questions');
+    }
+  };
+  const toggleActCategory = (section: string, category: string, subcategory?: string) => {
+    const key = actKey(section, category, subcategory);
+    setActSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else {
+        if (!subcategory) {
+          for (const selected of next) {
+            const [s, c] = JSON.parse(selected);
+            if (s === section && c === category) next.delete(selected);
+          }
+        }
+        next.add(key);
+      }
+      return next;
+    });
+  };
+  const setActSectionAll = (sec: ActSectionTaxonomy, on: boolean) => {
+    setActSelected((prev) => {
+      const next = new Set(prev);
+      for (const c of sec.categories) {
+        const key = actKey(sec.section, c.name);
+        if (on) next.add(key);
+        else next.delete(key);
+        for (const sub of c.subcategories) next.delete(actKey(sec.section, c.name, sub.name));
+      }
+      return next;
+    });
+  };
+  const toggleActDiff = (d: number) => {
+    setActDiffs((prev) => {
+      const next = new Set(prev);
+      if (next.has(d)) next.delete(d);
+      else next.add(d);
+      return next;
+    });
+  };
+  const actSelectionsJson = useMemo(
+    () =>
+      JSON.stringify(
+        Array.from(actSelected).map((key) => {
+          const [section, category, subcategory] = JSON.parse(key);
+          return { section, category, ...(subcategory ? { subcategory } : {}) };
+        }),
+      ),
+    [actSelected],
+  );
+  const actSelectedCount = useMemo(() => {
+    let n = 0;
+    for (const sec of actTaxonomy) {
+      for (const c of sec.categories) {
+        if (actSelected.has(actKey(sec.section, c.name))) n += c.count;
+        else for (const sub of c.subcategories) {
+          if (actSelected.has(actKey(sec.section, c.name, sub.name))) n += sub.count;
+        }
+      }
+    }
+    return n;
+  }, [actTaxonomy, actSelected]);
+
   // Serialize the selected-skills payload into a hidden field.
   // The Server Action parses this JSON on submit. Kept as a single
   // blob because the shape is nested (per-skill arrays + weight).
@@ -377,6 +495,41 @@ export function NewAssignmentInteractive({
         </section>
       )}
 
+      {/* Test (bank) selector — Phase 4B */}
+      <section className={styles.card}>
+        <div className={styles.sectionLabel}>Test</div>
+        <div className={styles.typeRow}>
+          {[
+            { value: 'sat', label: 'SAT' },
+            { value: 'act', label: 'ACT' },
+          ].map((t) => (
+            <label
+              key={t.value}
+              className={`${styles.typeOption} ${
+                testType === t.value ? styles.typeOptionActive : ''
+              }`}
+            >
+              <input
+                type="radio"
+                name="test_type"
+                value={t.value}
+                checked={testType === t.value}
+                onChange={() => switchTestType(t.value as 'sat' | 'act')}
+                className={styles.hidden}
+              />
+              <span>{t.label}</span>
+            </label>
+          ))}
+        </div>
+        {testType === 'act' && (
+          <p className={styles.sectionHint}>
+            ACT assignments are question sets sampled by section and
+            category, or a timed ACT form. Lessons and lesson packs are
+            SAT content.
+          </p>
+        )}
+      </section>
+
       {/* Type selector */}
       <section className={styles.card}>
         <div className={styles.sectionLabel}>Type</div>
@@ -386,7 +539,9 @@ export function NewAssignmentInteractive({
             { value: 'practice_test', label: 'Practice test' },
             { value: 'lesson', label: 'Lesson' },
             { value: 'lesson_pack', label: 'Lesson pack' },
-          ].map((t) => (
+          ].filter((t) =>
+            testType === 'sat' || t.value === 'questions' || t.value === 'practice_test',
+          ).map((t) => (
             <label
               key={t.value}
               className={`${styles.typeOption} ${
@@ -512,7 +667,7 @@ export function NewAssignmentInteractive({
       </section>
 
       {/* Type-specific groups */}
-      {assignmentType === 'questions' && (
+      {assignmentType === 'questions' && testType === 'sat' && (
         <section className={styles.card}>
           <div className={styles.sectionLabel}>Question pool</div>
           <p className={styles.sectionHint}>
@@ -821,7 +976,251 @@ export function NewAssignmentInteractive({
         </section>
       )}
 
-      {assignmentType === 'practice_test' && (
+      {/* ACT question pool (Phase 4B): categories under their section,
+          sampled evenly across the picks; difficulty 1–5 applies to
+          all of them. Same size / attempt-status / template fields as
+          the SAT pool — only one of the two sections is mounted. */}
+      {assignmentType === 'questions' && testType === 'act' && (
+        <section className={styles.card}>
+          <div className={styles.sectionLabel}>ACT question pool</div>
+          <p className={styles.sectionHint}>
+            Select a category to include all its questions, or choose
+            individual subcategories below it. Questions are sampled evenly
+            across your selections; difficulty applies to all of them.
+          </p>
+          {prefill?.testType === 'act' && actSelected.size > 0 && (
+            <p className={styles.prefillBanner}>
+              Prefilled from <strong>{prefill.label}</strong> — adjust freely before creating.
+            </p>
+          )}
+          {actTaxonomy.length === 0 ? (
+            <p className={styles.empty}>No ACT questions in the bank yet.</p>
+          ) : (
+            <ul className={`${styles.domainList} ${styles.actTaxonomyList}`}>
+              {actTaxonomy.map((sec) => {
+                const allOn = sec.categories.every((c) =>
+                  actSelected.has(actKey(sec.section, c.name)),
+                );
+                return (
+                  <li key={sec.section} className={styles.domainBlock}>
+                    <div className={styles.domainHeader}>
+                      <span className={styles.domainName}>{sec.label}</span>
+                      <button
+                        type="button"
+                        className={styles.domainAddAll}
+                        onClick={() => setActSectionAll(sec, !allOn)}
+                      >
+                        {allOn ? 'Clear all' : 'Add all'}
+                      </button>
+                    </div>
+                    <div className={styles.studentGrid}>
+                      {sec.categories.map((c) => {
+                        const key = actKey(sec.section, c.name);
+                        return (
+                          <div key={key}>
+                            <label className={styles.studentItem}>
+                              <input
+                                type="checkbox"
+                                checked={actSelected.has(key)}
+                                onChange={() => toggleActCategory(sec.section, c.name)}
+                              />
+                              <span className={styles.studentName}>
+                                {c.name}
+                                <span className={styles.studentEmail}>
+                                  {c.count} question{c.count === 1 ? '' : 's'}
+                                </span>
+                              </span>
+                            </label>
+                            {c.subcategories.length > 0 && (
+                              <div className={styles.actSubcategories}>
+                                {c.subcategories.map((sub) => {
+                                  const parentSelected = actSelected.has(key);
+                                  return (
+                                    <label key={sub.name} className={styles.studentItem}>
+                                      <input
+                                        type="checkbox"
+                                        checked={parentSelected || actSelected.has(actKey(sec.section, c.name, sub.name))}
+                                        disabled={parentSelected}
+                                        onChange={() => toggleActCategory(sec.section, c.name, sub.name)}
+                                      />
+                                      <span className={styles.studentName}>
+                                        {sub.name}
+                                        <span className={styles.studentEmail}>{sub.count} question{sub.count === 1 ? '' : 's'}</span>
+                                      </span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          {actDifficulties.length > 0 && (
+            <div style={{ marginTop: '16px' }}>
+              <div className={styles.controlLabel}>Difficulty (1 easiest – 5 hardest, all categories)</div>
+              <div className={styles.chipRow}>
+                {actDifficulties.map((d) => {
+                  const active = actDiffs.has(d);
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      className={`${styles.chip} ${active ? styles.chipActive : ''}`}
+                      onClick={() => toggleActDiff(d)}
+                    >
+                      Level {d}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginTop: '16px' }}>
+            <div className={styles.controlLabel}>Attempt status</div>
+            <label className={styles.notAttempted}>
+              <input
+                type="checkbox"
+                name="unanswered_only"
+                value="1"
+                checked={unattemptedOnly}
+                onChange={(e) => setUnattemptedOnly(e.target.checked)}
+              />
+              <span className={styles.notAttemptedText}>
+                <span>Only questions not yet attempted</span>
+                <span className={styles.muted}>
+                  {selectedStudents.size > 1
+                    ? `Excludes any question already attempted by any of the ${selectedStudents.size} selected students.`
+                    : 'Excludes any question already attempted by a selected student.'}
+                </span>
+              </span>
+            </label>
+          </div>
+
+          <div className={styles.fieldRow} style={{ marginTop: '16px' }}>
+            <label className={styles.fieldLabel} htmlFor="act_size">
+              Size (1–50)
+            </label>
+            <input
+              id="act_size"
+              name="size"
+              type="number"
+              min={1}
+              max={50}
+              defaultValue={prefill?.testType === 'act' ? (prefill?.size ?? 10) : 10}
+              className={`${styles.input} ${styles.inputSm}`}
+            />
+          </div>
+
+          <div style={{ marginTop: '16px' }}>
+            <label className={styles.notAttempted}>
+              <input
+                type="checkbox"
+                name="save_template"
+                value="1"
+                checked={saveTemplate}
+                onChange={(e) => setSaveTemplate(e.target.checked)}
+              />
+              <span className={styles.notAttemptedText}>
+                <span>Save these filters as a template</span>
+                <span className={styles.muted}>
+                  Categories, difficulty, and size — reusable from
+                  &ldquo;Start from a template&rdquo; on this page.
+                </span>
+              </span>
+            </label>
+            {saveTemplate && (
+              <div className={styles.fieldRow} style={{ marginTop: '8px' }}>
+                <label className={styles.fieldLabel} htmlFor="act_template_name">
+                  Template name
+                </label>
+                <input
+                  id="act_template_name"
+                  name="template_name"
+                  type="text"
+                  maxLength={120}
+                  required
+                  placeholder="e.g. ACT Math geometry, 10 questions"
+                  className={styles.input}
+                />
+              </div>
+            )}
+          </div>
+
+          <input type="hidden" name="act_selections" value={actSelectionsJson} />
+          {Array.from(actDiffs).map((d) => (
+            <input key={d} type="hidden" name="difficulty" value={String(d)} />
+          ))}
+
+          {actSelected.size > 0 && (
+            <div className={styles.preview}>
+              <span>
+                <span className={styles.previewStrong}>{actSelected.size}</span>{' '}
+                selection{actSelected.size === 1 ? '' : 's'} selected
+              </span>
+              <span className={styles.muted}>
+                {actSelectedCount.toLocaleString()} question{actSelectedCount === 1 ? '' : 's'} in the pool before filters
+              </span>
+            </div>
+          )}
+        </section>
+      )}
+
+      {assignmentType === 'practice_test' && testType === 'act' && (
+        <section className={styles.card}>
+          <div className={styles.sectionLabel}>ACT practice test</div>
+          {actForms.length === 0 ? (
+            <p className={styles.empty}>No ACT forms in the bank yet.</p>
+          ) : (
+            <div className={styles.fieldRow}>
+              <label className={styles.fieldLabel} htmlFor="act_source_test">Form</label>
+              <select
+                id="act_source_test"
+                name="act_source_test"
+                className={styles.select}
+                value={actSourceTest}
+                onChange={event => {
+                  setActSourceTest(event.target.value);
+                  setActTestSections(actForms.find(form => form.sourceTest === event.target.value)?.sections ?? []);
+                }}
+              >
+                <option value="" disabled>Select an ACT form…</option>
+                {actForms.map((f) => (
+                  <option key={f.sourceTest} value={f.sourceTest}>{f.label}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <fieldset className={styles.actSectionList}>
+            <legend className={styles.fieldLabel}>Sections</legend>
+            {ACT_SECTIONS.map(section => {
+              const available = availableActSections.includes(section);
+              return (
+                <label key={section} className={styles.actSectionToggle}>
+                  <span>{section[0].toUpperCase() + section.slice(1)}{!available && ' (unavailable)'}</span>
+                  <input type="checkbox" role="switch" name="act_sections" value={section}
+                    checked={available && actTestSections.includes(section)} disabled={!available}
+                    onChange={event => setActTestSections(current => event.target.checked
+                      ? [...current, section] : current.filter(value => value !== section))} />
+                </label>
+              );
+            })}
+          </fieldset>
+          <p className={styles.sectionHint}>
+            Choose one or more sections. The assignment is complete after all selected sections are finished.
+            Students can choose standard or extended time when they start.
+          </p>
+        </section>
+      )}
+
+      {assignmentType === 'practice_test' && testType === 'sat' && (
         <section className={styles.card}>
           <div className={styles.sectionLabel}>Practice test</div>
           <div className={styles.fieldRow}>

@@ -49,6 +49,7 @@ import {
 } from '@/lib/practice-test/adaptive-routing';
 import { recomputeAttemptScores } from '@/lib/practice-test/recompute-scores';
 import { claimItemAttempt } from '@/lib/practice-test/claim-item-attempt';
+import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
 
 const GRACE_SECONDS = 15;
 
@@ -80,7 +81,13 @@ export async function startTestAttempt(_prev, formData) {
   // Optional time-accommodation multiplier. Clamped to the same
   // [1.0, 3.0] range the DB check enforces so a malformed client
   // value doesn't reach the insert.
-  const rawMultiplier = Number(formData.get('timeMultiplier') ?? 1);
+  // An explicit field wins (the launch page always sends one — 1 when
+  // the student switched the accommodation off); a start with no field
+  // falls back to the student's standing accommodation.
+  const rawField = formData.get('timeMultiplier');
+  const rawMultiplier = rawField == null || rawField === ''
+    ? await loadTimeAccommodation(supabase, user.id)
+    : Number(rawField);
   const timeMultiplier = Number.isFinite(rawMultiplier)
     ? Math.max(1, Math.min(3, Math.round(rawMultiplier * 100) / 100))
     : 1;

@@ -97,6 +97,33 @@ export type Database = {
           },
         ]
       }
+      act_forms: {
+        Row: {
+          display_name: string | null
+          format: string
+          kind: string
+          source_test: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          display_name?: string | null
+          format?: string
+          kind?: string
+          source_test: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          display_name?: string | null
+          format?: string
+          kind?: string
+          source_test?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       act_import_jobs: {
         Row: {
           answer_key_url: string | null
@@ -161,48 +188,60 @@ export type Database = {
         Row: {
           composite_score: number | null
           created_at: string
+          current_section_index: number
           english_scaled: number | null
           finished_at: string | null
+          format: string
           id: string
           math_scaled: number | null
           practice_session_id: string | null
           reading_scaled: number | null
           science_scaled: number | null
+          sections: Json
           source_test: string
           started_at: string
           status: string
+          time_multiplier: number
           updated_at: string
           user_id: string
         }
         Insert: {
           composite_score?: number | null
           created_at?: string
+          current_section_index?: number
           english_scaled?: number | null
           finished_at?: string | null
+          format?: string
           id?: string
           math_scaled?: number | null
           practice_session_id?: string | null
           reading_scaled?: number | null
           science_scaled?: number | null
+          sections?: Json
           source_test: string
           started_at?: string
           status?: string
+          time_multiplier?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           composite_score?: number | null
           created_at?: string
+          current_section_index?: number
           english_scaled?: number | null
           finished_at?: string | null
+          format?: string
           id?: string
           math_scaled?: number | null
           practice_session_id?: string | null
           reading_scaled?: number | null
           science_scaled?: number | null
+          sections?: Json
           source_test?: string
           started_at?: string
           status?: string
+          time_multiplier?: number
           updated_at?: string
           user_id?: string
         }
@@ -225,6 +264,7 @@ export type Database = {
           difficulty: number | null
           id: string
           import_job_id: string
+          linked_existing: boolean
           needs_figure: boolean
           options_json: Json
           parse_warnings: Json
@@ -247,6 +287,7 @@ export type Database = {
           difficulty?: number | null
           id?: string
           import_job_id: string
+          linked_existing?: boolean
           needs_figure?: boolean
           options_json?: Json
           parse_warnings?: Json
@@ -269,6 +310,7 @@ export type Database = {
           difficulty?: number | null
           id?: string
           import_job_id?: string
+          linked_existing?: boolean
           needs_figure?: boolean
           options_json?: Json
           parse_warnings?: Json
@@ -577,6 +619,7 @@ export type Database = {
           id: string
           name: string
           teacher_id: string
+          test_type: string
           updated_at: string
         }
         Insert: {
@@ -586,6 +629,7 @@ export type Database = {
           id?: string
           name: string
           teacher_id: string
+          test_type?: string
           updated_at?: string
         }
         Update: {
@@ -595,12 +639,14 @@ export type Database = {
           id?: string
           name?: string
           teacher_id?: string
+          test_type?: string
           updated_at?: string
         }
         Relationships: []
       }
       assignments_v2: {
         Row: {
+          act_source_test: string | null
           archived_at: string | null
           assignment_type: string
           created_at: string
@@ -621,6 +667,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          act_source_test?: string | null
           archived_at?: string | null
           assignment_type: string
           created_at?: string
@@ -641,6 +688,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          act_source_test?: string | null
           archived_at?: string | null
           assignment_type?: string
           created_at?: string
@@ -2869,6 +2917,7 @@ export type Database = {
           subscription_exempt: boolean
           target_sat_score: number | null
           teacher_invite_code: string | null
+          time_accommodation: number
           tutor_name: string | null
           user_type: string | null
           welcome_email_sent_at: string | null
@@ -2895,6 +2944,7 @@ export type Database = {
           subscription_exempt?: boolean
           target_sat_score?: number | null
           teacher_invite_code?: string | null
+          time_accommodation?: number
           tutor_name?: string | null
           user_type?: string | null
           welcome_email_sent_at?: string | null
@@ -2921,6 +2971,7 @@ export type Database = {
           subscription_exempt?: boolean
           target_sat_score?: number | null
           teacher_invite_code?: string | null
+          time_accommodation?: number
           tutor_name?: string | null
           user_type?: string | null
           welcome_email_sent_at?: string | null
@@ -5053,6 +5104,20 @@ export type Database = {
         Args: { p_identifiers: string[]; p_stem: string }
         Returns: {
           id: string
+        }[]
+      }
+      get_act_student_stats: {
+        Args: {
+          p_lookback_start: string
+          p_user_id: string
+          p_week_ago: string
+        }
+        Returns: {
+          by_difficulty: Json
+          correct_attempts: number
+          per_section: Json
+          total_attempts: number
+          week_attempts: number
         }[]
       }
       get_plan_inputs: {

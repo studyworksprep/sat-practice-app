@@ -1,3 +1,6 @@
+import { assessActQuestions, combineActFormQuestions } from '@/lib/practice/act-format-detection';
+import { ACT_FORMAT_LABELS } from '@/lib/practice/act-test-plan';
+import { fetchAll } from '@/lib/supabase/fetchAll';
 // Admin → ACT → Imports → [jobId] → Review.
 //
 // Listing of every draft produced by the per-section parsers
@@ -13,6 +16,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
 import { sectionLabel, ACT_SECTIONS } from '@/lib/practice/act-taxonomy';
+import { loadReview } from '@/lib/act-import/load-review.mjs';
 import { DraftCard } from './DraftCard';
 import { BulkApproveButton, FinalizeJobButton } from './BulkButtons';
 import {
@@ -37,7 +41,6 @@ const STATUS_LABEL = {
 export default async function ReviewPage({ params, searchParams }) {
   const { jobId } = await params;
   const sp = (await searchParams) ?? {};
-  const filter = typeof sp.status === 'string' ? sp.status : 'all';
 
   let supabase;
   try {
@@ -46,39 +49,35 @@ export default async function ReviewPage({ params, searchParams }) {
     redirect('/');
   }
 
-  const { data: job } = await supabase
+  const { data: job, error: jobError } = await supabase
     .from('act_import_jobs')
     .select('id, source_test, status')
     .eq('id', jobId)
-    .maybeSingle();
+    .maybeSingle()
+    .abortSignal(AbortSignal.timeout(15000));
+  if (jobError) throw new Error('Could not load import job', { cause: jobError });
   if (!job) notFound();
 
-  const { data: drafts } = await supabase
-    .from('act_question_drafts')
-    .select(
-      'id, section, source_ordinal, stimulus_html, stem_html, rationale_html, ' +
-      'difficulty, category, category_code, subcategory, subcategory_code, ' +
-      'options_json, needs_figure, parse_warnings, status, approved_to_id',
-    )
-    .eq('import_job_id', jobId)
-    .order('section', { ascending: true })
-    .order('source_ordinal', { ascending: true });
+  const { drafts: visible, counts, filter, page, pages, total, offset } =
+    await loadReview(supabase, jobId, sp);
 
-  const all = drafts ?? [];
+  // Live questions already in the bank for this form, keyed by
+  // section:number. A pending draft with a match links to that
+  // question on approve instead of inserting a duplicate (fill-gaps
+  // re-import — see review/actions.ts approveOne).
+  const { data: existingRows, error: existingError } = await supabase
+    .from('act_questions')
+    .select('id, section, source_ordinal, is_broken')
+    .eq('source_test', job.source_test)
+    .is('deleted_at', null)
+    .abortSignal(AbortSignal.timeout(15000));
+  if (existingError) throw new Error('Could not load existing questions', { cause: existingError });
+  const existingByKey = new Map(
+    (existingRows ?? []).map((r) => [`${r.section}:${r.source_ordinal}`, r.id]),
+  );
+  const existingFor = (d) => existingByKey.get(`${d.section}:${d.source_ordinal}`) ?? null;
 
-  // Counts across the whole job — used for the filter chips +
-  // the "X of Y" header on each section.
-  const counts = {
-    all: all.length,
-    ready_for_review: 0,
-    approved: 0,
-    rejected: 0,
-    parsing: 0,
-  };
-  for (const d of all) counts[d.status] = (counts[d.status] ?? 0) + 1;
-
-  // Filter for the visible subset.
-  const visible = filter === 'all' ? all : all.filter((d) => d.status === filter);
+  const inBank = visible.filter((d) => d.status !== 'approved' && existingFor(d)).length;
 
   const bySection = new Map();
   for (const sec of ACT_SECTIONS) bySection.set(sec, []);
@@ -87,6 +86,14 @@ export default async function ReviewPage({ params, searchParams }) {
     bySection.get(d.section).push(d);
   }
 
+  const [draftIdentities, formSettings] = await Promise.all([
+    fetchAll((from, to) => supabase.from('act_question_drafts')
+      .select('section, source_ordinal').eq('import_job_id', jobId).neq('status', 'rejected')
+      .order('id').range(from, to)),
+    supabase.from('act_forms').select('format, kind').eq('source_test', job.source_test).maybeSingle(),
+  ]);
+  if (formSettings.error) throw new Error('Could not load ACT format settings', { cause: formSettings.error });
+  const detection = assessActQuestions(combineActFormQuestions((existingRows ?? []).filter(q => !q.is_broken), draftIdentities), formSettings.data ?? {});
   const allDone = counts.ready_for_review === 0 && counts.parsing === 0 && counts.all > 0;
 
   return (
@@ -102,6 +109,7 @@ export default async function ReviewPage({ params, searchParams }) {
               {counts.all} draft{counts.all === 1 ? '' : 's'} ·{' '}
               {counts.approved} approved · {counts.ready_for_review} pending ·{' '}
               {counts.rejected} rejected
+              {inBank > 0 ? ` · ${inBank} on this page already in the bank (approve links instead of duplicating)` : ''}
             </p>
           </div>
           {allDone && job.status !== 'completed' && (
@@ -111,6 +119,18 @@ export default async function ReviewPage({ params, searchParams }) {
         <FilterChips jobId={jobId} active={filter} counts={counts} />
       </header>
 
+      <p role="status">
+        {detection.reviewReason ? 'Timed test needs review: ' + detection.reviewReason : 'Detected format: ' + ACT_FORMAT_LABELS[detection.format]}
+        {' '}<Link href="/admin/act/forms">Review form settings</Link>
+        {allDone && detection.reviewReason && ' You can finalize this reviewed import; timed tests remain unavailable until the form is complete and consistent.'}
+      </p>
+      {total > 0 && (
+        <nav className={s.chips} aria-label="Draft pages">
+          {page > 1 && <Link className={s.chip} prefetch={false} href={`?status=${filter}&page=${page - 1}`}>← Previous</Link>}
+          <span className={s.sub}>Drafts {offset + 1}–{offset + visible.length} of {total} · Page {page} of {pages}</span>
+          {page < pages && <Link className={s.chip} prefetch={false} href={`?status=${filter}&page=${page + 1}`}>Next →</Link>}
+        </nav>
+      )}
       {visible.length === 0 ? (
         <div className={s.empty}>
           <div className={s.emptyTitle}>No drafts in this view.</div>
@@ -128,7 +148,7 @@ export default async function ReviewPage({ params, searchParams }) {
               <div className={s.sectionHeader}>
                 <div className={s.sectionTitle}>
                   {sectionLabel(section)}{' '}
-                  <span className={s.sectionCount}>· {list.length}</span>
+                  <span className={s.sectionCount}>· {list.length} on this page</span>
                 </div>
                 <BulkApproveButton
                   jobId={jobId}
@@ -143,6 +163,7 @@ export default async function ReviewPage({ params, searchParams }) {
                     <DraftCard
                       jobId={jobId}
                       draft={d}
+                      existingQuestionId={existingFor(d)}
                       statusLabel={STATUS_LABEL[d.status] ?? d.status}
                       saveAction={saveDraft}
                       approveAction={approveDraft}
@@ -171,6 +192,7 @@ function FilterChips({ jobId, active, counts }) {
       {chips.map((c) => (
         <Link
           key={c.key}
+          prefetch={false}
           href={
             c.key === 'all'
               ? `/admin/act/imports/${jobId}/review`

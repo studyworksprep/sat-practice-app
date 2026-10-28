@@ -46,7 +46,7 @@ const SLOTS = [
   },
 ];
 
-export function UploadForm({ createAction }) {
+export function UploadForm({ createAction, knownForms = [] }) {
   const [sourceTest, setSourceTest] = useState('');
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState(null);
@@ -73,9 +73,14 @@ export function UploadForm({ createAction }) {
         <span className={s.fieldHint}>
           Free-text identifier the resulting <code>act_questions</code>
           rows will carry as <code>source_test</code>. Example:{' '}
-          <code>ACT-2025-Jun-FormA</code>. Use the same name on
-          re-imports of the same form so the score-conversion table
-          and questions stay paired.
+          <code>ACT-2025-Jun-FormA</code>. Use the exact same name on
+          a re-import of a form: approving a draft whose form, section
+          and question number already exist in the bank links it to
+          that question instead of creating a duplicate, so a second
+          pass only fills the gaps the first parse missed. Retire a
+          question in the editor first if the re-parse should replace
+          it. The score-conversion parse replaces the form&apos;s table
+          section by section.
         </span>
         <input
           type="text"
@@ -86,7 +91,11 @@ export function UploadForm({ createAction }) {
           autoFocus
           className={s.input}
           placeholder="ACT-2025-Jun-FormA"
+          list="act-known-forms"
         />
+        <datalist id="act-known-forms">
+          {knownForms.map((f) => <option key={f} value={f} />)}
+        </datalist>
       </label>
 
       {SLOTS.map((slot) => (

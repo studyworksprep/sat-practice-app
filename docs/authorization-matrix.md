@@ -27,6 +27,7 @@ Runs on every matched request. Detected: session refresh only.
 | `/api/cron/repace` | — | requireRole[admin] + service client (RLS bypass) |
 | `/api/external/score-report/[attemptId]` | GET | requireExternalApiAccess + service client (RLS bypass) |
 | `/api/practice-test/time-ping` | POST | requireUser |
+| `/api/practice/error-notes` | POST | requireUser |
 | `/api/practice/time-ping` | — | requireUser + rateLimit |
 | `/api/public/students/[studentId]/practice-data` | GET | requireExternalApiAccess + service client (RLS bypass) |
 | `/api/public/students/provision` | POST | requireExternalApiAccess + service client (RLS bypass) |
@@ -43,10 +44,12 @@ Runs on every matched request. Detected: session refresh only.
 
 | Module | Exported actions | Guards (file-level) |
 |---|---|---|
+| `app/(admin)/admin/act/forms/actions.ts` | `setActFormFormat`, `setActFormKind`, `setActFormDisplayName` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/[jobId]/actions.ts` | `parseEnglish`, `parseMath`, `parseReading`, `parseScience`, `parseScaleAction`, `addJobFile` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/[jobId]/review/actions.ts` | `saveDraft`, `approveDraft`, `bulkApprove`, `unapproveDraft`, `rejectDraft`, `finalizeJob` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/actions.ts` | `createImportJob`, `deleteImportJob` | requireRole[admin] |
 | `app/(admin)/admin/act/questions/actions.ts` | `saveActQuestion`, `setActQuestionBroken`, `retireActQuestion`, `restoreActQuestion` | requireRole[admin] |
+| `app/(admin)/admin/act/questions/difficulty-actions.ts` | `estimateActDifficultyBatch` | requireRole[admin] |
 | `app/(admin)/admin/act/rationales/actions.ts` | `generateActRationaleBatch`, `regenerateActRationale`, `saveActRationaleDraft`, `approveActRationale`, `rejectActRationale`, `bulkApproveActRationales` | requireRole[admin] |
 | `app/(admin)/admin/act/score-conversion/actions.ts` | `upsertConversionRows`, `deleteConversionTable`, `createConversionForm` | requireRole[admin] |
 | `app/(admin)/admin/concept-tags/actions.ts` | `renameConceptTag`, `deleteConceptTag`, `mergeConceptTags` | requireRole[admin] |
@@ -69,14 +72,14 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/users/[userId]/actions.js` | `updateProfileFields`, `changeRole`, `toggleActive`, `banUser`, `unbanUser`, `deleteUser`, `assignTeacherStudent`, `unassignTeacherStudent`, `assignManagerTeacher`, `unassignManagerTeacher`, `setTestFlag`, `resetTestStudent` | requireRole[admin] + requireServiceRole + rateLimit |
 | `app/(admin)/admin/users/[userId]/login-actions.ts` | `sendLoginSetupEmail`, `setLoginEmail` | requireServiceRole + rateLimit |
 | `app/(admin)/admin/users/codes/actions.js` | `createTeacherCode`, `revokeTeacherCode`, `inviteStudent`, `revokeStudentInvite` | requireRole[admin] |
-| `app/(student)/assignments/[id]/actions.js` | `startAssignmentPractice` | requireUser + rateLimit |
+| `app/(student)/assignments/[id]/actions.js` | `startAssignmentPractice`, `startAssignmentActTest` | requireUser + rateLimit |
 | `app/(student)/dashboard/task-actions.ts` | `startPlanTask`, `markTaskDone` | requireUser + rateLimit |
 | `app/(student)/learn/[lessonId]/actions.js` | `markBlockComplete`, `submitCheckAnswer`, `submitDesmosResult`, `markLessonComplete`, `createLessonPracticeDrill` | requireUser + rateLimit |
 | `app/(student)/notes/actions.ts` | `createNote`, `updateNote`, `deleteNote`, `upsertNoteForQuestion` | requireUser |
 | `app/(student)/plan/actions.ts` | `adjustPlanAction`, `rebuildPlanAction` | requireUser |
 | `app/(student)/practice/start/actions.js` | `countAvailable`, `createSession`, `countAvailableAct`, `createActSession` | requireUser + rateLimit |
 | `app/(student)/practice/test/actions.js` | `startTestAttempt`, `recordItemAnswer`, `toggleMarkForReview`, `pauseTestModule`, `resumeTestModule`, `finishModule` | requireUser + rateLimit |
-| `app/(student)/practice/tests/actions.ts` | `startActPracticeTest`, `finalizeActPracticeTest` | requireUser + rateLimit |
+| `app/(student)/practice/tests/actions.ts` | `startActPracticeTest`, `startActSection`, `abandonActPracticeTest` | requireUser + rateLimit |
 | `app/(student)/review/actions.js` | `createWeakQueueDrill`, `createSkillDrill`, `createActWeakQueueDrill`, `createActCategoryDrill` | requireUser + rateLimit |
 | `app/(student)/review/queue-actions.ts` | `createDueReviewSession` | requireUser + rateLimit |
 | `app/(student)/welcome/actions.ts` | `startIntakeAction`, `saveAnswerAction`, `saveTargetsAction`, `saveAssessmentAction`, `buildPlanAction`, `activateFirstPlanAction`, `setAsideAction` | requireUser |
@@ -96,7 +99,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/training/assignments/[id]/actions.js` | `startTrainingAssignment` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/practice/actions.js` | `createTrainingSession`, `countAvailable` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/review/actions.js` | `createTrainingWeakQueueDrill`, `createTrainingSkillDrill` | requireUser + rateLimit |
-| `app/account/actions.js` | `updateProfile`, `updateDetourPreference`, `updateEmail`, `addTeacherCode` | requireUser |
+| `app/account/actions.js` | `updateProfile`, `updateDetourPreference`, `updateTimeAccommodation`, `updateEmail`, `addTeacherCode` | requireUser |
 | `lib/bluebook/submission-actions.ts` | `crossCheckAttempt`, `loadAttemptEntryView`, `createHtmlUploadSubmission`, `createAttemptLinkedSubmission`, `createManualGridSubmission`, `reviewSubmission`, `artifactDownloadUrl`, `promoteSubmission` | requireRole[...CONTRIBUTOR_ROLES|...STAFF_ROLES] + requireServiceRole |
 | `lib/lesson/editor-question-actions.ts` | `searchLessonEditorQuestions`, `getLessonEditorQuestion` | requireRole[admin|manager|teacher] |
 | `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan`, `proposeRepace` | requireUser |
@@ -123,4 +126,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_21 route handlers, 71 server-action modules enumerated._
+_22 route handlers, 73 server-action modules enumerated._

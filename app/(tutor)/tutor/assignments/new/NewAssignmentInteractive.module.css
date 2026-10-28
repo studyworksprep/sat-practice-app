@@ -794,3 +794,61 @@
   padding: 8px 12px;
   margin: 0 0 12px;
 }
+.actSectionList {
+  border: 0;
+  padding: 0;
+  margin: 1rem 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.actSectionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-app-border, #d1d5db);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.actSectionToggle input {
+  appearance: none;
+  width: 2.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  margin: 0;
+  border-radius: 1rem;
+  background: #9ca3af;
+  position: relative;
+  cursor: pointer;
+}
+.actSectionToggle input::before {
+  content: '';
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: white;
+  top: 0.25rem;
+  left: 0.25rem;
+}
+.actSectionToggle input:checked { background: var(--color-app-accent, #2563eb); }
+.actSectionToggle input:checked::before { left: 1.25rem; }
+.actSectionToggle input:focus-visible { outline: 2px solid var(--color-app-accent, #2563eb); outline-offset: 3px; }
+.actSectionToggle:has(input:disabled) { opacity: 0.5; cursor: default; }
+.actSectionToggle input:disabled { cursor: default; }
+
+.actTaxonomyList,
+.actTaxonomyList .studentGrid {
+  max-height: none;
+  overflow: visible;
+}
+
+.actSubcategories {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0 16px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}

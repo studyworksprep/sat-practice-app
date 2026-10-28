@@ -25,12 +25,28 @@ test('unknown speech and ambiguous boundaries require a visual transcription', (
   }
 });
 
+test('spoken multiplication cannot determine the notation in the original image', () => {
+  for (const speech of ['a, times pi', '2 times the square root of 3',
+    '9 x plus 5 equals a times open parenthesis x plus b close parenthesis',
+    '10 times 16 plus 20 times 0 equals s', 'm times 100',
+    '5 point 1 2 times 10 to the power 8', '0 point 2 times 25 equals 5',
+    'x to the 4 times 2 power', '2 TIMES 3', '2\ntimes\t3']) {
+    assert.equal(parse(speech), null, speech);
+  }
+  assert.equal(parse('a pi'), 'a \\pi');
+  assert.equal(parse('2 open parenthesis x plus 1 close parenthesis'), '2 \\left(x + 1\\right)');
+});
+
 test('reviewed source-image overrides retain geometry markings and known missing terms', async () => {
   const registry = JSON.parse(await readFile(new URL('../../scripts/verification/dc-question-math-transcriptions.json', import.meta.url), 'utf8'));
   const images = registry.math_images;
   assert.equal(new Set(images.map((m: { src_sha256: string }) => m.src_sha256)).size, images.length);
   assert.ok(images.some((m: { code: string; tex: string }) => m.code === 'M-00843' && m.tex === '(a-2)(a-8)=0'));
   assert.ok(images.some((m: { code: string; tex: string }) => m.code === 'M-00811' && m.tex === '\\widehat{AC}'));
+  assert.ok(images.some((m: { code: string; tex: string }) => m.code === 'M-00586' && m.tex === 'a\\pi'));
+  assert.ok(images.some((m: { code: string; tex: string }) => m.code === 'M-00010' && m.tex === '10(16)+20(0)=s'));
+  assert.ok(images.some((m: { code: string; tex: string }) => m.code === 'M-00421' && m.tex.includes('\\cdot')));
+  assert.ok(images.some((m: { code: string; tex: string }) => m.code === 'M-00977' && m.tex === '5.12\\times10^8'));
   for (const image of images) {
     assert.match(image.src_sha256, /^[a-f0-9]{64}$/);
     assert.ok(image.tex.trim());

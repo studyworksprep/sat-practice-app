@@ -10,6 +10,11 @@
 // Upsert key is (source_test, section, raw_score) per the table's
 // primary key; rerunning the parse on the same job is a no-op
 // for unchanged rows and an update where Claude refined a value.
+// Each section the parse returns is then trimmed to exactly the
+// raw scores it returned, so a re-import replaces that section's
+// table rather than leaving a stale tail behind (a first pass that
+// only saw part of a form produced a table sized to what parsed,
+// not to the official scale).
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { callClaude, parseClaudeJson } from './anthropic';
@@ -25,6 +30,9 @@ export interface ScaleEntry {
 
 export interface ParseScaleResult {
   inserted: number;
+  /** Rows of a parsed section that the parse did not return and were
+   *  deleted so the section matches the new table. */
+  removed: number;
   warnings: string[];
 }
 
@@ -83,7 +91,7 @@ export async function parseScale(opts: {
     }));
 
   if (rows.length === 0) {
-    return { inserted: 0, warnings: warnings.concat(['No valid rows parsed from scale PDF.']) };
+    return { inserted: 0, removed: 0, warnings: warnings.concat(['No valid rows parsed from scale PDF.']) };
   }
 
   const { error } = await opts.supabase
@@ -93,5 +101,30 @@ export async function parseScale(opts: {
     throw new Error(`Could not upsert scale rows: ${error.message}`);
   }
 
-  return { inserted: rows.length, warnings };
+  // Replace semantics per parsed section: anything this parse didn't
+  // return for a section it did cover is stale. Sections the parse
+  // skipped entirely are left alone.
+  const rawsBySection = new Map<string, number[]>();
+  for (const r of rows) {
+    const arr = rawsBySection.get(r.section) ?? [];
+    arr.push(r.raw_score);
+    rawsBySection.set(r.section, arr);
+  }
+  let removed = 0;
+  for (const [section, raws] of rawsBySection) {
+    const { data: gone, error: delErr } = await opts.supabase
+      .from('act_score_conversion')
+      .delete()
+      .eq('source_test', opts.sourceTest)
+      .eq('section', section)
+      .not('raw_score', 'in', `(${raws.join(',')})`)
+      .select('raw_score');
+    if (delErr) {
+      warnings.push(`Could not remove stale ${section} rows: ${delErr.message}`);
+      continue;
+    }
+    removed += (gone ?? []).length;
+  }
+
+  return { inserted: rows.length, removed, warnings };
 }

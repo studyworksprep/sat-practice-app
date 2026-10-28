@@ -1,0 +1,297 @@
+{
+  "source_test": "ACT-25MC5",
+  "source_file": "ACT-Test-Prep-ACT-Practice-Test-2-Form.pdf",
+  "source_sha256": "1257bc0f402744175beace9cc41e418c7c4895c047eace0e001e0e3bf817a0c0",
+  "applied_on": "2026-10-18",
+  "live_questions_updated": 101,
+  "draft_questions_updated": 101,
+  "validation": {
+    "browser_checks_passed": 40,
+    "viewports": [
+      390,
+      1246
+    ],
+    "all_english_source_characters_preserved": true,
+    "original_english_reference_targets_preserved": true,
+    "non_passage_fields_unchanged": true,
+    "full_page_raster_passages_remaining": 0
+  },
+  "passages": [
+    {
+      "section": "english",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "source_pages": [
+        4,
+        5
+      ],
+      "old_md5": "67334ddbf41862107d13b72ead5ac4aa",
+      "new_md5": "2f3f3f7841d8a3a32db79acfaaef7f0c",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "source_pages": [
+        6,
+        7
+      ],
+      "old_md5": "ce141fdba62783edda0c957b4587e063",
+      "new_md5": "987e80d20d8265597c0f8d6baead3697",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "source_pages": [
+        9,
+        10,
+        11
+      ],
+      "old_md5": "1576685d6f861438142c47ca7129dbd2",
+      "new_md5": "d04503349f7e064868e916bb5f8fc4c1",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45
+      ],
+      "source_pages": [
+        12,
+        13
+      ],
+      "old_md5": "e4c085bddbd84c88c0e8874f3f3cfdbb",
+      "new_md5": "37d647542b3e7fe150823837a8437a28",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "english",
+      "source_ordinals": [
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "source_pages": [
+        14,
+        15
+      ],
+      "old_md5": "1a405b4fd1c33ae05832aa2670214636",
+      "new_md5": "2c4229c2275162f486a71b1a13ff1395",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "source_pages": [
+        28,
+        29
+      ],
+      "old_md5": "95aca4bd3a7823cba64eaf49f0d3ad41",
+      "new_md5": "9b3b0982b05420a0975e15514af038a4",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "source_pages": [
+        30
+      ],
+      "old_md5": "947d0c0e6b2a9a1c1538d923d62d9e4a",
+      "new_md5": "6f465e57d55cfc0d28378804a5692a05",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "reading",
+      "source_ordinals": [
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "source_pages": [
+        34
+      ],
+      "old_md5": "453874477a8cc6daed994b0189c6cece",
+      "new_md5": "9c62ba92641c1ea3e5d977887a9b4001",
+      "figure_count": 0,
+      "table_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "source_pages": [
+        36
+      ],
+      "old_md5": "3490f87aa57fd1c5c2fc088162cad7e3",
+      "new_md5": "02b5e4b65e5672d19c1fe4fe97fc1d61",
+      "figure_count": 1,
+      "table_count": 2
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "source_pages": [
+        40
+      ],
+      "old_md5": "6759953580520c1f335aa51476dd0e4b",
+      "new_md5": "3ac5311fa55a017671ce51c8e2fdd2f2",
+      "figure_count": 0,
+      "table_count": 2
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "source_pages": [
+        42
+      ],
+      "old_md5": "b047fcbba7ccaa67962faa1531250d1a",
+      "new_md5": "c9c978a8f205fb1756e5a9198e90b3d7",
+      "figure_count": 3,
+      "table_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "source_pages": [
+        44
+      ],
+      "old_md5": "42f27208965412ac5966596bfa396c64",
+      "new_md5": "74ec2608565864903b894a0eb4ef4f53",
+      "figure_count": 1,
+      "table_count": 0
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        30,
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "source_pages": [
+        46
+      ],
+      "old_md5": "f5723abb5cddccac726f1520e7b2b209",
+      "new_md5": "6117b968662da8e7e5df10d9f4cc7ce9",
+      "figure_count": 0,
+      "table_count": 1
+    },
+    {
+      "section": "science",
+      "source_ordinals": [
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "source_pages": [
+        48
+      ],
+      "old_md5": "275decbf4db77510fcc5630b8f2f7819",
+      "new_md5": "36a5c06107fba83763d6e764393a3c00",
+      "figure_count": 2,
+      "table_count": 0
+    }
+  ]
+}

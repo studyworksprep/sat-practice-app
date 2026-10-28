@@ -35,6 +35,7 @@ import { ArchiveButton } from './ArchiveButton';
 import { AssignmentsToolbar } from './AssignmentsToolbar';
 import { filterAndSort, paginate } from './helpers';
 import s from './AssignmentsList.module.css';
+import { defaultActFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,18 +57,17 @@ export default async function TutorAssignmentsPage({ searchParams }) {
     redirect('/');
   }
 
-  // SAT-only list of the tutor's outgoing assignments. ACT
-  // assignments are forward-wired (§3.4) but no surface ships today.
+  // The tutor's outgoing assignments, SAT and ACT (Phase 4B).
   const { data: rows } = await supabase
     .from('assignments_v2')
     .select(`
       id, assignment_type, title, description, due_date,
       archived_at, deleted_at, created_at, question_ids,
+      test_type, act_source_test,
       lesson:lessons (title),
       practice_test:practice_tests_v2 (name)
     `)
     .eq('teacher_id', user.id)
-    .eq('test_type', 'sat')
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
@@ -108,42 +108,48 @@ export default async function TutorAssignmentsPage({ searchParams }) {
   // (allUserIds × allQids) would balloon past PostgREST's 1000-row
   // db-max-rows cap on a busy manager and silently truncate the
   // attempts result, leaving most assignment tiles stuck at 0/N.
+  // SAT and ACT question sets read different attempt tables (Phase
+  // 4B); the id spaces never collide, so the aggregation below can
+  // share one map.
   const qidsByUser = new Map();
+  const actQidsByUser = new Map();
   for (const { a, junc } of singleStudentRows) {
     const uid = junc[0].student_id;
     const qids = Array.isArray(a.question_ids) ? a.question_ids : [];
     if (qids.length === 0) continue;
-    const existing = qidsByUser.get(uid) ?? new Set();
+    const target = a.test_type === 'act' ? actQidsByUser : qidsByUser;
+    const existing = target.get(uid) ?? new Set();
     for (const q of qids) existing.add(q);
-    qidsByUser.set(uid, existing);
+    target.set(uid, existing);
   }
 
-  // One attempts query per student, in parallel. Each stays small
-  // (a few hundred rows) so none hits the truncation cap.
-  const [perUserAttempts, { data: sessionRows }] = await Promise.all([
-    Promise.all(
-      allUserIds.map(async (uid) => {
-        const qidSet = qidsByUser.get(uid);
-        if (!qidSet || qidSet.size === 0) return [];
-        const { data } = await supabase
-          .from('attempts')
-          .select('user_id, question_id, is_correct, created_at')
-          .eq('user_id', uid)
-          .in('question_id', Array.from(qidSet))
-          .order('created_at', { ascending: false });
-        return data ?? [];
-      }),
-    ),
+  // One attempts query per student per bank, in parallel. Each stays
+  // small (a few hundred rows) so none hits the truncation cap.
+  const perUserFrom = (table, byUser) => Promise.all(
+    allUserIds.map(async (uid) => {
+      const qidSet = byUser.get(uid);
+      if (!qidSet || qidSet.size === 0) return [];
+      const { data } = await supabase
+        .from(table)
+        .select('user_id, question_id, is_correct, created_at')
+        .eq('user_id', uid)
+        .in('question_id', Array.from(qidSet))
+        .order('created_at', { ascending: false });
+      return data ?? [];
+    }),
+  );
+  const [perUserAttempts, perUserActAttempts, { data: sessionRows }] = await Promise.all([
+    perUserFrom('attempts', qidsByUser),
+    perUserFrom('act_attempts', actQidsByUser),
     assignmentIds.length > 0
       ? supabase
           .from('practice_sessions')
           .select('id, created_at, filter_criteria, user_id')
-          .eq('test_type', 'sat')
           .in('filter_criteria->>assignment_id', assignmentIds)
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),
   ]);
-  const attemptsRaw = perUserAttempts.flat();
+  const attemptsRaw = [...perUserAttempts.flat(), ...perUserActAttempts.flat()];
 
   // Attempt aggregation: for each (user, qid) pair we keep the
   // attempts in chronological order. When the assignment has its
@@ -449,6 +455,9 @@ function AssignmentRow({ row, nowMs, archived = false }) {
   const title = row.title
     ?? (row.assignment_type === 'lesson' ? row.lesson?.title : null)
     ?? (row.assignment_type === 'practice_test' ? row.practice_test?.name : null)
+    ?? (row.assignment_type === 'practice_test' && row.act_source_test
+      ? defaultActFormName(row.act_source_test)
+      : null)
     ?? 'Assignment';
   const subtitle = displaySubtitle(row);
   const isOverdue =

@@ -26,7 +26,7 @@ export function BulkApproveButton({ jobId, section, action, disabled }) {
   async function onClick() {
     const ok = await confirm({
       title: `Approve every pending ${section} draft?`,
-      body: 'Skipped drafts (no correct answer, no category, etc.) will stay pending so you can fix them.',
+      body: 'This includes pending drafts on every page of this section. Skipped drafts (no correct answer, no category, etc.) will stay pending so you can fix them.',
       confirmLabel: 'Approve all',
     });
     if (!ok) return;
@@ -38,8 +38,13 @@ export function BulkApproveButton({ jobId, section, action, disabled }) {
     startTransition(async () => {
       const res = await action(null, fd);
       if (res?.ok) {
-        const { approved = 0, skipped = 0, skippedDetails: details = [] } = res.data ?? {};
-        setMessage(`Approved ${approved}${skipped ? ` · skipped ${skipped}` : ''}.`);
+        const { approved = 0, linked = 0, skipped = 0, skippedDetails: details = [] } = res.data ?? {};
+        setMessage(
+          `Approved ${approved}`
+          + (linked ? ` (${linked} linked to existing questions)` : '')
+          + (skipped ? ` · skipped ${skipped}` : '')
+          + '.',
+        );
         // Surface the first batch of skip reasons inline so the
         // admin can act on them without digging into network /
         // server logs. The action caps the array at 10 already.
@@ -59,7 +64,7 @@ export function BulkApproveButton({ jobId, section, action, disabled }) {
         disabled={disabled || pending}
         className={s.btnSecondary}
       >
-        {pending ? 'Approving…' : 'Approve all pending'}
+        {pending ? 'Approving…' : 'Approve all pending in section'}
       </button>
       {message && <div className={s.bulkMessage}>{message}</div>}
       {skippedDetails.length > 0 && (
