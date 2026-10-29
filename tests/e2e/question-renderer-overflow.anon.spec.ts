@@ -1,11 +1,17 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import React, { type ComponentType } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { loadBindings, transform } from 'next/dist/build/swc/index.js';
 import { test, expect } from '@playwright/test';
 import { renderHtml } from '../../lib/content/render-math.mjs';
+import { mathjax } from 'mathjax-full/js/mathjax.js';
+import { TeX } from 'mathjax-full/js/input/tex.js';
+import { CHTML } from 'mathjax-full/js/output/chtml.js';
+import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor.js';
+import { MATH_SCALE } from '../../lib/content/math-svg-units';
+import ts from 'typescript';
 
 // Render the actual shared component and CSS without a database or login.
 // CSS Modules use their source class names in this isolated browser fixture.
@@ -30,19 +36,85 @@ test.beforeAll(async () => {
 const css = ['app/styles/next-tokens.css', 'app/styles/next-prose.css', 'lib/ui/QuestionRenderer.module.css']
   .map(file => readFileSync(resolve(file), 'utf8')).join('\n');
 const equation = renderHtml(String.raw`\(\frac{123456789}{987654321}+\frac{234567891}{876543219}+\frac{345678912}{765432198}+\frac{456789123}{654321987}=\frac{567891234}{543219876}\)`);
+const adaptor = liteAdaptor();
+const chtml = new CHTML({ fontURL: 'https://mathjax.test/fonts', matchFontHeight: false, scale: MATH_SCALE });
+let chtmlStyles = '';
+function renderCHTML(html: string) {
+  const doc = mathjax.document(html, { InputJax: new TeX({ inlineMath: [['\\(', '\\)']] }), OutputJax: chtml });
+  doc.render();
+  chtmlStyles = adaptor.outerHTML(chtml.styleSheet(doc) as ReturnType<typeof adaptor.node>);
+  return adaptor.innerHTML(adaptor.body(doc.document));
+}
+const chtmlEquation = renderCHTML(String.raw`<p>This follows because \(9\left(\frac{x}{9}-9\right)+9=\frac{9x+9}{9}-9=x\).</p>`);
+const fitScript = ts.transpileModule(readFileSync(resolve('lib/ui/answer-choice-math.ts'), 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText
+  .replace('export function observeAnswerChoiceMath', 'function observeAnswerChoiceMath')
+  + '\nwindow.choiceMathObserver = observeAnswerChoiceMath(document.querySelector("main"));';
 
-function fixture(layout: string, reveal: boolean) {
+test.beforeEach(async ({ page }) => {
+  await page.route('https://mathjax.test/fonts/*', route => route.fulfill({
+    contentType: 'font/woff',
+    headers: { 'access-control-allow-origin': '*' },
+    body: readFileSync(resolve('node_modules/mathjax-full/es5/output/chtml/fonts/woff-v2', basename(new URL(route.request().url()).pathname))),
+  }));
+});
+
+function fixture(layout: string, reveal: boolean, contentHtml = equation, mode = 'practice') {
   const question = {
     questionId: 'overflow-fixture', questionType: 'mcq',
     stemHtml: '<p>Which expression is equivalent?</p>',
     stimulusHtml: layout === 'two-column' ? '<p>A short passage that wraps normally.</p>' : null,
-    options: [{ id: 'A', label: 'A', content_html: equation }, { id: 'B', label: 'B', content_html: '<p>2</p>' }],
+    options: [{ id: 'A', label: 'A', content_html: contentHtml }, { id: 'B', label: 'B', content_html: '<p>2</p>' }],
   };
   const content = renderToStaticMarkup(React.createElement(QuestionRenderer, {
-    question, layout, onSelectOption: () => {}, onToggleCross: () => {},
+    question, layout, mode, onSelectOption: () => {}, onToggleCross: () => {},
     result: reveal ? { isCorrect: true, correctOptionId: 'A', rationaleHtml: '<p>Use the following equation.</p><p>' + equation + '</p><p>The conclusion remains visible.</p>' } : null,
   }));
-  return '<style>' + css + '*{box-sizing:border-box}body{margin:0;font:16px Arial}main{max-width:1000px;margin:auto;padding:20px}</style><main>' + content + '</main>';
+  return chtmlStyles + '<style>' + css + '*{box-sizing:border-box}body{margin:0;font:16px Arial}main{max-width:1000px;margin:auto;padding:20px}</style><main>' + content + '</main>';
+}
+
+for (const mode of ['practice', 'review', 'teacher']) for (const layout of ['single', 'two-column']) {
+  test(`live math fits without scrolling and restores its size when widened (${mode}, ${layout})`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 1000 });
+    await page.setContent(fixture(layout, mode !== 'practice', '<p>Math is typeset after mounting.</p>', mode));
+    // Runtime MathJax inserts CHTML after the source crosses the sanitizer.
+    await page.locator('.optionContent').first().evaluate((el, html) => { el.innerHTML = html; }, chtmlEquation);
+    await page.evaluate(() => document.fonts.ready);
+    const math = page.locator('.optionContent mjx-container');
+    const original = await math.evaluate((el: HTMLElement) => el.style.fontSize);
+    await page.addScriptTag({ content: fitScript });
+    for (const width of [320, 400, 820, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await expect.poll(() => page.locator('.optionContent').first().evaluate(el => {
+        const math = el.querySelector('mjx-container')!.getBoundingClientRect();
+        const box = el.getBoundingClientRect();
+        return el.scrollWidth <= el.clientWidth + 1 && math.right <= box.right + 1;
+      })).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width + 1);
+      await expect(page.locator('.optionContent').first()).toHaveCSS('overflow-x', 'visible');
+      await expect(page.locator('.optionContent').first()).toHaveCSS('font-size', '15px');
+      if (mode === 'review' && width === 320) await page.locator('.optionsFieldset').screenshot({ path: testInfo.outputPath('fitted-choices-mobile.png') });
+    }
+    await expect.poll(() => math.evaluate((el: HTMLElement) => el.style.fontSize)).toBe(original);
+    if (mode === 'review' && layout === 'two-column') {
+      // Pane dragging can change the choice width without resizing the window.
+      await page.locator('.twoCol').evaluate((el: HTMLElement) => el.style.setProperty('--sw-pane-split', '70%'));
+      await expect.poll(() => math.evaluate((el: HTMLElement) => el.style.fontSize)).not.toBe(original);
+      await expect.poll(() => page.locator('.optionContent').first().evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+      await page.locator('.twoCol').evaluate((el: HTMLElement) => el.style.removeProperty('--sw-pane-split'));
+      await expect.poll(() => math.evaluate((el: HTMLElement) => el.style.fontSize)).toBe(original);
+      await page.locator('main').evaluate(el => { el.style.zoom = '1.25'; });
+      await expect.poll(() => page.locator('.optionContent').first().evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+      await page.locator('main').evaluate(el => { el.style.zoom = ''; });
+      await expect.poll(() => math.evaluate((el: HTMLElement) => el.style.fontSize)).toBe(original);
+    }
+    const style = await math.getAttribute('style');
+    await page.addScriptTag({ content: 'window.choiceMathObserver.refresh();' });
+    await expect(math).toHaveAttribute('style', style!);
+    await page.addScriptTag({ content: 'window.choiceMathObserver.dispose();' });
+    await expect.poll(() => math.evaluate((el: HTMLElement) => el.style.fontSize)).toBe(original);
+  });
 }
 
 for (const width of [320, 400, 820, 1440]) {
@@ -52,10 +124,16 @@ for (const width of [320, 400, 820, 1440]) {
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.setContent(fixture(layout, true));
       const result = await page.evaluate(() => {
-        const regions = [...document.querySelectorAll<HTMLElement>('.rationale,.optionContent')];
+        const regions = [...document.querySelectorAll<HTMLElement>('.rationale')];
+        const choice = document.querySelector<HTMLElement>('.optionContent')!;
+        const svg = choice.querySelector('svg')!.getBoundingClientRect();
+        const box = choice.getBoundingClientRect();
         return {
           pageOverflow: document.documentElement.scrollWidth > innerWidth + 2,
           escapingFields: [...document.querySelectorAll('.result,.optionsFieldset')].filter(e => e.scrollWidth > e.clientWidth + 2).length,
+          choiceScroll: choice.scrollWidth > choice.clientWidth + 2,
+          choiceOverflow: getComputedStyle(choice).overflowX,
+          equationVisible: svg.left >= box.left - 2 && svg.right <= box.right + 2,
           scrolls: regions.filter(e => e.scrollWidth > e.clientWidth + 2).map(e => {
             const svg = e.querySelector('svg')!;
             const size = svg.getBoundingClientRect();
@@ -67,7 +145,10 @@ for (const width of [320, 400, 820, 1440]) {
       });
       expect(result.pageOverflow).toBe(false);
       expect(result.escapingFields).toBe(0);
-      if (width <= 400) expect(result.scrolls.length).toBe(2);
+      expect(result.choiceScroll).toBe(false);
+      expect(['auto', 'scroll']).not.toContain(result.choiceOverflow);
+      expect(result.equationVisible).toBe(true);
+      if (width <= 400) expect(result.scrolls.length).toBe(1);
       for (const scroll of result.scrolls) expect(Object.values(scroll).every(Boolean)).toBe(true);
       await expect(page.getByText('The conclusion remains visible.')).toBeVisible();
 
