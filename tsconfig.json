@@ -43,6 +43,7 @@
     "out",
     "public",
     "supabase",
+    "tmp",
     "scripts/*.mjs",
     "scripts/*.js"
   ]

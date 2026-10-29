@@ -3,7 +3,8 @@
 > **Status: Living document.** Last verified against code: 2026-07-12
 > (question-bank write policies re-verified against production
 > 2026-09-01; attempt-stat read paths re-verified 2026-09-06; ACT union of
-> those paths verified against production 2026-10-13).
+> those paths verified against production 2026-10-13;
+> September 2024 H11 student readiness verified 2026-10-28).
 
 Short runbook for anything that touches the Supabase database.
 
@@ -379,3 +380,39 @@ the bank question. The reduced options are saved with a condition that the
 original draft choices and review status still match, so retries reuse the
 same removal and concurrent changes require a reload. Source PDFs and offline
 source packages retain their printed choices and official answer keys.
+
+## September 2024 ACT H11 readiness
+
+Verified in production on 2026-10-28. `ACT-2024-Sep` now has all 215
+student-visible questions: English 75, Math 60, Reading 40, Science 40.
+Math questions 31, 33, and 34 already existed but were flagged `is_broken`,
+which reduced the visible Math count to 57 and triggered the test hub's
+format-review gate. The import job and all 155 non-Math drafts were already
+completed/approved; there was no missing Math draft batch to re-import.
+
+The local `content/import/Sept2024/ACT-202409-Form-H11.pdf` was preserved
+byte-for-byte. Source review restored those three questions, replaced Q31's
+side-by-side table layout with one four-column table, restored Q4 distractors
+`0.003` and `0.014`, and restored the squared factors in Q49 choices A and B.
+The restored questions and Q49 include explanations. All 215 question IDs, 860 option
+IDs, answer flags, difficulty/taxonomy/Modeling metadata, and existing student
+history were preserved. The 155 non-Math keys, 60 Math Modeling flags, and
+219 score-conversion rows were checked against the booklet. All 60 Math
+answers were reviewed by their answer content because legacy five-choice
+source letters differ from the bank's four-choice letters.
+
+The live readback matched the prepared repairs exactly. The actual shared
+question renderer passed 430 browser checks (every question at 390px and
+1280px), with four options, working figures, no MathJax errors, and no page
+width overflow. Eight additional checks covered the new explanations in review mode.
+The app's format assessment returns `classic` with no review
+reason; the Math section plan contains 60 questions and 60 minutes.
+
+The source identity, original/repaired content, official Math keys, and
+verification receipt are in
+`content/question-repairs/2026-10/act-h11-math-finalization.json`.
+Run `node --experimental-strip-types scripts/question-repairs/verify-act-h11.ts`
+for read-only record validation. An optional `--snapshot <file>` checks a fresh
+snapshot with `questions`, `scales`, and `job` fields. Local before/after
+snapshots, source-key extraction, SQL, and browser evidence are retained under
+`tmp/sep2024-finalization-20261028/`.
