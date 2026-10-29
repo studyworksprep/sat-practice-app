@@ -550,8 +550,8 @@
 .optionContent {
   flex: 1;
   min-width: 0;
-  /* Keep wide equations inside the choice without shrinking math glyphs. */
-  overflow-x: auto;
+  /* Choices expand vertically; prose wraps and oversized math fits its width. */
+  overflow-wrap: anywhere;
   font-size: 15px;
   line-height: 1.55;
   color: var(--color-slate-700);

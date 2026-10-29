@@ -28,6 +28,18 @@
   margin-top: 8px;
 }
 
+/* Pre-rendered equations have an intrinsic SVG aspect ratio. Fit them to
+   the choice instead of introducing a nested scrollbar or clipping glyphs.
+   Live CHTML equations use the matching fit pass in preview-effects.js. */
+.sw-option-content mjx-container[jax="SVG"] {
+  display: inline-block;
+  max-width: 100%;
+}
+.sw-option-content svg[viewBox] {
+  max-width: 100%;
+  height: auto;
+}
+
 /* ----- .sw-prose — generic injected question text (stimulus,
        stem, rationale) ----- */
 
