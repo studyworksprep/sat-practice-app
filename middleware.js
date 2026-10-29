@@ -90,7 +90,7 @@ function matchLegacyRedirect(pathname) {
   return null;
 }
 
-export async function proxy(request) {
+export async function middleware(request) {
   // External/public API routes and webhooks handle their own auth — skip session logic.
   if (
     request.nextUrl.pathname.startsWith(EXTERNAL_API_PREFIX) ||
@@ -281,6 +281,10 @@ export async function proxy(request) {
 }
 
 export const config = {
+  // Keep auth/access checks beside Supabase. Next 16.2's Node.js proxy
+  // drops regions from its build output; this legacy filename uses Edge
+  // by default and preserves the regional setting.
+  regions: ['pdx1'],
   matcher: [
     /*
       Match all request paths except:

@@ -81,6 +81,9 @@ jobs:
           STRIPE_SECRET_KEY: sk_test_placeholder
           STRIPE_WEBHOOK_SECRET: whsec_placeholder
 
+      - name: Middleware deployment region
+        run: node scripts/check-middleware-region.mjs
+
   # Auth-boundary e2e suite (tests/e2e/api-auth.* + page-auth.*).
   # Needs a real Supabase project seeded with the dev users from
   # scripts/dev-seed-*.sql (see playwright.config.ts header), so it
