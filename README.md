@@ -63,15 +63,7 @@ npm run validate-lessons
 ## Deployment
 
 Vercel (functions pinned to `pdx1`, colocated with the production
-Supabase project in us-west-2). Auth/access checks also run in Oregon:
-`middleware.js` uses its default Edge runtime with `regions: ['pdx1']`.
-The legacy middleware filename is intentional: Next.js 16.2.3's Node.js
-`proxy.js` build output omits regional configuration, and Vercel restricts
-Next.js per-function overrides. Keep the middleware region aligned with
-`vercel.json` and the production database. After deployment, verify the
-middleware function is regional and that its Supabase auth/profile/
-entitlement requests enter via Oregon. Revisit the middleware convention
-when upgrading Next.js. Environment variables are configured
+Supabase project in us-west-2). Environment variables are configured
 in Vercel project settings; see `.env.example` for the client-side
 set. Webhooks: Stripe (`app/api/webhooks/stripe`, signature-verified).
 External integrations authenticate via `x-api-key` against the
