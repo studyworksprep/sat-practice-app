@@ -4,7 +4,7 @@
 // Enumerates every server entry point and the auth guards it calls:
 //   - Route handlers:  app/**/route.{js,ts}      (exported HTTP methods)
 //   - Server Actions:  files containing 'use server' (exported async fns)
-//   - Middleware:      proxy.js
+//   - Middleware:      middleware.js
 //
 // Guard detection is file-level (which guard calls appear in the file),
 // not per-function — precise enough to answer "does this entry point
@@ -167,7 +167,7 @@ for (const file of allFiles) {
 routes.sort((a, b) => a.path.localeCompare(b.path));
 actions.sort((a, b) => a.file.localeCompare(b.file));
 
-const proxyText = readFileSync(join(ROOT, 'proxy.js'), 'utf8');
+const proxyText = readFileSync(join(ROOT, 'middleware.js'), 'utf8');
 const proxyGuards = detectGuards(proxyText);
 
 const unguardedRoutes = routes.filter((r) => r.guards.length === 0);
@@ -189,7 +189,7 @@ lines.push('> all of it (`can_view()` + per-table policies). The hand-written');
 lines.push('> 2026-05-04 matrix with per-row analysis is preserved at');
 lines.push('> `docs/history/authorization-matrix-2026-05-04.md`.');
 lines.push('');
-lines.push('## Middleware (`proxy.js`)');
+lines.push('## Middleware (`middleware.js`)');
 lines.push('');
 lines.push(`Runs on every matched request. Detected: ${proxyGuards.join(', ') || 'session refresh only'}.`);
 lines.push('');
