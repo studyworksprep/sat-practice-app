@@ -9,7 +9,7 @@
 > 2026-05-04 matrix with per-row analysis is preserved at
 > `docs/history/authorization-matrix-2026-05-04.md`.
 
-## Middleware (`middleware.js`)
+## Middleware (`proxy.js`)
 
 Runs on every matched request. Detected: session refresh only.
 
