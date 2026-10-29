@@ -1,5 +1,11 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["pdx1"],
+  "functions": {
+    "proxy.js": {
+      "regions": ["pdx1"]
+    }
+  },
   "crons": [
     {
       "path": "/api/admin/sync-lessonworks",

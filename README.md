@@ -63,7 +63,14 @@ npm run validate-lessons
 ## Deployment
 
 Vercel (functions pinned to `pdx1`, colocated with the production
-Supabase project in us-west-2). Environment variables are configured
+Supabase project in us-west-2). `vercel.json` also explicitly pins
+`functions["proxy.js"].regions`: Vercel builds the Next.js proxy as a
+separate middleware function, which otherwise runs globally. Next.js
+16.2.3 does not emit `config.regions` for its Node.js proxy, so configure
+that function in `vercel.json`. Keep both region settings aligned with
+the production database. After deployment, verify `_middleware` runs in
+`pdx1` and that its Supabase auth/profile/entitlement requests enter via
+Oregon. Environment variables are configured
 in Vercel project settings; see `.env.example` for the client-side
 set. Webhooks: Stripe (`app/api/webhooks/stripe`, signature-verified).
 External integrations authenticate via `x-api-key` against the
