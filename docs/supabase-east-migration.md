@@ -7,9 +7,11 @@
 | Production source | SAT Question Bank | `noqtadytxyslkoetchrs` | `us-west-2` |
 | New production destination | Studyworks Content Bank | `yggbqwlvscuzuqqpwzpj` | `us-east-1` |
 
-Preparation started on October 30, 2026. The destination was confirmed healthy
-and empty: no application tables, Auth users, or Storage objects. Production
-still uses the west project and Vercel `pdx1`. No cutover has occurred.
+Preparation started on October 30, 2026. The destination was initially healthy
+and empty. A rehearsal copy is now restored and locally tested. Production
+still uses the west project and Vercel `pdx1`. No cutover has occurred. This
+branch changes Vercel to `iad1` for the east preview; do not merge that change
+before coordinating the production environment switch and final data refresh.
 
 The source runs PostgreSQL 17.6; the destination runs 17.11. Both have the same
 installed extensions. Initial inspection found no Vault secrets or operators
@@ -34,8 +36,48 @@ successfully into a second fixture database. The round trip preserved Auth
 IDs/password hashes, the account-creation trigger, application/Storage policies,
 legacy content, JSON/Unicode/TeX/multiline strings, migration history, and the
 identity sequence. A write through the read-only export connection was rejected.
-This validates the tooling on a fixture; the production-data rehearsal awaits
-direct database credentials.
+The subsequent production-data rehearsal also passed, using temporary
+migration credentials without resetting the existing database password.
+
+## Completed rehearsal checks
+
+- The initial snapshot restored 148,183 rows across 139 data tables, including
+  96 Auth users. Row fingerprints, sequence values, migration history, all 505
+  policies, and custom managed-schema triggers matched before test activity.
+- All 50 Storage files (4,585,934 bytes) were copied and byte-verified. All five
+  bucket configurations and object ownership were preserved.
+- Sixty-two public Storage URL references were mapped to the east project in
+  48 rows across five tables. Nine valid rendered-content hashes were updated;
+  other row fields and existing stale/null hash markers were preserved.
+- New-project defaults initially added grants to 25 functions and 11 tables.
+  A separate target-only reconciliation removed the extra grants. Effective
+  grants and ownership now match the source across all 212 application objects.
+  No column-specific grants were present.
+- A local production build passed. Student and tutor demo sessions reached
+  their dashboards, and both were blocked from writing through the API. Demo
+  login generates a session without sending email. These checks do not measure
+  end-user regional latency.
+- Migration guard tests pass locally. The CI workflow also runs these tests.
+
+The private snapshot and verification reports are in
+`/private/tmp/studyworks-east-migration/backup-2026-10-30T18-23-22.679Z/`,
+with permission-reconciliation reports in its parent directory.
+
+Auth templates, redirects, and nonsecret settings were copied. The Auth
+configuration API returns a fingerprint for `smtp_pass`, not the original SMTP
+credential. The candidate's custom SMTP is therefore cleared until a real
+Resend SMTP key can be configured. Do not copy secret fingerprints as keys.
+No test emails have been sent, and production SMTP is unchanged.
+
+The Vercel migration branch has its own east-project keys. Its external email,
+billing, sync, cron, AI/import-provider, shared Redis, and Sentry credentials
+are disabled for rehearsal. Other preview branches and production settings
+are unchanged. Vercel's existing preview access protection remains enabled.
+
+A populated-target refresh still needs to be implemented and rehearsed before
+cutover. The initial restore command intentionally refuses a populated target.
+The west project remains writable, so this snapshot is already a rehearsal
+baseline rather than a final production copy.
 
 ## Private access and preparation
 
@@ -45,20 +87,32 @@ file mode `0600`. This temporary directory is working space, not a durable
 disaster-recovery backup. Retain a verified production backup through the
 existing backup process before cutover.
 
-The private `access.env` file contains:
+The private `access.env` file contains a management token. Database URLs are
+optional; leave them blank or enter the exact project API origin to discover
+Session pooler endpoints and use Supabase-managed temporary migration logins.
+Existing database passwords do not need to be recovered or reset.
 
 ```text
-SOURCE_DATABASE_URL=<source direct or Session pooler PostgreSQL URI>
-TARGET_DATABASE_URL=<destination direct or Session pooler PostgreSQL URI>
+SOURCE_DATABASE_URL=
+TARGET_DATABASE_URL=
 SUPABASE_ACCESS_TOKEN=<short-lived management token>
 ```
 
-Use the Session pooler on port 5432 when direct IPv6 is unavailable. Passwords
+If supplying a database password, use the Session pooler on port 5432 when direct IPv6 is unavailable. Passwords
 in URIs must be percent-encoded. Do not put credentials into shell history,
 command-line arguments, logs, commits, or chat messages. Node's `--env-file`
 reads these values without evaluating shell substitutions.
 
-Prefer a token scoped to these two projects. Configuration export needs read
+Prefer a token scoped to these two projects. Temporary migration logins need
+Database read-write (for the platform login-role API) and Connection Pooling
+read. The restricted read-only-user login cannot access the managed Auth
+schema; the CLI migration login can, and all export/query transactions enforce
+read-only mode separately. Login passwords expire after 300 seconds and are
+refreshed before new operations as needed. They are held in memory, never
+printed or added to connection command arguments. Existing application
+database passwords and access policies are unchanged.
+
+Configuration export needs read
 access; copying destination settings needs the corresponding write access.
 Retrieving server API keys for Storage transfer additionally requires API Key
 Secrets permission. The tool reports missing access without printing secrets.

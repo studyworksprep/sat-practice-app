@@ -13,7 +13,7 @@ export const PROJECTS = Object.freeze({
   source: { ref: 'noqtadytxyslkoetchrs', region: 'us-west-2' },
   target: { ref: 'yggbqwlvscuzuqqpwzpj', region: 'us-east-1' },
 });
-const PRIVATE_DIR = '/private/tmp/studyworks-east-migration';
+export const PRIVATE_DIR = '/private/tmp/studyworks-east-migration';
 const USAGE = `Usage:
   node --env-file=/private/tmp/studyworks-east-migration/access.env \\
     scripts/supabase-east-migration.mjs <check-access | inventory | backup>
@@ -22,7 +22,9 @@ check-access  Validate both project identities and read-only DB connectivity.
 inventory     Save schema/security metadata and exact table counts privately.
 backup        Export roles, schema, data, history, and custom managed objects.
 
-No command changes either database or the deployment. Backup requires the
+No command changes application data or the deployment. Without database
+passwords, the tool requests Supabase-managed short-lived migration logins;
+all queries/exports still enforce read-only mode. Backup requires the
 official Supabase CLI dry-run scripts prepared in the private directory and
 the official postgres:17-alpine Docker image. Credentials are never printed.
 `;
@@ -59,6 +61,64 @@ export function connectionEnv(raw, side) {
   };
 }
 
+export function connectionHint(raw, side) {
+  if (!PROJECTS[side]) throw new Error('Unknown migration side.');
+  if (!raw?.trim()) return 'temporary';
+  let url;
+  try { url = new URL(raw); } catch { throw new Error(`${side}: invalid connection setting.`); }
+  if (['postgres:', 'postgresql:'].includes(url.protocol)) {
+    connectionEnv(raw, side);
+    return 'password';
+  }
+  if (url.origin === `https://${PROJECTS[side].ref}.supabase.co` && url.pathname === '/' && !url.search && !url.hash && !url.username && !url.password) {
+    return 'temporary';
+  }
+  throw new Error(`${side}: connection setting must identify the expected project.`);
+}
+
+export async function management(side, path = '', body) {
+  const token = process.env.SUPABASE_ACCESS_TOKEN;
+  if (!token) throw new Error('Missing SUPABASE_ACCESS_TOKEN in the private access.env file.');
+  const response = await fetch(`https://api.supabase.com/v1/projects/${PROJECTS[side].ref}${path}`, {
+    method: body === undefined ? 'GET' : 'POST',
+    headers: { Authorization: `Bearer ${token}`, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+    body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(30000),
+  });
+  const result = await response.json();
+  if (!response.ok) {
+    const missing = Array.isArray(result.missing_permissions) ? result.missing_permissions.filter((p) => /^[a-z_]+$/.test(p)).join(', ') : '';
+    throw new Error(`${side}: management access returned HTTP ${response.status}${missing ? `; missing permissions: ${missing}` : ''}.`);
+  }
+  return result;
+}
+
+const temporaryConnections = new Map();
+export async function migrationConnection(side) {
+  const raw = process.env[side === 'source' ? 'SOURCE_DATABASE_URL' : 'TARGET_DATABASE_URL'];
+  if (connectionHint(raw, side) === 'password') return connectionEnv(raw, side);
+  const cached = temporaryConnections.get(side);
+  if (cached && cached.expires > Date.now() + 60000) return { ...cached.env };
+  const project = PROJECTS[side];
+  const poolers = await management(side, '/config/database/pooler');
+  const primary = poolers.find((p) => p.database_type === 'PRIMARY');
+  if (!primary) throw new Error(`${side}: primary pooler configuration was not returned.`);
+  // Reuse the strict project/host checks before requesting a login. Session
+  // pooling uses 5432 even when the config URI describes transaction pooling.
+  const env = connectionEnv(`postgresql://postgres.${project.ref}:placeholder@${primary.db_host}:5432/postgres`, side);
+  // The read-only-user login cannot access managed Auth data. This is the
+  // same short-lived migration login used by the CLI; database transactions
+  // and pg_dump connections independently enforce read-only execution.
+  const login = await management(side, '/cli/login-role', { read_only: false });
+  if (login.role !== 'cli_login_postgres' || typeof login.password !== 'string' || !login.password || !Number.isFinite(login.ttl_seconds) || login.ttl_seconds <= 0 || login.ttl_seconds > 3600) {
+    throw new Error(`${side}: unexpected temporary login response.`);
+  }
+  env.PGUSER = `${login.role}.${project.ref}`;
+  env.PGPASSWORD = login.password;
+  temporaryConnections.set(side, { env, expires: Date.now() + login.ttl_seconds * 1000 });
+  console.log(`${side}: temporary migration login issued; expires in ${login.ttl_seconds}s. Queries and exports remain read-only.`);
+  return { ...env };
+}
+
 export function stripPlaceholderConnection(script) {
   // Only remove known placeholder exports from inspected CLI --dry-run output.
   // Never interpolate credentials into a shell script or command-line argument.
@@ -74,12 +134,12 @@ export function stripPlaceholderConnection(script) {
   return script;
 }
 
-function processEnv(pgEnv = {}) {
+export function processEnv(pgEnv = {}) {
   // Avoid inherited libpq service/connection overrides.
   return { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('PG'))), ...pgEnv };
 }
 
-async function run(executable, args, { input, env = process.env, outputFile } = {}) {
+export async function run(executable, args, { input, env = process.env, outputFile } = {}) {
   const output = outputFile ? createWriteStream(outputFile, { flags: 'wx', mode: 0o600 }) : null;
   const child = spawn(executable, args, { env, stdio: ['pipe', 'pipe', 'pipe'] });
   let stdout = '';
@@ -105,22 +165,15 @@ async function run(executable, args, { input, env = process.env, outputFile } = 
   return stdout.trim();
 }
 
-async function query(side, sql) {
-  const raw = process.env[side === 'source' ? 'SOURCE_DATABASE_URL' : 'TARGET_DATABASE_URL'];
-  const env = processEnv(connectionEnv(raw, side));
-  const text = await run('psql', ['--no-psqlrc', '--no-password', '--quiet', '--tuples-only', '--no-align', '--set', 'ON_ERROR_STOP=1'], { input: sql, env });
+export async function query(side, sql) {
+  const env = processEnv(await migrationConnection(side));
+  const text = await run('psql', ['--no-psqlrc', '--no-password', '--quiet', '--tuples-only', '--no-align', '--set', 'ON_ERROR_STOP=1'], { input: `BEGIN READ ONLY; SET LOCAL ROLE postgres;\n${sql}\nCOMMIT;`, env });
   return JSON.parse(text);
 }
 
-async function project(side) {
-  const token = process.env.SUPABASE_ACCESS_TOKEN;
-  if (!token) throw new Error('Missing SUPABASE_ACCESS_TOKEN in the private access.env file.');
+export async function project(side) {
   const expected = PROJECTS[side];
-  const response = await fetch(`https://api.supabase.com/v1/projects/${expected.ref}`, {
-    headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(30000),
-  });
-  if (!response.ok) throw new Error(`${side}: project access check returned HTTP ${response.status}; check token permissions.`);
-  const result = await response.json();
+  const result = await management(side);
   if ((result.id ?? result.ref) !== expected.ref || result.region !== expected.region || result.status !== 'ACTIVE_HEALTHY') {
     throw new Error(`${side}: project identity, region, or health does not match the migration plan.`);
   }
@@ -219,13 +272,13 @@ async function backup(result) {
   const dir = join(PRIVATE_DIR, `backup-${new Date().toISOString().replaceAll(':','-')}`);
   await mkdir(dir, { mode: 0o700 });
   await privateJson(join(dir, 'inventory.json'), result);
-  const pgEnv = connectionEnv(process.env.SOURCE_DATABASE_URL, 'source');
-  pgEnv.PGOPTIONS = '-c default_transaction_read_only=on -c statement_timeout=0 -c lock_timeout=5000 -c timezone=UTC';
-  const env = processEnv(pgEnv);
   for (const name of ['roles', 'schema', 'data', 'history-schema', 'history-data']) {
     const path = join(PRIVATE_DIR, `official-${name}-dump.sh`);
     if (!existsSync(path)) throw new Error(`Missing inspected official dump script: ${path}`);
     const script = stripPlaceholderConnection(await readFile(path, 'utf8'));
+    const pgEnv = await migrationConnection('source');
+    pgEnv.PGOPTIONS = '-c default_transaction_read_only=on -c statement_timeout=0 -c lock_timeout=5000 -c timezone=UTC';
+    const env = processEnv(pgEnv);
     const args = ['run', '--rm', '--interactive', ...Object.keys(pgEnv).flatMap((key) => ['--env', key]), image, 'sh', '-se'];
     console.log(`Exporting ${name} (source connection is read-only)...`);
     await run('docker', args, { input: script, env, outputFile: join(dir, `${name}.sql`) });
@@ -250,8 +303,8 @@ async function main() {
   await mkdir(PRIVATE_DIR, { recursive: true, mode: 0o700 });
   await chmod(PRIVATE_DIR, 0o700);
   // Reject switched source/target URLs before making any network request.
-  connectionEnv(process.env.SOURCE_DATABASE_URL, 'source');
-  connectionEnv(process.env.TARGET_DATABASE_URL, 'target');
+  connectionHint(process.env.SOURCE_DATABASE_URL, 'source');
+  connectionHint(process.env.TARGET_DATABASE_URL, 'target');
   if (args[0] === 'check-access') {
     const result = await Promise.all(['source','target'].map(async (side) => ({
       side, project: await project(side), database: await query(side, "select json_build_object('postgres_version',current_setting('server_version'),'read_only',current_setting('transaction_read_only'));"),

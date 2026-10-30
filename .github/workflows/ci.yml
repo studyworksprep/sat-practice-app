@@ -39,6 +39,9 @@ jobs:
       - name: Unit tests
         run: npm run test:unit
 
+      - name: Supabase migration guards
+        run: node --test scripts/supabase-east-*.test.mjs
+
       - name: Content normalization regressions
         run: npm run test:content-normalization
 

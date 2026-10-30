@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { PROJECTS, connectionEnv, stripPlaceholderConnection } from './supabase-east-migration.mjs';
+import { PROJECTS, connectionEnv, connectionHint, stripPlaceholderConnection } from './supabase-east-migration.mjs';
 
 const source = `postgresql://postgres.${PROJECTS.source.ref}:p%40ss%24%28word%29@aws-0-us-west-2.pooler.supabase.com:5432/postgres`;
 const target = `postgresql://postgres.${PROJECTS.target.ref}:secret@aws-1-us-east-1.pooler.supabase.com:5432/postgres`;
@@ -37,6 +37,21 @@ test('invalid URL errors do not print credentials', () => {
   for (const url of ['secret-value', source.replace('p%40ss%24%28word%29',''), `${source}?options=secret-value`]) {
     assert.throws(() => connectionEnv(url,'source'), (error) => !error.message.includes('secret-value'));
   }
+});
+
+test('temporary login discovery accepts only blank settings or the exact project API origin', () => {
+  assert.equal(connectionHint('', 'source'), 'temporary');
+  assert.equal(connectionHint(undefined, 'target'), 'temporary');
+  assert.equal(connectionHint(`https://${PROJECTS.source.ref}.supabase.co`, 'source'), 'temporary');
+  assert.equal(connectionHint(source, 'source'), 'password');
+  for (const url of [
+    `https://${PROJECTS.target.ref}.supabase.co`,
+    `http://${PROJECTS.source.ref}.supabase.co`,
+    `https://${PROJECTS.source.ref}.supabase.co/path`,
+    `https://${PROJECTS.source.ref}.supabase.co?host=example.com`,
+    `https://user:secret@${PROJECTS.source.ref}.supabase.co`,
+    'https://example.com',
+  ]) assert.throws(() => connectionHint(url, 'source'));
 });
 
 const placeholder = `#!/usr/bin/env bash
