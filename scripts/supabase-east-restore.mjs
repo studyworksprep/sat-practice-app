@@ -9,7 +9,7 @@ import { join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   PROJECTS, PRIVATE_DIR, INVENTORY_SQL, project, query, migrationConnection,
-  processEnv, run, stripPlaceholderConnection,
+  processEnv, run, stripPlaceholderConnection, assertCandidateWritePhase,
 } from './supabase-east-migration.mjs';
 
 const FILES = ['roles.sql','schema.sql','data.sql','history-schema.sql','history-data.sql','managed-objects.sql','inventory.json'];
@@ -126,6 +126,7 @@ async function main() {
   if (args.length < 1 || args.length > 2 || args[0].startsWith('--') || (args[1] && !['--apply','--verify'].includes(args[1]))) {
     throw new Error('Usage: node --env-file=<private access.env> scripts/supabase-east-restore.mjs <backup-dir> [--apply | --verify]\nDefault: review the restore plan without changing data.');
   }
+  if (args[1] === '--apply') assertCandidateWritePhase();
   const cp = await checkpoint(args[0]);
   const identity = await project('target');
   if (identity.ref !== PROJECTS.target.ref || identity.region !== PROJECTS.target.region) throw new Error('Unexpected destination project.');

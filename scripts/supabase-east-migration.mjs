@@ -14,6 +14,12 @@ export const PROJECTS = Object.freeze({
   target: { ref: 'yggbqwlvscuzuqqpwzpj', region: 'us-east-1' },
 });
 export const PRIVATE_DIR = '/private/tmp/studyworks-east-migration';
+
+// The east project became production on October 30, 2026. Retire the
+// rehearsal write entry points while retaining read-only audit helpers.
+export function assertCandidateWritePhase() {
+  throw new Error('Candidate mutation commands are retired: the east database is now live. Use a newly reviewed recovery plan for further database writes.');
+}
 const USAGE = `Usage:
   node --env-file=/private/tmp/studyworks-east-migration/access.env \\
     scripts/supabase-east-migration.mjs <check-access | inventory | backup>
@@ -292,7 +298,7 @@ async function backup(result) {
     phase: 'rehearsal', writes_frozen: false, files,
   });
   console.log(`Backup saved privately: ${dir}`);
-  console.log('This is a rehearsal snapshot. Production remains writable; final cutover requires a fresh export during the agreed write freeze.');
+  console.log('Historical west-project export only. The east project is now production; this command does not refresh or change it.');
 }
 
 async function main() {

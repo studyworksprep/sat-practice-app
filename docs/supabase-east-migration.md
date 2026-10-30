@@ -4,14 +4,28 @@
 
 | Role | Project | Ref | Region |
 | --- | --- | --- | --- |
-| Production source | SAT Question Bank | `noqtadytxyslkoetchrs` | `us-west-2` |
-| New production destination | Studyworks Content Bank | `yggbqwlvscuzuqqpwzpj` | `us-east-1` |
+| Protected rollback copy | SAT Question Bank | `noqtadytxyslkoetchrs` | `us-west-2` |
+| Production | Studyworks Content Bank | `yggbqwlvscuzuqqpwzpj` | `us-east-1` |
 
-Preparation started on October 30, 2026. The destination was initially healthy
-and empty. A rehearsal copy is now restored and locally tested. Production
-still uses the west project and Vercel `pdx1`. No cutover has occurred. This
-branch changes Vercel to `iad1` for the east preview; do not merge that change
-before coordinating the production environment switch and final data refresh.
+The production switch completed on October 30, 2026, at approximately 6:02 PM
+Eastern Time (22:02 UTC), through PR #443 and commit `5e56ee01`. Vercel production
+and Supabase now both run in North Virginia (`iad1` / `us-east-1`). The west
+database retains the final data and has 112 removable write guards that reject
+stale clients. It has not been deleted, paused, or had its signing keys rotated.
+
+The final frozen snapshot verified 148,182 rows across 139 data tables, 96 Auth
+users, sequence values, migration history, all 505 policies, and all 50 files.
+Public Storage URLs were mapped to east. Production SMTP and utility secrets
+were updated; explicit link-signing secrets preserve existing signatures.
+Live password login, practice save/time recording, and review reload passed;
+the temporary account and its activity were removed without sending email.
+
+**Candidate mutation commands are retired.** Their `--apply` and
+`--rehearse-target` modes now stop before accessing credentials or the network.
+The procedures below document the completed migration; do not replay them
+against production. Read-only audit helpers and the exact west guard-removal
+SQL remain available for a separately reviewed recovery plan. Once east has
+accepted writes, rollback requires reconciling that new data.
 
 The source runs PostgreSQL 17.6; the destination runs 17.11. Both have the same
 installed extensions. Initial inspection found no Vault secrets or operators
@@ -225,9 +239,9 @@ refresh commands after the east project starts accepting production writes.
 
 ## Production cutover
 
-Set the maintenance window after the rehearsal establishes the actual export,
-restore, validation, and build times. The user has authorized starting the
-migration; no maintenance window has been selected yet.
+The user explicitly approved an immediate production switch on October 30.
+West writes were held from 21:53:58 UTC until the new deployment was available
+at 22:02:37 UTC, approximately nine minutes. The completed sequence follows.
 
 - Freeze writes at every entry point, including already-open browser clients
   using the old Supabase URL, account creation, server/API writes, imports,

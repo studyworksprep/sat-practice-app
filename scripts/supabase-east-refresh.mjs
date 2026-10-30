@@ -5,7 +5,7 @@ import { readFile,writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join,resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PROJECTS,PRIVATE_DIR,INVENTORY_SQL,project,query,migrationConnection,processEnv,run } from './supabase-east-migration.mjs';
+import { PROJECTS,PRIVATE_DIR,INVENTORY_SQL,project,query,migrationConnection,processEnv,run,assertCandidateWritePhase } from './supabase-east-migration.mjs';
 import { checkpoint,dumpTarget,copyFingerprints,assertAuthColumns,verify } from './supabase-east-restore.mjs';
 
 // Exact schema dumps reviewed after the initial restore and ACL correction.
@@ -31,6 +31,7 @@ export function refreshTables(source,current,history){
 async function main(){
  const args=process.argv.slice(2);
  if(args.length<1||args.length>2||args[0].startsWith('--')||(args[1]&&args[1]!=='--apply'))throw new Error('Usage: node --env-file=<private access.env> scripts/supabase-east-refresh.mjs <backup-dir> [--apply]');
+ if(args[1]==='--apply')assertCandidateWritePhase();
  const cp=await checkpoint(args[0]);
  await project('target');
  if(cp.manifest.files['schema.sql']!==REVIEWED_SOURCE_SCHEMA)throw new Error('Source schema changed; review and rehearse the new schema before refreshing.');
