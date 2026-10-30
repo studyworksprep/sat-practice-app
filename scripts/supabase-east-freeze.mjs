@@ -3,7 +3,7 @@
 // The CLI only plans or rehearses on the candidate; it cannot freeze production.
 import { join,resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PRIVATE_DIR,project,query,migrationConnection,processEnv,run } from './supabase-east-migration.mjs';
+import { PRIVATE_DIR,project,query,migrationConnection,processEnv,run,assertCandidateWritePhase } from './supabase-east-migration.mjs';
 import { checkpoint,copyFingerprints } from './supabase-east-restore.mjs';
 
 const SCHEMA='_studyworks_east_cutover';
@@ -50,6 +50,7 @@ DROP SCHEMA "${SCHEMA}";`,
 async function main(){
  const args=process.argv.slice(2);
  if(args.length<1||args.length>2||args[0].startsWith('--')||(args[1]&&args[1]!=='--rehearse-target'))throw new Error('Usage: node --env-file=<private access.env> scripts/supabase-east-freeze.mjs <backup-dir> [--rehearse-target]');
+ if(args[1]==='--rehearse-target')assertCandidateWritePhase();
  const cp=await checkpoint(args[0]);await project('target');
  const data=await copyFingerprints(join(cp.dir,'data.sql'));
  const names=[...Object.keys(data.tables),'supabase_migrations.schema_migrations'];

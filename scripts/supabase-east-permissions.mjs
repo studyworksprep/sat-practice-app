@@ -6,7 +6,7 @@ import { writeFile } from 'node:fs/promises';
 import { isDeepStrictEqual } from 'node:util';
 import { join,resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PRIVATE_DIR,project,query,migrationConnection,processEnv,run } from './supabase-east-migration.mjs';
+import { PRIVATE_DIR,project,query,migrationConnection,processEnv,run,assertCandidateWritePhase } from './supabase-east-migration.mjs';
 
 export const ACL_SQL=`
 WITH objects AS (
@@ -79,6 +79,7 @@ export function permissionPlan(source,target){
 async function main(){
  const args=process.argv.slice(2);
  if(args.length>1||(args[0]&&args[0]!=='--apply'))throw new Error('Usage: node --env-file=<private access.env> scripts/supabase-east-permissions.mjs [--apply]');
+ if(args[0]==='--apply')assertCandidateWritePhase();
  await Promise.all([project('source'),project('target')]);
  const [source,target]=await Promise.all([query('source',ACL_SQL),query('target',ACL_SQL)]);
  const plan=permissionPlan(source,target);

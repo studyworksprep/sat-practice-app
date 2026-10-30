@@ -8,7 +8,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 import { sourceHash } from '../lib/content/render-math.mjs';
-import { PROJECTS, PRIVATE_DIR, project, query, migrationConnection, processEnv, run } from './supabase-east-migration.mjs';
+import { PROJECTS, PRIVATE_DIR, project, query, migrationConnection, processEnv, run, assertCandidateWritePhase } from './supabase-east-migration.mjs';
 import { checkpoint } from './supabase-east-restore.mjs';
 
 export const OLD_STORAGE = `https://${PROJECTS.source.ref}.supabase.co/storage/v1/`;
@@ -217,6 +217,7 @@ async function rewrite(apply,cp) {
 async function main(){
   const args=process.argv.slice(2);
   if (args.length<2 || args.length>3 || !['audit','storage','rewrite'].includes(args[1]) || (args[2] && args[2]!=='--apply')) throw new Error('Usage: node --env-file=<private access.env> scripts/supabase-east-assets.mjs <backup-dir> <audit | storage | rewrite> [--apply]');
+  if(args[2]==='--apply')assertCandidateWritePhase();
   const cp=await checkpoint(args[0]);
   await project('target');
   if(args[1]==='audit')console.log(JSON.stringify(await snapshotUrlAudit(cp)));
