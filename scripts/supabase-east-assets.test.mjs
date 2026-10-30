@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { sourceHash } from '../lib/content/render-math.mjs';
-import { OLD_STORAGE,NEW_STORAGE,validObjectPath,replaceStorage,transformedQuestion,cacheSeconds } from './supabase-east-assets.mjs';
+import { OLD_STORAGE,NEW_STORAGE,validObjectPath,replaceStorage,transformedQuestion,cacheSeconds,auditCopyUrls } from './supabase-east-assets.mjs';
 
 test('Storage paths reject traversal and route escapes',()=>{
   assert.doesNotThrow(()=>validObjectPath('question-figures','nested/example.svg'));
@@ -32,4 +32,22 @@ test('URL mapping updates valid render hashes while retaining stale/null markers
   assert.equal(result.updated_at,valid.updated_at);
   assert.equal(transformedQuestion({...row,rendered_source_hash:'already-stale'}).rendered_source_hash,'already-stale');
   assert.equal(transformedQuestion({...row,rendered_source_hash:null}).rendered_source_hash,null);
+});
+
+test('snapshot audit discovers fresh URL columns and signed links in escaped COPY data',async()=>{
+  const columns=['stem','options'].map(column_name=>({table_schema:'public',table_name:'questions',column_name,is_generated:'NEVER',data_type:column_name==='options'?'jsonb':'text'}));
+  const result=await auditCopyUrls([
+    'COPY "public"."questions" ("stem", "options") FROM stdin;',
+    `escaped\\ttext ${OLD_STORAGE}object/public/images/a.svg\t{"html":"${OLD_STORAGE}object/sign/images/b.svg"}`,
+    `two ${OLD_STORAGE}object/public/images/a.svg ${OLD_STORAGE}object/public/images/c.svg\t\\N`,
+    '\\.',
+  ],{columns});
+  assert.deepEqual(result.url_classes,{'object/public/':3,'object/sign/':1});
+  assert.deepEqual(result.columns,[{table:'public.questions',column:'options',rows:1,references:1},{table:'public.questions',column:'stem',rows:2,references:3}]);
+});
+
+test('snapshot audit stops on unsupported URL columns and incomplete COPY blocks',async()=>{
+  const header='COPY "public"."questions" ("stem") FROM stdin;';
+  await assert.rejects(()=>auditCopyUrls([header,OLD_STORAGE+'object/public/images/a.svg','\\.'],{columns:[]}),/unsupported column/);
+  await assert.rejects(()=>auditCopyUrls([header,'unrelated'],{columns:[]}),/Incomplete COPY/);
 });

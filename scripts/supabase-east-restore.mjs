@@ -67,7 +67,7 @@ export function compareFingerprints(source, target) {
   return differences.sort();
 }
 
-async function checkpoint(dir) {
+export async function checkpoint(dir) {
   const actual = await realpath(dir);
   const base = await realpath(PRIVATE_DIR);
   if (!actual.startsWith(base + sep)) throw new Error('Backup must be inside the private migration directory.');
@@ -81,7 +81,7 @@ async function checkpoint(dir) {
   return { dir: actual, manifest, inventory };
 }
 
-async function dumpTarget(checkpoint, name) {
+export async function dumpTarget(checkpoint, name) {
   const pgEnv = await migrationConnection('target');
   pgEnv.PGOPTIONS = '-c default_transaction_read_only=on -c statement_timeout=0 -c lock_timeout=5000 -c timezone=UTC';
   const script = stripPlaceholderConnection(await readFile(join(PRIVATE_DIR, `official-${name}-dump.sh`),'utf8'));
@@ -92,7 +92,7 @@ async function dumpTarget(checkpoint, name) {
   return path;
 }
 
-async function verify(cp) {
+export async function verify(cp) {
   console.log('Exporting destination data read-only for a comparison against the source snapshot...');
   const targetData = await dumpTarget(cp,'data');
   const targetHistory = await dumpTarget(cp,'history-data');

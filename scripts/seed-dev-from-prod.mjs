@@ -28,7 +28,7 @@
 //   derived content also roughly halves the payload.
 //
 // USAGE
-//   PROD_SUPABASE_URL=https://noqtadytxyslkoetchrs.supabase.co \
+//   PROD_SUPABASE_URL=https://yggbqwlvscuzuqqpwzpj.supabase.co \
 //   PROD_SUPABASE_SECRET_KEY=... \
 //   DEV_SUPABASE_URL=https://ikzhizgsawzjpuuznfid.supabase.co \
 //   DEV_SUPABASE_SECRET_KEY=... \
@@ -71,7 +71,7 @@ import { createClient } from '@supabase/supabase-js';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ID_FILE = join(HERE, 'seed-question-ids.txt');
 const CHUNK = 20;
-const PROD_REF = 'noqtadytxyslkoetchrs';
+const PROD_REF = 'yggbqwlvscuzuqqpwzpj';
 const DEV_REF = 'ikzhizgsawzjpuuznfid';
 const args = new Set(process.argv.slice(2));
 

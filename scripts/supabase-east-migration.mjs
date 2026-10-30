@@ -257,10 +257,9 @@ async function privateJson(file, value) {
 }
 
 async function backup(result) {
-  const target = result.target.inventory;
-  if (target.tables.some((t) => ['public','_legacy','supabase_migrations'].includes(t.schema)) || target.auth_users || target.storage.some((b) => b.objects)) {
-    throw new Error('The target is no longer empty. Review its state before taking another migration backup.');
-  }
+  // This operation only exports the source. A populated rehearsal target
+  // must not prevent a later, fresh source snapshot; restore guards live
+  // in the separate initial-restore and populated-refresh tools.
   if (result.source.inventory.vault_secrets || result.source.inventory.custom_estimators) {
     throw new Error('Vault/custom-operator migration requires separate review before proceeding.');
   }

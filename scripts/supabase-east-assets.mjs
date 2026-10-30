@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
+import { createReadStream } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
+import { createInterface } from 'node:readline';
 import { isDeepStrictEqual } from 'node:util';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 import { sourceHash } from '../lib/content/render-math.mjs';
 import { PROJECTS, PRIVATE_DIR, project, query, migrationConnection, processEnv, run } from './supabase-east-migration.mjs';
+import { checkpoint } from './supabase-east-restore.mjs';
 
 export const OLD_STORAGE = `https://${PROJECTS.source.ref}.supabase.co/storage/v1/`;
 export const NEW_STORAGE = `https://${PROJECTS.target.ref}.supabase.co/storage/v1/`;
-const BACKUP = join(PRIVATE_DIR,'backup-2026-10-30T18-23-22.679Z');
 const AUTH = { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false };
 const sqlString = (value) => value == null ? 'NULL' : `'${String(value).replaceAll("'","''")}'`;
 const ident = (value) => `"${value.replaceAll('"','""')}"`;
@@ -45,6 +47,45 @@ export function transformedQuestion(row) {
   return next;
 }
 
+export async function auditCopyUrls(lines,inventory) {
+  const metadata=new Map(inventory.columns.map(c=>[`${c.table_schema}.${c.table_name}.${c.column_name}`,c]));
+  const findings=new Map();const urlClasses={};let table=null,columns=[];
+  for await(const line of lines){
+    if(!table){
+      const match=line.match(/^COPY "([^"]+)"\."([^"]+)" \((.*)\) FROM stdin;$/);
+      if(match){table=`${match[1]}.${match[2]}`;columns=[...match[3].matchAll(/"([^"]+)"/g)].map(m=>m[1]);}
+      else if(line.startsWith('COPY '))throw new Error('Unexpected COPY header in Storage URL audit.');
+      continue;
+    }
+    if(line==='\\.'){table=null;continue;}
+    if(!['public','_legacy'].includes(table.split('.')[0]))continue;
+    const fields=line.split('\t');
+    if(fields.length!==columns.length)throw new Error('Unexpected COPY field count in Storage URL audit.');
+    for(let i=0;i<fields.length;i++){
+      const parts=fields[i].split(OLD_STORAGE);
+      if(parts.length===1)continue;
+      const column=columns[i],key=`${table}.${column}`,meta=metadata.get(key);
+      if(!meta||meta.is_generated!=='NEVER'||!['text','character varying','json','jsonb'].includes(meta.data_type))throw new Error('Storage URL found in an unsupported column; review before mapping.');
+      const old=findings.get(key)??{table,column,rows:0,references:0};
+      old.rows++;old.references+=parts.length-1;findings.set(key,old);
+      for(const suffix of parts.slice(1)){
+        const match=suffix.match(/^(object\/(?:public|sign|authenticated)\/|render\/image\/(?:public|sign)\/)/);
+        const kind=match?.[1]??'unrecognized';urlClasses[kind]=(urlClasses[kind]??0)+1;
+      }
+    }
+  }
+  if(table)throw new Error('Incomplete COPY data in Storage URL audit.');
+  return {columns:[...findings.values()].sort((a,b)=>`${a.table}.${a.column}`.localeCompare(`${b.table}.${b.column}`)),url_classes:urlClasses};
+}
+
+async function snapshotUrlAudit(cp){
+  const lines=createInterface({input:createReadStream(join(cp.dir,'data.sql')),crlfDelay:Infinity});
+  const audit=await auditCopyUrls(lines,cp.inventory.source.inventory);
+  audit.source_data_sha256=cp.manifest.files['data.sql'];
+  await writeFile(join(cp.dir,`source-url-audit-${Date.now()}.json`),JSON.stringify(audit,null,2)+'\n',{mode:0o600,flag:'wx'});
+  return audit;
+}
+
 async function writeTarget(sql) {
   await project('target');
   const env=await migrationConnection('target');
@@ -66,7 +107,7 @@ async function objects() {
   return query('target',"select coalesce(jsonb_agg(to_jsonb(o) order by bucket_id,name),'[]'::jsonb) from storage.objects o;");
 }
 
-async function storage(apply) {
+async function storage(apply,cp) {
   const originals=await objects();
   const beforeBuckets=await query('target',"select coalesce(jsonb_agg(to_jsonb(b) order by id),'[]'::jsonb) from storage.buckets b;");
   for (const item of originals) validObjectPath(item.bucket_id,item.name);
@@ -116,15 +157,15 @@ async function storage(apply) {
   const afterBuckets=await query('target',"select coalesce(jsonb_agg(to_jsonb(b) order by id),'[]'::jsonb) from storage.buckets b;");
   if (!isDeepStrictEqual(beforeBuckets,afterBuckets)) throw new Error('Storage bucket configuration changed unexpectedly.');
   const report={completed_at:new Date().toISOString(),files,buckets:beforeBuckets.length,ownership_repairs:ownerFixes.length,passed:true};
-  const path=join(BACKUP,`storage-verification-${Date.now()}.json`);
+  const path=join(cp.dir,`storage-verification-${Date.now()}.json`);
   await writeFile(path,JSON.stringify(report,null,2)+'\n',{mode:0o600,flag:'wx'});
   console.log(JSON.stringify({storage_verified:true,files:files.length,bytes:files.reduce((n,f)=>n+f.bytes,0),ownership_repairs:ownerFixes.length,report:path}));
 }
 
-async function rewrite(apply) {
-  const audit=JSON.parse(await readFile(join(BACKUP,'source-url-audit.json'),'utf8'));
-  if (audit.url_classes['object/sign/'] || audit.url_classes['render/image/sign/']) throw new Error('Signed Storage URLs require a separate migration.');
-  const inventory=JSON.parse(await readFile(join(BACKUP,'inventory.json'),'utf8'));
+async function rewrite(apply,cp) {
+  const audit=await snapshotUrlAudit(cp);
+  if (audit.url_classes['object/sign/'] || audit.url_classes['render/image/sign/'] || audit.url_classes.unrecognized) throw new Error('Signed or unrecognized Storage URLs require a separate migration.');
+  const inventory=cp.inventory;
   const groups=new Map();
   for (const entry of audit.columns) {
     if (!groups.has(entry.table)) groups.set(entry.table,[]);
@@ -157,7 +198,7 @@ async function rewrite(apply) {
   const count=before.reduce((n,t)=>n+t.rows.length,0);
   console.log(JSON.stringify({phase:'Storage URL mapping',tables:before.length,rows:count,valid_render_hashes_updated:hashUpdates,apply}));
   if (!apply) return;
-  await writeFile(join(BACKUP,`url-mapping-before-${Date.now()}.json`),JSON.stringify(before,null,2)+'\n',{mode:0o600,flag:'wx'});
+  await writeFile(join(cp.dir,`url-mapping-before-${Date.now()}.json`),JSON.stringify(before,null,2)+'\n',{mode:0o600,flag:'wx'});
   await writeTarget(updates.join('\n'));
   for (const table of before) {
     const ids=table.rows.map((row)=>sqlString(row.id)).join(',');
@@ -168,17 +209,19 @@ async function rewrite(apply) {
     if (remaining.remaining) throw new Error('Old Storage URLs remain after mapping.');
   }
   const report={completed_at:new Date().toISOString(),tables:before.map((t)=>({table:t.name,rows:t.rows.length})),rows:count,render_hashes_updated:hashUpdates,all_other_row_fields_preserved:true,old_storage_urls_remaining:0,passed:true};
-  const path=join(BACKUP,`url-mapping-verification-${Date.now()}.json`);
+  const path=join(cp.dir,`url-mapping-verification-${Date.now()}.json`);
   await writeFile(path,JSON.stringify(report,null,2)+'\n',{mode:0o600,flag:'wx'});
   console.log(JSON.stringify({...report,report:path}));
 }
 
 async function main(){
   const args=process.argv.slice(2);
-  if (!['storage','rewrite'].includes(args[0]) || args.length>2 || (args[1] && args[1]!=='--apply')) throw new Error('Usage: node --env-file=<private access.env> scripts/supabase-east-assets.mjs <storage | rewrite> [--apply]');
+  if (args.length<2 || args.length>3 || !['audit','storage','rewrite'].includes(args[1]) || (args[2] && args[2]!=='--apply')) throw new Error('Usage: node --env-file=<private access.env> scripts/supabase-east-assets.mjs <backup-dir> <audit | storage | rewrite> [--apply]');
+  const cp=await checkpoint(args[0]);
   await project('target');
-  if (args[0]==='storage') await storage(args[1]==='--apply');
-  else await rewrite(args[1]==='--apply');
+  if(args[1]==='audit')console.log(JSON.stringify(await snapshotUrlAudit(cp)));
+  else if (args[1]==='storage') await storage(args[2]==='--apply',cp);
+  else await rewrite(args[2]==='--apply',cp);
 }
 
 if (process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)) {

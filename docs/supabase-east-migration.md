@@ -58,6 +58,22 @@ migration credentials without resetting the existing database password.
   login generates a session without sending email. These checks do not measure
   end-user regional latency.
 - Migration guard tests pass locally. The CI workflow also runs these tests.
+- The populated candidate was refreshed from the snapshot in one transaction.
+  All rows, sequence values, history, policies, and the reviewed schema matched
+  again. Files and URL transformations were reapplied and verified afterward.
+- A transient lock rehearsal covered all 140 snapshot/history tables: ordinary
+  reads worked, Auth/Storage/application writes blocked, and rollback restored
+  writes. Durable guards were also tested on 112 application, Auth-user,
+  Storage-object/bucket, and history tables. Guard creation, rejection, removal,
+  and cleanup passed in a rolled-back candidate transaction.
+- The protected `iad1` preview passed browser checks for the home page,
+  anonymous redirect, both demo dashboards, practice picker, and demo write
+  restrictions, with no browser application errors. All 39 public files loaded
+  with matching hashes; all 11 private files rejected anonymous access.
+- Live preview logs showed median successful requests through `IAD` of 25 ms
+  for `/auth/v1/user` (97 requests), 29 ms for profiles (81), and 26 ms for
+  `has_plan` (63). These are backend origin timings during the rehearsal,
+  not a controlled South Florida page-load benchmark.
 
 The private snapshot and verification reports are in
 `/private/tmp/studyworks-east-migration/backup-2026-10-30T18-23-22.679Z/`,
@@ -65,19 +81,22 @@ with permission-reconciliation reports in its parent directory.
 
 Auth templates, redirects, and nonsecret settings were copied. The Auth
 configuration API returns a fingerprint for `smtp_pass`, not the original SMTP
-credential. The candidate's custom SMTP is therefore cleared until a real
-Resend SMTP key can be configured. Do not copy secret fingerprints as keys.
-No test emails have been sent, and production SMTP is unchanged.
+credential. A real Resend SMTP credential was then obtained privately from the
+existing Vercel configuration, and SMTP authentication passed without sending
+email. The candidate's custom SMTP remains cleared during rehearsal; the
+verified credential is staged privately for cutover. Do not copy secret
+fingerprints as keys. Production SMTP is unchanged.
 
 The Vercel migration branch has its own east-project keys. Its external email,
 billing, sync, cron, AI/import-provider, shared Redis, and Sentry credentials
 are disabled for rehearsal. Other preview branches and production settings
 are unchanged. Vercel's existing preview access protection remains enabled.
 
-A populated-target refresh still needs to be implemented and rehearsed before
-cutover. The initial restore command intentionally refuses a populated target.
-The west project remains writable, so this snapshot is already a rehearsal
-baseline rather than a final production copy.
+The populated-target refresh and write guards are implemented and rehearsed.
+The initial restore command still refuses a populated target. The west project
+remains writable, so this snapshot is a rehearsal baseline rather than a final
+production copy. Production has completed daily Supabase backups, including
+October 30 at 11:45 UTC; point-in-time recovery was not enabled at inspection.
 
 ## Private access and preparation
 
@@ -126,7 +145,8 @@ node --env-file=/private/tmp/studyworks-east-migration/access.env scripts/supaba
 All database connections in this preparation tool enforce read-only mode.
 Project refs, regions, database names, connection hosts, and TLS settings are
 validated before use. Passwords are passed through subprocess environments,
-not command arguments. Backup refuses a nonempty destination.
+not command arguments. Source export can run while the candidate is populated;
+the separate restore/refresh tools enforce their own destination guards.
 
 The official Supabase CLI 2.122.0 is installed in the private `tooling/`
 directory without changes to application dependencies. Its inspected
@@ -177,10 +197,31 @@ PostgreSQL 16 `pg_dump` cannot export this PostgreSQL 17 database.
     and inspect backend logs. Remove rehearsal-generated activity before the
     final import.
 
-The preparation runner exports artifacts only. Restore, Storage transfer,
-URL rewriting, settings changes, preview creation, and cutover must be
-implemented and verified as those phases are reached; they are not implied
-to have happened by running `backup`.
+## Repeating the candidate refresh
+
+The preparation runner exports artifacts only. Use the separate commands for
+initial restore, populated refresh, files, and URL mapping. Each validates the
+fixed project identities and snapshot checksums. The refresh preserves the
+reviewed schema and grants, refuses schema/COPY-column drift or foreign keys
+outside its exact write set, saves candidate activity privately, and truncates
+only the exported data/history tables without `CASCADE`. Managed platform
+migration tables are excluded. It uses `CONTINUE IDENTITY` because managed Auth
+sequences require their owner for a reset; the export's `setval` statements and
+verification restore the exact sequence state.
+
+```sh
+# Substitute the freshly exported, checksum-verified snapshot directory.
+migration_snapshot_dir=/private/tmp/studyworks-east-migration/backup-2026-10-30T18-23-22.679Z
+node --env-file=/private/tmp/studyworks-east-migration/access.env scripts/supabase-east-refresh.mjs "$migration_snapshot_dir" --apply
+node --env-file=/private/tmp/studyworks-east-migration/access.env scripts/supabase-east-assets.mjs "$migration_snapshot_dir" storage --apply
+node --env-file=/private/tmp/studyworks-east-migration/access.env scripts/supabase-east-assets.mjs "$migration_snapshot_dir" rewrite --apply
+node --env-file=/private/tmp/studyworks-east-migration/access.env scripts/supabase-east-freeze.mjs "$migration_snapshot_dir" --rehearse-target
+```
+
+URL discovery is regenerated from each snapshot's COPY data and column metadata;
+it is no longer tied to the initial audit. Signed/unknown URL classes and
+unsupported column types stop automatic mapping. Do not run these candidate
+refresh commands after the east project starts accepting production writes.
 
 ## Production cutover
 
@@ -192,6 +233,24 @@ migration; no maintenance window has been selected yet.
   using the old Supabase URL, account creation, server/API writes, imports,
   scheduled jobs, and external webhooks. An app maintenance screen alone
   does not enforce this. Verify the freeze using the actual API paths.
+- Use one dedicated source transaction to hold `SHARE` locks on all exported
+  tables while taking the final snapshot and copying files. A lost control
+  connection releases its locks: abandon that attempt rather than promoting
+  an export whose freeze was interrupted. After the final export, install the
+  durable guards in that same transaction before committing it. This keeps
+  the guards out of the east schema/data while blocking old clients on the
+  west application, Auth-user, and final Storage metadata tables afterward.
+  `freezeSql()` provides the exact matching removal SQL for a pre-reopen rollback.
+  The CLI only plans or rehearses against the candidate; it cannot freeze
+  production. Some newer platform-owned OAuth tables permit creating triggers
+  but not removing them, so durable guards deliberately avoid those internals.
+  The transient lock still covers their snapshot data while exporting.
+- Do not rely on disabling legacy API keys as the write freeze. In the
+  candidate rehearsal, Auth/REST eventually rejected them but Storage still
+  accepted them. The candidate flag was restored and access verified. Neither
+  the source's keys nor its signing settings were changed. A database default
+  of `default_transaction_read_only` alone is also insufficient for Data API
+  writes. The tested table locks and durable guards address these cases.
 - Stop or retry webhook deliveries without acknowledging an event before it
   is durably recorded. Reconcile Stripe state and event ordering afterward.
 - Take a fresh consistent export. Refresh the destination from that export
@@ -202,7 +261,13 @@ migration; no maintenance window has been selected yet.
   Vercel from `pdx1` to `iad1`; rebuild because public environment values are
   bundled into browser code. Check related settings and secrets whose values
   were derived from the old service key (`IMPORT_REVIEW_SECRET` and
-  `LOGIN_SETUP_SECRET` fallbacks) so in-flight links are handled deliberately.
+  `LOGIN_SETUP_SECRET` fallbacks). Their existing seeds are staged privately;
+  set them explicitly at cutover so in-flight links retain their signatures.
+- Update GitHub production utility secrets `SUPABASE_URL`,
+  `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_SERVICE_KEY` together. They are used
+  by graph generation, math backfill, batch repair, and image-migration manual
+  workflows. Preserve all `E2E_*` development secrets. The seed-from-production
+  utility's expected production ref is updated on this branch for the move.
 - Verify production with writes still held, then reopen and resume one set
   of jobs/webhooks. Plan for users to sign in again and reload stale clients.
 - Keep the west project protected against stale writes during verification.
@@ -221,3 +286,5 @@ and potentially billing updates.
 - [Migrating Auth users](https://supabase.com/kb/troubleshooting/migrating-auth-users-between-projects)
 - [PostgreSQL 17.11 compatibility notes](https://supabase.com/changelog/postgres-15-19-17-11-breaking-changes)
 - [Scoped management tokens](https://supabase.com/changelog/scoped-personal-access-tokens-ga)
+- [PostgreSQL table-lock compatibility](https://www.postgresql.org/docs/17/explicit-locking.html)
+- [Supabase migration write-freeze limitations](https://supabase.com/kb/troubleshooting/putting-a-project-in-read-only-mode-or-freezing-writes-during-a-migration)
