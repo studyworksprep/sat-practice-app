@@ -70,6 +70,14 @@ jobs:
       - name: Supabase migration guards
         run: node --test scripts/supabase-east-*.test.mjs
 
+      - name: ACT practice taxonomy counts and authorization regressions
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/act-practice-taxonomy.sql
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: dashboard-test-only
+
       - name: Content normalization regressions
         run: npm run test:content-normalization
 

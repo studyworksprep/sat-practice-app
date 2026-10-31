@@ -4969,6 +4969,15 @@ export type Database = {
       }
     }
     Views: {
+      act_practice_taxonomy: {
+        Row: {
+          category: string | null
+          question_count: number | null
+          section: string | null
+          subcategory: string | null
+        }
+        Relationships: []
+      }
       item_miskey_audit: {
         Row: {
           discrimination: number | null

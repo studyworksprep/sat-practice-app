@@ -4,6 +4,7 @@
 > Performance auditing section verified: 2026-10-29.
 > Dashboard summary rollout instructions verified: 2026-10-31.
 > Tutor reporting optimization instructions verified: 2026-10-31.
+> ACT practice taxonomy rollout instructions verified: 2026-10-31.
 
 Short operational playbook. Expand as new scenarios come up.
 
@@ -98,18 +99,48 @@ Some legacy histories contain conflicting first answers at identical
 timestamps. Those students retain the previous `get_skill_mastery_asof`
 calculation so a different global sort cannot change the displayed scores.
 A read-only comparison on the twenty most active production students
-returns the same 29 skill summaries; it does not change production data
-or install the new function there.
+returned the same 29 skill summaries before rollout.
 
-The migration is applied to `studyworks-dev` for preview verification.
-Apply the reviewed file through Supabase MCP when releasing it to
-production; do not use `db push`. Existing application versions continue
-to work because the RPC contract does not change.
+The migration is installed on development and east production following
+the merge of PR #447 on 2026-10-31. A production demo tutor's six-student
+roster returned 29 skill rows successfully after rollout. New environments
+need the reviewed file applied through Supabase MCP; do not use `db push`.
+Existing application versions continue to work because the RPC contract
+does not change.
 
 CI compares the batched function with frozen production definitions using
 `tests/sql/roster-mastery.sql` in a disposable PostgreSQL database. Tests
 cover conflicting timestamp ties, hints, retries, recency/date boundaries,
 empty/duplicate rosters, grants and caller visibility.
+
+### ACT practice picker taxonomy
+
+Apply `supabase/migrations/20261031165829_act_practice_taxonomy.sql` through
+Supabase MCP before deploying the ACT picker application change. The view
+is installed on `studyworks-dev` for preview verification; production
+requires the reviewed migration before releasing this change.
+
+`act_practice_taxonomy` groups question counts by section, category and
+subcategory. It uses the same `is_broken = false AND deleted_at IS NULL`
+predicate as the previous launcher and applies the caller's underlying
+question RLS with `security_invoker = true`. Only `authenticated` has
+SELECT access; the application uses its existing user-scoped client.
+It is an ordinary view, so imports, flags and retirements affect counts
+immediately without cache invalidation.
+
+The launcher reads summary groups instead of downloading every question's
+metadata and loads the independent ACT resume card concurrently. It still
+paginates the summaries with a stable order if taxonomy groups exceed the
+API row cap. Canonical section order and parent/child counts are preserved;
+equal-size categories and subcategories now use alphabetical tie ordering.
+The production bank measured on 2026-10-31 has 1,862 visible questions in
+23 groups; that measures row reduction, not overall page-load improvement.
+
+CI runs `tests/sql/act-practice-taxonomy.sql` on an empty disposable
+PostgreSQL 17 database. It checks large counts, broken/retired questions,
+nullable labels, caller-specific RLS, anonymous denial, read-only grants
+and fresh counts after retirement. Never run this fixture on a Supabase
+project or populated database.
 
 ## Parallel-build kill switch — RETIRED
 

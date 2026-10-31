@@ -22,16 +22,11 @@ import {
   createSession, countAvailable,
   createActSession, countAvailableAct,
 } from './actions';
-import { visibleActQuestions } from '@/lib/practice/act-visibility';
+import { loadActPracticeTaxonomy } from '@/lib/practice/act-practice-taxonomy';
 import { searchQuestions } from '@/lib/practice/question-search-actions';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
 import { StartInteractiveAct } from '@/lib/practice/StartInteractiveAct';
 import { domainSection } from '@/lib/ui/question-layout';
-import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
-import { fetchAll } from '@/lib/supabase/fetchAll';
-// fetchAll is still used by the ACT launcher below; the SAT side
-// reads the pre-aggregated public.published_question_taxonomy view
-// instead.
 import s from './PracticeStart.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -197,83 +192,21 @@ async function SatLauncher({ user, supabase }) {
 // ──────────────────────────────────────────────────────────────
 
 async function ActLauncher({ user, supabase }) {
-  // Pull every non-broken ACT question's section + category so the
-  // launcher can render counts per (section, category). Volume is
-  // small (~231 today) — one paginated query is overkill but matches
-  // the SAT loader's shape and stays safe as the bank grows.
-  const actRows = await fetchAll((from, to) =>
-    visibleActQuestions(
-      supabase
-        .from('act_questions')
-        .select('section, category, subcategory'),
-    ).range(from, to),
-  );
-
-  // Bucket per (section, category, subcategory). The canonical
-  // section order (ACT_SECTIONS) ensures English → Math → Reading
-  // → Science even when only some sections have data.
-  const sectionAcc = new Map();
-  for (const row of actRows) {
-    if (!row.section) continue;
-    let sec = sectionAcc.get(row.section);
-    if (!sec) {
-      sec = { count: 0, categories: new Map() };
-      sectionAcc.set(row.section, sec);
-    }
-    sec.count += 1;
-    if (row.category) {
-      let cat = sec.categories.get(row.category);
-      if (!cat) {
-        cat = { count: 0, subcategories: new Map() };
-        sec.categories.set(row.category, cat);
-      }
-      cat.count += 1;
-      if (row.subcategory) {
-        cat.subcategories.set(
-          row.subcategory,
-          (cat.subcategories.get(row.subcategory) ?? 0) + 1,
-        );
-      }
-    }
-  }
-
-  const sections = ACT_SECTIONS
-    .filter((sec) => sectionAcc.has(sec))
-    .map((sec) => {
-      const entry = sectionAcc.get(sec);
-      return {
-        section: sec,
-        name: sectionLabel(sec),
-        count: entry.count,
-        // Categories sorted by count desc — biggest bucket first so
-        // the student sees the most-likely picks at the top of the
-        // expanded list. Subcategories within each category get the
-        // same treatment; categories with no labeled subcategories
-        // (Reading, Science, Math IES) just send an empty array.
-        categories: Array.from(entry.categories.entries())
-          .sort((a, b) => b[1].count - a[1].count)
-          .map(([name, cat]) => ({
-            name,
-            count: cat.count,
-            subcategories: Array.from(cat.subcategories.entries())
-              .sort((a, b) => b[1] - a[1])
-              .map(([subName, subCount]) => ({ name: subName, count: subCount })),
-          })),
-      };
-    });
-
-  // Active ACT session for the Resume card.
-  const { data: activeActSession } = await supabase
-    .from('practice_sessions')
-    .select('id, current_position, question_ids, last_activity_at')
-    .eq('user_id', user.id)
-    .in('mode', ['practice', 'review'])
-    .eq('status', 'in_progress')
-    .eq('test_type', 'act')
-    .gt('expires_at', new Date().toISOString())
-    .order('last_activity_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // Read compact counts and the independent Resume card together.
+  const [sections, { data: activeActSession }] = await Promise.all([
+    loadActPracticeTaxonomy(supabase),
+    supabase
+      .from('practice_sessions')
+      .select('id, current_position, question_ids, last_activity_at')
+      .eq('user_id', user.id)
+      .in('mode', ['practice', 'review'])
+      .eq('status', 'in_progress')
+      .eq('test_type', 'act')
+      .gt('expires_at', new Date().toISOString())
+      .order('last_activity_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   const resumeInfo = activeActSession
     ? {
