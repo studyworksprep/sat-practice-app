@@ -5056,6 +5056,32 @@ export type Database = {
       }
     }
     Functions: {
+      get_act_student_dashboard_stats: {
+        Args: {
+          p_lookback_start: string
+          p_user_id: string
+          p_week_ago: string
+        }
+        Returns: {
+          correct_attempts: number
+          per_section: Json
+          total_attempts: number
+          week_attempts: number
+        }[]
+      }
+      get_dashboard_recent_accuracy: {
+        Args: {
+          p_assignment_ids: string[]
+          p_session_ids: string[]
+          p_user_id: string
+        }
+        Returns: {
+          attempted: number
+          correct: number
+          id: string
+          kind: string
+        }[]
+      }
       activate_study_plan: { Args: { p_plan_id: string }; Returns: string }
       assignment_has_visible_student: {
         Args: { p_assignment_id: string }

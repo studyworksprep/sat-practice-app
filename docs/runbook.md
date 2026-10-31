@@ -2,6 +2,7 @@
 
 > **Status: Living document.** Last verified against code: 2026-07-12.
 > Performance auditing section verified: 2026-10-29.
+> Dashboard summary rollout instructions verified: 2026-10-31.
 
 Short operational playbook. Expand as new scenarios come up.
 
@@ -50,6 +51,37 @@ roster; validate improvements against deployed traces and field
 metrics before making production latency claims. See the
 [2026-10-29 audit](performance-audit-2026-10-29.md) for measurements and
 prioritized follow-ups.
+
+### Dashboard summary rollout
+
+Apply `supabase/migrations/20261031131201_dashboard_summaries.sql` through
+Supabase MCP before deploying the dashboard-summary application change.
+Do not use `db push`; see `supabase/migrations/README.md`. The two additive
+functions are installed on `studyworks-dev` for preview testing. Production
+needs the same reviewed migration before the application release.
+
+`get_act_student_dashboard_stats` replaces the ACT loader's three counts,
+raw attempt-history download and dependent metadata query with one compact
+RPC. Lifetime totals still count all visible attempts; category performance
+uses the first answer per question within the 90-day window. Caller RLS
+continues to determine which student/metadata rows a tutor can see.
+
+`get_dashboard_recent_accuracy` replaces the dashboard's two capped recent
+history downloads with counts for at most 20 completed sessions and ten
+completed assignments. Session cards retain the latest answer after the
+session's creation time; assignment cards retain the latest answer overall.
+Unlike the old globally capped history slices, older displayed work keeps
+its accuracy even when unrelated newer answers exceed the row limit.
+The function is restricted to the student's own items and is not a tutor
+reporting API. Both functions are `SECURITY INVOKER`, have a fixed empty
+search path and are executable by `authenticated`, not `anon`.
+
+CI runs `tests/sql/dashboard-summaries.sql` on a disposable PostgreSQL 17
+database. The fixture checks large histories, retries, unknown/hidden ACT
+metadata, completed/deleted assignments, authorized tutor reads, cross-user
+denial and request-size bounds. To run it manually, use an empty disposable
+database with `psql -v ON_ERROR_STOP=1 -f tests/sql/dashboard-summaries.sql`.
+Do not run this fixture against a Supabase project or any populated database.
 
 ## Parallel-build kill switch — RETIRED
 
