@@ -40,38 +40,23 @@ export default async function TutorRosterPage() {
   // the tutor's roster without any extra filter here. created_at
   // is the signup timestamp — used as the start-date fallback for
   // students whose start_date hasn't been set explicitly.
-  const { data: rows } = await supabase
-    .from('profiles')
-    .select(
-      'id, email, first_name, last_name, high_school, graduation_year, target_sat_score, start_date, is_active, created_at',
-    )
-    .eq('role', 'student')
-    .order('last_name', { ascending: true, nullsFirst: false })
-    .order('first_name', { ascending: true, nullsFirst: false });
-
-  // Plan adherence (§2.4): one RLS-scoped join pulls every visible
-  // student's active plan with its task statuses; computeAdherence
-  // (the same implementation the plan page uses) classifies each as
-  // on-track / behind / ahead so the roster answers "who needs a
-  // nudge?" at a glance. Draft plans ride along as the review signal:
-  // a draft parked on a student (tutor-generated, or proposed by the
-  // §2.5 weekly re-pace job) surfaces as a "review draft" chip.
-  const { data: planRows } = await supabase
-    .from('study_plans')
-    .select('student_id, status, plan_tasks(status, scheduled_date)')
-    .in('status', ['active', 'draft'])
-    .eq('test_type', 'sat');
-
-  // Foundations covered (foundations doc §3.2, §4 step 5): the section
-  // syllabi's lesson steps, and each visible student's rows on them —
-  // completed in the app or marked covered in session, either counts.
-  // Nothing to show until a foundation syllabus has a published lesson,
-  // so the column and its sort only appear then.
-  const foundationLessons = await loadFoundationLessons(supabase, 'sat');
-  const foundationRows = await loadFoundationProgress(
-    supabase,
-    foundationLessons.map((f) => f.lessonId),
-  );
+  // These three reads are independent. Only foundation progress needs the
+  // syllabus ids; chain that read without delaying profiles or plan adherence.
+  const [{ data: rows }, { data: planRows }, { lessons: foundationLessons, progress: foundationRows }] =
+    await Promise.all([
+      supabase.from('profiles')
+        .select('id, email, first_name, last_name, high_school, graduation_year, target_sat_score, start_date, is_active, created_at')
+        .eq('role', 'student')
+        .order('last_name', { ascending: true, nullsFirst: false })
+        .order('first_name', { ascending: true, nullsFirst: false }),
+      supabase.from('study_plans')
+        .select('student_id, status, plan_tasks(status, scheduled_date)')
+        .in('status', ['active', 'draft']).eq('test_type', 'sat'),
+      loadFoundationLessons(supabase, 'sat').then(async (lessons) => ({
+        lessons,
+        progress: await loadFoundationProgress(supabase, lessons.map((f) => f.lessonId)),
+      })),
+    ]);
   const foundationRowsByStudent = new Map();
   for (const r of foundationRows) {
     const arr = foundationRowsByStudent.get(r.student_id) ?? [];

@@ -52,6 +52,7 @@ authorization matrix to prove it's fresh.
 
 | Document | Record of |
 |---|---|
+| `performance-audit-2026-10-29.md` | Student/tutor production-build measurements, shared script and loader fixes, database hotspots, and remaining validation limits |
 | `technique-tagging-2026-10-10.md` | Twenty reviewed questions added to each of five techniques without explicit tags; 100 production tags, individual solution paths, and preservation checks |
 | `technique-bank-review-2026-10-10.md` | Complete active-bank technique review; 3,415 production tags, verified coverage, preserved existing records, and 364 unmatched questions for follow-up |
 | `sat-mobile-emphasis-repairs-2026-10-10.md` | Verified containment for 44 SAT mobile overflow cases and seven live official-emphasis repairs; preserved math, answers, and student history |

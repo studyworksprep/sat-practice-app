@@ -7,8 +7,9 @@
 
 'use client';
 
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { useCallback, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useMathTypeset } from '@/lib/ui/preview-effects';
 import { useRouter } from 'next/navigation';
 import type { NoteForReview, NotesIndexFacets } from '@/app/(student)/notes/loaders';
 import s from './ReviewNotes.module.css';
@@ -178,39 +179,9 @@ export function NotesReviewInteractive({
 
   const hasTaxonomyFilter = !!(activeSubject || activeDomain || activeSkill);
 
-  // Re-typeset math + drawings whenever the visible notes change.
-  // bodyHtml strings include `\(…\)` delimiters MathJax processes
-  // (loaded globally in app/layout.js); drawing nodes are inline
-  // SVG so MathJax skips them.
+  // The shared hook loads MathJax only if a visible note contains raw math.
   const listRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const el = listRef.current;
-    if (!el) return undefined;
-    if (!/\\\(|\\\[|\$\$/.test(el.innerHTML)) return undefined;
-    let cancelled = false;
-    let tries = 0;
-    const tryTypeset = () => {
-      if (cancelled) return;
-      const mj = (window as unknown as {
-        MathJax?: {
-          typesetClear?: (els: Element[]) => void;
-          typesetPromise?: (els: Element[]) => Promise<unknown>;
-        };
-      }).MathJax;
-      if (mj?.typesetPromise) {
-        try {
-          mj.typesetClear?.([el]);
-          mj.typesetPromise([el]).catch(() => {});
-        } catch { /* */ }
-        return;
-      }
-      tries += 1;
-      if (tries < 240) setTimeout(tryTypeset, 50);
-    };
-    tryTypeset();
-    return () => { cancelled = true; };
-  }, [initialNotes]);
+  useMathTypeset(listRef, initialNotes);
 
   return (
     <div className={s.layout}>

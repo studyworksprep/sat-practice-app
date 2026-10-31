@@ -57,10 +57,7 @@ export default async function StudentDashboardPage({ searchParams }) {
   const today = new Date(nowMs).toISOString().slice(0, 10);
   const nowIso = new Date(nowMs).toISOString();
 
-  // Heavy aggregate (totals + per-domain) lives behind a 60s cache
-  // keyed by user id; submitAnswer revalidates the tag so a fresh
-  // answer flushes it on the next visit. Everything else is per-
-  // request. The two wide reads (recent attempts, assignment-linked
+  // Aggregate RPCs and the other reads run fresh per request. The two wide reads (recent attempts, assignment-linked
   // sessions) are bounded by row count rather than by an id list so
   // they can run in this single wave instead of a second one.
   const RECENT_ATTEMPTS_CAP = 2000;

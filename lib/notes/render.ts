@@ -63,7 +63,7 @@ export const EMPTY_DOC: NoteDoc = {
 // ──────────────────────────────────────────────────────────────
 // Snippet HTML — same walk as docToPlainText, but emits HTML with
 // MathJax-friendly inline delimiters around math nodes so the
-// global MathJax instance loaded in app/layout.js can typeset them
+// on-demand MathJax loader can typeset them
 // on mount. Used by the /notes index page so each card shows
 // rendered math instead of raw LaTeX.
 // ──────────────────────────────────────────────────────────────

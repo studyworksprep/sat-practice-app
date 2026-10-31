@@ -3,10 +3,7 @@ import './styles/next-tokens.css';
 import './styles/next-prose.css';
 import './styles/next-tools.css';
 import { Inter, Playfair_Display } from 'next/font/google';
-import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
-import { desmosCalculatorSrc } from '../lib/config/desmos';
-import { MATH_SCALE } from '../lib/content/math-svg-units';
 import { siteUrl, siteName, siteTitle, siteDescription } from '../lib/config/site';
 
 // Self-hosted Google Fonts via next/font. The bundler downloads them
@@ -86,80 +83,6 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <head>
-        {/* Speed up Desmos loading: early DNS + TLS handshake, then preload the script */}
-        <link rel="dns-prefetch" href="https://www.desmos.com" />
-        <link rel="preconnect" href="https://www.desmos.com" />
-        {/* No crossOrigin here — next/script below renders a plain <script>
-            (no `crossorigin` attribute), which the browser treats as a no-CORS
-            request. A `crossOrigin="anonymous"` on this preload would mismatch
-            that, so the preload would be ignored and the script would re-fetch
-            from scratch — adding latency and, on flaky networks, ERR_TIMED_OUT. */}
-        <link rel="preload" href={desmosCalculatorSrc()} as="script" />
-
-        {/* MathJax config: enable both MathML and TeX input so content
-            authored either way renders. TeX uses the standard \( \) inline +
-            \[ \] / $$ display delimiters, matching Bluebook-source content.
-
-            chtml.matchFontHeight is deliberately OFF, with the scale it
-            would otherwise compute pinned as a constant. Left on, MathJax
-            sizes every expression by measuring a hidden 60ex probe's
-            offsetHeight and dividing by the container's computed
-            font-size — a measurement that is wrong in two ways here:
-
-              - WebKit inflates offsetHeight under an effective zoom but
-                leaves the computed font-size alone, so any Safari user
-                with the site page-zoomed got math scaled by the zoom on
-                top of the zoom. At 115% inline math rendered 1.42x the
-                text height instead of 1.25x; at 150%, 1.84x, and the
-                line boxes containing math grew 17% taller than their
-                neighbours. Chrome scales neither value, so it only ever
-                showed in Safari.
-              - It runs once, whenever that expression is typeset. Inter
-                loads with display: swap, so an expression typeset during
-                the swap window matched the fallback face (1.1911) and
-                one typeset after matched Inter (1.2355) — a ~4% wobble
-                between page loads, in every browser.
-
-            MATH_SCALE (1.2355) is the value the measurement itself
-            produces against Inter once loaded (ex/em 0.5461 ÷ the TeX
-            font's 0.442 x-height), so this pins the intended appearance
-            rather than changing it — it just stops re-deriving it from
-            a probe that zoom and font-loading both perturb. The constant
-            lives in lib/content/math-svg-units.ts, which applies the
-            same scale to the pre-rendered SVG path (the *_rendered
-            columns) by rewriting MathJax's ex-based svg sizing to em —
-            WebKit also mis-resolves `ex` itself under page zoom, so the
-            SVG path had the same Safari-only inflation through a
-            different door. Re-measure it if --font-sans ever stops
-            being Inter. */}
-        <Script id="mathjax-config" strategy="beforeInteractive">
-          {`
-            window.MathJax = {
-              loader: { load: ['input/mml', 'input/tex', 'output/chtml'] },
-              tex: {
-                inlineMath: [['\\\\(', '\\\\)']],
-                displayMath: [['\\\\[', '\\\\]'], ['$$', '$$']],
-                processEscapes: true
-              },
-              chtml: {
-                matchFontHeight: false,
-                scale: ${MATH_SCALE}
-              }
-            };
-          `}
-        </Script>
-        <Script
-          id="mathjax-script"
-          strategy="beforeInteractive"
-          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
-        />
-        <Script
-          id="desmos-calculator-script"
-          strategy="afterInteractive"
-          src={desmosCalculatorSrc()}
-        />
-      </head>
       <body>
         {children}
         <Analytics />

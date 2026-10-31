@@ -17,6 +17,7 @@
 // the nav even renders.
 
 import { redirect } from 'next/navigation';
+import { after } from 'next/server';
 import { headers } from 'next/headers';
 import { requireUserPage } from '@/lib/api/auth';
 import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
@@ -80,51 +81,42 @@ export default async function StudentTreeLayout({ children }) {
     && (profile.role === 'teacher' || profile.role === 'manager' || profile.role === 'admin');
   let links = isTutor ? tutorLinksForRole(profile.role) : STUDENT_LINKS;
 
-  // Self-studying students (no tutor on the platform) never see
-  // assignments — drop the tab so the nav doesn't advertise an
-  // empty surface. Skip the check on shared-infra paths since
-  // the nav there isn't STUDENT_LINKS anyway.
-  let hasTutor = true;
-  if (!isTutor && profile.role === 'student') {
-    hasTutor = await hasAssignedTutor(supabase, user.id);
-    if (!hasTutor) {
-      links = links.filter((l) => l.href !== '/assignments');
-    }
+  const isStudent = !isTutor && profile.role === 'student';
+
+  // Welcome-email delivery uses its own service client and idempotent stamp.
+  // It must not hold up the shell, even when the mail provider is slow.
+  if (profile.role === 'student' && !profile.is_demo) {
+    after(() => maybeSendWelcomeEmail({ userId: user.id, email: user.email }));
   }
 
-  // Post-confirmation welcome email. The home page (`/`) was the
-  // original hook for this, but the login form does a client-side
-  // router.push('/dashboard') after sign-in, so `/` never renders
-  // server-side for the newly-confirmed student. Moving the call
-  // here means it fires on the first authenticated student-tree
-  // page (almost always /dashboard). Idempotent (gated on
-  // profiles.welcome_email_sent_at IS NULL with a compare-and-swap
-  // stamp) so firing on every render is safe.
-  if (profile.role === 'student') {
-    await maybeSendWelcomeEmail({ userId: user.id, email: user.email });
-  }
-
-  // The student's live plan + intake state, read once: they drive the
-  // login routing below and the sidebar's Plan anchor + footer strip.
-  let activePlan = null;
-  let intake = parseIntakeRow(null);
-  if (!isTutor && profile.role === 'student') {
-    const [{ data: activePlans }, { data: intakeRow }] = await Promise.all([
-      supabase
-        .from('study_plans')
-        .select('id, test_date')
-        .eq('student_id', user.id)
-        .eq('status', 'active')
-        .limit(1),
-      supabase
-        .from('student_intake')
-        .select('prep_level, intent, targets, weekly_hours, study_days, self_rating, full_tests, completed_at, skipped_at')
-        .eq('student_id', user.id)
-        .maybeSingle(),
+  // All shell reads depend only on identity. Start them together rather than
+  // making every page wait for tutor → email → plan/intake → flag → footer.
+  const sidebarPromise = sidebarEnabledFor(navUser.role);
+  const [hasTutor, sidebarEnabled, { data: activePlans }, { data: intakeRow }, footerData] =
+    await Promise.all([
+      isStudent ? hasAssignedTutor(supabase, user.id) : true,
+      sidebarPromise,
+      isStudent
+        ? supabase.from('study_plans').select('id, test_date')
+            .eq('student_id', user.id).eq('status', 'active').limit(1)
+        : { data: [] },
+      isStudent
+        ? supabase.from('student_intake')
+            .select('prep_level, intent, targets, weekly_hours, study_days, self_rating, full_tests, completed_at, skipped_at')
+            .eq('student_id', user.id).maybeSingle()
+        : { data: null },
+      sidebarPromise.then((enabled) => enabled && !isTutor
+        ? Promise.all([
+            supabase.from('profiles').select('sat_test_date').eq('id', user.id).maybeSingle(),
+            supabase.rpc('get_practice_streak', { p_user: user.id }),
+          ])
+        : [{ data: null }, { data: [] }]),
     ]);
-    activePlan = (activePlans ?? [])[0] ?? null;
-    intake = parseIntakeRow(intakeRow);
+  if (!hasTutor) links = links.filter((l) => l.href !== '/assignments');
+  const activePlan = (activePlans ?? [])[0] ?? null;
+  const intake = parseIntakeRow(intakeRow);
 
+  if (isStudent) {
     // A new student's first stop is the intake, not the dashboard
     // (docs/student-onboarding-and-plan-redesign-2026-09.md §3.1).
     // Only the dashboard bounces — every other surface stays reachable
@@ -143,7 +135,7 @@ export default async function StudentTreeLayout({ children }) {
     }
   }
 
-  if (await sidebarEnabledFor(navUser.role)) {
+  if (sidebarEnabled) {
     let sections;
     let footer = null;
     if (isTutor) {
@@ -154,19 +146,10 @@ export default async function StudentTreeLayout({ children }) {
       // The plan read also feeds the footer strip (§6.1): plan test
       // date wins over the profile date, same precedence as the
       // dashboard; the streak comes from one aggregate RPC.
-      const [{ data: profileDates }, { data: streakRows }] =
-        await Promise.all([
-          supabase
-            .from('profiles')
-            .select('sat_test_date')
-            .eq('id', user.id)
-            .maybeSingle()
-            .then((r) => ({ data: r.data ? [r.data] : [] })),
-          supabase.rpc('get_practice_streak', { p_user: user.id }),
-        ]);
+      const [{ data: profileDates }, { data: streakRows }] = footerData;
       sections = studentSections({ hasTutor, hasPlan: Boolean(activePlan) });
 
-      const testDateIso = activePlan?.test_date ?? profileDates?.[0]?.sat_test_date ?? null;
+      const testDateIso = activePlan?.test_date ?? profileDates?.sat_test_date ?? null;
       let daysToTest = null;
       let testDateLabel = null;
       if (testDateIso) {

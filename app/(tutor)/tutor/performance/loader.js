@@ -36,33 +36,17 @@ const NUM_WEEKS = Math.ceil(PERFORMANCE_WINDOW_DAYS / 7);
  * @param {object} supabase  - RLS-scoped Supabase client.
  */
 export async function loadRosterPerformance(supabase) {
-  // 1) Two roster reads in parallel:
-  //    - student_practice_stats for the skill / trend RPC inputs
-  //      (matches prior behavior — view drops inactive students
-  //      from the heatmap)
-  //    - profiles for the cohort student table (needs is_active +
-  //      start_date + target so the table can include archived
-  //      students behind a toggle and compute archive summaries).
-  const [
-    { data: rosterRows, error: rosterErr },
-    { data: profileRows, error: profileErr },
-  ] = await Promise.all([
-    supabase.from('student_practice_stats').select('user_id'),
-    supabase
-      .from('profiles')
-      .select('id, first_name, last_name, email, target_sat_score, start_date, created_at, is_active')
-      .eq('role', 'student'),
-  ]);
-
-  // Surface failed reads instead of rendering them as an empty
-  // roster — a statement timeout here used to masquerade as
-  // "No activity yet" (see 20260804120000_set_based_visibility_policies.sql).
-  if (rosterErr) throw rosterErr;
+  // Only identities are needed for the RPC inputs. Reading the aggregate
+  // student_practice_stats view here needlessly groups every visible attempt
+  // before the skill/trend RPCs perform their own aggregation. That view has
+  // the same student-role predicate and profiles RLS visibility.
+  const { data: profileRows, error: profileErr } = await supabase
+    .from('profiles')
+    .select('id, first_name, last_name, email, target_sat_score, start_date, created_at, is_active')
+    .eq('role', 'student');
   if (profileErr) throw profileErr;
 
-  const rosterIds = (rosterRows ?? [])
-    .map((r) => r.user_id)
-    .filter(Boolean);
+  const rosterIds = (profileRows ?? []).map((p) => p.id).filter(Boolean);
   const profileIds = (profileRows ?? []).map((p) => p.id).filter(Boolean);
 
   if (rosterIds.length === 0 && profileIds.length === 0) {
