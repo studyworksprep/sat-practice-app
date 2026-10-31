@@ -85,7 +85,7 @@ denial and request-size bounds. To run it manually, use an empty disposable
 database with `psql -v ON_ERROR_STOP=1 -f tests/sql/dashboard-summaries.sql`.
 Do not run this fixture against a Supabase project or any populated database.
 
-### Tutor roster and session workspace
+### Tutor roster mastery
 
 `supabase/migrations/20261031143042_roster_mastery_batch.sql` preserves
 `get_roster_skill_trend`'s signature, execute grants and caller RLS. It reads
@@ -106,18 +106,10 @@ Apply the reviewed file through Supabase MCP when releasing it to
 production; do not use `db push`. Existing application versions continue
 to work because the RPC contract does not change.
 
-The session workspace starts window-dependent prep reads when its visible
-profile and notes arrive, and assignment-report reads when its visible
-profile and assignment rows arrive. Coverage, plan and band queries can
-continue in parallel. The latest-note/default-fourteen-day window,
-assignment selection and existing scoring helpers are retained.
-
 CI compares the batched function with frozen production definitions using
 `tests/sql/roster-mastery.sql` in a disposable PostgreSQL database. Tests
 cover conflicting timestamp ties, hints, retries, recency/date boundaries,
-empty/duplicate rosters, grants and caller visibility. Workspace unit tests
-hold coverage/plan promises open to verify that independent prep/report
-reads can start without waiting for them.
+empty/duplicate rosters, grants and caller visibility.
 
 ## Parallel-build kill switch — RETIRED
 

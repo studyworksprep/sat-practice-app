@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "validate-lessons": "node scripts/validate-lessons.mjs",
     "typecheck": "tsc --noEmit",
-    "test:unit": "node --test 'lib/**/*.test.mjs' lib/content/svg-clipping.test.ts lib/act-import/options.test.ts lib/act-import/promotion.test.ts lib/ui/mathjax-loader.test.ts lib/practice/dashboard-summary.test.ts lib/tutor/load-session-workspace.test.ts",
+    "test:unit": "node --test 'lib/**/*.test.mjs' lib/content/svg-clipping.test.ts lib/act-import/options.test.ts lib/act-import/promotion.test.ts lib/ui/mathjax-loader.test.ts lib/practice/dashboard-summary.test.ts",
     "test:content-normalization": "node --test lib/content/normalize-bank-html.test.ts lib/content/parse-bounded-math-speech.test.ts lib/content/replace-math-images.test.mjs",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium",
