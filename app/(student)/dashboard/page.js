@@ -25,6 +25,8 @@ import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
 import { buildTodayView } from '@/lib/plan/today';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
+import { loadDashboardRecentAccuracy } from '@/lib/practice/load-dashboard-recent-accuracy';
+import { accuracyKey, dashboardAccuracyMetric } from '@/lib/practice/dashboard-summary';
 import { DashboardView } from './DashboardView';
 import { defaultActFormName } from '@/lib/practice/act-form-names';
 
@@ -57,11 +59,10 @@ export default async function StudentDashboardPage({ searchParams }) {
   const today = new Date(nowMs).toISOString().slice(0, 10);
   const nowIso = new Date(nowMs).toISOString();
 
-  // Aggregate RPCs and the other reads run fresh per request. The two wide reads (recent attempts, assignment-linked
-  // sessions) are bounded by row count rather than by an id list so
-  // they can run in this single wave instead of a second one.
-  const RECENT_ATTEMPTS_CAP = 2000;
+  // Aggregate RPCs run fresh under the caller's RLS. Recent-card accuracy
+  // is loaded as compact counts once the displayed item IDs are known.
   const ASSIGNMENT_LINKED_SESSIONS_CAP = 100;
+  const TREND_WEEKS = 13;
 
   const [
     aggregate,
@@ -74,10 +75,9 @@ export default async function StudentDashboardPage({ searchParams }) {
     { data: activeSession },
     { data: nextRegistrationRow },
     { data: assignmentLinkedSessions },
-    { data: recentAttempts },
-    { data: recentActAttempts },
     hasTutor,
     { data: activePlanRow },
+    { data: trendRows },
   ] = await Promise.all([
     loadDashboardAggregate(user.id),
     // Sibling ACT aggregator. Returns zeroed totals when the student
@@ -171,21 +171,6 @@ export default async function StudentDashboardPage({ searchParams }) {
       .not('filter_criteria->>assignment_id', 'is', null)
       .order('created_at', { ascending: false })
       .limit(ASSIGNMENT_LINKED_SESSIONS_CAP),
-    // Most-recent attempts, for first-attempt accuracy on each
-    // "Recently finished" card.
-    supabase
-      .from('attempts')
-      .select('question_id, is_correct, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(RECENT_ATTEMPTS_CAP),
-    // ACT attempts live in their own table keyed to act_questions.
-    supabase
-      .from('act_attempts')
-      .select('question_id, is_correct, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(RECENT_ATTEMPTS_CAP),
     // Self-studiers (no row in teacher_student_assignments) never see
     // assignment rows in the Tasks box.
     hasAssignedTutor(supabase, user.id),
@@ -200,18 +185,37 @@ export default async function StudentDashboardPage({ searchParams }) {
       .order('test_type', { ascending: false }) // 'sat' > 'act'
       .limit(1)
       .maybeSingle(),
+    // This trend does not depend on the plan or recent-card reads.
+    supabase.rpc('get_roster_weekly_trend', {
+      p_roster: [user.id], p_num_weeks: TREND_WEEKS,
+    }),
+  ]);
+
+  const allAssignments = (assignmentRows ?? [])
+    .map((r) => ({ ...r.assignment, student_completed_at: r.completed_at }))
+    .filter((a) => a && a.id && !a.deleted_at && !a.archived_at);
+  const completedAssignments = allAssignments.filter((a) => a.student_completed_at);
+  const accuracySessionIds = [...(recentSessions ?? []), ...(recentActSessions ?? [])]
+    .filter(s => Array.isArray(s.question_ids) && s.question_ids.length > 0
+      && !s.filter_criteria?.assignment_id && s.filter_criteria?.kind !== 'practice_test')
+    .map(s => s.id);
+  const accuracyAssignmentIds = completedAssignments.slice(0, RECENT_FINISHED_PER_TYPE)
+    .filter(a => ['questions', 'lesson_pack'].includes(a.assignment_type) && Array.isArray(a.question_ids))
+    .map(a => a.id);
+  const [recentAccuracy, { data: taskRows }] = await Promise.all([
+    loadDashboardRecentAccuracy(supabase, user.id, accuracySessionIds, accuracyAssignmentIds),
+    activePlanRow ? supabase
+      .from('plan_tasks')
+      .select('id, week_index, scheduled_date, task_type, payload, status, completed_at, source')
+      .eq('plan_id', activePlanRow.id)
+      .order('scheduled_date', { ascending: true, nullsFirst: true })
+      .order('created_at', { ascending: true }) : Promise.resolve({ data: [] }),
   ]);
 
   // ---------- Tasks box: the plan's daily view ----------
   let view = null;
   let wasAutoRepaced = false;
   if (activePlanRow) {
-    const { data: taskRows } = await supabase
-      .from('plan_tasks')
-      .select('id, week_index, scheduled_date, task_type, payload, status, completed_at, source')
-      .eq('plan_id', activePlanRow.id)
-      .order('scheduled_date', { ascending: true, nullsFirst: true })
-      .order('created_at', { ascending: true });
     const tasks = (taskRows ?? []).map((t) => ({
       id: t.id,
       weekIndex: t.week_index,
@@ -236,11 +240,6 @@ export default async function StudentDashboardPage({ searchParams }) {
   // the RPC the tutor performance page calls, with a single-element
   // roster; RLS inside the RPC means only the caller's own data can
   // come back. 13 weeks tracks the standard 90-day window.
-  const TREND_WEEKS = 13;
-  const { data: trendRows } = await supabase.rpc('get_roster_weekly_trend', {
-    p_roster: [user.id],
-    p_num_weeks: TREND_WEEKS,
-  });
   const weeklyTrend = (trendRows ?? []).map((r) => ({
     startIso: r.start_iso,
     endIso: r.end_iso,
@@ -271,10 +270,6 @@ export default async function StudentDashboardPage({ searchParams }) {
     : null;
 
   // ---------- Assignments: pending (no-plan Tasks box) + completed (Recently finished) ----------
-  const allAssignments = (assignmentRows ?? [])
-    .map((r) => ({ ...r.assignment, student_completed_at: r.completed_at }))
-    .filter((a) => a && a.id && !a.deleted_at && !a.archived_at);
-
   const openAssignments = allAssignments
     .filter((a) => !a.student_completed_at)
     .sort((a, b) => {
@@ -289,8 +284,6 @@ export default async function StudentDashboardPage({ searchParams }) {
       title: assignmentTitle(a),
       dueDate: a.due_date ?? null,
     }));
-
-  const completedAssignments = allAssignments.filter((a) => a.student_completed_at);
 
   // Latest session per assignment id — for the click-through link.
   // assignmentLinkedSessions is already ordered created_at desc, so
@@ -308,11 +301,11 @@ export default async function StudentDashboardPage({ searchParams }) {
   const finishedEntries = [];
 
   finishedEntries.push(
-    ...buildSessionEntries(recentSessions, recentAttempts, {
+    ...buildSessionEntries(recentSessions, recentAccuracy, {
       kind: 'session',
       titlePrefix: 'Practice',
     }),
-    ...buildSessionEntries(recentActSessions, recentActAttempts, {
+    ...buildSessionEntries(recentActSessions, recentAccuracy, {
       kind: 'act_session',
       titlePrefix: 'ACT practice',
     }),
@@ -353,21 +346,7 @@ export default async function StudentDashboardPage({ searchParams }) {
     const sessionId = latestSessionByAssignment.get(a.id) ?? null;
     let metric = 'Completed';
     if ((a.assignment_type === 'questions' || a.assignment_type === 'lesson_pack') && Array.isArray(a.question_ids)) {
-      const qidSet = new Set(a.question_ids);
-      const firstByQid = new Map();
-      for (const at of recentAttempts ?? []) {
-        if (!qidSet.has(at.question_id)) continue;
-        if (!firstByQid.has(at.question_id)) firstByQid.set(at.question_id, at);
-      }
-      let correct = 0;
-      for (const at of firstByQid.values()) if (at.is_correct) correct += 1;
-      const attempted = firstByQid.size;
-      const accuracyPct =
-        attempted > 0 ? Math.round((correct / attempted) * 100) : null;
-      metric =
-        accuracyPct == null
-          ? `${a.question_ids.length} questions`
-          : `${correct} of ${attempted} · ${accuracyPct}%`;
+      metric = dashboardAccuracyMetric(recentAccuracy.get(accuracyKey('assignment', a.id)), a.question_ids.length);
     }
     finishedEntries.push({
       kind: 'assignment',
@@ -438,9 +417,9 @@ export default async function StudentDashboardPage({ searchParams }) {
 
 // Shape a batch of completed practice sessions into "Recently
 // finished" cards. Test-type agnostic: the caller supplies the
-// matching attempts rows (SAT `attempts` / ACT `act_attempts`) and
+// matching compact accuracy summary (SAT / ACT) and
 // the badge kind, so both sides share one accuracy computation.
-function buildSessionEntries(sessions, attempts, { kind, titlePrefix }) {
+function buildSessionEntries(sessions, accuracy, { kind, titlePrefix }) {
   const entries = [];
   for (const sess of sessions ?? []) {
     if (!Array.isArray(sess.question_ids) || sess.question_ids.length === 0) continue;
@@ -449,28 +428,16 @@ function buildSessionEntries(sessions, attempts, { kind, titlePrefix }) {
     // ACT full-form practice tests report on the ACT results page and
     // already list on the ACT tests hub.
     if (sess.filter_criteria?.kind === 'practice_test') continue;
-    const qidSet = new Set(sess.question_ids);
-    const firstByQid = new Map();
-    for (const a of attempts ?? []) {
-      if (!qidSet.has(a.question_id)) continue;
-      if (a.created_at < sess.created_at) continue;
-      if (!firstByQid.has(a.question_id)) firstByQid.set(a.question_id, a);
-    }
-    let correct = 0;
-    for (const a of firstByQid.values()) if (a.is_correct) correct += 1;
+    const counts = accuracy.get(accuracyKey(kind, sess.id));
     const total = sess.question_ids.length;
-    const attempted = firstByQid.size;
     const accuracyPct =
-      attempted > 0 ? Math.round((correct / attempted) * 100) : null;
+      counts?.attempted > 0 ? Math.round(counts.correct / counts.attempted * 100) : null;
     entries.push({
       kind,
       id: sess.id,
       title: `${titlePrefix} · ${total} question${total === 1 ? '' : 's'}`,
       finishedAt: sess.created_at,
-      metric:
-        accuracyPct == null
-          ? `${total} questions`
-          : `${correct} of ${attempted} · ${accuracyPct}%`,
+      metric: dashboardAccuracyMetric(counts, total),
       tone: accuracyTone(accuracyPct),
       href: `/practice/review/${sess.id}`,
     });

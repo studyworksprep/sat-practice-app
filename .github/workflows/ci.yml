@@ -14,6 +14,18 @@ jobs:
   lint-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      dashboard-postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: dashboard-test-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -38,6 +50,14 @@ jobs:
 
       - name: Unit tests
         run: npm run test:unit
+
+      - name: Dashboard summary SQL and authorization regressions
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/dashboard-summaries.sql
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: dashboard-test-only
 
       - name: Supabase migration guards
         run: node --test scripts/supabase-east-*.test.mjs
