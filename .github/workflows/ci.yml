@@ -59,6 +59,14 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: dashboard-test-only
 
+      - name: Tutor roster mastery parity and authorization regressions
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/roster-mastery.sql
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: dashboard-test-only
+
       - name: Supabase migration guards
         run: node --test scripts/supabase-east-*.test.mjs
 

@@ -7,11 +7,9 @@
 // assignments with report deep-links, session notes, and one-tap
 // starts for assign/plan/profile.
 //
-// Reads are two-stage: everything student-shaped loads in one
-// Promise.all; the prep card's window-dependent reads (mastery
-// as-of, struggle scan, session count) need the "since last
-// session" anchor — the newest tutor_notes.session_at — so they
-// go in a second batch. All reads ride the RLS-scoped client:
+// Reads are pipelined by their actual inputs: prep-card reads start
+// as soon as the visible profile and newest note are known, while
+// coverage/plan reads continue. All reads ride the RLS-scoped client:
 // an invisible student 404s on the profile read, same as the
 // plan page.
 
@@ -20,6 +18,7 @@ import { requireUser } from '@/lib/api/auth';
 import { adherenceSummaryLine, ADHERENCE_LABELS } from '@/lib/plan/adherence';
 import { loadStudentPlanState } from '@/lib/plan/load-plan-state';
 import { buildPrepCard } from '@/lib/tutor/prep';
+import { loadSessionWorkspace, DEFAULT_PREP_WINDOW_DAYS } from '@/lib/tutor/load-session-workspace';
 import { getDueReviewItems, summarizeDue } from '@/lib/review/queue';
 import type { Database } from '@/lib/types';
 import { addTutorNote, deleteTutorNote } from './actions';
@@ -39,13 +38,6 @@ type NoteRow = Pick<
   Database['public']['Tables']['tutor_notes']['Row'],
   'id' | 'author_id' | 'body' | 'session_at'
 >;
-
-/** With no session note yet, the prep window defaults to two weeks. */
-const DEFAULT_WINDOW_DAYS = 14;
-/** Struggle scan floors tuned for one student, not a roster. */
-const MIN_SKILL_ATTEMPTS = 3;
-const MIN_STUDENT_ATTEMPTS = 3;
-const STRUGGLING_THRESHOLD = 0.6;
 
 const STATUS_LABELS: Record<string, string> = {
   not_started: 'Not started',
@@ -86,97 +78,20 @@ export default async function SessionWorkspacePage({ params }: PageProps) {
   const nowIso = now.toISOString();
   const today = nowIso.slice(0, 10);
 
-  // ── Stage 1: everything that only needs the student id ──────────
-  const [
-    { data: student },
-    { data: noteRows },
-    planState,
-    { data: coverageRows },
-    { data: bandRows },
-    dueItems,
-    { data: assignmentRows },
-  ] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('first_name, last_name, email, target_sat_score, sat_test_date')
-      .eq('id', studentId)
-      .maybeSingle(),
-    supabase
-      .from('tutor_notes')
-      .select('id, author_id, body, session_at')
-      .eq('student_id', studentId)
-      .order('session_at', { ascending: false })
-      .limit(6),
-    loadStudentPlanState(supabase, studentId, today),
-    supabase.rpc('get_student_coverage', { p_student: studentId }),
-    supabase.rpc('get_predicted_score_band', { p_student: studentId, p_test_type: 'sat' }),
-    getDueReviewItems(supabase, studentId, nowIso).catch(() => []),
-    supabase
-      .from('assignment_students_v2')
-      .select(
-        `
-        completed_at,
-        assignment:assignments_v2 (
-          id, assignment_type, title, due_date, archived_at, deleted_at, created_at
-        )
-      `,
-      )
-      .eq('student_id', studentId)
-      .eq('test_type', 'sat'),
-  ]);
-
-  // RLS: a student this tutor can't see reads as absent → 404.
-  if (!student) notFound();
-
+  const payload = await loadSessionWorkspace(supabase, studentId, now, {
+    loadPlan: loadStudentPlanState, loadDue: getDueReviewItems,
+  });
+  if (!payload) notFound();
+  const {
+    student, noteRows, planState, coverageRows, bandRows, dueItems,
+    lastNoteIso, sinceIso, assignments, reportSessions,
+    masteryThenRows, masteryNowRows, performanceRows, sessionsSince,
+  } = payload;
   const notes = (noteRows ?? []) as NoteRow[];
   const coverage = (coverageRows ?? []) as CoverageRow[];
   const band = ((bandRows ?? []) as BandRow[])[0] ?? null;
   const dueSummary = summarizeDue(dueItems);
   const { active, adherence } = planState;
-
-  // "Since last session" anchor: newest note, else the default window.
-  const lastNoteIso = notes[0]?.session_at ?? null;
-  const sinceIso =
-    lastNoteIso ?? new Date(now.getTime() - DEFAULT_WINDOW_DAYS * 86_400_000).toISOString();
-  const sinceDate = sinceIso.slice(0, 10);
-
-  const assignments = (assignmentRows ?? [])
-    .map((r) => ({ completedAt: r.completed_at, a: r.assignment }))
-    .filter((r) => r.a && !r.a.deleted_at && !r.a.archived_at)
-    .sort((x, y) => (y.a!.created_at ?? '').localeCompare(x.a!.created_at ?? ''))
-    .slice(0, 3);
-  const assignmentIds = assignments.map((r) => r.a!.id);
-
-  // ── Stage 2: reads bound to the prep window / stage-1 output ────
-  const [
-    { data: masteryThenRows },
-    { data: masteryNowRows },
-    { data: performanceRows },
-    { count: sessionsSince },
-    { data: reportSessions },
-  ] = await Promise.all([
-    supabase.rpc('get_skill_mastery_asof', { p_student: studentId, p_asof: sinceDate }),
-    supabase.rpc('get_skill_mastery_asof', { p_student: studentId, p_asof: today }),
-    supabase.rpc('get_roster_skill_performance', {
-      p_roster: [studentId],
-      p_since: sinceIso,
-      p_min_skill_attempts: MIN_SKILL_ATTEMPTS,
-      p_min_student_attempts: MIN_STUDENT_ATTEMPTS,
-      p_struggling_threshold: STRUGGLING_THRESHOLD,
-    }),
-    supabase
-      .from('practice_sessions')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', studentId)
-      .gte('created_at', sinceIso),
-    assignmentIds.length
-      ? supabase
-          .from('practice_sessions')
-          .select('id, status, filter_criteria')
-          .eq('user_id', studentId)
-          .in('filter_criteria->>assignment_id', assignmentIds)
-      : Promise.resolve({ data: [] as { id: string; status: string | null; filter_criteria: unknown }[] }),
-  ]);
 
   // Latest report per assignment, preferring completed sessions —
   // same ranking the student detail page uses.
@@ -292,7 +207,7 @@ export default async function SessionWorkspacePage({ params }: PageProps) {
           <h2 className={s.cardTitle}>Prep</h2>
           <span className={s.prepWindow}>
             since {fmtDate(sinceIso)}
-            {lastNoteIso ? '' : ` · last ${DEFAULT_WINDOW_DAYS} days (no session notes yet)`}
+            {lastNoteIso ? '' : ` · last ${DEFAULT_PREP_WINDOW_DAYS} days (no session notes yet)`}
           </span>
         </div>
 

@@ -3,6 +3,7 @@
 > **Status: Living document.** Last verified against code: 2026-07-12.
 > Performance auditing section verified: 2026-10-29.
 > Dashboard summary rollout instructions verified: 2026-10-31.
+> Tutor reporting optimization instructions verified: 2026-10-31.
 
 Short operational playbook. Expand as new scenarios come up.
 
@@ -57,8 +58,9 @@ prioritized follow-ups.
 Apply `supabase/migrations/20261031131201_dashboard_summaries.sql` through
 Supabase MCP before deploying the dashboard-summary application change.
 Do not use `db push`; see `supabase/migrations/README.md`. The two additive
-functions are installed on `studyworks-dev` for preview testing. Production
-needs the same reviewed migration before the application release.
+functions are installed on development and production. The east production
+rollout completed on 2026-10-31 (migration record `20261031133448`, PR #446).
+New environments need the reviewed migration before the application release.
 
 `get_act_student_dashboard_stats` replaces the ACT loader's three counts,
 raw attempt-history download and dependent metadata query with one compact
@@ -82,6 +84,40 @@ metadata, completed/deleted assignments, authorized tutor reads, cross-user
 denial and request-size bounds. To run it manually, use an empty disposable
 database with `psql -v ON_ERROR_STOP=1 -f tests/sql/dashboard-summaries.sql`.
 Do not run this fixture against a Supabase project or any populated database.
+
+### Tutor roster and session workspace
+
+`supabase/migrations/20261031143042_roster_mastery_batch.sql` preserves
+`get_roster_skill_trend`'s signature, execute grants and caller RLS. It reads
+eligible history once for ordinary rosters, calculates the current and
+prior aggregates together, and uses the existing mastery-score/weight
+functions. First answers, hint weighting, recency bonuses, date cutoffs,
+duplicate roster inputs and current test-type behavior stay unchanged.
+
+Some legacy histories contain conflicting first answers at identical
+timestamps. Those students retain the previous `get_skill_mastery_asof`
+calculation so a different global sort cannot change the displayed scores.
+A read-only comparison on the twenty most active production students
+returns the same 29 skill summaries; it does not change production data
+or install the new function there.
+
+The migration is applied to `studyworks-dev` for preview verification.
+Apply the reviewed file through Supabase MCP when releasing it to
+production; do not use `db push`. Existing application versions continue
+to work because the RPC contract does not change.
+
+The session workspace starts window-dependent prep reads when its visible
+profile and notes arrive, and assignment-report reads when its visible
+profile and assignment rows arrive. Coverage, plan and band queries can
+continue in parallel. The latest-note/default-fourteen-day window,
+assignment selection and existing scoring helpers are retained.
+
+CI compares the batched function with frozen production definitions using
+`tests/sql/roster-mastery.sql` in a disposable PostgreSQL database. Tests
+cover conflicting timestamp ties, hints, retries, recency/date boundaries,
+empty/duplicate rosters, grants and caller visibility. Workspace unit tests
+hold coverage/plan promises open to verify that independent prep/report
+reads can start without waiting for them.
 
 ## Parallel-build kill switch — RETIRED
 
