@@ -1,8 +1,55 @@
 # Studyworks runbook
 
 > **Status: Living document.** Last verified against code: 2026-07-12.
+> Performance auditing section verified: 2026-10-29.
 
 Short operational playbook. Expand as new scenarios come up.
+
+## Investigating slow student and tutor pages
+
+Measure an optimized build (`npm run build`, then `npm run start --
+--hostname 127.0.0.1 --port 3100`). Dev compilation time is not a page
+performance baseline. Authenticate the seeded development users with
+the existing Playwright auth setup, then run with Node 22+:
+
+```bash
+E2E_BASE_URL=http://127.0.0.1:3100 npx playwright test --project=setup
+node --experimental-strip-types scripts/performance-audit.ts
+```
+
+The audit covers student dashboard, practice launchers (SAT/ACT),
+history, review, assignments, lessons, notes, statistics, and tutor
+dashboard, roster, student detail/statistics, assignments, builder and
+cohort performance. It records TTFB, visible main-content readiness,
+a two-second LCP snapshot, long tasks, known script body sizes and
+runtime errors. The first navigation per route has a cold browser
+cache; later navigations reuse it. Server/database caches are not reset.
+Redirects, including streamed redirects, fail the sample rather than
+measuring another page under the wrong label. No answers are submitted.
+
+Options: `PERF_BASE_URL`, `PERF_SAMPLES` (default 3), `PERF_OUTPUT`
+(default `tmp/performance/latest.json`), `PERF_STUDENT_STATE`,
+`PERF_TUTOR_STATE`, `PERF_STUDENT_ID`, `PERF_FILTER` (route substring),
+and `PERF_EXTRA_ROUTES` (JSON with optional `student` and `tutor` path
+arrays). State files default to `tests/.auth/student.json` and
+`tests/.auth/teacher.json`; the default student id is the dev seed's
+student1. For local demo fixtures, use `PERF_DEMO=1`; this requires a
+working service-role key and seeded demo accounts. Remote targets
+require explicitly prepared storage-state files.
+
+MathJax is loaded by the shared math renderer only when raw TeX/MathML
+appears; baked SVG needs no client SDK. Desmos loads when a calculator
+panel mounts. Plain dashboards and roster pages should request neither
+SDK. Welcome-email checks run after the student response, and layout
+reads overlap instead of forming a sequence. User-specific reads remain
+RLS-scoped; shared tutor-existence checks use request-scoped React cache.
+
+Compare several samples with the same fixtures and build mode. A
+local development database does not represent a large production
+roster; validate improvements against deployed traces and field
+metrics before making production latency claims. See the
+[2026-10-29 audit](performance-audit-2026-10-29.md) for measurements and
+prioritized follow-ups.
 
 ## Parallel-build kill switch — RETIRED
 

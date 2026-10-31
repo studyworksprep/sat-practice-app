@@ -29,9 +29,7 @@
 // as inert info cards (admin preview's default — preview should
 // not navigate the user away into the practice runner).
 //
-// Desmos requires window.Desmos.GraphingCalculator at runtime;
-// app/layout.js loads the script globally so any descendant of
-// the root layout has it available.
+// DesmosPanel loads the calculator SDK when a lesson calculator mounts.
 //
 // All styling lives in LessonSlideshow.module.css — add classes there
 // rather than reaching for inline styles, which can't express the

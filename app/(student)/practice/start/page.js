@@ -69,9 +69,49 @@ async function SatLauncher({ user, supabase }) {
   // docs/architecture-plan.md Finding #1 and the New Assignment
   // loader for the same pattern). question_count is per-skill;
   // domain totals are derived client-side as their sum.
-  const { data: taxonomyRows } = await supabase
-    .from('published_question_taxonomy')
-    .select('domain_name, skill_name, question_count, score_bands, domain_code');
+  // Parallel loads for the rest of the page:
+  //   - active practice session (Resume card)
+  //   - in-progress test attempt (Resume-test card). Test launch UX
+  //     lives on its own page now (/practice/tests); this page only
+  //     surfaces the resume callout so a student mid-test doesn't
+  //     miss it.
+  const [
+    { data: taxonomyRows },
+    { data: activeSession },
+    { data: inProgressTestAttempt },
+    { data: extraBatchRows },
+  ] = await Promise.all([
+    supabase.from('published_question_taxonomy')
+      .select('domain_name, skill_name, question_count, score_bands, domain_code'),
+    // SAT practice launcher Resume card.
+    supabase
+      .from('practice_sessions')
+      .select('id, current_position, question_ids, last_activity_at')
+      .eq('user_id', user.id)
+      .in('mode', ['practice', 'review'])
+      .eq('status', 'in_progress')
+      .eq('test_type', 'sat')
+      .gt('expires_at', new Date().toISOString())
+      .order('last_activity_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('practice_test_attempts_v2')
+      .select('id, practice_test_id, started_at, practice_test:practice_tests_v2(name, code)')
+      .eq('user_id', user.id)
+      .eq('status', 'in_progress')
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    // Opt-in import batches with at least one live question — the
+    // "Extra practice sets" section. The rest of the filter card
+    // (taxonomy counts above) covers the standard pool only; these
+    // sets join the candidate pool per-session when selected.
+    supabase
+      .from('published_question_batches')
+      .select('id, label, administration_date, question_count')
+      .order('administration_date', { ascending: false, nullsFirst: false }),
+  ]);
 
   const domainMap = new Map();
   const scoreBandSet = new Set();
@@ -105,47 +145,6 @@ async function SatLauncher({ user, supabase }) {
       return a.name.localeCompare(b.name);
     });
   const scoreBands = Array.from(scoreBandSet).sort((a, b) => a - b);
-
-  // Parallel loads for the rest of the page:
-  //   - active practice session (Resume card)
-  //   - in-progress test attempt (Resume-test card). Test launch UX
-  //     lives on its own page now (/practice/tests); this page only
-  //     surfaces the resume callout so a student mid-test doesn't
-  //     miss it.
-  const [
-    { data: activeSession },
-    { data: inProgressTestAttempt },
-    { data: extraBatchRows },
-  ] = await Promise.all([
-    // SAT practice launcher Resume card.
-    supabase
-      .from('practice_sessions')
-      .select('id, current_position, question_ids, last_activity_at')
-      .eq('user_id', user.id)
-      .in('mode', ['practice', 'review'])
-      .eq('status', 'in_progress')
-      .eq('test_type', 'sat')
-      .gt('expires_at', new Date().toISOString())
-      .order('last_activity_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from('practice_test_attempts_v2')
-      .select('id, practice_test_id, started_at, practice_test:practice_tests_v2(name, code)')
-      .eq('user_id', user.id)
-      .eq('status', 'in_progress')
-      .order('started_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    // Opt-in import batches with at least one live question — the
-    // "Extra practice sets" section. The rest of the filter card
-    // (taxonomy counts above) covers the standard pool only; these
-    // sets join the candidate pool per-session when selected.
-    supabase
-      .from('published_question_batches')
-      .select('id, label, administration_date, question_count')
-      .order('administration_date', { ascending: false, nullsFirst: false }),
-  ]);
 
   const resumeInfo = activeSession
     ? {

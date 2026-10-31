@@ -77,11 +77,12 @@ export default async function StudentReviewPage() {
   // sync is best-effort (a failure just means the count leans on
   // question/flashcard items until the next visit).
   const nowIso = new Date().toISOString();
-  try {
-    await syncDecayedSkillReviews(supabase, user.id);
-  } catch { /* best-effort */ }
-  const dueItems = await getDueReviewItems(supabase, user.id, nowIso);
-  const dueSummary = summarizeDue(dueItems);
+  const dueItemsPromise = (async () => {
+    try {
+      await syncDecayedSkillReviews(supabase, user.id);
+    } catch { /* best-effort */ }
+    return getDueReviewItems(supabase, user.id, nowIso);
+  })();
 
   // Parallel: extended profile (for sat_test_date), SAT scored
   // weak queue + raw attempts + question meta, ACT versions of the
@@ -90,6 +91,7 @@ export default async function StudentReviewPage() {
   // test types combined since the /review/error-log page shows
   // SAT + ACT entries on the same page.
   const [
+    dueItems,
     { data: extendedProfile },
     weakQueue,
     attemptsRaw,
@@ -99,6 +101,7 @@ export default async function StudentReviewPage() {
     { count: errorNotesCount },
     { count: studentNotesCount },
   ] = await Promise.all([
+    dueItemsPromise,
     supabase
       .from('profiles')
       .select('sat_test_date')
@@ -139,6 +142,8 @@ export default async function StudentReviewPage() {
       .eq('user_id', user.id),
   ]);
 
+  const dueSummary = summarizeDue(dueItems);
+
   // Common Errors aggregation: reuse the question meta we'd need
   // anyway by grabbing the distinct question ids out of attempts
   // and looking them up once. attempts is exclusively v2-keyed,
@@ -146,11 +151,19 @@ export default async function StudentReviewPage() {
   const attemptedQids = Array.from(
     new Set(attemptsRaw.map((a) => a.question_id)),
   );
-  const metaById = await resolveQuestionV2Meta(
-    supabase,
-    attemptedQids,
-    'id, skill_name, skill_code, domain_name, is_published, is_broken, deleted_at',
-  );
+  const actAttemptedQids = Array.from(new Set(actAttemptsRaw.map((a) => a.question_id)));
+  const setIds = (flashcardSets ?? []).map((sOne) => sOne.id);
+  const [metaById, actMetaById, { count: flashcardCount }] = await Promise.all([
+    resolveQuestionV2Meta(
+      supabase, attemptedQids,
+      'id, skill_name, skill_code, domain_name, is_published, is_broken, deleted_at',
+    ),
+    resolveActQuestionMetaForReview(supabase, actAttemptedQids),
+    setIds.length > 0
+      ? supabase.from('flashcards').select('*', { count: 'exact', head: true }).in('set_id', setIds)
+      : { count: 0 },
+  ]);
+  const flashcardTotal = flashcardCount ?? 0;
 
   const commonErrors = commonErrorsFromAttempts(attemptsRaw, metaById)
     .filter((row) => row.weak > 0)
@@ -169,13 +182,6 @@ export default async function StudentReviewPage() {
 
   // ACT side — same shape (skill_name carries category, domain_name
   // carries section label) so the existing render markup is reused.
-  const actAttemptedQids = Array.from(
-    new Set(actAttemptsRaw.map((a) => a.question_id)),
-  );
-  const actMetaById = await resolveActQuestionMetaForReview(
-    supabase,
-    actAttemptedQids,
-  );
   const actCommonErrors = commonErrorsFromActAttempts(actAttemptsRaw, actMetaById)
     .filter((row) => row.weak > 0)
     .slice(0, COMMON_ERRORS_TOP_N);
@@ -187,18 +193,6 @@ export default async function StudentReviewPage() {
   const hasSatData = commonErrors.length > 0 || weakQueue.length > 0;
   const hasActData = actCommonErrors.length > 0 || weakQueueAct.length > 0;
   const showHeaders = hasSatData && hasActData;
-
-  // Flashcard rollup. The cards-per-set join is one extra query;
-  // cheap, but skippable when the student has no sets yet.
-  let flashcardTotal = 0;
-  const setIds = (flashcardSets ?? []).map((sOne) => sOne.id);
-  if (setIds.length > 0) {
-    const { count } = await supabase
-      .from('flashcards')
-      .select('*', { count: 'exact', head: true })
-      .in('set_id', setIds);
-    flashcardTotal = count ?? 0;
-  }
 
   return (
     <main className={s.container}>

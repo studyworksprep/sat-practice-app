@@ -21,9 +21,8 @@
 // element. The callback is invoked once on mount and again with
 // `null` on unmount so callers can drop their reference.
 //
-// The calculator's script tag is injected globally from
-// app/layout.js so the window.Desmos constructor is available
-// here. We don't load it again.
+// This panel loads the calculator script on demand. Next Script deduplicates
+// it across panels; pages without a calculator never download the SDK.
 //
 // Sizing: by default the panel carries a 640px min-height floor so
 // it stays usable when it drives a grid track that would otherwise
@@ -83,8 +82,8 @@ export function DesmosPanel({
     seedRef.current = { initialState, initialExpressions };
   }, [initialState, initialExpressions]);
 
-  // If Desmos was loaded in an earlier page (via the global script
-  // tag in app/layout.js), the constructor is already on window.
+  // If Desmos was loaded by a panel on an earlier page, its
+  // constructor is already on window.
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Desmos) {
       setReady(true);
@@ -93,9 +92,8 @@ export function DesmosPanel({
   }, []);
 
   // Do not leave an unexplained blank panel when the external script is
-  // blocked, misconfigured, or unavailable. A timeout also catches cases
-  // where the global layout script fails before this component's Script
-  // callback can report an error.
+  // blocked, misconfigured, or unavailable. A timeout also catches a
+  // stalled download before the Script callback can report an error.
   useEffect(() => {
     if (ready || !DESMOS_API_KEY) return undefined;
     const timer = setTimeout(() => setLoadError('load-failed'), LOAD_TIMEOUT_MS);
