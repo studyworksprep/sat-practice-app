@@ -147,6 +147,33 @@ test('report renders separate lifecycle dates and first-answer time in Eastern e
   const pending = renderToStaticMarkup(React.createElement(AssignmentReport, {
     ...props, assignment: { ...props.assignment, startedAt: null, completedAt: null },
   }));
-  assert.match(pending, /Not started/);
+  assert.match(pending, /No recorded start/);
   assert.match(pending, /Not completed/);
+  const emptySubmission = renderToStaticMarkup(React.createElement(AssignmentReport, {
+    ...props, assignment: { ...props.assignment, startedAt: null },
+    metrics: { ...props.metrics, attempted: 0 },
+  }));
+  assert.match(emptySubmission, /Submitted without recorded answers/);
+  assert.doesNotMatch(pending, /Submitted without recorded answers/);
+});
+
+test('a synthetic empty submission has no student start date and cannot borrow older answers', async () => {
+  const session = { id: 'synthetic', user_id: 'student', created_at: '2026-10-29T22:06:00Z',
+    question_ids: ['shared'], filter_criteria: { assignment_id: 'b', synthetic_on_behalf: true }, mode: 'practice', test_type: 'sat' };
+  const tables = {
+    assignments_v2: [{ id: 'b', created_at: '2026-10-22T23:03:00Z', question_ids: ['shared'] }],
+    questions_v2: [{ id: 'shared', question_type: 'mcq', options: [] }],
+    attempts: [{ user_id: 'student', question_id: 'shared', context_type: 'assignment', context_id: 'a',
+      created_at: '2026-08-26T20:31:00Z', is_correct: true }],
+    practice_sessions: [session],
+    assignment_students_v2: [{ assignment_id: 'b', student_id: 'student', completed_at: '2026-10-29T22:06:01Z' }],
+  };
+  const view = await buildSessionReview({ user: { id: 'tutor' }, target: { id: 'student' }, session, supabase: database(tables) });
+  assert.equal(view.metrics.attempted, 0);
+  assert.equal(view.assignment.startedAt, null);
+  assert.equal(view.assignment.completedAt, '2026-10-29T22:06:01Z');
+  tables.attempts.push({ ...tables.attempts[0], context_id: 'b', created_at: '2026-10-23T12:00:00Z' });
+  const answered = await buildSessionReview({ user: { id: 'tutor' }, target: { id: 'student' }, session, supabase: database(tables) });
+  assert.equal(answered.metrics.attempted, 1);
+  assert.equal(answered.assignment.startedAt, '2026-10-23T12:00:00Z');
 });

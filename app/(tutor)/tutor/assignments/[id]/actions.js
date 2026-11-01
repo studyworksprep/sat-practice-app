@@ -187,31 +187,31 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
     // before this code path existed). The assignment system and
     // the session system should be the same thing — an assignment
     // IS a session driven by the tutor — so close that gap by
-    // synthesizing a real session row tied to the student's
-    // earliest attempt on these questions.
+    // synthesizing a session tied only to this assignment's answers.
     const questionIds = Array.isArray(assignment.question_ids)
       ? assignment.question_ids.filter(Boolean)
       : [];
 
-    let createdAtIso = assignment.created_at ?? new Date().toISOString();
+    let createdAtIso = new Date().toISOString();
     if (questionIds.length > 0) {
       const { allIds } = testType === 'act'
         ? { allIds: questionIds }
         : await expandToAttemptIds(ctx.supabase, questionIds);
       if (allIds.length > 0) {
-        // Earliest attempt the student has on any of the
-        // assignment's questions becomes the synthetic
-        // session's start time. Anchoring there means
-        // buildSessionReview's "attempts since session.created_at"
-        // filter scoops up everything that should count.
-        const { data: earliest } = await ctx.supabase
+        // Question overlap does not establish assignment membership.
+        // Never borrow a start date from older or unrelated work.
+        const { data: earliest, error: earliestError } = await ctx.supabase
           .from(testType === 'act' ? 'act_attempts' : 'attempts')
           .select('created_at')
           .eq('user_id', studentId)
+          .eq('context_type', 'assignment')
+          .eq('context_id', assignmentId)
           .in('question_id', allIds)
+          .gte('created_at', assignment.created_at)
           .order('created_at', { ascending: true })
           .limit(1)
           .maybeSingle();
+        if (earliestError) return actionFail('Could not check assignment answers. Please try again.');
         if (earliest?.created_at) createdAtIso = earliest.created_at;
       }
     }
@@ -233,7 +233,7 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
         question_ids: questionIds,
         current_position: Math.max(0, questionIds.length - 1),
         status: 'completed',
-        filter_criteria: { assignment_id: assignmentId },
+        filter_criteria: { assignment_id: assignmentId, synthetic_on_behalf: true },
         created_at: createdAtIso,
         last_activity_at: new Date().toISOString(),
       })
