@@ -96,12 +96,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
     ? { allIds: questionIds, v2ByLegacy: new Map() }
     : await expandToAttemptIds(supabase, questionIds);
 
-  // Floor: every attempt at-or-after the assignment's created_at on
-  // one of its questions counts toward this student's progress on
-  // this assignment, regardless of context (assignment runner,
-  // self-directed practice, practice test). A freshly-created
-  // assignment therefore starts every question Unanswered for every
-  // student. Same rule on the student + training pages.
+  // Only answers linked to this assignment count, after its issue date.
   const assignmentFloor = assignment.created_at ?? '1970-01-01T00:00:00Z';
 
   // Two parallel reads: per-student attempts (latest wins for the
@@ -116,6 +111,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
           .select('user_id, question_id, is_correct, created_at')
           .in('user_id', studentIds)
           .in('question_id', attemptQuestionIds)
+          .match(isAct ? {} : { context_type: 'assignment', context_id: assignmentId })
           .gte('created_at', assignmentFloor)
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),

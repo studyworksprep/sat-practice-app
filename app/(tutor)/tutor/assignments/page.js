@@ -129,12 +129,14 @@ export default async function TutorAssignmentsPage({ searchParams }) {
     allUserIds.map(async (uid) => {
       const qidSet = byUser.get(uid);
       if (!qidSet || qidSet.size === 0) return [];
-      const { data } = await supabase
+      let query = supabase
         .from(table)
-        .select('user_id, question_id, is_correct, created_at')
+        .select(table === 'attempts' ? 'user_id, question_id, is_correct, created_at, context_id' : 'user_id, question_id, is_correct, created_at')
         .eq('user_id', uid)
         .in('question_id', Array.from(qidSet))
         .order('created_at', { ascending: false });
+      if (table === 'attempts') query = query.eq('context_type', 'assignment').in('context_id', assignmentIds);
+      const { data } = await query;
       return data ?? [];
     }),
   );
@@ -164,7 +166,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
   const attemptsAsc = (attemptsRaw ?? []).slice().reverse();
   const attemptsByPairAsc = new Map();
   for (const a of attemptsAsc) {
-    const key = `${a.user_id}::${a.question_id}`;
+    const key = `${a.context_id ?? 'act'}::${a.user_id}::${a.question_id}`;
     if (!attemptsByPairAsc.has(key)) attemptsByPairAsc.set(key, []);
     attemptsByPairAsc.get(key).push(a);
   }
@@ -216,9 +218,11 @@ export default async function TutorAssignmentsPage({ searchParams }) {
         sessionByAssignmentUser.get(`${a.id}::${j.student_id}`) ?? null;
       if ((a.assignment_type === 'questions' || a.assignment_type === 'lesson_pack') && total > 0) {
         for (const qid of a.question_ids) {
-          const arr = attemptsByPairAsc.get(`${j.student_id}::${qid}`) ?? [];
+          const arr = attemptsByPairAsc.get(`${a.test_type === 'act' ? 'act' : a.id}::${j.student_id}::${qid}`) ?? [];
           if (arr.length === 0) continue;
-          const attempt = sessionInfo
+          const attempt = a.test_type !== 'act'
+            ? arr.find((att) => att.created_at >= a.created_at)
+            : sessionInfo
             ? arr.find((att) => att.created_at >= sessionInfo.createdAt)
             : arr[0];
           if (attempt) {

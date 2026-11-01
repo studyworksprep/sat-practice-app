@@ -33,6 +33,7 @@ import { StudentQuestionNotes } from '@/lib/practice/StudentQuestionNotes';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import { formatDuration } from '@/lib/practice/format-duration';
 import { formatDate } from '@/lib/formatters';
+import { formatReportTimestamp } from '@/lib/practice/report-dates';
 import { QuestionMapGrid } from '@/lib/practice/QuestionMapGrid';
 import { BookmarkIcon, CorrectIcon, IncorrectIcon, NotesIcon, TimeSpentIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
@@ -481,6 +482,11 @@ export function TestResultsInteractive({
                   ` · Band ${selected.taxonomy.score_band}`}
                 {selected.studentAnswer?.timeSpentMs != null &&
                   ` · ${formatDuration(selected.studentAnswer.timeSpentMs)}`}
+                {canRecalculate && formatReportTimestamp(selected.studentAnswer?.submittedAt) && (
+                  <span title="When activity on this question was first recorded. This may precede the answer or a later answer change.">
+                    {' · First activity '}{formatReportTimestamp(selected.studentAnswer.submittedAt)}
+                  </span>
+                )}
               </span>
             </div>
             <div className={s.questionHeaderRight}>

@@ -183,6 +183,8 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       .select('id', { count: 'exact', head: true })
       .eq('user_id', studentId)
       .in('question_id', allIds)
+      .eq('context_type', 'assignment')
+      .eq('context_id', assignmentId)
       .gte('created_at', assignmentFloor),
     realSessionOrNull && sessionQids.length > 0
       ? supabase
@@ -190,6 +192,8 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
           .select('id', { count: 'exact', head: true })
           .eq('user_id', studentId)
           .in('question_id', sessionQids)
+          .eq('context_type', 'assignment')
+          .eq('context_id', assignmentId)
           .gte('created_at', assignmentFloor)
       : Promise.resolve({ count: 0 }),
   ]);
@@ -249,8 +253,8 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
         backHref={`/tutor/assignments/${assignmentId}`}
         body={
           junction.completed_at
-            ? "Marked complete, but no attempts on the assignment's questions are recorded yet."
-            : "No attempts on this assignment yet."
+            ? 'Marked complete, but no answers are linked to this assignment. Older answers without assignment information are not included.'
+            : 'No answers are linked to this assignment yet.'
         }
       />
     );
