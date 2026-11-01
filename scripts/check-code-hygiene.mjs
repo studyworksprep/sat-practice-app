@@ -25,7 +25,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 // route.ts. The Stripe webhook handler was rewritten for the billing
 // hardening work (idempotency + no silent event drops), so it converted
 // as part of a substantial refactor rather than a bare rename.
-const JS_FILE_BASELINE = 307; // 2026-10-12: lib/practice/ActTestsHub.jsx → .tsx (ACT multi-section test mode rewrite)
+const JS_FILE_BASELINE = 306; // 2026-11-01: dashboard RosterFinder converted to TypeScript search.
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {

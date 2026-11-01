@@ -1,32 +1,9 @@
-// Tutor dashboard. Server-loaded roster and completions, with browser-local
-// student shortcuts and lightweight action tracking in client components.
-//
-// Data sources:
-//   - profiles (RLS-scoped via can_view) for the roster — name +
-//     static profile detail only. Per-student perf metrics
-//     deliberately dropped: the per-student detail page is where
-//     that data belongs, and aggregating across the whole attempts
-//     table on this surface was the slowest thing on the page.
-//   - assignment_students_v2 (limit 8) for the "Recent assignments
-//     completed" panel. Most tutors operate through assignments,
-//     and practice-test assignments now auto-complete their
-//     junction row when the attempt finishes, so this panel
-//     covers question, lesson, and practice-test completions in
-//     one place. Self-directed practice + practice tests are
-//     still reachable through the roster → student page.
-//
-// Layout: banner with roster size, primary content panel
-// (RosterFinder), secondary panel (recent assignment completions).
-
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
-import { formatRelativeShort } from '@/lib/formatters';
-import { ClipboardCheckIcon } from '@/lib/ui/icons';
-import { IconTile } from '@/lib/ui/IconTile';
 import { loadTutorDashboard } from '@/lib/practice/load-tutor-dashboard';
 import { RosterFinder } from './RosterFinder';
-import { ReportLink } from './ReportLink';
+import { ActivityFeed } from './ActivityFeed';
 import s from './Dashboard.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -59,7 +36,7 @@ export default async function TutorDashboardPage() {
     );
   }
 
-  const { rawStudents, recentCompletions } = payload;
+  const { rawStudents, activities, activityUnavailable } = payload;
   const students = rawStudents.map((row) => ({
     id: row.user_id,
     name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.email || '—',
@@ -73,29 +50,6 @@ export default async function TutorDashboardPage() {
     total: rawStudents.length,
     visible: students.length,
   };
-
-  const studentsById = new Map(students.map((st) => [st.id, st]));
-
-  // Resolve the report only when opened, keeping this page's load inexpensive.
-  const completionRows = (recentCompletions ?? [])
-    .filter((r) => r.assignment != null)
-    .map((r) => {
-      const a = r.assignment;
-      const title =
-        a.title
-        ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
-        ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
-        ?? 'Assignment';
-      return {
-        id: `${a.id}:${r.student_id}`,
-        studentId: r.student_id,
-        reportHref: `/tutor/dashboard/review/${a.id}/${r.student_id}`,
-        studentName: studentsById.get(r.student_id)?.name ?? '—',
-        title,
-        assignmentType: a.assignment_type,
-        completedAt: r.completed_at,
-      };
-    });
 
   const greeting = profile.first_name
     ? `Welcome back, ${profile.first_name}.`
@@ -132,54 +86,7 @@ export default async function TutorDashboardPage() {
         <RosterFinder students={students} />
       )}
 
-      {/* ---------- Recent assignments completed ---------- */}
-      {completionRows.length > 0 && (
-        <section className={s.card}>
-          <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>
-              <IconTile icon={ClipboardCheckIcon} palette="success" size="sm" />
-              Recent assignments completed
-            </div>
-            <div className={s.cardHeaderHint}>
-              Open completed work directly to review it with your student.
-            </div>
-          </div>
-          <ul className={s.testList}>
-            {completionRows.map((row) => (
-              <li key={row.id}>
-                <ReportLink
-                  href={row.reportHref}
-                  studentId={row.studentId}
-                  assignmentType={row.assignmentType}
-                  className={s.testRow}
-                >
-                  <div className={s.testRowLeft}>
-                    <div className={s.testRowName}>{row.studentName}</div>
-                    <div className={s.testRowMeta}>
-                      <span className={s.assignmentTypePill}>
-                        {assignmentTypeLabel(row.assignmentType)}
-                      </span>
-                      {' '}
-                      {row.title}
-                      {' · '}
-                      {formatRelativeShort(row.completedAt) ?? '—'}
-                    </div>
-                  </div>
-                  <span className={s.reviewAction}>Review results →</span>
-                </ReportLink>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {cohort.total > 0 && <ActivityFeed activities={activities} students={students} unavailable={activityUnavailable} />}
     </main>
   );
-}
-
-// ──────────────────────────────────────────────────────────────
-
-function assignmentTypeLabel(type) {
-  if (type === 'practice_test') return 'Practice test';
-  if (type === 'lesson') return 'Lesson';
-  return 'Questions';
 }
