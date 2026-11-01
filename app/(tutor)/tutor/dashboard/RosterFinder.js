@@ -1,28 +1,14 @@
-// Tutor roster finder. Replaces the dashboard's flat student
-// table with a search-first picker that scales past a roster of
-// 38+ without forcing the tutor to scroll.
-//
-// Default view: an input on top, plus a compact tile grid of the
-// 8 most-recently-active students. That's 1 click to land on the
-// student you saw most recently — which is what tutors usually
-// reach for between sessions.
-//
-// Typing in the search filters the WHOLE roster live (case-
-// insensitive on name + email + school). Result tiles render in
-// the same compact form. The first match is keyboard-focusable
-// and Enter activates it, so it's "type two letters, hit Enter"
-// for fast finds.
-//
-// "Show all" toggles a denser fallback table for the rare case
-// the tutor wants to scan everyone — same columns the prior
-// dashboard had.
+// Search the complete visible roster. Pins precede recently opened
+// students; alphabetical order fills the remaining shortcuts.
 
 'use client';
 
 import Link from 'next/link';
+import { track } from '@vercel/analytics';
 import { useMemo, useRef, useState } from 'react';
 import { RosterIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
+import { useDashboardHistory } from '@/lib/tutor/DashboardHistory';
 import s from './Dashboard.module.css';
 
 const RECENT_TILE_COUNT = 8;
@@ -38,6 +24,11 @@ const RECENT_TILE_COUNT = 8;
  */
 
 export function RosterFinder({ students }) {
+  const { students: orderedStudents, history, togglePin, recordStudent, saved } = useDashboardHistory(students);
+  function recordAction(studentId, action) {
+    recordStudent?.(studentId);
+    track('tutor_dashboard_action', { action });
+  }
   const [query, setQuery] = useState('');
   const [showAll, setShowAll] = useState(false);
   const inputRef = useRef(null);
@@ -45,8 +36,8 @@ export function RosterFinder({ students }) {
 
   const trimmed = query.trim().toLowerCase();
   const filtered = useMemo(() => {
-    if (!trimmed) return students;
-    return students.filter((st) => {
+    if (!trimmed) return orderedStudents;
+    return orderedStudents.filter((st) => {
       const haystack = [
         st.name,
         st.email,
@@ -57,12 +48,8 @@ export function RosterFinder({ students }) {
         .join(' · ');
       return haystack.includes(trimmed);
     });
-  }, [students, trimmed]);
+  }, [orderedStudents, trimmed]);
 
-  // Default tiles: 8 most-recently-active students. The full
-  // roster query already orders by last_activity_at desc, so the
-  // first N entries are exactly that. When a query is active we
-  // expand to the full filtered list.
   const tileCount = trimmed ? filtered.length : RECENT_TILE_COUNT;
   const tiles = filtered.slice(0, tileCount);
   const hiddenCount = students.length - RECENT_TILE_COUNT;
@@ -89,8 +76,7 @@ export function RosterFinder({ students }) {
           Find a student
         </div>
         <div className={s.cardHeaderHint}>
-          {students.length} on your roster · click a tile or type a
-          name to jump to one.
+          {students.length} on your roster · pinned students first, then recently opened.
         </div>
       </div>
 
@@ -141,22 +127,32 @@ export function RosterFinder({ students }) {
       {tiles.length > 0 && (
         <div className={s.tileGrid}>
           {tiles.map((st, i) => (
-            <Link
+            <article
               key={st.id}
-              href={`/tutor/students/${st.id}`}
               className={s.tile}
-              ref={i === 0 ? firstTileRef : null}
             >
               <div className={s.tileTop}>
                 <div className={s.tileAvatar} aria-hidden="true">
                   {initialsOf(st.name)}
                 </div>
                 <div className={s.tileMain}>
-                  <div className={s.tileName}>{st.name}</div>
+                  <Link
+                    href={`/tutor/students/${st.id}`}
+                    className={s.tileName}
+                    onClick={() => recordAction(st.id, 'open_student')}
+                    ref={i === 0 ? firstTileRef : null}
+                  >{st.name}</Link>
                   <div className={s.tileSchool}>
                     {st.highSchool ?? st.email ?? ''}
                   </div>
                 </div>
+                <button
+                  type="button"
+                  className={s.pinButton}
+                  aria-pressed={history.pinned.includes(st.id)}
+                  aria-label={`${history.pinned.includes(st.id) ? 'Unpin' : 'Pin'} ${st.name}`}
+                  onClick={() => togglePin(st.id)}
+                >{history.pinned.includes(st.id) ? 'Pinned' : 'Pin'}</button>
               </div>
               {(st.targetScore != null || st.graduationYear) && (
                 <div className={s.tileMetrics}>
@@ -172,10 +168,20 @@ export function RosterFinder({ students }) {
                   )}
                 </div>
               )}
-            </Link>
+              <div className={s.tileActions}>
+                <Link href={`/tutor/session/${st.id}`} prefetch={false} onClick={() => recordAction(st.id, 'prepare_session')} aria-label={`Prepare session with ${st.name}`}>Prepare session</Link>
+                <Link href={`/tutor/assignments/new?student=${st.id}`} prefetch={false} onClick={() => recordAction(st.id, 'assign_work')} aria-label={`Assign work to ${st.name}`}>Assign work</Link>
+              </div>
+            </article>
           ))}
         </div>
       )}
+
+      <p className={s.footnote}>
+        {saved === false
+          ? 'Browser storage is unavailable. Pins may not be saved after you leave.'
+          : 'Pins and recently opened students are saved on this browser. Other students appear alphabetically.'}
+      </p>
 
       {showAll && !trimmed && (
         <div className={s.tableWrap} style={{ marginTop: 'var(--s4)' }}>

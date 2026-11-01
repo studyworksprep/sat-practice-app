@@ -534,6 +534,7 @@
 }
 
 .tileName {
+  text-decoration: none;
   font-size: 14px;
   font-weight: 600;
   color: var(--fg1);
@@ -570,4 +571,42 @@
   margin-left: auto;
   font-variant-numeric: tabular-nums;
   font-size: 11px;
+}
+
+.pinButton {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  color: var(--fg2);
+  cursor: pointer;
+  font-size: 12px;
+}
+.pinButton[aria-pressed="true"] {
+  background: var(--color-navy-900);
+  color: white;
+}
+.tileActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.tileActions a, .reviewAction {
+  color: var(--color-app-accent);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.tileName:hover, .tileActions a:hover { text-decoration: underline; }
+.pinButton:focus-visible, .tile a:focus-visible, .testRow:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 3px;
+}
+.reviewAction { flex-shrink: 0; }
+@media (max-width: 520px) {
+  .tileGrid { grid-template-columns: minmax(0, 1fr); }
+  .cardHeader, .testRow { flex-wrap: wrap; }
+  .testRowLeft { flex-basis: 100%; }
 }
