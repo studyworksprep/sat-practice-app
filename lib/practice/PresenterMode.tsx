@@ -408,11 +408,14 @@ export function PresenterMode({
       </div>
 
       {/* Topic and recorded activity for the selected question. */}
-      {(taxonomy?.domainName || taxonomy?.skillName || timestamp || timeSpentMs != null) && (
+      {(taxonomy?.domainName || taxonomy?.skillName || taxonomy?.scoreBand != null || timestamp || timeSpentMs != null) && (
         <div className={s.metaBar}>
-          <span className={s.metaTopic} title={[taxonomy?.domainName, taxonomy?.skillName].filter(Boolean).join(' · ')}>
-            {[taxonomy?.domainName, taxonomy?.skillName].filter(Boolean).join(' · ')}
-          </span>
+          <div className={s.metaContext}>
+            <span className={s.metaTopic} title={[taxonomy?.domainName, taxonomy?.skillName].filter(Boolean).join(' · ')}>
+              {[taxonomy?.domainName, taxonomy?.skillName].filter(Boolean).join(' · ')}
+            </span>
+            {taxonomy?.scoreBand != null && <span className={s.metaBand}>Band {taxonomy.scoreBand}</span>}
+          </div>
           <div className={s.activityMeta}>
             {timestamp && <span title={timestampLabel === 'First activity' ? 'First recorded activity; it can precede the answer or a later answer change.' : undefined}>{timestampLabel} {timestamp}</span>}
             {timeSpentMs != null && timeSpentMs >= 0 && <span>Time spent {timeSpentMs === 0 ? '0s' : formatDuration(timeSpentMs)}</span>}
