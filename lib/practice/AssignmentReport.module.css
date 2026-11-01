@@ -3,6 +3,16 @@
    container, eyebrow + serif H1, content cards) and reuses the
    tile palette tokens for the per-section accuracy tones. */
 
+.submissionNotice {
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  color: var(--fg2);
+  font-size: 14px;
+}
+.submissionNotice p { margin: 6px 0 0; }
+
 .container {
   max-width: 1280px;
   margin: 0 auto;

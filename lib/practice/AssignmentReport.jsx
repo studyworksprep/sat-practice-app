@@ -197,7 +197,7 @@ export function AssignmentReport({
               <>
                 <span>Assigned {formatReportTimestamp(assignment.assignedAt)}</span>
                 <span className={s.dot}>·</span>
-                <span>{assignment.startedAt ? `Started ${formatReportTimestamp(assignment.startedAt)}` : 'Not started'}</span>
+                <span>{assignment.startedAt ? `Started ${formatReportTimestamp(assignment.startedAt)}` : 'No recorded start'}</span>
                 <span className={s.dot}>·</span>
                 <span>{assignment.completedAt ? `Completed ${formatReportTimestamp(assignment.completedAt)}` : 'Not completed'}</span>
               </>
@@ -228,6 +228,14 @@ export function AssignmentReport({
           )}
         </div>
       </header>
+
+      {assignment?.completedAt && metrics.attempted === 0 && (
+        <section className={s.submissionNotice} aria-label="Submission status">
+          <strong>Submitted without recorded answers</strong>
+          <p>This assignment was marked complete, but no answers were recorded for it.
+            Answers from other assignments or independent practice are not included.</p>
+        </section>
+      )}
 
       {/* ---------- Headline + supporting tiles ----------
            Hero = accuracy %, the headline metric a tutor reads
