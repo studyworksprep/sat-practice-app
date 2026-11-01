@@ -24,6 +24,7 @@ import { sidebarEnabledFor } from '@/lib/flags-server';
 import { AppNav } from '@/lib/ui/AppNav';
 import { AppShell } from '@/lib/ui/AppSidebar';
 import { tutorLinksForRole, tutorSectionsForRole } from '@/lib/ui/nav-links';
+import { DashboardHistory } from '@/lib/tutor/DashboardHistory';
 
 export default async function TutorTreeLayout({ children }) {
   const { user, profile } = await requireUserPage();
@@ -40,7 +41,7 @@ export default async function TutorTreeLayout({ children }) {
   if (await sidebarEnabledFor(profile.role)) {
     return (
       <AppShell user={navUser} sections={tutorSectionsForRole(profile.role)}>
-        {children}
+        <DashboardHistory key={user.id} userId={user.id}>{children}</DashboardHistory>
       </AppShell>
     );
   }
@@ -48,7 +49,7 @@ export default async function TutorTreeLayout({ children }) {
   return (
     <>
       <AppNav user={navUser} links={tutorLinksForRole(profile.role)} />
-      {children}
+      <DashboardHistory key={user.id} userId={user.id}>{children}</DashboardHistory>
     </>
   );
 }

@@ -1,6 +1,5 @@
-// Tutor dashboard. Server Component — the whole page runs
-// server-side, no client island because nothing is interactive
-// here beyond row clicks (which are plain Next.js Links).
+// Tutor dashboard. Server-loaded roster and completions, with browser-local
+// student shortcuts and lightweight action tracking in client components.
 //
 // Data sources:
 //   - profiles (RLS-scoped via can_view) for the roster — name +
@@ -27,11 +26,10 @@ import { ClipboardCheckIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { loadTutorDashboard } from '@/lib/practice/load-tutor-dashboard';
 import { RosterFinder } from './RosterFinder';
+import { ReportLink } from './ReportLink';
 import s from './Dashboard.module.css';
 
 export const dynamic = 'force-dynamic';
-
-const STUDENT_LIMIT = 100;
 
 export default async function TutorDashboardPage() {
   const { user, profile } = await requireUser();
@@ -62,7 +60,7 @@ export default async function TutorDashboardPage() {
   }
 
   const { rawStudents, recentCompletions } = payload;
-  const students = rawStudents.slice(0, STUDENT_LIMIT).map((row) => ({
+  const students = rawStudents.map((row) => ({
     id: row.user_id,
     name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.email || '—',
     email: row.email,
@@ -78,10 +76,7 @@ export default async function TutorDashboardPage() {
 
   const studentsById = new Map(students.map((st) => [st.id, st]));
 
-  // Recent completion rows for the panel. Each row's link points to
-  // the student detail page so the tutor can drill into the specific
-  // session / attempt from there — no per-assignment tutor URL
-  // exists yet and a student page lists both kinds of work.
+  // Resolve the report only when opened, keeping this page's load inexpensive.
   const completionRows = (recentCompletions ?? [])
     .filter((r) => r.assignment != null)
     .map((r) => {
@@ -94,6 +89,7 @@ export default async function TutorDashboardPage() {
       return {
         id: `${a.id}:${r.student_id}`,
         studentId: r.student_id,
+        reportHref: `/tutor/dashboard/review/${a.id}/${r.student_id}`,
         studentName: studentsById.get(r.student_id)?.name ?? '—',
         title,
         assignmentType: a.assignment_type,
@@ -145,15 +141,16 @@ export default async function TutorDashboardPage() {
               Recent assignments completed
             </div>
             <div className={s.cardHeaderHint}>
-              Self-directed practice and standalone tests live on each
-              student&apos;s page — find them via the roster above.
+              Open completed work directly to review it with your student.
             </div>
           </div>
           <ul className={s.testList}>
             {completionRows.map((row) => (
               <li key={row.id}>
-                <Link
-                  href={`/tutor/students/${row.studentId}`}
+                <ReportLink
+                  href={row.reportHref}
+                  studentId={row.studentId}
+                  assignmentType={row.assignmentType}
                   className={s.testRow}
                 >
                   <div className={s.testRowLeft}>
@@ -168,7 +165,8 @@ export default async function TutorDashboardPage() {
                       {formatRelativeShort(row.completedAt) ?? '—'}
                     </div>
                   </div>
-                </Link>
+                  <span className={s.reviewAction}>Review results →</span>
+                </ReportLink>
               </li>
             ))}
           </ul>
