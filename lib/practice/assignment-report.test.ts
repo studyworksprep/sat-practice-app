@@ -70,6 +70,7 @@ function database(tables: Record<string, Row[]>) {
         rows = rows.filter(r => (key.includes('->>') ? r.filter_criteria?.assignment_id : r[key]) === value);
         return query;
       },
+      match(scope: Record<string, unknown>) { for (const [key, value] of Object.entries(scope)) query.eq(key, value); return query; },
       in(key: string, values: unknown[]) { rows = rows.filter(r => values.includes(r[key])); return query; },
       gte(key: string, value: string) { rows = rows.filter(r => r[key] >= value); return query; },
       order(key: string, { ascending = true } = {}) {
@@ -78,7 +79,7 @@ function database(tables: Record<string, Row[]>) {
       },
       limit(n: number) { rows = rows.slice(0, n); return query; },
       maybeSingle() { single = true; return query; },
-      then(resolve: (value: unknown) => unknown) { return Promise.resolve({ data: single ? rows[0] ?? null : rows }).then(resolve); },
+      then(resolve: (value: unknown) => unknown) { return Promise.resolve({ data: single ? rows[0] ?? null : rows, count: rows.length }).then(resolve); },
     };
     return query;
   } };
@@ -155,6 +156,15 @@ test('report renders separate lifecycle dates and first-answer time in Eastern e
   }));
   assert.match(emptySubmission, /Submitted without recorded answers/);
   assert.doesNotMatch(pending, /Submitted without recorded answers/);
+  const preview = renderToStaticMarkup(React.createElement(AssignmentReport, {
+    ...props, assignment: { ...props.assignment, startedAt: null, completedAt: null },
+    metrics: { ...props.metrics, attempted: 0 },
+  }));
+  assert.match(preview, /Assignment questions/);
+  assert.match(preview, /Ready to work through together/);
+  assert.match(preview, /Question 1/);
+  assert.doesNotMatch(preview, /Daily distribution|Weak spots|By score band|Submitted without recorded answers/);
+  assert.doesNotMatch(html, /Ready to work through together/);
 });
 
 test('a synthetic empty submission has no student start date and cannot borrow older answers', async () => {
@@ -176,4 +186,62 @@ test('a synthetic empty submission has no student start date and cannot borrow o
   const answered = await buildSessionReview({ user: { id: 'tutor' }, target: { id: 'student' }, session, supabase: database(tables) });
   assert.equal(answered.metrics.attempted, 1);
   assert.equal(answered.assignment.startedAt, '2026-10-23T12:00:00Z');
+});
+
+test('tutor route opens untouched SAT and ACT question sets without writing student progress', async () => {
+  const reactUrl = pathToFileURL(createRequire(import.meta.url).resolve('react')).href;
+  const routeSource = (await readFile(new URL('../../app/(tutor)/tutor/assignments/[id]/students/[studentId]/page.js', import.meta.url), 'utf8'))
+    .replace(/^import .*;\r?\n/gm, '');
+  const routeStubs = `
+    let context, builder;
+    export function configure(ctx, fn) { context = ctx; builder = fn; }
+    const requireRole = async roles => {
+      if (!roles.includes(context.profile.role)) throw new Error('forbidden');
+      return context;
+    };
+    const notFound = () => { throw new Error('not found'); };
+    const QUESTION_STATS_ROLES = [];
+    const expandToAttemptIds = async (_db, ids) => ({ allIds: ids });
+    const buildSessionReview = args => builder(args);
+    const AssignmentReport = () => null;
+  `;
+  const compiled = ts.transpileModule(routeStubs + routeSource, {
+    compilerOptions: { module: ts.ModuleKind.ESNext, jsx: ts.JsxEmit.React },
+  }).outputText;
+  const route = await import(`data:text/javascript;base64,${Buffer.from(
+    `import React from ${JSON.stringify(reactUrl)};\n${compiled}`,
+  ).toString('base64')}`);
+  for (const testType of ['sat', 'act']) {
+    const tables = {
+      assignments_v2: [{ id: 'new', title: 'Live lesson', assignment_type: 'questions', test_type: testType,
+        created_at: '2026-11-01T15:00:00Z', question_ids: ['q2', 'q1'] }],
+      assignment_students_v2: [{ assignment_id: 'new', student_id: 'student', completed_at: null }],
+      profiles: [{ id: 'student', role: 'student', first_name: 'Test' }],
+      questions_v2: ['q1', 'q2'].map(id => ({ id, question_type: 'mcq', options: [] })),
+    };
+    const before = JSON.stringify(tables);
+    let calls = 0;
+    const ctx = { user: { id: 'tutor' }, profile: { role: 'teacher' }, supabase: database(tables) };
+    route.configure(ctx, async (args: Row) => {
+      calls++;
+      assert.equal(args.session.test_type, testType);
+      assert.deepEqual(args.session.question_ids, ['q2', 'q1']);
+      assert.equal(args.session.filter_criteria.assignment_id, 'new');
+      // Exercise the real SAT builder; ACT dispatch is covered by its loader tests.
+      return buildSessionReview({ ...args, session: { ...args.session, test_type: 'sat' } });
+    });
+    const props = { params: Promise.resolve({ id: 'new', studentId: 'student' }), searchParams: Promise.resolve({}) };
+    const page = await route.default(props);
+    assert.equal(calls, 1);
+    assert.equal(page.type.name, 'AssignmentReport');
+    assert.equal(page.props.items.length, 2);
+    assert.equal(page.props.metrics.attempted, 0);
+    assert.equal(page.props.assignment.startedAt, null);
+    assert.equal(page.props.assignment.completedAt, null);
+    assert.equal(JSON.stringify(tables), before);
+    route.configure({ ...ctx, profile: { role: 'student' } }, () => { throw new Error('must not load'); });
+    await assert.rejects(route.default(props), /forbidden/);
+    route.configure({ ...ctx, supabase: database({ ...tables, assignment_students_v2: [] }) }, () => { throw new Error('must not load'); });
+    await assert.rejects(route.default(props), /not found/);
+  }
 });

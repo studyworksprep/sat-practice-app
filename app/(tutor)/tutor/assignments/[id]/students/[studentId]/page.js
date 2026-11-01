@@ -14,12 +14,12 @@
 //      a recorded session), so report stats line up with the
 //      cohort table. attempts is exclusively v2-keyed — the old
 //      v1-expansion step is retired.
-//   3. Empty state when there are no attempts at all.
+//   3. With no attempts, the read-only question view supports live teaching.
 //
 // Auth: tutor / manager / admin. RLS does the real authorization.
 
-import { notFound, redirect } from 'next/navigation';
-import { requireUser } from '@/lib/api/auth';
+import { notFound } from 'next/navigation';
+import { requireRole } from '@/lib/api/auth';
 import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
@@ -39,14 +39,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
   // e.g. multiple sessions, legacy imports, manual override side
   // effects.
   const forceRebuild = sp.rebuild === '1' || sp.rebuild === 'true';
-  const { user, profile, supabase } = await requireUser();
-
-  if (profile.role === 'student' || profile.role === 'practice') {
-    redirect('/dashboard');
-  }
-  if (!['teacher', 'manager', 'admin'].includes(profile.role)) {
-    redirect('/');
-  }
+  const { user, profile, supabase } = await requireRole(['teacher', 'manager', 'admin']);
 
   // Parent assignment, junction confirming the pair, owner
   // profile (drives the back-link target), and any latest
@@ -59,7 +52,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
   ] = await Promise.all([
     supabase
       .from('assignments_v2')
-      .select('id, title, description, assignment_type, question_ids, lesson_id, due_date, created_at, deleted_at, lesson:lessons (id, title)')
+      .select('id, title, description, assignment_type, test_type, question_ids, lesson_id, due_date, created_at, deleted_at, lesson:lessons (id, title)')
       .eq('id', assignmentId)
       .maybeSingle(),
     supabase
@@ -155,45 +148,30 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
     );
   }
 
-  // Expand the assignment's question pool to cover v1 ids that map
-  // to the same v2 question. We need this either way: the synthetic
-  // path uses it as its query set, and the canonical-vs-rebuild
-  // auto-detect below counts attempts against it.
+  const isAct = assignment.test_type === 'act';
   const { allIds } = await expandToAttemptIds(supabase, questionIds);
   const assignmentFloor = assignment.created_at ?? '1970-01-01T00:00:00Z';
-
-  // Auto-rebuild detection. The canonical session row is whichever
-  // completed v2 session for this (student, assignment) ran most
-  // recently — fine when that one session captures the whole
-  // assignment, but it under-counts when:
-  //   • the student worked the assignment across multiple sessions
-  //     (the latest is a subset of the full picture), or
-  //   • some attempts were recorded against pre-cutover v1
-  //     question ids that the canonical builder's v2-keyed query
-  //     skips over (it does v1→v2 mapping on session.question_ids,
-  //     not on the student's attempt rows).
-  // Compare attempt counts: rebuild scans the assignment's full
-  // pool (v1+v2 union); canonical sees only what the session row
-  // carries. If rebuild finds strictly more, the canonical view is
-  // incomplete and we flip to the synthetic path silently.
+  // Match the roster's progress query: SAT has assignment context;
+  // ACT currently uses the question pool and assignment time window.
+  const attemptTable = isAct ? 'act_attempts' : 'attempts';
+  const attemptScope = isAct ? {} : { context_type: 'assignment', context_id: assignmentId };
+  // Rebuild if the latest completed session covers only part of the pool.
   const sessionQids = realSessionOrNull?.question_ids ?? [];
   const [{ count: rebuildCountRaw }, { count: canonicalCountRaw }] = await Promise.all([
     supabase
-      .from('attempts')
+      .from(attemptTable)
       .select('id', { count: 'exact', head: true })
       .eq('user_id', studentId)
       .in('question_id', allIds)
-      .eq('context_type', 'assignment')
-      .eq('context_id', assignmentId)
+      .match(attemptScope)
       .gte('created_at', assignmentFloor),
     realSessionOrNull && sessionQids.length > 0
       ? supabase
-          .from('attempts')
+          .from(attemptTable)
           .select('id', { count: 'exact', head: true })
           .eq('user_id', studentId)
           .in('question_id', sessionQids)
-          .eq('context_type', 'assignment')
-          .eq('context_id', assignmentId)
+          .match(attemptScope)
           .gte('created_at', assignmentFloor)
       : Promise.resolve({ count: 0 }),
   ]);
@@ -221,7 +199,13 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
         items={view.items}
         metrics={view.metrics}
         timing={view.timing}
-        assignment={view.assignment}
+        assignment={view.assignment ?? {
+          id: assignmentId,
+          title: assignment.title ?? 'Assignment',
+          assignedAt: assignment.created_at,
+          startedAt: view.items.find((item) => item.studentAnswer)?.studentAnswer?.submittedAt ?? null,
+          completedAt: junction.completed_at,
+        }}
         studentName={ownerName}
         studentHref={ownerHomeHref}
         backHref={`/tutor/assignments/${assignmentId}`}
@@ -242,23 +226,8 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
     );
   }
 
-  // Path 2 — synthetic session. Empty-state when the student has
-  // genuinely no attempts (friendlier than an all-Unanswered card).
-  // Reuses the rebuildCount above instead of an extra round trip.
-  if (!rebuildCount) {
-    return (
-      <EmptyReport
-        ownerName={ownerName}
-        title={assignment.title ?? 'Assignment'}
-        backHref={`/tutor/assignments/${assignmentId}`}
-        body={
-          junction.completed_at
-            ? 'Marked complete, but no answers are linked to this assignment. Older answers without assignment information are not included.'
-            : 'No answers are linked to this assignment yet.'
-        }
-      />
-    );
-  }
+  // An in-memory session loads the questions even before the first answer.
+  // This GET never creates a session or changes the student's progress.
 
   const syntheticSession = {
     id: `synthetic:${assignmentId}:${studentId}`,
@@ -266,6 +235,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
     question_ids: questionIds,
     created_at: assignment.created_at ?? '1970-01-01T00:00:00Z',
     mode: 'practice',
+    test_type: assignment.test_type ?? 'sat',
     filter_criteria: { assignment_id: assignmentId },
   };
 
@@ -284,7 +254,13 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       items={view.items}
       metrics={view.metrics}
       timing={view.timing}
-      assignment={view.assignment}
+      assignment={view.assignment ?? {
+          id: assignmentId,
+          title: assignment.title ?? 'Assignment',
+          assignedAt: assignment.created_at,
+          startedAt: view.items.find((item) => item.studentAnswer)?.studentAnswer?.submittedAt ?? null,
+          completedAt: junction.completed_at,
+        }}
       studentName={ownerName}
       studentHref={ownerHomeHref}
       backHref={`/tutor/assignments/${assignmentId}`}

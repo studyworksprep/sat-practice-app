@@ -527,7 +527,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
                   )}
                   <th className={s.th}>Completed</th>
                   {(isQuestionLike || isLesson) && (
-                    <th className={s.th}>Report</th>
+                    <th className={s.th}>Questions / report</th>
                   )}
                 </tr>
               </thead>
@@ -545,6 +545,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
                     isQuestionLike || isLesson
                       ? `/tutor/assignments/${assignment.id}/students/${stu.id}`
                       : null;
+                  const questionPreview = isQuestionLike && !stu.completed_at && stu.done === 0;
                   // Lesson progress: blocks completed over the lesson's
                   // step count, and first-try accuracy over the checks
                   // this student actually submitted.
@@ -567,10 +568,10 @@ export default async function TutorAssignmentDetailPage({ params }) {
                           <Link
                             href={reportHref}
                             className={s.rowLink}
-                            aria-label={`Open ${stu.name}'s assignment report`}
+                            aria-label={`Open ${stu.name}'s assignment ${questionPreview ? 'questions' : 'report'}`}
                             tabIndex={-1}
                           >
-                            Open {stu.name}'s assignment report
+                            Open {stu.name}'s assignment {questionPreview ? 'questions' : 'report'}
                           </Link>
                         )}
                         <Link
@@ -655,7 +656,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
                             href={reportHref}
                             className={`${s.reportLink} ${s.rowLinkLabel}`}
                           >
-                            View report →
+                            {questionPreview ? 'View questions →' : 'View report →'}
                           </Link>
                         </td>
                       )}

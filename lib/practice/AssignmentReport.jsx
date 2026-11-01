@@ -114,6 +114,7 @@ export function AssignmentReport({
   );
 
   const isAct = sessionMeta.testType === 'act';
+  const questionPreview = Boolean(assignment && !assignment.completedAt && metrics.attempted === 0);
   const firstReal = items.find((item) => item.taxonomy?.domain_code === initialSection)
     ?? items.find((it) => !it.missing) ?? items[0];
   const [selectedPosition, setSelectedPosition] = useState(
@@ -179,7 +180,7 @@ export function AssignmentReport({
       <header className={s.header}>
         <div className={s.headerMain}>
           <div className={s.eyebrow}>
-            {sessionMeta.actTestReport ? 'ACT practice test report' : assignment ? 'Assignment report' : 'Session report'}
+            {questionPreview ? 'Assignment questions' : sessionMeta.actTestReport ? 'ACT practice test report' : assignment ? 'Assignment report' : 'Session report'}
           </div>
           <h1 className={s.h1}>
             {assignment ? assignment.title : sessionMeta.sourceTest ?? sessionDate}
@@ -237,6 +238,16 @@ export function AssignmentReport({
         </section>
       )}
 
+      {questionPreview && (
+        <section className={s.submissionNotice} aria-label="Question preview">
+          <strong>Ready to work through together</strong>
+          <p>No answers have been recorded yet. Choose a question below or use Present
+            to work through the assignment with your student. Viewing questions and
+            revealing answers here does not record student answers or mark the assignment complete.</p>
+        </section>
+      )}
+
+      {!questionPreview && <>
       {/* ---------- Headline + supporting tiles ----------
            Hero = accuracy %, the headline metric a tutor reads
            first. Supporting tiles repeat the practice-test report's
@@ -442,6 +453,8 @@ export function AssignmentReport({
         </section>
       )}
 
+      </>}
+
       {/* ---------- Question map ---------- */}
       {/* Per-question review: map on the left, detail on the right
           on wide screens; stacks on narrow. The map sticks to the
@@ -451,7 +464,7 @@ export function AssignmentReport({
         <section className={`${s.card} ${s.reviewMapCard}`}>
           <div className={s.cardHead}>
             <div className={s.cardHeadMain}>
-              <h2 className={s.h2}>Per-question review</h2>
+              <h2 className={s.h2}>{questionPreview ? 'Questions' : 'Per-question review'}</h2>
               <p className={s.cardHint}>
                 Every question, color-coded by difficulty with a
                 corner mark for status. Click any cell to open the
