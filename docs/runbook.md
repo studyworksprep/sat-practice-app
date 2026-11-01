@@ -5,8 +5,30 @@
 > Dashboard summary rollout instructions verified: 2026-10-31.
 > Tutor reporting optimization instructions verified: 2026-10-31.
 > ACT practice taxonomy rollout instructions verified: 2026-10-31.
+> Tutor dashboard activity instructions verified: 2026-11-01.
 
 Short operational playbook. Expand as new scenarios come up.
+
+## Tutor dashboard search and activity
+
+The dashboard searches the visible roster on demand; it does not display student
+cards before typing. Search matches name, email, or school, shows at most eight
+clickable results, and supports arrow keys, Enter, and Escape. The full roster
+remains available from its link.
+
+Recent activity loads the latest 20 rows from each of four RLS-scoped sources
+within 14 days: assignment completions, practice sessions, SAT test results, and
+ACT test results. It merges these chronologically and initially displays 12
+updates, with category filters and Show more. These are recent updates, not
+cohort totals or accuracy trends. Assignment sessions collapse by student and
+assignment; tutor-created synthetic sessions and test-section sessions are
+excluded. Archived/deleted assignment work is excluded.
+
+“Marked complete” describes the assignment flag, not proof of answered questions.
+Question-set size is not an answer count. Completed tests show stored total or
+composite scores when available and individual section scores, including partial
+tests. Activity-source errors show an unavailable message while retaining search;
+they must not be rendered as an empty feed. No new RPC or migration is required.
 
 ## Investigating slow student and tutor pages
 
