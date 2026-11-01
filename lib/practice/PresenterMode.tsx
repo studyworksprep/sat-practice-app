@@ -29,6 +29,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { QuestionMapGrid } from './QuestionMapGrid';
 import { DesmosPanel } from '@/lib/ui/DesmosPanel';
+import { formatReportTimestamp } from './report-dates';
+import { formatDuration } from './format-duration';
 import s from './PresenterMode.module.css';
 
 // Loose Excalidraw typing, same rationale as ExcalidrawNode.tsx.
@@ -88,8 +90,7 @@ export interface PresenterModeProps {
   onRevealAll: () => void;
   onExit: () => void;
   /** Taxonomy of the current question — shown as a meta strip under
-   *  the top bar so the tutor can cite topic/skill + score band while
-   *  presenting. Null/absent (e.g. a missing question) hides the strip. */
+   *  the top bar. Recorded activity appears beside the topic when available. */
   taxonomy?: {
     domainName?: string | null;
     skillName?: string | null;
@@ -101,6 +102,9 @@ export interface PresenterModeProps {
    *  Presenter hides it behind a "Show tags" toggle so tags don't
    *  project to students by default. */
   tagsNode?: React.ReactNode;
+  submittedAt?: string | null;
+  timeSpentMs?: number | null;
+  timestampLabel?: 'Answered' | 'First activity';
   /** True when the current question is a math question — shows the
    *  Desmos pane (default open) in the runner's two-column format. */
   desmosEligible?: boolean;
@@ -123,10 +127,17 @@ export function PresenterMode({
   onExit,
   taxonomy = null,
   tagsNode = null,
+  submittedAt = null,
+  timeSpentMs = null,
+  timestampLabel = 'Answered',
   desmosEligible = false,
   desmosKey = null,
   children,
 }: PresenterModeProps) {
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsRef = useRef<HTMLDivElement>(null);
+  const toolsButtonRef = useRef<HTMLButtonElement>(null);
+  const timestamp = formatReportTimestamp(submittedAt);
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const desmosPaneRef = useRef<HTMLDivElement>(null);
@@ -256,7 +267,8 @@ export function PresenterMode({
       if (inField) return;
       if (e.key === 'Escape') {
         e.preventDefault();
-        if (drawing) setDrawing(false);
+        if (toolsOpen) { setToolsOpen(false); toolsButtonRef.current?.focus(); }
+        else if (drawing) setDrawing(false);
         else if (!document.fullscreenElement) onExitRef.current();
         // With fullscreen active the browser's own Esc handling
         // exits fullscreen first; a second Esc closes presenter.
@@ -269,7 +281,16 @@ export function PresenterMode({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [drawing, step, onReveal, selectedPosition]);
+  }, [drawing, toolsOpen, step, onReveal, selectedPosition]);
+
+  useEffect(() => {
+    if (!toolsOpen) return;
+    const dismiss = (event: PointerEvent) => {
+      if (!toolsRef.current?.contains(event.target as Node)) setToolsOpen(false);
+    };
+    document.addEventListener('pointerdown', dismiss);
+    return () => document.removeEventListener('pointerdown', dismiss);
+  }, [toolsOpen]);
 
   // Excalidraw loads lazily the first time the draw layer opens.
   useEffect(() => {
@@ -295,8 +316,8 @@ export function PresenterMode({
           <button type="button" className={s.navBtn} onClick={() => step(-1)} disabled={index <= 0} aria-label="Previous question (←)">
             ←
           </button>
-          <button type="button" className={s.counterBtn} onClick={() => setMapOpen((v) => !v)} aria-expanded={mapOpen}>
-            Question {index + 1} of {positions.length}
+          <button type="button" className={s.counterBtn} onClick={() => setMapOpen((v) => !v)} aria-expanded={mapOpen} aria-label={`Question ${index + 1} of ${positions.length}; toggle question map`}>
+            <span className={s.counterLong}>Question </span>{index + 1} / {positions.length}
           </button>
           <button
             type="button"
@@ -311,86 +332,93 @@ export function PresenterMode({
         <div className={s.topBarRight}>
           <button
             type="button"
-            className={s.toolBtn}
-            onClick={() => setScaleIdx((i) => Math.max(0, i - 1))}
-            disabled={scaleIdx === 0}
-            aria-label="Smaller text"
-          >
-            A−
-          </button>
-          <button
-            type="button"
-            className={s.toolBtn}
-            onClick={() => setScaleIdx((i) => Math.min(SCALES.length - 1, i + 1))}
-            disabled={scaleIdx === SCALES.length - 1}
-            aria-label="Larger text"
-          >
-            A+
-          </button>
-          <button
-            type="button"
             className={`${s.toolBtn} ${!isRevealed ? s.toolBtnAccent : ''}`}
             onClick={() => onReveal(selectedPosition)}
             disabled={isRevealed}
           >
-            {isRevealed ? 'Revealed' : 'Reveal (R)'}
+            {isRevealed ? 'Revealed' : 'Reveal'}
           </button>
-          <button type="button" className={s.toolBtn} onClick={onRevealAll} disabled={allRevealed}>
-            Reveal all
-          </button>
-          {desmosEligible ? (
-            <button
-              type="button"
-              className={`${s.toolBtn} ${calcOpen ? s.toolBtnActive : ''}`}
-              onClick={() => setCalcOpen((v) => !v)}
-              aria-pressed={calcOpen}
-            >
-              Calculator
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className={`${s.toolBtn} ${drawing ? s.toolBtnActive : ''}`}
-            onClick={() => setDrawing((v) => !v)}
-            aria-pressed={drawing}
-          >
-            ✎ Draw
-          </button>
-          {drawing ? (
-            <button
-              type="button"
-              className={s.toolBtn}
-              onClick={() => excaliApiRef.current?.updateScene({ elements: [] })}
-            >
-              Clear drawing
-            </button>
-          ) : null}
-          {!isFullscreen ? (
-            <button
-              type="button"
-              className={s.toolBtn}
-              onClick={() => rootRef.current?.requestFullscreen?.().catch(() => {})}
-              aria-label="Enter fullscreen"
-            >
-              ⛶ Fullscreen
-            </button>
-          ) : null}
+          <div ref={toolsRef} className={s.toolsWrap}>
+            <button ref={toolsButtonRef} type="button" className={`${s.toolBtn} ${s.moreBtn}`} aria-expanded={toolsOpen} aria-controls="presenter-tools" onClick={() => setToolsOpen(v => !v)}>More ▾</button>
+            <div id="presenter-tools" className={`${s.secondaryTools} ${toolsOpen ? s.secondaryToolsOpen : ''}`} role="group" aria-label="Presentation tools">
+              <button
+                type="button"
+                className={s.toolBtn}
+                onClick={() => setScaleIdx((i) => Math.max(0, i - 1))}
+                disabled={scaleIdx === 0}
+                aria-label="Smaller text"
+              >
+                A−
+              </button>
+              <button
+                type="button"
+                className={s.toolBtn}
+                onClick={() => setScaleIdx((i) => Math.min(SCALES.length - 1, i + 1))}
+                disabled={scaleIdx === SCALES.length - 1}
+                aria-label="Larger text"
+              >
+                A+
+              </button>
+              <button type="button" className={s.toolBtn} onClick={onRevealAll} disabled={allRevealed}>
+                Reveal all
+              </button>
+              {desmosEligible ? (
+                <button
+                  type="button"
+                  className={`${s.toolBtn} ${calcOpen ? s.toolBtnActive : ''}`}
+                  onClick={() => setCalcOpen((v) => !v)}
+                  aria-pressed={calcOpen}
+                >
+                  Calculator
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className={`${s.toolBtn} ${drawing ? s.toolBtnActive : ''}`}
+                onClick={() => setDrawing((v) => !v)}
+                aria-pressed={drawing}
+              >
+                ✎ Draw
+              </button>
+              {drawing ? (
+                <button
+                  type="button"
+                  className={s.toolBtn}
+                  onClick={() => excaliApiRef.current?.updateScene({ elements: [] })}
+                >
+                  Clear drawing
+                </button>
+              ) : null}
+              {!isFullscreen ? (
+                <button
+                  type="button"
+                  className={s.toolBtn}
+                  onClick={() => rootRef.current?.requestFullscreen?.().catch(() => {})}
+                  aria-label="Enter fullscreen"
+                >
+                  ⛶ Fullscreen
+                </button>
+              ) : null}
+            </div>
+          </div>
           <button type="button" className={s.exitBtn} onClick={onExit}>
             ✕ Exit
           </button>
         </div>
       </div>
 
-      {/* ── Question meta: topic/skill + score band ─────────── */}
-      {taxonomy && (taxonomy.domainName || taxonomy.skillName || taxonomy.scoreBand != null) ? (
+      {/* Topic and recorded activity for the selected question. */}
+      {(taxonomy?.domainName || taxonomy?.skillName || timestamp || timeSpentMs != null) && (
         <div className={s.metaBar}>
-          {taxonomy.domainName ? <span className={s.metaItem}>{taxonomy.domainName}</span> : null}
-          {taxonomy.skillName ? <span className={s.metaItem}>{taxonomy.skillName}</span> : null}
-          {taxonomy.scoreBand != null ? (
-            <span className={s.metaBand}>Band {taxonomy.scoreBand}</span>
-          ) : null}
+          <span className={s.metaTopic} title={[taxonomy?.domainName, taxonomy?.skillName].filter(Boolean).join(' · ')}>
+            {[taxonomy?.domainName, taxonomy?.skillName].filter(Boolean).join(' · ')}
+          </span>
+          <div className={s.activityMeta}>
+            {timestamp && <span title={timestampLabel === 'First activity' ? 'First recorded activity; it can precede the answer or a later answer change.' : undefined}>{timestampLabel} {timestamp}</span>}
+            {timeSpentMs != null && timeSpentMs >= 0 && <span>Time spent {timeSpentMs === 0 ? '0s' : formatDuration(timeSpentMs)}</span>}
+          </div>
         </div>
-      ) : null}
+      )}
 
       {/* ── Jump map (collapsible) ──────────────────────────── */}
       {mapOpen ? (

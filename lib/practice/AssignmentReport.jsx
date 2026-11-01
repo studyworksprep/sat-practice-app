@@ -644,6 +644,9 @@ export function AssignmentReport({
           onReveal={reveal}
           onRevealAll={revealAll}
           onExit={() => setPresenting(false)}
+          submittedAt={selected.studentAnswer?.submittedAt ?? null}
+          timeSpentMs={selected.studentAnswer?.timeSpentMs ?? null}
+          timestampLabel="Answered"
           taxonomy={selected.missing ? null : {
             domainName: selected.taxonomy?.domain_name ?? null,
             skillName: selected.taxonomy?.skill_name ?? null,
