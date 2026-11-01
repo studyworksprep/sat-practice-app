@@ -163,6 +163,8 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
           .select('user_id, question_id, is_correct, created_at')
           .in('user_id', studentIds)
           .in('question_id', attemptQuestionIds)
+          .eq('context_type', 'assignment')
+          .eq('context_id', assignmentId)
           .gte('created_at', assignmentFloor)
           .order('created_at', { ascending: true })
       : Promise.resolve({ data: [] }),

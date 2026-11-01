@@ -136,12 +136,8 @@ export default async function AssignmentDetailPage({ params }) {
   // authoritative source. Client-side reduction picks the most
   // recent attempt per question for the ✓/✗ display.
   //
-  // Floor: any attempt at-or-after the assignment's created_at counts
-  // as in-assignment progress, regardless of context (assignment
-  // runner, self-directed session, practice test). Earlier attempts
-  // on the same question are excluded so a freshly-created assignment
-  // starts with every question Unanswered. Same rule on the tutor
-  // surfaces.
+  // Count only answers linked to this assignment, after its issue date.
+
   let questionRows = null;
   // lesson_pack stores a materialized question_ids snapshot just
   // like a 'questions' assignment, so the data-loading and
@@ -173,6 +169,7 @@ export default async function AssignmentDetailPage({ params }) {
           .select('question_id, is_correct, created_at')
           .eq('user_id', user.id)
           .in('question_id', attemptQuestionIds)
+          .match(isAct ? {} : { context_type: 'assignment', context_id: assignment.id })
           .gte('created_at', assignmentFloor)
           .order('created_at', { ascending: false }),
       ]);

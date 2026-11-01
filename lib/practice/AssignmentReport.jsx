@@ -47,6 +47,7 @@ import { ActScoreSummary } from '@/lib/practice-test/ActScoreSummary';
 import { ReportHero } from './ReportHero';
 import { formatDuration } from './format-duration';
 import { formatDate } from '@/lib/formatters';
+import { formatReportTimestamp, REPORT_TIME_ZONE } from './report-dates';
 import s from './AssignmentReport.module.css';
 
 // Domain codes that get the math toolkit (Desmos + reference
@@ -192,7 +193,15 @@ export function AssignmentReport({
               <span className={s.studentName}>{studentName}</span>
             ))}
             {studentName && <span className={s.dot}>·</span>}
-            <span>{sessionDate}</span>
+            {assignment ? (
+              <>
+                <span>Assigned {formatReportTimestamp(assignment.assignedAt)}</span>
+                <span className={s.dot}>·</span>
+                <span>{assignment.startedAt ? `Started ${formatReportTimestamp(assignment.startedAt)}` : 'Not started'}</span>
+                <span className={s.dot}>·</span>
+                <span>{assignment.completedAt ? `Completed ${formatReportTimestamp(assignment.completedAt)}` : 'Not completed'}</span>
+              </>
+            ) : <span>Started {sessionDate}</span>}
             {totalMs > 0 && (
               <>
                 <span className={s.dot}>·</span>
@@ -274,7 +283,7 @@ export function AssignmentReport({
                 volume, bar color shows accuracy — green ≥80%,
                 amber 50–79%, red &lt;50%. Slate marks days with
                 no practice, so spaced effort vs. last-minute
-                cramming reads at a glance.
+                cramming reads at a glance. All dates and times are Eastern.
               </p>
             </div>
           </div>
@@ -482,6 +491,9 @@ export function AssignmentReport({
                     {formatDuration(selected.studentAnswer.timeSpentMs)} on
                     this question
                   </>
+                )}
+                {selected.studentAnswer?.submittedAt && (
+                  <> · Answered {formatReportTimestamp(selected.studentAnswer.submittedAt)}</>
                 )}
               </span>
             </div>
@@ -820,20 +832,12 @@ function ordinalLabel(n) {
 }
 
 function formatAttemptTimestamp(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  return formatReportTimestamp(iso);
 }
 
 function formatSessionDate(iso) {
   return formatDate(iso, {
+    timeZone: REPORT_TIME_ZONE,
     weekday: 'long',
     year: 'numeric',
     month: 'long',
