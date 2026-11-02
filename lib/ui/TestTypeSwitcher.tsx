@@ -21,7 +21,7 @@ export function TestTypeSwitcher(props: Props) {
     ) : (
       <label key={test} className={className}>
         <input type="radio" name={props.name} value={test} checked={active}
-          onChange={() => props.onChange(test)} className={s.input} />
+          onChange={() => props.onChange(test)} className={s.visuallyHidden} />
         {content}
       </label>
     );
@@ -31,7 +31,7 @@ export function TestTypeSwitcher(props: Props) {
       <span className={s.label}>Choose a test</span>
       {props.hrefs ? <nav className={s.options} aria-label="Test type">{options}</nav> : (
         <fieldset className={s.options}>
-          <legend className={s.input}>Test type</legend>
+          <legend className={s.visuallyHidden}>Test type</legend>
           {options}
         </fieldset>
       )}

@@ -38,7 +38,7 @@
   outline: 3px solid var(--color-app-accent);
   outline-offset: 3px;
 }
-.input {
+.visuallyHidden {
   position: absolute;
   width: 1px;
   height: 1px;

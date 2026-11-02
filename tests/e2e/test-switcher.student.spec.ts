@@ -11,6 +11,8 @@ for (const path of ['/practice/start', '/practice/tests', '/practice/history']) 
     await expect(sat).toHaveAttribute('aria-current', 'page');
     const bounds = await act.boundingBox();
     expect(bounds?.height).toBeGreaterThanOrEqual(44);
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
     await act.click();
     await expect(page).toHaveURL(new RegExp(path + '\\?test=act$'));
     await expect(act).toHaveAttribute('aria-current', 'page');
@@ -18,6 +20,6 @@ for (const path of ['/practice/start', '/practice/tests', '/practice/history']) 
     await sat.press('Enter');
     await expect(page).toHaveURL(new RegExp(path + '$'));
     await expect(sat).toHaveAttribute('aria-current', 'page');
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await expect(nav).toBeInViewport({ ratio: 1 });
   });
 }

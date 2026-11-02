@@ -19,6 +19,7 @@ test.beforeAll(async () => {
     '@/lib/practice/act-taxonomy': './taxonomy.mjs',
     '@/lib/practice/act-test-plan': './plan.mjs',
     '@/lib/practice/act-assignment-taxonomy': './assignment-taxonomy.mjs',
+    '@/lib/ui/TestTypeSwitcher': './test-switcher.mjs',
     'next/navigation': './navigation.mjs',
     'next/link': './navigation.mjs',
     '@/lib/ui/ConfirmDialog': './navigation.mjs',
@@ -28,6 +29,7 @@ test.beforeAll(async () => {
   const files = {
     taxonomy: 'lib/practice/act-taxonomy.ts', plan: 'lib/practice/act-test-plan.ts',
     'assignment-taxonomy': 'lib/practice/act-assignment-taxonomy.ts',
+    'test-switcher': 'lib/ui/TestTypeSwitcher.tsx',
     hub: 'lib/practice/ActTestsHub.tsx',
     assignment: 'app/(tutor)/tutor/assignments/new/NewAssignmentInteractive.tsx',
     report: 'lib/practice-test/act-report.ts',
@@ -80,7 +82,8 @@ test.beforeAll(async () => {
       : fixture.kind==='hub'
       ? React.createElement(ActTestsHub,{forms:[{sourceTest:'ACT-fixture',name:'ACT fixture',detail:null,format:'classic',kind:'released',total:60,sections:[{section:'math',count:60}]}],attempts:[],tabs:null,
           resumeInfo: fixture.resume ? {attemptId:'resume',sourceTest:'ACT-fixture',name:'ACT fixture',sectionIndex:0,sectionCount:1,sectionLabel:'Math',sectionStatus:'in_progress',plan,timeMultiplier:1} : null})
-      : React.createElement(NewAssignmentInteractive,{students:[],domains:[],difficulties:[],practiceTests:[],lessonPacks:[],actTaxonomy:buildActAssignmentTaxonomy(rows),
+      : React.createElement(NewAssignmentInteractive,{students:[],domains:[],difficulties:[],practiceTests:[],lessonPacks:[],
+          initialActCatalog:{taxonomy:buildActAssignmentTaxonomy(rows),difficulties:[],forms:[]},loadActCatalogAction:async()=>({ok:false,error:'Not used by this preloaded fixture'}),
           prefill:{label:'Saved template',testType:'act',skills:[],difficulties:[],size:10,unansweredOnly:false,actSelections:fixture.selections||[]},createAction:async()=>({ok:true})}));
   `);
   await new Promise<void>((done, reject) => {
@@ -98,6 +101,7 @@ test.afterAll(() => { if (directory) rmSync(directory, { recursive: true, force:
 
 async function mount(page: Page, fixture: { kind: 'hub' | 'assignment' | 'report'; resume?: boolean; selections?: unknown[] }) {
   const css = ['app/styles/next-tokens.css', fixture.kind === 'report' ? 'lib/practice/SkillBreakdownCard.module.css' : fixture.kind === 'hub' ? 'lib/practice/ActTestsHub.module.css' : 'app/(tutor)/tutor/assignments/new/NewAssignmentInteractive.module.css']
+    .concat(fixture.kind === 'assignment' ? ['lib/ui/TestTypeSwitcher.module.css'] : [])
     .map(path => readFileSync(resolve(path), 'utf8')).join('\n');
   await page.setContent(`<style>${css}*{box-sizing:border-box}body{margin:0;font:14px Arial}</style><div id="fixture"></div>`);
   await page.addScriptTag({ content: `window.actFixture=${JSON.stringify(fixture)};\n${bundle}` });
