@@ -10,7 +10,7 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useConfirm } from '@/lib/ui/ConfirmDialog';
-import s from './Review.module.css';
+import s from './SessionLifecycleButtons.module.css';
 
 export function SessionLifecycleButtons({
   sessionId,
