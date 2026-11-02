@@ -21,12 +21,14 @@
 
 'use client';
 
-import { useActionState, useMemo, useState } from 'react';
+import { useActionState, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ActionResult } from '@/lib/types';
 import type { LessonCatalogItem } from '@/lib/lesson/catalog';
 import { ACT_SECTIONS, type ActSection } from '@/lib/practice/act-taxonomy';
 import { actSelectionKey as actKey, parseActSelections, type ActSectionTaxonomy } from '@/lib/practice/act-assignment-taxonomy';
+import type { ActAssignmentCatalog } from '@/lib/tutor/act-assignment-catalog';
+import { TestTypeSwitcher } from '@/lib/ui/TestTypeSwitcher';
 import { LessonPicker } from './LessonPicker';
 import styles from './NewAssignmentInteractive.module.css';
 
@@ -47,10 +49,6 @@ type PersonOption = { id: string; name: string; email: string | null };
 type PracticeTestOption = { id: string; label: string };
 type LessonPackOption = { id: string; name: string; questionCount: number };
 type TemplateOption = { id: string; name: string; testType?: 'sat' | 'act' };
-
-// ACT bank (Phase 4B): the picker groups categories under their
-// section; a practice test is a form.
-type ActFormOption = { sourceTest: string; label: string; sections: ActSection[] };
 
 /** Server-resolved one-click prefill (§4.3): a template or a
  *  student's weak skills. Skills are the persisted shape (no
@@ -91,9 +89,8 @@ interface Props {
   lessonPacks: LessonPackOption[];
   lessons?: LessonCatalogItem[];
   templates?: TemplateOption[];
-  actTaxonomy?: ActSectionTaxonomy[];
-  actDifficulties?: number[];
-  actForms?: ActFormOption[];
+  initialActCatalog?: ActAssignmentCatalog | null;
+  loadActCatalogAction: () => Promise<ActionResult<{ data: ActAssignmentCatalog }>>;
   prefill?: Prefill | null;
   createAction: CreateAction;
   deleteTemplateAction?: TemplateDeleteAction;
@@ -111,6 +108,7 @@ type SelectedSkill = {
 };
 
 const DEFAULT_WEIGHT = 1;
+const EMPTY_ACT_CATALOG: ActAssignmentCatalog = { taxonomy: [], difficulties: [], forms: [] };
 const WEIGHT_STEPS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3];
 
 function difficultyLabel(d: number): string {
@@ -128,9 +126,8 @@ export function NewAssignmentInteractive({
   lessonPacks,
   lessons = [],
   templates = [],
-  actTaxonomy = [],
-  actDifficulties = [],
-  actForms = [],
+  initialActCatalog = null,
+  loadActCatalogAction,
   prefill = null,
   createAction,
   deleteTemplateAction,
@@ -140,6 +137,11 @@ export function NewAssignmentInteractive({
     null,
   );
   const router = useRouter();
+  const [actCatalog, setActCatalog] = useState(initialActCatalog);
+  const [actCatalogError, setActCatalogError] = useState<string | null>(null);
+  const [isActCatalogPending, startCatalogTransition] = useTransition();
+  const catalogRequested = useRef(false);
+  const { taxonomy: actTaxonomy, difficulties: actDifficulties, forms: actForms } = actCatalog ?? EMPTY_ACT_CATALOG;
   const [actSourceTest, setActSourceTest] = useState('');
   const [actTestSections, setActTestSections] = useState<ActSection[]>([...ACT_SECTIONS]);
   const availableActSections = actForms.find(form => form.sourceTest === actSourceTest)?.sections ?? ACT_SECTIONS;
@@ -379,8 +381,29 @@ export function NewAssignmentInteractive({
   };
 
   // ── ACT picker state (Phase 4B) ─────────────────────────────────
+  const ensureActCatalog = () => {
+    if (actCatalog || catalogRequested.current) return;
+    catalogRequested.current = true;
+    setActCatalogError(null);
+    startCatalogTransition(async () => {
+      try {
+        const result = await loadActCatalogAction();
+        // Keep successful requests marked while React commits the result;
+        // failures release the guard so the user can retry.
+        if (!result.ok) catalogRequested.current = false;
+        startCatalogTransition(() => {
+          if (result.ok) setActCatalog(result.data);
+          else setActCatalogError(result.error);
+        });
+      } catch {
+        catalogRequested.current = false;
+        setActCatalogError('Could not load ACT options. Please try again.');
+      }
+    });
+  };
   const switchTestType = (next: 'sat' | 'act') => {
     setTestType(next);
+    if (next === 'act') ensureActCatalog();
     if (next === 'act' && (assignmentType === 'lesson' || assignmentType === 'lesson_pack')) {
       setAssignmentType('questions');
     }
@@ -474,6 +497,17 @@ export function NewAssignmentInteractive({
 
   return (
     <form action={submitAction} className={styles.form}>
+      <TestTypeSwitcher value={testType} name="test_type" onChange={switchTestType} />
+      {testType === 'act' && !actCatalog && (
+        <section className={styles.card} aria-busy={isActCatalogPending}>
+          {actCatalogError ? (
+            <>
+              <p role="alert" className={styles.error}>{actCatalogError}</p>
+              <button type="button" className={styles.typeOption} onClick={ensureActCatalog}>Try again</button>
+            </>
+          ) : <p role="status">Loading ACT questions and tests…</p>}
+        </section>
+      )}
       {/* Template shelf (§4.3) */}
       {templates.length > 0 && (
         <section className={styles.card}>
@@ -494,41 +528,6 @@ export function NewAssignmentInteractive({
           </ul>
         </section>
       )}
-
-      {/* Test (bank) selector — Phase 4B */}
-      <section className={styles.card}>
-        <div className={styles.sectionLabel}>Test</div>
-        <div className={styles.typeRow}>
-          {[
-            { value: 'sat', label: 'SAT' },
-            { value: 'act', label: 'ACT' },
-          ].map((t) => (
-            <label
-              key={t.value}
-              className={`${styles.typeOption} ${
-                testType === t.value ? styles.typeOptionActive : ''
-              }`}
-            >
-              <input
-                type="radio"
-                name="test_type"
-                value={t.value}
-                checked={testType === t.value}
-                onChange={() => switchTestType(t.value as 'sat' | 'act')}
-                className={styles.hidden}
-              />
-              <span>{t.label}</span>
-            </label>
-          ))}
-        </div>
-        {testType === 'act' && (
-          <p className={styles.sectionHint}>
-            ACT assignments are question sets sampled by section and
-            category, or a timed ACT form. Lessons and lesson packs are
-            SAT content.
-          </p>
-        )}
-      </section>
 
       {/* Type selector */}
       <section className={styles.card}>
@@ -980,7 +979,7 @@ export function NewAssignmentInteractive({
           sampled evenly across the picks; difficulty 1–5 applies to
           all of them. Same size / attempt-status / template fields as
           the SAT pool — only one of the two sections is mounted. */}
-      {assignmentType === 'questions' && testType === 'act' && (
+      {assignmentType === 'questions' && testType === 'act' && actCatalog && (
         <section className={styles.card}>
           <div className={styles.sectionLabel}>ACT question pool</div>
           <p className={styles.sectionHint}>
@@ -1173,7 +1172,7 @@ export function NewAssignmentInteractive({
         </section>
       )}
 
-      {assignmentType === 'practice_test' && testType === 'act' && (
+      {assignmentType === 'practice_test' && testType === 'act' && actCatalog && (
         <section className={styles.card}>
           <div className={styles.sectionLabel}>ACT practice test</div>
           {actForms.length === 0 ? (
@@ -1300,7 +1299,7 @@ export function NewAssignmentInteractive({
         )}
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || (testType === 'act' && !actCatalog)}
           className={styles.submitButton}
         >
           {isPending ? 'Creating…' : 'Create assignment'}
