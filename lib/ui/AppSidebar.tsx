@@ -229,7 +229,10 @@ export function AppShell({ user, sections, footer, children }: AppShellProps) {
           {(user?.firstName || user?.email) && (
             <div className={s.userIdentity} title={user.email ?? undefined}>
               <span className={s.userName}>{user.firstName || user.email}</span>
-              {user?.role && <span className={s.roleBadge}>{user.role}</span>}
+              {/* Staff roles are worth labelling; a student seeing "student" learns nothing. */}
+              {user?.role && user.role !== 'student' && (
+                <span className={s.roleBadge}>{user.role}</span>
+              )}
             </div>
           )}
           <div className={s.userActions}>

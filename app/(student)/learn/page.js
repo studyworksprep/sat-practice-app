@@ -11,6 +11,8 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { estimateLessonMinutes, formatLessonDuration } from '@/lib/lesson/duration.mjs';
 import { Card } from '@/lib/ui/Card';
+import { IconTile } from '@/lib/ui/IconTile';
+import { BookOpenIcon } from '@/lib/ui/icons';
 import { LearnFilter } from './LearnFilter';
 import s from './Learn.module.css';
 
@@ -106,7 +108,7 @@ export default async function StudentLearnPage({ searchParams }) {
 
       <a href="/learn/getting-started" className={s.gettingStartedLink}>
         <Card tone="info" className={s.gettingStartedCard}>
-          <span className={s.gettingStartedIcon} aria-hidden="true">📖</span>
+          <IconTile icon={BookOpenIcon} palette="navy" size="md" className={s.gettingStartedIcon} />
           <div className={s.gettingStartedBody}>
             <div className={s.gettingStartedTitle}>
               Getting Started: Your Guide to SAT Practice

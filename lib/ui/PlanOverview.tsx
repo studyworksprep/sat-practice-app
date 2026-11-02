@@ -180,14 +180,15 @@ export function PlanOverview({
                   {isNow && <span className={s.nowPill}>now</span>}
                 </span>
                 <span className={s.weekMeta}>
-                  {phase ? `${PHASE_LABEL[phase.type]} · ` : ''}
-                  {range}
-                  {list.length > 0 && (
-                    <>
-                      {' · '}
-                      {done > 0 ? `${done} of ${list.length} done` : `${list.length} task${list.length === 1 ? '' : 's'}`}
-                    </>
-                  )}
+                  {[
+                    phase ? PHASE_LABEL[phase.type] : '',
+                    range,
+                    list.length === 0
+                      ? 'no tasks'
+                      : done > 0
+                        ? `${done} of ${list.length} done`
+                        : `${list.length} task${list.length === 1 ? '' : 's'}`,
+                  ].filter(Boolean).join(' · ')}
                 </span>
               </summary>
               <ul className={s.taskList}>
