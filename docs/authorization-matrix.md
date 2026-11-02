@@ -86,6 +86,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/assignments/[id]/actions.js` | `addAssignmentMembers`, `submitAssignmentOnBehalf`, `archiveAssignment` | requireUser |
 | `app/(tutor)/tutor/assignments/[id]/reassign-actions.ts` | `reassignAssignment` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/assignments/new/actions.ts` | `createAssignment` | requireUser + rateLimit |
+| `app/(tutor)/tutor/assignments/new/catalog-actions.ts` | `loadActCatalog` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/assignments/new/template-actions.ts` | `deleteAssignmentTemplate` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/lesson-packs/actions.ts` | `createPack`, `renamePack`, `deletePack`, `addQuestionToPack`, `removeQuestionFromPack`, `reorderPackQuestions`, `searchQuestions`, `listDomainsAndSkills`, `listConceptTags` | requireUser + rateLimit |
 | `app/(tutor)/tutor/lessons/actions.ts` | `createNewLessonDraft`, `proposeLessonEdit` | requireRole[manager|teacher] + assertWriter |
@@ -126,4 +127,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_22 route handlers, 73 server-action modules enumerated._
+_22 route handlers, 74 server-action modules enumerated._

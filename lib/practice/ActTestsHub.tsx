@@ -107,6 +107,7 @@ export function ActTestsHub({
 
   return (
     <main className={s.container}>
+      {tabs}
       <header className={s.header}>
         <div className={s.eyebrow}>Practice tests</div>
         <h1 className={s.h1}>Practice tests</h1>
@@ -115,8 +116,6 @@ export function ActTestsHub({
           Set your timing before you start.
         </p>
       </header>
-
-      {tabs}
 
       {resumeInfo && <ResumeCard info={resumeInfo} />}
 

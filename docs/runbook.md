@@ -5,6 +5,7 @@
 > Dashboard summary rollout instructions verified: 2026-10-31.
 > Tutor reporting optimization instructions verified: 2026-10-31.
 > ACT practice taxonomy rollout instructions verified: 2026-10-31.
+> Assignment loading and test switcher verified against code: 2026-11-02.
 > Tutor dashboard activity instructions verified: 2026-11-01.
 
 Short operational playbook. Expand as new scenarios come up.
@@ -163,6 +164,29 @@ PostgreSQL 17 database. It checks large counts, broken/retired questions,
 nullable labels, caller-specific RLS, anonymous denial, read-only grants
 and fresh counts after retirement. Never run this fixture on a Supabase
 project or populated database.
+
+### Assignment builder and visible test selection
+
+The default SAT assignment builder skips ACT question/form reads. Selecting
+ACT calls the tutor-only `catalog-actions.ts` Server Action using the current
+user's RLS-scoped client. The result is retained only in that mounted form;
+rapid switches share the pending request and later switches reuse its result.
+Loading and retry states keep ACT submission disabled until options are ready.
+Titles, recipients and other form details survive switching tests.
+
+ACT templates load their catalog during server rendering so saved categories
+and difficulties are available to the initial form state. All questions are
+still paginated before form assessment; format/ordinal validation, category
+counts, names and section order match the previous builder. This change
+requires no database migration. It defers ACT work on SAT visits rather than
+claiming that ACT catalog loading itself is faster.
+
+The shared `TestTypeSwitcher` labels SAT/ACT selection and uses 44-pixel
+controls with a high-contrast selected state. Student practice, practice tests
+and history retain URL-based links. Tutor assignments use native radios above
+the template shelf, preserving keyboard control and the submitted `test_type`.
+Unit catalog parity tests and student/tutor browser regressions cover these
+flows, including failed loads and retry.
 
 ## Parallel-build kill switch — RETIRED
 

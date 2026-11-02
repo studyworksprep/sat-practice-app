@@ -1,3 +1,4 @@
+import { TestTypeSwitcher } from '@/lib/ui/TestTypeSwitcher';
 // Practice session start page.
 //
 // Server-side: load the filter taxonomy for whichever test type the
@@ -15,7 +16,6 @@
 // and renders. That separation is the whole point of the
 // fixed-list redesign: dumb viewer, smart generator.
 
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import {
@@ -240,22 +240,5 @@ async function ActLauncher({ user, supabase }) {
 // ──────────────────────────────────────────────────────────────
 
 function TestTypeTabs({ current }) {
-  return (
-    <nav className={s.tabs} aria-label="Test type">
-      <Link
-        href="/practice/start"
-        className={`${s.tab} ${current === 'sat' ? s.tabActive : ''}`}
-        aria-current={current === 'sat' ? 'page' : undefined}
-      >
-        SAT
-      </Link>
-      <Link
-        href="/practice/start?test=act"
-        className={`${s.tab} ${current === 'act' ? s.tabActive : ''}`}
-        aria-current={current === 'act' ? 'page' : undefined}
-      >
-        ACT
-      </Link>
-    </nav>
-  );
+  return <TestTypeSwitcher value={current} hrefs={{ sat: '/practice/start', act: '/practice/start?test=act' }} className={s.testSwitcher} />;
 }

@@ -1,4 +1,3 @@
-import { assessActQuestions } from '@/lib/practice/act-format-detection';
 // Teacher assignment-creation page. Server Component loads the data
 // the form needs (the teacher's students, the taxonomy for the
 // question filters, the practice tests, published lessons, lesson
@@ -19,10 +18,8 @@ import { assessActQuestions } from '@/lib/practice/act-format-detection';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
-import { fetchAll } from '@/lib/supabase/fetchAll';
-import { ACT_FORMAT_LABELS, isActFormat } from '@/lib/practice/act-test-plan';
-import { actFormNamer } from '@/lib/practice/act-form-names';
-import { buildActAssignmentTaxonomy } from '@/lib/practice/act-assignment-taxonomy';
+import { loadActAssignmentCatalog } from '@/lib/tutor/act-assignment-catalog';
+import { loadActCatalog } from './catalog-actions';
 import { createAssignment } from './actions';
 import { deleteAssignmentTemplate } from './template-actions';
 import { NewAssignmentInteractive } from './NewAssignmentInteractive';
@@ -54,6 +51,19 @@ export default async function NewAssignmentPage({ searchParams }) {
   // and the form's target toggle is hidden for them.
   const isManagerScope = profile.role === 'manager' || profile.role === 'admin';
 
+  const templateParam = typeof params.template === 'string' ? params.template : null;
+  // Reuse one native promise: awaiting a Supabase query builder twice would
+  // execute it twice. Only an ACT template needs the ACT catalog at arrival.
+  const templatesRequest = Promise.resolve(supabase.from('assignment_templates')
+    .select('id, name, assignment_type, test_type, filter_criteria')
+    .eq('teacher_id', user.id).order('created_at', { ascending: false }));
+  const actCatalogRequest = templatesRequest.then(({ data }) => {
+    const template = (data ?? []).find(row => row.id === templateParam);
+    return template?.test_type === 'act' && Array.isArray(template.filter_criteria?.actSelections)
+      ? loadActAssignmentCatalog(supabase)
+      : null;
+  });
+
   // Taxonomy for the question-filter form comes from the
   // published_question_taxonomy view — a DB-side GROUP BY over
   // questions_v2 that returns ~30 rows (one per skill) with the
@@ -71,8 +81,7 @@ export default async function NewAssignmentPage({ searchParams }) {
     { data: teacherJunctions },
     lessonCatalog,
     { data: templateRows },
-    actQuestionRows,
-    { data: actFormRows },
+    initialActCatalog,
   ] = await Promise.all([
     // The picker needs names/emails only, so read profiles directly.
     // (This used to select from student_practice_stats, whose
@@ -123,25 +132,8 @@ export default async function NewAssignmentPage({ searchParams }) {
     loadLessonCatalog(supabase, { status: 'published', visibility: 'shared' }),
     // The teacher's template shelf. RLS is owner-scoped, but the
     // explicit filter keeps admins from seeing a cross-tutor menu.
-    supabase
-      .from('assignment_templates')
-      .select('id, name, assignment_type, test_type, filter_criteria')
-      .eq('teacher_id', user.id)
-      .order('created_at', { ascending: false }),
-    // ACT bank (Phase 4B): live questions, grouped below into
-    // section → category with counts for the picker, plus each
-    // form's question count for the practice-test picker. Paged via
-    // fetchAll — a full set of forms is past PostgREST's silent
-    // 1,000-row cap.
-    fetchAll((from, to) =>
-      supabase
-        .from('act_questions')
-        .select('section, category, subcategory, difficulty, source_test, source_ordinal')
-        .eq('is_broken', false)
-        .is('deleted_at', null)
-        .order('id').range(from, to),
-    ),
-    supabase.from('act_forms').select('source_test, format, display_name'),
+    templatesRequest,
+    actCatalogRequest,
   ]);
 
   // Bucket junction rows by pack id so the picker shows "12
@@ -208,33 +200,6 @@ export default async function NewAssignmentPage({ searchParams }) {
     }));
   const difficulties = Array.from(difficultiesSet).sort((a, b) => a - b);
 
-  // ACT taxonomy + forms (Phase 4B). Categories are free text on
-  // act_questions, so the picker shows whatever the bank carries.
-  const actFormatByForm = new Map();
-  for (const f of actFormRows ?? []) {
-    if (isActFormat(f.format)) actFormatByForm.set(f.source_test, f.format);
-  }
-  const nameActForm = actFormNamer(actFormRows);
-  const actDiffSet = new Set();
-  const actFormCounts = new Map();
-  for (const r of actQuestionRows ?? []) {
-    if (!r.section) continue;
-    if (Number.isInteger(r.difficulty)) actDiffSet.add(r.difficulty);
-    if (r.source_test) {
-      actFormCounts.set(r.source_test, (actFormCounts.get(r.source_test) ?? 0) + 1);
-    }
-  }
-  const actTaxonomy = buildActAssignmentTaxonomy(actQuestionRows ?? []);
-  const actDifficulties = Array.from(actDiffSet).sort((a, b) => a - b);
-  const actForms = Array.from(actFormCounts.entries())
-    .filter(([sourceTest]) => !assessActQuestions(actQuestionRows.filter(q => q.source_test === sourceTest), { format: actFormatByForm.get(sourceTest) }).reviewReason)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([sourceTest, count]) => ({
-      sourceTest,
-      sections: [...new Set(actQuestionRows.filter(q => q.source_test === sourceTest).map(q => q.section))],
-      label: `${nameActForm(sourceTest)} · ${ACT_FORMAT_LABELS[assessActQuestions(actQuestionRows.filter(q => q.source_test === sourceTest), { format: actFormatByForm.get(sourceTest) }).format]} · ${count} question${count === 1 ? '' : 's'}`,
-    }));
-
   // ── One-click prefill (§4.3) ──────────────────────────────────
   // Resolved server-side so deep links stay short and the weak-skill
   // computation reuses the same RPC the session workspace trusts.
@@ -242,7 +207,6 @@ export default async function NewAssignmentPage({ searchParams }) {
   // taxonomy and silently drops skills that no longer exist.
   let prefill = null;
 
-  const templateParam = typeof params.template === 'string' ? params.template : null;
   const fromStudentParam =
     typeof params.from_student === 'string' ? params.from_student : null;
 
@@ -340,9 +304,8 @@ export default async function NewAssignmentPage({ searchParams }) {
         lessonPacks={lessonPacks}
         lessons={lessons}
         templates={templates}
-        actTaxonomy={actTaxonomy}
-        actDifficulties={actDifficulties}
-        actForms={actForms}
+        initialActCatalog={initialActCatalog}
+        loadActCatalogAction={loadActCatalog}
         prefill={prefill}
         createAction={createAssignment}
         deleteTemplateAction={deleteAssignmentTemplate}

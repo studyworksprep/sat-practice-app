@@ -1,3 +1,4 @@
+import { TestTypeSwitcher } from '@/lib/ui/TestTypeSwitcher';
 // Practice history — list of the student's past practice sessions
 // with a Review button per row.
 //
@@ -258,24 +259,7 @@ export default async function PracticeHistoryPage({ searchParams }) {
 // ──────────────────────────────────────────────────────────────
 
 function TestTypeTabs({ current }) {
-  return (
-    <nav className={s.tabs} aria-label="Test type">
-      <Link
-        href="/practice/history"
-        className={`${s.tab} ${current === 'sat' ? s.tabActive : ''}`}
-        aria-current={current === 'sat' ? 'page' : undefined}
-      >
-        SAT
-      </Link>
-      <Link
-        href="/practice/history?test=act"
-        className={`${s.tab} ${current === 'act' ? s.tabActive : ''}`}
-        aria-current={current === 'act' ? 'page' : undefined}
-      >
-        ACT
-      </Link>
-    </nav>
-  );
+  return <TestTypeSwitcher value={current} hrefs={{ sat: '/practice/history', act: '/practice/history?test=act' }} className={s.testSwitcher} />;
 }
 
 // ──────────────────────────────────────────────────────────────

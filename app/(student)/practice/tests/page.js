@@ -1,3 +1,4 @@
+import { TestTypeSwitcher } from '@/lib/ui/TestTypeSwitcher';
 import { assessActQuestions } from '@/lib/practice/act-format-detection';
 import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 // Student → practice-tests hub.
@@ -113,6 +114,7 @@ async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
 
   return (
     <main className={s.container}>
+      <TestTypeTabs current="sat" />
       <header className={s.header}>
         <div className={s.eyebrow}>Practice tests</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -124,8 +126,6 @@ async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
           progress and history are below the launcher.
         </p>
       </header>
-
-      <TestTypeTabs current="sat" />
 
       <StatsStrip stats={stats} />
 
@@ -504,24 +504,7 @@ function formatDate(iso) {
 // ──────────────────────────────────────────────────────────────
 
 function TestTypeTabs({ current }) {
-  return (
-    <nav className={s.tabs} aria-label="Test type">
-      <Link
-        href="/practice/tests"
-        className={`${s.tab} ${current === 'sat' ? s.tabActive : ''}`}
-        aria-current={current === 'sat' ? 'page' : undefined}
-      >
-        SAT
-      </Link>
-      <Link
-        href="/practice/tests?test=act"
-        className={`${s.tab} ${current === 'act' ? s.tabActive : ''}`}
-        aria-current={current === 'act' ? 'page' : undefined}
-      >
-        ACT
-      </Link>
-    </nav>
-  );
+  return <TestTypeSwitcher value={current} hrefs={{ sat: '/practice/tests', act: '/practice/tests?test=act' }} className={s.testSwitcher} />;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -621,11 +604,11 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
 
   return (
     <ActTestsHub
-      forms={forms}
-      attempts={(attemptRows ?? []).map(({ sections, ...a }) => ({ ...a, name: nameOf(a.source_test), untimed: isUntimedPlan(sections) }))}
-      resumeInfo={resumeInfo}
-      tabs={<TestTypeTabs current="act" />}
-      defaultMultiplier={timeAccommodation}
+        forms={forms}
+        attempts={(attemptRows ?? []).map(({ sections, ...a }) => ({ ...a, name: nameOf(a.source_test), untimed: isUntimedPlan(sections) }))}
+        resumeInfo={resumeInfo}
+        tabs={<TestTypeTabs current="act" />}
+        defaultMultiplier={timeAccommodation}
     />
   );
 }
