@@ -235,6 +235,16 @@ math[display="block"] {
   vertical-align: baseline;
 }
 
+/* Stimulus equations are display math, including pre-rendered MathJax.
+   Keep this more specific than the inline overrides for running text. */
+.sw-prose.sw-stimulus mjx-container,
+.sw-prose.sw-stimulus math {
+  display: block;
+  margin: 1em 0;
+  text-align: center;
+  math-style: normal;
+}
+
 /* ----- .qref — ACT question-reference marker -----
    The English + Reading parsers emit `<span class="qref" data-q="N">…</span>`
    around the portion question N targets (English: the underlined
