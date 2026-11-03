@@ -16,6 +16,7 @@
 // /next/(student) URL gets redirected to their own tree before
 // the nav even renders.
 
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { after } from 'next/server';
 import { headers } from 'next/headers';
@@ -28,6 +29,8 @@ import { parseIntakeRow, shouldRouteToWelcome } from '@/lib/plan/intake';
 import { AppNav } from '@/lib/ui/AppNav';
 import { AppShell } from '@/lib/ui/AppSidebar';
 import { SidebarFooterStrip } from '@/lib/ui/SidebarFooterStrip';
+import { SidebarTestSwitch, SidebarTestSwitchFallback } from '@/lib/ui/SidebarTestSwitch';
+import { storedTestType } from '@/lib/practice/test-type-server';
 import {
   STUDENT_LINKS,
   studentSections,
@@ -109,8 +112,22 @@ export default async function StudentTreeLayout({ children }) {
         ? Promise.all([
             supabase.from('profiles').select('sat_test_date').eq('id', user.id).maybeSingle(),
             supabase.rpc('get_practice_streak', { p_user: user.id }),
+            // Nav counts: review items due now, and open assignments
+            // past their due date. Head-only counts — no rows travel.
+            supabase.from('review_queue')
+              .select('id', { count: 'exact', head: true })
+              .eq('student_id', user.id)
+              .lte('due_at', new Date().toISOString()),
+            supabase.from('assignment_students_v2')
+              .select('assignment:assignments_v2!inner(id)', { count: 'exact', head: true })
+              .eq('student_id', user.id)
+              .is('completed_at', null)
+              .lt('assignment.due_date', new Date().toISOString().slice(0, 10))
+              .is('assignment.archived_at', null)
+              .is('assignment.deleted_at', null),
+            storedTestType(),
           ])
-        : [{ data: null }, { data: [] }]),
+        : [{ data: null }, { data: [] }, { count: 0 }, { count: 0 }, 'sat']),
     ]);
   if (!hasTutor) links = links.filter((l) => l.href !== '/assignments');
   const activePlan = (activePlans ?? [])[0] ?? null;
@@ -138,6 +155,8 @@ export default async function StudentTreeLayout({ children }) {
   if (sidebarEnabled) {
     let sections;
     let footer = null;
+    let headerSlot = null;
+    let badges;
     if (isTutor) {
       sections = tutorSectionsForRole(profile.role);
     } else {
@@ -146,7 +165,13 @@ export default async function StudentTreeLayout({ children }) {
       // The plan read also feeds the footer strip (§6.1): plan test
       // date wins over the profile date, same precedence as the
       // dashboard; the streak comes from one aggregate RPC.
-      const [{ data: profileDates }, { data: streakRows }] = footerData;
+      const [
+        { data: profileDates },
+        { data: streakRows },
+        { count: reviewDue },
+        { count: lateAssignments },
+        testType,
+      ] = footerData;
       sections = studentSections({ hasTutor, hasPlan: Boolean(activePlan) });
 
       const testDateIso = activePlan?.test_date ?? profileDates?.sat_test_date ?? null;
@@ -166,6 +191,18 @@ export default async function StudentTreeLayout({ children }) {
         }
       }
       const streak = (streakRows ?? [])[0] ?? null;
+      badges = {};
+      if (reviewDue > 0) badges['/review'] = { label: `${reviewDue} due`, tone: 'neutral' };
+      if (hasTutor && lateAssignments > 0) {
+        badges['/assignments'] = { label: `${lateAssignments} late`, tone: 'alert' };
+      }
+      // useSearchParams inside the switch needs a Suspense boundary;
+      // the fallback is the same control showing the stored choice.
+      headerSlot = (
+        <Suspense fallback={<SidebarTestSwitchFallback stored={testType} />}>
+          <SidebarTestSwitch stored={testType} />
+        </Suspense>
+      );
       footer = (
         <SidebarFooterStrip
           daysToTest={daysToTest}
@@ -176,7 +213,7 @@ export default async function StudentTreeLayout({ children }) {
       );
     }
     return (
-      <AppShell user={navUser} sections={sections} footer={footer}>
+      <AppShell user={navUser} sections={sections} headerSlot={headerSlot} badges={badges} footer={footer}>
         {children}
       </AppShell>
     );

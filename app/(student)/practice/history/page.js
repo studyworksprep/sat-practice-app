@@ -1,4 +1,4 @@
-import { TestTypeSwitcher } from '@/lib/ui/TestTypeSwitcher';
+import { resolveTestType } from '@/lib/practice/test-type-server';
 // Practice history — list of the student's past practice sessions
 // with a Review button per row.
 //
@@ -17,9 +17,9 @@ import { TestTypeSwitcher } from '@/lib/ui/TestTypeSwitcher';
 // one attempt by this user. Partial sessions still render with a
 // progress indicator and a Resume button in place of Review.
 //
-// Test-type slice. SAT-first tabs per docs/architecture-plan.md §3.4,
-// matching /practice/start and /practice/tests: the page accepts a
-// `?test=sat|act` query param and forks the two reads below. Only the
+// Test-type slice, matching /practice/start and /practice/tests:
+// `?test=sat|act` (else the sidebar switch's stored choice, see
+// lib/practice/test-type-server.ts) forks the two reads below. Only the
 // data source forks — buildRow and the whole render tree are
 // test-type agnostic, and /practice/review/[sessionId] already
 // branches to the ACT report builder on session.test_type.
@@ -47,12 +47,9 @@ export default async function PracticeHistoryPage({ searchParams }) {
   if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
 
-  // ?test=sat|act slice — SAT-first. Anything malformed lands on SAT,
-  // same as the launcher and the practice-tests hub. No redirect on a
-  // bad value: tab navigation is the canonical way to switch.
   const sp = (await searchParams) ?? {};
-  const testParam = typeof sp.test === 'string' ? sp.test.toLowerCase() : '';
-  const testType = testParam === 'act' ? 'act' : 'sat';
+  // ?test= wins; otherwise the sidebar SAT/ACT switch's stored choice.
+  const testType = await resolveTestType(sp.test);
   const isAct = testType === 'act';
 
   // 1) All self-guided sessions for this user — practice plus
@@ -147,7 +144,6 @@ export default async function PracticeHistoryPage({ searchParams }) {
 
   return (
     <>
-      <TestTypeTabs current={testType} />
       <main className={s.container}>
         <header className={s.header}>
           <div className={s.eyebrow}>Practice</div>
@@ -251,16 +247,6 @@ export default async function PracticeHistoryPage({ searchParams }) {
   );
 }
 
-// ──────────────────────────────────────────────────────────────
-// Tabs. SAT first, ACT second — §3.4 ("SAT-first tabs, no
-// preferred_test_type column"). Same shape as the launcher's and
-// the practice-tests hub's tabs: plain server-rendered links, so
-// switching tabs is just a navigation with no client state.
-// ──────────────────────────────────────────────────────────────
-
-function TestTypeTabs({ current }) {
-  return <TestTypeSwitcher value={current} hrefs={{ sat: '/practice/history', act: '/practice/history?test=act' }} className={s.testSwitcher} />;
-}
 
 // ──────────────────────────────────────────────────────────────
 

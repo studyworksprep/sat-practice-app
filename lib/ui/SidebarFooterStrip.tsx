@@ -27,31 +27,24 @@ export function SidebarFooterStrip({
   return (
     <div className={s.strip}>
       {showCountdown && (
-        <div className={s.row}>
-          <span className={s.value}>
-            {daysToTest === 0 ? 'Test day' : `${daysToTest} day${daysToTest === 1 ? '' : 's'}`}
-          </span>
+        <div className={s.tile}>
+          <span className={s.value}>{daysToTest === 0 ? 'Today' : daysToTest}</span>
           <span className={s.label}>
-            {daysToTest === 0 ? 'good luck!' : `to test${testDateLabel ? ` · ${testDateLabel}` : ''}`}
+            {daysToTest === 0
+              ? 'is test day'
+              : `day${daysToTest === 1 ? '' : 's'} to ${testDateLabel ?? 'test'}`}
           </span>
         </div>
       )}
-      <div className={s.row}>
-        {currentStreak > 0 ? (
-          <>
-            <span className={`${s.value} ${practicedToday ? s.valueLit : ''}`}>
-              {currentStreak}-day streak
-            </span>
-            <span className={s.label}>
-              {practicedToday ? 'practiced today' : 'practice today to keep it'}
-            </span>
-          </>
-        ) : (
-          <>
-            <span className={s.value}>No streak yet</span>
-            <span className={s.label}>one question starts one</span>
-          </>
-        )}
+      <div className={practicedToday && currentStreak > 0 ? `${s.tile} ${s.tileLit}` : s.tile}>
+        <span className={s.value}>{currentStreak}</span>
+        <span className={s.label}>
+          {currentStreak === 0
+            ? 'day streak — one question starts it'
+            : practicedToday
+              ? 'day streak · done today'
+              : 'day streak · practice today'}
+        </span>
       </div>
     </div>
   );

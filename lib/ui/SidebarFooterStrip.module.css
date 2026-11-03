@@ -1,35 +1,41 @@
-/* Countdown + streak strip (§6.1), living in AppSidebar's
+/* Countdown + streak tiles (§6.1), living in AppSidebar's
    .footerSlot (which brings the padding + top border and hides
    itself in collapsed/icon-rail mode). */
 
 .strip {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  gap: var(--s2);
 }
 
-.row {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
+.tile {
+  flex: 1 1 0;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s2) 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+}
+
+/* Streak kept alive today — the app's warm accent. */
+.tileLit {
+  background: var(--color-gold-50);
 }
 
 .value {
-  font-size: 12px;
+  font-size: 17px;
   font-weight: 700;
-  color: var(--color-navy-900, #102a43);
-  white-space: nowrap;
+  line-height: 1.2;
+  color: var(--color-app-primary);
 }
 
-/* Streak kept alive today — gold, the app's warm accent. */
-.valueLit {
-  color: var(--color-gold-700, #b7791f);
+.tileLit .value {
+  color: var(--color-gold-900);
 }
 
 .label {
   font-size: 11px;
-  color: var(--fg3, #52606d);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  color: var(--fg2);
 }

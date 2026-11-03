@@ -1,15 +1,15 @@
-import { TestTypeSwitcher } from '@/lib/ui/TestTypeSwitcher';
+import { resolveTestType } from '@/lib/practice/test-type-server';
 // Practice session start page.
 //
 // Server-side: load the filter taxonomy for whichever test type the
 // student selected, then hand control to the matching client island
 // (StartInteractive for SAT, StartInteractiveAct for ACT).
 //
-// Test-type slice. SAT-first tabs per docs/architecture-plan.md §3.4:
-// the page accepts a `?test=sat|act` query param and dispatches at
-// the page layer. There is no stored preference — the URL is the
-// single source of truth. A student switching from SAT to ACT pays
-// one click; the runner itself is unified (PR 5).
+// Test-type slice: an explicit `?test=sat|act` dispatches at the page
+// layer; without one, the sidebar SAT/ACT switch's stored choice does
+// (lib/practice/test-type-server.ts — a cookie, not a profile column;
+// see docs/upgrade-plan-2026-07.md §6.1). The runner itself is
+// unified (PR 5).
 //
 // The practice page downstream of this one never sees filters —
 // it reads question_ids[position] from the practice_sessions row
@@ -27,7 +27,6 @@ import { searchQuestions } from '@/lib/practice/question-search-actions';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
 import { StartInteractiveAct } from '@/lib/practice/StartInteractiveAct';
 import { domainSection } from '@/lib/ui/question-layout';
-import s from './PracticeStart.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,12 +37,11 @@ export default async function PracticeStartPage({ searchParams }) {
   if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
 
-  // ?test=sat|act slice. Anything else (missing, malformed) lands on
-  // SAT — the SAT-first principle from §3.4. We don't redirect on a
-  // bad value because tab navigation is the canonical way to switch.
+  // A malformed ?test= falls through to the stored choice, then SAT;
+  // no redirect — the sidebar switch is the canonical way to switch.
   const sp = (await searchParams) ?? {};
-  const testParam = typeof sp.test === 'string' ? sp.test.toLowerCase() : '';
-  const testType = testParam === 'act' ? 'act' : 'sat';
+  // ?test= wins; otherwise the sidebar SAT/ACT switch's stored choice.
+  const testType = await resolveTestType(sp.test);
 
   if (testType === 'act') {
     return <ActLauncher user={user} supabase={supabase} />;
@@ -169,7 +167,6 @@ async function SatLauncher({ user, supabase }) {
 
   return (
     <>
-      <TestTypeTabs current="sat" />
       <StartInteractive
         domains={domains}
         scoreBands={scoreBands}
@@ -221,7 +218,6 @@ async function ActLauncher({ user, supabase }) {
 
   return (
     <>
-      <TestTypeTabs current="act" />
       <StartInteractiveAct
         sections={sections}
         resumeInfo={resumeInfo}
@@ -233,12 +229,3 @@ async function ActLauncher({ user, supabase }) {
   );
 }
 
-// ──────────────────────────────────────────────────────────────
-// Tabs. SAT first, ACT second — §3.4 ("SAT-first tabs, no
-// preferred_test_type column"). Plain server-rendered links so
-// switching tabs is just a navigation, no client state.
-// ──────────────────────────────────────────────────────────────
-
-function TestTypeTabs({ current }) {
-  return <TestTypeSwitcher value={current} hrefs={{ sat: '/practice/start', act: '/practice/start?test=act' }} className={s.testSwitcher} />;
-}

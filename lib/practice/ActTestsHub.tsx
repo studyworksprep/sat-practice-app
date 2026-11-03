@@ -96,7 +96,8 @@ export function ActTestsHub({
   resumeInfo: HubResumeInfo | null;
   /** Tabs nav rendered above the header so the test-type slice is
    *  the first thing visible. */
-  tabs: React.ReactNode;
+  /** Optional content above the hub (the old per-page test tabs). */
+  tabs?: React.ReactNode;
   /** Standing accommodation (profiles.time_accommodation); pre-selects
    *  the Timing control. */
   defaultMultiplier?: number;

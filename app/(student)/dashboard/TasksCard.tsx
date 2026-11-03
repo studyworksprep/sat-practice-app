@@ -1,8 +1,9 @@
 // Dashboard · Tasks box — the study plan's daily surface, folded into
 // the dashboard (2026-09-19; it was the standalone /today page before).
-// Shows today's 1–3 due plan tasks with one-tap starts and why-this
-// copy, what's already done today, and the next task up when the day
-// is clear. Assignment-mirrored tasks (payload.assignment_id, migration
+// Since the 2026-11 dashboard layout the first task lives in the Up next
+// card (./NextUpCard) as the page's primary action; this box lists what
+// comes after it — the rest of today's due tasks, then the next few
+// scheduled ahead (startable early) — plus what's already done today. Assignment-mirrored tasks (payload.assignment_id, migration
 // 20260919120000) render in the violet "assigned" treatment so tutor
 // work stands out from generated work.
 //
@@ -70,6 +71,8 @@ export interface TasksCardProps {
   /** §2.5: the weekly job re-paced this plan within the last week. */
   wasAutoRepaced: boolean;
   hasTutor: boolean;
+  /** The task the Up next card shows — left out of this list. */
+  heroTaskId: string | null;
   /** Open assignments, shown only without a plan (with one they are
    *  mirrored into the plan's tasks). */
   pendingAssignments: PendingAssignmentSummary[];
@@ -81,6 +84,7 @@ export function TasksCard({
   today,
   error,
   wasAutoRepaced,
+  heroTaskId,
   hasTutor,
   pendingAssignments,
   assignmentsTotal,
@@ -91,16 +95,16 @@ export function TasksCard({
         <div>
           <h2 id="dashboard-tasks" className={s.sectionLabel}>
             <IconTile icon={CalendarIcon} palette="gold" size="sm" />
-            Tasks
+            {view ? 'Coming up' : 'Tasks'}
           </h2>
           <div className={s.cardSub}>
             {view
-              ? 'What to do next. Finishing a task checks it off.'
+              ? 'Start any of these early. Finishing a task checks it off.'
               : 'A plan turns your goal into a few tasks a day.'}
           </div>
         </div>
         {view ? (
-          <Link href="/plan" className={s.cardHeaderLink}>See the whole plan →</Link>
+          <Link href="/plan" className={s.cardHeaderLink}>Full plan →</Link>
         ) : hasTutor && pendingAssignments.length > 0 ? (
           <Link href="/assignments" className={s.cardHeaderLink}>
             {assignmentsTotal > pendingAssignments.length ? 'See all assignments →' : 'Assignments →'}
@@ -113,7 +117,7 @@ export function TasksCard({
       )}
 
       {view ? (
-        <PlanTasks view={view} today={today} wasAutoRepaced={wasAutoRepaced} />
+        <PlanTasks view={view} today={today} wasAutoRepaced={wasAutoRepaced} heroTaskId={heroTaskId} />
       ) : (
         <NoPlan hasTutor={hasTutor} pendingAssignments={pendingAssignments} />
       )}
@@ -127,11 +131,17 @@ function PlanTasks({
   view,
   today,
   wasAutoRepaced,
+  heroTaskId,
 }: {
   view: TodayView;
   today: string;
   wasAutoRepaced: boolean;
+  heroTaskId: string | null;
 }) {
+  const dueIds = new Set(view.due.map((t) => t.id));
+  const rest = view.due.filter((t) => t.id !== heroTaskId);
+  const ahead = view.ahead.filter((t) => t.id !== heroTaskId && !dueIds.has(t.id));
+
   return (
     <>
       {wasAutoRepaced && (
@@ -154,33 +164,21 @@ function PlanTasks({
         </ul>
       )}
 
-      {view.due.length > 0 ? (
+      {rest.length + ahead.length > 0 ? (
         <ul className={s.taskList}>
-          {view.due.map((t, i) => (
-            <TaskRow key={t.id} task={t} isPrimary={i === 0} today={today} />
+          {rest.map((t) => (
+            <TaskRow key={t.id} task={t} today={today} />
+          ))}
+          {ahead.map((t) => (
+            <TaskRow key={t.id} task={t} today={today} upNext />
           ))}
         </ul>
       ) : (
-        <div className={s.caughtUp}>
-          <p className={s.caughtUpTitle}>
-            {view.planFinished
-              ? 'Plan complete — every task is done.'
-              : view.doneToday.length > 0
-                ? 'That’s today done. Nice work.'
-                : 'Nothing due today.'}
-          </p>
-          {view.upNext ? (
-            <ul className={s.taskList}>
-              <TaskRow task={view.upNext} isPrimary={false} today={today} upNext />
-            </ul>
-          ) : !view.planFinished ? (
-            <p className={s.caughtUpSub}>
-              Want more anyway? The{' '}
-              <Link href="/review" className={s.inlineLink}>Review hub</Link>
-              {' '}always has something worth drilling.
-            </p>
-          ) : null}
-        </div>
+        <p className={s.caughtUpSub}>
+          {view.planFinished
+            ? 'Every task in your plan is done.'
+            : 'Nothing else lined up yet — the plan adds the next tasks as the week goes on.'}
+        </p>
       )}
     </>
   );
@@ -188,12 +186,10 @@ function PlanTasks({
 
 function TaskRow({
   task,
-  isPrimary,
   today,
   upNext = false,
 }: {
   task: TodayTaskRow;
-  isPrimary: boolean;
   today: string;
   /** A future task offered early: labelled with its date, never "catch-up". */
   upNext?: boolean;
@@ -205,11 +201,7 @@ function TaskRow({
   const overdue = !upNext && task.scheduledDate != null && task.scheduledDate < today;
   // Assignment-linked tasks complete through the assignment, never by hand.
   const manual = MANUAL_COMPLETE_TYPES.includes(task.taskType) && !assigned;
-  const className = [
-    s.taskRow,
-    isPrimary ? s.taskRowPrimary : null,
-    assigned ? s.taskRowAssigned : null,
-  ].filter(Boolean).join(' ');
+  const className = [s.taskRow, assigned ? s.taskRowAssigned : null].filter(Boolean).join(' ');
 
   return (
     <li className={className}>
@@ -219,12 +211,9 @@ function TaskRow({
           <h3 className={s.taskTitle}>{taskTitle(task)}</h3>
           {assigned && <span className={s.assignedPill}>Assigned</span>}
           {overdue && <span className={s.overduePill}>catch-up</span>}
-          {upNext && (
+          {upNext && task.scheduledDate && (
             <span className={s.upNextPill}>
-              Up next
-              {task.scheduledDate
-                ? ` · ${formatDate(task.scheduledDate) ?? task.scheduledDate}`
-                : ''}
+              {formatDate(task.scheduledDate) ?? task.scheduledDate}
             </span>
           )}
         </div>

@@ -2,12 +2,6 @@
    Practice history list. Tokens from [data-tree="next"].
 ============================================================= */
 
-.testSwitcher {
-  width: calc(100% - 2 * var(--s6));
-  max-width: calc(980px - 2 * var(--s6));
-  margin: 16px auto 0;
-}
-
 .container {
   max-width: 980px;
   margin: 0 auto;

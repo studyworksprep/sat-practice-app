@@ -387,3 +387,38 @@
   .shellCollapsed .footerSlot,
   .shellCollapsed .userBox { display: flex; }
 }
+
+/* ---------- Header slot (student SAT/ACT switch) ---------- */
+
+.headerSlot {
+  padding: 0 14px 8px;
+}
+
+/* ---------- Link count badges ---------- */
+
+.badge {
+  margin-left: auto;
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-200);
+  color: var(--color-app-primary);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.badgeAlert {
+  background: var(--color-diff-hard-bg);
+  color: var(--color-diff-hard-fg);
+}
+
+/* Icon rail: no room for labels — the link title carries the count. */
+.shellCollapsed .headerSlot,
+.shellCollapsed .badge { display: none; }
+
+@media (max-width: 767px) {
+  .shellCollapsed .headerSlot { display: block; }
+  .shellCollapsed .badge { display: inline-flex; }
+}
