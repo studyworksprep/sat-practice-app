@@ -628,6 +628,14 @@ weakest skills with ≥5 answers (`lib/practice/stats-focus.ts`) — and
 each has a Drill link that opens the builder prefilled via
 `/practice/start?skill=`. The tutor's `/tutor/students/[id]/stats`
 renders the same view with SAT and ACT together and no Drill links.
+`/practice/history` filters by status (`?status=open|done`) and topic
+(`?topic=`, matched in memory on each row's label group), lists open
+sessions first (three shown, the rest folded), then finished sessions
+grouped by day in `REPORT_TIME_ZONE` with only the newest day expanded.
+"Load earlier sessions" widens the window (`?show=`, 50 at a time, max
+500). Row labels come from `filter_criteria`
+(`lib/practice/history-rows.ts`): the skill / domain for builder sets,
+the assignment title, or the drill kind.
 
 **6.2 One design language — with a codified Bluebook exception.**
 The practice-test and practice-session runners deliberately mirror the
