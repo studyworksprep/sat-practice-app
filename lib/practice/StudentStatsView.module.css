@@ -1,5 +1,6 @@
 /* =============================================================
-   Tutor → student → "More statistics". Tokens from
+   Statistics view — student /performance and tutor
+   /tutor/students/[id]/stats. Tokens from
    [data-tree="next"]. Reuses the report visual vocabulary
    (cardHead, sectionLabel, diffTile shading) so the page reads
    as a sibling of the assignment / practice-test reports.
@@ -25,50 +26,15 @@
 }
 .breadcrumb:hover { color: var(--color-app-accent); }
 
-/* ---------- Header ---------- */
-
-.header {
-  padding: var(--s2) 0;
-}
-
-.eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-gold-700);
-  margin-bottom: var(--s1);
-}
-
-.h1 {
-  font-family: var(--font-serif);
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.15;
-  color: var(--color-navy-900);
-  margin: 0 0 var(--s2);
-}
-
-.sub {
-  color: var(--fg3);
-  font-size: 13px;
-  margin: 0;
-  max-width: 740px;
-}
-
 /* ---------- Stat strip ---------- */
 
 .statsRow {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--s3);
 }
-@media (max-width: 1080px) {
-  .statsRow { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 540px) {
-  .statsRow { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 900px) {
+  .statsRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .statCard {
@@ -80,14 +46,16 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .statValue {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 750;
   letter-spacing: -0.01em;
   color: var(--fg1);
-  line-height: 1.05;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
 .statLabel {
@@ -99,7 +67,7 @@
 }
 
 .statSub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--fg3);
   font-variant-numeric: tabular-nums;
 }
@@ -107,6 +75,45 @@
 .statGood .statValue { color: var(--color-diff-easy-fg); }
 .statOk   .statValue { color: var(--color-diff-med-fg); }
 .statBad  .statValue { color: var(--color-diff-hard-fg); }
+
+/* ---------- Tabs ----------
+   Links, one per view. The bar scrolls sideways on its own on a
+   narrow phone rather than pushing the page wider. */
+
+.tabs {
+  display: flex;
+  gap: var(--s4);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  min-height: 44px;
+  padding: 0 4px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg2);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--color-navy-900); }
+.tabOn {
+  color: var(--color-navy-900);
+  font-weight: 700;
+  border-bottom-color: var(--color-gold-400, #f0b429);
+}
+.tab:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
 /* ---------- Generic card ---------- */
 
@@ -299,4 +306,208 @@
 .subjectAct {
   font-weight: 600;
   color: var(--color-gold-700, #92400e);
+}
+
+/* ---------- Work on these next ---------- */
+
+.focusList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.focusRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.focusRow:first-child { border-top: none; padding-top: 4px; }
+
+.focusRank {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-navy-900);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.focusText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.focusName {
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--fg1);
+}
+
+.focusMeta {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.focusPct {
+  flex: none;
+  font-size: 18px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.focusEmpty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg3);
+}
+
+.thinNote {
+  margin: var(--s3) 0 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50, #f8fafc);
+  font-size: 13px;
+  color: var(--fg2);
+}
+
+.drillBtn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  background: var(--color-app-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.drillBtn:hover { background: var(--color-app-primary-hover); color: #fff; }
+.drillBtn:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+}
+.skillTable .drillBtn { min-height: 32px; padding: 0 12px; font-size: 12px; }
+
+@media (max-width: 540px) {
+  .focusRow { flex-wrap: wrap; }
+  .focusText { flex-basis: calc(100% - 44px); }
+  .focusPct { margin-left: 40px; }
+  .focusRow .drillBtn { margin-left: auto; }
+}
+
+/* ---------- Domain summaries ---------- */
+
+.domainCard { padding: 18px 20px; }
+
+.domainHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2);
+  margin-bottom: var(--s2);
+}
+
+.domainTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+}
+.toneMath { color: var(--tile-math-fg, #2f5fcc); }
+.toneRw   { color: var(--tile-rw-fg, #ea580c); }
+.toneAct  { color: var(--color-gold-700, #92400e); }
+
+.domainTotal {
+  font-size: 12px;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+}
+
+.domainList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.domainRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px var(--s2);
+  font-size: 13px;
+}
+
+.domainName { color: var(--fg1); font-weight: 550; }
+
+.domainNums {
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.domainBar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-slate-100, #f1f5f9);
+  overflow: hidden;
+}
+
+.domainFill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+.fillGood { background: var(--color-diff-easy-fg); }
+.fillOk   { background: var(--color-diff-med-fg); }
+.fillBad  { background: var(--color-diff-hard-fg); }
+.fillThin { background: var(--color-slate-300, #cbd5e1); }
+
+.moreLink {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy-900);
+}
+
+/* ---------- Empty state ---------- */
+
+.emptyCard {
+  font-size: 14px;
+  color: var(--fg2);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Wide tables scroll inside their card on a phone. */
+@media (max-width: 640px) {
+  .card { padding: 16px; overflow-x: auto; }
+  .skillTable { min-width: 460px; }
 }
