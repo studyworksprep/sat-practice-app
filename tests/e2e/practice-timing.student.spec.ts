@@ -25,9 +25,9 @@ test('practice session records per-question time and review shows the timing ban
   // Size 1 so the first post-submit Next click finishes the set and
   // routes to the review page.
   await page.goto('/practice/start');
-  const sizeInput = page.getByLabel(/session size/i);
+  const sizeInput = page.getByLabel('How many', { exact: true });
   await sizeInput.fill('1');
-  const startBtn = page.getByRole('button', { name: /^start · /i });
+  const startBtn = page.getByRole('button', { name: /^start \d+ questions?$/i });
   await expect(startBtn).toBeEnabled();
   await startBtn.click();
   await page.waitForURL(/\/practice\/s\/[0-9a-f-]+\/0$/, { timeout: 15_000 });

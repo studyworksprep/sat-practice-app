@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 test('error-log drafts survive failed saves and retry through a stable endpoint', async ({ page }, testInfo) => {
   test.setTimeout(90_000);
   await page.goto('/practice/start');
-  await page.getByLabel(/session size/i).fill('1');
-  await page.getByRole('button', { name: /^start · /i }).click();
+  await page.getByLabel('How many', { exact: true }).fill('1');
+  await page.getByRole('button', { name: /^start \d+ questions?$/i }).click();
   await page.waitForURL(/\/practice\/s\/[0-9a-f-]+\/0$/, { timeout: 20_000 });
   await page.getByRole('button', { name: 'Error Log', exact: true }).click();
   const panel = page.getByRole('dialog', { name: 'Error log note', exact: true });
