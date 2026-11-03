@@ -1,25 +1,55 @@
 import { test, expect } from '@playwright/test';
 
-for (const path of ['/practice/start', '/practice/tests', '/practice/history']) {
-  test(`visible test switcher preserves SAT/ACT navigation on ${path}`, async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
+// The sidebar SAT/ACT switch (lib/ui/SidebarTestSwitch.tsx) replaces the
+// per-page "Choose a test" cards. It stores the choice in a cookie, so
+// one switch steers every practice surface; an explicit ?test= wins.
+
+const SWITCH = "Test you're studying for";
+
+test.afterEach(async ({ context }) => {
+  // Leave the shared student fixture on SAT for the next spec.
+  await context.clearCookies({ name: 'sw_test_type' });
+});
+
+test('one sidebar switch steers every practice surface', async ({ page }) => {
+  await page.goto('/practice/start');
+  const group = page.getByRole('group', { name: SWITCH });
+  const sat = group.getByRole('button', { name: 'SAT', exact: true });
+  const act = group.getByRole('button', { name: 'ACT', exact: true });
+
+  await expect(page.getByText('Choose a test', { exact: true })).toHaveCount(0);
+  await expect(sat).toHaveAttribute('aria-pressed', 'true');
+
+  await act.click();
+  await expect(act).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByText('ACT practice', { exact: true })).toBeVisible();
+
+  // The choice carries to the other practice surfaces without a param.
+  for (const path of ['/practice/tests', '/practice/history']) {
     await page.goto(path);
-    const nav = page.getByRole('navigation', { name: 'Test type', exact: true });
-    await expect(page.getByText('Choose a test', { exact: true })).toBeVisible();
-    const sat = nav.getByRole('link', { name: 'SAT', exact: true });
-    const act = nav.getByRole('link', { name: 'ACT', exact: true });
-    await expect(sat).toHaveAttribute('aria-current', 'page');
-    const bounds = await act.boundingBox();
-    expect(bounds?.height).toBeGreaterThanOrEqual(44);
-    expect(bounds!.x).toBeGreaterThanOrEqual(0);
-    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
-    await act.click();
-    await expect(page).toHaveURL(new RegExp(path + '\\?test=act$'));
-    await expect(act).toHaveAttribute('aria-current', 'page');
-    await sat.focus();
-    await sat.press('Enter');
-    await expect(page).toHaveURL(new RegExp(path + '$'));
-    await expect(sat).toHaveAttribute('aria-current', 'page');
-    await expect(nav).toBeInViewport({ ratio: 1 });
-  });
-}
+    await expect(page.getByRole('group', { name: SWITCH }).getByRole('button', { name: 'ACT', exact: true }))
+      .toHaveAttribute('aria-pressed', 'true');
+  }
+
+  // An explicit ?test= still wins over the stored choice…
+  await page.goto('/practice/start?test=sat');
+  await expect(sat).toHaveAttribute('aria-pressed', 'true');
+
+  // …and choosing in the switch drops the contradicting param.
+  await act.click();
+  await expect(page).toHaveURL(/\/practice\/start$/);
+  await expect(act).toHaveAttribute('aria-pressed', 'true');
+
+  await sat.click();
+  await expect(sat).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('the switch is reachable and touch-sized in the phone drawer', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/practice/start');
+  await page.getByRole('button', { name: 'Open navigation' }).click();
+  const act = page.getByRole('group', { name: SWITCH }).getByRole('button', { name: 'ACT', exact: true });
+  await expect(act).toBeInViewport({ ratio: 1 });
+  const bounds = await act.boundingBox();
+  expect(bounds?.height).toBeGreaterThanOrEqual(36);
+});

@@ -1,41 +1,46 @@
 // Student dashboard layout — the landing page and command center.
 // page.js loads and shapes every prop; this composes the boxes:
 //
-//   1. Banner — greeting, the plan's week/phase line (or a stats line
-//      without a plan), target / accuracy / days-to-test chips, and the
-//      Resume + Free-practice links. No primary button: the Tasks box
-//      below carries the day's Start buttons.
-//   2. Tasks (left) — today's plan tasks, assignments included, with a
-//      link to the whole plan.
-//   3. Progress (right) — the reduced statistics, with a link to the
+//   1. PageHeader — greeting, the plan's week/phase/target eyebrow, a
+//      one-line "what's waiting" description, and Free practice.
+//   2. Up next (with a plan) — the one task to do now as the page's
+//      single primary action, beside this week's progress and the open
+//      session. Without a plan the open session moves into the header.
+//   3. Coming up (left) — the rest of today's tasks and the next few
+//      ahead, assignments included, with a link to the whole plan.
+//   4. Progress (right) — the reduced statistics, with a link to the
 //      full Performance page.
-//   4. Recently finished — the report links.
+//   5. Recently finished — the report links.
+//
+// Countdown and streak live in the sidebar footer, so they are not
+// repeated here.
 //
 // Server Component. The only client island on the page is HelpNudge
 // (localStorage-counted first-visit pointer at the Help guide).
 
 import Link from 'next/link';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import { HelpNudge } from '../help/HelpNudge';
+import { NextUpCard, type NextUpCardProps } from './NextUpCard';
 import { TasksCard, type TasksCardProps } from './TasksCard';
 import { ProgressCard, type ProgressCardProps } from './ProgressCard';
 import { RecentlyFinished, type FinishedEntry } from './RecentlyFinished';
 import s from './Dashboard.module.css';
 
-export interface BannerProps {
+export interface HeaderProps {
   firstName: string | null;
-  /** "Week 3 of 12 · Focus · 2 of 5 tasks done this week" when a plan is
-   *  active; otherwise a stats line. */
-  subline: string;
-  targetScore: number | null;
-  accuracy: number | null;
-  /** Negative = the test has passed; null = no date anywhere. */
-  daysToTest: number | null;
-  resume: { sessionId: string; position: number } | null;
+  /** "Week 16 of 20 · Focus · Target 1400"; null without a plan or target. */
+  eyebrow: string | null;
+  /** One line on what's waiting (catch-up work, today's tasks, or stats). */
+  description: string;
+  resume: NextUpCardProps['resume'];
 }
 
 export interface DashboardViewProps {
   accountCreatedAt: string | null;
-  banner: BannerProps;
+  header: HeaderProps;
+  /** Present only with an active plan. */
+  nextUp: NextUpCardProps | null;
   tasks: TasksCardProps;
   progress: ProgressCardProps;
   recentlyFinished: FinishedEntry[];
@@ -43,49 +48,41 @@ export interface DashboardViewProps {
 
 export function DashboardView({
   accountCreatedAt,
-  banner,
+  header,
+  nextUp,
   tasks,
   progress,
   recentlyFinished,
 }: DashboardViewProps) {
-  const greeting = banner.firstName ? `Welcome back, ${banner.firstName}.` : 'Welcome back.';
+  const greeting = header.firstName ? `Welcome back, ${header.firstName}` : 'Welcome back';
+  // With a plan, the open session sits in the Up next card; without one
+  // the header is its only home.
+  const headerResume = nextUp ? null : header.resume;
 
   return (
     <main className={s.main}>
       <HelpNudge accountCreatedAt={accountCreatedAt} />
 
-      <section className={s.banner}>
-        <div className={s.bannerText}>
-          <h1 className={s.bannerGreeting}>{greeting}</h1>
-          <div className={s.bannerSub}>{banner.subline}</div>
-          <div className={s.bannerChips}>
-            <span className={`${s.bannerChip} ${s.bannerChipAccent}`}>
-              Target · {banner.targetScore ?? 'Not set'}
-            </span>
-            {banner.accuracy != null && (
-              <span className={s.bannerChip}>Accuracy · {banner.accuracy}%</span>
-            )}
-            {banner.daysToTest != null && (
-              <span className={s.bannerChip}>{countdownLabel(banner.daysToTest)}</span>
-            )}
-          </div>
-        </div>
-        <div className={s.bannerActions}>
-          {banner.resume ? (
-            <>
-              <Link href="/practice/start" className={s.bannerLink}>Free practice</Link>
+      <PageHeader
+        eyebrow={header.eyebrow}
+        title={greeting}
+        description={header.description}
+        actions={
+          <>
+            <Link href="/practice/start" className={s.btnSecondary}>Free practice</Link>
+            {headerResume && (
               <Link
-                href={`/practice/s/${banner.resume.sessionId}/${banner.resume.position}`}
-                className={s.btnSecondary}
+                href={`/practice/s/${headerResume.sessionId}/${headerResume.position}`}
+                className={s.btnPrimary}
               >
                 Resume session
               </Link>
-            </>
-          ) : (
-            <Link href="/practice/start" className={s.btnSecondary}>Free practice</Link>
-          )}
-        </div>
-      </section>
+            )}
+          </>
+        }
+      />
+
+      {nextUp && <NextUpCard {...nextUp} />}
 
       <div className={s.grid}>
         <TasksCard {...tasks} />
@@ -95,10 +92,4 @@ export function DashboardView({
       <RecentlyFinished entries={recentlyFinished} />
     </main>
   );
-}
-
-function countdownLabel(days: number): string {
-  if (days < 0) return 'Test passed';
-  if (days === 0) return 'Test day';
-  return `${days} day${days === 1 ? '' : 's'} to test day`;
 }

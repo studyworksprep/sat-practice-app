@@ -1,4 +1,4 @@
-import { TestTypeSwitcher } from '@/lib/ui/TestTypeSwitcher';
+import { resolveTestType } from '@/lib/practice/test-type-server';
 import { assessActQuestions } from '@/lib/practice/act-format-detection';
 import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 // Student → practice-tests hub.
@@ -13,8 +13,8 @@ import { loadActFormQuestions } from '@/lib/practice/load-act-form-questions';
 //   - Performance trend: recent composite scores as a mini chart
 //   - Full history table at the bottom
 //
-// Test-type slice. SAT-first tabs per docs/architecture-plan.md §3.4:
-// ?test=act flips the page to the ACT hub. ACT practice tests are
+// Test-type slice: ?test=act (or the sidebar switch's stored choice,
+// lib/practice/test-type-server.ts) flips the page to the ACT hub. ACT practice tests are
 // virtual constructs over act_questions sliced by source_test — no
 // 7-table parallel family; the launcher writes a practice_sessions
 // row with test_type='act' + filter_criteria.kind='practice_test'.
@@ -40,10 +40,9 @@ export default async function PracticeTestsPage({ searchParams }) {
   if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
 
-  // ?test=sat|act slice — SAT-first. Anything malformed lands on SAT.
   const sp = (await searchParams) ?? {};
-  const testParam = typeof sp.test === 'string' ? sp.test.toLowerCase() : '';
-  const testType = testParam === 'act' ? 'act' : 'sat';
+  // ?test= wins; otherwise the sidebar SAT/ACT switch's stored choice.
+  const testType = await resolveTestType(sp.test);
 
   // Standing extended-time accommodation (Account page). Pre-selects
   // the SAT launcher's accommodation controls and the ACT hub's
@@ -114,7 +113,6 @@ async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
 
   return (
     <main className={s.container}>
-      <TestTypeTabs current="sat" />
       <header className={s.header}>
         <div className={s.eyebrow}>Practice tests</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -499,15 +497,6 @@ function formatDate(iso) {
 }
 
 // ──────────────────────────────────────────────────────────────
-// Tabs above both hubs. Server-rendered links per §3.4 — switching
-// tabs is just navigation, no client state. SAT first.
-// ──────────────────────────────────────────────────────────────
-
-function TestTypeTabs({ current }) {
-  return <TestTypeSwitcher value={current} hrefs={{ sat: '/practice/tests', act: '/practice/tests?test=act' }} className={s.testSwitcher} />;
-}
-
-// ──────────────────────────────────────────────────────────────
 // ACT hub. Loads the distinct ACT forms (one card per source_test,
 // with the form's format from act_forms), the student's completed
 // attempts, and any attempt still in progress (Phase 3: the attempt
@@ -607,7 +596,6 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
         forms={forms}
         attempts={(attemptRows ?? []).map(({ sections, ...a }) => ({ ...a, name: nameOf(a.source_test), untimed: isUntimedPlan(sections) }))}
         resumeInfo={resumeInfo}
-        tabs={<TestTypeTabs current="act" />}
         defaultMultiplier={timeAccommodation}
     />
   );

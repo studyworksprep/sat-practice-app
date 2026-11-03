@@ -2,8 +2,9 @@
    Student dashboard. Tokens from [data-tree="next"].
 
    Layout: vertical stack inside .main —
-     - banner (greeting + chips + Resume / Free-practice)
-     - grid: Tasks box (left) | Progress box (right)
+     - PageHeader (lib/ui) — greeting, eyebrow, Free practice
+     - Up next card (with a plan) — the day's primary action
+     - grid: Coming up (left) | Progress box (right)
      - Recently finished (full width)
 ============================================================= */
 
@@ -17,87 +18,7 @@
   color: var(--fg1);
 }
 
-/* ---------- Banner ---------- */
-
-.banner {
-  background: linear-gradient(135deg, #fff 0%, #f7f4ec 100%);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 26px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s5);
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
-}
-
-.banner::before {
-  content: "";
-  position: absolute;
-  left: 28px;
-  top: 26px;
-  width: 40px;
-  height: 3px;
-  background: var(--color-gold-500);
-  border-radius: 2px;
-}
-
-.bannerText {
-  display: grid;
-  gap: 6px;
-  padding-top: 14px;
-  min-width: 0;
-}
-
-.bannerGreeting {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.1;
-  color: var(--color-navy-900);
-}
-
-.bannerSub {
-  color: var(--fg3);
-  font-size: 13px;
-}
-
-.bannerChips {
-  display: flex;
-  gap: var(--s2);
-  margin-top: var(--s2);
-  flex-wrap: wrap;
-}
-
-.bannerChip {
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--bg-white);
-  border: 1px solid var(--border);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--fg2);
-}
-
-.bannerChipAccent {
-  background: var(--color-app-highlight-soft);
-  border-color: transparent;
-  color: var(--color-gold-700);
-}
-
-.bannerActions {
-  display: flex;
-  gap: var(--s2);
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.bannerLink { font-size: 13px; font-weight: 600; color: var(--fg2); text-decoration: underline; padding: 0 6px; }
-.bannerLink:hover { color: var(--color-app-accent); }
+/* ---------- Header buttons ---------- */
 
 .btnPrimary,
 .btnSecondary {
@@ -105,9 +26,10 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 16px;
+  min-height: 44px;
+  padding: 0 16px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   border-radius: var(--radius-md);
   text-decoration: none;
   cursor: pointer;
@@ -136,9 +58,6 @@
   border-color: var(--border-strong);
 }
 
-@media (max-width: 720px) {
-  .banner { flex-direction: column; align-items: flex-start; }
-}
 
 /* ---------- Two-up grid: Tasks | Progress ---------- */
 
@@ -306,23 +225,12 @@
   padding: 14px 16px;
 }
 
-/* The first row is "the thing to do" — a touch more presence. */
-.taskRowPrimary {
-  border-color: var(--color-gold-300);
-  box-shadow: 0 2px 10px rgb(16 42 67 / 0.07);
-}
-
 /* Tutor-assigned work: the violet family the finished-list badge and
    the plan hub's "Assigned" tag already use, so one color means
    "from your tutor" everywhere. */
 .taskRowAssigned {
   background: color-mix(in srgb, var(--tile-violet-bg, #ede9fe) 45%, var(--bg-white));
   border-left: 4px solid var(--tile-violet-fg, #5e3fbf);
-}
-
-.taskRowPrimary.taskRowAssigned {
-  border-color: color-mix(in srgb, var(--tile-violet-fg, #5e3fbf) 35%, var(--border));
-  border-left-color: var(--tile-violet-fg, #5e3fbf);
 }
 
 .taskListAssigned { margin-top: var(--s1); }
@@ -465,19 +373,6 @@
 }
 
 /* ---------- Tasks: caught-up / no-plan states ---------- */
-
-.caughtUp {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s3);
-}
-
-.caughtUpTitle {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-navy-900);
-}
 
 .caughtUpSub {
   margin: 0;
@@ -735,3 +630,188 @@
 .metricTone_ok      { color: var(--color-diff-med-fg); }
 .metricTone_warn    { color: var(--color-diff-hard-fg); }
 .metricTone_neutral { color: var(--fg1); }
+
+/* ---------- Up next (the day's primary action) ---------- */
+
+.nextUp {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s5);
+  padding: 28px;
+  border-radius: var(--radius-xl);
+  background: var(--color-app-primary);
+  color: #fff;
+}
+
+.nextUpMain {
+  flex: 3 1 360px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.nextUpEyebrow {
+  margin: 0;
+  font-size: var(--eyebrow-size);
+  font-weight: var(--eyebrow-weight);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--color-gold-300);
+}
+
+.nextUpTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.nextUpBody {
+  margin: 0;
+  max-width: 540px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-navy-100);
+}
+
+.nextUpMeta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-navy-200);
+}
+
+.nextUpActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: var(--s2);
+}
+
+.nextUpPrimary,
+.nextUpGhost {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+
+.nextUpPrimary {
+  border: 0;
+  background: var(--color-gold-500);
+  color: var(--color-navy-900);
+}
+.nextUpPrimary:hover { background: var(--color-gold-400); color: var(--color-navy-900); }
+
+.nextUpGhost {
+  border: 1px solid rgb(255 255 255 / 0.3);
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+}
+.nextUpGhost:hover { background: rgb(255 255 255 / 0.08); }
+
+.nextUpPrimary:focus-visible,
+.nextUpGhost:focus-visible,
+.resumeBtn:focus-visible {
+  outline: 2px solid var(--color-gold-300);
+  outline-offset: 2px;
+}
+
+.nextUpSide {
+  flex: 2 1 240px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  background: rgb(255 255 255 / 0.07);
+}
+
+.nextUpSide:empty { display: none; }
+
+.weekBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.weekRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2);
+}
+
+.weekLabel { font-size: 13px; font-weight: 600; color: var(--color-navy-100); }
+.weekMeta  { font-size: 13px; color: var(--color-navy-200); }
+
+.weekCount {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.weekCountOf {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-navy-200);
+}
+
+.weekBar {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.15);
+  overflow: hidden;
+}
+
+.weekFill {
+  height: 100%;
+  min-width: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-gold-500);
+}
+
+.resumeBlock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding-top: var(--s4);
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+}
+
+.weekBlock + .resumeBlock { margin-top: 0; }
+.resumeBlock:first-child { padding-top: 0; border-top: 0; }
+
+.resumeTitle { font-size: 14px; font-weight: 600; }
+.resumeMeta  { font-size: 13px; color: var(--color-navy-200); }
+
+.resumeBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--color-navy-900);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.resumeBtn:hover { background: var(--color-navy-50); color: var(--color-navy-900); }
+
+@media (max-width: 560px) {
+  .nextUp { padding: 20px; }
+  .nextUpTitle { font-size: 22px; }
+  .nextUpPrimary { width: 100%; justify-content: center; }
+}

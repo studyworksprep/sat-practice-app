@@ -96,15 +96,26 @@ interface ShellUser {
   firstName?: string | null;
 }
 
+/** A small count shown on a nav link, e.g. "6 due" on Review. */
+export interface NavBadge {
+  label: string;
+  /** `alert` for work that is late; `neutral` for work that is waiting. */
+  tone: 'alert' | 'neutral';
+}
+
 interface AppShellProps {
   user: ShellUser;
   sections: readonly NavSection[];
+  /** Rendered under the logo (the student SAT/ACT switch). */
+  headerSlot?: ReactNode;
+  /** Counts keyed by link href. */
+  badges?: Readonly<Record<string, NavBadge>>;
   /** Rendered above the account box (Phase 2.3 countdown/streak). */
   footer?: ReactNode;
   children: ReactNode;
 }
 
-export function AppShell({ user, sections, footer, children }: AppShellProps) {
+export function AppShell({ user, sections, headerSlot, badges, footer, children }: AppShellProps) {
   const pathname = usePathname() ?? '';
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -205,6 +216,8 @@ export function AppShell({ user, sections, footer, children }: AppShellProps) {
           </button>
         </div>
 
+        {headerSlot && <div className={s.headerSlot}>{headerSlot}</div>}
+
         <nav className={s.nav} aria-label="Primary">
           {sections.map((section, i) => (
             <div key={section.title ?? `untitled-${i}`} className={s.section}>
@@ -217,6 +230,7 @@ export function AppShell({ user, sections, footer, children }: AppShellProps) {
                   link={link}
                   active={isActive(pathname, link)}
                   collapsed={collapsed}
+                  badge={badges?.[link.href] ?? null}
                 />
               ))}
             </div>
@@ -253,10 +267,12 @@ function SidebarLink({
   link,
   active,
   collapsed,
+  badge,
 }: {
   link: NavLink;
   active: boolean;
   collapsed: boolean;
+  badge: NavBadge | null;
 }) {
   const Icon = link.icon ? NAV_ICONS[link.icon] : null;
   return (
@@ -264,7 +280,7 @@ function SidebarLink({
       href={link.href}
       className={active ? `${s.link} ${s.linkActive}` : s.link}
       aria-current={active ? 'page' : undefined}
-      title={collapsed ? link.label : undefined}
+      title={collapsed ? (badge ? `${link.label} · ${badge.label}` : link.label) : undefined}
     >
       {Icon ? (
         <IconTile
@@ -277,6 +293,11 @@ function SidebarLink({
         <span className={s.linkTilePlaceholder} aria-hidden="true" />
       )}
       <SidebarLinkLabel label={link.label} />
+      {badge && (
+        <span className={badge.tone === 'alert' ? `${s.badge} ${s.badgeAlert}` : s.badge}>
+          {badge.label}
+        </span>
+      )}
     </Link>
   );
 }

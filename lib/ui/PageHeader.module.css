@@ -1,0 +1,53 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s4);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 360px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: var(--eyebrow-size);
+  font-weight: var(--eyebrow-weight);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  /* gold-800: the gold that passes 4.5:1 on white at 11px. */
+  color: var(--color-gold-800);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--color-app-primary);
+}
+
+.description {
+  margin: 0;
+  max-width: 640px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--fg2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 767px) {
+  .title { font-size: 28px; }
+}

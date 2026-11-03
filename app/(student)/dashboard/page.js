@@ -139,7 +139,7 @@ export default async function StudentDashboardPage({ searchParams }) {
         )
       `)
       .eq('student_id', user.id),
-    // Active session for the Resume link in the banner. SAT-only.
+    // Active session for the Resume link (Up next card or header). SAT-only.
     supabase
       .from('practice_sessions')
       .select('id, current_position, question_ids, last_activity_at')
@@ -174,7 +174,7 @@ export default async function StudentDashboardPage({ searchParams }) {
     // Self-studiers (no row in teacher_student_assignments) never see
     // assignment rows in the Tasks box.
     hasAssignedTutor(supabase, user.id),
-    // The active study plan drives the Tasks box, the banner line, and
+    // The active study plan drives the Tasks box, the header line, and
     // the countdown's first-choice date. SAT first if a student somehow
     // has both.
     supabase
@@ -252,7 +252,7 @@ export default async function StudentDashboardPage({ searchParams }) {
     ? Math.round((aggregate.correctAttempts / aggregate.totalAttempts) * 100)
     : null;
 
-  // ---------- Banner ----------
+  // ---------- Header + Up next ----------
   const testDateIso =
     activePlanRow?.test_date
     ?? (typeof nextRegistrationRow?.test_date === 'string' ? nextRegistrationRow.test_date : null)
@@ -261,13 +261,21 @@ export default async function StudentDashboardPage({ searchParams }) {
   const daysToTest = daysUntil(testDateIso, nowMs);
   const targetScore = activePlanRow?.goal_score ?? fullProfile?.target_sat_score ?? null;
 
-  const subline = view
-    ? planLine(view, activePlanRow)
+  const eyebrow = headerEyebrow(view, activePlanRow, targetScore);
+  const description = view
+    ? planDescription(view, today)
     : statusLine({ weekAttempts: aggregate.weekAttempts, totalAttempts: aggregate.totalAttempts, accuracy }, daysToTest);
 
   const resume = activeSession && Array.isArray(activeSession.question_ids) && activeSession.question_ids.length > 0
-    ? { sessionId: activeSession.id, position: activeSession.current_position }
+    ? {
+        sessionId: activeSession.id,
+        position: activeSession.current_position,
+        total: activeSession.question_ids.length,
+      }
     : null;
+
+  // Up next: the oldest due task, else the next one scheduled ahead.
+  const heroTask = view ? (view.due[0] ?? view.upNext ?? null) : null;
 
   // ---------- Assignments: pending (no-plan Tasks box) + completed (Recently finished) ----------
   const openAssignments = allAssignments
@@ -384,19 +392,27 @@ export default async function StudentDashboardPage({ searchParams }) {
   return (
     <DashboardView
       accountCreatedAt={fullProfile?.created_at ?? null}
-      banner={{
+      header={{
         firstName: fullProfile?.first_name ?? null,
-        subline,
-        targetScore,
-        accuracy,
-        daysToTest,
+        eyebrow,
+        description,
         resume,
       }}
+      nextUp={view ? {
+        task: heroTask,
+        ahead: heroTask != null && view.due[0] == null,
+        today,
+        week: view.week,
+        planFinished: view.planFinished,
+        doneTodayCount: view.doneToday.length,
+        resume,
+      } : null}
       tasks={{
         view,
         today,
         error: taskError,
         wasAutoRepaced,
+        heroTaskId: heroTask?.id ?? null,
         hasTutor,
         pendingAssignments,
         assignmentsTotal: openAssignments.length,
@@ -478,15 +494,32 @@ const PHASE_LABEL = {
   targets: 'Your targets',
 };
 
-function planLine(view, plan) {
-  if (!view.week) return 'Your plan is live — the tasks below are what to do next.';
-  const { index, total, done, count } = view.week;
-  const phases = Array.isArray(plan?.phases) ? plan.phases : [];
-  const phase = phases.find((p) => index >= p.start_week && index <= p.end_week) ?? null;
-  const bits = [`Week ${index + 1} of ${total}`];
-  if (phase && PHASE_LABEL[phase.type]) bits.push(PHASE_LABEL[phase.type]);
-  if (count > 0) bits.push(`${done} of ${count} tasks done this week`);
-  return bits.join(' · ');
+// "Week 16 of 20 · Focus · Target 1400" — the header eyebrow. Without a
+// plan only the target remains (or nothing).
+function headerEyebrow(view, plan, targetScore) {
+  const bits = [];
+  if (view?.week) {
+    const { index, total } = view.week;
+    const phases = Array.isArray(plan?.phases) ? plan.phases : [];
+    const phase = phases.find((p) => index >= p.start_week && index <= p.end_week) ?? null;
+    bits.push(`Week ${index + 1} of ${total}`);
+    if (phase && PHASE_LABEL[phase.type]) bits.push(PHASE_LABEL[phase.type]);
+  }
+  if (targetScore) bits.push(`Target ${targetScore}`);
+  return bits.length > 0 ? bits.join(' · ') : null;
+}
+
+// One line on what's waiting, led by catch-up work from earlier days.
+function planDescription(view, today) {
+  if (view.planFinished) return 'Every task in your plan is done.';
+  const overdue = view.due.filter((t) => t.scheduledDate && t.scheduledDate < today).length;
+  if (overdue > 1) return `${overdue} catch-up tasks from earlier days are waiting. Start with the first one.`;
+  if (overdue === 1) return 'One catch-up task from an earlier day is waiting. Start there.';
+  if (view.due.length > 0) {
+    return `${view.due.length} task${view.due.length === 1 ? '' : 's'} on today's plan.`;
+  }
+  if (view.doneToday.length > 0) return 'That’s today done. You can start the next task early.';
+  return 'Nothing due today. You can start the next task early.';
 }
 
 function statusLine(stats, daysToTest) {
