@@ -74,6 +74,9 @@ export interface StartInteractiveProps {
   scoreBands: number[];
   extraBatches?: ExtraBatch[];
   suggestions?: PracticeSuggestion[];
+  /** Skills to start selected — the Performance page's Drill links
+   *  arrive as `?skill=`. Names not in `domains` are ignored. */
+  initialSkills?: string[];
   resumeInfo: { sessionId: string; position: number; total: number } | null;
   resumeTest?: { attemptId: string; testName: string } | null;
   createSessionAction: FormAction;
@@ -92,6 +95,7 @@ export function StartInteractive({
   scoreBands,
   extraBatches = [],
   suggestions = [],
+  initialSkills = [],
   resumeInfo,
   resumeTest = null,
   createSessionAction,
@@ -103,8 +107,16 @@ export function StartInteractive({
   eyebrow = 'Practice · SAT',
 }: StartInteractiveProps) {
   // ── Form state ─────────────────────────────────────────────
-  const [selectedSkills,       setSelectedSkills]       = useState<Set<string>>(() => new Set());
-  const [expandedDomains,      setExpandedDomains]      = useState<Set<string>>(() => new Set());
+  const [selectedSkills,       setSelectedSkills]       = useState<Set<string>>(() => {
+    const known = new Set(domains.flatMap((d) => d.skills.map((sk) => sk.name)));
+    return new Set(initialSkills.filter((name) => known.has(name)));
+  });
+  // A prefilled skill opens its domain so the student sees what's ticked.
+  const [expandedDomains,      setExpandedDomains]      = useState<Set<string>>(() => new Set(
+    domains
+      .filter((d) => d.skills.some((sk) => initialSkills.includes(sk.name)))
+      .map((d) => d.name),
+  ));
   const [selectedDifficulties, setSelectedDifficulties] = useState<Set<number>>(() => new Set());
   const [selectedScoreBands,   setSelectedScoreBands]   = useState<Set<number>>(() => new Set());
   // Opt-in import batches ("Extra practice sets"). Off by default —

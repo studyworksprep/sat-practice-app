@@ -48,7 +48,10 @@ export default async function PracticeStartPage({ searchParams }) {
   if (testType === 'act') {
     return <ActLauncher user={user} supabase={supabase} />;
   }
-  return <SatLauncher user={user} supabase={supabase} />;
+  // ?skill= (repeatable) prefills the builder — the Performance page's
+  // Drill links. The builder drops names it doesn't know.
+  const initialSkills = [].concat(sp.skill ?? []).filter((v) => typeof v === 'string');
+  return <SatLauncher user={user} supabase={supabase} initialSkills={initialSkills} />;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -56,7 +59,7 @@ export default async function PracticeStartPage({ searchParams }) {
 // page-level test-type branch stays one switch.
 // ──────────────────────────────────────────────────────────────
 
-async function SatLauncher({ user, supabase }) {
+async function SatLauncher({ user, supabase, initialSkills }) {
   // Domain / skill lookup. v2 has taxonomy inline on questions_v2,
   // and public.published_question_taxonomy rolls that up to one row
   // per skill so the launcher reads ~30 rows in one round-trip
@@ -183,6 +186,7 @@ async function SatLauncher({ user, supabase }) {
         scoreBands={scoreBands}
         extraBatches={extraBatches}
         suggestions={buildPracticeSuggestions(domains, skillStats)}
+        initialSkills={initialSkills}
         resumeInfo={resumeInfo}
         resumeTest={resumeTest}
         createSessionAction={createSession}

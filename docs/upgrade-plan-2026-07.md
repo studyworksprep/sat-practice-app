@@ -620,6 +620,14 @@ two tiles (days to test, streak). Pages open with the shared
 actions); the dashboard is the first adopter, other student pages follow.
 The flag-off `AppNav` fallback has no SAT/ACT switch — with
 `sidebar_shell = all` in production it is not reachable by students.
+`/performance` follows the switch too: the stat strip counts only the
+chosen test (SAT = view totals − ACT), and the page splits into
+`?tab=` views (Overview · All skills · Weekly trend · Daily activity ·
+By difficulty). The Overview leads with "Work on these next" — the
+weakest skills with ≥5 answers (`lib/practice/stats-focus.ts`) — and
+each has a Drill link that opens the builder prefilled via
+`/practice/start?skill=`. The tutor's `/tutor/students/[id]/stats`
+renders the same view with SAT and ACT together and no Drill links.
 
 **6.2 One design language — with a codified Bluebook exception.**
 The practice-test and practice-session runners deliberately mirror the
