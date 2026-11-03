@@ -25,6 +25,8 @@ import {
 import { loadActPracticeTaxonomy } from '@/lib/practice/act-practice-taxonomy';
 import { searchQuestions } from '@/lib/practice/question-search-actions';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
+import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
+import { buildPracticeSuggestions } from '@/lib/practice/practice-suggestions';
 import { StartInteractiveAct } from '@/lib/practice/StartInteractiveAct';
 import { domainSection } from '@/lib/ui/question-layout';
 
@@ -73,6 +75,7 @@ async function SatLauncher({ user, supabase }) {
     { data: activeSession },
     { data: inProgressTestAttempt },
     { data: extraBatchRows },
+    skillStats,
   ] = await Promise.all([
     supabase.from('published_question_taxonomy')
       .select('domain_name, skill_name, question_count, score_bands, domain_code'),
@@ -104,6 +107,14 @@ async function SatLauncher({ user, supabase }) {
       .from('published_question_batches')
       .select('id, label, administration_date, question_count')
       .order('administration_date', { ascending: false, nullsFirst: false }),
+    // Per-skill 90-day stats for "Suggested for you" — the same rollup
+    // the dashboard reads. Suggestions are optional: a failed read just
+    // means the row doesn't render.
+    loadDashboardAggregate(user.id)
+      .then((agg) => [...agg.performance.math.domains, ...agg.performance.rw.domains]
+        .flatMap((d) => d.skills)
+        .map((sk) => ({ name: sk.name, correct: sk.correct, total: sk.total })))
+      .catch(() => []),
   ]);
 
   const domainMap = new Map();
@@ -171,6 +182,7 @@ async function SatLauncher({ user, supabase }) {
         domains={domains}
         scoreBands={scoreBands}
         extraBatches={extraBatches}
+        suggestions={buildPracticeSuggestions(domains, skillStats)}
         resumeInfo={resumeInfo}
         resumeTest={resumeTest}
         createSessionAction={createSession}

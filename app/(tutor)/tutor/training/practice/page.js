@@ -119,6 +119,7 @@ export default async function TutorTrainingPracticePage() {
       listTagsAction={listConceptTagsForSearch}
       basePath="/tutor/training/practice"
       historyHref="/tutor/training/practice/history"
+      eyebrow="Training · SAT"
     />
   );
 }
