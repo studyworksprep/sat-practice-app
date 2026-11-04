@@ -9,6 +9,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import { loadNotesIndex } from './loaders';
 import { NotesListInteractive } from './NotesListInteractive';
 import { NotesNav } from './NotesNav';
@@ -43,20 +44,20 @@ export default async function StudentNotesIndex({ searchParams }) {
   return (
     <main className={s.page}>
       <NotesNav />
-      <header className={s.pageHeader}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <h1 className={s.pageTitle}>My notes</h1>
+      <PageHeader
+        className={s.pageHead}
+        eyebrow="Study · Notes"
+        title="My notes"
+        description="Private to you. Nothing here is shared with tutors or other students."
+        actions={
+          <>
             <HelpButton slug="notes" />
-          </div>
-          <p className={s.pageSubtitle}>
-            Private to you. Nothing here is shared with tutors or other students.
-          </p>
-        </div>
-        <Link href="/notes/new" className={s.btnPrimary}>
-          + New note
-        </Link>
-      </header>
+            <Link href="/notes/new" className={s.btnPrimary}>
+              + New note
+            </Link>
+          </>
+        }
+      />
 
       <NotesListInteractive
         initialNotes={notes}

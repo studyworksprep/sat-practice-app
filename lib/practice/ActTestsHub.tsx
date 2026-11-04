@@ -17,6 +17,8 @@ import { useId, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useConfirm } from '@/lib/ui/ConfirmDialog';
+import { PageHeader } from '@/lib/ui/PageHeader';
+import { HelpButton } from '@/app/(student)/help/HelpButton';
 import { sectionLabel, type ActSection } from '@/lib/practice/act-taxonomy';
 import {
   ACT_FORMAT_LABELS,
@@ -109,14 +111,12 @@ export function ActTestsHub({
   return (
     <main className={s.container}>
       {tabs}
-      <header className={s.header}>
-        <div className={s.eyebrow}>Practice tests</div>
-        <h1 className={s.h1}>Practice tests</h1>
-        <p className={s.sub}>
-          Take a full ACT practice test or choose sections to focus on.
-          Set your timing before you start.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Practice · ACT"
+        title="Practice tests"
+        description="Take a full ACT practice test or choose sections to focus on. Set your timing before you start."
+        actions={<HelpButton slug="practice-tests" />}
+      />
 
       {resumeInfo && <ResumeCard info={resumeInfo} />}
 

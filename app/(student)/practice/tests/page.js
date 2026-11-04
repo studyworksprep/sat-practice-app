@@ -25,6 +25,7 @@ import { requireUser } from '@/lib/api/auth';
 import { TestLauncher } from '@/lib/practice/TestLauncher';
 import { ActTestsHub } from '@/lib/practice/ActTestsHub';
 import { HelpButton } from '@/app/(student)/help/HelpButton';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './PracticeTestsPage.module.css';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import { isActFormat, isActFormKind, isUntimedPlan, parsePlan, parseTimeMultiplier } from '@/lib/practice/act-test-plan';
@@ -113,17 +114,12 @@ async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div className={s.eyebrow}>Practice tests</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <h1 className={s.h1}>Practice tests</h1>
-          <HelpButton slug="practice-tests" />
-        </div>
-        <p className={s.sub}>
-          Full-length SAT simulations under timed conditions. Your
-          progress and history are below the launcher.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Practice · SAT"
+        title="Practice tests"
+        description="Full-length SAT simulations under timed conditions. Your progress and history are below the launcher."
+        actions={<HelpButton slug="practice-tests" />}
+      />
 
       <StatsStrip stats={stats} />
 

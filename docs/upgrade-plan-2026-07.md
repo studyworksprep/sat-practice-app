@@ -646,6 +646,13 @@ and badges on drawer-only links dot More. With tabs, the top bar drops
 the hamburger and carries the SAT/ACT switch. Fixed page widgets (help
 nudge, calculators) sit above the bar via `--shell-bottom-inset`. Tutor
 and admin shells are unchanged.
+Every student hub page now opens with `PageHeader`: Practice tests (SAT
+and ACT), Assignments, Review, Notes (with its Error log and Flashcards
+tabs), Lessons, Study Plan and Help, alongside the dashboard, builder,
+history and performance. Eyebrows name the sidebar section ("Practice ·
+SAT", "Study · Notes"); the Help button and page buttons sit in
+`actions`. Detail pages (an assignment, a help article, a lesson, a
+review sub-page) keep their own headers.
 
 **6.2 One design language — with a codified Bluebook exception.**
 The practice-test and practice-session runners deliberately mirror the

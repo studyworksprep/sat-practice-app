@@ -29,6 +29,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import {
   buildWeakQueue,
@@ -196,18 +197,12 @@ export default async function StudentReviewPage() {
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div className={s.eyebrow}>Review</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <h1 className={s.h1}>Review</h1>
-          <HelpButton slug="review" />
-        </div>
-        <p className={s.sub}>
-          A focused study surface for the days before your test.
-          Drill your weakest questions, fix your most common errors,
-          and keep your flashcards fresh.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Study"
+        title="Review"
+        description="A focused study surface for the days before your test. Drill your weakest questions, fix your most common errors, and keep your flashcards fresh."
+        actions={<HelpButton slug="review" />}
+      />
 
       <StudyCountdown isoDate={extendedProfile?.sat_test_date ?? null} />
 

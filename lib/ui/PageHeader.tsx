@@ -19,11 +19,13 @@ export interface PageHeaderProps {
   actions?: ReactNode;
   /** id for the <h1>, so a landmark can point at it with aria-labelledby. */
   titleId?: string;
+  /** Extra class for spacing on pages whose container has no gap. */
+  className?: string;
 }
 
-export function PageHeader({ eyebrow, title, description, actions, titleId }: PageHeaderProps) {
+export function PageHeader({ eyebrow, title, description, actions, titleId, className }: PageHeaderProps) {
   return (
-    <header className={s.header}>
+    <header className={className ? `${s.header} ${className}` : s.header}>
       <div className={s.text}>
         {eyebrow && <p className={s.eyebrow}>{eyebrow}</p>}
         <h1 id={titleId} className={s.title}>{title}</h1>

@@ -465,3 +465,6 @@
   font-size: 14px;
   color: var(--fg1);
 }
+
+/* PageHeader spacing: .page is a plain block, not a gap container. */
+.pageHead { margin-bottom: 20px; }

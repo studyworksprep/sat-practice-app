@@ -17,6 +17,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { formatDate, isPastDueDate } from '@/lib/formatters';
@@ -36,14 +37,11 @@ export default async function StudentAssignmentsPage() {
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div className={s.eyebrow}>Assignments</div>
-        <h1 className={s.h1}>Your assignments</h1>
-        <p className={s.sub}>
-          Everything your tutor has assigned you. Pending work at the top,
-          finished work below with a quick look at how you did.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Practice"
+        title="Your assignments"
+        description="Everything your tutor has assigned you. Pending work at the top, finished work below with a quick look at how you did."
+      />
 
       <StatsStrip stats={stats} />
 
