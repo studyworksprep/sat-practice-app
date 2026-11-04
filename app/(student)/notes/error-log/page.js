@@ -11,9 +11,8 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import { loadErrorNotes } from '@/lib/practice/load-error-notes';
-import { NotesIcon } from '@/lib/ui/icons';
-import { IconTile } from '@/lib/ui/IconTile';
 import { SafeHtml } from '@/lib/ui/SafeHtml';
 import { NotesNav } from '../NotesNav';
 import { HelpButton } from '../../help/HelpButton';
@@ -49,26 +48,23 @@ export default async function StudentErrorLogManagePage() {
   return (
     <main className={notesS.page}>
       <NotesNav />
-      <header className={s.header}>
-        <div className={s.titleRow}>
-          <IconTile icon={NotesIcon} palette="amber" size="md" />
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <h1 className={s.h1}>Error log</h1>
-              <HelpButton slug="error-log" />
-            </div>
-            <p className={s.sub}>
-              Your notes on questions you got wrong, newest first.
-              Click <strong>Show question</strong> to reopen the
-              question alongside what you wrote, or head to{' '}
-              <Link href="/review/error-log" className={s.backLink}>
-                Review → Error log
-              </Link>{' '}
-              for an immersive scroll.
-            </p>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        className={notesS.pageHead}
+        eyebrow="Study · Notes"
+        title="Error log"
+        description={
+          <>
+            Your notes on questions you got wrong, newest first.
+            Click <strong>Show question</strong> to reopen the
+            question alongside what you wrote, or head to{' '}
+            <Link href="/review/error-log" className={s.backLink}>
+              Review → Error log
+            </Link>{' '}
+            for an immersive scroll.
+          </>
+        }
+        actions={<HelpButton slug="error-log" />}
+      />
 
       {totalNotes > 0 && (
         <div className={s.statsStrip}>

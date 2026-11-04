@@ -11,6 +11,7 @@
 
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import { formatDate } from '@/lib/formatters';
 import { buildTodayView } from '@/lib/plan/today';
 import type { TodayTaskRow } from '@/lib/plan/today';
@@ -64,12 +65,7 @@ export default async function PlanPage() {
   if (!plan) {
     return (
       <main className={s.container}>
-        <header className={s.header}>
-          <div>
-            <div className={s.eyebrow}>Your plan</div>
-            <h1 className={s.h1}>No plan yet</h1>
-          </div>
-        </header>
+        <PageHeader eyebrow="Your plan" title="No plan yet" />
         <section className={s.card}>
           <p className={s.body}>
             A few quick questions and you get a week-by-week plan built around where you are and
@@ -138,15 +134,10 @@ export default async function PlanPage() {
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div>
-          <div className={s.eyebrow}>Your plan</div>
-          <h1 className={s.h1}>
-            {plan.mode ? MODE_LABEL[plan.mode as PlanMode] : 'Study plan'}
-            {firstName ? ` for ${firstName}` : ''}
-          </h1>
-        </div>
-        <div className={s.pills}>
+      <PageHeader
+        eyebrow="Your plan"
+        title={`${plan.mode ? MODE_LABEL[plan.mode as PlanMode] : 'Study plan'}${firstName ? ` for ${firstName}` : ''}`}
+        actions={<div className={s.pills}>
           {plan.goal_score != null && <span className={s.pill}>Target <strong>{plan.goal_score}</strong></span>}
           {plan.test_date && (
             <span className={s.pill}>
@@ -161,8 +152,8 @@ export default async function PlanPage() {
           <span className={s.pill}>
             <strong>{doneCount}</strong> of {tasks.length} tasks done
           </span>
-        </div>
-      </header>
+        </div>}
+      />
 
       {/* ---------- Where you are ---------- */}
       <section className={s.card}>

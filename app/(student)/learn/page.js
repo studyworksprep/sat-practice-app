@@ -9,6 +9,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import { estimateLessonMinutes, formatLessonDuration } from '@/lib/lesson/duration.mjs';
 import { Card } from '@/lib/ui/Card';
 import { IconTile } from '@/lib/ui/IconTile';
@@ -102,9 +103,12 @@ export default async function StudentLearnPage({ searchParams }) {
 
   return (
     <main className={s.page}>
-      <header className={s.header}>
-        <h1 className={s.h1}>Learn</h1>
-      </header>
+      <PageHeader
+        className={s.pageHead}
+        eyebrow="Study"
+        title="Lessons"
+        description="Short lessons on each skill. Search, or filter by topic."
+      />
 
       <a href="/learn/getting-started" className={s.gettingStartedLink}>
         <Card tone="info" className={s.gettingStartedCard}>

@@ -197,27 +197,8 @@
   min-width: 0;
 }
 
-.pageHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
 
-.pageTitle {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text, #1a1a1a);
-  margin: 0;
-}
 
-.pageSubtitle {
-  font-size: 13px;
-  color: var(--text-muted, #777);
-  margin: 4px 0 0;
-}
 
 .btnPrimary,
 .btnSecondary,
@@ -761,3 +742,6 @@
   color: var(--text-muted, #888);
   font-size: 14px;
 }
+
+/* PageHeader spacing: .page is a plain block, not a gap container. */
+.pageHead { margin: 4px 0 20px; }

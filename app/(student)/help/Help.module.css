@@ -192,3 +192,6 @@
   line-height: 1.5;
 }
 .stillStuckBody a { color: var(--accent, #102a43); }
+
+/* PageHeader spacing: .container is a plain block, not a gap container. */
+.pageHead { margin-bottom: 28px; }

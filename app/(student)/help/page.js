@@ -6,6 +6,7 @@
 import Link from 'next/link';
 import { getOrderedArticles } from './content';
 import { IconTile } from '@/lib/ui/IconTile';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Help.module.css';
 
 export const metadata = {
@@ -32,13 +33,12 @@ export default async function HelpIndexPage({ searchParams }) {
         </div>
       )}
 
-      <div className={s.eyebrow}>Help</div>
-      <h1 className={s.h1}>Learn how to use Studyworks</h1>
-      <p className={s.lead}>
-        Guides for every part of the app, plus a self-study routine and tips
-        for getting the most out of the platform. Skim the list and read whichever
-        articles answer your current question.
-      </p>
+      <PageHeader
+        className={s.pageHead}
+        eyebrow="Help"
+        title="Learn how to use Studyworks"
+        description="Guides for every part of the app, plus a self-study routine and tips for getting the most out of the platform. Skim the list and read whichever articles answer your current question."
+      />
 
       <div className={s.articleGrid}>
         {articles.map((a) => (
