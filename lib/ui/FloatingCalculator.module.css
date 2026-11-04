@@ -44,7 +44,7 @@
    pop-up window. */
 .panel {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + var(--shell-bottom-inset, 0px));
   right: 24px;
   width: min(460px, calc(100vw - 48px));
   height: min(560px, calc(100vh - 120px));

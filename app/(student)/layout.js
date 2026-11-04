@@ -34,6 +34,7 @@ import { storedTestType } from '@/lib/practice/test-type-server';
 import {
   STUDENT_LINKS,
   studentSections,
+  studentTabs,
   tutorLinksForRole,
   tutorSectionsForRole,
 } from '@/lib/ui/nav-links';
@@ -157,6 +158,7 @@ export default async function StudentTreeLayout({ children }) {
     let footer = null;
     let headerSlot = null;
     let badges;
+    let tabs;
     if (isTutor) {
       sections = tutorSectionsForRole(profile.role);
     } else {
@@ -173,6 +175,8 @@ export default async function StudentTreeLayout({ children }) {
         testType,
       ] = footerData;
       sections = studentSections({ hasTutor, hasPlan: Boolean(activePlan) });
+      // Phone bottom tabs (<768px); "More" opens the drawer for the rest.
+      tabs = studentTabs({ hasPlan: Boolean(activePlan) });
 
       const testDateIso = activePlan?.test_date ?? profileDates?.sat_test_date ?? null;
       let daysToTest = null;
@@ -213,7 +217,7 @@ export default async function StudentTreeLayout({ children }) {
       );
     }
     return (
-      <AppShell user={navUser} sections={sections} headerSlot={headerSlot} badges={badges} footer={footer}>
+      <AppShell user={navUser} sections={sections} headerSlot={headerSlot} badges={badges} footer={footer} tabs={tabs}>
         {children}
       </AppShell>
     );

@@ -636,6 +636,16 @@ grouped by day in `REPORT_TIME_ZONE` with only the newest day expanded.
 500). Row labels come from `filter_criteria`
 (`lib/practice/history-rows.ts`): the skill / domain for builder sets,
 the assignment title, or the drill kind.
+On phones (<768px) the student shell adds a **bottom tab bar**
+(`AppShell` `tabs`, from `studentTabs()` in `lib/ui/nav-links.ts`):
+Home · Plan · Practice · Review · More with an active plan, Progress in
+Plan's slot without one. Practice stays lit across question sets and
+full tests; any page outside the four tabs lights More, which opens the
+existing drawer. Badges show as a dot (count in the accessible name),
+and badges on drawer-only links dot More. With tabs, the top bar drops
+the hamburger and carries the SAT/ACT switch. Fixed page widgets (help
+nudge, calculators) sit above the bar via `--shell-bottom-inset`. Tutor
+and admin shells are unchanged.
 
 **6.2 One design language — with a codified Bluebook exception.**
 The practice-test and practice-session runners deliberately mirror the
