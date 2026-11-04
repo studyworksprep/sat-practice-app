@@ -58,6 +58,20 @@
   color: var(--color-slate-700);
 }
 
+/* Math uses the same plain, centered presentation whether equations
+   arrive in the stimulus field or in the question stem. */
+.mathStimulus {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  margin-bottom: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--fg1);
+  text-align: center;
+}
+
 /* Column variant — no own border; the twoCol card is the frame.
    overflow-x: auto contains oversized stimulus content (mainly
    wide data tables — RW-00194 has a 4-column corn-vocabulary
