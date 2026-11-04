@@ -11,6 +11,9 @@
   margin: 0 auto;
   padding: var(--s5) var(--s6) var(--s7);
   display: grid;
+  /* minmax(0, …) so a wide child can't stretch the page past the
+     viewport on a phone (an auto track grows to min-content). */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s4);
   font-family: var(--font-sans);
   color: var(--fg1);
@@ -247,6 +250,7 @@
   padding: 0;
   margin: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s2);
 }
 
@@ -332,6 +336,13 @@
   align-items: center;
   gap: var(--s3);
   flex-shrink: 0;
+}
+
+/* Phone: a composite + three section scores don't fit beside the
+   test name, so the scores drop to their own line. */
+@media (max-width: 640px) {
+  .testRow { flex-wrap: wrap; }
+  .testRowLeft { flex-basis: 100%; }
 }
 
 .scorePill { text-align: center; min-width: 46px; }
@@ -502,6 +513,14 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+/* Phone: the title takes its own line and the dates + status wrap
+   under it, instead of one row that runs off the screen. */
+@media (max-width: 640px) {
+  .assignmentRow { flex-wrap: wrap; row-gap: 6px; }
+  .assignmentTitle { flex: 1 1 100%; order: -1; white-space: normal; }
+  .assignmentDates { flex-direction: row; gap: var(--s2); margin-right: auto; }
+}
+
 .assignmentRow:hover .reportPill {
   background: var(--tile-success-fg);
   color: var(--bg-white, #fff);
@@ -618,7 +637,7 @@
 
 @media (max-width: 900px) {
   .contentGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

@@ -58,6 +58,15 @@ export const dynamic = 'force-dynamic';
 const RECENT_SESSIONS_LIMIT = 10;
 const RECENT_TESTS_LIMIT    = 10;
 
+// Readable names for assignments_v2.assignment_type. The pill is
+// uppercased by CSS, so these read as QUESTIONS / PRACTICE TEST.
+const ASSIGNMENT_TYPE_LABEL: Record<string, string> = {
+  questions: 'Questions',
+  practice_test: 'Practice test',
+  lesson: 'Lesson',
+  lesson_pack: 'Lesson pack',
+};
+
 interface PageProps {
   params: Promise<{ studentId: string }>;
 }
@@ -498,8 +507,8 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
 
   return (
     <main className={s.container}>
-      <Link href="/tutor/dashboard" className={s.breadcrumb}>
-        ← Tutor dashboard
+      <Link href="/tutor/roster" className={s.breadcrumb}>
+        ← Roster
       </Link>
 
       {/* ---------- Header ---------- */}
@@ -798,7 +807,9 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                         href={rowHref}
                         className={a.completed_at ? `${s.assignmentRow} ${s.assignmentRowDone}` : s.assignmentRow}
                       >
-                        <span className={s.assignmentType}>{a.assignment_type}</span>
+                        <span className={s.assignmentType}>
+                          {ASSIGNMENT_TYPE_LABEL[a.assignment_type] ?? 'Assignment'}
+                        </span>
                         {a.test_type === 'act' && (
                           <span className={s.actPill}>ACT</span>
                         )}
@@ -1087,7 +1098,7 @@ function ScorePill({ label, value, subject }: ScorePillProps) {
 function ErrorState({ message }: { message: string }) {
   return (
     <main className={s.container}>
-      <Link href="/tutor/dashboard" className={s.breadcrumb}>← Tutor dashboard</Link>
+      <Link href="/tutor/roster" className={s.breadcrumb}>← Roster</Link>
       <header className={s.header}>
         <h1 className={s.h1}>Student detail</h1>
         <p className={s.sub}>Something went wrong loading this student.</p>

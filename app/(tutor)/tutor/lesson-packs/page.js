@@ -67,10 +67,6 @@ export default async function TutorLessonPacksPage() {
 
   return (
     <main className={s.container}>
-      <nav className={s.breadcrumb}>
-        <Link href="/tutor/assignments">← Assignments</Link>
-      </nav>
-
       <header className={s.header}>
         <div className={s.headerLeft}>
           <div className={s.eyebrow}>Tutor · Lesson packs</div>

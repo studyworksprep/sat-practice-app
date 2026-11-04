@@ -117,7 +117,7 @@ export default async function TutorLessonsPage({
             <h2>Published lessons</h2>
             <p>
               {visibleLessons.length === lessonRows.length
-                ? `${lessonRows.length} canonical lessons available to students.`
+                ? `${lessonRows.length} ${lessonRows.length === 1 ? 'lesson' : 'lessons'} available to students.`
                 : `${visibleLessons.length} of ${lessonRows.length} lessons match these filters.`}
             </p>
           </div>
