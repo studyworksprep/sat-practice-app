@@ -1,7 +1,7 @@
 .nudge {
   position: fixed;
   right: 20px;
-  bottom: 20px;
+  bottom: calc(20px + var(--shell-bottom-inset, 0px));
   z-index: 40;
   display: flex;
   align-items: center;

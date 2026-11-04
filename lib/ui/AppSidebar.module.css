@@ -422,3 +422,118 @@
   .shellCollapsed .headerSlot { display: block; }
   .shellCollapsed .badge { display: inline-flex; }
 }
+
+/* ---------- Phone tab bar (students, <768px) ----------
+   .shellTabs is set when the layout passes `tabs`. The bar is fixed to
+   the bottom; --shell-bottom-inset tells fixed-position page widgets
+   (help nudge, calculators) how much room to leave above it. */
+
+.tabBar { display: none; }
+.mobileBarSlot { display: none; }
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 767px) {
+  .shellTabs {
+    --tabbar-h: 60px;
+    --shell-bottom-inset: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .shellTabs .content { padding-bottom: var(--shell-bottom-inset); }
+
+  /* The switch lives in the top bar; the drawer copy would repeat it. */
+  .shellTabs .headerSlot,
+  .shellTabs.shellCollapsed .headerSlot { display: none; }
+
+  .shellTabs .mobileBar { justify-content: space-between; padding: 0 12px 0 16px; }
+
+  .mobileBarSlot {
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  .tabBar {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 35;
+    min-height: var(--tabbar-h);
+    padding: 2px 4px env(safe-area-inset-bottom, 0px);
+    background: var(--bg-white);
+    border-top: 1px solid var(--border);
+  }
+
+  .tab {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 56px;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fg3);
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab:hover { color: var(--color-navy-900); }
+  .tabOn { color: var(--color-navy-900); }
+  .tab:focus-visible {
+    outline: 2px solid var(--color-navy-500);
+    outline-offset: -2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .tabIcon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 28px;
+    border-radius: var(--radius-pill);
+  }
+  .tabOn .tabIcon { background: var(--color-slate-100); }
+
+  .tabLabel {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tabDot {
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--color-gold-400);
+    box-shadow: 0 0 0 2px var(--bg-white);
+  }
+  .tabDotAlert { background: var(--color-diff-hard-fg); }
+}
+
+@media (max-width: 767px) {
+  .mobileBarSlot button { min-width: 52px; min-height: 34px; }
+}

@@ -363,6 +363,38 @@ export function studentSections(
   ];
 }
 
+// ── Phone tab bar (student shell, <768px) ────────────────────────
+// Four destinations plus a "More" button that opens the full drawer.
+// Labels are short so five fit across a 320px phone. Practice spans
+// both question sets and full tests, so the tab stays lit on either.
+
+const TAB_HOME: NavLink = { ...STUDENT_DASHBOARD, label: 'Home' };
+const TAB_PLAN: NavLink = { ...STUDENT_PLAN, label: 'Plan' };
+const TAB_PERFORMANCE: NavLink = { ...STUDENT_PERFORMANCE, label: 'Progress' };
+const TAB_PRACTICE: NavLink = {
+  ...STUDENT_PRACTICE,
+  label: 'Practice',
+  matchPrefix: [
+    ...(STUDENT_PRACTICE.matchPrefix as readonly string[]),
+    ...(STUDENT_TESTS.matchPrefix as readonly string[]),
+  ],
+};
+const TAB_REVIEW: NavLink = { ...STUDENT_REVIEW };
+
+/** Student phone tabs. With an active plan the plan hub takes the
+ *  second slot; without one, Performance does (Plan would be empty). */
+export function studentTabs({ hasPlan = false }: { hasPlan?: boolean } = {}): NavLink[] {
+  return hasPlan
+    ? [TAB_HOME, TAB_PLAN, TAB_PRACTICE, TAB_REVIEW]
+    : [TAB_HOME, TAB_PRACTICE, TAB_PERFORMANCE, TAB_REVIEW];
+}
+
+/** Which tab a pathname lights: the first matching tab, or null —
+ *  null means "More", whose drawer holds every other surface. */
+export function activeTabHref(pathname: string, tabs: readonly NavLink[]): string | null {
+  return tabs.find((t) => isActive(pathname, t))?.href ?? null;
+}
+
 const TEACHER_SECTIONS: readonly NavSection[] = [
   { title: 'Teach', links: [TUTOR_DASHBOARD, TUTOR_ROSTER, TUTOR_LESSONS] },
   { title: 'Assign', links: [TUTOR_ASSIGNMENTS, TUTOR_LESSON_PACKS] },

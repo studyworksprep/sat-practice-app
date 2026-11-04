@@ -15,6 +15,9 @@
 //   - Mobile (<768px): slim top bar with a hamburger; the sidebar
 //     slides in as a drawer over a backdrop, closes on navigation,
 //     backdrop click, or Escape.
+//   - Phone tab bar (`tabs`, students only): four destinations plus
+//     "More", which opens the same drawer. With tabs the hamburger
+//     goes and the header slot (SAT/ACT switch) moves into the top bar.
 //   - `footer` slot sits above the account box — reserved for the
 //     student countdown/streak strip when Phase 2.3 ships "Today".
 //
@@ -30,7 +33,7 @@ import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/browser';
 import { IconTile } from './IconTile';
 import { StudyworksWordmark } from './StudyworksWordmark';
-import { isActive, isShellSuppressedPath } from './nav-links';
+import { activeTabHref, isActive, isShellSuppressedPath } from './nav-links';
 import type { NavIconName, NavLink, NavSection } from './nav-links';
 import {
   BarChartIcon,
@@ -112,10 +115,12 @@ interface AppShellProps {
   badges?: Readonly<Record<string, NavBadge>>;
   /** Rendered above the account box (Phase 2.3 countdown/streak). */
   footer?: ReactNode;
+  /** Phone bottom tabs (<768px); "More" is added and opens the drawer. */
+  tabs?: readonly NavLink[];
   children: ReactNode;
 }
 
-export function AppShell({ user, sections, headerSlot, badges, footer, children }: AppShellProps) {
+export function AppShell({ user, sections, headerSlot, badges, footer, tabs, children }: AppShellProps) {
   const pathname = usePathname() ?? '';
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -174,23 +179,30 @@ export function AppShell({ user, sections, headerSlot, badges, footer, children 
   }
 
   const home = sections[0]?.links[0]?.href ?? '/dashboard';
+  const hasTabs = Boolean(tabs && tabs.length > 0);
+  const shellClass = [s.shell, collapsed && s.shellCollapsed, hasTabs && s.shellTabs]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <div className={collapsed ? `${s.shell} ${s.shellCollapsed}` : s.shell}>
-      {/* Mobile-only top strip: hamburger + wordmark */}
+    <div className={shellClass}>
+      {/* Mobile-only top strip: hamburger (or, with tabs, the header slot) + wordmark */}
       <header className={s.mobileBar}>
-        <button
-          type="button"
-          className={s.hamburger}
-          aria-label="Open navigation"
-          aria-expanded={drawerOpen}
-          onClick={() => setDrawerOpen(true)}
-        >
-          <span /><span /><span />
-        </button>
-        <Link href={home} className={s.mobileLogoLink}>
+        {!hasTabs && (
+          <button
+            type="button"
+            className={s.hamburger}
+            aria-label="Open navigation"
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen(true)}
+          >
+            <span /><span /><span />
+          </button>
+        )}
+        <Link href={home} className={s.mobileLogoLink} aria-label="Studyworks home">
           <StudyworksWordmark />
         </Link>
+        {hasTabs && headerSlot && <div className={s.mobileBarSlot}>{headerSlot}</div>}
       </header>
 
       {drawerOpen && (
@@ -259,8 +271,95 @@ export function AppShell({ user, sections, headerSlot, badges, footer, children 
       </aside>
 
       <div className={s.content}>{children}</div>
+
+      {hasTabs && tabs && (
+        <TabBar
+          tabs={tabs}
+          pathname={pathname}
+          badges={badges}
+          drawerOpen={drawerOpen}
+          onMore={() => setDrawerOpen(true)}
+        />
+      )}
     </div>
   );
+}
+
+// Phone tab bar. A tab lights when the URL belongs to it; any other
+// page lights "More", so the bar always says where you are. Badges
+// show as a dot (count in the accessible name); badges on links that
+// live only in the drawer put their dot on More.
+function TabBar({
+  tabs,
+  pathname,
+  badges,
+  drawerOpen,
+  onMore,
+}: {
+  tabs: readonly NavLink[];
+  pathname: string;
+  badges?: Readonly<Record<string, NavBadge>>;
+  drawerOpen: boolean;
+  onMore: () => void;
+}) {
+  const active = activeTabHref(pathname, tabs);
+  const tabHrefs = new Set(tabs.map((t) => t.href));
+  const moreBadges = Object.entries(badges ?? {})
+    .filter(([href]) => !tabHrefs.has(href))
+    .map(([, b]) => b);
+  const moreAlert = moreBadges.some((b) => b.tone === 'alert');
+  return (
+    <nav className={s.tabBar} aria-label="Main">
+      {tabs.map((tab) => {
+        const Icon = tab.icon ? NAV_ICONS[tab.icon] : null;
+        const on = active === tab.href;
+        const badge = badges?.[tab.href] ?? null;
+        return (
+          <Link
+            key={tab.href}
+            href={tab.href}
+            className={on ? `${s.tab} ${s.tabOn}` : s.tab}
+            aria-current={on ? 'page' : undefined}
+          >
+            <span className={s.tabIcon}>
+              {Icon && <Icon size={22} />}
+              {badge && <TabDot alert={badge.tone === 'alert'} />}
+            </span>
+            <TabLabel label={tab.label} />
+            {badge && <span className={s.srOnly}>, {badge.label}</span>}
+          </Link>
+        );
+      })}
+      <button
+        type="button"
+        className={active === null && !drawerOpen ? `${s.tab} ${s.tabOn}` : s.tab}
+        aria-expanded={drawerOpen}
+        aria-current={active === null ? 'page' : undefined}
+        onClick={onMore}
+      >
+        <span className={s.tabIcon}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="1.75" strokeLinecap="round" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          {moreBadges.length > 0 && <TabDot alert={moreAlert} />}
+        </span>
+        <span className={s.tabLabel}>More</span>
+        {moreBadges.length > 0 && (
+          <span className={s.srOnly}>, {moreBadges.map((b) => b.label).join(', ')}</span>
+        )}
+      </button>
+    </nav>
+  );
+}
+
+function TabDot({ alert }: { alert: boolean }) {
+  return <span className={alert ? `${s.tabDot} ${s.tabDotAlert}` : s.tabDot} aria-hidden="true" />;
+}
+
+function TabLabel({ label }: { label: string }) {
+  const { pending } = useLinkStatus();
+  return <span className={pending ? `${s.tabLabel} ${s.linkLabelPending}` : s.tabLabel}>{label}</span>;
 }
 
 function SidebarLink({
