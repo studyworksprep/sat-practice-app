@@ -268,8 +268,9 @@ export default async function SessionWorkspacePage({ params }: PageProps) {
             {dueSummary.total}
             {dueSummary.total > 0 ? (
               <span className={s.statDetail}>
-                {dueSummary.questions} questions · {dueSummary.skills} skills ·{' '}
-                {dueSummary.flashcards} cards
+                {dueSummary.questions} question{dueSummary.questions === 1 ? '' : 's'}
+                {' · '}{dueSummary.skills} skill{dueSummary.skills === 1 ? '' : 's'}
+                {' · '}{dueSummary.flashcards} card{dueSummary.flashcards === 1 ? '' : 's'}
               </span>
             ) : null}
           </div>

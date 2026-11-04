@@ -215,7 +215,7 @@ export default async function TutorTrainingDashboardPage() {
       finishedAt: sess.created_at,
       metric:
         acc == null
-          ? `${totalQ} questions`
+          ? `${totalQ} question${totalQ === 1 ? '' : 's'}`
           : `${attemptCorrect} of ${attempted} · ${acc}%`,
       tone: accTone(acc),
       href: `/tutor/training/practice/review/${sess.id}`,
@@ -263,7 +263,7 @@ export default async function TutorTrainingDashboardPage() {
       const attempted = firstByQid.size;
       const acc = attempted > 0 ? Math.round((assCorrect / attempted) * 100) : null;
       metric = acc == null
-        ? `${a.question_ids.length} questions`
+        ? `${a.question_ids.length} question${a.question_ids.length === 1 ? '' : 's'}`
         : `${assCorrect} of ${attempted} · ${acc}%`;
     }
     finished.push({

@@ -498,7 +498,7 @@ function AssignmentRow({ row, nowMs, archived = false }) {
             accuracyPct != null ? ` · ${accuracyPct}%` : ''
           }`
         : single.done === 0
-          ? `Not started · ${single.total} questions`
+          ? `Not started · ${single.total} question${single.total === 1 ? '' : 's'}`
           : `${single.done} of ${single.total} attempted${
               accuracyPct != null ? ` · ${accuracyPct}% so far` : ''
             }`;
