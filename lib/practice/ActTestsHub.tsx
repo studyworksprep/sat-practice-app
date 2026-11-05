@@ -121,7 +121,7 @@ export function ActTestsHub({
         eyebrow="Practice · ACT"
         title="Practice tests"
         description="Full-length ACT practice tests, or just the sections you want to focus on. Your progress and history are below the launcher."
-        actions={<HelpButton slug="practice-tests" />}
+        actions={<HelpButton slug="practice-tests" sectionId="act-practice-test" />}
       />
 
       {stats}
