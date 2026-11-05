@@ -1,87 +1,69 @@
-// Teacher assignment-creation form. One form, four type-specific
-// payload groups toggled by the selected assignment_type.
+// Teacher assignment-creation form, in four numbered steps beside a
+// sticky "This assignment" summary that holds Create:
 //
-// Key design points:
-// - For "questions" assignments, skills are picked one-at-a-time
-//   into a Selected list. Each selected skill has its own
-//   score-band chip selector and its own weight (relative
-//   sampling share), so a tutor can say "heavy on Ratios + light
-//   on Percents" instead of one global score-band for everything.
-// - Difficulty is still applied assignment-wide (tutors almost
-//   always want the same level across topics; a per-skill
-//   difficulty control would be visually overwhelming for the
-//   rare case where it's wanted).
-// - The selected skills are serialized to a single hidden input
-//   as JSON because the payload shape is nested; getAll('field')
-//   can't represent nested objects cleanly.
+//   1. What are you assigning? — SAT/ACT, the type, saved templates.
+//   2. Who is it for? — students (or, for managers, trainees).
+//   3. The content — skills (SAT, grouped Math | Reading & Writing) or
+//      ACT categories, with difficulty, size and "only unseen"; or the
+//      practice test, lesson or lesson pack.
+//   4. Name and due date.
 //
-// Client state is minimal: the working selection (which skills
-// are chosen, their bands + weight), the type toggle, and the
-// student checkbox set. Everything else is a plain form field.
+// Key design points kept from the original form:
+// - SAT skills carry their own score bands and weight (relative
+//   sampling share), now under "Fine-tune selected skills"; difficulty
+//   applies assignment-wide.
+// - Selected skills / ACT picks serialize to one hidden JSON field each
+//   (nested shapes); every field name the Server Action reads
+//   (actions.ts) is unchanged.
+// - Only one of the SAT / ACT question pools is mounted, so their
+//   same-named fields (size, difficulty) never both submit.
 
 'use client';
 
 import { useActionState, useMemo, useRef, useState, useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ActionResult } from '@/lib/types';
 import type { LessonCatalogItem } from '@/lib/lesson/catalog';
 import { ACT_SECTIONS, type ActSection } from '@/lib/practice/act-taxonomy';
 import { actSelectionKey as actKey, parseActSelections, type ActSectionTaxonomy } from '@/lib/practice/act-assignment-taxonomy';
 import type { ActAssignmentCatalog } from '@/lib/tutor/act-assignment-catalog';
-import { TestTypeSwitcher } from '@/lib/ui/TestTypeSwitcher';
+import { formatCalendarDate } from '@/lib/formatters';
 import { LessonPicker } from './LessonPicker';
+import { ActPoolPicker } from './ActPoolPicker';
+import {
+  DEFAULT_WEIGHT,
+  SatSkillPicker,
+  WEIGHT_STEPS,
+  type DomainTaxonomy,
+  type SelectedSkill,
+  type SkillTaxonomy,
+} from './SatSkillPicker';
+import { TemplateShelf, type TemplateDeleteAction, type TemplateOption } from './TemplateShelf';
 import styles from './NewAssignmentInteractive.module.css';
-
-// ── Props shape coming from the Server Component page ───────────
-
-type SkillTaxonomy = {
-  name: string;
-  scoreBands: number[];
-  count: number;
-};
-
-type DomainTaxonomy = {
-  name: string;
-  skills: SkillTaxonomy[];
-};
 
 type PersonOption = { id: string; name: string; email: string | null };
 type PracticeTestOption = { id: string; label: string };
 type LessonPackOption = { id: string; name: string; questionCount: number };
-type TemplateOption = { id: string; name: string; testType?: 'sat' | 'act' };
+type AssignmentType = 'questions' | 'practice_test' | 'lesson' | 'lesson_pack';
 
 /** Server-resolved one-click prefill (§4.3): a template or a
- *  student's weak skills. Skills are the persisted shape (no
- *  availableBands/Count) — rehydrated against `domains` below. */
+ *  student's weak skills, rehydrated against `domains` below. */
 type Prefill = {
   label: string;
-  /** Which bank the recipe is for; defaults to SAT. */
   testType?: 'sat' | 'act';
   skills: { domain: string; skill: string; scoreBands: number[]; weight: number }[];
-  /** ACT recipes: whole categories or individual subcategories. */
   actSelections?: { section: string; category: string; subcategory?: string }[];
   difficulties: number[];
   size: number | null;
   unansweredOnly: boolean;
 };
 
-type CreateAction = (
-  prev: ActionResult | null,
-  fd: FormData,
-) => Promise<ActionResult | null>;
-
-type TemplateDeleteAction = (
-  prev: ActionResult | null,
-  fd: FormData,
-) => Promise<ActionResult>;
+type CreateAction = (prev: ActionResult | null, fd: FormData) => Promise<ActionResult | null>;
 
 interface Props {
   students: PersonOption[];
-  /**
-   * Teachers under this manager. Empty for non-managers — when
-   * empty, the Target toggle is hidden and the form falls back
-   * to the students-only behavior.
-   */
+  /** Teachers under this manager; empty for non-managers (no Target toggle). */
   teachers?: PersonOption[];
   domains: DomainTaxonomy[];
   difficulties: number[];
@@ -96,23 +78,29 @@ interface Props {
   deleteTemplateAction?: TemplateDeleteAction;
 }
 
-// ── Selected-skill state ────────────────────────────────────────
-
-type SelectedSkill = {
-  domain: string;
-  skill: string;
-  scoreBands: number[];  // empty = all available for this skill
-  weight: number;        // 0.25 .. 3.0, default 1
-  availableBands: number[];
-  availableCount: number;
-};
-
-const DEFAULT_WEIGHT = 1;
 const EMPTY_ACT_CATALOG: ActAssignmentCatalog = { taxonomy: [], difficulties: [], forms: [] };
-const WEIGHT_STEPS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3];
+
+const TYPE_OPTIONS: Array<{ value: AssignmentType; label: string; act: boolean }> = [
+  { value: 'questions', label: 'Questions', act: true },
+  { value: 'practice_test', label: 'Practice test', act: true },
+  { value: 'lesson', label: 'Lesson', act: false },
+  { value: 'lesson_pack', label: 'Lesson pack', act: false },
+];
+
+const STEP3_TITLE: Record<AssignmentType, string> = {
+  questions: 'Which skills?',
+  practice_test: 'Which test?',
+  lesson: 'Which lesson?',
+  lesson_pack: 'Which pack?',
+};
 
 function difficultyLabel(d: number): string {
   return { 1: 'Easy', 2: 'Medium', 3: 'Hard' }[d] ?? String(d);
+}
+
+function clampSize(text: string): number {
+  const n = Math.floor(Number(text));
+  return Number.isFinite(n) ? Math.min(50, Math.max(1, n)) : 10;
 }
 
 // ── Component ───────────────────────────────────────────────────
@@ -147,9 +135,7 @@ export function NewAssignmentInteractive({
   const availableActSections = actForms.find(form => form.sourceTest === actSourceTest)?.sections ?? ACT_SECTIONS;
 
   const hasTeachers = teachers.length > 0;
-  const [assignmentType, setAssignmentType] = useState<
-    'questions' | 'practice_test' | 'lesson' | 'lesson_pack'
-  >('questions');
+  const [assignmentType, setAssignmentType] = useState<AssignmentType>('questions');
 
   // Which bank (Phase 4B). ACT offers question sets and practice
   // tests; lessons and lesson packs are SAT content, so switching to
@@ -263,16 +249,17 @@ export function NewAssignmentInteractive({
   const [unattemptedOnly, setUnattemptedOnly] = useState(prefill?.unansweredOnly ?? false);
   // Save-as-template (§4.3) — questions type only.
   const [saveTemplate, setSaveTemplate] = useState(false);
+  // Controlled so the summary can read them.
+  const [sizeText, setSizeText] = useState(String(prefill?.size ?? 10));
+  const [title, setTitle] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [practiceTestId, setPracticeTestId] = useState('');
+  const [lessonPackId, setLessonPackId] = useState('');
 
   const visiblePeople = target === 'trainees' ? teachers : students;
   const peopleLabel = target === 'trainees' ? 'Trainees' : 'Students';
   const peopleEmpty =
     target === 'trainees' ? 'You have no teachers on your team yet.' : 'You have no students yet.';
-
-  const totalWeight = useMemo(
-    () => selectedSkills.reduce((sum, s) => sum + s.weight, 0),
-    [selectedSkills],
-  );
 
   // Skills already picked — keyed by domain|skill for O(1) lookup
   // in the browser list.
@@ -282,24 +269,12 @@ export function NewAssignmentInteractive({
     return set;
   }, [selectedSkills]);
 
-  const filteredDomains = useMemo(() => {
-    const q = skillSearch.trim().toLowerCase();
-    if (!q) return domains;
-    return domains
-      .map((d) => ({
-        ...d,
-        skills: d.skills.filter(
-          (s) =>
-            s.name.toLowerCase().includes(q) ||
-            d.name.toLowerCase().includes(q),
-        ),
-      }))
-      .filter((d) => d.skills.length > 0);
-  }, [domains, skillSearch]);
-
-  const addSkill = (domain: string, skill: SkillTaxonomy) => {
+  const toggleSkill = (domain: string, skill: SkillTaxonomy) => {
     const key = `${domain}|${skill.name}`;
-    if (pickedKeys.has(key)) return;
+    if (pickedKeys.has(key)) {
+      removeSkill(domain, skill.name);
+      return;
+    }
     setSelectedSkills((prev) => [
       ...prev,
       {
@@ -313,11 +288,12 @@ export function NewAssignmentInteractive({
     ]);
   };
 
-  const addAllInDomain = (domain: DomainTaxonomy) => {
-    const toAdd = domain.skills.filter(
-      (s) => !pickedKeys.has(`${domain.name}|${s.name}`),
-    );
-    if (toAdd.length === 0) return;
+  const toggleDomain = (domain: DomainTaxonomy, on: boolean) => {
+    if (!on) {
+      setSelectedSkills((prev) => prev.filter((s) => s.domain !== domain.name));
+      return;
+    }
+    const toAdd = domain.skills.filter((s) => !pickedKeys.has(`${domain.name}|${s.name}`));
     setSelectedSkills((prev) => [
       ...prev,
       ...toAdd.map((s) => ({
@@ -495,872 +471,405 @@ export function NewAssignmentInteractive({
     router.push(`/tutor/assignments/new?${qs.toString()}`);
   };
 
-  return (
-    <form action={submitAction} className={styles.form}>
-      <TestTypeSwitcher value={testType} name="test_type" onChange={switchTestType} />
-      {testType === 'act' && !actCatalog && (
-        <section className={styles.card} aria-busy={isActCatalogPending}>
-          {actCatalogError ? (
-            <>
-              <p role="alert" className={styles.error}>{actCatalogError}</p>
-              <button type="button" className={styles.typeOption} onClick={ensureActCatalog}>Try again</button>
-            </>
-          ) : <p role="status">Loading ACT questions and tests…</p>}
-        </section>
-      )}
-      {/* Template shelf (§4.3) */}
-      {templates.length > 0 && (
-        <section className={styles.card}>
-          <div className={styles.sectionLabel}>Start from a template</div>
-          <p className={styles.sectionHint}>
-            Your saved question recipes. Applying one fills the skill picker below —
-            fresh questions are sampled each time.
-          </p>
-          <ul className={styles.templateList}>
-            {templates.map((t) => (
-              <TemplateRow
-                key={t.id}
-                template={t}
-                onApply={applyTemplate}
-                deleteAction={deleteTemplateAction}
-              />
-            ))}
-          </ul>
-        </section>
-      )}
+  // ── Summary ─────────────────────────────────────────────────────
+  const size = clampSize(sizeText);
+  const chosenPeople = visiblePeople.filter((p) => selectedStudents.has(p.id));
+  const forLabel = chosenPeople.length === 0
+    ? 'No one yet'
+    : chosenPeople.length <= 2
+      ? chosenPeople.map((p) => p.name).join(', ')
+      : `${chosenPeople.length} ${target === 'trainees' ? 'trainees' : 'students'}`;
+  const testLabel = testType === 'act' ? 'ACT' : 'SAT';
+  const headline = assignmentType === 'questions'
+    ? `${size} ${testLabel} question${size === 1 ? '' : 's'}`
+    : assignmentType === 'practice_test'
+      ? (testType === 'act'
+          ? actForms.find((f) => f.sourceTest === actSourceTest)?.label
+          : practiceTests.find((p) => p.id === practiceTestId)?.label) ?? `${testLabel} practice test`
+      : assignmentType === 'lesson_pack'
+        ? lessonPacks.find((p) => p.id === lessonPackId)?.name ?? 'Lesson pack'
+        : 'Lesson';
+  const skillDomains = [...new Set(selectedSkills.map((s) => s.domain))];
+  const skillsLabel = testType === 'act'
+    ? (actSelected.size === 0 ? 'None yet' : `${actSelected.size} selection${actSelected.size === 1 ? '' : 's'} · ${actSelectedCount.toLocaleString()} questions`)
+    : selectedSkills.length === 0
+      ? 'None yet'
+      : `${selectedSkills.length} · ${skillDomains.length <= 2 ? skillDomains.join(', ') : `${skillDomains.length} domains`}`;
+  const diffs = testType === 'act' ? [...actDiffs].sort() : [...globalDifficulties].sort();
+  const difficultyText = diffs.length === 0
+    ? 'Any'
+    : diffs.map((d) => (testType === 'act' ? `Level ${d}` : difficultyLabel(d))).join(', ');
+  const missing: string[] = [];
+  if (chosenPeople.length === 0) missing.push(target === 'trainees' ? 'a trainee' : 'a student');
+  if (assignmentType === 'questions' && testType === 'sat' && selectedSkills.length === 0) missing.push('at least one skill');
+  if (assignmentType === 'questions' && testType === 'act' && actSelected.size === 0) missing.push('at least one category');
+  if (assignmentType === 'practice_test' && testType === 'sat' && !practiceTestId) missing.push('a practice test');
+  if (assignmentType === 'practice_test' && testType === 'act' && !actSourceTest) missing.push('an ACT form');
+  if (assignmentType === 'lesson_pack' && !lessonPackId) missing.push('a lesson pack');
 
-      {/* Type selector */}
-      <section className={styles.card}>
-        <div className={styles.sectionLabel}>Type</div>
-        <div className={styles.typeRow}>
-          {[
-            { value: 'questions', label: 'Questions' },
-            { value: 'practice_test', label: 'Practice test' },
-            { value: 'lesson', label: 'Lesson' },
-            { value: 'lesson_pack', label: 'Lesson pack' },
-          ].filter((t) =>
-            testType === 'sat' || t.value === 'questions' || t.value === 'practice_test',
-          ).map((t) => (
-            <label
-              key={t.value}
-              className={`${styles.typeOption} ${
-                assignmentType === t.value ? styles.typeOptionActive : ''
-              }`}
-            >
-              <input
-                type="radio"
-                name="assignment_type"
-                value={t.value}
-                checked={assignmentType === t.value}
-                onChange={() =>
-                  setAssignmentType(t.value as typeof assignmentType)
-                }
-                className={styles.hidden}
-              />
-              <span>{t.label}</span>
-            </label>
-          ))}
-        </div>
-      </section>
+  const onlyStudent = target === 'students' && chosenPeople.length === 1 ? chosenPeople[0] : null;
+  const weaknessLink = onlyStudent ? (
+    <a
+      href={`/tutor/assignments/new?student=${onlyStudent.id}&from_student=${onlyStudent.id}`}
+      className={styles.linkBtn}
+      title="Fill the picker with this student's weakest recent skills, weighted by how often they were missed"
+    >
+      Use {onlyStudent.name.split(' ')[0]}&apos;s weakest skills
+    </a>
+  ) : null;
 
-      {/* Common fields */}
-      <section className={styles.card}>
-        <div className={styles.sectionLabel}>Details</div>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldLabel} htmlFor="title">Title</label>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            maxLength={200}
-            className={styles.input}
-          />
-        </div>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldLabel} htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            rows={2}
-            className={styles.textarea}
-          />
-        </div>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldLabel} htmlFor="due_date">Due date</label>
-          <input
-            id="due_date"
-            name="due_date"
-            type="date"
-            className={`${styles.input} ${styles.inputSm}`}
-          />
-        </div>
-      </section>
-
-      {/* Students / Trainees */}
-      <section className={styles.card}>
-        <div className={styles.sectionLabel}>
-          {peopleLabel}
-          <span className={styles.sectionCount}>
-            ({selectedStudents.size} selected)
-          </span>
-        </div>
-        {hasTeachers && (
-          <div className={styles.targetRow}>
-            <label
-              className={`${styles.typeOption} ${target === 'students' ? styles.typeOptionActive : ''}`}
-            >
-              <input
-                type="radio"
-                name="target_kind"
-                value="students"
-                checked={target === 'students'}
-                onChange={() => {
-                  setTarget('students');
-                  setSelectedStudents(new Set());
-                }}
-                className={styles.hidden}
-              />
-              <span>Students</span>
-            </label>
-            <label
-              className={`${styles.typeOption} ${target === 'trainees' ? styles.typeOptionActive : ''}`}
-            >
-              <input
-                type="radio"
-                name="target_kind"
-                value="trainees"
-                checked={target === 'trainees'}
-                onChange={() => {
-                  setTarget('trainees');
-                  setSelectedStudents(new Set());
-                }}
-                className={styles.hidden}
-              />
-              <span>Trainees (teachers)</span>
-            </label>
-          </div>
-        )}
-        {visiblePeople.length === 0 ? (
-          <p className={styles.empty}>{peopleEmpty}</p>
-        ) : (
-          <div className={styles.studentGrid}>
-            {visiblePeople.map((s) => (
-              <label key={s.id} className={styles.studentItem}>
-                <input
-                  type="checkbox"
-                  name="student_id"
-                  value={s.id}
-                  checked={selectedStudents.has(s.id)}
-                  onChange={() => toggleStudent(s.id)}
-                />
-                <span className={styles.studentName}>
-                  {s.name}
-                  {s.email && (
-                    <span className={styles.studentEmail}>{s.email}</span>
-                  )}
-                </span>
-              </label>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Type-specific groups */}
-      {assignmentType === 'questions' && testType === 'sat' && (
-        <section className={styles.card}>
-          <div className={styles.sectionLabel}>Question pool</div>
-          <p className={styles.sectionHint}>
-            Pick which skills the assignment should cover. Each skill has
-            its own score bands and a weight that controls how many of
-            its questions appear relative to the others.
-          </p>
-          {prefill && selectedSkills.length > 0 && (
-            <p className={styles.prefillBanner}>
-              Prefilled from <strong>{prefill.label}</strong> — adjust freely before creating.
-            </p>
-          )}
-
-          <div className={styles.twoCol}>
-            {/* Left: skill browser */}
-            <div className={styles.browserPanel}>
-              <div className={styles.panelTitle}>
-                <span>Available skills</span>
-              </div>
-              <input
-                type="search"
-                placeholder="Filter by skill or domain…"
-                value={skillSearch}
-                onChange={(e) => setSkillSearch(e.target.value)}
-                className={styles.search}
-              />
-              {filteredDomains.length === 0 ? (
-                <p className={styles.empty}>No skills match.</p>
-              ) : (
-                <ul className={styles.domainList}>
-                  {filteredDomains.map((d) => {
-                    const allAdded = d.skills.every((s) =>
-                      pickedKeys.has(`${d.name}|${s.name}`),
-                    );
-                    return (
-                      <li key={d.name} className={styles.domainBlock}>
-                        <div className={styles.domainHeader}>
-                          <span className={styles.domainName}>{d.name}</span>
-                          <button
-                            type="button"
-                            className={styles.domainAddAll}
-                            onClick={() => addAllInDomain(d)}
-                            disabled={allAdded}
-                          >
-                            {allAdded ? 'All added' : 'Add all'}
-                          </button>
-                        </div>
-                        <ul className={styles.skillList}>
-                          {d.skills.map((s) => {
-                            const picked = pickedKeys.has(`${d.name}|${s.name}`);
-                            return (
-                              <li
-                                key={s.name}
-                                className={`${styles.skillRow} ${
-                                  picked ? styles.skillRowSelected : ''
-                                }`}
-                                onClick={() => !picked && addSkill(d.name, s)}
-                              >
-                                <span className={styles.skillRowName}>{s.name}</span>
-                                <span className={styles.skillRowCount}>
-                                  {picked ? 'added' : `${s.count} q`}
-                                </span>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-
-            {/* Right: selected skills */}
-            <div className={styles.selectedPanel}>
-              <div className={styles.panelTitle}>
-                <span>Selected</span>
-                <span>
-                  {selectedSkills.length} skill
-                  {selectedSkills.length === 1 ? '' : 's'}
-                </span>
-              </div>
-              {selectedSkills.length === 0 ? (
-                <p className={styles.emptySelected}>
-                  Click a skill on the left to add it.
-                </p>
-              ) : (
-                <ul className={styles.selectedList}>
-                  {selectedSkills.map((s) => (
-                    <li
-                      key={`${s.domain}|${s.skill}`}
-                      className={styles.selectedItem}
-                    >
-                      <div className={styles.selectedItemHeader}>
-                        <div className={styles.selectedItemTitle}>
-                          <div className={styles.selectedItemSkill}>
-                            {s.skill}
-                          </div>
-                          <div className={styles.selectedItemDomain}>
-                            {s.domain}
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          className={styles.removeButton}
-                          onClick={() => removeSkill(s.domain, s.skill)}
-                          aria-label="Remove skill"
-                        >
-                          ×
-                        </button>
-                      </div>
-
-                      {s.availableBands.length > 0 && (
-                        <div>
-                          <div className={styles.controlLabel}>
-                            Score bands
-                            {s.scoreBands.length === 0 && ' (all)'}
-                          </div>
-                          <div className={styles.bandRow}>
-                            {s.availableBands.map((b) => {
-                              const active = s.scoreBands.includes(b);
-                              return (
-                                <button
-                                  key={b}
-                                  type="button"
-                                  className={`${styles.bandChip} ${
-                                    active ? styles.bandChipActive : ''
-                                  }`}
-                                  onClick={() => toggleBand(s.domain, s.skill, b)}
-                                >
-                                  {b}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <div className={styles.controlLabel}>
-                          Weight — relative share of the set
-                        </div>
-                        <div className={styles.weightRow}>
-                          <input
-                            type="range"
-                            min={0}
-                            max={WEIGHT_STEPS.length - 1}
-                            step={1}
-                            value={WEIGHT_STEPS.indexOf(s.weight) === -1
-                              ? WEIGHT_STEPS.indexOf(DEFAULT_WEIGHT)
-                              : WEIGHT_STEPS.indexOf(s.weight)}
-                            onChange={(e) => {
-                              const idx = Number(e.target.value);
-                              updateSkill(s.domain, s.skill, {
-                                weight: WEIGHT_STEPS[idx],
-                              });
-                            }}
-                            className={styles.weightSlider}
-                          />
-                          <span className={styles.weightValue}>
-                            {s.weight.toFixed(2).replace(/\.00$/, '')}×
-                          </span>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-
-          {/* Global difficulty */}
-          {difficulties.length > 0 && (
-            <div style={{ marginTop: '16px' }}>
-              <div className={styles.controlLabel}>Difficulty (all skills)</div>
-              <div className={styles.chipRow}>
-                {difficulties.map((d) => {
-                  const active = globalDifficulties.has(d);
-                  return (
-                    <button
-                      key={d}
-                      type="button"
-                      className={`${styles.chip} ${active ? styles.chipActive : ''}`}
-                      onClick={() => toggleDifficulty(d)}
-                    >
-                      {difficultyLabel(d)}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Not-attempted filter */}
-          <div style={{ marginTop: '16px' }}>
-            <div className={styles.controlLabel}>Attempt status</div>
-            <label className={styles.notAttempted}>
-              <input
-                type="checkbox"
-                name="unanswered_only"
-                value="1"
-                checked={unattemptedOnly}
-                onChange={(e) => setUnattemptedOnly(e.target.checked)}
-              />
-              <span className={styles.notAttemptedText}>
-                <span>Only questions not yet attempted</span>
-                <span className={styles.muted}>
-                  {selectedStudents.size > 1
-                    ? `Excludes any question already attempted by any of the ${selectedStudents.size} selected students.`
-                    : 'Excludes any question already attempted by a selected student.'}
-                </span>
-              </span>
-            </label>
-          </div>
-
-          <div className={styles.fieldRow} style={{ marginTop: '16px' }}>
-            <label className={styles.fieldLabel} htmlFor="size">
-              Size (1–50)
-            </label>
-            <input
-              id="size"
-              name="size"
-              type="number"
-              min={1}
-              max={50}
-              defaultValue={prefill?.size ?? 10}
-              className={`${styles.input} ${styles.inputSm}`}
-            />
-          </div>
-
-          {/* Save-as-template (§4.3): stores the recipe above under a
-              name so the next assignment starts from this shelf. */}
-          <div style={{ marginTop: '16px' }}>
-            <label className={styles.notAttempted}>
-              <input
-                type="checkbox"
-                name="save_template"
-                value="1"
-                checked={saveTemplate}
-                onChange={(e) => setSaveTemplate(e.target.checked)}
-              />
-              <span className={styles.notAttemptedText}>
-                <span>Save these filters as a template</span>
-                <span className={styles.muted}>
-                  Skills, weights, bands, difficulty, and size — reusable from
-                  &ldquo;Start from a template&rdquo; on this page.
-                </span>
-              </span>
-            </label>
-            {saveTemplate && (
-              <div className={styles.fieldRow} style={{ marginTop: '8px' }}>
-                <label className={styles.fieldLabel} htmlFor="template_name">
-                  Template name
-                </label>
-                <input
-                  id="template_name"
-                  name="template_name"
-                  type="text"
-                  maxLength={120}
-                  required
-                  placeholder="e.g. Algebra tune-up, 10 medium"
-                  className={styles.input}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Hidden serialized payload fields. The Server Action reads
-              skill_selections (JSON) and difficulty[] separately. */}
-          <input
-            type="hidden"
-            name="skill_selections"
-            value={skillSelectionsJson}
-          />
-          {Array.from(globalDifficulties).map((d) => (
-            <input
-              key={d}
-              type="hidden"
-              name="difficulty"
-              value={String(d)}
-            />
-          ))}
-
-          {selectedSkills.length > 0 && (
-            <div className={styles.preview}>
-              <span>
-                <span className={styles.previewStrong}>{selectedSkills.length}</span>{' '}
-                skill{selectedSkills.length === 1 ? '' : 's'} selected,{' '}
-                total weight{' '}
-                <span className={styles.previewStrong}>
-                  {totalWeight.toFixed(2).replace(/\.00$/, '')}
-                </span>
-              </span>
-              <span className={styles.muted}>
-                Heaviest ×
-                {Math.max(...selectedSkills.map((s) => s.weight))
-                  .toFixed(2)
-                  .replace(/\.00$/, '')}{' '}
-                · Lightest ×
-                {Math.min(...selectedSkills.map((s) => s.weight))
-                  .toFixed(2)
-                  .replace(/\.00$/, '')}
-              </span>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* ACT question pool (Phase 4B): categories under their section,
-          sampled evenly across the picks; difficulty 1–5 applies to
-          all of them. Same size / attempt-status / template fields as
-          the SAT pool — only one of the two sections is mounted. */}
-      {assignmentType === 'questions' && testType === 'act' && actCatalog && (
-        <section className={styles.card}>
-          <div className={styles.sectionLabel}>ACT question pool</div>
-          <p className={styles.sectionHint}>
-            Select a category to include all its questions, or choose
-            individual subcategories below it. Questions are sampled evenly
-            across your selections; difficulty applies to all of them.
-          </p>
-          {prefill?.testType === 'act' && actSelected.size > 0 && (
-            <p className={styles.prefillBanner}>
-              Prefilled from <strong>{prefill.label}</strong> — adjust freely before creating.
-            </p>
-          )}
-          {actTaxonomy.length === 0 ? (
-            <p className={styles.empty}>No ACT questions in the bank yet.</p>
-          ) : (
-            <ul className={`${styles.domainList} ${styles.actTaxonomyList}`}>
-              {actTaxonomy.map((sec) => {
-                const allOn = sec.categories.every((c) =>
-                  actSelected.has(actKey(sec.section, c.name)),
-                );
-                return (
-                  <li key={sec.section} className={styles.domainBlock}>
-                    <div className={styles.domainHeader}>
-                      <span className={styles.domainName}>{sec.label}</span>
-                      <button
-                        type="button"
-                        className={styles.domainAddAll}
-                        onClick={() => setActSectionAll(sec, !allOn)}
-                      >
-                        {allOn ? 'Clear all' : 'Add all'}
-                      </button>
-                    </div>
-                    <div className={styles.studentGrid}>
-                      {sec.categories.map((c) => {
-                        const key = actKey(sec.section, c.name);
-                        return (
-                          <div key={key}>
-                            <label className={styles.studentItem}>
-                              <input
-                                type="checkbox"
-                                checked={actSelected.has(key)}
-                                onChange={() => toggleActCategory(sec.section, c.name)}
-                              />
-                              <span className={styles.studentName}>
-                                {c.name}
-                                <span className={styles.studentEmail}>
-                                  {c.count} question{c.count === 1 ? '' : 's'}
-                                </span>
-                              </span>
-                            </label>
-                            {c.subcategories.length > 0 && (
-                              <div className={styles.actSubcategories}>
-                                {c.subcategories.map((sub) => {
-                                  const parentSelected = actSelected.has(key);
-                                  return (
-                                    <label key={sub.name} className={styles.studentItem}>
-                                      <input
-                                        type="checkbox"
-                                        checked={parentSelected || actSelected.has(actKey(sec.section, c.name, sub.name))}
-                                        disabled={parentSelected}
-                                        onChange={() => toggleActCategory(sec.section, c.name, sub.name)}
-                                      />
-                                      <span className={styles.studentName}>
-                                        {sub.name}
-                                        <span className={styles.studentEmail}>{sub.count} question{sub.count === 1 ? '' : 's'}</span>
-                                      </span>
-                                    </label>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-
-          {actDifficulties.length > 0 && (
-            <div style={{ marginTop: '16px' }}>
-              <div className={styles.controlLabel}>Difficulty (1 easiest – 5 hardest, all categories)</div>
-              <div className={styles.chipRow}>
-                {actDifficulties.map((d) => {
-                  const active = actDiffs.has(d);
-                  return (
-                    <button
-                      key={d}
-                      type="button"
-                      className={`${styles.chip} ${active ? styles.chipActive : ''}`}
-                      onClick={() => toggleActDiff(d)}
-                    >
-                      Level {d}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <div style={{ marginTop: '16px' }}>
-            <div className={styles.controlLabel}>Attempt status</div>
-            <label className={styles.notAttempted}>
-              <input
-                type="checkbox"
-                name="unanswered_only"
-                value="1"
-                checked={unattemptedOnly}
-                onChange={(e) => setUnattemptedOnly(e.target.checked)}
-              />
-              <span className={styles.notAttemptedText}>
-                <span>Only questions not yet attempted</span>
-                <span className={styles.muted}>
-                  {selectedStudents.size > 1
-                    ? `Excludes any question already attempted by any of the ${selectedStudents.size} selected students.`
-                    : 'Excludes any question already attempted by a selected student.'}
-                </span>
-              </span>
-            </label>
-          </div>
-
-          <div className={styles.fieldRow} style={{ marginTop: '16px' }}>
-            <label className={styles.fieldLabel} htmlFor="act_size">
-              Size (1–50)
-            </label>
-            <input
-              id="act_size"
-              name="size"
-              type="number"
-              min={1}
-              max={50}
-              defaultValue={prefill?.testType === 'act' ? (prefill?.size ?? 10) : 10}
-              className={`${styles.input} ${styles.inputSm}`}
-            />
-          </div>
-
-          <div style={{ marginTop: '16px' }}>
-            <label className={styles.notAttempted}>
-              <input
-                type="checkbox"
-                name="save_template"
-                value="1"
-                checked={saveTemplate}
-                onChange={(e) => setSaveTemplate(e.target.checked)}
-              />
-              <span className={styles.notAttemptedText}>
-                <span>Save these filters as a template</span>
-                <span className={styles.muted}>
-                  Categories, difficulty, and size — reusable from
-                  &ldquo;Start from a template&rdquo; on this page.
-                </span>
-              </span>
-            </label>
-            {saveTemplate && (
-              <div className={styles.fieldRow} style={{ marginTop: '8px' }}>
-                <label className={styles.fieldLabel} htmlFor="act_template_name">
-                  Template name
-                </label>
-                <input
-                  id="act_template_name"
-                  name="template_name"
-                  type="text"
-                  maxLength={120}
-                  required
-                  placeholder="e.g. ACT Math geometry, 10 questions"
-                  className={styles.input}
-                />
-              </div>
-            )}
-          </div>
-
-          <input type="hidden" name="act_selections" value={actSelectionsJson} />
-          {Array.from(actDiffs).map((d) => (
-            <input key={d} type="hidden" name="difficulty" value={String(d)} />
-          ))}
-
-          {actSelected.size > 0 && (
-            <div className={styles.preview}>
-              <span>
-                <span className={styles.previewStrong}>{actSelected.size}</span>{' '}
-                selection{actSelected.size === 1 ? '' : 's'} selected
-              </span>
-              <span className={styles.muted}>
-                {actSelectedCount.toLocaleString()} question{actSelectedCount === 1 ? '' : 's'} in the pool before filters
-              </span>
-            </div>
-          )}
-        </section>
-      )}
-
-      {assignmentType === 'practice_test' && testType === 'act' && actCatalog && (
-        <section className={styles.card}>
-          <div className={styles.sectionLabel}>ACT practice test</div>
-          {actForms.length === 0 ? (
-            <p className={styles.empty}>No ACT forms in the bank yet.</p>
-          ) : (
-            <div className={styles.fieldRow}>
-              <label className={styles.fieldLabel} htmlFor="act_source_test">Form</label>
-              <select
-                id="act_source_test"
-                name="act_source_test"
-                className={styles.select}
-                value={actSourceTest}
-                onChange={event => {
-                  setActSourceTest(event.target.value);
-                  setActTestSections(actForms.find(form => form.sourceTest === event.target.value)?.sections ?? []);
-                }}
-              >
-                <option value="" disabled>Select an ACT form…</option>
-                {actForms.map((f) => (
-                  <option key={f.sourceTest} value={f.sourceTest}>{f.label}</option>
-                ))}
-              </select>
-            </div>
-          )}
-          <fieldset className={styles.actSectionList}>
-            <legend className={styles.fieldLabel}>Sections</legend>
-            {ACT_SECTIONS.map(section => {
-              const available = availableActSections.includes(section);
+  const questionOptions = (
+    <div className={styles.optionRow}>
+      {(testType === 'act' ? actDifficulties : difficulties).length > 0 && (
+        <fieldset className={styles.inlineGroup}>
+          <legend className={styles.controlLabel}>
+            {testType === 'act' ? 'Difficulty (1 easiest – 5 hardest)' : 'Difficulty'}
+          </legend>
+          <div className={styles.chipRow}>
+            {(testType === 'act' ? actDifficulties : difficulties).map((d) => {
+              const active = testType === 'act' ? actDiffs.has(d) : globalDifficulties.has(d);
               return (
-                <label key={section} className={styles.actSectionToggle}>
-                  <span>{section[0].toUpperCase() + section.slice(1)}{!available && ' (unavailable)'}</span>
-                  <input type="checkbox" role="switch" name="act_sections" value={section}
-                    checked={available && actTestSections.includes(section)} disabled={!available}
-                    onChange={event => setActTestSections(current => event.target.checked
-                      ? [...current, section] : current.filter(value => value !== section))} />
-                </label>
+                <button
+                  key={d}
+                  type="button"
+                  aria-pressed={active}
+                  className={`${styles.chip} ${active ? styles.chipActive : ''}`}
+                  onClick={() => (testType === 'act' ? toggleActDiff(d) : toggleDifficulty(d))}
+                >
+                  {testType === 'act' ? `Level ${d}` : difficultyLabel(d)}
+                </button>
               );
             })}
-          </fieldset>
-          <p className={styles.sectionHint}>
-            Choose one or more sections. The assignment is complete after all selected sections are finished.
-            Students can choose standard or extended time when they start.
-          </p>
-        </section>
-      )}
-
-      {assignmentType === 'practice_test' && testType === 'sat' && (
-        <section className={styles.card}>
-          <div className={styles.sectionLabel}>Practice test</div>
-          <div className={styles.fieldRow}>
-            <label className={styles.fieldLabel} htmlFor="practice_test_id">Test</label>
-            <select
-              id="practice_test_id"
-              name="practice_test_id"
-              className={styles.select}
-              defaultValue=""
-            >
-              <option value="" disabled>Select a practice test…</option>
-              {practiceTests.map((pt) => (
-                <option key={pt.id} value={pt.id}>{pt.label}</option>
-              ))}
-            </select>
           </div>
-          <div className={styles.fieldRow}>
-            <label className={styles.fieldLabel} htmlFor="sections">Sections</label>
-            <select
-              id="sections"
-              name="sections"
-              className={styles.select}
-              defaultValue="both"
-            >
-              <option value="both">Both</option>
-              <option value="rw">Reading &amp; Writing only</option>
-              <option value="math">Math only</option>
-            </select>
-          </div>
-        </section>
+        </fieldset>
       )}
-
-      {assignmentType === 'lesson' && (
-        <section className={styles.card}>
-          <div className={styles.sectionLabel}>Lesson</div>
-          {lessons.length === 0 ? (
-            <p className={styles.empty}>No published lessons yet.</p>
-          ) : (
-            <LessonPicker lessons={lessons} />
-          )}
-        </section>
-      )}
-
-      {assignmentType === 'lesson_pack' && (
-        <section className={styles.card}>
-          <div className={styles.sectionLabel}>Lesson pack</div>
-          {lessonPacks.length === 0 ? (
-            <p className={styles.empty}>
-              You don&apos;t have any lesson packs with questions yet.{' '}
-              <a href="/tutor/lesson-packs">Create one →</a>
-            </p>
-          ) : (
-            <div className={styles.fieldRow}>
-              <label className={styles.fieldLabel} htmlFor="lesson_pack_id">Pack</label>
-              <select
-                id="lesson_pack_id"
-                name="lesson_pack_id"
-                className={styles.select}
-                defaultValue=""
-              >
-                <option value="" disabled>Select a pack…</option>
-                {lessonPacks.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} · {p.questionCount} question{p.questionCount === 1 ? '' : 's'}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Submit */}
-      <div className={styles.submitRow}>
-        {state && !state.ok && (
-          <span role="alert" className={styles.error}>{state.error}</span>
-        )}
-        <button
-          type="submit"
-          disabled={isPending || (testType === 'act' && !actCatalog)}
-          className={styles.submitButton}
-        >
-          {isPending ? 'Creating…' : 'Create assignment'}
-        </button>
-      </div>
-    </form>
+      <label className={styles.checkInline}>
+        <input
+          type="checkbox"
+          name="unanswered_only"
+          value="1"
+          checked={unattemptedOnly}
+          onChange={(e) => setUnattemptedOnly(e.target.checked)}
+        />
+        <span>
+          Only questions they haven&apos;t seen
+          <span className={styles.muted}>
+            {selectedStudents.size > 1 ? ` · skips anything any of the ${selectedStudents.size} has tried` : ''}
+          </span>
+        </span>
+      </label>
+      <label className={styles.sizeField}>
+        Questions
+        <input
+          name="size"
+          type="number"
+          min={1}
+          max={50}
+          value={sizeText}
+          onChange={(e) => setSizeText(e.target.value)}
+          onBlur={() => setSizeText(String(clampSize(sizeText)))}
+          className={`${styles.input} ${styles.inputSm}`}
+        />
+      </label>
+    </div>
   );
-}
-
-// ── Template shelf row (§4.3) ───────────────────────────────────
-// Lives outside the main <form> flow visually but INSIDE it in the
-// DOM would nest forms — so delete goes through a button click that
-// builds its own FormData, ArchiveButton-style, instead of a nested
-// <form action>.
-
-function TemplateRow({
-  template,
-  onApply,
-  deleteAction,
-}: {
-  template: TemplateOption;
-  onApply: (id: string) => void;
-  deleteAction?: TemplateDeleteAction;
-}) {
-  const [deleteState, setDeleteState] = useState<ActionResult | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
-  const handleDelete = async () => {
-    if (!deleteAction || deleting) return;
-    setDeleting(true);
-    const fd = new FormData();
-    fd.set('template_id', template.id);
-    const result = await deleteAction(null, fd);
-    setDeleteState(result);
-    setDeleting(false);
-  };
-
-  if (deleteState?.ok) return null;
 
   return (
-    <li className={styles.templateRow}>
-      <span className={styles.templateName}>{template.name}</span>
-      <span className={styles.templateActions}>
-        <button
-          type="button"
-          className={styles.templateApplyBtn}
-          onClick={() => onApply(template.id)}
-        >
-          Apply
+    <form action={submitAction} className={styles.layout}>
+      <div className={styles.steps}>
+        {/* ── 1. What ─────────────────────────────────────────── */}
+        <section className={styles.step} aria-labelledby="step-1">
+          <h2 id="step-1" className={styles.stepTitle}><span className={styles.stepNum}>1</span>What are you assigning?</h2>
+          <div className={styles.typeBar}>
+            <div className={styles.segmented} role="radiogroup" aria-label="Test">
+              {(['sat', 'act'] as const).map((t) => (
+                <label key={t} className={testType === t ? styles.segOn : undefined}>
+                  <input type="radio" name="test_type" value={t} checked={testType === t} onChange={() => switchTestType(t)} className={styles.pillInput} />
+                  {t.toUpperCase()}
+                </label>
+              ))}
+            </div>
+            <div className={styles.segmented} role="radiogroup" aria-label="Assignment type">
+              {TYPE_OPTIONS.filter((t) => testType === 'sat' || t.act).map((t) => (
+                <label key={t.value} className={assignmentType === t.value ? styles.segOn : undefined}>
+                  <input
+                    type="radio"
+                    name="assignment_type"
+                    value={t.value}
+                    checked={assignmentType === t.value}
+                    onChange={() => setAssignmentType(t.value)}
+                    className={styles.pillInput}
+                  />
+                  {t.label}
+                </label>
+              ))}
+            </div>
+          </div>
+          {assignmentType === 'questions' && templates.length > 0 && (
+            <TemplateShelf templates={templates} onApply={applyTemplate} deleteAction={deleteTemplateAction} />
+          )}
+        </section>
+
+        {/* ── 2. Who ──────────────────────────────────────────── */}
+        <section className={styles.step} aria-labelledby="step-2">
+          <div className={styles.stepHead}>
+            <h2 id="step-2" className={styles.stepTitle}><span className={styles.stepNum}>2</span>Who is it for?</h2>
+            <span className={styles.stepHint}>{selectedStudents.size} selected</span>
+          </div>
+          {hasTeachers && (
+            <div className={styles.segmented} role="radiogroup" aria-label="Assign to">
+              {(['students', 'trainees'] as const).map((t) => (
+                <label key={t} className={target === t ? styles.segOn : undefined}>
+                  <input
+                    type="radio"
+                    name="target_kind"
+                    value={t}
+                    checked={target === t}
+                    onChange={() => { setTarget(t); setSelectedStudents(new Set()); }}
+                    className={styles.pillInput}
+                  />
+                  {t === 'students' ? 'Students' : 'Trainees (teachers)'}
+                </label>
+              ))}
+            </div>
+          )}
+          {visiblePeople.length === 0 ? (
+            <p className={styles.empty}>{peopleEmpty}</p>
+          ) : (
+            <div className={styles.peopleRow}>
+              {visiblePeople.map((p) => {
+                const on = selectedStudents.has(p.id);
+                return (
+                  <label key={p.id} className={on ? `${styles.personChip} ${styles.personChipOn}` : styles.personChip} title={p.email ?? undefined}>
+                    <input type="checkbox" name="student_id" value={p.id} checked={on} onChange={() => toggleStudent(p.id)} className={styles.pillInput} />
+                    <span aria-hidden="true">{on ? '✓ ' : ''}</span>{p.name}
+                  </label>
+                );
+              })}
+              <button
+                type="button"
+                className={styles.linkBtn}
+                onClick={() => setSelectedStudents(
+                  selectedStudents.size === visiblePeople.length ? new Set() : new Set(visiblePeople.map((p) => p.id)),
+                )}
+              >
+                {selectedStudents.size === visiblePeople.length ? 'Clear' : 'Select all'}
+              </button>
+            </div>
+          )}
+          <span className={styles.srOnly}>{peopleLabel}</span>
+        </section>
+
+        {/* ── 3. Content ──────────────────────────────────────── */}
+        <section className={styles.step} aria-labelledby="step-3">
+          <h2 id="step-3" className={styles.stepTitle}><span className={styles.stepNum}>3</span>{STEP3_TITLE[assignmentType]}</h2>
+
+          {testType === 'act' && !actCatalog && (
+            <div aria-busy={isActCatalogPending}>
+              {actCatalogError ? (
+                <>
+                  <p role="alert" className={styles.error}>{actCatalogError}</p>
+                  <button type="button" className={styles.linkBtn} onClick={ensureActCatalog}>Try again</button>
+                </>
+              ) : <p role="status" className={styles.muted}>Loading ACT questions and tests…</p>}
+            </div>
+          )}
+
+          {assignmentType === 'questions' && testType === 'sat' && (
+            <>
+              <SatSkillPicker
+                domains={domains}
+                selected={selectedSkills}
+                search={skillSearch}
+                onSearch={setSkillSearch}
+                onToggleSkill={toggleSkill}
+                onToggleDomain={toggleDomain}
+                onToggleBand={toggleBand}
+                onWeight={(domain, skill, weight) => updateSkill(domain, skill, { weight })}
+                prefillLabel={prefill?.testType !== 'act' ? prefill?.label ?? null : null}
+                weaknessLink={weaknessLink}
+              />
+              {questionOptions}
+              <input type="hidden" name="skill_selections" value={skillSelectionsJson} />
+              {Array.from(globalDifficulties).map((d) => <input key={d} type="hidden" name="difficulty" value={String(d)} />)}
+            </>
+          )}
+
+          {assignmentType === 'questions' && testType === 'act' && actCatalog && (
+            <>
+              <ActPoolPicker
+                taxonomy={actTaxonomy}
+                selected={actSelected}
+                onToggle={toggleActCategory}
+                onSectionAll={setActSectionAll}
+                prefillLabel={prefill?.testType === 'act' ? prefill.label : null}
+              />
+              {questionOptions}
+              <input type="hidden" name="act_selections" value={actSelectionsJson} />
+              {Array.from(actDiffs).map((d) => <input key={d} type="hidden" name="difficulty" value={String(d)} />)}
+            </>
+          )}
+
+          {assignmentType === 'practice_test' && testType === 'sat' && (
+            <div className={styles.fieldGrid}>
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>Test</span>
+                <select name="practice_test_id" className={styles.select} value={practiceTestId} onChange={(e) => setPracticeTestId(e.target.value)}>
+                  <option value="" disabled>Select a practice test…</option>
+                  {practiceTests.map((pt) => <option key={pt.id} value={pt.id}>{pt.label}</option>)}
+                </select>
+              </label>
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>Sections</span>
+                <select name="sections" className={styles.select} defaultValue="both">
+                  <option value="both">Both</option>
+                  <option value="rw">Reading &amp; Writing only</option>
+                  <option value="math">Math only</option>
+                </select>
+              </label>
+            </div>
+          )}
+
+          {assignmentType === 'practice_test' && testType === 'act' && actCatalog && (
+            <>
+              {actForms.length === 0 ? (
+                <p className={styles.empty}>No ACT forms in the bank yet.</p>
+              ) : (
+                <label className={styles.field}>
+                  <span className={styles.fieldLabel}>Form</span>
+                  <select
+                    name="act_source_test"
+                    className={styles.select}
+                    value={actSourceTest}
+                    onChange={(event) => {
+                      setActSourceTest(event.target.value);
+                      setActTestSections(actForms.find((form) => form.sourceTest === event.target.value)?.sections ?? []);
+                    }}
+                  >
+                    <option value="" disabled>Select an ACT form…</option>
+                    {actForms.map((f) => <option key={f.sourceTest} value={f.sourceTest}>{f.label}</option>)}
+                  </select>
+                </label>
+              )}
+              <fieldset className={styles.actSectionList}>
+                <legend className={styles.fieldLabel}>Sections</legend>
+                {ACT_SECTIONS.map((section) => {
+                  const available = availableActSections.includes(section);
+                  return (
+                    <label key={section} className={styles.actSectionToggle}>
+                      <span>{section[0].toUpperCase() + section.slice(1)}{!available && ' (unavailable)'}</span>
+                      <input
+                        type="checkbox"
+                        role="switch"
+                        name="act_sections"
+                        value={section}
+                        checked={available && actTestSections.includes(section)}
+                        disabled={!available}
+                        onChange={(event) => setActTestSections((current) => event.target.checked
+                          ? [...current, section] : current.filter((value) => value !== section))}
+                      />
+                    </label>
+                  );
+                })}
+              </fieldset>
+              <p className={styles.sectionHint}>
+                The assignment is complete once every selected section is finished. Students choose
+                standard or extended time when they start.
+              </p>
+            </>
+          )}
+
+          {assignmentType === 'lesson' && (
+            lessons.length === 0 ? <p className={styles.empty}>No published lessons yet.</p> : <LessonPicker lessons={lessons} />
+          )}
+
+          {assignmentType === 'lesson_pack' && (
+            lessonPacks.length === 0 ? (
+              <p className={styles.empty}>
+                You don&apos;t have any lesson packs with questions yet. <Link href="/tutor/lesson-packs">Create one →</Link>
+              </p>
+            ) : (
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>Pack</span>
+                <select name="lesson_pack_id" className={styles.select} value={lessonPackId} onChange={(e) => setLessonPackId(e.target.value)}>
+                  <option value="" disabled>Select a pack…</option>
+                  {lessonPacks.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} · {p.questionCount} question{p.questionCount === 1 ? '' : 's'}</option>
+                  ))}
+                </select>
+              </label>
+            )
+          )}
+        </section>
+
+        {/* ── 4. Name and due date ────────────────────────────── */}
+        <section className={styles.step} aria-labelledby="step-4">
+          <h2 id="step-4" className={styles.stepTitle}><span className={styles.stepNum}>4</span>Name and due date</h2>
+          <div className={styles.fieldGrid}>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>Title <span className={styles.muted}>(optional)</span></span>
+              <input name="title" type="text" maxLength={200} className={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Named after the content if left blank" />
+            </label>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>Due <span className={styles.muted}>(optional)</span></span>
+              <input name="due_date" type="date" className={styles.input} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+            </label>
+          </div>
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>Note to the student <span className={styles.muted}>(optional)</span></span>
+            <textarea name="description" rows={2} className={styles.textarea} />
+          </label>
+        </section>
+      </div>
+
+      {/* ── Summary ─────────────────────────────────────────── */}
+      <aside className={styles.summary} aria-labelledby="summary-title">
+        <h2 id="summary-title" className={styles.summaryTitle}>This assignment</h2>
+        <p className={styles.summaryHeadline}>{headline}</p>
+        <dl className={styles.summaryList}>
+          <div><dt>For</dt><dd>{forLabel}</dd></div>
+          {assignmentType === 'questions' && (
+            <>
+              <div><dt>{testType === 'act' ? 'Categories' : 'Skills'}</dt><dd>{skillsLabel}</dd></div>
+              <div><dt>Difficulty</dt><dd>{difficultyText}</dd></div>
+              <div><dt>Questions</dt><dd>{unattemptedOnly ? 'Unseen only' : 'Any'}</dd></div>
+            </>
+          )}
+          <div><dt>Due</dt><dd>{dueDate ? formatCalendarDate(dueDate) : 'No due date'}</dd></div>
+          {title && <div><dt>Title</dt><dd>{title}</dd></div>}
+        </dl>
+
+        {missing.length > 0 && (
+          <p className={styles.summaryMissing}>Still needed: {missing.join(', ')}.</p>
+        )}
+        {state && !state.ok && <p role="alert" className={styles.error}>{state.error}</p>}
+
+        <button type="submit" disabled={isPending || (testType === 'act' && !actCatalog)} className={styles.submitButton}>
+          {isPending ? 'Creating…' : 'Create assignment'}
         </button>
-        <button
-          type="button"
-          className={styles.templateDeleteBtn}
-          onClick={handleDelete}
-          disabled={deleting || !deleteAction}
-          aria-label={`Delete template ${template.name}`}
-          title={deleteState && !deleteState.ok ? deleteState.error : 'Delete template'}
-        >
-          {deleting ? '…' : '✕'}
-        </button>
-      </span>
-    </li>
+
+        {assignmentType === 'questions' && (
+          <div className={styles.saveTemplate}>
+            <label className={styles.checkInline}>
+              <input type="checkbox" name="save_template" value="1" checked={saveTemplate} onChange={(e) => setSaveTemplate(e.target.checked)} />
+              <span>Also save as a template</span>
+            </label>
+            {saveTemplate && (
+              <label className={styles.field}>
+                <span className={styles.srOnly}>Template name</span>
+                <input
+                  name="template_name"
+                  type="text"
+                  maxLength={120}
+                  required
+                  placeholder={testType === 'act' ? 'e.g. ACT Math geometry, 10' : 'e.g. Algebra tune-up, 10 medium'}
+                  className={styles.input}
+                />
+              </label>
+            )}
+          </div>
+        )}
+      </aside>
+    </form>
   );
 }
