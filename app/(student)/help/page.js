@@ -1,67 +1,69 @@
-// Student Help index. Server component — content is fully static
-// (see ./content.js), so there's nothing to fetch and no client
-// state. The ?welcome=1 banner is rendered when the dashboard
-// first-login redirect routes a brand-new student here.
-
 import Link from 'next/link';
-import { getOrderedArticles } from './content';
+import { getHelpTopics } from './content';
 import { IconTile } from '@/lib/ui/IconTile';
-import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Help.module.css';
 
 export const metadata = {
   title: 'Help — Studyworks',
-  description: 'Learn how to use every feature of the SAT practice platform.',
+  description: 'Find guides to SAT and ACT practice, scores, review tools, and your Studyworks account.',
 };
 
 export default async function HelpIndexPage({ searchParams }) {
   const params = await searchParams;
   const welcome = params?.welcome === '1';
-  const articles = getOrderedArticles();
+  const topics = getHelpTopics();
 
   return (
     <main className={s.container}>
-      <Link href="/dashboard" className={s.backLink}>← Back to Dashboard</Link>
+      <Link href="/dashboard" className={s.backLink}>
+        <span aria-hidden="true">←</span> Back to Dashboard
+      </Link>
 
-      {welcome && (
-        <div className={s.welcomeBanner}>
-          <div className={s.welcomeBannerTitle}>Welcome to Studyworks!</div>
-          <p className={s.welcomeBannerBody}>
-            Take a few minutes to look around. Start with <strong>Welcome — Start Here</strong> below.
-            Everything in this Help section is here so you can use the platform well on your own.
-          </p>
-        </div>
-      )}
-
-      <PageHeader
-        className={s.pageHead}
-        eyebrow="Help"
-        title="Learn how to use Studyworks"
-        description="Guides for every part of the app, plus a self-study routine and tips for getting the most out of the platform. Skim the list and read whichever articles answer your current question."
-      />
-
-      <div className={s.articleGrid}>
-        {articles.map((a) => (
-          <Link key={a.slug} href={`/help/${a.slug}`} className={s.articleCard}>
-            <IconTile icon={a.icon} palette={a.palette} size="md" className={s.articleIcon} />
-            <div className={s.articleBody}>
-              <div className={s.articleTitle}>{a.title}</div>
-              <p className={s.articleBlurb}>{a.blurb}</p>
-            </div>
-            <span className={s.articleArrow}>→</span>
-          </Link>
-        ))}
-      </div>
-
-      <div className={s.stillStuck}>
-        <div className={s.stillStuckTitle}>Still have questions?</div>
-        <p className={s.stillStuckBody}>
-          If you have a tutor on the platform, message them directly. Self-studying?
-          The <Link href="/help/study-routine">Study Routine</Link> article is the one to
-          read first; <Link href="/help/notes">Notes &amp; Error Log</Link> is the feature
-          most students underuse.
+      <header className={s.hero}>
+        <p className={s.eyebrow}>Studyworks Help</p>
+        <h1 className={s.h1}>{welcome ? 'Welcome to Studyworks!' : 'How can we help?'}</h1>
+        <p className={s.lead}>
+          {welcome
+            ? 'If you’re new here, our welcome guide will help you find your way around and decide what to work on in your first week.'
+            : 'Find your way around Studyworks, learn how SAT and ACT practice differ, or pick up a study habit you can try today.'}
         </p>
-      </div>
+        {welcome && <Link className={s.primaryLink} href="/help/getting-started">Read the welcome guide</Link>}
+      </header>
+
+      <nav className={s.topicLinks} aria-label="Help topics">
+        {topics.map((topic) => (
+          <a key={topic.id} href={`#${topic.id}`}>{topic.title}</a>
+        ))}
+      </nav>
+
+      {topics.map((topic) => (
+        <section key={topic.id} className={s.topic}>
+          <h2 id={topic.id} tabIndex={-1} className={s.sectionHeading}>{topic.title}</h2>
+          <p className={s.topicDescription}>{topic.description}</p>
+          <ul className={s.articleGrid}>
+            {topic.articles.map((article) => (
+              <li key={article.slug}>
+                <Link href={`/help/${article.slug}`} className={s.articleCard}>
+                  <IconTile icon={article.icon} palette={article.palette} size="md" />
+                  <div className={s.cardCopy}>
+                    <h3 className={s.cardTitle}>{article.title}</h3>
+                    <p className={s.cardDescription}>{article.blurb}</p>
+                  </div>
+                  <span className={s.arrow} aria-hidden="true">→</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+
+      <section className={s.support} aria-labelledby="help-contact">
+        <h2 id="help-contact" className={s.sectionHeading}>Still have a question?</h2>
+        <p>
+          If something on the site is getting in your way, you can reach us at{' '}
+          <a href="mailto:support@studyworksprep.com">support@studyworksprep.com</a>.
+        </p>
+      </section>
     </main>
   );
 }

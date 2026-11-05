@@ -1,81 +1,45 @@
-// Single source of truth for the student Help section on the new tree.
-// Each article is rendered by app/next/(student)/help/[slug]/page.js;
-// the index page (app/next/(student)/help/page.js) lists them in `order`.
-//
-// Content is hand-authored constant HTML (trusted source), so the article
-// page can render it directly via dangerouslySetInnerHTML without
-// SafeHtml sanitization. Internal links use href values that match the
-// next-tree route names — '/practice/start', '/notes', '/review',
-// '/practice/tests' — so the article cross-links navigate within the
-// student tree rather than bouncing to legacy.
-
-// Article icons come from the shared SVG system (upgrade-plan §6.2 —
-// emoji icons retired); each entry pairs an icon component with an
-// IconTile palette, rendered by the pages via <IconTile>.
+// Help pages render this hand-authored HTML. Contextual Help buttons use the
+// same article titles and summaries.
 import {
   InfoIcon, PerformanceIcon, PracticeIcon, TestIcon, NotesIcon,
   SearchIcon, FlashcardsIcon, ReviewIcon, ClipboardCheckIcon,
   CalendarIcon, GoalIcon, ReportIcon, HelpIcon,
 } from '@/lib/ui/icons';
 
+export const HELP_TOPICS = [
+  { id: 'getting-started', title: 'Getting started', description: 'Find your way around and decide what to work on first.' },
+  { id: 'practice-and-scores', title: 'Practice and scores', description: 'Choose questions, take a practice test, and understand what your results mean.' },
+  { id: 'review-and-study-tools', title: 'Review and study tools', description: 'Save what you learn and come back to it when you need it.' },
+  { id: 'account-and-support', title: 'Account and support', description: 'Manage your subscription or find help when something goes wrong.' },
+];
+
 export const HELP_ARTICLES = [
   {
     slug: 'getting-started',
-    title: 'Welcome — Start Here',
-    blurb: 'A 2-minute orientation to Studyworks, your study plan, and what to do in your first week.',
-    summary: 'New to Studyworks? Read this first. A short orientation to the platform, how your study plan works, a quick tour of the sidebar, and pointers to the most useful guides for self-study students.',
+    topic: 'getting-started',
+    title: 'Welcome to Studyworks',
+    blurb: 'Get comfortable with Studyworks and find a few manageable things to do in your first week.',
     icon: InfoIcon, palette: 'gold',
-    order: 1,
     sections: [
       {
-        heading: 'What Studyworks is for',
+        id: 'first-week',
+        heading: 'Make a plan for your first week',
         html: `
-<p>Welcome — glad you're here. Studyworks is your home base for SAT and ACT practice, and the goal of this Help section is to make sure you can use it confidently on your own.</p>
-<p>The whole platform is built around three things:</p>
-<ul>
-  <li><strong>Practice the right questions.</strong> Instead of grinding through random sets, you'll run focused sessions on the specific skills that are limiting your score right now.</li>
-  <li><strong>Turn each lesson into something you'll remember.</strong> Studyworks gives you three different study tools — Flashcards, Error Log entries, and Notes — so you can capture every kind of learning in the place where it'll be most useful later.</li>
-  <li><strong>Measure progress with realistic practice tests.</strong> Full-length, adaptive simulations of the digital SAT and the ACT, so you always know where you actually stand.</li>
-</ul>
-<p>You don't need a tutor to use any of this well — plenty of students hit big score gains on their own. The articles in this Help section walk you through every part of the sidebar, explain the three study tools and when to use each, and lay out a self-study routine you can follow week by week. Skim what's useful; come back when something new comes up.</p>
+<p>Welcome! Whether you're studying for the SAT or ACT, or still deciding between them, you can start with a short practice session and use what you learn to choose your next one. If you're working with a tutor, your assignments are a good place to begin.</p>
+<p>If Studyworks invites you to set up a <a href="/plan">Study Plan</a>, it will ask about your goal, your test date, and the time you have to study. You can look over the suggested plan before you begin. Once it's active, your <a href="/dashboard">Dashboard</a> shows the next tasks, so you can sit down to study without having to decide what to do each time.</p>
+<p>As you work, take a moment to save an explanation you want to remember or a mistake you want to avoid. When you're ready for a longer session, take a timed <a href="/help/practice-tests">practice test</a> so you have a starting point to compare with later attempts.</p>
         `,
       },
       {
-        heading: 'Your first week — do this',
-        html: `
-<p>This is the simple loop. Don't worry about being perfect — just get the rhythm started.</p>
-<ol>
-  <li><strong>Finish setting up your study plan.</strong> The first time you sign in, Studyworks asks a few questions — your target and test date, how much prep you've done, when you can study, and how comfortable you feel with each area. From those it builds a week-by-week plan and shows you the whole thing before you start. If you set it aside, you can come back to it any time from the <a href="/dashboard">Dashboard</a>.</li>
-  <li><strong>Open your <a href="/dashboard">Dashboard</a> each study day.</strong> Once your plan is live, the Tasks box shows one to three tasks — a lesson, a drill, a review, or a practice test — each with a reason it's there. Anything your tutor assigns shows up in the same list, marked <em>Assigned</em>. Start with the top one. Finishing a task checks it off automatically.</li>
-  <li><strong>Trust the order early on.</strong> If you're starting from scratch, the plan covers every topic in order first, then narrows to your weak areas once it has seen a few weeks of your work. That's deliberate: a handful of questions can't tell it much, but your first few weeks can.</li>
-  <li><strong>Capture every miss with the right tool.</strong> Studyworks gives you three ways to save what you learn: <strong>Flashcards</strong> for a term or formula you didn't know, <strong>Error Log</strong> for a process mistake or a trap you fell for, and <strong>Notes</strong> for a topic you need to actually learn. Choosing well takes about ten seconds and pays off for the rest of your prep — see the <a href="/help/notes">Notes guide</a> for examples.</li>
-  <li><strong>Take the practice tests when the plan schedules them.</strong> They're checkpoints, not diagnostics: the score tells you how the whole thing is going, and the plan adjusts itself weekly as your results come in.</li>
-</ol>
-<p>That's the whole loop. Everything else in this Help section explains pieces of it in more detail — read whichever ones feel relevant when a question comes up.</p>
-        `,
-      },
-      {
-        heading: 'The sidebar, briefly',
+        id: 'where-to-go',
+        heading: 'Find your way around',
         html: `
 <ul>
-  <li><strong><a href="/dashboard">Dashboard</a></strong> — where you land: today's tasks, a quick read on your progress, and your recent work.</li>
-  <li><strong><a href="/plan">Study Plan</a></strong> — the whole study plan, week by week, and where to change your target, date, or hours.</li>
-  <li><strong><a href="/performance">Performance</a></strong> — every statistic: per-skill accuracy, weekly trend, daily activity, and a ranked list of skills weakest-first.</li>
-  <li><strong><a href="/practice/start">Practice Questions</a></strong> — start a self-guided session, filtered to whatever you want to work on.</li>
-  <li><strong><a href="/practice/tests">Practice tests</a></strong> — launch a full-length, timed, adaptive SAT or ACT.</li>
-  <li><strong><a href="/assignments">Assignments</a></strong> — work assigned by your tutor (skip if you don't have one).</li>
-  <li><strong><a href="/notes">Notes</a></strong> — rich-text notes, your Error Log, and Flashcards. All your study material in one place.</li>
-  <li><strong><a href="/review">Review</a></strong> — drills on your weakest skills + a study surface for the days before the test.</li>
-</ul>
-        `,
-      },
-      {
-        heading: 'Most useful articles for new students',
-        html: `
-<ul>
-  <li><a href="/help/study-routine"><strong>Study Routine (No Tutor)</strong></a> — exactly what to do each week if you're studying on your own.</li>
-  <li><a href="/help/notes"><strong>Notes, Error Log &amp; Flashcards</strong></a> — the new system for capturing and reviewing your mistakes. This is the feature most students underuse.</li>
-  <li><a href="/help/scores"><strong>Understanding Your Scores</strong></a> — what difficulty levels, score bands, and practice-test scores actually mean.</li>
+  <li><a href="/dashboard">Dashboard</a> shows what's coming up and gives you a way back to the work you've recently finished.</li>
+  <li><a href="/practice/start">Practice Questions</a> lets you choose the topics you want to work on. Open <a href="/practice/tests">Practice Tests</a> when you want to work through a test or a section under timed conditions. Use the SAT and ACT switch in the sidebar to choose which test you want to work on.</li>
+  <li><a href="/performance">Performance</a> helps you spot the skills or categories that deserve another look. <a href="/learn">Lessons</a> gives you a place to learn a topic before trying more questions.</li>
+  <li><a href="/notes">Notes</a> is where you keep your notes, Error Log entries, and flashcards. Open <a href="/review">Review</a> to study what you've saved or retry questions you've found difficult.</li>
+  <li><a href="/assignments">Assignments</a> appears when you're linked to a tutor. It gives you a place to check what they've assigned and revisit completed work.</li>
 </ul>
         `,
       },
@@ -83,728 +47,442 @@ export const HELP_ARTICLES = [
   },
   {
     slug: 'dashboard',
+    topic: 'getting-started',
     title: 'Your Dashboard',
-    blurb: 'Tasks, Progress, and Recently finished — the page you land on.',
-    summary: 'Your Dashboard is the page you land on after logging in and the place to start every study day. It has three boxes: Tasks (what to do next, from your plan and your tutor), Progress (a quick read on how it is going, with a link to the full Performance page), and Recently finished (the reports for your latest work).',
+    blurb: 'See what to work on today, how your recent practice is going, and where to find your past results.',
     icon: PerformanceIcon, palette: 'navy',
-    order: 2,
     sections: [
       {
-        heading: 'What the Dashboard is',
+        id: 'tasks',
+        heading: 'Find your next task',
         html: `
-<p>The <a href="/dashboard">Dashboard</a> is the page you land on when you log in. It answers two questions on one screen: what should I do next, and how is it going. Everything else in the app is one click away from it.</p>
+<p>Start with <strong>Tasks</strong> on your <a href="/dashboard">Dashboard</a>. If you have an active study plan, you'll see what it's asking you to work on, whether that's a lesson, a question set, a review session, or a practice test. Tutor work appears with an <strong>Assigned</strong> label. Open a task to work on it, and check the list afterward to see what you've finished.</p>
+<p>Open <a href="/plan">Study Plan</a> to see upcoming weeks or use <strong>Adjust</strong> if your goal, test date, or availability changes. If you're already in the middle of a practice session, look for <strong>Resume session</strong> on the Dashboard.</p>
         `,
       },
       {
-        heading: 'The banner — target, accuracy, days to test',
+        id: 'progress',
+        heading: 'Read your progress and revisit recent work',
         html: `
-<p>Top of the page. Shows your name, which week of your plan you're in, your target score, your overall accuracy, and a countdown to your test date. If you have an in-progress practice session, a <strong>Resume session</strong> button appears here too, next to <strong>Free practice</strong>.</p>
-<p>To change your target or test date, open the <a href="/plan">Study Plan</a> page and use <em>Adjust</em> — the plan re-paces itself around the new numbers. A realistic 3-month goal is your baseline + 100 to 150 points.</p>
+<p><strong>Progress</strong> gives you a quick look at how often you've practiced and how often you answered correctly. A change in overall accuracy can reflect the mix of questions you've chosen. If you spent this week on a harder topic, look at your results on that topic before drawing conclusions from the overall percentage.</p>
+<p><strong>Recently finished</strong> links back to results from recent work. If you just completed a practice set and want to revisit a question, open its report here or find it in practice history.</p>
         `,
       },
       {
-        heading: 'Tasks',
+        id: 'performance',
+        heading: 'Use Performance to choose what to study',
         html: `
-<p>What to do next. Once your plan is live this box shows one to three tasks for the day — a lesson, a drill, a review, or a practice test — each with a reason it's there and a <strong>Start</strong> button. The top one has a highlighted border: begin there. Finishing the work checks the task off automatically, and anything you complete today stays listed with a check mark so you can see the day adding up.</p>
-<p>If you have a tutor, their assignments appear in the same list with a violet <strong>Assigned</strong> tag, dated to when they're due. Start opens the assignment itself.</p>
-<p>When nothing is due, the box shows the next task up so you can get ahead, and <strong>See the whole plan</strong> opens the <a href="/plan">Study Plan</a> page — every week, every task, and the controls to adjust or rebuild. No plan yet? The box holds the <strong>Set up my plan</strong> button instead.</p>
-        `,
-      },
-      {
-        heading: 'Progress',
-        html: `
-<p>A quick read on how it's going, over the last 90 days:</p>
-<ul>
-  <li><strong>Questions</strong> — running count of attempts, with a weekly sparkline.</li>
-  <li><strong>Accuracy</strong> — the high-level number, with the trend and how this week compares to before. Don't chase it as a goal; use the per-skill view instead.</li>
-  <li><strong>This week</strong> — what you've done in the last 7 days against the week before. The single best leading indicator that you're studying enough.</li>
-</ul>
-<p>Below the tiles, one accuracy bar per domain — Math on top, Reading &amp; Writing beneath (and ACT if you practice it). Green is 80% and up, amber is 50–79%, red is under 50%. <strong>See full performance</strong> opens the <a href="/performance">Performance</a> page.</p>
-        `,
-      },
-      {
-        heading: 'Recently finished',
-        html: `
-<p>A unified feed of your most recent completed practice sessions, practice-test attempts, and assignments — newest at top. Click any row to open its report.</p>
-<p>This is the fastest path back into a review: finished a session 10 minutes ago and want to see what you got wrong? Click it here.</p>
-        `,
-      },
-      {
-        heading: 'The Performance page',
-        html: `
-<p>The <a href="/performance">Performance</a> page is where the detail lives — the place to come back to whenever you're not sure what to practice next. It's the same view your tutor sees of you: the per-skill performance grid, a 13-week accuracy trend, a daily activity heatmap, your results by difficulty and score band, and a full list of skills ranked weakest-first.</p>
-<p>In the performance grid you'll see two columns: <strong>Math</strong> and <strong>Reading &amp; Writing</strong>. Each one is broken into domains (Algebra, Advanced Math, Information and Ideas, Standard English Conventions, and so on). Inside each domain bar you'll see <strong>colored segments</strong> — one per skill in that domain. The width of a segment shows how much you've practiced that skill; the color shows how well you're doing on it.</p>
-<p>Color tones:</p>
-<ul>
-  <li><strong>Green</strong> (80%+): you have this skill. Maintain it with the occasional question; don't waste time grinding here.</li>
-  <li><strong>Yellow / amber</strong> (50-79%): you know it, but inconsistently. More reps will turn this green — these skills usually give the fastest gains.</li>
-  <li><strong>Red</strong> (under 50%): a real weakness. Slow down, read the rationales carefully, and treat anything you don't understand as a topic to actually learn (a Note), not just to re-attempt.</li>
-</ul>
-<p>Hover or tap a segment to see which skill it represents and your accuracy on it. When you're picking what to practice, scan for the red and yellow segments inside the domains you care about most.</p>
-<p>Take ACT questions too? A separate ACT performance card appears with the same shape. If you've never attempted an ACT question, that card stays hidden so the page doesn't feel cluttered.</p>
-<p>The weekly accuracy trend is a 13-week line chart. Look for the slope — going up is good, flat is fine if you're at a high level, going down means review days are getting skipped.</p>
-        `,
-      },
-    ],
-  },
-  {
-    slug: 'practice',
-    title: 'Practice Sessions',
-    blurb: 'How to start, run, and review a filtered practice session.',
-    summary: 'A Practice session is a set of questions you pick by filter and work through in one sitting — no timer, no adaptive scoring, just focused reps on whatever you want to drill. This guide covers how to choose useful filters, what each control in the runner does, and how to get the most out of the post-session review.',
-    icon: PracticeIcon, palette: 'math',
-    order: 3,
-    sections: [
-      {
-        heading: 'What a Practice session is',
-        html: `
-<p>A <a href="/practice/start">Practice session</a> is a set of questions you pick by filter, taken in one sitting. Unlike a Practice test, there's no timer or adaptive scoring — just a flexible way to drill the skills you choose.</p>
-        `,
-      },
-      {
-        heading: 'Starting a session',
-        html: `
-<p>Open the <em>Practice Questions</em> tab. The filter panel lays out everything you need to pick what to work on:</p>
-<ul>
-  <li><strong>Math and Reading &amp; Writing columns</strong> — the two subjects sit side by side. You can pick skills from one column, the other, or both. There's no toggle, so a mixed session (a little Math, a little R&amp;W) is one click away if that's what you want. If you also practice ACT questions, switch tests with the tab at the top.</li>
-  <li><strong>Domain &amp; Skill filters</strong> — each domain expands to show its individual skills. <em>This is the high-leverage move</em>: a session of 15 questions on one skill teaches you far more than 15 random questions across the whole test. When in doubt, pick the weakest skill you can see on your Performance page and click just that one.</li>
-  <li><strong>Difficulty</strong> — Easy, Medium, or Hard. Match your current level, then push up when you start getting most questions right. Mixing in one or two harder questions per session is fine; an all-Hard session early on usually just frustrates.</li>
-  <li><strong>Score band</strong> — a precise 1-to-7 difficulty rating that lines up with the public Easy/Medium/Hard buckets. See <a href="/help/scores">Understanding Your Scores</a> for the full mapping.</li>
-  <li><strong>Session size and order</strong> — pick how many questions and whether you want them randomized, then hit <strong>Start</strong>. A live counter shows how many questions match your filters before you commit.</li>
-</ul>
-<p>If you already have a session in progress, a <strong>Resume</strong> card appears at the top so you can pick up exactly where you left off. Studyworks remembers your spot, your answers, and any notes you wrote, so it's safe to close the tab whenever you need to.</p>
-        `,
-      },
-      {
-        heading: 'Inside the session — what each control does',
-        html: `
-<p>The runner is intentionally similar to the real digital SAT so the layout feels familiar on test day. Here's what each piece does:</p>
-<ul>
-  <li><strong>Question chips at the bottom</strong> — small numbered chips along the bottom of the page let you jump to any question in the session. Chips fill in as you answer; flagged questions get a marker so they're easy to find later.</li>
-  <li><strong>Mark for review</strong> — flag a question to come back to. The flag persists into the post-session report and into your Marked filter on the Practice page.</li>
-  <li><strong>Reveal Answer</strong> — once you've committed to a choice, hitting <strong>Reveal Answer</strong> shows both the correct answer and the full written rationale. Always read the rationale, even on questions you got right — sometimes you'll discover you got there for the wrong reason, which is a silent score leak worth fixing.</li>
-  <li><strong>Desmos calculator</strong> — the same embedded calculator you'll use on the digital SAT (Math only). Use it on every practice session; muscle memory matters on test day.</li>
-  <li><strong>Reference sheet</strong> — the Math formula sheet, one click away. Keep using it even when you remember the formula — it teaches you to find what you need fast.</li>
-  <li><strong>Error Log button</strong> — appears after you reveal the answer. One of three places to capture what you learned from the question (Flashcards and Notes are the other two; see the <a href="/help/notes">Notes guide</a> for which to use when).</li>
-</ul>
-<p>You can leave a session at any time and come back. Progress saves automatically — your answers, your reveals, and your notes are all preserved.</p>
-        `,
-      },
-      {
-        heading: 'Practice history & post-session review',
-        html: `
-<p>The <strong>Practice history →</strong> link on the Practice page shows every session you've completed, newest first. Each row has accuracy, size, and a <strong>Review</strong> button that opens the full report — every question, your answer, the correct answer, and the rationale, all on one page.</p>
-<p>The review page is where the score actually comes from. Skim it after every session. Look for: questions you got right but guessed on, questions where the rationale surprised you, and skills where you missed two or more.</p>
-        `,
-      },
-    ],
-  },
-  {
-    slug: 'practice-tests',
-    title: 'Practice Tests',
-    blurb: 'Full-length, timed, adaptive — how to take one and what to do after.',
-    summary: 'A Practice test is a full-length, timed simulation of the digital SAT or the ACT — the closest thing to the real exam you can do on Studyworks. This guide covers when to take one, how to take it under realistic conditions, and (most importantly) what to do during the post-test review, which is where the actual score gains come from.',
-    icon: TestIcon, palette: 'violet',
-    order: 4,
-    sections: [
-      {
-        heading: 'What a Practice test is',
-        html: `
-<p>A full-length, timed simulation. The digital SAT version has two R&amp;W modules and two Math modules, with the second module of each adapting to how you did on the first — exactly like the real test. The ACT version has the four ACT sections.</p>
-<p>Launch from the <a href="/practice/tests">Practice tests</a> tab.</p>
-        `,
-      },
-      {
-        heading: 'When to take one',
-        html: `
-<ul>
-  <li><strong>Right away.</strong> Take your first one in your first week — this is your baseline.</li>
-  <li><strong>Every 2 weeks.</strong> Often enough to see real progress, not so often that you burn out.</li>
-  <li><strong>Two weeks before the real test.</strong> Final dress rehearsal under realistic conditions.</li>
-</ul>
-        `,
-      },
-      {
-        heading: 'How to take it well',
-        html: `
-<ul>
-  <li><strong>Sit it in one go.</strong> Don't split modules across days — the timing and stamina are the point.</li>
-  <li><strong>Quiet room, no phone.</strong> Treat it like the real thing.</li>
-  <li><strong>Use the on-screen Desmos calculator only.</strong> Don't reach for a separate one.</li>
-  <li><strong>Don't look up answers mid-test.</strong> Flag and move on, just like the real exam.</li>
-</ul>
-<p>If you have accommodations (extra time, etc.), set them in the launch panel before you start.</p>
-        `,
-      },
-      {
-        heading: 'After the test — this is where the score comes from',
-        html: `
-<p>Most students take a test, look at the score, and stop. The score doesn't teach you anything — the review does.</p>
-<ol>
-  <li>The Practice tests page shows a <strong>history table</strong> with your composite, RW, and Math scores per attempt. Click <strong>Review</strong> on the row.</li>
-  <li>Go through every question you got wrong <em>and every question you guessed on</em>, even if you got it right.</li>
-  <li>For each one, ask: did I not know the content, or did I make a process mistake?</li>
-  <li>For any pattern that emerges, write a Note (see the <a href="/help/notes">Notes</a> article). The same mistake twice is a real weakness; capture it.</li>
-</ol>
-<p>An hour of post-test review will move your score more than another full test will.</p>
-        `,
-      },
-      {
-        heading: 'Score trend & best composite',
-        html: `
-<p>The Practice tests page shows a <strong>mini trend chart</strong> of your recent composites plus your <strong>best composite</strong>. Track the best, not the average — it's a closer match to what you'll get on test day.</p>
-        `,
-      },
-    ],
-  },
-  {
-    slug: 'notes',
-    title: 'Notes, Error Log & Flashcards',
-    blurb: 'The Notes tab is where you turn mistakes into improvement. Read this.',
-    summary: 'The Notes tab is your study hub. It gives you three different tools for capturing what you learn: Flashcards for terms and formulas, Error Log entries for process mistakes and traps, and Notes for concepts that need a real explanation. Choosing the right tool for each lesson is the single highest-leverage habit on the platform — this article walks through when to use which.',
-    icon: NotesIcon, palette: 'amber',
-    order: 5,
-    sections: [
-      {
-        heading: 'Why the Notes tab matters more than new questions',
-        html: `
-<p>The single biggest difference between students who improve fast and students who plateau isn't talent or hours — it's what they do with what they get wrong. Doing more questions while forgetting the same mistakes is a treadmill: a lot of effort, not much movement. Capturing what you learn from each miss is what actually moves the score.</p>
-<p>That's what the <a href="/notes">Notes</a> tab is for. It gives you <strong>three different study tools</strong> in one place, and the most important thing to learn is which one to reach for in which situation. Read the next section carefully — this is the part most students miss.</p>
-        `,
-      },
-      {
-        heading: 'Choosing the right tool — Flashcards vs Error Log vs Notes',
-        html: `
-<p>When you get a question wrong (or get it right but feel shaky about it), ask yourself: <em>what specifically did I just learn?</em> The answer points to one of three tools.</p>
-<p><strong>📇 Flashcard</strong> — use this when the lesson is a single piece of information you need to remember on demand. A vocabulary word and its definition. A geometry formula. A grammar rule like "semicolons join two independent clauses." Flashcards are best at the small, atomic stuff: one fact per card, drilled into long-term memory through repetition. If you can write it as a question-and-answer pair, it belongs on a flashcard. <a href="/help/flashcards">Full guide to Flashcards →</a></p>
-<p><strong>🔍 Error Log</strong> — use this when the lesson is about your <em>process</em>: a trap you fell for, a step you skipped, a misread, a wrong assumption. "I assumed 'except' meant the same as 'such as.'" "I solved for x but the question asked for 2x." "I picked the most extreme answer choice without checking." Error Log entries aren't about content you didn't know — they're about the specific habit you want to change. Next time you face the same kind of question, your past note pops up and reminds you not to make the same move. <a href="/help/error-log">Full guide to the Error Log →</a></p>
-<p><strong>📓 Notes</strong> — use this when the lesson is a concept that needs explaining, not just memorizing. A multi-step solution method. A topic you genuinely don't understand yet. Anything with multiple parts, examples, diagrams, or worked steps. Notes are full rich-text documents: you can format text, embed math, draw diagrams, and tag the note with the topic it covers. Use them when a flashcard would feel too small and an Error Log entry wouldn't say enough.</p>
-<p>If you're not sure which one applies, ask: <em>could I explain this on a single index card? could I sum it up as "next time, do X instead of Y"? or does it actually need a paragraph?</em> The right tool is usually obvious once you frame it that way.</p>
-        `,
-      },
-      {
-        heading: 'Notes — for concepts you need to actually learn',
-        html: `
-<p>A Note is a full rich-text document. You can format text, embed math notation, draw diagrams with Excalidraw, and tag the note with any labels you like. Each note can be linked to a specific question; when it is, the subject, domain, and skill auto-fill so you can filter on them later.</p>
-<p>Good things to make a Note about:</p>
-<ul>
-  <li>A topic-level summary sheet — "How to handle systems of equations word problems," with the method, two worked examples, and the traps to watch for.</li>
-  <li>A vocabulary list with example sentences in context (better than flashcards once the word has multiple shades of meaning).</li>
-  <li>A hard problem worked through in your own words, so the explanation makes sense to <em>you</em>.</li>
-  <li>A pre-test checklist — strategies, timing notes, reminders to read before a practice test.</li>
-</ul>
-<p>Open <a href="/notes">/notes</a> to see everything you've written. Click <strong>+ New note</strong> to start a new one. The sidebar lets you filter by subject, domain, skill, or any tag you've used. When you write a Note about something you also want to drill from memory (a formula, a term), make a Flashcard for it as well — the two tools complement each other.</p>
-        `,
-      },
-      {
-        heading: 'Where to go next',
-        html: `
-<p>Each of the three tools has its own dedicated guide with the full details, examples, and common pitfalls:</p>
-<ul>
-  <li><a href="/help/error-log"><strong>Error Log</strong></a> — how to write entries that actually change your habits, and how to use the two views (manage vs study).</li>
-  <li><a href="/help/flashcards"><strong>Flashcards</strong></a> — how the spaced-repetition mastery system works, and how to write cards that actually teach you something.</li>
-  <li><a href="/help/study-routine"><strong>Study Routine</strong></a> — how all three tools fit into a weekly self-study plan.</li>
-</ul>
-        `,
-      },
-    ],
-  },
-  {
-    slug: 'error-log',
-    title: 'Error Log',
-    blurb: 'A journal of process mistakes you don\'t want to repeat — one entry per missed question.',
-    summary: 'The Error Log is a per-question journal of process mistakes — traps you fell for, steps you skipped, assumptions you made. It\'s most useful for changing your habits over time. This guide covers how to write a good entry, when to use it (and when to reach for a Flashcard or Note instead), and how to use the two Error Log views in your weekly routine.',
-    icon: SearchIcon, palette: 'danger',
-    order: 6,
-    sections: [
-      {
-        heading: 'What the Error Log is',
-        html: `
-<p>The Error Log is a running journal of what you got wrong — but with a specific focus. Each entry is <strong>tied to a single question</strong> and lives at <a href="/notes/error-log">/notes/error-log</a>. There's one entry per question, so re-attempting the same question later updates the existing entry rather than creating a new one.</p>
-<p>You'll create most entries straight from the Practice runner: after you reveal the answer on a question, click the <strong>Error Log</strong> button and write a short note about what happened. You can also edit existing entries later from the management view if you want to add a follow-up thought.</p>
-        `,
-      },
-      {
-        heading: 'When to use the Error Log (vs the other tools)',
-        html: `
-<p>The Error Log is for <strong>process mistakes</strong> — the kind where the lesson is about a decision you'd want to make differently next time. It is <em>not</em> for content gaps. Use the right tool for the right kind of mistake:</p>
-<ul>
-  <li>"I didn't know what 'cogent' means." → That's a <a href="/help/flashcards">Flashcard</a>, not an Error Log entry.</li>
-  <li>"I don't really understand how to solve systems of equations word problems." → That's a <a href="/help/notes">Note</a>, not an Error Log entry.</li>
-  <li>"I assumed 'except' meant the same as 'such as.'" ✅ Error Log.</li>
-  <li>"I solved for x but the question asked for 2x." ✅ Error Log.</li>
-  <li>"I picked the most extreme answer choice without checking the others." ✅ Error Log.</li>
-  <li>"I started writing the equation before reading the last sentence of the prompt." ✅ Error Log.</li>
-</ul>
-<p>If you find yourself writing an Error Log entry that's really about a content gap, copy the lesson into a Flashcard or Note instead. The Error Log gets more useful — not less — when you keep it focused on process.</p>
-        `,
-      },
-      {
-        heading: 'How to write a useful entry',
-        html: `
-<p>An entry doesn't need to be long. Aim for one or two sentences, focused on the move you made (or didn't) — the thing you'd want to do differently next time.</p>
-<p>Useful template: <em>"Next time, [do this] instead of [what I did]."</em></p>
-<p>Examples:</p>
-<ul>
-  <li>"Next time, circle the word the question actually asks for before solving — I solved for x but the prompt wanted 2x."</li>
-  <li>"Next time, read all four answer choices before committing. I jumped at (A) because it 'looked right' and missed that (C) was exactly what the passage said."</li>
-  <li>"Next time, convert the units in the first step. I worked the whole problem in feet and the answer choices were in inches."</li>
-</ul>
-<p>What to avoid:</p>
-<ul>
-  <li><strong>Don't just restate the right answer.</strong> "The answer is C" doesn't help you next time. <em>Why</em> you didn't pick C is what matters.</li>
-  <li><strong>Don't be vague.</strong> "I was careless" doesn't teach you anything. "I assumed 'few' and 'a few' meant the same thing" does.</li>
-  <li><strong>Don't apologize to yourself in the note.</strong> You're writing for your future self in the middle of a study session — they need the lesson, not the guilt.</li>
-</ul>
-        `,
-      },
-      {
-        heading: 'The two Error Log views',
-        html: `
-<p>The same entries are surfaced in two places, with different layouts depending on what you're trying to do:</p>
-<ul>
-  <li><strong><a href="/notes/error-log">/notes/error-log</a> — Manage view.</strong> A tight list of every entry, with three counters at the top: total entries, how many you're still getting wrong on your latest attempt, and how many you've fixed (latest attempt correct). Each row shows the question metadata plus your note; click <strong>Show question</strong> to expand the original question inline. This is the view to scan when you want to ask "what's currently in my Error Log?" or "which entries should I clean up or update?"</li>
-  <li><strong><a href="/review/error-log">/review/error-log</a> — Study view.</strong> Each entry is fully expanded with the question stem, answer choices, official rationale, and your note all visible at once. Best for a sit-down review session — make a coffee, open this view, and read top to bottom for half an hour a few days before your test.</li>
-</ul>
-<p>Both views combine SAT and ACT entries into a single unified list, sorted newest first.</p>
-        `,
-      },
-      {
-        heading: 'How to use it in your routine',
-        html: `
-<p>The Error Log compounds over time — its value grows as you build the habit of contributing to it and re-reading it. Some patterns that work:</p>
-<ul>
-  <li><strong>Contribute in real time.</strong> Write the entry the moment you reveal the answer, while your reasoning is fresh. If you wait a day, you'll forget what you were thinking.</li>
-  <li><strong>Re-read weekly.</strong> Once a week (review day is perfect), open <a href="/review/error-log">/review/error-log</a> and read your most recent entries. You're looking for <em>patterns</em>: the same trap showing up again, the same kind of careless slip, the same content gap leaking through.</li>
-  <li><strong>Promote patterns into focused practice.</strong> When you notice a pattern ("I keep falling for absolute-value sign errors"), spend the next Practice session on that exact thing. The Error Log is most useful when it changes what you study next.</li>
-  <li><strong>Skim it the night before a practice test.</strong> Not to cram, but to put your most common mistakes back at the top of your mind. Ten minutes is plenty.</li>
-</ul>
-        `,
-      },
-    ],
-  },
-  {
-    slug: 'flashcards',
-    title: 'Flashcards',
-    blurb: 'For terms, formulas, and rules — anything you need to remember on demand.',
-    summary: 'Flashcards are for the small, atomic stuff: one fact per card, drilled into long-term memory through spaced repetition. This guide covers how the mastery system works, when to reach for a flashcard vs a Note, how to write cards that actually teach you something, and how to fit a few minutes of card review into your day.',
-    icon: FlashcardsIcon, palette: 'pink',
-    order: 7,
-    sections: [
-      {
-        heading: 'What flashcards are good for',
-        html: `
-<p>Flashcards are best at one thing: turning a small piece of information into something you can recall instantly under test pressure. Use them when the lesson is atomic — a single fact, term, formula, or rule that you need to know cold.</p>
-<p>Great flashcard material:</p>
-<ul>
-  <li>Vocabulary words and their definitions (especially the SAT vocab that shows up in Words in Context questions).</li>
-  <li>Math formulas you need to recall without thinking — the quadratic formula, area of a trapezoid, exponent rules.</li>
-  <li>Grammar rules with one clean takeaway — "use 'whom' as the object of a verb or preposition."</li>
-  <li>Common SAT/ACT conventions — the order of operations on Roman-numeral questions, what "least possible value" implies for the answer choices.</li>
-</ul>
-<p>Not great flashcard material:</p>
-<ul>
-  <li>Multi-step procedures (use a <a href="/help/notes">Note</a> instead — flashcards can't carry diagrams or worked examples well).</li>
-  <li>"How to think about" a topic — that's a Note, not a card.</li>
-  <li>Words with multiple shades of meaning that depend on context — better captured as a Note with example sentences.</li>
-  <li>Process mistakes you want to stop making — those belong in the <a href="/help/error-log">Error Log</a>, where they appear next to the question that taught you the lesson.</li>
-</ul>
-        `,
-      },
-      {
-        heading: 'How the mastery system works',
-        html: `
-<p>Each card carries a <strong>mastery score from 0 to 5</strong>. Brand-new cards start at 0; correctly answering a card during review raises its mastery, missing it lowers it. The review picker weights cards by mastery — the lower your mastery on a card, the more often it'll come up.</p>
-<p>What this means in practice: you don't have to manage which cards to drill. Just review the set and let the system surface the ones you don't know yet. Cards you've mastered will still appear occasionally so the memory stays fresh, but they won't dominate your time.</p>
-<p>The Flashcards page shows an <strong>average mastery</strong> for each set as a percentage. It's a useful at-a-glance signal: a set sitting at 30% needs more reps; a set at 90% is mostly maintenance and you might be better off spending time on a different set.</p>
-        `,
-      },
-      {
-        heading: 'Your sets and the default sets',
-        html: `
-<p>Open <a href="/notes/flashcards">/notes/flashcards</a> and you'll see two kinds of sets:</p>
-<ul>
-  <li><strong>Default sets</strong> — vocabulary and formula sets Studyworks ships with, available to every student. Good starting point for vocab review even before you start making your own cards.</li>
-  <li><strong>Your sets</strong> — sets you create yourself, private to your account.</li>
-</ul>
-<p>For each set, you'll see two actions: <strong>Manage</strong> (add, edit, or delete cards) and <strong>Review</strong> (start a review session — the mastery-weighted picker chooses which cards to show).</p>
-        `,
-      },
-      {
-        heading: 'How to write a good flashcard',
-        html: `
-<p>The single most common flashcard mistake is putting too much on one card. The point of a card is to test recall of one specific thing; bigger cards are harder to remember <em>and</em> harder to actually drill, because you can't tell whether you got "most of it right" or not.</p>
-<p>Rules of thumb:</p>
-<ul>
-  <li><strong>One fact per card.</strong> "What does 'ephemeral' mean?" is a card. "Tell me about vocabulary" is not.</li>
-  <li><strong>Make the front genuinely need the back.</strong> If the front of the card is enough to answer itself, the card teaches nothing. "When semicolons are used" is too easy; "Joining two independent clauses without a conjunction requires which punctuation?" is testable.</li>
-  <li><strong>Phrase the front as a question or a prompt</strong>, not a label. Pulls your brain into recall mode instead of pattern-matching mode.</li>
-  <li><strong>For vocabulary, add an example sentence on the back.</strong> The definition tells you what the word means; an example sentence shows you how it actually behaves.</li>
-  <li><strong>For formulas, write the front as a situation, not the formula itself.</strong> "Area of a trapezoid" is fine, but "You're given the two parallel sides and the height of a trapezoid; how do you find the area?" trains the recall you actually need on the test.</li>
-</ul>
-        `,
-      },
-      {
-        heading: 'Fitting flashcards into your routine',
-        html: `
-<p>Flashcards work best in short, frequent bursts — much better than one long session per week. Five minutes on the bus, ten minutes between classes, a few minutes before bed: that's the rhythm.</p>
-<p>A workable pattern:</p>
-<ul>
-  <li><strong>Once a week — set creation.</strong> Make new cards from the vocab and formulas you collected in your Practice sessions and Notes that week. Aim for 5-10 new cards per session; resist the urge to mass-import a 500-word list (you won't actually drill them all).</li>
-  <li><strong>Most days — short review.</strong> Five to ten minutes on the set you're currently building mastery on. The mastery system handles which cards you see; you just hit Review.</li>
-  <li><strong>Before a practice test or the real test.</strong> A few minutes of formula review on test morning is genuinely useful — it loads the formulas into immediate recall while the test is in front of you.</li>
-</ul>
-<p>One small thing: don't skip a card just because you're not sure. Make a guess, then check. Guessing-and-checking trains recall in a way that "I'll come back to this" never does.</p>
-        `,
-      },
-    ],
-  },
-  {
-    slug: 'review',
-    title: 'The Review Tab',
-    blurb: 'Common Errors, Weak Queue, and the pre-test study surface.',
-    summary: 'The Review tab is a focused study surface for the days before your test. It gives you two active drill tools — Common Errors and the Weak Questions drill — plus links into long-form re-reading of your saved Notes, Error Log, and Flashcards. Lean on it most heavily in the final two weeks before test day.',
-    icon: ReviewIcon, palette: 'cyan',
-    order: 8,
-    sections: [
-      {
-        heading: 'What the Review tab is for',
-        html: `
-<p>The <a href="/review">Review</a> tab is a study surface for the days before your test. "I have ten days; what should I do?" — the Review tab answers that. It has two kinds of tools.</p>
-        `,
-      },
-      {
-        heading: 'Active drills',
-        html: `
-<p>These generate fresh questions for you to work through, picked by what you most need.</p>
-<ul>
-  <li><strong>Common Errors</strong> — the three skills where you've missed the most questions. One click starts a drill on that skill, only on questions you haven't already mastered. The fastest way to fix patterns.</li>
-  <li><strong>Weak questions drill</strong> — a mixed session pulling from your weakest questions across every skill. Uses a priority formula (recently wrong + historically bad + stale + hard). Run this once or twice a week.</li>
-</ul>
-<p>If you've taken both SAT and ACT questions, separate SAT and ACT versions of both tools appear.</p>
-        `,
-      },
-      {
-        heading: 'Review materials',
-        html: `
-<p>Three cards link into the passive-review surfaces:</p>
-<ul>
-  <li><strong>Review notes</strong> → <a href="/review/notes">/review/notes</a> — long-scroll reader of every note you've written. Filter by subject / domain / skill.</li>
-  <li><strong>Review error log</strong> → <a href="/review/error-log">/review/error-log</a> — every Error Log entry with its full question expanded inline. The single best reading material you have.</li>
-  <li><strong>Review flashcards</strong> → <a href="/notes/flashcards">/notes/flashcards</a> — your sets and the default vocab sets.</li>
-</ul>
-        `,
-      },
-      {
-        heading: 'Test countdown',
-        html: `
-<p>If you've set a test date on your profile, a countdown shows at the top of the Review tab. As the date approaches, lean harder on active drills and your Error Log; new question practice becomes less useful in the final week.</p>
-        `,
-      },
-    ],
-  },
-  {
-    slug: 'assignments',
-    title: 'Assignments',
-    blurb: 'When a tutor has assigned specific work.',
-    summary: 'If you have a tutor on Studyworks, Assignments is where their work for you shows up — pending at the top, completed below. This guide covers how to work through one and what to do if you don\'t have a tutor (short version: skip this article and use the self-study routine).',
-    icon: ClipboardCheckIcon, palette: 'navy',
-    order: 9,
-    sections: [
-      {
-        heading: 'Do you have a tutor on the platform?',
-        html: `
-<p>If yes, your tutor can assign you specific work — a question set, a practice test, or a reading task. Assignments show up on your Dashboard (top, next to the banner) and in the <a href="/assignments">Assignments</a> tab.</p>
-<p>Studying on your own? You won't have assignments — that's expected. Skip this article and use <a href="/help/study-routine">Study Routine (No Tutor)</a>.</p>
-        `,
-      },
-      {
-        heading: 'Pending vs Completed',
-        html: `
-<p>The Assignments page has two sections:</p>
-<ul>
-  <li><strong>Pending</strong> — assignments still open, newest first. Each row shows the assignment type, title, due date (red if overdue), and your tutor's name. For question-set assignments, a progress bar shows how much you've done.</li>
-  <li><strong>Completed</strong> — finished assignments with your final accuracy. Question-set assignments also show a difficulty breakdown (Easy / Medium / Hard accuracy).</li>
-</ul>
-        `,
-      },
-      {
-        heading: 'How to work through one',
-        html: `
-<ul>
-  <li>Click into the assignment from the Dashboard or the Assignments tab.</li>
-  <li>Complete the questions in order — your tutor chose the sequence for a reason.</li>
-  <li>Progress saves automatically; you can leave and come back.</li>
-  <li>When you finish, the assignment moves to <strong>Completed</strong> and your tutor can see your results.</li>
-</ul>
+<p>Open <a href="/performance">Performance</a> when you want to look more closely at your attempts. SAT results are organized around Math and Reading and Writing skills. ACT results have their own breakdown by section and category when there's ACT practice to report. Look for a topic you've tried several times and still find difficult, then use it to choose your next practice session.</p>
+<p>Color can help you spot where to look, but check the number of attempts too. One missed question may give you something useful to review. A series of similar misses tells you more about which skill to work on next.</p>
         `,
       },
     ],
   },
   {
     slug: 'study-routine',
-    title: 'Study Routine (No Tutor)',
-    blurb: 'A concrete weekly plan you can run on your own.',
-    summary: 'A concrete weekly routine for students prepping without a tutor: four practice days, one review day, two rest days, with a full-length practice test every other Saturday. This article walks through what a normal weekday looks like, what to do on review day, how to handle practice-test weeks, and the most common mistakes to avoid.',
-    icon: CalendarIcon, palette: 'success',
-    order: 10,
+    topic: 'getting-started',
+    title: 'Build a Study Routine',
+    blurb: 'Make a weekly plan you can follow on your own, with time for questions, review, and practice tests.',
+    icon: CalendarIcon, palette: 'violet',
     sections: [
       {
-        heading: 'The plan, in one paragraph',
+        id: 'short-study-session',
+        heading: 'Start with a study session you can repeat',
         html: `
-<p>Each week: <strong>practice four days, review one day, rest two days</strong>. Take a full <a href="/practice/tests">practice test</a> every other Saturday. Adjust which skills you target after each test. Stick with this for 8 to 12 weeks and you'll see 100+ points of real improvement on the SAT — not because the plan is magic, but because consistent, focused practice with proper review is what actually works. The rest of this article walks through what each kind of day looks like.</p>
+<p>On a day when you have about 30 minutes, try spending five minutes reviewing something you've saved, 15 minutes on a small set of questions, and the last ten minutes reading explanations. If a question takes most of the session, use the remaining time to figure out where you got stuck and write down what you'll try next time.</p>
+<p>Choose a topic narrow enough to practice more than once. For the SAT, you might work on transitions in Reading and Writing or linear equations in Math. For the ACT, try punctuation in English, a geometry category in Math, or a short Reading passage where you have to find evidence for each answer. If you're taking Science, set aside time to practice reading tables and graphs in context.</p>
         `,
       },
       {
-        heading: 'A normal weekday (about 30 minutes)',
+        id: 'weekly-review',
+        heading: 'Set aside time to review each week',
         html: `
-<p>Aim for thirty solid minutes most days. Even on busy days, ten focused minutes is better than zero — momentum is the thing that compounds.</p>
-<ol>
-  <li><strong>5 minutes — pick a skill.</strong> If your plan has a task due, that's your skill — skip to step two. Otherwise open <a href="/performance">Performance</a> and look at the segmented bars in the performance grid. Find a red or yellow segment in a skill that matters for your target score, and that's what you're working on today. Don't overthink it; whichever weak skill catches your eye is fine.</li>
-  <li><strong>20 minutes — practice it.</strong> Open <a href="/practice/start">Practice Questions</a>, click just that skill, and run a 10-15 question session. Take the questions seriously: read carefully, work them out, then hit <strong>Reveal Answer</strong>. After each question — including the ones you got right — pause and ask: <em>what did I learn?</em>
-    <ul>
-      <li>If the answer is "a term, formula, or rule I didn't know" → add a Flashcard.</li>
-      <li>If the answer is "I made a process mistake or fell for a trap" → write an Error Log entry.</li>
-      <li>If the answer is "a concept I need to actually learn" → start a Note.</li>
-      <li>If the answer is "I knew it, just made sure" → great, move on.</li>
-    </ul>
-    Most questions need nothing; the ones that do, capture in the right place. The <a href="/help/notes">Notes guide</a> has more examples if you're not sure which to pick.
-  </li>
-  <li><strong>5 minutes — flashcards.</strong> A quick burst at <a href="/notes/flashcards">/notes/flashcards</a> — vocab or formulas, whichever is weaker right now. Five minutes a day adds up to real fluency over a couple of months.</li>
-</ol>
+<p>Read a few recent <a href="/review/error-log">Error Log entries</a> and look for a decision that keeps tripping you up, such as answering for the wrong quantity or choosing an answer before checking the passage. Pick one pattern and work through a small question set that lets you practice a different approach.</p>
+<p>If you keep forgetting a formula or rule, make a <a href="/help/flashcards">flashcard</a> and try recalling it again a few days later. If you need to see how several steps fit together, write a <a href="/help/notes">note</a> with an example you can work through again.</p>
         `,
       },
       {
-        heading: 'Review day (about 45 minutes)',
+        id: 'practice-test-weeks',
+        heading: 'Use practice tests as checkpoints',
         html: `
-<p>Once a week — Sunday tends to work well — trade a practice day for a review day. The goal here isn't to do new questions; it's to lock in what you've already seen.</p>
-<ol>
-  <li><strong>20 minutes — Weak Queue drill.</strong> Open <a href="/review">Review</a> and run the <strong>Weak questions drill</strong>. The platform picks the questions you most need to see again, based on what you've recently gotten wrong, what you historically struggle with, and what's gone stale. This is the closest thing to a personal tutor on the platform — let it do its job.</li>
-  <li><strong>15 minutes — re-read your Error Log.</strong> Open <a href="/review/error-log">/review/error-log</a> and skim through your last week or two of entries. You're looking for patterns: the same trap showing up multiple times, the same kind of careless slip, the same content gap. Patterns are gold — once you can name a habit, you can change it.</li>
-  <li><strong>10 minutes — focused fix.</strong> Pick one pattern you noticed and run a small, targeted Practice session on the exact skill or question type involved. Five well-chosen questions on the thing you keep missing beats fifty random ones.</li>
-</ol>
-<p>If you also want to spend a few minutes on Notes you've written — re-reading a topic summary, working through a Note on a complex concept — Sunday is a good time for that too.</p>
+<p>Take a timed <a href="/help/practice-tests">practice test</a> early enough to give yourself a starting score and time to act on it. Between tests, work on a few patterns from your results. When you can set aside time for both the test and the review, take another under similar conditions and see what changed.</p>
+<p>On the SAT, pay attention to how you manage time within each module. On the ACT, practice working at the pace of each section. For passage-based sections, notice how you divide your time between reading and answering. Use a format and calculator setup that match your test day as closely as possible.</p>
+        `,
+      },
+    ],
+  },
+  {
+    slug: 'assignments',
+    topic: 'getting-started',
+    title: 'Assignments',
+    blurb: 'Find work from your tutor, check due dates, and return to completed assignments.',
+    icon: ClipboardCheckIcon, palette: 'navy',
+    sections: [
+      {
+        id: 'find-assignments',
+        heading: 'Find work from your tutor',
+        html: `
+<p>If you're linked to a tutor on Studyworks, open <a href="/assignments">Assignments</a> to see the work they've shared with you. You may also see assigned work in the Tasks list on your Dashboard. Check the due date and any instructions before opening the assignment so you know how much time to set aside.</p>
+<p>If you expected to see work and the list is empty, check with your tutor that they've assigned it to the account you're using. If you're studying independently, you can follow the <a href="/help/study-routine">study routine</a> and choose your own practice questions.</p>
         `,
       },
       {
-        heading: 'Practice test weeks',
+        id: 'completed-work',
+        heading: 'Return to completed work',
         html: `
-<p>Every other Saturday (or whichever day you can carve out three uninterrupted hours), take a full <a href="/practice/tests">practice test</a>. Two-week spacing is the sweet spot: often enough to see real movement, not so often that you burn out or stop processing what you've learned in between.</p>
-<ol>
-  <li><strong>Take it under real conditions.</strong> Quiet room, no phone, on-screen Desmos only, no peeking at your notes. The point is to find out where you actually stand — making it easier on yourself just hides the things you'd most want to know about.</li>
-  <li><strong>Review it thoroughly within 24 hours.</strong> Plan at least an hour for review, ideally the same day. Go through every question you got wrong <em>and every question you guessed on but got right</em>. For each one, decide what you learned and capture it with the right tool — flashcard, Error Log entry, or Note. This step is where the actual point-gain comes from.</li>
-  <li><strong>Update your focus areas.</strong> Whatever showed up as a weakness becomes one of your priority skills for the next two weeks. Then start the weekly cycle again.</li>
-</ol>
+<p>When you finish an assignment, you can find it under <strong>Completed</strong>. Open the results to review the questions and see where you'd like more practice. Your tutor can also see your results, so you can bring a specific question or an explanation you found confusing to your next session.</p>
+        `,
+      },
+    ],
+  },
+  {
+    slug: 'practice',
+    topic: 'practice-and-scores',
+    title: 'Practice Sessions',
+    blurb: 'Build a question set for the SAT or ACT, then use the answer explanations to decide what to practice next.',
+    summary: 'Practice Questions lets you choose what to work on and go at your own pace. This guide explains which filters are available for each test, how to use the tools during a session, and where to find your results afterward.',
+    icon: PracticeIcon, palette: 'math',
+    sections: [
+      {
+        id: 'sat-practice',
+        heading: 'Choose SAT practice questions',
+        html: `
+<p>Open <a href="/practice/start?test=sat">SAT Practice Questions</a> and choose topics from <strong>Math</strong>, <strong>Reading and Writing</strong>, or both. Expand a domain to see its individual skills. If you want to understand why you keep missing a certain kind of question, start with one skill so the explanations are easier to compare.</p>
+<p>Choose Easy, Medium, or Hard, or use the <strong>Score band</strong> filter to narrow the set further when bands are available. See <a href="/help/scores#sat-difficulty">SAT difficulty and Score Bands</a> for how to read these labels.</p>
         `,
       },
       {
-        heading: 'Common mistakes self-studiers make',
+        id: 'act-practice',
+        heading: 'Choose ACT practice questions',
         html: `
-<p>You're going to make some of these — everyone does. Knowing what they are in advance just makes it easier to course-correct.</p>
-<ul>
-  <li><strong>Doing too many new questions, too little review.</strong> New questions feel productive — you can count them, you can see the bar fill up — but the actual learning happens when you sit with the questions you already attempted. Aim for at least a quarter of your time spent on review.</li>
-  <li><strong>Capturing nothing after a missed question.</strong> A wrong answer you don't reflect on is a wrong answer you'll repeat. Capture each one — but with the right tool (see above), not by reflex into the Error Log.</li>
-  <li><strong>Putting everything in the Error Log.</strong> The opposite mistake. If the lesson is "I didn't know what 'cogent' means," that's a flashcard, not an Error Log entry. Each tool gets less useful when you misuse it.</li>
-  <li><strong>Not timing yourself.</strong> The SAT is partly a time-management test. Untimed practice quietly teaches you to be slow. Even if you don't run a strict timer, glance at the clock and notice when you're taking too long.</li>
-  <li><strong>Avoiding hard questions.</strong> If everything you do is Easy or Medium, your score won't move past the mid-range. Push into Hard at least a third of the time — yes, it feels uncomfortable; that's the part doing the work.</li>
-  <li><strong>Skipping the rationale when you got it right.</strong> Right-for-the-wrong-reason is the most common silent score leak. It takes thirty seconds to read; do it.</li>
-  <li><strong>Cramming.</strong> Thirty minutes a day for eight weeks beats four hours on a Sunday. Your brain consolidates between sessions, not during them.</li>
-</ul>
-<p>If you fall off the routine for a few days, just start again. Nobody who improved meaningfully on this test did it with a perfect streak — they did it by getting back to the work after the breaks.</p>
+<p>Open <a href="/practice/start?test=act">ACT Practice Questions</a> and choose from the available categories in <strong>English</strong>, <strong>Math</strong>, <strong>Reading</strong>, and <strong>Science</strong>. You might start with a punctuation category in English or a set of Science questions that ask you to interpret data. Passage-based questions can share the same text or figures, so give yourself time to read them before judging your pace.</p>
+<p>The ACT difficulty filter runs from <strong>1 · Easiest</strong> to <strong>5 · Hardest</strong>. You can work from easier to harder questions or choose <strong>Test-form order</strong> to keep questions in their original order within each form. If you see very few matches, clear the difficulty filter to include questions without a rating. See <a href="/help/scores#act-difficulty">ACT difficulty levels</a> for ways to use the scale.</p>
+        `,
+      },
+      {
+        id: 'during-practice',
+        heading: 'Work through your set',
+        html: `
+<p>Choose how many questions you want and the order you'd like to see them in. Check the number of matching questions before you start. Once you're in the session, use the numbered question buttons to move around and mark questions you want to revisit.</p>
+<p>After submitting an answer, reveal the explanation and compare it with your own reasoning. If you guessed correctly, it's worth taking a moment to see why the answer works. For math questions, use the calculator when it helps you check an idea. The SAT Math reference sheet is also available during SAT Math practice.</p>
+<p>If you need to leave, return to Practice Questions with the same test selected and look for <strong>Resume</strong> while the session is still in progress.</p>
+        `,
+      },
+      {
+        id: 'practice-history',
+        heading: 'Review your results',
+        html: `
+<p>Open <strong>History</strong> from Practice Questions to return to a completed set. Look for questions you missed, flagged, or answered with a guess. If you notice a pattern, save it in your <a href="/help/error-log">Error Log</a> or make a note that explains the method you want to try again.</p>
+        `,
+      },
+    ],
+  },
+  {
+    slug: 'practice-tests',
+    topic: 'practice-and-scores',
+    title: 'Practice Tests',
+    blurb: 'Set up an SAT or ACT practice test, choose timing that fits your goal, and make time to review afterward.',
+    summary: 'Use Practice Tests to see how your skills hold up when you work through a timed test or a whole section. This guide explains how the SAT and ACT options differ and how to use your results to plan your next study sessions.',
+    icon: TestIcon, palette: 'violet',
+    sections: [
+      {
+        id: 'sat-practice-test',
+        heading: 'Set up an SAT practice test',
+        html: `
+<p>Open <a href="/practice/tests?test=sat">SAT Practice Tests</a> and choose a test. Select both sections when you want a total score, or choose one section if you'd like to focus on it. Each section has two timed modules. On an adaptive test, your performance in the first module determines which second module you see in that section.</p>
+<p>Check the timing setting before you start. During Math, get comfortable with the built-in Desmos calculator and the reference sheet, since those tools are available on the digital SAT. If you'll bring a handheld calculator, check College Board's policy and practice with the model you plan to use.</p>
+<p>Read more about the format and permitted tools in <a href="https://satsuite.collegeboard.org/scores/what-scores-mean/how-scores-calculated">College Board's guide to SAT scoring</a> and its <a href="https://satsuite.collegeboard.org/sat/what-to-bring-do/calculator-policy">SAT calculator policy</a>.</p>
+        `,
+      },
+      {
+        id: 'act-practice-test',
+        heading: 'Set up an ACT practice test',
+        html: `
+<p>Open <a href="/practice/tests?test=act">ACT Practice Tests</a> and choose an <strong>Enhanced ACT</strong> form to practice for the current format. Older <strong>Classic ACT</strong> forms can give you more questions to work through at the older pace. Select English, Math, and Reading for an Enhanced ACT Composite, and include Science if you're taking it. If you’re testing through school, check which sections your school is offering. You can also choose a single section on Studyworks when you want to practice its timing or work through it untimed.</p>
+<p>The ACT uses fixed sections, so your answers don't change what you'll see in the next section. Check the time shown on each section before you start. A released form may have fewer questions than the test you take on test day because it leaves out unscored questions. Studyworks shortens the section time in that case so you can practice at the same pace per question.</p>
+<p>Plan to use a calculator only in Math. ACT allows approved handheld calculators, and its national online test provides Desmos in Math. Practice with the option you'll use on test day. See <a href="https://www.act.org/content/act/en/products-and-services/the-act/test-preparation/act-exam-sections-and-structure.html">ACT's guide to the exam sections</a> and the <a href="https://www.act.org/content/act/en/products-and-services/the-act/test-day/calculator-policy.html">ACT calculator policy</a> for details.</p>
+        `,
+      },
+      {
+        id: 'during-the-test',
+        heading: 'Make the timing count',
+        html: `
+<p>For a starting score you can compare with later attempts, set aside enough time to take the test in one sitting, with the breaks and timing you'll have on test day. Put away your notes and phone. If you're stuck, mark the question and return to it if time remains in that module or section.</p>
+<p>If you need to leave, return to Practice Tests with the same test selected and look for <strong>Continue</strong>. The clock keeps running once a timed module or section has started, so plan any interruptions between modules or sections if you can.</p>
+        `,
+      },
+      {
+        id: 'after-the-test',
+        heading: 'Turn your results into a study plan',
+        html: `
+<p>Open your results from <strong>History</strong> with the same test selected. Alongside your scores, revisit questions you missed or marked and any correct answers you reached by guessing. Ask whether you needed more time, misunderstood what the question was asking, or needed to learn a concept before trying again.</p>
+<p>Choose one or two patterns to work on before the next test. You might try a set of SAT questions on the same skill or a timed ACT section to see whether a different pacing strategy helps. When you compare results, look at attempts with similar timing and section choices. The <a href="/help/scores">scores guide</a> explains what each result can tell you.</p>
         `,
       },
     ],
   },
   {
     slug: 'scores',
+    topic: 'practice-and-scores',
     title: 'Understanding Your Scores',
-    blurb: 'What difficulty levels, score bands, and practice-test scores actually mean.',
-    summary: 'A plain-English guide to how the SAT and ACT are scored, what difficulty levels and Score Bands (1-7) actually mean, why the digital SAT\'s second module adapts, and how to set a realistic goal based on your baseline.',
+    blurb: 'Understand SAT and ACT scores, read each test’s difficulty labels, and use your results to choose what to study.',
     icon: GoalIcon, palette: 'gold',
-    order: 11,
     sections: [
       {
-        heading: 'The digital SAT score, in plain English',
+        id: 'sat-scoring',
+        heading: 'How the SAT is scored',
         html: `
-<p>Two section scores, each from 200 to 800: <strong>Reading &amp; Writing</strong> and <strong>Math</strong>. Total: 400-1600. The College Board releases your real score about two weeks after the test.</p>
-<p>Your practice-test score here is the best estimate available of what you'd get on the real thing today.</p>
+<p>The digital SAT has two section scores, one for Reading and Writing and one for Math. Each ranges from 200 to 800, and the two scores add up to a total of 400 to 1600. If you take just one section on Studyworks, use its section score to see how that part of your practice is going.</p>
+<p>On the official SAT, each section starts with a module containing a mix of easier and harder questions. Your performance in that module determines the overall difficulty of the second one, and your section score is based on your work across both modules. Two students can answer the same number of questions correctly and earn different scores, so a practice percentage by itself can't tell you what your scaled score will be.</p>
+<p>Learn more in <a href="https://satsuite.collegeboard.org/scores/what-scores-mean/how-scores-calculated">College Board's explanation of how SAT scores are calculated</a>.</p>
         `,
       },
       {
-        heading: 'The ACT score',
+        id: 'sat-difficulty',
+        heading: 'SAT difficulty and Score Bands',
         html: `
-<p>Four section scores (English, Math, Reading, Science), each from 1 to 36. The composite is the average. The Studyworks ACT practice test scores the same way.</p>
+<p>In SAT Practice Questions, <strong>Easy</strong>, <strong>Medium</strong>, and <strong>Hard</strong> let you choose a broad level of challenge. When a question has a <strong>Score Band</strong>, Studyworks can use its rating from 1 to 7 to make a finer distinction. Bands 1 to 3 are Easy, 4 to 5 are Medium, and 6 to 7 are Hard.</p>
+<p>Use the bands to vary the difficulty of the questions you practice. For example, if you've been getting most Band 4 questions on linear equations right and can explain your steps, try Band 5 questions on the same skill and see where you need more time. The band describes the question. To gauge your current SAT score, use a timed practice test.</p>
         `,
       },
       {
-        heading: 'Score Bands (1-7) on questions',
+        id: 'act-scoring',
+        heading: 'How the ACT is scored',
         html: `
-<p>Every question on the platform is labeled with both a public difficulty (Easy / Medium / Hard) and a more precise <strong>Score Band</strong> from 1 to 7. Think of the Score Band as a finer-grained ruler for the same thing the Easy/Medium/Hard labels measure — they map to each other directly:</p>
+<p>ACT section scores range from 1 to 36. On the current <strong>Enhanced ACT</strong>, your Composite is the rounded average of your English, Math, and Reading scores. If you take Science, it has a separate section score. Older <strong>Classic ACT</strong> practice forms in Studyworks use the earlier Composite calculation, which averages English, Math, Reading, and Science.</p>
+<p>Studyworks follows the rule for the form you chose and needs a scaled score in each required section to show a Composite. If you practiced Math by itself or your form doesn't have a score conversion, use the number correct and the question explanations to decide what to study next.</p>
+<p>See <a href="https://www.act.org/content/act/en/products-and-services/the-act-postsecondary-professionals/scores/multi-scores.html">ACT's explanation of Composite scores</a> for more about the current calculation.</p>
+        `,
+      },
+      {
+        id: 'act-difficulty',
+        heading: 'ACT difficulty levels',
+        html: `
+<p>In ACT Practice Questions, Studyworks uses five difficulty levels, from <strong>1 · Easiest</strong> to <strong>5 · Hardest</strong>. These are Studyworks estimates for choosing practice questions. Your 1-to-36 score comes from your performance on a test with a score conversion.</p>
+<p>For many imported Math questions, Studyworks estimates difficulty from where the question appears in its section. For some Science forms, the estimate also takes into account where the question appears within its passage. Some questions, including many in English and Reading, have no difficulty rating. Leave the filter clear to include those questions.</p>
+<p>Start with a level where you can explain most of your answers, then try the next level in the same category. In ACT Math, for example, you might be comfortable finding a missing length in a single step but need more practice when a problem combines several relationships. In Reading or Science, a question may feel harder when you have to connect information from more than one part of a passage or figure.</p>
+<p>Once you're comfortable working through questions at your own pace, try a mixed set or a timed section. That will help you see whether a question is taking longer because of the concept, the amount of reading, or a step in your approach. If you're stuck during a timed section, leave yourself time for the questions you can answer and come back if time remains. See <a href="https://www.act.org/content/act/en/products-and-services/the-act/test-preparation/act-exam-sections-and-structure.html">ACT's advice for working through a section</a>.</p>
+        `,
+      },
+      {
+        id: 'accuracy-and-goals',
+        heading: 'Use accuracy and test scores together',
+        html: `
+<p>Accuracy tells you how many of the questions you attempted were correct. Check the number and difficulty of those questions when you compare results. Getting three out of four right gives you a reason to keep exploring a skill. Getting most questions right across several sessions tells you more about what you can do consistently.</p>
+<p>For a score goal, start with a timed practice test in the format you'll take and look at the section results. Choose a specific next step, such as leaving time to revisit marked SAT Math questions or finishing each ACT English passage within the time you've set aside. After another comparable test, use the new results to decide whether that step is helping.</p>
+<p>Treat your Studyworks scores as practice estimates. Looking at several comparable attempts gives you a better sense of your usual performance than choosing your highest score.</p>
+        `,
+      },
+    ],
+  },
+  {
+    slug: 'notes',
+    topic: 'review-and-study-tools',
+    title: 'Notes, Error Log, and Flashcards',
+    blurb: 'Choose a place to save a worked example, a mistake you want to avoid, or a fact you want to remember.',
+    summary: 'Notes keeps your study materials together. You can write a note to explain a concept, use the Error Log to remember what you want to do differently, or make a flashcard for a fact you want to recall quickly.',
+    icon: NotesIcon, palette: 'amber',
+    sections: [
+      {
+        id: 'choose-a-tool',
+        heading: 'Choose what to save',
+        html: `
+<p>When you review a question, ask what you'd like to remember when you see a similar one. The answer can help you choose a tool.</p>
 <ul>
-  <li><strong>Bands 1-3 — Easy.</strong> Foundational questions most students get right regardless of their target score. Band 1 is the gentlest end of Easy; Band 3 is Easy bordering on Medium.</li>
-  <li><strong>Bands 4-5 — Medium.</strong> The core of the test. Band 4 questions differentiate students in the 500-600 range; Band 5 starts to separate 600-700 scorers.</li>
-  <li><strong>Bands 6-7 — Hard.</strong> The high-end questions. Band 6 is what separates 650-750 scorers; Band 7 is the hardest material on the test, where 750+ scorers earn their last points.</li>
-</ul>
-<p>Why bother with the finer scale? Because "Medium" is a wide bucket. A Band 4 question and a Band 5 question can both be labeled Medium, but they behave very differently for your prep: getting consistent on Band 4 will pull a mid-500s student into the 600s, while drilling Band 5 is what carries that same student from the 600s into the 700s. If you can, target the Band right at the edge of where you currently get most questions right — that's the zone where new points get won.</p>
-<p>Quick guide: aiming for 700? Get reliably right on Bands 1-5. Aiming for 750+? You need to be solid on Band 6 and start landing some Band 7.</p>
-        `,
-      },
-      {
-        heading: 'Why the second module adapts',
-        html: `
-<p>The digital SAT is <strong>section-adaptive</strong>. How you do on the first R&amp;W module determines whether the second module is easier or harder. Same for Math.</p>
-<p>This means: <strong>missing easy questions in Module 1 hurts more than missing hard questions in Module 2</strong>, because it caps the difficulty (and the score ceiling) of Module 2. On a practice test, prioritize getting the easy and medium questions right before grinding on the hardest ones.</p>
-        `,
-      },
-      {
-        heading: 'Setting a realistic goal',
-        html: `
-<ul>
-  <li>Take a baseline practice test before setting any goal.</li>
-  <li>A realistic 3-month goal: <strong>baseline + 100 to 150 points</strong> on the SAT with consistent work.</li>
-  <li>Bigger jumps (200+) are possible but usually need 4-6 months of serious time.</li>
-  <li>Your <em>best</em> practice-test composite is a closer match to real-test performance than your average. The Practice tests page shows both.</li>
+  <li>Use a <a href="/help/flashcards">flashcard</a> when you want to recall one thing, such as how to find the area of a trapezoid or what a word means in a sentence.</li>
+  <li>Use the <a href="/help/error-log">Error Log</a> when you want to remember a decision you could make differently. If you solved for <em>x</em> when the question asked for <em>2x</em>, write down how you'll check the requested quantity next time.</li>
+  <li>Write a <strong>note</strong> when you need room to explain how ideas fit together. A worked example that shows how to set up two equations from a word problem is a good place to start.</li>
 </ul>
         `,
       },
       {
-        heading: 'What accuracy percentages mean',
+        id: 'write-a-note',
+        heading: 'Write a note you can learn from later',
         html: `
-<p>On the Dashboard Performance grid, accuracy on each skill is a percentage. Rough guide:</p>
-<ul>
-  <li><strong>Below 50%:</strong> you don't have this skill yet. Slow down, read rationales, look up the concept, write a Note.</li>
-  <li><strong>50-80%:</strong> you know it but inconsistently. More reps will fix this.</li>
-  <li><strong>80%+:</strong> solid. Maintain with periodic review.</li>
-</ul>
+<p>Open <a href="/notes">Notes</a> and choose <strong>New note</strong>. Give it a title you can recognize later and explain the idea in words that make sense to you. You can format your text, add math notation, and give the note tags that make it easier to find again.</p>
+<p>Try adding an example with a short explanation of why each step works. When you come back to it, cover the solution and see how far you can get on your own. <a href="/review/notes">Review notes</a> gives you a place to read through what you've saved.</p>
+        `,
+      },
+    ],
+  },
+  {
+    slug: 'error-log',
+    topic: 'review-and-study-tools',
+    title: 'Error Log',
+    blurb: 'Keep track of mistakes you want to learn from and give yourself a clear next step for similar questions.',
+    summary: 'The Error Log keeps your reflection alongside the question that prompted it. Use this guide to write a helpful entry and find patterns when you review.',
+    icon: SearchIcon, palette: 'danger',
+    sections: [
+      {
+        id: 'write-an-entry',
+        heading: 'Write an entry for your future self',
+        html: `
+<p>When you review an answer and see a step you want to change, open <strong>Error Log</strong> on the question and write what happened while you can still remember your reasoning. The entry is linked to that question, so you can come back to it and add to your original note as you learn more.</p>
+<p>Give yourself something specific to try. For example, “I calculated the answer in feet and missed that the choices were in inches. Next time, I'll underline the requested unit before I start.” For a passage question, you might write, “I'll find a sentence in the passage that supports my choice before moving on.”</p>
+        `,
+      },
+      {
+        id: 'find-your-entries',
+        heading: 'Find and review your entries',
+        html: `
+<p>Open the <a href="/notes/error-log">Error Log under Notes</a> to browse or update your entries. Use <strong>Show question</strong> when you want to expand an item and see the question it came from.</p>
+<p>Open <a href="/review/error-log">Review error log</a> when you have time to study. It puts your entries alongside the expanded questions and explanations. Both places show your saved entries from the SAT and ACT.</p>
+        `,
+      },
+      {
+        id: 'notice-patterns',
+        heading: 'Use patterns to choose your next questions',
+        html: `
+<p>Read a few entries at the end of the week and look for a habit that shows up more than once. If you keep picking an answer that sounds reasonable before checking the passage, make a small Reading practice set and deliberately point to the evidence for each answer. Add a follow-up to the entry if that approach helped.</p>
+        `,
+      },
+    ],
+  },
+  {
+    slug: 'flashcards',
+    topic: 'review-and-study-tools',
+    title: 'Flashcards',
+    blurb: 'Make cards for facts, formulas, and rules, and come back to the ones you’re still learning.',
+    summary: 'Flashcards help you practice recalling one idea at a time. Learn how to write a card, review a set, and use the mastery rating to tell which cards need another look.',
+    icon: FlashcardsIcon, palette: 'pink',
+    sections: [
+      {
+        id: 'make-a-card',
+        heading: 'Write a card you can answer from memory',
+        html: `
+<p>Put a short question on the front and one idea on the back. For a geometry card, you might ask, “How do I find the area when I know the two parallel sides and the height of a trapezoid?” Put the formula and a brief reminder of what each measurement represents on the back.</p>
+<p>For a word or grammar rule, add an example sentence so you can see how it works in context. If you want to include several steps or compare different cases, give yourself more room in a <a href="/help/notes">note</a>.</p>
+        `,
+      },
+      {
+        id: 'review-a-set',
+        heading: 'Open a set and review a few cards',
+        html: `
+<p>Open <a href="/notes/flashcards">Flashcards</a> to find starter sets and any sets you've created. Choose <strong>Manage</strong> to add or edit cards, or <strong>Review</strong> to go through a set. Take a moment to say or write your answer before you flip each card, then rate how well you remembered it.</p>
+<p>Your ratings help Studyworks give more attention to cards you’re still learning. The mastery percentage on a set summarizes how familiar its cards are based on your reviews. A short session a few days later gives you another chance to recall the ideas after you've had time away from them.</p>
+        `,
+      },
+    ],
+  },
+  {
+    slug: 'review',
+    topic: 'review-and-study-tools',
+    title: 'Review Your Practice',
+    blurb: 'Return to questions you found difficult or spend time with your saved study materials.',
+    summary: 'Review brings together questions you’ve struggled with and the notes, Error Log entries, and flashcards you’ve saved. It’s a good place to start when you want to revisit what you’ve learned.',
+    icon: ReviewIcon, palette: 'cyan',
+    sections: [
+      {
+        id: 'review-drills',
+        heading: 'Retry questions or work on a recurring mistake',
+        html: `
+<p>On <a href="/review">Review</a>, <strong>Common Errors</strong> points to SAT skills or ACT categories you've struggled with. Choose one to focus on if you'd like to work through similar questions together. If you'd prefer a mix, start a drill from the weak questions list, which draws on your past attempts.</p>
+<p>Review can show separate SAT and ACT recommendations when you have enough practice history for both. If you're new and the page has little to suggest, work through a few questions and return once you've had a chance to review your answers.</p>
+        `,
+      },
+      {
+        id: 'review-materials',
+        heading: 'Study the material you’ve saved',
+        html: `
+<p>Choose <a href="/review/notes">Review notes</a> to read a worked example again, <a href="/review/error-log">Review error log</a> to revisit mistakes alongside the original questions, or <a href="/notes/flashcards">Review flashcards</a> to see what you can recall without looking. On a busy day, pick one of these and give it a few minutes.</p>
         `,
       },
     ],
   },
   {
     slug: 'billing',
-    title: 'Billing & Subscription',
-    blurb: 'Plans, your free trial, and exactly how to cancel.',
+    topic: 'account-and-support',
+    title: 'Billing and Subscription',
+    blurb: 'Find your trial dates, update your payment details, or cancel your subscription.',
     icon: ReportIcon, palette: 'slate',
-    order: 10,
     sections: [
       {
-        heading: 'Plans and the free trial',
+        id: 'trial-and-plans',
+        heading: 'Check your plan and trial dates',
         html: `
-<p>Studyworks runs on a simple subscription. Every new account starts with a <strong>7-day free trial</strong> — full access, no charge until the trial ends. You can cancel any time during the trial and you won't be billed.</p>
-<ul>
-  <li><strong>Student plan</strong> — $12.99 / month. Everything in the platform: unlimited Practice sessions, full-length adaptive practice tests, Notes, Error Log, Flashcards, and Review drills.</li>
-  <li><strong>Teacher plan</strong> — $29.99 / month. Adds tutor tools (rosters, assignments, student reports). Not what most students need.</li>
-</ul>
-<p>If your tutor or school works with Studyworks Prep directly, your account may be <strong>sponsored</strong> — full access at no cost, no subscription required. You'll see "Exempt" on your <a href="/account/billing">Billing</a> page if that applies to you.</p>
+<p>Open <a href="/account/billing">Billing</a> to check your subscription status and the dates that apply to your account. If you're in the seven-day free trial, the page shows when it ends. You can see current plan options on the <a href="/subscribe">subscription page</a>.</p>
+<p>If your account is sponsored through a tutor or school that works with Studyworks, Billing may show <strong>Exempt</strong>. That means your access is covered and you can use Studyworks without a separate subscription.</p>
         `,
       },
       {
-        heading: 'How to cancel your subscription',
+        id: 'cancel-subscription',
+        heading: 'Cancel a trial or subscription',
         html: `
-<p>Cancellation is self-serve and takes about 30 seconds. You won't lose anything you've created — your notes, error log entries, and practice history stay on your account in case you come back later.</p>
-<ol>
-  <li>Sign in and open <a href="/account/billing"><strong>Billing</strong></a> from your account menu (or go directly to <a href="/account/billing">/account/billing</a>).</li>
-  <li>Click the <strong>Manage Subscription</strong> button. This opens our secure billing portal (hosted by Stripe).</li>
-  <li>In the portal, click <strong>Cancel plan</strong>. You'll see a confirmation showing the date your access ends.</li>
-</ol>
-<p>You keep full access until the end of the period you've already paid for. After that, your account becomes read-only — you can still sign in to view your notes and history, but practice sessions and tests are paused until you resubscribe.</p>
-<p>To cancel <em>during the free trial</em>, follow the same steps. As long as you cancel before the trial end date shown on the Billing page, no charge is made.</p>
+<p>From <a href="/account/billing">Billing</a>, choose <strong>Manage Subscription</strong> to open the billing portal. Select <strong>Cancel plan</strong> and follow the prompts until the portal confirms the change. It will show the date your access ends.</p>
+<p>To avoid a charge during a free trial, complete cancellation before the trial ends. If you've already paid for a period, you can keep using your subscription through the end of that period.</p>
         `,
       },
       {
-        heading: 'Updating payment, switching plans, or resubscribing',
+        id: 'payment-and-support',
+        heading: 'Update payment details or ask about a charge',
         html: `
-<p>The same <strong>Manage Subscription</strong> button handles all of these:</p>
-<ul>
-  <li><strong>Update card</strong> — replace the card on file, fix an expiration, change billing address.</li>
-  <li><strong>Switch plans</strong> — student to teacher or back. Prorating is automatic.</li>
-  <li><strong>Resume after canceling</strong> — if you're still inside your paid period, the portal lets you reactivate without a new trial. If your access has lapsed, go to <a href="/subscribe">/subscribe</a> and pick a plan again.</li>
-</ul>
-<p>Invoices and payment receipts are emailed to you automatically. You can also download them from inside the billing portal.</p>
-        `,
-      },
-      {
-        heading: "If something looks wrong",
-        html: `
-<p>A few things to check first if your account status seems off:</p>
-<ul>
-  <li>The <a href="/account/billing">Billing</a> page shows your live status — plan, next billing date, trial end date, and whether a cancellation is scheduled.</li>
-  <li>If you just signed up and the page says "No active subscription," your trial may not have finished setting up — refresh, or sign out and back in.</li>
-  <li>If you canceled but were still charged, check the date: cancellations stop the <em>next</em> charge, they don't refund the current period automatically.</li>
-</ul>
-<p>For anything else — billing questions, accidental charges, account issues — email <a href="mailto:support@studyworksprep.com">support@studyworksprep.com</a> and we'll sort it out.</p>
+<p>Use <strong>Manage Subscription</strong> to update your card or billing details, see the plan options available for your account, or find a receipt. If your subscription has ended, open the <a href="/subscribe">subscription page</a> to see your options for restarting it.</p>
+<p>If your account status or a charge looks different from what you expected, email <a href="mailto:support@studyworksprep.com">support@studyworksprep.com</a> and tell us what you see on the Billing page.</p>
         `,
       },
     ],
   },
   {
     slug: 'faq',
-    title: 'FAQ & Troubleshooting',
-    blurb: 'Common questions and what to do when something looks wrong.',
-    summary: 'Quick answers to the questions that come up most often: a question marked wrong, the calculator not loading, an interrupted practice test, missing assignments, and a few common what-should-I-do-now questions about pacing and when to take the real SAT.',
+    topic: 'account-and-support',
+    title: 'Common Questions and Troubleshooting',
+    blurb: 'Get help with interrupted tests, unexpected answers, calculator problems, and missing assignments.',
     icon: HelpIcon, palette: 'navy',
-    order: 12,
     sections: [
       {
-        heading: 'I think a question is marked wrong',
+        id: 'question-marked-wrong',
+        heading: 'What if a question seems to be marked incorrectly?',
         html: `
-<p>It happens occasionally. If you're sure the platform is calling your correct answer wrong (or vice versa), contact your tutor — they can flag it for the admin team. Include the question.</p>
+<p>Check the answer explanation first, especially if the question asks for a different quantity or for evidence from a specific part of a passage. If you still think the answer is incorrect, contact your tutor or <a href="mailto:support@studyworksprep.com">Studyworks support</a>. Include the question code if it's visible and describe the answer you expected, so we can find the question and check it.</p>
         `,
       },
       {
-        heading: 'The Desmos calculator isn\'t loading',
+        id: 'calculator-not-loading',
+        heading: 'Why isn’t the calculator loading?',
         html: `
-<p>Refresh the page. If it still doesn't appear, try a different browser (Chrome, Edge, and Safari all work). Desmos needs JavaScript and a recent browser version.</p>
+<p>The built-in calculator is a Math tool. If you're on a Math question and it isn't opening, try refreshing the page or using a current version of your browser. If it still doesn't load, tell support what browser you're using and where you were practicing.</p>
         `,
       },
       {
-        heading: 'My practice test got interrupted',
+        id: 'interrupted-test',
+        heading: 'How do I get back to an interrupted practice test?',
         html: `
-<p>Practice tests save progress per module. Open the Practice tests page — the in-progress attempt will be at the top with a <strong>Resume</strong> button. Your answers up to the point of interruption are saved.</p>
+<p>Return to <a href="/practice/tests">Practice Tests</a>, select SAT or ACT to match the attempt, and look for <strong>Continue</strong> if it's still in progress. The timer keeps running after a timed module or section begins, so check the remaining time when you get back. See the <a href="/help/practice-tests">Practice Tests guide</a> for the timing options available on each test.</p>
         `,
       },
       {
-        heading: 'I don\'t see any assignments',
+        id: 'missing-assignments',
+        heading: 'Where are my tutor’s assignments?',
         html: `
-<p>If you don't have a tutor on the platform, you won't have assignments — that's normal. Use the <a href="/help/study-routine">self-study routine</a> instead.</p>
-<p>If you do have a tutor and still see nothing, they may not have assigned anything yet, or your account may not be linked to theirs. Ask them.</p>
+<p>If your tutor has assigned work and you can't find it, check that you're signed in with the same account your tutor linked. See the <a href="/help/assignments">Assignments guide</a> for where to look for new and completed work.</p>
         `,
       },
       {
-        heading: 'How many questions should I do per day?',
+        id: 'switch-tests',
+        heading: 'How do I switch between the SAT and ACT?',
         html: `
-<p>10-20 is the sweet spot for a school-day. More than 40 in one sitting is usually counter-productive — you stop processing the rationales. Better to spread practice across more days.</p>
+<p>Use the SAT and ACT switch in the sidebar. On a phone, tap <strong>More</strong> to open it. Your choice applies when you open <a href="/practice/start">Practice Questions</a> or <a href="/practice/tests">Practice Tests</a>. Each test has its own question filters and test options. Your saved study materials are available from <a href="/notes">Notes</a>.</p>
         `,
       },
       {
-        heading: 'What\'s the difference between /notes/error-log and /review/error-log?',
+        id: 'how-much-practice',
+        heading: 'How many questions should I do in one session?',
         html: `
-<p>Same data, different layouts. <a href="/notes/error-log">/notes/error-log</a> is a manage view — a tight list you can skim and filter. <a href="/review/error-log">/review/error-log</a> is a study view — each entry is fully expanded with the question, options, rationale, and your note inline, so you can sit down and read.</p>
-<p>Use the manage view for "what did I get wrong this week"; use the review view for "let me re-learn this stuff before my test."</p>
+<p>Start with a set small enough to leave time for the explanations. Ten questions might work well on a busy day, while one ACT Reading passage or a few longer Math problems might be plenty on another. The <a href="/help/study-routine#short-study-session">study routine guide</a> gives you a way to divide your time.</p>
         `,
       },
       {
-        heading: 'Can I take the ACT here too?',
+        id: 'cancel-my-subscription',
+        heading: 'Where do I cancel my subscription?',
         html: `
-<p>Yes. Switch between SAT and ACT using the toggle at the top of the Practice and Practice tests pages. Your Notes and Error Log are unified — entries from both tests live in the same place.</p>
+<p>Open <a href="/account/billing">Billing</a> and choose <strong>Manage Subscription</strong> to reach the billing portal. The <a href="/help/billing#cancel-subscription">cancellation guide</a> explains how to finish the process and check when your access ends.</p>
         `,
       },
       {
-        heading: 'When should I take the real SAT?',
+        id: 'contact-support',
+        heading: 'How can I get more help?',
         html: `
-<p>Take your first attempt at least 3 months after starting serious prep. Plan for two attempts — most students improve on the second sitting. Junior spring + senior fall is the standard rhythm.</p>
-        `,
-      },
-      {
-        heading: 'How do I cancel my subscription?',
-        html: `
-<p>Open <a href="/account/billing">Billing</a>, click <strong>Manage Subscription</strong>, and choose <strong>Cancel plan</strong> in the portal. You keep access through the end of the period you've already paid for. Full walkthrough — including how to cancel during the free trial without being charged — in the <a href="/help/billing">Billing &amp; Subscription</a> article.</p>
-        `,
-      },
-      {
-        heading: 'Still stuck?',
-        html: `
-<p>If you have a tutor, message them. Otherwise, email <a href="mailto:support@studyworksprep.com">support@studyworksprep.com</a> — we read every message.</p>
+<p>For questions about what to study next, your tutor can help you choose where to start. If you're having trouble with your account or something on the site, email <a href="mailto:support@studyworksprep.com">support@studyworksprep.com</a> and tell us what you were trying to do.</p>
         `,
       },
     ],
@@ -812,9 +490,12 @@ export const HELP_ARTICLES = [
 ];
 
 export function getArticle(slug) {
-  return HELP_ARTICLES.find((a) => a.slug === slug) || null;
+  return HELP_ARTICLES.find((article) => article.slug === slug) ?? null;
 }
 
-export function getOrderedArticles() {
-  return [...HELP_ARTICLES].sort((a, b) => a.order - b.order);
+export function getHelpTopics() {
+  return HELP_TOPICS.map((topic) => ({
+    ...topic,
+    articles: HELP_ARTICLES.filter((article) => article.topic === topic.id),
+  }));
 }
