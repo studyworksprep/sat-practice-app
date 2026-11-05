@@ -199,7 +199,7 @@ export function StartInteractiveAct({
         description="Filter the ACT question bank by section and topic, then start. The summary updates as you choose."
         actions={
           <>
-            <HelpButton slug="practice" />
+            <HelpButton slug="practice" sectionId="act-practice" />
             <a href={historyHref} className={s.headerBtn}>History</a>
           </>
         }

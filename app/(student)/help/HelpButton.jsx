@@ -22,10 +22,11 @@ import s from './HelpButton.module.css';
  * @param {object} props
  * @param {string} props.slug — slug of the Help article to summarize.
  *   The button text is derived from the article unless overridden.
+ * @param {string} [props.sectionId] — optional section to open in the article.
  * @param {string} [props.label] — optional override for the button label.
  *   Defaults to "Help" so the button stays short next to a page title.
  */
-export function HelpButton({ slug, label = 'Help' }) {
+export function HelpButton({ slug, sectionId, label = 'Help' }) {
   const [open, setOpen] = useState(false);
   const article = getArticle(slug);
 
@@ -48,7 +49,8 @@ export function HelpButton({ slug, label = 'Help' }) {
     );
   }
 
-  const articleHref = `/help/${article.slug}`;
+  const section = article.sections.find(({ id }) => id === sectionId);
+  const articleHref = `/help/${article.slug}${section ? `#${section.id}` : ''}`;
   const summary = article.summary || article.blurb;
 
   return (
