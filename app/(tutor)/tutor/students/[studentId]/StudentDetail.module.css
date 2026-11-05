@@ -70,60 +70,10 @@
 
 /* ---------- Snapshot card ---------- */
 
-.snapshotCard {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: var(--s4);
-}
-
-.snapshotHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s2);
-  margin-bottom: var(--s3);
-  padding-bottom: var(--s3);
-  border-bottom: 1px solid var(--border);
-}
-
 .snapshotHeadActions {
   display: flex;
   align-items: center;
   gap: var(--s3);
-}
-
-.snapshotTitle {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--fg1);
-}
-
-.snapshotCols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--s4) var(--s5);
-}
-
-@media (max-width: 640px) {
-  .snapshotCols { grid-template-columns: 1fr; }
-}
-
-.snapshotCol {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s2);
-  min-width: 0;
-}
-
-.snapshotColTitle {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--fg3);
 }
 
 .snapshotList {
@@ -597,18 +547,6 @@
    header strip carrying the section label and the "More
    statistics" deep-link. Same shape as the student dashboard;
    only the surrounding header differs. */
-.perfSection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s2);
-}
-
-.perfHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--s3);
-}
 
 .perfGrid {
   display: grid;
@@ -1183,3 +1121,91 @@
 }
 .foundationBtn:disabled { opacity: 0.6; cursor: default; }
 .foundationUndo { border-color: transparent; color: var(--fg3); }
+
+/* ---------- Header actions ---------- */
+
+.headerBtn,
+.headerBtnPrimary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.headerBtn { background: var(--bg-white); color: var(--fg1); border: 1px solid var(--border-strong); }
+.headerBtn:hover { background: var(--color-slate-50); color: var(--fg1); }
+.headerBtnPrimary { background: var(--color-navy-900); color: #fff; border: 1px solid var(--color-navy-900); }
+.headerBtnPrimary:hover { background: var(--color-app-primary-hover, #243b53); color: #fff; }
+
+/* ---------- Snapshot tiles ---------- */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--s3);
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.tileLabel { font-size: 12px; font-weight: 600; color: var(--fg2); }
+.tileValue { font-size: 24px; font-weight: 700; line-height: 1.15; color: var(--color-navy-900); }
+.tileGood { color: var(--color-success-fg, #047857); }
+.tileBad { color: var(--color-diff-hard-fg); }
+.tileSub { font-size: 12px; color: var(--fg3); overflow-wrap: anywhere; }
+
+/* ---------- Tabs ---------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: none;
+}
+.tab {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--fg2);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--fg1); }
+.tab[aria-current="page"] { color: var(--color-navy-900); border-bottom-color: var(--color-gold-500, #d4a72c); }
+.tab:focus-visible { outline: 2px solid var(--color-app-accent); outline-offset: -2px; }
+
+/* ---------- Card bits used by the tabs ---------- */
+
+.cardTitle { margin: 0; font-family: var(--font-serif); font-size: 19px; font-weight: 700; color: var(--color-navy-900); }
+.cardSub { margin: 0 0 var(--s3); font-size: 13px; color: var(--fg3); }
+.cardFoot { margin: var(--s3) 0 0; font-size: 12px; color: var(--fg3); }
+.overviewSkills { display: grid; gap: var(--s3); }
+.noteDate { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--fg3); }
+.noteBody { margin: 0; font-size: 14px; line-height: 1.55; color: var(--fg1); white-space: pre-wrap; }
+.glanceList { margin: 0; display: grid; gap: 8px; }
+.glanceList > div { display: flex; justify-content: space-between; gap: var(--s3); font-size: 14px; }
+.glanceList dt { color: var(--fg2); }
+.glanceList dd { margin: 0; font-weight: 600; }
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: var(--s4);
+  align-items: start;
+}
