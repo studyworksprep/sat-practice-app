@@ -413,8 +413,10 @@ const ADMIN_SECTIONS: readonly NavSection[] = [
  *  tutorLinksForRole's role semantics. */
 export function tutorSectionsForRole(role: string): NavSection[] {
   if (role === 'admin') return [...ADMIN_SECTIONS];
+  // Team leads the manager sidebar: checking on the teachers is the
+  // manager's first job, their own teaching second.
   if (role === 'manager') {
-    return [...TEACHER_SECTIONS, { title: 'Team', links: [MANAGER_TEACHERS, MANAGER_TAGGING] }];
+    return [{ title: 'Team', links: [MANAGER_TEACHERS, MANAGER_TAGGING] }, ...TEACHER_SECTIONS];
   }
   return [...TEACHER_SECTIONS];
 }

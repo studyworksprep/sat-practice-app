@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
 import { loadTeamEffectiveness } from '@/lib/tutor/load-team-effectiveness';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Teachers.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -146,15 +147,11 @@ export default async function TutorTeachersPage() {
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div className={s.eyebrow}>Manager · Team</div>
-        <h1 className={s.h1}>Your teachers</h1>
-        <p className={s.sub}>
-          The tutors on your team and how their rosters are doing
-          this week. Click a teacher for their full roster + the
-          assignments they&apos;ve sent.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Team · Teachers"
+        title="Your teachers"
+        description="The tutors on your team and how their rosters are doing this week. Open a teacher for their full roster and the assignments they've sent."
+      />
 
       {team.teacherCount === 0 ? (
         <div className={s.emptyCard}>

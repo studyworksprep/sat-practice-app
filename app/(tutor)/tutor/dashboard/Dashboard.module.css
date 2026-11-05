@@ -15,52 +15,7 @@
   color: var(--fg1);
 }
 
-/* ---------- Banner ---------- */
-
-.banner {
-  background: linear-gradient(135deg, #fff 0%, #f7f4ec 100%);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 26px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s5);
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
-}
-
-.banner::before {
-  content: "";
-  position: absolute;
-  left: 28px;
-  top: 26px;
-  width: 40px;
-  height: 3px;
-  background: var(--color-gold-500);
-  border-radius: 2px;
-}
-
-.bannerText { display: grid; gap: 6px; padding-top: 14px; min-width: 0; }
-
-.bannerGreeting {
-  font-family: var(--font-serif);
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.1;
-  color: var(--color-navy-900);
-}
-
-.bannerSub { color: var(--fg3); font-size: 13px; }
-
-.bannerActions {
-  display: flex;
-  gap: var(--s2);
-  align-items: center;
-  flex-shrink: 0;
-}
+/* ---------- Buttons ---------- */
 
 .btnPrimary,
 .btnSecondary {
@@ -96,17 +51,6 @@
 .btnSecondary:hover { background: var(--color-slate-50); }
 
 /* ---------- Header ---------- */
-
-.header { padding: var(--s2) 0; }
-
-.eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-gold-700);
-  margin-bottom: var(--s1);
-}
 
 .h1 {
   font-family: var(--font-serif);
@@ -219,7 +163,6 @@
 }
 .searchClear:hover { color: var(--fg1); }
 
-
 .searchStatus { margin-top: 10px; font-size: 12px; color: var(--fg3); }
 .searchResults { list-style: none; padding: 0; margin: 8px 0 0; }
 .searchResult { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--fg1); text-decoration: none; }
@@ -248,8 +191,6 @@
 .moreActivity { margin-top: 12px; }
 @media (max-width: 600px) {
   .container { padding: 16px; }
-  .banner { padding: 20px; flex-wrap: wrap; gap: 16px; }
-  .bannerGreeting { font-size: 26px; }
   .card { padding: 16px; min-width: 0; }
   .cardHeader { flex-wrap: wrap; }
   .searchWrap { min-width: 0; }
