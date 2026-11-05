@@ -21,6 +21,7 @@ import { InboxIcon } from '@/lib/ui/icons';
 import { formatShortDate } from '@/lib/formatters';
 import { NewPackForm } from './NewPackForm';
 import { DeletePackButton } from './DeletePackButton';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './LessonPacksList.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -67,15 +68,11 @@ export default async function TutorLessonPacksPage() {
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div className={s.headerLeft}>
-          <div className={s.eyebrow}>Tutor · Lesson packs</div>
-          <h1 className={s.h1}>Your lesson packs</h1>
-          <p className={s.sub}>
-            Curate reusable question sets for your lessons. Each pack is private to you.
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Assign · Lesson packs"
+        title="Your lesson packs"
+        description="Curate reusable question sets for your lessons. Each pack is private to you."
+      />
 
       <NewPackForm />
 

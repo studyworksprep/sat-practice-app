@@ -16,6 +16,7 @@ import { fetchAll } from '@/lib/supabase/fetchAll';
 import { buildWeakQueue } from '@/lib/practice/weak-queue';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
 import { formatDate, isPastDueDate } from '@/lib/formatters';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './TrainingDashboard.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -49,7 +50,7 @@ export default async function TutorTrainingDashboardPage() {
   ] = await Promise.all([
     supabase
       .from('profiles')
-      .select('first_name, sat_test_date, target_sat_score')
+      .select('sat_test_date, target_sat_score')
       .eq('id', user.id)
       .maybeSingle(),
     supabase
@@ -286,9 +287,6 @@ export default async function TutorTrainingDashboardPage() {
     .sort((a, b) => Date.parse(b.finishedAt) - Date.parse(a.finishedAt))
     .slice(0, RECENT_FINISHED_CAP);
 
-  const greeting = fullProfile?.first_name
-    ? `Welcome back, ${fullProfile.first_name}.`
-    : 'Welcome back.';
   const resumeInfo = activeSession && Array.isArray(activeSession.question_ids) && activeSession.question_ids.length > 0
     ? {
         sessionId: activeSession.id,
@@ -305,17 +303,11 @@ export default async function TutorTrainingDashboardPage() {
 
   return (
     <main className={s.container}>
-      <section className={s.banner}>
-        <div className={s.bannerText}>
-          <div className={s.bannerEyebrow}>Train</div>
-          <div className={s.bannerGreeting}>{greeting}</div>
-          <div className={s.bannerSub}>
-            Your own SAT practice and review — kept separate from the
-            rosters you teach. Drill weak spots, take a full-length test,
-            or work through what your manager assigned.
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Train"
+        title="Your training"
+        description="Your own SAT practice and review — kept separate from the rosters you teach. Drill weak spots, take a full-length test, or work through what your manager assigned."
+      />
 
       {fullProfile?.sat_test_date && (
         <StudyCountdown

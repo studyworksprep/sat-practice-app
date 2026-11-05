@@ -11,6 +11,7 @@ import { SAT_TAXONOMY } from '@/lib/practice/sat-taxonomy';
 import { loadTechniqueCatalog } from '@/lib/practice/load-question-techniques';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { Button } from '@/lib/ui/Button';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Tagging.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -106,26 +107,26 @@ export default async function TaggingIndexPage() {
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div>
-          <div className={s.eyebrow}>{profile.role === 'admin' ? 'Admin' : 'Team'} · Tag questions</div>
-          <h1 className={s.h1}>Tag questions by technique</h1>
-          <p className={s.sub}>
+      <PageHeader
+        eyebrow={`${profile.role === 'admin' ? 'Admin' : 'Team'} · Tag questions`}
+        title="Tag questions by technique"
+        description={
+          <>
             Pick a unit and, question by question, tick the technique(s) you would use to solve it. The
             practice set after a lesson draws the questions tagged with that lesson&rsquo;s techniques first.
             A technique that applies to a whole skill is set on the technique itself and needs no tagging here.
-          </p>
-          <p className={s.sub}>
-            <strong>{grandTagged.toLocaleString()}</strong> of {grandTotal.toLocaleString()} questions tagged ·{' '}
-            {(techniques ?? []).length} technique{(techniques ?? []).length === 1 ? '' : 's'} in the catalog
-            {profile.role === 'admin' ? (
-              <>
-                {' '}· <Link href="/admin/techniques">Techniques</Link> · <Link href="/admin/curriculum">Curriculum</Link>
-              </>
-            ) : null}
-          </p>
-        </div>
-      </header>
+          </>
+        }
+      />
+      <p className={s.sub}>
+        <strong>{grandTagged.toLocaleString()}</strong> of {grandTotal.toLocaleString()} questions tagged ·{' '}
+        {(techniques ?? []).length} technique{(techniques ?? []).length === 1 ? '' : 's'} in the catalog
+        {profile.role === 'admin' ? (
+          <>
+            {' '}· <Link href="/admin/techniques">Techniques</Link> · <Link href="/admin/curriculum">Curriculum</Link>
+          </>
+        ) : null}
+      </p>
 
       {(techniques ?? []).length === 0 && (
         <p className={s.help}>
