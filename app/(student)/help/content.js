@@ -36,7 +36,7 @@ export const HELP_ARTICLES = [
         html: `
 <ul>
   <li><a href="/dashboard">Dashboard</a> shows what's coming up and gives you a way back to the work you've recently finished.</li>
-  <li><a href="/practice/start">Practice Questions</a> lets you choose the topics you want to work on. Open <a href="/practice/tests">Practice Tests</a> when you want to work through a test or a section under timed conditions. Use the SAT and ACT switch in the sidebar to choose which test you want to work on.</li>
+  <li><a href="/practice/start">Practice Questions</a> lets you choose the topics you want to work on. Open <a href="/practice/tests">Practice Tests</a> when you want to work through a test or a section under timed conditions. Use the SAT and ACT switch in the sidebar, or at the top of the screen on a phone, to choose which test you want to work on.</li>
   <li><a href="/performance">Performance</a> helps you spot the skills or categories that deserve another look. <a href="/learn">Lessons</a> gives you a place to learn a topic before trying more questions.</li>
   <li><a href="/notes">Notes</a> is where you keep your notes, Error Log entries, and flashcards. Open <a href="/review">Review</a> to study what you've saved or retry questions you've found difficult.</li>
   <li><a href="/assignments">Assignments</a> appears when you're linked to a tutor. It gives you a place to check what they've assigned and revisit completed work.</li>
@@ -461,7 +461,7 @@ export const HELP_ARTICLES = [
         id: 'switch-tests',
         heading: 'How do I switch between the SAT and ACT?',
         html: `
-<p>Use the SAT and ACT switch in the sidebar. On a phone, tap <strong>More</strong> to open it. Your choice applies when you open <a href="/practice/start">Practice Questions</a> or <a href="/practice/tests">Practice Tests</a>. Each test has its own question filters and test options. Your saved study materials are available from <a href="/notes">Notes</a>.</p>
+<p>Use the SAT and ACT switch in the sidebar. On a phone, you'll find it at the top of the screen. Your choice applies when you open <a href="/practice/start">Practice Questions</a> or <a href="/practice/tests">Practice Tests</a>. Each test has its own question filters and test options. Your saved study materials are available from <a href="/notes">Notes</a>.</p>
         `,
       },
       {
