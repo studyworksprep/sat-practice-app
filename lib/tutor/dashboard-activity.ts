@@ -4,6 +4,8 @@ export type ActivityKind = 'assignment' | 'practice' | 'test';
 export type DashboardActivity = {
   id: string; studentId: string; kind: ActivityKind; title: string;
   status: string; detail: string; at: string; href: string; action: string;
+  /** Practice sessions only: the set's size and whether it is still open. */
+  questionCount?: number; open?: boolean;
 };
 export type ActivitySession = {
   id: string; user_id: string; test_type: string; status: string;
@@ -65,6 +67,7 @@ export function buildDashboardActivity({ studentIds, sessions, completions, assi
       title: assignment?.title ?? `${session.test_type === 'act' ? 'ACT' : 'SAT'} practice`,
       status: session.status === 'completed' ? (assignmentId ? 'Session completed' : 'Completed') : 'In progress',
       detail: `${count}-question set`, at: session.last_activity_at,
+      questionCount: count, open: session.status !== 'completed',
       href: assignmentId ? `/tutor/assignments/${assignmentId}/students/${session.user_id}` : `/tutor/sessions/${session.id}`,
       action: session.status === 'completed' ? 'Review work' : 'View progress' });
   }
@@ -80,4 +83,66 @@ export function buildDashboardActivity({ studentIds, sessions, completions, assi
       at: test.finished_at, href: `/tutor/students/${test.user_id}/tests/${test.id}/results`, action: 'View results' });
   }
   return [...events.values()].sort((a, b) => b.at.localeCompare(a.at) || a.id.localeCompare(b.id));
+}
+
+// ── Recent work, grouped ─────────────────────────────────────────
+// The dashboard shows the feed by day ("Today", "Yesterday", "Mon, Nov
+// 2"), and folds one student's self-guided practice sets on the same day
+// into a single row ("4 practice sets · 3 finished, 1 still open").
+// Assignments and tests stay one row each. `dayOf` maps a timestamp to
+// the viewer's local day key (yyyy-mm-dd), so grouping runs in the
+// browser, where the viewer's timezone is known.
+
+export type RecentWorkRow = DashboardActivity & {
+  /** Practice sets folded into this row (1 for an unfolded row). */
+  sets: number;
+};
+
+export type RecentWorkDay = { day: string; rows: RecentWorkRow[] };
+
+export function groupRecentWork(
+  activities: readonly DashboardActivity[],
+  dayOf: (iso: string) => string,
+): RecentWorkDay[] {
+  const days = new Map<string, RecentWorkRow[]>();
+  const folded = new Map<string, RecentWorkRow & { parts: DashboardActivity[] }>();
+  for (const row of activities) {
+    const day = dayOf(row.at);
+    let list = days.get(day);
+    if (!list) { list = []; days.set(day, list); }
+    if (row.kind !== 'practice') { list.push({ ...row, sets: 1 }); continue; }
+    const key = `${day}|${row.studentId}`;
+    const group = folded.get(key);
+    if (!group) {
+      const first = { ...row, sets: 1, parts: [row] };
+      folded.set(key, first);
+      list.push(first);
+      continue;
+    }
+    group.parts.push(row);
+    group.sets = group.parts.length;
+    if (row.at > group.at) group.at = row.at;
+  }
+  for (const group of folded.values()) {
+    if (group.parts.length < 2) continue;
+    const open = group.parts.filter((p) => p.open).length;
+    const questions = group.parts.reduce((n, p) => n + (p.questionCount ?? 0), 0);
+    group.id = `practice-day:${group.studentId}:${dayOf(group.at)}`;
+    group.title = `${group.parts.length} practice sets`;
+    group.status = open === 0 ? 'All finished' : open === group.parts.length ? 'In progress' : `${group.parts.length - open} finished, ${open} still open`;
+    group.detail = `${questions} questions in all`;
+    group.href = `/tutor/students/${group.studentId}`;
+    group.action = 'Open student';
+  }
+  const out: RecentWorkDay[] = [];
+  for (const [day, rows] of days) {
+    const clean = rows.map((r) => {
+      const rest = { ...r } as RecentWorkRow & { parts?: unknown };
+      delete rest.parts;
+      return rest as RecentWorkRow;
+    });
+    clean.sort((a, b) => b.at.localeCompare(a.at) || a.id.localeCompare(b.id));
+    out.push({ day, rows: clean });
+  }
+  return out.sort((a, b) => b.day.localeCompare(a.day));
 }
