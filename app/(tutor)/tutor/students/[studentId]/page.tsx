@@ -1,1096 +1,164 @@
-// Tutor → individual student detail page. See
-// docs/architecture-plan.md §3.8.
+// Tutor → individual student. See docs/architecture-plan.md §3.8.
 //
-// Shows the student's profile + cohort-style stat row, then their
-// assignments, practice tests, and practice sessions in that
-// order — what a tutor wants to scan before a meeting. RLS on
-// every table uses can_view(), so the page returns 404 if the
-// caller can't see this student.
+//   PageHeader — name, email · school · class, and the three things a
+//     tutor does from here: Study plan, Assign work, Start session.
+//   Five tiles — latest score against the goal, test date, plan,
+//     accuracy, last active (with curriculum coverage).
+//   Tabs (?tab=) — Overview, Assignments, Tests & scores, Practice,
+//     Settings. Plain links, so a tab is shareable and works without
+//     JavaScript; only the selected tab renders.
 //
-// Mostly read-only on the tutor side — mutations live elsewhere
-// (assignments/new for new work; the runner pages for the
-// student themselves). The Server Actions used here sit on small
-// client islands: the practice-history import, registrations and
-// official scores, the step-back switch, and the Foundations
-// card's "covered in session" mark.
+// Data: ./load.ts (one RLS-scoped batch; a student the caller can't
+// see 404s). Mutations sit on small client islands inside the tabs.
 
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
-import { formatCalendarDate, formatDate, formatRelativeShort, isPastDueDate } from '@/lib/formatters';
+import { formatCalendarDate, formatRelativeShort } from '@/lib/formatters';
 import { adherenceSummaryLine, ADHERENCE_LABELS } from '@/lib/plan/adherence';
-import { loadStudentPlanState } from '@/lib/plan/load-plan-state';
-import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
-import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
-import { resolveDetoursEnabled } from '@/lib/practice/detour-preference.mjs';
-import { parseTimeAccommodation } from '@/lib/practice/time-accommodation';
-import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
-import { buildArchiveSummary } from '@/lib/practice/superscore';
-import {
-  buildFoundationRows,
-  foundationSyllabusTitle,
-  loadFoundationLessons,
-  summarizeFoundations,
-} from '@/lib/lesson/foundations';
-import {
-  InboxIcon,
-  PencilIcon,
-  PerformanceIcon,
-  TestIcon,
-} from '@/lib/ui/icons';
-import { IconTile } from '@/lib/ui/IconTile';
-import { DeletePracticeTestButton } from './DeletePracticeTestButton';
-import { EditTargetStartButton } from './EditTargetStartModal';
-import { FoundationsCard } from './FoundationsCard';
-import type { FoundationCardGroup } from './FoundationsCard';
-import { OfficialScoresCard } from './OfficialScoresCard';
-import { ScoreProgressChart } from './ScoreProgressChart';
-import { StepBackOffersCard } from './StepBackOffersCard';
-import { ExtendedTimeCard } from './ExtendedTimeCard';
-import { TestRegistrationsCard } from './TestRegistrationsCard';
-import { UploadBluebookCard } from './UploadBluebookCard';
+import { PageHeader } from '@/lib/ui/PageHeader';
+import { loadStudentDetail, type StudentDetail } from './load';
+import { OverviewTab } from './_tabs/OverviewTab';
+import { AssignmentsTab, PracticeTab } from './_tabs/WorkTabs';
+import { TestsTab } from './_tabs/TestsTab';
+import { SettingsTab } from './_tabs/SettingsTab';
 import s from './StudentDetail.module.css';
-
-import type { ViewRow, SubjectCode } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-const RECENT_SESSIONS_LIMIT = 10;
-const RECENT_TESTS_LIMIT    = 10;
-
-// Readable names for assignments_v2.assignment_type. The pill is
-// uppercased by CSS, so these read as QUESTIONS / PRACTICE TEST.
-const ASSIGNMENT_TYPE_LABEL: Record<string, string> = {
-  questions: 'Questions',
-  practice_test: 'Practice test',
-  lesson: 'Lesson',
-  lesson_pack: 'Lesson pack',
-};
+const TABS = ['overview', 'assignments', 'tests', 'practice', 'settings'] as const;
+type Tab = (typeof TABS)[number];
 
 interface PageProps {
   params: Promise<{ studentId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }
 
-export default async function TutorStudentDetailPage({ params }: PageProps) {
+export default async function TutorStudentDetailPage({ params, searchParams }: PageProps) {
   const { studentId } = await params;
+  const sp = (await searchParams) ?? {};
+  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? '') ? (sp.tab as Tab) : 'overview';
   const { user, profile, supabase } = await requireUser();
 
-  // Role gate. The (tutor) layout already enforces this; the
-  // belt-and-suspenders guard here keeps direct-URL hits safe if
-  // the layout is ever bypassed.
-  if (profile.role === 'student' || profile.role === 'practice') {
-    redirect('/dashboard');
-  }
-  if (!['teacher', 'manager', 'admin'].includes(profile.role)) {
-    redirect('/');
-  }
+  // The (tutor) layout already gates roles; this keeps direct hits safe.
+  if (profile.role === 'student' || profile.role === 'practice') redirect('/dashboard');
+  if (!['teacher', 'manager', 'admin'].includes(profile.role)) redirect('/');
 
-  // Parallel reads. RLS uses can_view() on each table, so an
-  // empty result on the stats row means the caller can't see this
-  // student → 404. The dashboard aggregate runs as the same RLS-
-  // scoped client, so the tutor only sees their student's data.
-  const [
-    { data: studentRows, error: rpcErr },
-    { data: profileRow },
-    { data: assignmentJunctions },
-    { data: testAttemptRows },
-    { data: completedTestRowsForScore },
-    { data: actTestAttemptRows },
-    { data: sessionRows },
-    { data: registrations },
-    { data: officialScores },
-    { data: publishedTests },
-    aggregate,
-    aggregateAct,
-    planState,
-    { data: coverageRows },
-    { data: tutorLinks },
-    foundationLessons,
-    { data: foundationProgressRows },
-  ] = await Promise.all([
-    supabase
-      .from('student_practice_stats')
-      .select('*')
-      .eq('user_id', studentId),
-    supabase
-      .from('profiles')
-      .select('created_at, start_date, practice_detours_enabled, time_accommodation')
-      .eq('id', studentId)
-      .maybeSingle(),
-    // Assignments inbox for this student. Includes both SAT and
-    // ACT — the parent assignment row carries its own test_type so
-    // each tile can show an ACT/SAT badge. Was SAT-only until ACT
-    // sessions started landing for students without their tutors
-    // seeing them.
-    supabase
-      .from('assignment_students_v2')
-      .select(`
-        completed_at,
-        assignment:assignments_v2 (
-          id, assignment_type, title, due_date, archived_at, deleted_at, created_at,
-          question_ids, test_type,
-          lesson:lessons (title),
-          practice_test:practice_tests_v2 (name)
-        )
-      `)
-      .eq('student_id', studentId)
-      .in('test_type', ['sat', 'act']),
-    supabase
-      .from('practice_test_attempts_v2')
-      .select(`
-        id, status, started_at, finished_at,
-        composite_score, rw_scaled, math_scaled, sections_only,
-        practice_test:practice_tests_v2(name, code)
-      `)
-      .eq('user_id', studentId)
-      .order('started_at', { ascending: false })
-      .limit(RECENT_TESTS_LIMIT),
-    // Every completed practice test, no limit. Feeds the
-    // starting / final score math (buildArchiveSummary) — the
-    // recent-tests query above caps at 10 for the display list,
-    // which would under-count the "highest practice composite
-    // overall" fallback and miss the practice test closest to
-    // start_date for older students.
-    supabase
-      .from('practice_test_attempts_v2')
-      .select('started_at, finished_at, composite_score, rw_scaled, math_scaled')
-      .eq('user_id', studentId)
-      .eq('status', 'completed'),
-    // ACT practice-test attempts — cached section + composite scales
-    // written at finalize (app/(student)/practice/tests/actions.ts).
-    // RLS: can_view(user_id). Merged into the same "Recent practice
-    // tests" list as the SAT attempts below.
-    supabase
-      .from('act_practice_test_attempts')
-      .select(`
-        id, status, source_test, started_at, finished_at,
-        english_scaled, math_scaled, reading_scaled, science_scaled, composite_score
-      `)
-      .eq('user_id', studentId)
-      .eq('status', 'completed')
-      .order('finished_at', { ascending: false })
-      .limit(RECENT_TESTS_LIMIT),
-    // Self-guided sessions for this student, SAT + ACT. Includes
-    // review-mode Weak Questions Drills — a drill is just a practice
-    // session built from the weak-questions scheme, so it surfaces
-    // here like any other. The row carries test_type so the list can
-    // badge ACT sessions.
-    supabase
-      .from('practice_sessions')
-      .select('id, created_at, question_ids, current_position, status, test_type')
-      .eq('user_id', studentId)
-      .in('mode', ['practice', 'review'])
-      .in('test_type', ['sat', 'act'])
-      .neq('status', 'abandoned')
-      // Exclude assignment-linked sessions — those already surface
-      // in the Assignments list above (each completed assignment
-      // links to its session report there), so listing them here
-      // would double-count the same work.
-      .is('filter_criteria->>assignment_id', null)
-      .order('created_at', { ascending: false })
-      .limit(RECENT_SESSIONS_LIMIT),
-    supabase
-      .from('sat_test_registrations')
-      .select('id, test_date, created_at')
-      .eq('student_id', studentId)
-      .order('test_date', { ascending: true }),
-    supabase
-      .from('sat_official_scores')
-      .select(`
-        id, test_date, rw_score, math_score, composite_score, created_at, test_type,
-        domain_ini, domain_cas, domain_eoi, domain_sec,
-        domain_alg, domain_atm, domain_pam, domain_geo
-      `)
-      .eq('student_id', studentId)
-      .order('test_date', { ascending: false }),
-    supabase
-      .from('practice_tests_v2')
-      .select('id, name, code')
-      .eq('is_published', true)
-      .is('deleted_at', null)
-      .order('code', { ascending: true }),
-    loadDashboardAggregate(studentId),
-    loadDashboardAggregateAct(studentId),
-    // Plan adherence (§4.4) — same shared loader the plan page and
-    // session workspace use.
-    loadStudentPlanState(supabase, studentId, new Date().toISOString().slice(0, 10)),
-    // Curriculum coverage (§4.4) — status counts for the snapshot;
-    // the session workspace renders the full per-unit table.
-    supabase.rpc('get_student_coverage', { p_student: studentId }),
-    // Does this student have a tutor at all? Decides the unset
-    // default for the §3.2 step-back switch below. Not inferable
-    // from "a tutor is looking at this page" — managers and admins
-    // reach it for unassigned students too.
-    supabase
-      .from('teacher_student_assignments')
-      .select('teacher_id')
-      .eq('student_id', studentId)
-      .limit(1),
-    // Foundations (foundations doc §3.2, §4 step 5): the section
-    // syllabi's lesson steps, and every lesson_progress row this student
-    // has — the few rows are cheaper than a dependent second round trip.
-    loadFoundationLessons(supabase, 'sat'),
-    supabase
-      .from('lesson_progress')
-      .select('lesson_id, completed_at, covered_by, covered_at')
-      .eq('student_id', studentId),
-  ]);
+  const result = await loadStudentDetail(supabase, studentId, user.id);
+  if (result.kind === 'notFound') notFound();
+  if (result.kind === 'error') return <ErrorState message={result.message} />;
+  const d = result;
+  const { student } = d;
 
-  if (rpcErr) {
-    return <ErrorState message={`Failed to load student: ${rpcErr.message}`} />;
-  }
-  if (!studentRows || studentRows.length === 0) {
-    notFound();
-  }
-
-  // The view returns numeric strings on aggregate columns —
-  // narrow + coerce in one pass.
-  const row = studentRows[0] as ViewRow<'student_practice_stats'>;
-  const total   = Number(row.total_attempts ?? 0);
-  const correct = Number(row.correct_attempts ?? 0);
-  const week    = Number(row.week_attempts ?? 0);
-  // Effective start date defaults to the signup timestamp
-  // (profiles.created_at, set by handle_new_user) when start_date
-  // hasn't been set explicitly. The Edit modal still writes to the
-  // explicit start_date column; the fallback only governs display
-  // and the archived-summary score lookups.
-  const studentProfile = profileRow as {
-    start_date?: string | null;
-    created_at?: string | null;
-    practice_detours_enabled?: boolean | null;
-    time_accommodation?: number | string | null;
-  } | null;
-  const startDateRaw = studentProfile?.start_date ?? null;
-  const effectiveStartDate = startDateRaw ?? studentProfile?.created_at ?? null;
-
-  // §3.2 step-back offers. Unset resolves to off for a student with
-  // a tutor — see lib/practice/detour-preference.mjs.
-  const detourPreference = studentProfile?.practice_detours_enabled ?? null;
-  const hasAssignedTutor = (tutorLinks ?? []).length > 0;
-  const detoursEnabled = resolveDetoursEnabled({
-    preference: detourPreference,
-    hasAssignedTutor,
-  });
-  // Standing extended-time accommodation (shared with /account).
-  const timeAccommodation = parseTimeAccommodation(studentProfile?.time_accommodation);
-
-  const student = {
-    id: row.user_id ?? studentId,
-    name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.email || 'Unknown',
-    email: row.email,
-    targetScore: row.target_sat_score,
-    highSchool: row.high_school,
-    graduationYear: row.graduation_year,
-    satTestDate: row.sat_test_date,
-    startDate: startDateRaw,
-    effectiveStartDate,
-    totalAttempts: total,
-    correctAttempts: correct,
-    weekAttempts: week,
-    accuracy: total > 0 ? Math.round((correct / total) * 100) : null,
-    lastActivityAt: row.last_activity_at,
+  const tabHref = (t: string) => (t === 'overview' ? `/tutor/students/${student.id}` : `/tutor/students/${student.id}?tab=${t}`);
+  const tabLabels: Record<Tab, string> = {
+    overview: 'Overview',
+    assignments: `Assignments · ${d.assignments.length}`,
+    tests: `Tests & scores · ${d.testRows.length + d.officialScores.length}`,
+    practice: 'Practice',
+    settings: 'Settings',
   };
 
-  // Starting / final / impact / reach — same math the Roster's
-  // past-students view uses, computed live so a tutor sees what
-  // the summary would be without having to archive the student.
-  // Helper is tolerant of empty inputs; rw_scaled / math_scaled
-  // are passed through under the rw_score / math_score keys it
-  // expects, matching the Roster page's mapping. Cast at the
-  // boundary because superscore.js's destructure defaults read
-  // as never[] from a strict TS caller.
-  type CompletedTestRow = {
-    started_at: string | null;
-    finished_at: string | null;
-    composite_score: number | null;
-    rw_scaled: number | null;
-    math_scaled: number | null;
-  };
-  const practiceTestsForScore = ((completedTestRowsForScore ?? []) as CompletedTestRow[]).map((r) => ({
-    finished_at: r.finished_at,
-    started_at: r.started_at,
-    composite_score: r.composite_score,
-    rw_score: r.rw_scaled,
-    math_score: r.math_scaled,
-  }));
-  const scoreSummary: {
-    startingScore: number | null;
-    finalScore: number | null;
-    impact: number | null;
-    targetReachPct: number | null;
-  } = buildArchiveSummary({
-    officialScores: officialScores ?? [],
-    practiceTests: practiceTestsForScore,
-    startDate: student.effectiveStartDate,
-    targetScore: student.targetScore,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
-
-  // Test attempts — keep status-aware, surface scores on completed
-  // ones, link by status.
-  const satTestRows = (testAttemptRows ?? []).map((r) => ({
-    kind: 'sat' as const,
-    id: r.id,
-    status: r.status,
-    timestamp: r.finished_at ?? r.started_at,
-    composite: r.composite_score,
-    rwScaled: r.rw_scaled,
-    mathScaled: r.math_scaled,
-    sectionsOnly: r.sections_only ?? null,
-    testName: (r.practice_test as { name?: string } | null)?.name ?? 'Practice test',
-    testCode: (r.practice_test as { code?: string } | null)?.code ?? '',
-  }));
-  // ACT rows share the list and the results URL shape; the tutor
-  // results route falls through to the ACT loader for these ids.
-  const actTestRows = (actTestAttemptRows ?? []).map((r) => ({
-    kind: 'act' as const,
-    id: r.id,
-    status: r.status,
-    timestamp: r.finished_at ?? r.started_at,
-    composite: r.composite_score,
-    sections: [
-      ['English', r.english_scaled],
-      ['Math', r.math_scaled],
-      ['Reading', r.reading_scaled],
-      ['Science', r.science_scaled],
-    ] as Array<[string, number | null]>,
-    sectionsOnly: null as string | null,
-    testName: r.source_test,
-    testCode: 'ACT',
-  }));
-  const testRows = [...satTestRows, ...actTestRows]
-    .sort((a, b) => (b.timestamp ?? '').localeCompare(a.timestamp ?? ''))
-    .slice(0, RECENT_TESTS_LIMIT);
-
-  // Practice sessions — adjusted for tutor view: link to the
-  // student's session report when completed, no Resume because
-  // tutors don't take students' sessions for them.
-  const sessionRowsView = (sessionRows ?? [])
-    .filter((r) => Array.isArray(r.question_ids) && (r.question_ids as unknown[]).length > 0)
-    .map((r) => {
-      const totalQ = (r.question_ids as unknown[]).length;
-      return {
-        id: r.id,
-        createdAt: r.created_at,
-        total: totalQ,
-        completed: r.status === 'completed',
-        testType: (r.test_type ?? 'sat') as string,
-      };
-    });
-
-  // Assignments: active first, archived dropped. PostgREST's
-  // generated types model embedded one-to-one relations as arrays,
-  // but the actual response is a single object — `as unknown as`
-  // narrows past the over-broad generated type. (A long-term fix
-  // is to switch the select to a non-embed shape.)
-  type Assignment = {
-    id: string;
-    assignment_type: string;
-    title: string | null;
-    due_date: string | null;
-    archived_at: string | null;
-    deleted_at: string | null;
-    created_at: string | null;
-    question_ids: unknown;
-    test_type: string | null;
-    lesson: { title: string | null } | null;
-    practice_test: { name: string | null } | null;
-    completed_at: string | null;
-  };
-  // Newest-assigned first. The list is the running record of
-  // what the tutor has handed out, so the freshest work sits at
-  // the top regardless of completion or due-date status.
-  const assignments = (
-    (assignmentJunctions ?? []) as unknown as { completed_at: string | null; assignment: Assignment }[]
-  )
-    .map((j) => ({ ...j.assignment, completed_at: j.completed_at }))
-    .filter((a) => a && a.id && !a.deleted_at && !a.archived_at)
-    .sort((a, b) => {
-      const aAt = a.created_at ? Date.parse(a.created_at) : 0;
-      const bAt = b.created_at ? Date.parse(b.created_at) : 0;
-      return bAt - aAt;
-    });
-
-  // Best practice_session per assignment for deep-linking the report.
-  // The assignment's own completed_at is the source of truth for whether
-  // the work is done; the session status can lag (assignment auto-completes
-  // when all underlying attempts exist, even if the session was never
-  // explicitly finalized). So we accept any session here and let the
-  // per-row `completed_at && reportSessionId` gate downstream decide
-  // whether to render the link. Prefer completed > in_progress > other
-  // when multiple sessions exist for one assignment.
-  const assignmentIdsForSessions = assignments
-    .map((a) => a.id)
-    .filter((id): id is string => typeof id === 'string');
-  const reportSessionByAssignment = new Map<string, string>();
-  if (assignmentIdsForSessions.length > 0) {
-    const { data: sessionRows } = await supabase
-      .from('practice_sessions')
-      .select('id, status, created_at, filter_criteria')
-      .eq('user_id', studentId)
-      .in('test_type', ['sat', 'act'])
-      .in('filter_criteria->>assignment_id', assignmentIdsForSessions)
-      .order('created_at', { ascending: false });
-    const statusRank = (s: string | null | undefined) =>
-      s === 'completed' ? 0 : s === 'in_progress' ? 1 : 2;
-    const bestStatusByAssignment = new Map<string, string>();
-    for (const r of sessionRows ?? []) {
-      const fc = r.filter_criteria as { assignment_id?: string } | null;
-      const aid = typeof fc?.assignment_id === 'string' ? fc.assignment_id : null;
-      if (!aid) continue;
-      const prev = bestStatusByAssignment.get(aid);
-      if (!prev || statusRank(r.status) < statusRank(prev)) {
-        reportSessionByAssignment.set(aid, r.id);
-        bestStatusByAssignment.set(aid, r.status);
-      }
-    }
-  }
-
-  const daysToTest = daysUntil(student.satTestDate);
-
-  // Coverage status counts for the snapshot's Coverage row (§4.4).
-  // "Started" = anything beyond not_started; decayed is called out
-  // because it's the retention alarm a tutor acts on.
-  const coverage = (() => {
-    const rows = coverageRows ?? [];
-    let started = 0;
-    let mastered = 0;
-    let decayed = 0;
-    for (const c of rows) {
-      if (c.status !== 'not_started') started++;
-      if (c.status === 'mastered') mastered++;
-      if (c.status === 'decayed') decayed++;
-    }
-    return { total: rows.length, started, mastered, decayed };
-  })();
-
-  // Foundations (foundations doc §3.2, §4 step 5): where the student
-  // stands on each foundation lesson, grouped by syllabus. The name of
-  // whoever recorded a covered-in-session mark comes from profile_cards,
-  // so a co-instructor's mark shows a name only to someone who can see
-  // that co-instructor (managers, admins); the card falls back to
-  // "by you" or no name.
-  const foundationRows = buildFoundationRows(foundationLessons, foundationProgressRows ?? []);
-  const foundationSummary = summarizeFoundations(foundationLessons, foundationProgressRows ?? []);
-  const coveredByIds = [
-    ...new Set(foundationRows.map((r) => r.coveredBy).filter((id): id is string => Boolean(id))),
-  ];
-  const coveredByNames = new Map<string, string>();
-  if (coveredByIds.length > 0) {
-    const { data: cards } = await supabase
-      .from('profile_cards')
-      .select('id, first_name, last_name, tutor_name')
-      .in('id', coveredByIds);
-    for (const c of cards ?? []) {
-      const name =
-        (c.tutor_name ?? '').trim() || [c.first_name, c.last_name].filter(Boolean).join(' ').trim();
-      if (c.id && name) coveredByNames.set(c.id, name);
-    }
-  }
-  const foundationGroups: FoundationCardGroup[] = (['math', 'reading_writing'] as const)
-    .map((section) => ({
-      section,
-      title: foundationSyllabusTitle(section),
-      rows: foundationRows
-        .filter((r) => r.section === section)
-        .map((r) => ({
-          lessonId: r.lessonId,
-          title: r.title,
-          status: r.status,
-          completedAt: r.completedAt,
-          coveredAt: r.coveredAt,
-          coveredByName: r.coveredBy ? (coveredByNames.get(r.coveredBy) ?? null) : null,
-          coveredByMe: r.coveredBy === user.id,
-        })),
-    }))
-    .filter((g) => g.rows.length > 0);
+  const description = [
+    student.email,
+    student.highSchool,
+    student.graduationYear ? `class of ${student.graduationYear}` : null,
+  ].filter(Boolean).join(' · ');
 
   return (
     <main className={s.container}>
-      <Link href="/tutor/roster" className={s.breadcrumb}>
-        ← Roster
-      </Link>
+      <Link href="/tutor/roster" className={s.breadcrumb}>← Roster</Link>
 
-      {/* ---------- Header ---------- */}
-      <header className={s.header}>
-        <div className={s.eyebrow}>Student</div>
-        <h1 className={s.h1}>{student.name}</h1>
-        <div className={s.sub}>
-          {student.email && <span>{student.email}</span>}
-          {student.highSchool && (
-            <span>
-              {student.email && ' · '}
-              {student.highSchool}
-              {student.graduationYear ? ` · class of ${student.graduationYear}` : ''}
-            </span>
-          )}
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Teach · Student"
+        title={student.name}
+        description={description || undefined}
+        actions={
+          <>
+            <Link href={`/tutor/students/${student.id}/plan`} className={s.headerBtn}>Study plan</Link>
+            <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.headerBtn}>Assign work</Link>
+            <Link href={`/tutor/session/${student.id}`} className={s.headerBtnPrimary}>Start session</Link>
+          </>
+        }
+      />
 
-      {/* ---------- Snapshot card ----------
-           Single profile card grouping every header-row metric so
-           the page doesn't open on a wall of pills. Two columns:
-           activity (start date, attempts, last activity, etc.) on
-           the left, score progression (target / starting / final /
-           impact / reach) on the right. Effective start date
-           defaults to the signup timestamp when start_date hasn't
-           been set explicitly. Edit pill lives in the card header
-           since both editable fields (target + start date) sit in
-           the right column. */}
-      <section className={s.snapshotCard}>
-        <div className={s.snapshotHead}>
-          <h2 className={s.snapshotTitle}>Snapshot</h2>
-          <div className={s.snapshotHeadActions}>
-            <Link href={`/tutor/session/${student.id}`} className={s.cardHeaderLink}>
-              Session workspace →
-            </Link>
-            <Link href={`/tutor/students/${student.id}/plan`} className={s.cardHeaderLink}>
-              Study plan →
-            </Link>
-            <EditTargetStartButton
-              studentId={student.id}
-              targetScore={student.targetScore ?? null}
-              startDate={profileRow?.start_date ?? null}
-            />
-          </div>
-        </div>
-        <div className={s.snapshotCols}>
-          <div className={s.snapshotCol}>
-            <div className={s.snapshotColTitle}>Activity</div>
-            <dl className={s.snapshotList}>
-              <ProfileRow
-                label="Start date"
-                value={student.effectiveStartDate
-                  ? (formatDate(student.effectiveStartDate) ?? '—')
-                  : '—'}
-                sub={student.startDate ? undefined : 'defaults to signup'}
-              />
-              {daysToTest != null && (
-                <ProfileRow
-                  label={daysToTest >= 0 ? 'Days to test' : 'Test date'}
-                  value={daysToTest >= 0 ? daysToTest : 'Past'}
-                  sub={student.satTestDate
-                    ? formatCalendarDate(student.satTestDate) || undefined
-                    : undefined}
-                />
-              )}
-              {/* §4.4: plan adherence + curriculum coverage join the
-                  header — with struggling-with and progress below,
-                  the six-questions set now lives on one page. */}
-              <ProfileRow
-                label="Plan"
-                value={
-                  planState.adherence
-                    ? ADHERENCE_LABELS[planState.adherence.status]
-                    : planState.draft
-                      ? 'Draft awaiting review'
-                      : 'No plan'
-                }
-                sub={
-                  planState.adherence
-                    ? adherenceSummaryLine(planState.adherence)
-                    : undefined
-                }
-                tone={
-                  planState.adherence?.status === 'behind'
-                    ? 'bad'
-                    : planState.adherence?.status === 'on_track' ||
-                        planState.adherence?.status === 'ahead'
-                      ? 'good'
-                      : undefined
-                }
-              />
-              <ProfileRow
-                label="Coverage"
-                value={
-                  coverage.total > 0
-                    ? `${coverage.started} / ${coverage.total} units`
-                    : '—'
-                }
-                sub={
-                  coverage.total > 0
-                    ? `${coverage.mastered} mastered${coverage.decayed > 0 ? ` · ${coverage.decayed} decayed` : ''}`
-                    : undefined
-                }
-                tone={coverage.decayed > 0 ? 'bad' : undefined}
-              />
-              <ProfileRow
-                label="Last activity"
-                value={formatRelativeShort(student.lastActivityAt) ?? '—'}
-              />
-              <ProfileRow
-                label="Accuracy"
-                value={student.accuracy != null ? `${student.accuracy}%` : '—'}
-                sub={student.accuracy != null
-                  ? `${student.correctAttempts} / ${student.totalAttempts}`
-                  : undefined}
-                tone={accuracyTone(student.accuracy)}
-              />
-              <ProfileRow
-                label="Total attempts"
-                value={student.totalAttempts.toLocaleString()}
-              />
-              <ProfileRow
-                label="Last 7 days"
-                value={student.weekAttempts}
-              />
-            </dl>
-          </div>
-          <div className={s.snapshotCol}>
-            <div className={s.snapshotColTitle}>Scores</div>
-            <dl className={s.snapshotList}>
-              <ProfileRow label="Target" value={student.targetScore ?? '—'} />
-              <ProfileRow
-                label="Starting score"
-                value={scoreSummary.startingScore ?? '—'}
-              />
-              <ProfileRow
-                label="Final score"
-                value={scoreSummary.finalScore ?? '—'}
-              />
-              <ProfileRow
-                label="Impact"
-                value={
-                  scoreSummary.impact == null
-                    ? '—'
-                    : scoreSummary.impact > 0
-                      ? `+${scoreSummary.impact}`
-                      : String(scoreSummary.impact)
-                }
-                tone={impactTone(scoreSummary.impact)}
-              />
-              {student.targetScore != null && (
-                <ProfileRow
-                  label="Target reach"
-                  value={
-                    scoreSummary.targetReachPct == null
-                      ? '—'
-                      : `${scoreSummary.targetReachPct}%`
-                  }
-                  tone={reachTone(scoreSummary.targetReachPct)}
-                />
-              )}
-            </dl>
-          </div>
-        </div>
-      </section>
+      <SnapshotTiles d={d} />
 
-      {/* ---------- Performance ----------
-           Same skill-segmented bars the student sees on their own
-           dashboard — surface them here so a tutor opens the
-           detail page and can read where the student is strong /
-           weak without bouncing through a separate report. The
-           "More statistics" link goes to the deeper, tutor-only
-           view (per-skill table, daily-activity heatmap, by-
-           difficulty rollup, weekly trend). */}
-      {(aggregate.performance.math.domains.length > 0 ||
-        aggregate.performance.rw.domains.length > 0) && (
-        <section className={s.perfSection}>
-          <div className={s.perfHeader}>
-            <div className={s.sectionLabel}>
-              <IconTile icon={PerformanceIcon} palette="cyan" size="sm" />
-              SAT performance · last 90 days
-            </div>
-            <Link
-              href={`/tutor/students/${student.id}/stats`}
-              className={s.cardHeaderLink}
-            >
-              More statistics →
-            </Link>
-          </div>
-          <div className={s.perfGrid}>
-            <SkillBreakdownCard
-              title="Math"
-              tone="math"
-              domains={toBreakdownDomains(aggregate.performance.math.domains)}
-            />
-            <SkillBreakdownCard
-              title="Reading & Writing"
-              tone="rw"
-              domains={toBreakdownDomains(aggregate.performance.rw.domains)}
-            />
-          </div>
-        </section>
-      )}
+      <nav className={s.tabs} aria-label="Student sections">
+        {TABS.map((t) => (
+          <Link
+            key={t}
+            href={tabHref(t)}
+            className={s.tab}
+            aria-current={t === tab ? 'page' : undefined}
+            scroll={false}
+          >
+            {tabLabels[t]}
+          </Link>
+        ))}
+      </nav>
 
-      {/* ---------- ACT performance ----------
-          Same layout shape as SAT — sections-as-domains,
-          categories-as-skills mapped onto the SkillBreakdownCard
-          shape. Hides when the student has no ACT attempts in the
-          90-day window (§3.4 "per-test-type sections hide when
-          there's no data"). When SAT has no data and ACT does,
-          this is the only performance card on the page; when both
-          have data, the two cards stack with their test-type
-          labels disambiguating them. */}
-      {aggregateAct && aggregateAct.totalAttempts > 0
-        && aggregateAct.performance.sections.length > 0 && (
-        <section className={s.perfSection}>
-          <div className={s.perfHeader}>
-            <div className={s.sectionLabel}>
-              <IconTile icon={PerformanceIcon} palette="cyan" size="sm" />
-              ACT performance · last 90 days
-            </div>
-            {aggregateAct.totalAttempts > 0 && (
-              <span className={s.cardHeaderLink}>
-                {aggregateAct.totalAttempts} attempt
-                {aggregateAct.totalAttempts === 1 ? '' : 's'}
-                {aggregateAct.performance.pct != null
-                  ? ` · ${aggregateAct.performance.pct}%`
-                  : ''}
-              </span>
-            )}
-          </div>
-          <div className={s.perfGrid}>
-            <SkillBreakdownCard
-              title="ACT"
-              tone="math"
-              domains={aggregateAct.performance.sections.map((sec) => ({
-                name: sec.label,
-                correct: sec.correct,
-                total: sec.total,
-                skills: sec.categories.map((c) => ({
-                  name: c.name,
-                  correct: c.correct,
-                  total: c.total,
-                })),
-              }))}
-            />
-          </div>
-        </section>
-      )}
-
-      {/* ---------- Two-column body ----------
-           Left column: the click-into surfaces a tutor reaches
-           for most often (assignments, recent tests, sessions).
-           Right column: glance / reference data + the
-           occasionally-used add-actions.
-      */}
-      <div className={s.contentGrid}>
-        <div className={s.colMain}>
-          {/* Assignments */}
-          <section className={s.card}>
-            <div className={s.cardHeader}>
-              <div className={s.sectionLabel}>
-                <IconTile icon={InboxIcon} palette="navy" size="sm" />
-                Assignments
-              </div>
-              <div className={s.snapshotHeadActions}>
-                <Link
-                  href={`/tutor/assignments/new?student=${student.id}&from_student=${student.id}`}
-                  className={s.cardHeaderLink}
-                  title="Open the assignment form with this student's weakest recent skills already in the picker, weighted by how often they were missed"
-                >
-                  Assign from weaknesses →
-                </Link>
-                <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.cardHeaderLink}>
-                  + New assignment
-                </Link>
-              </div>
-            </div>
-            {assignments.length === 0 ? (
-              <p className={s.empty}>This student has no assignments.</p>
-            ) : (
-              <ul className={s.assignmentList}>
-                {assignments.map((a) => {
-                  const title = a.title
-                    ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
-                    ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
-                    ?? 'Assignment';
-                  const n = Array.isArray(a.question_ids) ? (a.question_ids as unknown[]).length : null;
-                  const reportSessionId = reportSessionByAssignment.get(a.id) ?? null;
-                  const rowHref = reportSessionId
-                    ? `/tutor/sessions/${reportSessionId}`
-                    : `/tutor/assignments/${a.id}`;
-                  return (
-                    <li key={a.id}>
-                      <Link
-                        href={rowHref}
-                        className={a.completed_at ? `${s.assignmentRow} ${s.assignmentRowDone}` : s.assignmentRow}
-                      >
-                        <span className={s.assignmentType}>
-                          {ASSIGNMENT_TYPE_LABEL[a.assignment_type] ?? 'Assignment'}
-                        </span>
-                        {a.test_type === 'act' && (
-                          <span className={s.actPill}>ACT</span>
-                        )}
-                        <span className={s.assignmentTitle}>
-                          {title}
-                          {n != null && <span className={s.assignmentCount}> · {n} q{n === 1 ? '' : 's'}</span>}
-                        </span>
-                        <span className={s.assignmentDates}>
-                          {a.created_at && (
-                            <span className={s.assignedDate}>
-                              Assigned {formatDate(a.created_at)}
-                            </span>
-                          )}
-                          {a.due_date && (
-                            <span className={isPastDueDate(a.due_date) && !a.completed_at ? s.dueOverdue : s.due}>
-                              Due {formatDate(a.due_date)}
-                            </span>
-                          )}
-                        </span>
-                        {a.completed_at && reportSessionId && (
-                          <span className={s.reportPill}>View report →</span>
-                        )}
-                        {a.completed_at && !reportSessionId && (
-                          <span className={s.completedTag}>Completed</span>
-                        )}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-
-          {/* Recent practice tests */}
-          <section className={s.card}>
-            <div className={s.cardHeader}>
-              <div className={s.sectionLabel}>
-                <IconTile icon={TestIcon} palette="cyan" size="sm" />
-                Recent practice tests
-              </div>
-            </div>
-            {testRows.length === 0 ? (
-              <p className={s.empty}>No practice tests yet.</p>
-            ) : (
-              <ul className={s.testList}>
-                {testRows.map((t) => (
-                  <li key={t.id} className={s.testRowWrap}>
-                    <Link
-                      href={t.status === 'completed'
-                        ? `/tutor/students/${student.id}/tests/${t.id}/results`
-                        : `/tutor/students/${student.id}`}
-                      className={s.testRow}
-                    >
-                      <div className={s.testRowLeft}>
-                        <div className={s.testRowName}>
-                          {t.testName}
-                          {t.sectionsOnly && (
-                            <span className={s.sectionsOnlyPill}>
-                              {t.sectionsOnly === 'RW' ? 'R&W only' : 'Math only'}
-                            </span>
-                          )}
-                        </div>
-                        <div className={s.testRowMeta}>
-                          <span className={s.mono}>{t.testCode}</span>
-                          {t.testCode && ' · '}
-                          {formatRelativeShort(t.timestamp) ?? '—'}
-                          {t.status !== 'completed' && (
-                            <span className={s.testRowTag}>
-                              {' · '}{t.status === 'in_progress' ? 'In progress' : 'Abandoned'}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className={s.testRowScores}>
-                        {t.status !== 'completed' ? (
-                          <span className={s.muted}>—</span>
-                        ) : t.kind === 'act' ? (
-                          <>
-                            <ScorePill label="Composite" value={t.composite} />
-                            {t.sections.map(([label, value]) => (
-                              <ScorePill key={label} label={label} value={value} />
-                            ))}
-                            {t.composite == null && t.sections.every(([, v]) => v == null) && (
-                              <span className={s.muted}>Scaled pending</span>
-                            )}
-                          </>
-                        ) : t.composite != null ? (
-                          <>
-                            <ScorePill label="Total" value={t.composite} />
-                            <ScorePill label="RW"   value={t.rwScaled} subject="RW" />
-                            <ScorePill label="Math" value={t.mathScaled} subject="MATH" />
-                          </>
-                        ) : t.sectionsOnly === 'RW' && t.rwScaled != null ? (
-                          <ScorePill label="RW only" value={t.rwScaled} subject="RW" />
-                        ) : t.sectionsOnly === 'MATH' && t.mathScaled != null ? (
-                          <ScorePill label="Math only" value={t.mathScaled} subject="MATH" />
-                        ) : (
-                          <span className={s.muted}>—</span>
-                        )}
-                      </div>
-                    </Link>
-                    {t.kind === 'sat' && (
-                      <DeletePracticeTestButton
-                        studentId={student.id}
-                        attemptId={t.id}
-                        testName={t.testName}
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          {/* Recent practice sessions */}
-          <section className={s.card}>
-            <div className={s.cardHeader}>
-              <div className={s.sectionLabel}>
-                <IconTile icon={PencilIcon} palette="gold" size="sm" />
-                Recent practice sessions
-              </div>
-            </div>
-            {sessionRowsView.length === 0 ? (
-              <p className={s.empty}>No practice sessions yet.</p>
-            ) : (
-              <ul className={s.sessionList}>
-                {sessionRowsView.map((row) => (
-                  <li key={row.id}>
-                    <Link
-                      href={row.completed
-                        ? `/tutor/sessions/${row.id}`
-                        : `/tutor/students/${student.id}`}
-                      className={s.sessionRow}
-                    >
-                      <div className={s.sessionRowLeft}>
-                        <div className={s.sessionRowDate}>
-                          {formatRelativeShort(row.createdAt) ?? '—'}
-                          {row.testType === 'act' && (
-                            <span className={s.actPill}>ACT</span>
-                          )}
-                        </div>
-                        <div className={s.sessionRowMeta}>
-                          {row.total} question{row.total === 1 ? '' : 's'}
-                          {!row.completed && <span className={s.sessionRowTag}> · In progress</span>}
-                        </div>
-                      </div>
-                      {row.completed ? (
-                        <span className={s.reportPill}>View report →</span>
-                      ) : (
-                        <span className={s.sessionRowChevron} aria-hidden="true">→</span>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        </div>
-
-        <aside className={s.colSide}>
-          {/* Foundations (foundations doc §3.2, §4 step 5): mark what was
-              covered live so the plan skips it. Hidden until a section
-              syllabus has a published lesson. */}
-          {foundationLessons.length > 0 && (
-            <FoundationsCard
-              studentId={student.id}
-              groups={foundationGroups}
-              covered={foundationSummary.covered}
-              total={foundationSummary.total}
-            />
-          )}
-
-          {/* Score progress chart — compact glance only renders when
-              we have at least one official score on file. The
-              target value sits in the section header so the chart
-              body doesn't reserve right margin for the label. */}
-          {(officialScores ?? []).length > 0 && (
-            <section className={s.card}>
-              <div className={s.cardHeader}>
-                <div className={s.sectionLabel}>Progress</div>
-                {student.targetScore != null && (
-                  <span className={s.cardHeaderHint}>
-                    Target <strong>{student.targetScore}</strong>
-                  </span>
-                )}
-              </div>
-              <ScoreProgressChart
-                scores={officialScores ?? []}
-                targetScore={student.targetScore}
-              />
-            </section>
-          )}
-
-          {/* Test registrations */}
-          <TestRegistrationsCard
-            studentId={student.id}
-            registrations={(registrations ?? []).map((r) => ({
-              id: r.id as string,
-              test_date: r.test_date as string,
-            }))}
-          />
-
-          {/* Official scores */}
-          <OfficialScoresCard
-            studentId={student.id}
-            scores={(officialScores ?? []) as unknown as Array<{
-              id: string; test_date: string; rw_score: number; math_score: number;
-              composite_score: number; test_type: string | null;
-              domain_ini: number | null; domain_cas: number | null;
-              domain_eoi: number | null; domain_sec: number | null;
-              domain_alg: number | null; domain_atm: number | null;
-              domain_pam: number | null; domain_geo: number | null;
-            }>}
-          />
-
-          {/* Upload Bluebook (just the action trigger) */}
-          <UploadBluebookCard
-            studentId={student.id}
-            tests={(publishedTests ?? []) as Array<{ id: string; name: string; code: string | null }>}
-          />
-
-          {/* §3.2 step-back offers — shared with the student's own
-              Account page; either side can change it. */}
-          <StepBackOffersCard
-            studentId={student.id}
-            enabled={detoursEnabled}
-            isExplicit={typeof detourPreference === 'boolean'}
-            hasAssignedTutor={hasAssignedTutor}
-          />
-
-          {/* Standing extended-time accommodation — the same setting the
-              student sees under Account → Practice experience. */}
-          <ExtendedTimeCard studentId={student.id} value={timeAccommodation} />
-        </aside>
-      </div>
+      {tab === 'overview' && <OverviewTab d={d} tabHref={tabHref} />}
+      {tab === 'assignments' && <AssignmentsTab d={d} />}
+      {tab === 'tests' && <TestsTab d={d} />}
+      {tab === 'practice' && <PracticeTab d={d} />}
+      {tab === 'settings' && <SettingsTab d={d} />}
     </main>
   );
 }
 
 // ──────────────────────────────────────────────────────────────
 
-interface ProfileRowProps {
-  label: string;
-  value: number | string;
-  sub?: string;
-  tone?: 'good' | 'ok' | 'bad';
-}
-function ProfileRow({ label, value, sub, tone }: ProfileRowProps) {
-  const valueCls = [
-    s.snapshotRowValueMain,
-    tone === 'good' ? s.snapshotRowGood : null,
-    tone === 'ok'   ? s.snapshotRowOk   : null,
-    tone === 'bad'  ? s.snapshotRowBad  : null,
-  ].filter(Boolean).join(' ');
+function SnapshotTiles({ d }: { d: StudentDetail }) {
+  const { student, scoreSummary, planState, coverage } = d;
+  const days = daysUntil(student.satTestDate);
+  const adherence = planState.adherence;
+  const scoreSub = [
+    student.targetScore != null ? `goal ${student.targetScore}` : 'no goal set',
+    scoreSummary.startingScore != null ? `started ${scoreSummary.startingScore}` : null,
+  ].filter(Boolean).join(' · ');
+
   return (
-    <div className={s.snapshotRow}>
-      <dt className={s.snapshotRowLabel}>{label}</dt>
-      <dd className={s.snapshotRowValue}>
-        <div className={valueCls}>{value}</div>
-        {sub && <div className={s.snapshotRowSub}>{sub}</div>}
-      </dd>
-    </div>
+    <section aria-label="Snapshot" className={s.tiles}>
+      <Tile label="Latest score" value={scoreSummary.finalScore ?? '—'} sub={scoreSub} />
+      <Tile
+        label="Test date"
+        value={days == null ? 'Not set' : days < 0 ? 'Past' : days === 0 ? 'Today' : `${days} day${days === 1 ? '' : 's'}`}
+        sub={student.satTestDate ? `SAT · ${formatCalendarDate(student.satTestDate)}` : 'Add one under Tests & scores'}
+      />
+      <Tile
+        label="Plan"
+        value={adherence ? ADHERENCE_LABELS[adherence.status] : planState.draft ? 'Draft' : 'No plan'}
+        sub={adherence ? adherenceSummaryLine(adherence) : planState.draft ? 'Awaiting your review' : 'Build one from Study plan'}
+        tone={adherence?.status === 'behind' ? 'bad' : adherence?.status === 'on_track' || adherence?.status === 'ahead' ? 'good' : undefined}
+      />
+      <Tile
+        label="Accuracy"
+        value={student.accuracy != null ? `${student.accuracy}%` : '—'}
+        sub={student.totalAttempts > 0
+          ? `${student.correctAttempts.toLocaleString()} of ${student.totalAttempts.toLocaleString()} · ${student.weekAttempts} this week`
+          : 'No questions answered yet'}
+        tone={student.accuracy == null ? undefined : student.accuracy >= 80 ? 'good' : student.accuracy < 50 ? 'bad' : undefined}
+      />
+      <Tile
+        label="Last active"
+        value={formatRelativeShort(student.lastActivityAt) ?? '—'}
+        sub={coverage.total > 0
+          ? `${coverage.started} of ${coverage.total} units covered${coverage.decayed > 0 ? ` · ${coverage.decayed} decayed` : ''}`
+          : undefined}
+      />
+    </section>
   );
 }
 
-interface ScorePillProps {
-  label: string;
-  value: number | null;
-  subject?: SubjectCode;
-}
-function ScorePill({ label, value, subject }: ScorePillProps) {
-  if (value == null) return null;
-  const cls = [
-    s.scorePill,
-    subject === 'RW'   ? s.scorePillRw   : null,
-    subject === 'MATH' ? s.scorePillMath : null,
-  ].filter(Boolean).join(' ');
+function Tile({ label, value, sub, tone }: { label: string; value: string | number; sub?: string; tone?: 'good' | 'bad' }) {
   return (
-    <div className={cls}>
-      <div className={s.scorePillValue}>{value}</div>
-      <div className={s.scorePillLabel}>{label}</div>
+    <div className={s.tile}>
+      <div className={s.tileLabel}>{label}</div>
+      <div className={[s.tileValue, tone === 'good' ? s.tileGood : tone === 'bad' ? s.tileBad : null].filter(Boolean).join(' ')}>
+        {value}
+      </div>
+      {sub && <div className={s.tileSub}>{sub}</div>}
     </div>
   );
 }
@@ -1099,60 +167,17 @@ function ErrorState({ message }: { message: string }) {
   return (
     <main className={s.container}>
       <Link href="/tutor/roster" className={s.breadcrumb}>← Roster</Link>
-      <header className={s.header}>
-        <h1 className={s.h1}>Student detail</h1>
-        <p className={s.sub}>Something went wrong loading this student.</p>
-      </header>
+      <PageHeader eyebrow="Teach · Student" title="Student" description="Something went wrong loading this student." />
       <div className={s.errorCard} role="alert">{message}</div>
     </main>
   );
 }
 
-// Adapter from loadDashboardAggregate's domain shape to the
-// SkillBreakdownCard's `{ name, correct, total, skills }` shape.
-// Mirrors the helper on the student dashboard so the two surfaces
-// pass identical inputs into the shared card.
-function toBreakdownDomains(
-  domains: Array<{
-    name: string;
-    correct: number;
-    total: number;
-    skills: Array<{ name: string; correct: number; total: number }>;
-  }>,
-) {
-  return domains.map((d) => ({
-    name:    d.name,
-    correct: d.correct,
-    total:   d.total,
-    skills:  d.skills ?? [],
-  }));
-}
-
-function accuracyTone(pct: number | null): 'good' | 'ok' | 'bad' | undefined {
-  if (pct == null) return undefined;
-  if (pct >= 80) return 'good';
-  if (pct >= 50) return 'ok';
-  return 'bad';
-}
-
-function impactTone(delta: number | null): 'good' | 'bad' | undefined {
-  if (delta == null || delta === 0) return undefined;
-  return delta > 0 ? 'good' : 'bad';
-}
-
-// Roster's archived view uses a four-step scale (hit / close / mid /
-// low). Three-step here to fit the StatTile palette (good / ok / bad).
-function reachTone(pct: number | null): 'good' | 'ok' | 'bad' | undefined {
-  if (pct == null) return undefined;
-  if (pct >= 100) return 'good';
-  if (pct >= 90) return 'ok';
-  return 'bad';
-}
-
-
-function daysUntil(iso: string | null): number | null {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  return Math.round((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+function daysUntil(date: string | null): number | null {
+  if (!date) return null;
+  const target = Date.parse(`${date.slice(0, 10)}T00:00:00Z`);
+  if (!Number.isFinite(target)) return null;
+  const now = new Date();
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Math.round((target - today) / 86_400_000);
 }
