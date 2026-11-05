@@ -4,6 +4,7 @@ import { requireUser } from '@/lib/api/auth';
 import { loadTutorDashboard } from '@/lib/practice/load-tutor-dashboard';
 import { RosterFinder } from './RosterFinder';
 import { ActivityFeed } from './ActivityFeed';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Dashboard.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -23,12 +24,10 @@ export default async function TutorDashboardPage() {
   } catch (err) {
     return (
       <main className={s.container}>
-        <header className={s.header}>
-          <div className={s.eyebrow}>Tutor</div>
-          <h1 className={s.h1}>
-            {profile.first_name ? `Hi, ${profile.first_name}` : 'Tutor dashboard'}
-          </h1>
-        </header>
+        <PageHeader
+          eyebrow="Teach · Dashboard"
+          title={profile.first_name ? `Welcome back, ${profile.first_name}` : 'Welcome back'}
+        />
         <div className={s.errorCard} role="alert">
           Failed to load students: {err?.message ?? String(err)}
         </div>
@@ -52,25 +51,21 @@ export default async function TutorDashboardPage() {
   };
 
   const greeting = profile.first_name
-    ? `Welcome back, ${profile.first_name}.`
-    : 'Welcome back.';
+    ? `Welcome back, ${profile.first_name}`
+    : 'Welcome back';
 
   return (
     <main className={s.container}>
-      {/* ---------- Banner ---------- */}
-      <section className={s.banner}>
-        <div className={s.bannerText}>
-          <div className={s.bannerGreeting}>{greeting}</div>
-          <div className={s.bannerSub}>
-            {cohort.total === 0
-              ? 'No students assigned yet.'
-              : `${cohort.total} student${cohort.total === 1 ? '' : 's'} on your roster`}
-          </div>
-        </div>
-        <div className={s.bannerActions}>
-          <Link href="/tutor/assignments/new" className={s.btnPrimary}>New assignment</Link>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Teach · Dashboard"
+        title={greeting}
+        description={
+          cohort.total === 0
+            ? 'No students assigned yet.'
+            : `${cohort.total} student${cohort.total === 1 ? '' : 's'} on your roster.`
+        }
+        actions={<Link href="/tutor/assignments/new" className={s.btnPrimary}>New assignment</Link>}
+      />
 
       {/* ---------- Roster finder ---------- */}
       {cohort.total === 0 ? (

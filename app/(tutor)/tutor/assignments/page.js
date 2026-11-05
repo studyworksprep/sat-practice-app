@@ -34,6 +34,7 @@ import { formatShortDate, isPastDueDate } from '@/lib/formatters';
 import { ArchiveButton } from './ArchiveButton';
 import { AssignmentsToolbar } from './AssignmentsToolbar';
 import { filterAndSort, paginate } from './helpers';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './AssignmentsList.module.css';
 import { defaultActFormName } from '@/lib/practice/act-form-names';
 
@@ -266,8 +267,11 @@ export default async function TutorAssignmentsPage({ searchParams }) {
   const totalCompletions = totalAssignedRows.filter((r) => r.completed_at).length;
   // eslint-disable-next-line react-hooks/purity
   const nowMs = Date.now();
+  // Same rule as the sidebar's "N late" count (lib/tutor/nav-badges):
+  // past due AND someone still hasn't finished. Work everyone turned in
+  // isn't late just because nobody archived it yet.
   const overdueCount = enrichedActive.filter(
-    (a) => a.due_date && isPastDueDate(a.due_date, nowMs),
+    (a) => a.due_date && isPastDueDate(a.due_date, nowMs) && a.completedCount < a.studentCount,
   ).length;
 
   // Apply search + sort + pagination to each section. Stats above
@@ -284,24 +288,21 @@ export default async function TutorAssignmentsPage({ searchParams }) {
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div className={s.headerLeft}>
-          <div className={s.eyebrow}>Tutor · Assignments</div>
-          <h1 className={s.h1}>Your assignments</h1>
-          <p className={s.sub}>
-            Single-student assignments show that student&apos;s name + progress;
-            group assignments roll up the cohort.
-          </p>
-        </div>
-        <div className={s.headerActions}>
-          <Link href="/tutor/lesson-packs" className={s.secondaryBtn}>
-            Lesson packs
-          </Link>
-          <Link href="/tutor/assignments/new" className={s.newBtn}>
-            + New assignment
-          </Link>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Assign · Assignments"
+        title="Your assignments"
+        description="Single-student assignments show that student's name and progress; group assignments roll up the cohort."
+        actions={
+          <>
+            <Link href="/tutor/lesson-packs" className={s.secondaryBtn}>
+              Lesson packs
+            </Link>
+            <Link href="/tutor/assignments/new" className={s.newBtn}>
+              + New assignment
+            </Link>
+          </>
+        }
+      />
 
       <div className={s.statsStrip}>
         <StatTile
@@ -335,7 +336,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
         <StatTile
           label="Overdue"
           value={overdueCount}
-          sub={overdueCount === 0 ? 'Cohort is on schedule' : 'Active, past due date'}
+          sub={overdueCount === 0 ? 'Cohort is on schedule' : 'Past due, not yet finished'}
           tone={overdueCount > 0 ? 'warn' : 'neutral'}
         />
       </div>
@@ -465,7 +466,8 @@ function AssignmentRow({ row, nowMs, archived = false }) {
     ?? 'Assignment';
   const subtitle = displaySubtitle(row);
   const isOverdue =
-    !archived && row.due_date && isPastDueDate(row.due_date, nowMs);
+    !archived && row.due_date && isPastDueDate(row.due_date, nowMs)
+    && row.completedCount < row.studentCount;
   const isSingle = row.studentCount === 1;
   const single = row.single;
 

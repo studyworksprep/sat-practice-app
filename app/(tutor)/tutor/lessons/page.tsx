@@ -7,6 +7,7 @@ import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
 import { LessonCatalogFilterBar } from '@/lib/ui/LessonCatalogFilters';
 import { LessonScopeChips } from '@/lib/ui/LessonScopeChips';
 import { createNewLessonDraft, proposeLessonEdit } from './actions';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Lessons.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -66,20 +67,17 @@ export default async function TutorLessonsPage({
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div>
-          <div className={s.eyebrow}>Teach · Lessons</div>
-          <h1 className={s.h1}>Lesson library</h1>
-          <p className={s.sub}>
-            Preview the published student experience, propose improvements without
-            touching the live lesson, or draft something new for admin review.
-          </p>
-        </div>
-        <form action={createDraftAction} className={s.newForm}>
-          <input name="title" aria-label="New lesson title" placeholder="New lesson title" />
-          <Button type="submit">Create draft</Button>
-        </form>
-      </header>
+      <PageHeader
+        eyebrow="Teach · Lessons"
+        title="Lesson library"
+        description="Preview the published student experience, propose improvements without touching the live lesson, or draft something new for admin review."
+        actions={
+          <form action={createDraftAction} className={s.newForm}>
+            <input name="title" aria-label="New lesson title" placeholder="New lesson title" />
+            <Button type="submit">Create draft</Button>
+          </form>
+        }
+      />
 
       <section className={s.section}>
         <div className={s.sectionHead}>

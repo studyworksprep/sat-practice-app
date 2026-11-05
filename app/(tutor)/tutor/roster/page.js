@@ -26,6 +26,7 @@ import {
   summarizeFoundations,
 } from '@/lib/lesson/foundations';
 import { RosterInteractive } from './RosterInteractive';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Roster.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -170,16 +171,18 @@ export default async function TutorRosterPage() {
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div className={s.eyebrow}>Tutor · Roster</div>
-        <h1 className={s.h1}>Roster</h1>
-        <p className={s.sub}>
-          {students.length} student{students.length === 1 ? '' : 's'} ·
-          {' '}{students.filter((st) => st.isActive).length} active.
-          Archive a student to move them to the past-students view
-          with their starting / final score summary.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Teach · Roster"
+        title="Roster"
+        description={
+          <>
+            {students.length} student{students.length === 1 ? '' : 's'} ·
+            {' '}{students.filter((st) => st.isActive).length} active.
+            Archive a student to move them to the past-students view
+            with their starting / final score summary.
+          </>
+        }
+      />
       <RosterInteractive
         students={students}
         canEdit={['teacher', 'manager', 'admin'].includes(profile.role)}

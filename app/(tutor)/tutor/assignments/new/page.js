@@ -23,6 +23,7 @@ import { loadActCatalog } from './catalog-actions';
 import { createAssignment } from './actions';
 import { deleteAssignmentTemplate } from './template-actions';
 import { NewAssignmentInteractive } from './NewAssignmentInteractive';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import styles from './NewAssignmentInteractive.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -281,13 +282,11 @@ export default async function NewAssignmentPage({ searchParams }) {
       <a href="/tutor/assignments" className={styles.breadcrumb}>
         ← Your assignments
       </a>
-      <header className={styles.header}>
-        <div className={styles.eyebrow}>Assignment · New</div>
-        <h1 className={styles.h1}>New assignment</h1>
-        <p className={styles.sub}>
-          Give your students a question set, a practice test, or one of your lesson packs — SAT or ACT.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Assign · New"
+        title="New assignment"
+        description="Give your students a question set, a practice test, or one of your lesson packs — SAT or ACT."
+      />
 
       <NewAssignmentInteractive
         // The island seeds selection state in lazy useState

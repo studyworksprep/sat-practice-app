@@ -12,37 +12,6 @@
   color: var(--fg1);
 }
 
-.header {
-  display: grid;
-  gap: var(--s2);
-  padding-block: var(--s3) var(--s2);
-}
-
-.eyebrow {
-  font-size: var(--eyebrow-size);
-  font-weight: var(--eyebrow-weight);
-  letter-spacing: var(--eyebrow-tracking);
-  text-transform: uppercase;
-  color: var(--color-gold-700);
-}
-
-.h1 {
-  font-family: var(--font-serif);
-  font-size: var(--app-title-1);
-  font-weight: 700;
-  color: var(--color-navy-900, var(--fg1));
-  line-height: 1.15;
-  margin: 0;
-}
-
-.sub {
-  margin: 0;
-  font-size: var(--body-size);
-  line-height: var(--body-lh);
-  color: var(--fg2);
-  max-width: 720px;
-}
-
 /* ---------- Stats strip ---------- */
 
 .statsStrip {

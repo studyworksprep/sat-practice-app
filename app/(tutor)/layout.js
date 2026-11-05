@@ -25,9 +25,10 @@ import { AppNav } from '@/lib/ui/AppNav';
 import { AppShell } from '@/lib/ui/AppSidebar';
 import { tutorLinksForRole, tutorSectionsForRole } from '@/lib/ui/nav-links';
 import { DashboardHistory } from '@/lib/tutor/DashboardHistory';
+import { loadTutorNavBadges } from '@/lib/tutor/nav-badges';
 
 export default async function TutorTreeLayout({ children }) {
-  const { user, profile } = await requireUserPage();
+  const { user, profile, supabase } = await requireUserPage();
 
   if (profile.role === 'student' || profile.role === 'practice') redirect('/dashboard');
   if (!['teacher', 'manager', 'admin'].includes(profile.role)) redirect('/');
@@ -38,9 +39,17 @@ export default async function TutorTreeLayout({ children }) {
     firstName: profile.first_name ?? null,
   };
 
-  if (await sidebarEnabledFor(profile.role)) {
+  // "N behind" on Roster, "N late" on Assignments (teachers and
+  // managers only; see lib/tutor/nav-badges). Loaded alongside the
+  // flag read so the counts don't add a round trip to every page.
+  const [sidebarOn, badges] = await Promise.all([
+    sidebarEnabledFor(profile.role),
+    loadTutorNavBadges(supabase, user.id, profile.role),
+  ]);
+
+  if (sidebarOn) {
     return (
-      <AppShell user={navUser} sections={tutorSectionsForRole(profile.role)}>
+      <AppShell user={navUser} sections={tutorSectionsForRole(profile.role)} badges={badges}>
         <DashboardHistory key={user.id} userId={user.id}>{children}</DashboardHistory>
       </AppShell>
     );

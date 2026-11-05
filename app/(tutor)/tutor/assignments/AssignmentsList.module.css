@@ -17,43 +17,7 @@
   color: var(--fg1);
 }
 
-/* ---------- Header ---------- */
-
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--s4);
-  flex-wrap: wrap;
-  padding: var(--s2) 0;
-}
-
-.headerLeft { min-width: 0; }
-
-.eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-gold-700);
-  margin-bottom: var(--s1);
-}
-
-.h1 {
-  font-family: var(--font-serif);
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--color-navy-900);
-  margin: 0 0 var(--s2);
-}
-
-.sub {
-  color: var(--fg3);
-  font-size: 14px;
-  margin: 0;
-  max-width: 720px;
-}
+/* ---------- Header actions ---------- */
 
 .newBtn {
   padding: 10px 18px;
@@ -69,14 +33,6 @@
   flex-shrink: 0;
 }
 .newBtn:hover { background: var(--color-app-accent-hover); color: #fff; }
-
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: var(--s2);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
 
 .secondaryBtn {
   padding: 10px 18px;

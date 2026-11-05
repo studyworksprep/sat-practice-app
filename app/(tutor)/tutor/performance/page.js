@@ -29,6 +29,7 @@ import { loadRosterPerformance, sortSkills } from './loader';
 import { PerformanceSortToolbar } from './PerformanceSortToolbar';
 import { CohortStudentsTable } from './CohortStudentsTable';
 import { WeeklyTrendChart } from '@/lib/practice/WeeklyTrendChart';
+import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Performance.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -77,15 +78,11 @@ export default async function TutorPerformancePage({ searchParams }) {
 
   return (
     <main className={s.container}>
-      <header className={s.header}>
-        <div className={s.eyebrow}>Tutor · Performance</div>
-        <h1 className={s.h1}>Roster performance</h1>
-        <p className={s.sub}>
-          Skill-level rollup across your students, last {data.windowDays} days
-          of practice. Helps surface where the cohort is collectively weakest
-          so you can plan the next lesson or assignment.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Analyze · Performance"
+        title="Roster performance"
+        description={`Skill-level rollup across your students, last ${data.windowDays} days of practice. Shows where the group is weakest so you can plan the next lesson or assignment.`}
+      />
 
       <div className={s.statsStrip}>
         <StatTile
