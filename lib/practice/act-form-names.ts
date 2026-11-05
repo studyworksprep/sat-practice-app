@@ -15,10 +15,9 @@
 //                               code (2025 multiple-choice edition)
 //   ACT-Online-Practice-Test-3  ACT Online Practice Test, by number
 //
-// Naming rule (owner, 2026-11-04): released exams read "Month Year
-// Form" with no "ACT" ("April 2022 Form E25", "September 2024" when
-// the key has no code); online practice tests read "ACT Online
-// Practice Test N".
+// Naming rule (owner, 2026-11-04): released exams read "Month Year"
+// with no "ACT" and no form code ("April 2022"); online practice tests
+// read "ACT Online Practice Test N". The form code stays in the key.
 
 const MONTHS: Record<string, string> = {
   jan: 'January', feb: 'February', mar: 'March', apr: 'April',
@@ -70,12 +69,11 @@ export function parseActSourceTest(sourceTest: string): ParsedActSourceTest {
   return { kind: 'unknown' };
 }
 
-/** The default name for a form key: "April 2022 Form E25", "September
- *  2024", "ACT Online Practice Test 2", or the key itself when it has
- *  no known shape. */
+/** The default name for a form key: "April 2022", "ACT Online Practice
+ *  Test 2", or the key itself when it has no known shape. */
 export function defaultActFormName(sourceTest: string): string {
   const p = parseActSourceTest(sourceTest);
-  if (p.kind === 'dated') return `${p.month} ${p.year}${p.formCode ? ` Form ${p.formCode}` : ''}`;
+  if (p.kind === 'dated') return `${p.month} ${p.year}`;
   if (p.kind === 'online_practice') return `ACT Online Practice Test ${p.number}`;
   return (sourceTest ?? '').trim();
 }

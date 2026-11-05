@@ -115,7 +115,7 @@ export default async function ActAttemptEntryPage({
   const format = attemptFormat(attempt);
 
   // Readable form name: the admin's display_name or the default
-  // derived from the key ("April 2026 Form J01").
+  // derived from the key ("April 2026").
   const { data: formRow } = await supabase
     .from('act_forms')
     .select('display_name')

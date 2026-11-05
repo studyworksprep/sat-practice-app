@@ -564,7 +564,7 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
     if (isActFormKind(r.kind)) kindByForm.set(r.source_test, r.kind);
   }
   // Readable names: the admin's display_name or a default derived
-  // from the key ("April 2026 Form J01", "ACT Online Practice Test 1").
+  // from the key ("April 2026", "ACT Online Practice Test 1").
   const nameOf = actFormNamer(formRows);
 
   // Bucket per (source_test, section).
