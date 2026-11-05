@@ -72,7 +72,12 @@ export async function loadTutorDashboard(tutorId: string): Promise<TutorDashboar
         console.error('Tutor dashboard activity load failed', error);
         return { activities: [] as DashboardActivity[], activityUnavailable: true };
       }),
-    loadSignals(supabase, tutorId, rawStudents)
+    loadStudentSignals(supabase, tutorId, rawStudents.map((st) => ({
+      id: st.user_id,
+      name: [st.first_name, st.last_name].filter(Boolean).join(' ') || st.email || '—',
+      targetScore: st.target_sat_score,
+      satTestDate: st.sat_test_date,
+    })))
       .then((r) => ({ ...r, signalsUnavailable: false }))
       .catch((error) => {
         console.error('Tutor dashboard signals load failed', error);
@@ -83,12 +88,22 @@ export async function loadTutorDashboard(tutorId: string): Promise<TutorDashboar
   return { rawStudents, ...activityPart, ...signalPart };
 }
 
-async function loadSignals(
+export interface SignalStudent {
+  id: string;
+  name: string;
+  targetScore: number | null;
+  satTestDate: string | null;
+}
+
+/** Per-student signals for a roster: plan adherence, this tutor's open
+ *  and overdue work, last practice, test date and latest SAT practice
+ *  score. Shared by the dashboard and the roster. RLS-scoped reads. */
+export async function loadStudentSignals(
   supabase: TypedSupabaseClient,
   tutorId: string,
-  students: RawStudentRow[],
+  students: SignalStudent[],
 ): Promise<{ signals: StudentSignals[]; lateAssignments: number }> {
-  const ids = students.map((s) => s.user_id);
+  const ids = students.map((s) => s.id);
   if (ids.length === 0) return { signals: [], lateAssignments: 0 };
   const since = new Date(Date.now() - ACTIVITY_LOOKBACK_DAYS * 86_400_000).toISOString();
 
@@ -100,8 +115,7 @@ async function loadSignals(
       .select('due_date, archived_at, assignment_students_v2(student_id, completed_at)')
       .eq('teacher_id', tutorId)
       .is('deleted_at', null)
-      .is('archived_at', null)
-      .not('due_date', 'is', null),
+      .is('archived_at', null),
     // Newest first, so the first row per student is their last activity.
     supabase.from('practice_sessions')
       .select('user_id, last_activity_at')
@@ -144,13 +158,17 @@ async function loadSignals(
   const nowMs = Date.now();
   let lateAssignments = 0;
   const overdueByStudent = new Map<string, number>();
+  const openByStudent = new Map<string, number>();
+  const bump = (map: Map<string, number>, id: string) => map.set(id, (map.get(id) ?? 0) + 1);
   for (const row of (assignments.data ?? []) as Array<AssignmentRow & {
     assignment_students_v2: Array<{ student_id: string; completed_at: string | null }> | null;
   }>) {
-    if (!isLateAssignment(row, nowMs)) continue;
-    lateAssignments += 1;
+    const late = isLateAssignment(row, nowMs);
+    if (late) lateAssignments += 1;
     for (const m of row.assignment_students_v2 ?? []) {
-      if (!m.completed_at) overdueByStudent.set(m.student_id, (overdueByStudent.get(m.student_id) ?? 0) + 1);
+      if (m.completed_at) continue;
+      bump(openByStudent, m.student_id);
+      if (late) bump(overdueByStudent, m.student_id);
     }
   }
 
@@ -164,18 +182,19 @@ async function loadSignals(
   }
 
   const signals = students.map((st): StudentSignals => {
-    const plan = planByStudent.get(st.user_id);
+    const plan = planByStudent.get(st.id);
     return {
-      id: st.user_id,
-      name: [st.first_name, st.last_name].filter(Boolean).join(' ') || st.email || '—',
-      lastActiveAt: lastActive.get(st.user_id) ?? null,
+      id: st.id,
+      name: st.name,
+      lastActiveAt: lastActive.get(st.id) ?? null,
       hasPlan: Boolean(plan),
       planBehind: plan?.behind ?? false,
       overdueTasks: plan?.overdue ?? 0,
-      overdueAssignments: overdueByStudent.get(st.user_id) ?? 0,
-      testDate: plan?.testDate ?? st.sat_test_date ?? null,
-      latestScore: latestScore.get(st.user_id) ?? null,
-      goalScore: st.target_sat_score,
+      overdueAssignments: overdueByStudent.get(st.id) ?? 0,
+      openAssignments: openByStudent.get(st.id) ?? 0,
+      testDate: plan?.testDate ?? st.satTestDate ?? null,
+      latestScore: latestScore.get(st.id) ?? null,
+      goalScore: st.targetScore,
     };
   });
   return { signals, lateAssignments };

@@ -25,7 +25,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 // route.ts. The Stripe webhook handler was rewritten for the billing
 // hardening work (idempotency + no silent event drops), so it converted
 // as part of a substantial refactor rather than a bare rename.
-const JS_FILE_BASELINE = 302; // 2026-11-05: tutor dashboard page converted to TypeScript.
+const JS_FILE_BASELINE = 301; // 2026-11-05: roster island converted to TypeScript.
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {

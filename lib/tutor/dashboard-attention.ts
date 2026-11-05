@@ -32,6 +32,8 @@ export interface StudentSignals {
   overdueTasks: number;
   /** This tutor's assignments past due that the student hasn't finished. */
   overdueAssignments: number;
+  /** This tutor's open assignments the student hasn't finished, overdue included. */
+  openAssignments: number;
   /** Plan test date, else the profile's SAT date (yyyy-mm-dd). */
   testDate: string | null;
   /** Latest completed SAT practice-test total, if any. */

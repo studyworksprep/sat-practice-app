@@ -25,6 +25,8 @@ import {
   loadFoundationProgress,
   summarizeFoundations,
 } from '@/lib/lesson/foundations';
+import { loadStudentSignals } from '@/lib/practice/load-tutor-dashboard';
+import { buildAttention } from '@/lib/tutor/dashboard-attention';
 import { RosterInteractive } from './RosterInteractive';
 import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Roster.module.css';
@@ -32,7 +34,7 @@ import s from './Roster.module.css';
 export const dynamic = 'force-dynamic';
 
 export default async function TutorRosterPage() {
-  const { profile, supabase } = await requireUser();
+  const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'student' || profile.role === 'practice') redirect('/dashboard');
   if (!['teacher', 'manager', 'admin'].includes(profile.role)) redirect('/');
@@ -46,7 +48,7 @@ export default async function TutorRosterPage() {
   const [{ data: rows }, { data: planRows }, { lessons: foundationLessons, progress: foundationRows }] =
     await Promise.all([
       supabase.from('profiles')
-        .select('id, email, first_name, last_name, high_school, graduation_year, target_sat_score, start_date, is_active, created_at')
+        .select('id, email, first_name, last_name, high_school, graduation_year, target_sat_score, sat_test_date, start_date, is_active, created_at')
         .eq('role', 'student')
         .order('last_name', { ascending: true, nullsFirst: false })
         .order('first_name', { ascending: true, nullsFirst: false }),
@@ -98,6 +100,7 @@ export default async function TutorRosterPage() {
       highSchool: p.high_school,
       graduationYear: p.graduation_year,
       targetScore: p.target_sat_score,
+      satTestDate: p.sat_test_date ?? null,
       startDate,
       effectiveStartDate: startDate ?? p.created_at ?? null,
       isActive: p.is_active !== false, // null → treat as active
@@ -158,8 +161,29 @@ export default async function TutorRosterPage() {
     }
   }
 
+  // Last active, this tutor's open / overdue work, test date and latest
+  // practice score for the active rows — the same signals (and the same
+  // "needs attention" ranking) as the dashboard. Best-effort: a failed
+  // read leaves those columns blank rather than failing the roster.
+  const activeBase = baseStudents.filter((st) => st.isActive);
+  const { signals } = await loadStudentSignals(supabase, user.id, activeBase.map((st) => ({
+    id: st.id,
+    name: [st.firstName, st.lastName].filter(Boolean).join(' ') || st.email || '—',
+    targetScore: st.targetScore,
+    satTestDate: st.satTestDate,
+  }))).catch((error) => {
+    console.error('Roster signals load failed', error);
+    return { signals: [] };
+  });
+  const signalsById = new Map(signals.map((sig) => [sig.id, sig]));
+  // eslint-disable-next-line react-hooks/purity -- request-time snapshot
+  const nowMs = Date.now();
+  const weightById = new Map(buildAttention(signals, nowMs).map((r) => [r.student.id, r.weight]));
+
   const students = baseStudents.map((st) => {
-    if (st.isActive) return st;
+    if (st.isActive) {
+      return { ...st, signals: signalsById.get(st.id) ?? null, attentionWeight: weightById.get(st.id) ?? 0 };
+    }
     const summary = buildArchiveSummary({
       officialScores: officialByStudent.get(st.id) ?? [],
       practiceTests: practiceByStudent.get(st.id) ?? [],
@@ -174,19 +198,13 @@ export default async function TutorRosterPage() {
       <PageHeader
         eyebrow="Teach · Roster"
         title="Roster"
-        description={
-          <>
-            {students.length} student{students.length === 1 ? '' : 's'} ·
-            {' '}{students.filter((st) => st.isActive).length} active.
-            Archive a student to move them to the past-students view
-            with their starting / final score summary.
-          </>
-        }
+        description={`${activeBase.length} active student${activeBase.length === 1 ? '' : 's'}. Archived students keep their score summary under Past.`}
       />
       <RosterInteractive
         students={students}
         canEdit={['teacher', 'manager', 'admin'].includes(profile.role)}
         showFoundations={foundationLessons.length > 0}
+        nowMs={nowMs}
       />
     </main>
   );
