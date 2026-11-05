@@ -1,6 +1,8 @@
 /* =============================================================
-   Manager → Teachers tab. Tokens from [data-tree="next"].
-   Mirrors the tutor's roster page one layer up.
+   Manager → Teachers. Tokens from [data-tree="next"].
+
+   PageHeader, four tiles, the sortable teacher table (TeamTable)
+   with flagged rows highlighted, and the Worth-a-check-in card.
 ============================================================= */
 
 .container {
@@ -8,262 +10,147 @@
   margin: 0 auto;
   padding: var(--s5) var(--s6) var(--s7);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s4);
   font-family: var(--font-sans);
   color: var(--fg1);
 }
 
-/* ---------- Stats strip ---------- */
+.headerBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  color: var(--color-navy-900);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.headerBtn:hover { background: var(--color-slate-50); color: var(--color-navy-900); }
+
+/* ---------- Tiles ---------- */
 
 .statsStrip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--s3);
 }
-
 .statTile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.statLabel { font-size: 12px; font-weight: 600; color: var(--fg2); }
+.statValue { font-size: 28px; font-weight: 700; line-height: 1.1; color: var(--color-navy-900); font-variant-numeric: tabular-nums; }
+.statWarn { color: var(--color-diff-med-fg); }
+.statAlert { color: var(--color-diff-hard-fg); }
+.statOf { font-size: 16px; font-weight: 500; color: var(--fg2); }
+
+/* ---------- Teacher table ---------- */
+
+.tableCard {
+  min-width: 0;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  padding: 16px 18px;
+  overflow: hidden;
+}
+.tableHead {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.statLabel {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--fg3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.statValue {
-  font-size: 28px;
-  font-weight: 750;
-  letter-spacing: -0.01em;
-  color: var(--fg1);
-  font-variant-numeric: tabular-nums;
-}
-
-.statSub { font-size: 11px; color: var(--fg3); margin-top: 2px; }
-
-.statTile_good   .statValue { color: var(--color-diff-easy-fg); }
-.statTile_warn   .statValue { color: var(--color-diff-hard-fg); }
-.statTile_neutral .statValue { color: var(--fg1); }
-
-/* ---------- Section ---------- */
-
-.section { display: grid; gap: var(--s3); }
-
-.sectionHead {
-  display: flex;
-  align-items: baseline;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: var(--s3);
+  padding: 18px 20px 12px;
+}
+.tableTitle { margin: 0; font-family: var(--font-serif); font-size: 21px; font-weight: 700; color: var(--color-navy-900); }
+.sortLabel { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 600; color: var(--fg2); }
+.sortSelect {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  font: inherit;
+  font-size: 14px;
+  color: var(--fg1);
 }
 
-.sectionTitle {
-  font-family: var(--font-serif);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.005em;
-  color: var(--color-navy-900);
-  margin: 0;
+.tableWrap { position: relative; overflow-x: auto; }
+.table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 14px; }
+.table th {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-align: left;
+  white-space: nowrap;
 }
+.table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.table tbody tr:hover { background: var(--color-slate-50); }
+.table th.num, .table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.rowFlagged { background: color-mix(in srgb, var(--color-gold-500, #d4a72c) 9%, var(--card)); }
+.table tbody tr.rowFlagged:hover { background: color-mix(in srgb, var(--color-gold-500, #d4a72c) 14%, var(--card)); }
 
-.sectionCount {
+.teacherLink { font-weight: 700; color: var(--fg1); text-decoration: none; }
+.teacherLink:hover { text-decoration: underline; }
+.subline { margin-top: 2px; font-size: 12px; color: var(--fg3); white-space: nowrap; }
+.flagPill {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 7px;
+  border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--fg3);
+  background: var(--color-diff-med-bg);
+  color: var(--color-diff-med-fg);
 }
+.muted { color: var(--fg3); }
+.good { color: var(--color-success-fg, #047857); font-weight: 600; }
+.warn { color: var(--color-diff-med-fg); font-weight: 600; }
+.alert { color: var(--color-diff-hard-fg); font-weight: 600; }
+.tableFoot { margin: 0; padding: 12px 20px 16px; font-size: 13px; color: var(--fg3); }
 
-/* ---------- Teacher cards ---------- */
+/* ---------- Worth a check-in ---------- */
 
-.cardList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.checkCard {
   display: grid;
-  gap: var(--s2);
-}
-
-.teacherCard {
-  display: flex;
-  flex-direction: column;
   gap: var(--s3);
-  padding: 16px 20px;
+  padding: 18px 20px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+}
+.checkTitle { margin: 0; font-size: 16px; font-weight: 700; color: var(--color-navy-900); }
+.checkEmpty { margin: 0; font-size: 14px; color: var(--fg2); }
+.checkList { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s3); }
+.checkRow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.checkText { flex: 1 1 320px; margin: 0; font-size: 14px; line-height: 1.5; }
+.checkBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-navy-900);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
   text-decoration: none;
-  color: inherit;
-  transition: all var(--dur-fast) var(--ease-std);
 }
-.teacherCard:hover {
-  border-color: var(--color-app-accent);
-  box-shadow: 0 4px 14px rgba(31, 41, 55, 0.07);
-  color: inherit;
-}
+.checkBtn:hover { background: var(--color-app-primary-hover, #243b53); color: #fff; }
 
-.teacherTop {
-  display: flex;
-  align-items: center;
-  gap: var(--s3);
-  min-width: 0;
-}
-
-.teacherAvatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-gold-500) 25%, var(--bg-white));
-  color: var(--color-navy-900);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.teacherMain {
-  flex: 1;
-  min-width: 0;
-}
-
-.teacherName {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--fg1);
-  letter-spacing: -0.005em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.teacherEmail {
-  font-size: 12px;
-  color: var(--fg3);
-  margin-top: 2px;
-}
-
-.teacherChevron {
-  color: var(--fg3);
-  font-size: 18px;
-  flex-shrink: 0;
-}
-
-.teacherMetrics {
-  display: flex;
-  align-items: center;
-  gap: var(--s4);
-  flex-wrap: wrap;
-  border-top: 1px dashed var(--border);
-  padding-top: var(--s3);
-}
-
-.metric {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.metricValue {
-  font-size: 18px;
-  font-weight: 750;
-  color: var(--fg1);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-
-.metricLabel {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--fg3);
-  margin-top: 2px;
-}
-
-.metricGood { color: var(--color-diff-easy-fg); }
-.metricOk   { color: var(--color-diff-med-fg); }
-.metricWarn { color: var(--color-diff-hard-fg); }
-
-/* §5.2 effectiveness signals — second metrics row on each card. */
-.effectRow {
-  display: flex;
-  align-items: center;
-  gap: var(--s4);
-  flex-wrap: wrap;
-  border-top: 1px dashed var(--border);
-  padding-top: var(--s3);
-  margin-top: var(--s3);
-}
-
-.adhCluster {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.adhPills {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s2);
-  flex-wrap: wrap;
-  min-height: 20px;
-}
-
-.adhPill {
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: var(--bg2);
-  color: var(--fg2);
-  white-space: nowrap;
-}
-
-.adhGood {
-  background: color-mix(in srgb, var(--color-diff-easy-fg) 12%, transparent);
-  color: var(--color-diff-easy-fg);
-}
-
-.adhWarn {
-  background: color-mix(in srgb, var(--color-diff-hard-fg) 12%, transparent);
-  color: var(--color-diff-hard-fg);
-}
-
-.adhMuted {
-  background: var(--bg2);
-  color: var(--fg3);
-}
-
-.sectionNote {
-  margin: var(--s2) 0 0;
-  font-size: 12.5px;
-  color: var(--fg3);
-  max-width: 62ch;
-}
-
-.teacherLast {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--fg3);
-  font-variant-numeric: tabular-nums;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-weight: 600;
-}
-
-/* ---------- Empty state ---------- */
+/* ---------- Empty team ---------- */
 
 .emptyCard {
   background: var(--card);
@@ -272,12 +159,13 @@
   padding: 32px 24px;
   text-align: center;
 }
-
-.emptyTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--fg1);
-  margin-bottom: 6px;
-}
-
+.emptyTitle { font-size: 16px; font-weight: 600; color: var(--fg1); margin-bottom: 6px; }
 .emptyBody { font-size: 13px; color: var(--fg3); }
+
+.teacherLink:focus-visible,
+.checkBtn:focus-visible,
+.headerBtn:focus-visible { outline: 2px solid var(--color-app-accent); outline-offset: 3px; }
+
+@media (max-width: 600px) {
+  .container { padding: 16px; }
+}
