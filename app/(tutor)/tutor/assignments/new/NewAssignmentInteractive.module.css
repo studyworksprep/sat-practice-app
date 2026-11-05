@@ -7,7 +7,7 @@
 ============================================================= */
 
 .container {
-  max-width: 980px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: var(--s5) var(--s6) var(--s7);
   display: grid;
@@ -28,53 +28,13 @@
 
 /* ---------- Form shell ---------- */
 
-.form {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--s4);
-  margin-top: var(--s3);
-}
-
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 18px 20px;
-}
-
-.sectionLabel {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--fg3);
-  margin-bottom: var(--s2);
-}
-
 .sectionHint {
   font-size: 12px;
   color: var(--fg3);
   margin: 0 0 var(--s3);
 }
 
-.sectionCount {
-  font-weight: 500;
-  color: var(--fg3);
-  text-transform: none;
-  letter-spacing: 0;
-  margin-left: 6px;
-}
-
 /* ---------- Basic inputs ---------- */
-
-.fieldRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--s1);
-  margin-bottom: var(--s3);
-}
-.fieldRow:last-child { margin-bottom: 0; }
 
 .fieldLabel {
   font-size: 12px;
@@ -106,105 +66,11 @@
 
 /* ---------- Type picker ---------- */
 
-.typeRow {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.typeOption {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-white);
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--fg2);
-  transition: all var(--dur-fast) var(--ease-std);
-}
-.typeOption:hover { border-color: var(--color-app-accent); }
-.typeOptionActive {
-  border-color: var(--color-app-accent);
-  background: color-mix(in srgb, var(--color-app-accent) 8%, var(--bg-white));
-  color: var(--fg1);
-}
-
 /* ---------- Target (students vs trainees) ---------- */
-
-.targetRow {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: var(--s3);
-}
 
 /* ---------- Student picker ---------- */
 
-.studentGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 4px;
-  max-height: 280px;
-  overflow-y: auto;
-  /* Same WebKit row-squashing guard as .domainList below. */
-  grid-auto-rows: min-content;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 6px;
-  background: var(--bg-white);
-}
-
-.studentItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  font-size: 13px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-.studentItem:hover { background: var(--color-slate-50); }
-.studentName { flex: 1; font-weight: 500; color: var(--fg1); min-width: 0; }
-.studentEmail { color: var(--fg3); font-size: 12px; margin-left: 6px; }
-
 /* ---------- Skill browser (left column) ---------- */
-
-.twoCol {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: var(--s3);
-  align-items: start;
-}
-@media (max-width: 860px) {
-  .twoCol { grid-template-columns: 1fr; }
-}
-
-.browserPanel,
-.selectedPanel {
-  background: var(--color-slate-50);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 260px;
-}
-
-.panelTitle {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--fg3);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
 
 .search {
   width: 100%;
@@ -213,32 +79,6 @@
   border-radius: var(--radius-sm);
   font-size: 13px;
   background: var(--bg-white);
-}
-
-.domainList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 8px;
-  max-height: 380px;
-  overflow-y: auto;
-  /* Rows must hug their content. With the default `auto`, WebKit
-     treats this container's max-height as a definite size to
-     distribute across the rows and compresses them to fit instead of
-     overflowing into the scroller: every .domainBlock collapsed to
-     41px — header plus a 7px sliver of the skill list, with the rest
-     clipped by .domainBlock's overflow: hidden — and the list did not
-     scroll at all (scrollHeight === clientHeight). Chrome sizes the
-     rows to content and scrolls, so it only showed in Safari. */
-  grid-auto-rows: min-content;
-}
-
-.domainBlock {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-white);
-  overflow: hidden;
 }
 
 .domainHeader {
@@ -265,40 +105,6 @@
 .domainAddAll:hover { text-decoration: underline; }
 .domainAddAll:disabled { color: var(--fg3); cursor: default; text-decoration: none; }
 
-.skillList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.skillRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 10px;
-  font-size: 13px;
-  border-top: 1px solid var(--border);
-  cursor: pointer;
-  color: var(--fg1);
-}
-.skillRow:first-child { border-top: none; }
-.skillRow:hover { background: var(--color-slate-50); }
-.skillRowSelected {
-  background: color-mix(in srgb, var(--color-app-accent) 10%, transparent);
-  color: var(--fg3);
-  cursor: default;
-}
-.skillRowSelected:hover { background: color-mix(in srgb, var(--color-app-accent) 10%, transparent); }
-
-.skillRowName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.skillRowCount {
-  font-size: 11px;
-  color: var(--fg3);
-  font-variant-numeric: tabular-nums;
-  margin-left: 8px;
-  flex-shrink: 0;
-}
-
 /* ---------- Selected skills panel (right column) ---------- */
 
 .selectedList {
@@ -315,27 +121,12 @@
   grid-auto-rows: min-content;
 }
 
-.emptySelected {
-  color: var(--fg3);
-  font-size: 13px;
-  text-align: center;
-  padding: 40px 20px;
-  font-style: italic;
-}
-
 .selectedItem {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-white);
   padding: 10px 12px;
   display: grid;
-  gap: 8px;
-}
-
-.selectedItemHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   gap: 8px;
 }
 
@@ -359,19 +150,6 @@
   color: var(--fg3);
   font-weight: 500;
 }
-
-.removeButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--fg3);
-  font-size: 16px;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-  line-height: 1;
-}
-.removeButton:hover { color: var(--color-diff-hard-fg); background: var(--color-slate-50); }
 
 .controlLabel {
   font-size: 10px;
@@ -459,50 +237,7 @@
 
 /* ---------- Not-attempted filter ---------- */
 
-.notAttempted {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-white);
-  cursor: pointer;
-  font-size: 13px;
-}
-.notAttempted:hover { border-color: var(--color-app-accent); }
-.notAttempted input { margin-top: 2px; flex-shrink: 0; }
-
-.notAttemptedText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-weight: 500;
-  color: var(--fg1);
-}
-.notAttemptedText .muted { font-weight: 400; font-size: 12px; }
-
 /* ---------- Preview + submit ---------- */
-
-.preview {
-  font-size: 13px;
-  color: var(--fg3);
-  padding-top: var(--s2);
-  border-top: 1px dashed var(--border);
-  display: flex;
-  justify-content: space-between;
-  gap: var(--s3);
-  flex-wrap: wrap;
-}
-.previewStrong { color: var(--fg1); font-weight: 600; }
-
-.submitRow {
-  display: flex;
-  align-items: center;
-  gap: var(--s3);
-  justify-content: flex-end;
-  padding-top: var(--s2);
-}
 
 .error {
   color: var(--color-diff-hard-fg);
@@ -712,33 +447,6 @@
   gap: 6px;
 }
 
-.templateRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg, 10px);
-}
-
-.templateName {
-  min-width: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--fg1);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.templateActions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
 .templateApplyBtn {
   font: inherit;
   font-size: 12px;
@@ -821,12 +529,6 @@
 .actSectionToggle:has(input:disabled) { opacity: 0.5; cursor: default; }
 .actSectionToggle input:disabled { cursor: default; }
 
-.actTaxonomyList,
-.actTaxonomyList .studentGrid {
-  max-height: none;
-  overflow: visible;
-}
-
 .actSubcategories {
   display: flex;
   flex-direction: column;
@@ -835,3 +537,238 @@
   padding-left: 12px;
   border-left: 2px solid var(--border);
 }
+
+/* =============================================================
+   Steps + summary layout (2026-11 redesign)
+============================================================= */
+
+/* The app's global label rule adds vertical margins; these labels
+   are controls laid out by their containers. */
+.segmented label,
+.personChip,
+.skillCheck,
+.checkInline,
+.sizeField,
+.field { margin: 0; }
+
+/* Radios and checkboxes inside pill controls stay keyboard-reachable
+   (visually hidden, not display:none); the pill shows focus. */
+.pillInput {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+.segmented label,
+.personChip { position: relative; }
+
+.srOnly {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+  align-items: start;
+  gap: var(--s4);
+}
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+}
+.steps { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s4); min-width: 0; }
+
+.step {
+  display: grid;
+  gap: var(--s3);
+  min-width: 0;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.stepHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.stepTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+}
+.stepNum {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-navy-900);
+}
+.stepHint { font-size: 13px; color: var(--fg3); }
+
+/* Segmented radio groups (test, type, target). */
+.typeBar { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s3); }
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  /* Dividers are the 1px gaps showing the border colour behind, so
+     they stay even when the options wrap onto a second row. */
+  gap: 1px;
+  background: var(--border-strong);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  width: fit-content;
+}
+.segmented label {
+  flex: 1 0 auto;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg2);
+  background: var(--bg-white);
+  cursor: pointer;
+}
+.segmented label:focus-within { outline: 2px solid var(--color-app-accent); outline-offset: -2px; }
+.segmented .segOn { background: var(--color-navy-900); color: #fff; }
+
+/* Templates inside step 1. */
+.templateShelf { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+.templateShelf .templateList { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.templateChip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--bg-white);
+  overflow: hidden;
+}
+.templateChip .templateApplyBtn { border: 0; border-radius: 0; background: none; padding: 6px 4px 6px 12px; }
+.templateChip .templateDeleteBtn { padding: 6px 10px 6px 6px; }
+.templateTag { margin-left: 6px; font-size: 10px; font-weight: 700; color: var(--fg3); }
+
+/* People chips. */
+.peopleRow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.personChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--bg-white);
+  color: var(--fg1);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.personChip:focus-within { outline: 2px solid var(--color-app-accent); outline-offset: 2px; }
+.personChipOn { background: var(--color-navy-900); border-color: var(--color-navy-900); color: #fff; }
+.linkBtn {
+  border: 0;
+  background: none;
+  padding: 6px 4px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--color-app-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+.linkBtn:hover { text-decoration: underline; }
+
+/* Skills. */
+.skillToolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2); }
+.skillToolbar .search { flex: 1 1 240px; max-width: 360px; margin: 0; }
+.sectionCols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--s4) var(--s5);
+}
+.sectionColTitle {
+  margin: 0 0 var(--s2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+.domainGroup { display: grid; gap: 2px; margin-bottom: var(--s3); }
+.skillCheck {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--fg1);
+  cursor: pointer;
+}
+.skillCheck:hover { background: var(--color-slate-50); }
+.skillCheck input { width: 17px; height: 17px; flex: none; accent-color: var(--color-navy-900); }
+.skillCheckOn { background: color-mix(in srgb, var(--color-app-accent) 7%, var(--bg-white)); }
+.skillCheckName { flex: 1; min-width: 0; }
+.skillCheckCount { font-size: 12px; color: var(--fg3); font-variant-numeric: tabular-nums; }
+
+.fineTune { border-top: 1px solid var(--border); padding-top: var(--s3); }
+.fineTune summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--color-navy-900); }
+.fineTune .selectedList { margin-top: var(--s3); }
+
+.optionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s3) var(--s5);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--border);
+}
+.inlineGroup { margin: 0; padding: 0; border: 0; display: grid; gap: 6px; }
+.checkInline { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; font-size: 14px; cursor: pointer; }
+.checkInline input { width: 17px; height: 17px; accent-color: var(--color-navy-900); }
+.sizeField { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--fg2); }
+
+/* Plain fields (steps 3 and 4). */
+.fieldGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: var(--s3); }
+.field { display: grid; gap: 6px; min-width: 0; }
+
+/* Summary. */
+.summary {
+  position: sticky;
+  top: var(--s5);
+  display: grid;
+  gap: var(--s3);
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+@media (max-width: 960px) {
+  .summary { position: static; }
+}
+.summaryTitle { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg3); }
+.summaryHeadline { margin: 0; font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--color-navy-900); overflow-wrap: anywhere; }
+.summaryList { margin: 0; display: grid; gap: 8px; }
+.summaryList > div { display: flex; justify-content: space-between; gap: var(--s3); font-size: 14px; }
+.summaryList dt { color: var(--fg2); flex: none; }
+.summaryList dd { margin: 0; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.summaryMissing { margin: 0; font-size: 13px; color: var(--color-diff-med-fg); }
+.summary .submitButton { width: 100%; min-height: 48px; }
+.saveTemplate { display: grid; gap: 6px; }
