@@ -28,7 +28,7 @@ import {
 import { FormatSelect } from './FormatSelect';
 import { KindSelect } from './KindSelect';
 import { NameInput } from './NameInput';
-import { defaultActFormName } from '@/lib/practice/act-form-names';
+import { compareActForms, defaultActFormName } from '@/lib/practice/act-form-names';
 import s from '../questions/ActQuestions.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -99,7 +99,7 @@ export default async function AdminActFormsPage() {
     });
     Object.assign(row, detected);
   }
-  const rows = Array.from(rowsByForm.values()).sort((a, b) => a.sourceTest.localeCompare(b.sourceTest));
+  const rows = Array.from(rowsByForm.values()).sort((a, b) => compareActForms(a.sourceTest, b.sourceTest));
 
   return (
     <main className={s.container}>

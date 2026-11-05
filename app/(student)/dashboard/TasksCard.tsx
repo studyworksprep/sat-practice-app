@@ -117,7 +117,13 @@ export function TasksCard({
       )}
 
       {view ? (
-        <PlanTasks view={view} today={today} wasAutoRepaced={wasAutoRepaced} heroTaskId={heroTaskId} />
+        <>
+          <PlanTasks view={view} today={today} wasAutoRepaced={wasAutoRepaced} heroTaskId={heroTaskId} />
+          <p className={s.cardFoot}>
+            Want to work on something else?{' '}
+            <Link href="/practice/start" className={s.inlineLink}>Build your own practice set →</Link>
+          </p>
+        </>
       ) : (
         <NoPlan hasTutor={hasTutor} pendingAssignments={pendingAssignments} />
       )}

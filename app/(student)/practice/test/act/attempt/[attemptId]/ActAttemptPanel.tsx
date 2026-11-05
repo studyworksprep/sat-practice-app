@@ -28,7 +28,6 @@ export interface PanelSection {
 export function ActAttemptPanel({
   attemptId,
   formName,
-  formDetail,
   formatLabel,
   timeMultiplier,
   sections,
@@ -40,7 +39,6 @@ export function ActAttemptPanel({
 }: {
   attemptId: string;
   formName: string;
-  formDetail: string | null;
   formatLabel: string;
   timeMultiplier: number;
   sections: PanelSection[];
@@ -97,7 +95,6 @@ export function ActAttemptPanel({
         <div className={s.eyebrow}>ACT practice test</div>
         <h1 className={s.h1}>{formName}</h1>
         <p className={s.sub}>
-          {formDetail ? `${formDetail} · ` : ''}
           {formatLabel} · {sections.length} section{sections.length === 1 ? '' : 's'}
           {untimed ? ' · Untimed' : timeMultiplier > 1 ? ` · ${timeMultiplier}× time` : ''}
           {done > 0 ? ` · ${done} of ${sections.length} done` : ''}

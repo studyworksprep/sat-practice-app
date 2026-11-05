@@ -1,8 +1,9 @@
 // Student dashboard layout — the landing page and command center.
 // page.js loads and shapes every prop; this composes the boxes:
 //
-//   1. PageHeader — greeting, the plan's week/phase/target eyebrow, a
-//      one-line "what's waiting" description, and Free practice.
+//   1. PageHeader — greeting, the plan's week/phase/target eyebrow and a
+//      one-line "what's waiting" description. Self-guided practice is
+//      offered at the foot of Coming up, after the plan's own tasks.
 //   2. Up next (with a plan) — the one task to do now as the page's
 //      single primary action, beside this week's progress and the open
 //      session. Without a plan the open session moves into the header.
@@ -67,19 +68,14 @@ export function DashboardView({
         eyebrow={header.eyebrow}
         title={greeting}
         description={header.description}
-        actions={
-          <>
-            <Link href="/practice/start" className={s.btnSecondary}>Free practice</Link>
-            {headerResume && (
-              <Link
-                href={`/practice/s/${headerResume.sessionId}/${headerResume.position}`}
-                className={s.btnPrimary}
-              >
-                Resume session
-              </Link>
-            )}
-          </>
-        }
+        actions={headerResume ? (
+          <Link
+            href={`/practice/s/${headerResume.sessionId}/${headerResume.position}`}
+            className={s.btnPrimary}
+          >
+            Resume session
+          </Link>
+        ) : undefined}
       />
 
       {nextUp && <NextUpCard {...nextUp} />}

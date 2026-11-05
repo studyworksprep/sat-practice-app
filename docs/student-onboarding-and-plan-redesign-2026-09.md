@@ -1,6 +1,7 @@
 # Student onboarding and study-plan redesign
 
 > **Status: Living document.** Last verified against code: 2026-09-22
+> (dashboard header paragraph refreshed against code 2026-11-04)
 > (Phase 1 and Phase 2 implemented; migrations applied to dev and
 > production 2026-09-17; owner notes of 2026-09-17 folded in — see §3.4;
 > login routing narrowed to new students 2026-09-22 — see §3.1). Design settled with the
@@ -488,9 +489,13 @@ box on it, not a page. Three boxes:
 - **Recently finished.** Unchanged: report links for the latest
   sessions, tests, and assignments.
 
-The banner keeps the greeting, the plan's "week N of M · phase ·
-tasks done" line, and the target / accuracy / countdown chips, with
-Resume and Free practice as secondary links. The target-score editor
+The header (shared `PageHeader`) carries the greeting, the plan's
+"week N of M · phase · target" eyebrow and a one-line "what's
+waiting" description; without a plan it also holds Resume. Countdown
+and streak live in the sidebar footer. Self-guided practice is a
+"Build your own practice set" link at the foot of Coming up
+(2026-11-04: moved out of the header, where "Free practice" competed
+with the plan's own next task). The target-score editor
 is gone from the dashboard (the hub's Adjust owns target and date),
 and the countdown reads the plan's date first, then a registered
 exam, then the profile date — the sidebar footer's precedence, so

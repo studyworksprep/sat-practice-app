@@ -2,9 +2,10 @@
    Student dashboard. Tokens from [data-tree="next"].
 
    Layout: vertical stack inside .main —
-     - PageHeader (lib/ui) — greeting, eyebrow, Free practice
+     - PageHeader (lib/ui) — greeting, eyebrow, Resume (no plan)
      - Up next card (with a plan) — the day's primary action
-     - grid: Coming up (left) | Progress box (right)
+     - grid: Coming up (left, ends with the self-guided practice
+       link) | Progress box (right)
      - Recently finished (full width)
 ============================================================= */
 
@@ -20,8 +21,7 @@
 
 /* ---------- Header buttons ---------- */
 
-.btnPrimary,
-.btnSecondary {
+.btnPrimary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -35,28 +35,15 @@
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease-std),
               border-color var(--dur-fast) var(--ease-std);
-  border: 1px solid transparent;
-}
-
-.btnPrimary {
+  border: 1px solid var(--color-app-accent);
   background: var(--color-app-accent);
   color: #fff;
-  border-color: var(--color-app-accent);
 }
 .btnPrimary:hover {
   background: var(--color-app-accent-hover);
   border-color: var(--color-app-accent-hover);
 }
 
-.btnSecondary {
-  background: var(--bg-white);
-  color: var(--fg1);
-  border-color: var(--border-strong);
-}
-.btnSecondary:hover {
-  background: var(--color-slate-50);
-  border-color: var(--border-strong);
-}
 
 
 /* ---------- Two-up grid: Tasks | Progress ---------- */
@@ -373,6 +360,14 @@
 }
 
 /* ---------- Tasks: caught-up / no-plan states ---------- */
+
+.cardFoot {
+  margin: var(--s2) 0 0;
+  padding-top: var(--s3);
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--fg2);
+}
 
 .caughtUpSub {
   margin: 0;
