@@ -30,7 +30,7 @@ import s from './PracticeTestsPage.module.css';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import { isActFormat, isActFormKind, isUntimedPlan, parsePlan, parseTimeMultiplier } from '@/lib/practice/act-test-plan';
 import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
-import { actFormDetail, actFormNamer } from '@/lib/practice/act-form-names';
+import { actFormNamer, compareActForms } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -159,7 +159,7 @@ async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
       {recentForChart.length >= 2 && (
         <section className={s.card}>
           <div className={s.sectionLabel}>Recent composites</div>
-          <TrendChart attempts={recentForChart} />
+          <TrendChart attempts={recentForChart} floor={400} ceil={1600} step={50} labelOf={(a) => a.practice_test?.code ?? '—'} />
         </section>
       )}
 
@@ -201,8 +201,7 @@ function buildStats(completedAttempts) {
       latestComposite: null,
       bestComposite: null,
       delta: null,
-      bestRw: null,
-      bestMath: null,
+      bestSub: null,
     };
   }
   // completedAttempts is ordered finished_at desc, so [0] is latest.
@@ -228,8 +227,31 @@ function buildStats(completedAttempts) {
     delta: previous && Number.isFinite(previous.composite_score)
       ? latest.composite_score - previous.composite_score
       : null,
-    bestRw: bestRw > 0 ? bestRw : null,
-    bestMath: bestMath > 0 ? bestMath : null,
+    bestSub: bestRw > 0 && bestMath > 0 ? `Best RW ${bestRw} · Best Math ${bestMath}` : null,
+  };
+}
+
+// ACT: composite on the 1–36 scale; best section scores in the sub line.
+function buildActStats(completedAttempts) {
+  const withScore = completedAttempts.filter((a) => Number.isFinite(a.composite_score));
+  if (withScore.length === 0) {
+    return { taken: completedAttempts.length, latestComposite: null, bestComposite: null, delta: null, bestSub: null };
+  }
+  const latest = withScore[0];
+  const previous = withScore[1] ?? null;
+  const best = (key) => completedAttempts.reduce((m, a) => (Number.isFinite(a[key]) ? Math.max(m, a[key]) : m), 0);
+  const parts = [
+    ['English', best('english_scaled')],
+    ['Math', best('math_scaled')],
+    ['Reading', best('reading_scaled')],
+    ['Science', best('science_scaled')],
+  ].filter(([, v]) => v > 0);
+  return {
+    taken: completedAttempts.length,
+    latestComposite: latest.composite_score,
+    bestComposite: withScore.reduce((m, a) => Math.max(m, a.composite_score), 0),
+    delta: previous ? latest.composite_score - previous.composite_score : null,
+    bestSub: parts.length > 0 ? `Best ${parts.map(([k, v]) => `${k} ${v}`).join(' · ')}` : null,
   };
 }
 
@@ -274,9 +296,7 @@ function StatsStrip({ stats }) {
         value={stats.bestComposite == null
           ? '—'
           : stats.bestComposite.toLocaleString()}
-        sub={stats.bestRw != null && stats.bestMath != null
-          ? `Best RW ${stats.bestRw} · Best Math ${stats.bestMath}`
-          : 'Your personal best'}
+        sub={stats.bestSub ?? 'Your personal best'}
         tone="neutral"
       />
       <StatTile
@@ -316,7 +336,7 @@ function StatTile({ label, value, sub, tone }) {
 // Pure server-rendered SVG; no charting library.
 // ──────────────────────────────────────────────────────────────
 
-function TrendChart({ attempts }) {
+function TrendChart({ attempts, floor, ceil, step, labelOf }) {
   const W = 680;
   const H = 140;
   const PAD_X = 36;
@@ -327,9 +347,9 @@ function TrendChart({ attempts }) {
   const scores = attempts.map((a) => a.composite_score);
   const minScore = Math.min(...scores);
   const maxScore = Math.max(...scores);
-  const lo = Math.max(400, Math.floor((minScore - 50) / 50) * 50);
-  const hi = Math.min(1600, Math.ceil((maxScore + 50) / 50) * 50);
-  const range = Math.max(hi - lo, 50);
+  const lo = Math.max(floor, Math.floor((minScore - step) / step) * step);
+  const hi = Math.min(ceil, Math.ceil((maxScore + step) / step) * step);
+  const range = Math.max(hi - lo, step);
 
   const bandW = innerW / attempts.length;
   const barW = Math.min(48, bandW * 0.55);
@@ -375,7 +395,7 @@ function TrendChart({ attempts }) {
           const barX = cx - barW / 2;
           const h = ((a.composite_score - lo) / range) * innerH;
           const y = PAD_Y + innerH - h;
-          const label = a.practice_test?.code ?? '—';
+          const label = labelOf(a);
           return (
             <g key={a.id}>
               <rect
@@ -481,6 +501,12 @@ function HistoryTable({ attempts }) {
   );
 }
 
+function shortMonth(iso) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
 function formatDate(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
@@ -538,7 +564,7 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
     if (isActFormKind(r.kind)) kindByForm.set(r.source_test, r.kind);
   }
   // Readable names: the admin's display_name or a default derived
-  // from the key ("April 2026 ACT", "Online Multiple Choice Test 1").
+  // from the key ("April 2026 Form J01", "ACT Online Practice Test 1").
   const nameOf = actFormNamer(formRows);
 
   // Bucket per (source_test, section).
@@ -557,7 +583,6 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
     .map((f) => ({
       sourceTest: f.source_test,
       name: nameOf(f.source_test),
-      detail: actFormDetail(f.source_test),
       ...assessActQuestions(questionRows.filter(q => q.source_test === f.source_test), {
         format: formatByForm.get(f.source_test), kind: kindByForm.get(f.source_test),
       }),
@@ -566,7 +591,7 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
         .sort((a, b) => ACT_SECTIONS.indexOf(a[0]) - ACT_SECTIONS.indexOf(b[0]))
         .map(([section, count]) => ({ section, count })),
     }))
-    .sort((a, b) => a.sourceTest.localeCompare(b.sourceTest));
+    .sort((a, b) => compareActForms(a.sourceTest, b.sourceTest));
 
   let resumeInfo = null;
   if (inProgress) {
@@ -587,12 +612,25 @@ async function ActPracticeTestsPage({ user, supabase, timeAccommodation }) {
     };
   }
 
+  const completed = attemptRows ?? [];
+  const recentForChart = completed
+    .filter((a) => Number.isFinite(a.composite_score))
+    .slice(0, 6)
+    .reverse();
+
   return (
     <ActTestsHub
-        forms={forms}
-        attempts={(attemptRows ?? []).map(({ sections, ...a }) => ({ ...a, name: nameOf(a.source_test), untimed: isUntimedPlan(sections) }))}
-        resumeInfo={resumeInfo}
-        defaultMultiplier={timeAccommodation}
+      forms={forms}
+      attempts={completed.map(({ sections, ...a }) => ({ ...a, name: nameOf(a.source_test), untimed: isUntimedPlan(sections) }))}
+      resumeInfo={resumeInfo}
+      defaultMultiplier={timeAccommodation}
+      stats={<StatsStrip stats={buildActStats(completed)} />}
+      chart={recentForChart.length >= 2 ? (
+        <section className={s.card}>
+          <div className={s.sectionLabel}>Recent composites</div>
+          <TrendChart attempts={recentForChart} floor={1} ceil={36} step={2} labelOf={(a) => shortMonth(a.finished_at)} />
+        </section>
+      ) : null}
     />
   );
 }

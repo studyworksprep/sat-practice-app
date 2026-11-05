@@ -3,7 +3,7 @@ import type { Row } from '../types/index.ts';
 import { fetchAll } from '../supabase/fetchAll.js';
 import { buildActAssignmentTaxonomy, type ActSectionTaxonomy } from '../practice/act-assignment-taxonomy.ts';
 import { assessActQuestions } from '../practice/act-format-detection.ts';
-import { actFormNamer } from '../practice/act-form-names.ts';
+import { actFormNamer, compareActForms } from '../practice/act-form-names.ts';
 import { ACT_FORMAT_LABELS, isActFormat } from '../practice/act-test-plan.ts';
 import type { ActSection } from '../practice/act-taxonomy.ts';
 
@@ -44,7 +44,7 @@ export function shapeActAssignmentCatalog(rows: Question[], forms: Form[]): ActA
       label: `${nameForm(sourceTest)} · ${ACT_FORMAT_LABELS[assessment.format]} · ${count} question${count === 1 ? '' : 's'}`,
     });
   }
-  options.sort((a, b) => a.sourceTest.localeCompare(b.sourceTest));
+  options.sort((a, b) => compareActForms(a.sourceTest, b.sourceTest));
   return {
     taxonomy: buildActAssignmentTaxonomy(rows),
     difficulties: [...difficulties].sort((a, b) => a - b),

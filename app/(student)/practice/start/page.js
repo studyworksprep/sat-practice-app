@@ -3,7 +3,7 @@ import { resolveTestType } from '@/lib/practice/test-type-server';
 //
 // Server-side: load the filter taxonomy for whichever test type the
 // student selected, then hand control to the matching client island
-// (StartInteractive for SAT, StartInteractiveAct for ACT).
+// (StartInteractive for SAT, StartInteractiveAct for ACT — same layout).
 //
 // Test-type slice: an explicit `?test=sat|act` dispatches at the page
 // layer; without one, the sidebar SAT/ACT switch's stored choice does

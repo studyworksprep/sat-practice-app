@@ -75,7 +75,6 @@ export function ActTestResults({
         <div className={s.eyebrow}>ACT score report</div>
         <h1 className={s.h1}>{attempt.formName}</h1>
         <p className={s.sub}>
-          {attempt.formDetail ? `${attempt.formDetail} · ` : ''}
           {ACT_FORMAT_LABELS[attempt.format]}
           {' · '}Finished {formatDate(attempt.finishedAt)}
           {attempt.untimed ? ' · Untimed' : attempt.timeMultiplier > 1 ? ` · ${attempt.timeMultiplier}× time` : ''}

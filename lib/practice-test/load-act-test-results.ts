@@ -20,7 +20,7 @@
 import { sectionLabel, type ActSection } from '@/lib/practice/act-taxonomy';
 import { buildActSectionRows, type ActReportCategory } from './act-report.ts';
 import { isUntimedPlan, parsePlan, type ActFormat } from '@/lib/practice/act-test-plan';
-import { actFormDetail, actFormName } from '@/lib/practice/act-form-names';
+import { actFormName } from '@/lib/practice/act-form-names';
 import {
   ACT_ATTEMPT_COLUMNS,
   attemptFormat,
@@ -33,8 +33,6 @@ export interface ActTestResultsAttempt {
   sourceTest: string;
   /** Student-facing name (act_forms.display_name or the derived default). */
   formName: string;
-  /** "Form E25"-style detail, or null. */
-  formDetail: string | null;
   status: string;
   format: ActFormat;
   timeMultiplier: number;
@@ -69,7 +67,6 @@ function toAttempt(row: ActAttemptRow, displayName: string | null | undefined): 
     userId: row.user_id,
     sourceTest: row.source_test,
     formName: actFormName(row.source_test, displayName),
-    formDetail: actFormDetail(row.source_test),
     status: row.status,
     format: attemptFormat(row),
     timeMultiplier: Number(row.time_multiplier ?? 1) || 1,

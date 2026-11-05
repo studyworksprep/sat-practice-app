@@ -8,33 +8,52 @@
 // turns act_forms rows into a namer.
 //
 // Key shapes in the bank:
-//   ACT-2022-April-E25        dated released exam, form code E25
-//   ACT-2024-Sep              dated, no code
-//   ACT-2026-April-FormJ01    dated, "Form" prefix on the code
-//   ACT-25MC1                 online multiple-choice practice test 1
-//                             (2025 edition)
+//   ACT-2022-April-E25          dated released exam, form code E25
+//   ACT-2024-Sep                dated, no code
+//   ACT-2026-April-FormJ01      dated, "Form" prefix on the code
+//   ACT-25MC1                   ACT Online Practice Test, by its file
+//                               code (2025 multiple-choice edition)
+//   ACT-Online-Practice-Test-3  ACT Online Practice Test, by number
+//
+// Naming rule (owner, 2026-11-04): released exams read "Month Year
+// Form" with no "ACT" ("April 2022 Form E25", "September 2024" when
+// the key has no code); online practice tests read "ACT Online
+// Practice Test N".
 
 const MONTHS: Record<string, string> = {
   jan: 'January', feb: 'February', mar: 'March', apr: 'April',
   may: 'May', jun: 'June', jul: 'July', aug: 'August',
   sep: 'September', oct: 'October', nov: 'November', dec: 'December',
 };
+const MONTH_ORDER = Object.values(MONTHS);
+
+// The online practice tests' file codes don't carry the test number:
+// 25MC1 is Online Practice Test 1 and 25MC5 is Online Practice Test 2
+// (owner, 2026-11-04). A code not listed here keeps its MC number.
+const ONLINE_MC_TEST_NUMBER: Record<string, number> = {
+  '2025-1': 1,
+  '2025-5': 2,
+};
 
 export type ParsedActSourceTest =
   | { kind: 'dated'; year: number; month: string; formCode: string | null }
-  | { kind: 'online_mc'; year: number; number: number }
+  | { kind: 'online_practice'; number: number }
   | { kind: 'unknown' };
 
 const DATED_RE = /^ACT-(\d{4})-([A-Za-z]{3,9})(?:-(?:Form)?([A-Za-z0-9]{1,8}))?$/i;
 const ONLINE_MC_RE = /^ACT-(\d{2}|\d{4})-?MC(\d{1,2})$/i;
+const ONLINE_PRACTICE_RE = /^ACT-Online-Practice-Test-(\d{1,2})$/i;
 
 export function parseActSourceTest(sourceTest: string): ParsedActSourceTest {
   const key = (sourceTest ?? '').trim();
+  const practice = ONLINE_PRACTICE_RE.exec(key);
+  if (practice) return { kind: 'online_practice', number: Number(practice[1]) };
   const mc = ONLINE_MC_RE.exec(key);
   if (mc) {
     const yy = mc[1];
     const year = yy.length === 2 ? 2000 + Number(yy) : Number(yy);
-    return { kind: 'online_mc', year, number: Number(mc[2]) };
+    const code = Number(mc[2]);
+    return { kind: 'online_practice', number: ONLINE_MC_TEST_NUMBER[`${year}-${code}`] ?? code };
   }
   const dated = DATED_RE.exec(key);
   if (dated) {
@@ -51,20 +70,28 @@ export function parseActSourceTest(sourceTest: string): ParsedActSourceTest {
   return { kind: 'unknown' };
 }
 
-/** The default name for a form key: "April 2022 ACT", "Online Multiple
- *  Choice Test 1 (2025)", or the key itself when it has no known shape. */
+/** The default name for a form key: "April 2022 Form E25", "September
+ *  2024", "ACT Online Practice Test 2", or the key itself when it has
+ *  no known shape. */
 export function defaultActFormName(sourceTest: string): string {
   const p = parseActSourceTest(sourceTest);
-  if (p.kind === 'dated') return `${p.month} ${p.year} ACT`;
-  if (p.kind === 'online_mc') return `Online Multiple Choice Test ${p.number} (${p.year})`;
+  if (p.kind === 'dated') return `${p.month} ${p.year}${p.formCode ? ` Form ${p.formCode}` : ''}`;
+  if (p.kind === 'online_practice') return `ACT Online Practice Test ${p.number}`;
   return (sourceTest ?? '').trim();
 }
 
-/** Secondary detail worth keeping next to the name: the form code of a
- *  dated exam ("Form E25"). Null when there is nothing to add. */
-export function actFormDetail(sourceTest: string): string | null {
-  const p = parseActSourceTest(sourceTest);
-  return p.kind === 'dated' && p.formCode ? `Form ${p.formCode}` : null;
+/** Display order for form lists: released exams newest first, then the
+ *  online practice tests by number, then anything unrecognized by key. */
+export function compareActForms(a: string, b: string): number {
+  const rank = (key: string): [number, number, string] => {
+    const p = parseActSourceTest(key);
+    if (p.kind === 'dated') return [0, -(p.year * 12 + MONTH_ORDER.indexOf(p.month)), key];
+    if (p.kind === 'online_practice') return [1, p.number, key];
+    return [2, 0, key];
+  };
+  const [ga, na, ka] = rank(a);
+  const [gb, nb, kb] = rank(b);
+  return ga - gb || na - nb || ka.localeCompare(kb);
 }
 
 /** The name to show: the admin's display_name when set, else the default. */
