@@ -170,11 +170,11 @@ test.describe('onboarding intake', () => {
     // Coverage tasks carry no "why" line (owner note 3).
     await expect(page.getByText('Part of covering every topic in order')).toHaveCount(0);
 
-    // Activate → the dashboard, with the plan's first task in the Tasks box.
+    // Activate → the dashboard, with the plan's tasks under "Coming up".
     await page.getByRole('button', { name: 'Start my plan' }).click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
-    await expect(page.getByRole('heading', { name: 'Tasks' })).toBeVisible();
-    await expect(page.getByRole('link', { name: /see the whole plan/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Coming up' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Full plan →' })).toBeVisible();
 
     // The plan hub is reachable and shows where the student is.
     await page.goto('/plan');

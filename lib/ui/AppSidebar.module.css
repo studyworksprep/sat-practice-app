@@ -535,5 +535,5 @@
 }
 
 @media (max-width: 767px) {
-  .mobileBarSlot button { min-width: 52px; min-height: 34px; }
+  .mobileBarSlot button { min-width: 52px; min-height: 36px; }
 }

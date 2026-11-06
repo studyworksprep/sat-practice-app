@@ -24,9 +24,9 @@ test.describe('Teacher — page-level access', () => {
     await page.goto(`/tutor/students/${USERS.student1.id}`);
     // The detail page heading is the student's name.
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    // The "Snapshot" section heading is a stable fingerprint of the
+    // The Overview tab's "Open work" card is a stable fingerprint of the
     // detail body; if we 404'd we'd see Next's not-found page instead.
-    await expect(page.getByRole('heading', { name: 'Snapshot' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Open work' })).toBeVisible();
   });
 
   test('GET /tutor/students/<not-on-roster> 404s', async ({ page }) => {
@@ -34,12 +34,12 @@ test.describe('Teacher — page-level access', () => {
     // student2 is not on the seeded teacher's roster, so can_view() hides
     // them and the Server Component calls notFound(). Two independent
     // guarantees, so this can never silently pass on a leaked detail page:
-    //   1. The private detail (the "Snapshot" section) must be absent.
+    //   1. The private detail (the "Open work" card) must be absent.
     //   2. The not-found page must render.
     // notFound() returns a 404 status in production; the Next dev server
     // renders the same not-found page with a 200, so accept the 404 status
     // OR the visible not-found copy.
-    await expect(page.getByRole('heading', { name: 'Snapshot' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Open work' })).toHaveCount(0);
     if (res?.status() !== 404) {
       await expect(page.getByText(/could not be found|not found/i)).toBeVisible();
     }
