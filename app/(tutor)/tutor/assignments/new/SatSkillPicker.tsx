@@ -4,7 +4,8 @@
 // Writing, then domain, each skill a checkbox. Ticked skills appear
 // under "Fine-tune selected skills" with their own score bands and
 // weight (relative share of the set) — kept from the original picker,
-// folded away so the common case is just ticking boxes.
+// folded away so the common case is just ticking boxes. A skill's own
+// bands replace the assignment-wide ones (`globalBands`) for it.
 
 import type { ReactNode } from 'react';
 import styles from './NewAssignmentInteractive.module.css';
@@ -40,6 +41,7 @@ export function SatSkillPicker({
   onToggleDomain,
   onToggleBand,
   onWeight,
+  globalBands,
   prefillLabel,
   weaknessLink,
 }: {
@@ -51,6 +53,8 @@ export function SatSkillPicker({
   onToggleDomain: (domain: DomainTaxonomy, on: boolean) => void;
   onToggleBand: (domain: string, skill: string, band: number) => void;
   onWeight: (domain: string, skill: string, weight: number) => void;
+  /** The assignment-wide score bands; empty = any. */
+  globalBands: number[];
   prefillLabel: string | null;
   weaknessLink: ReactNode;
 }) {
@@ -133,7 +137,10 @@ export function SatSkillPicker({
                 </div>
                 {s.availableBands.length > 0 && (
                   <div>
-                    <div className={styles.controlLabel}>Score bands{s.scoreBands.length === 0 && ' (all)'}</div>
+                    <div className={styles.controlLabel}>
+                      Score bands
+                      {s.scoreBands.length === 0 && (globalBands.length > 0 ? ' (using the assignment-wide bands)' : ' (all)')}
+                    </div>
                     <div className={styles.bandRow}>
                       {s.availableBands.map((b) => (
                         <button

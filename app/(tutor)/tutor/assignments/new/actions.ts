@@ -8,7 +8,10 @@
 // Questions payload shape (new, as of the per-skill-weighting update):
 //   - skill_selections : JSON string of
 //       [{ domain, skill, scoreBands: number[], weight: number }, ...]
-//   - difficulty[]     : optional global difficulty filter
+//   - score_band[]     : optional assignment-wide score bands (1–7);
+//       a skill with its own scoreBands uses those instead
+//   - difficulty[]     : optional global difficulty filter (API callers;
+//       the SAT form sends score bands instead)
 //   - unanswered_only  : "1" to keep only questions none of the
 //       assignment's students have attempted. Any attempt by any
 //       selected student disqualifies a question, so the set is new
@@ -283,6 +286,12 @@ async function buildQuestionsPayload(
     .getAll('difficulty')
     .map((d) => Number(d))
     .filter(Number.isFinite);
+  const scoreBands = [...new Set(
+    formData
+      .getAll('score_band')
+      .map((b) => Number(b))
+      .filter((b) => Number.isInteger(b) && b >= 1 && b <= 7),
+  )].sort((a, b) => a - b);
 
   const rawSize = Number(formData.get('size') ?? 10);
   const size = Math.min(
@@ -306,8 +315,9 @@ async function buildQuestionsPayload(
   );
 
   // Fetch candidates per selection in parallel. Each query applies
-  // that skill's own score-band filter plus the global difficulty
-  // filter; the is_published + is_broken=false gate is shared.
+  // that skill's own score bands — or, when it has none, the
+  // assignment-wide ones — plus any global difficulty filter; the
+  // is_published + is_broken=false gate is shared.
   // When the "not attempted" filter is on, the students' attempt
   // history is fetched alongside so the two waves overlap.
   const [candidatePools, attempted] = await Promise.all([
@@ -326,8 +336,9 @@ async function buildQuestionsPayload(
           .eq('domain_name', sel.domain)
           .eq('skill_name', sel.skill);
 
-        if (sel.scoreBands.length > 0) {
-          q = q.in('score_band', sel.scoreBands);
+        const bands = sel.scoreBands.length > 0 ? sel.scoreBands : scoreBands;
+        if (bands.length > 0) {
+          q = q.in('score_band', bands);
         }
         if (difficulties.length > 0) {
           q = q.in('difficulty', difficulties);
@@ -383,6 +394,7 @@ async function buildQuestionsPayload(
       question_ids: questionIds,
       filter_criteria: {
         skillSelections: selections,
+        scoreBands,
         difficulties,
         size,
         unansweredOnly,
