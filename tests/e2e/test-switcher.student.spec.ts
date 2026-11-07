@@ -22,7 +22,7 @@ test('one sidebar switch steers every practice surface', async ({ page }) => {
 
   await act.click();
   await expect(act).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByText('ACT practice', { exact: true })).toBeVisible();
+  await expect(page.getByText('Practice · ACT', { exact: true })).toBeVisible();
 
   // The choice carries to the other practice surfaces without a param.
   for (const path of ['/practice/tests', '/practice/history']) {
@@ -44,10 +44,11 @@ test('one sidebar switch steers every practice surface', async ({ page }) => {
   await expect(sat).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('the switch is reachable and touch-sized in the phone drawer', async ({ page }) => {
+test('the switch is reachable and touch-sized in the phone top bar', async ({ page }) => {
+  // Students get the bottom tab bar on phones; the switch sits in the
+  // top bar so it never hides behind "More".
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/practice/start');
-  await page.getByRole('button', { name: 'Open navigation' }).click();
   const act = page.getByRole('group', { name: SWITCH }).getByRole('button', { name: 'ACT', exact: true });
   await expect(act).toBeInViewport({ ratio: 1 });
   const bounds = await act.boundingBox();

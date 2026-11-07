@@ -128,7 +128,11 @@ jobs:
   # Until those exist this job reports itself skipped rather than
   # green, so a missing test environment is visible, not silent.
   e2e-auth:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, which Playwright 1.59 cannot
+    # install browser dependencies on ("Playwright does not support
+    # chromium on ubuntu26.04-x64"). Move to latest with a Playwright
+    # release that supports it.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}

@@ -28,7 +28,7 @@ export function ActPoolPicker({
           Prefilled from <strong>{prefillLabel}</strong> — adjust freely before creating.
         </p>
       )}
-      <div className={styles.sectionCols}>
+      <div className={styles.sectionCols} role="group" aria-label="ACT question pool">
         {taxonomy.map((sec) => {
           const allOn = sec.categories.every((c) => selected.has(actKey(sec.section, c.name)));
           return (

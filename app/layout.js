@@ -2,27 +2,37 @@ import './globals.css';
 import './styles/next-tokens.css';
 import './styles/next-prose.css';
 import './styles/next-tools.css';
-import { Inter, Playfair_Display } from 'next/font/google';
+import localFont from 'next/font/local';
 import { Analytics } from '@vercel/analytics/next';
 import { siteUrl, siteName, siteTitle, siteDescription } from '../lib/config/site';
 
-// Self-hosted Google Fonts via next/font. The bundler downloads them
-// at build time, scopes the @font-face to a hashed class on <html>,
-// and exposes a CSS custom property each. The token file
-// (app/styles/next-tokens.css) reads --font-inter / --font-playfair
-// at the head of its --font-sans / --font-serif fallback stacks, so
-// every macOS / Windows / Linux user sees the same typeface instead
-// of falling through to system fonts.
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+// Self-hosted fonts via next/font/local: the latin subsets of the
+// Inter and Playfair Display variable fonts, committed in app/fonts/
+// (SIL Open Font License; texts alongside). next/font scopes the
+// @font-face to a hashed class on <html> and exposes a CSS custom
+// property each. The token file (app/styles/next-tokens.css) reads
+// --font-inter / --font-playfair at the head of its --font-sans /
+// --font-serif fallback stacks, so every macOS / Windows / Linux user
+// sees the same typeface instead of falling through to system fonts.
+//
+// Not next/font/google: that fetches from Google at build time, and
+// Google sometimes answers with extensionless /l/font?kit= URLs that
+// Next 16.2's Turbopack loader rejects ("next/font/google queries have
+// exactly one entry"), failing the Vercel build at random
+// (vercel/next.js#99114, fixed in 16.4.3). Local files also mean the
+// build never depends on a third party being up.
+const inter = localFont({
+  src: './fonts/inter-latin-variable.woff2',
+  weight: '400 800',
+  style: 'normal',
   variable: '--font-inter',
   display: 'swap',
 });
 
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['600', '700', '800'],
+const playfair = localFont({
+  src: './fonts/playfair-display-latin-variable.woff2',
+  weight: '600 800',
+  style: 'normal',
   variable: '--font-playfair',
   display: 'swap',
 });

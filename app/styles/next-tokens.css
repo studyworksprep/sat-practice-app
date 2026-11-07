@@ -158,7 +158,7 @@
   --tile-slate-bg:   #f1f5f9;  --tile-slate-fg:   #334155;
 
   /* ---------- Typography ----------
-     --font-inter and --font-playfair come from next/font/google in
+     --font-inter and --font-playfair come from next/font/local in
      app/layout.js — they're the actual hashed font-family tokens
      for the self-hosted Inter + Playfair Display bundles. The
      literal "Inter" / "Playfair Display" stay in the stack as a

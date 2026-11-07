@@ -2,7 +2,6 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import ts from 'typescript';
 import { test, expect, type Page } from '@playwright/test';
 
 // Real controls and styles, with navigation/actions isolated from the database.
@@ -11,46 +10,33 @@ let directory: string;
 let bundle: string;
 test.beforeAll(async () => {
   directory = mkdtempSync(join(tmpdir(), 'act-options-'));
-  const imports: Record<string, string> = {
-    './act-taxonomy.ts': './taxonomy.mjs',
-    './act-taxonomy': './taxonomy.mjs',
-    '../practice/act-taxonomy.ts': './taxonomy.mjs',
-    './SkillBreakdownCard': './breakdown-card.mjs',
-    '@/lib/practice/act-taxonomy': './taxonomy.mjs',
-    '@/lib/practice/act-test-plan': './plan.mjs',
-    '@/lib/practice/act-assignment-taxonomy': './assignment-taxonomy.mjs',
-    '@/lib/ui/TestTypeSwitcher': './test-switcher.mjs',
-    'next/navigation': './navigation.mjs',
-    'next/link': './navigation.mjs',
-    '@/lib/ui/ConfirmDialog': './navigation.mjs',
-    '@/app/(student)/practice/tests/actions': './actions.mjs',
-    './LessonPicker': './navigation.mjs',
-  };
-  const files = {
-    taxonomy: 'lib/practice/act-taxonomy.ts', plan: 'lib/practice/act-test-plan.ts',
-    'assignment-taxonomy': 'lib/practice/act-assignment-taxonomy.ts',
-    'test-switcher': 'lib/ui/TestTypeSwitcher.tsx',
-    hub: 'lib/practice/ActTestsHub.tsx',
-    assignment: 'app/(tutor)/tutor/assignments/new/NewAssignmentInteractive.tsx',
-    report: 'lib/practice-test/act-report.ts',
-    breakdown: 'lib/practice/ActBreakdownCards.tsx',
-    'breakdown-card': 'lib/practice/SkillBreakdownCard.jsx',
-  };
-  for (const [name, path] of Object.entries(files)) {
-    let source = readFileSync(resolve(path), 'utf8')
-      .replace(/import (\w+) from '[^']+\.module\.css';/, 'const $1 = new Proxy({}, { get: (_, key) => key });');
-    for (const [specifier, target] of Object.entries(imports)) source = source.replaceAll(`'${specifier}'`, JSON.stringify(target));
-    writeFileSync(join(directory, `${name}.mjs`), ts.transpileModule("import React from 'react';\n" + source, {
-      compilerOptions: { module: ts.ModuleKind.ESNext, jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2022 },
-    }).outputText);
-  }
+  // Real source files are bundled through a tiny loader (TypeScript/JSX
+  // transpile; CSS modules become a class-name proxy), so a component
+  // gaining a new import doesn't break the harness. Only Next's
+  // runtime and server actions are aliased to stubs.
+  const root = resolve('.');
+  writeFileSync(join(directory, 'loader.cjs'), `
+    const ts = require(${JSON.stringify(createRequire(resolve('package.json')).resolve('typescript'))});
+    module.exports = function (source) {
+      const body = source
+        .replace(/^import (\\w+) from '[^']+\\.module\\.css';$/gm, 'const $1 = new Proxy({}, { get: (_, key) => key });')
+        .replace(/^import '[^']+\\.css';$/gm, '');
+      return ts.transpileModule("import * as __React from 'react';\\n" + body, {
+        fileName: this.resourcePath,
+        compilerOptions: {
+          module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022,
+          jsx: ts.JsxEmit.React, jsxFactory: '__React.createElement', jsxFragmentFactory: '__React.Fragment',
+        },
+      }).outputText;
+    };
+  `);
   writeFileSync(join(directory, 'navigation.mjs'), `
     import React from 'react';
     export default function Link({href, children, ...props}) { return React.createElement('a', {...props, href}, children); }
     export const useRouter = () => ({push(){}, refresh(){}});
     export const useSearchParams = () => new URLSearchParams();
+    export const usePathname = () => '/';
     export const useConfirm = () => [async () => true, null];
-    export const LessonPicker = () => null;
   `);
   writeFileSync(join(directory, 'actions.mjs'), `
     export async function startActPracticeTest(_, fd) { window.lastActStart = {mode: fd.get('timing_mode'), sections: fd.getAll('sections')}; return {ok:true}; }
@@ -58,12 +44,12 @@ test.beforeAll(async () => {
   `);
   writeFileSync(join(directory, 'entry.mjs'), `
     import React from 'react'; import {createRoot} from 'react-dom/client';
-    import {ActTestsHub} from './hub.mjs';
-    import {NewAssignmentInteractive} from './assignment.mjs';
-    import {buildActAssignmentTaxonomy} from './assignment-taxonomy.mjs';
-    import {buildSectionPlan} from './plan.mjs';
-    import {buildActSectionRows} from './report.mjs';
-    import {ActBreakdownCards} from './breakdown.mjs';
+    import {ActTestsHub} from '@/lib/practice/ActTestsHub';
+    import {NewAssignmentInteractive} from '@/app/(tutor)/tutor/assignments/new/NewAssignmentInteractive';
+    import {buildActAssignmentTaxonomy} from '@/lib/practice/act-assignment-taxonomy';
+    import {buildSectionPlan} from '@/lib/practice/act-test-plan';
+    import {buildActSectionRows} from '@/lib/practice-test/act-report';
+    import {ActBreakdownCards} from '@/lib/practice/ActBreakdownCards';
     const fixture = window.actFixture;
     const plan = buildSectionPlan({format:'classic',multiplier:1,untimed:true,questionsBySection:{math:['m']}});
     const rows = [
@@ -82,13 +68,25 @@ test.beforeAll(async () => {
       : fixture.kind==='hub'
       ? React.createElement(ActTestsHub,{forms:[{sourceTest:'ACT-fixture',name:'ACT fixture',detail:null,format:'classic',kind:'released',total:60,sections:[{section:'math',count:60}]}],attempts:[],tabs:null,
           resumeInfo: fixture.resume ? {attemptId:'resume',sourceTest:'ACT-fixture',name:'ACT fixture',sectionIndex:0,sectionCount:1,sectionLabel:'Math',sectionStatus:'in_progress',plan,timeMultiplier:1} : null})
-      : React.createElement(NewAssignmentInteractive,{students:[],domains:[],difficulties:[],practiceTests:[],lessonPacks:[],
+      : React.createElement(NewAssignmentInteractive,{students:[],domains:[],practiceTests:[],lessonPacks:[],
           initialActCatalog:{taxonomy:buildActAssignmentTaxonomy(rows),difficulties:[],forms:[]},loadActCatalogAction:async()=>({ok:false,error:'Not used by this preloaded fixture'}),
           prefill:{label:'Saved template',testType:'act',skills:[],difficulties:[],size:10,unansweredOnly:false,actSelections:fixture.selections||[]},createAction:async()=>({ok:true})}));
   `);
   await new Promise<void>((done, reject) => {
+    const stub = (file: string) => join(directory, file);
     const compiler = webpack({ mode: 'production', entry: join(directory, 'entry.mjs'),
-      resolve: { modules: [resolve('node_modules'), 'node_modules'] },
+      resolve: {
+        modules: [resolve('node_modules'), 'node_modules'],
+        extensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs'],
+        alias: {
+          'next/navigation$': stub('navigation.mjs'),
+          'next/link$': stub('navigation.mjs'),
+          '@/lib/ui/ConfirmDialog$': stub('navigation.mjs'),
+          '@/app/(student)/practice/tests/actions$': stub('actions.mjs'),
+          '@': root,
+        },
+      },
+      module: { rules: [{ test: /\.(tsx?|jsx?)$/, include: root, exclude: /node_modules/, use: join(directory, 'loader.cjs') }] },
       output: { path: directory, filename: 'bundle.js' }, optimization: { minimize: false }, devtool: false });
     compiler.run((error: Error | null, stats: { hasErrors(): boolean; toString(): string }) => {
       compiler.close(() => {});
@@ -100,8 +98,12 @@ test.beforeAll(async () => {
 test.afterAll(() => { if (directory) rmSync(directory, { recursive: true, force: true }); });
 
 async function mount(page: Page, fixture: { kind: 'hub' | 'assignment' | 'report'; resume?: boolean; selections?: unknown[] }) {
-  const css = ['app/styles/next-tokens.css', fixture.kind === 'report' ? 'lib/practice/SkillBreakdownCard.module.css' : fixture.kind === 'hub' ? 'lib/practice/ActTestsHub.module.css' : 'app/(tutor)/tutor/assignments/new/NewAssignmentInteractive.module.css']
-    .concat(fixture.kind === 'assignment' ? ['lib/ui/TestTypeSwitcher.module.css'] : [])
+  const sheets = {
+    report: ['lib/practice/SkillBreakdownCard.module.css'],
+    hub: ['app/(student)/practice/tests/PracticeTestsPage.module.css', 'lib/practice/TestLauncher.module.css', 'lib/practice/ActTestsHub.module.css'],
+    assignment: ['app/(tutor)/tutor/assignments/new/NewAssignmentInteractive.module.css'],
+  }[fixture.kind];
+  const css = ['app/styles/next-tokens.css', ...sheets]
     .map(path => readFileSync(resolve(path), 'utf8')).join('\n');
   await page.setContent(`<style>${css}*{box-sizing:border-box}body{margin:0;font:14px Arial}</style><div id="fixture"></div>`);
   await page.addScriptTag({ content: `window.actFixture=${JSON.stringify(fixture)};\n${bundle}` });
@@ -109,24 +111,25 @@ async function mount(page: Page, fixture: { kind: 'hub' | 'assignment' | 'report
 
 test('students can choose untimed sections while timed accommodations remain available', async ({ page }, testInfo) => {
   await mount(page, { kind: 'hub' });
-  const timing = page.getByRole('combobox', { name: 'ACT test timing' });
+  const timing = page.getByRole('combobox', { name: 'Timing' });
+  const plan = page.getByText(/60 questions · /);
   await timing.selectOption('2');
-  await expect(page.getByText('Math · 60 questions · 2 h', { exact: true })).toBeVisible();
+  await expect(plan).not.toContainText('Untimed');
   await timing.selectOption('untimed');
-  await expect(page.getByText('Math · 60 questions · Untimed', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await expect(plan).toContainText('60 questions · Untimed');
+  await page.getByRole('button', { name: 'Start test →', exact: true }).click();
   expect(await page.evaluate(() => (window as unknown as { lastActStart: unknown }).lastActStart)).toEqual({ mode: 'untimed', sections: ['math'] });
   await page.setViewportSize({ width: 375, height: 900 });
   await page.screenshot({ path: testInfo.outputPath('untimed-hub-mobile.png'), fullPage: true });
 });
 
-test('resuming preserves untimed mode when the launcher control is changed', async ({ page }) => {
+test('resuming keeps the saved sections and timing', async ({ page }) => {
   await mount(page, { kind: 'hub', resume: true });
-  await page.getByRole('combobox', { name: 'ACT test timing' }).selectOption('2');
-  await expect(page.getByText(/saved sections and timing \(Untimed\)/)).toBeVisible();
-  await expect(page.getByText(/clock running/)).toHaveCount(0);
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  expect(await page.evaluate(() => (window as unknown as { lastActStart: unknown }).lastActStart)).toEqual({ mode: 'untimed', sections: ['math'] });
+  // The launcher locks to the saved attempt rather than starting a new one.
+  await expect(page.getByRole('combobox', { name: 'Timing' })).toBeDisabled();
+  await expect(page.getByText('Continue keeps its saved sections and timing.', { exact: false })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Continue test →', exact: true }).first())
+    .toHaveAttribute('href', '/practice/test/act/attempt/resume');
 });
 
 test('tutors can select child categories without double-counting parent selections', async ({ page }, testInfo) => {
@@ -140,15 +143,15 @@ test('tutors can select child categories without double-counting parent selectio
     { section: 'math', category: 'Preparing for Higher Math', subcategory: 'Geometry' },
     { section: 'english', category: 'Conventions of Standard English', subcategory: 'Punctuation' },
   ]);
-  await expect(page.getByText('5 questions in the pool before filters', { exact: true })).toBeVisible();
+  await expect(page.getByText('3 selections · 5 questions', { exact: true })).toBeVisible();
   await page.getByRole('checkbox', { name: /^Preparing for Higher Math/ }).check();
   await expect(page.getByRole('checkbox', { name: /^Algebra/ })).toBeDisabled();
-  await expect(page.getByText('11 questions in the pool before filters', { exact: true })).toBeVisible();
+  await expect(page.getByText('2 selections · 11 questions', { exact: true })).toBeVisible();
   expect(await selections()).toEqual([
     { section: 'english', category: 'Conventions of Standard English', subcategory: 'Punctuation' },
     { section: 'math', category: 'Preparing for Higher Math' },
   ]);
-  await page.locator('section').filter({ has: page.getByText('ACT question pool', { exact: true }) }).screenshot({ path: testInfo.outputPath('assignment-subcategories.png') });
+  await page.getByRole('group', { name: 'ACT question pool', exact: true }).screenshot({ path: testInfo.outputPath('assignment-subcategories.png') });
 });
 
 test('saved subcategory templates rehydrate the exact selected children', async ({ page }) => {

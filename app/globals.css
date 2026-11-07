@@ -42,7 +42,7 @@
      Typography + rhythm
   ================================ */
 
-  /* --font-inter is provided by next/font/google in app/layout.js
+  /* --font-inter is provided by next/font/local in app/layout.js
      and applied as a CSS variable to <html>. Putting it at the head
      of the legacy stack means legacy-tree users get the same
      typeface as next-tree users instead of falling through to

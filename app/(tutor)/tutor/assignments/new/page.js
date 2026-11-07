@@ -97,7 +97,7 @@ export default async function NewAssignmentPage({ searchParams }) {
       .order('last_name', { ascending: true, nullsFirst: false }),
     supabase
       .from('published_question_taxonomy')
-      .select('domain_name, skill_name, question_count, score_bands, difficulties'),
+      .select('domain_name, skill_name, question_count, score_bands'),
     supabase
       .from('practice_tests_v2')
       .select('id, code, name')
@@ -178,12 +178,10 @@ export default async function NewAssignmentPage({ searchParams }) {
     }));
 
   // Reshape the pre-aggregated taxonomy rows (one per skill) into
-  // the nested domain → skills[] structure the picker expects, and
-  // collect the global difficulty list across skills. Difficulty
-  // is applied assignment-wide, not per-skill, so the union across
-  // skills is what the picker shows.
+  // the nested domain → skills[] structure the picker expects. The
+  // assignment-wide score-band chips are the union of the skills'
+  // bands, computed in the island.
   const byDomain = new Map();
-  const difficultiesSet = new Set();
   for (const r of taxonomyRows ?? []) {
     if (!byDomain.has(r.domain_name)) byDomain.set(r.domain_name, []);
     byDomain.get(r.domain_name).push({
@@ -191,7 +189,6 @@ export default async function NewAssignmentPage({ searchParams }) {
       scoreBands: [...(r.score_bands ?? [])].sort((a, b) => a - b),
       count: r.question_count ?? 0,
     });
-    for (const d of r.difficulties ?? []) difficultiesSet.add(d);
   }
   const domains = Array.from(byDomain.entries())
     .sort(([a], [b]) => a.localeCompare(b))
@@ -199,7 +196,6 @@ export default async function NewAssignmentPage({ searchParams }) {
       name,
       skills: skills.sort((a, b) => a.name.localeCompare(b.name)),
     }));
-  const difficulties = Array.from(difficultiesSet).sort((a, b) => a - b);
 
   // ── One-click prefill (§4.3) ──────────────────────────────────
   // Resolved server-side so deep links stay short and the weak-skill
@@ -230,7 +226,8 @@ export default async function NewAssignmentPage({ searchParams }) {
         label: `Template · ${t.name}`,
         testType: 'sat',
         skills: fc.skillSelections,
-        difficulties: Array.isArray(fc.difficulties) ? fc.difficulties : [],
+        difficulties: [],
+        scoreBands: Array.isArray(fc.scoreBands) ? fc.scoreBands : [],
         size: typeof fc.size === 'number' ? fc.size : null,
         unansweredOnly: fc.unansweredOnly === true,
       };
@@ -298,7 +295,6 @@ export default async function NewAssignmentPage({ searchParams }) {
         students={students}
         teachers={teachers}
         domains={domains}
-        difficulties={difficulties}
         practiceTests={(practiceTests ?? []).map((pt) => ({ id: pt.id, label: pt.name ?? pt.code ?? pt.id }))}
         lessonPacks={lessonPacks}
         lessons={lessons}

@@ -2,21 +2,24 @@
 // sticky "This assignment" summary that holds Create:
 //
 //   1. What are you assigning? — SAT/ACT, the type, saved templates.
-//   2. Who is it for? — students (or, for managers, trainees).
+//   2. Who is it for? — the students added so far, plus "Add student"
+//      (a roster search; StudentPicker). Managers can switch to
+//      trainees. At least one person is required to create.
 //   3. The content — skills (SAT, grouped Math | Reading & Writing) or
-//      ACT categories, with difficulty, size and "only unseen"; or the
-//      practice test, lesson or lesson pack.
+//      ACT categories, with score band (SAT) or difficulty (ACT), size
+//      and "only unseen"; or the practice test, lesson or lesson pack.
 //   4. Name and due date.
 //
 // Key design points kept from the original form:
-// - SAT skills carry their own score bands and weight (relative
-//   sampling share), now under "Fine-tune selected skills"; difficulty
-//   applies assignment-wide.
+// - The SAT score-band chips (1–7) apply to every selected skill; a
+//   skill fine-tuned with its own bands under "Fine-tune selected
+//   skills" uses those instead. Weight (relative sampling share) is
+//   per skill. ACT keeps its assignment-wide difficulty levels.
 // - Selected skills / ACT picks serialize to one hidden JSON field each
 //   (nested shapes); every field name the Server Action reads
 //   (actions.ts) is unchanged.
 // - Only one of the SAT / ACT question pools is mounted, so their
-//   same-named fields (size, difficulty) never both submit.
+//   same-named fields (size) never both submit.
 
 'use client';
 
@@ -40,9 +43,9 @@ import {
   type SkillTaxonomy,
 } from './SatSkillPicker';
 import { TemplateShelf, type TemplateDeleteAction, type TemplateOption } from './TemplateShelf';
+import { StudentPicker, type PersonOption } from './StudentPicker';
 import styles from './NewAssignmentInteractive.module.css';
 
-type PersonOption = { id: string; name: string; email: string | null };
 type PracticeTestOption = { id: string; label: string };
 type LessonPackOption = { id: string; name: string; questionCount: number };
 type AssignmentType = 'questions' | 'practice_test' | 'lesson' | 'lesson_pack';
@@ -54,7 +57,10 @@ type Prefill = {
   testType?: 'sat' | 'act';
   skills: { domain: string; skill: string; scoreBands: number[]; weight: number }[];
   actSelections?: { section: string; category: string; subcategory?: string }[];
+  /** ACT difficulty levels. */
   difficulties: number[];
+  /** SAT assignment-wide score bands. */
+  scoreBands?: number[];
   size: number | null;
   unansweredOnly: boolean;
 };
@@ -66,7 +72,6 @@ interface Props {
   /** Teachers under this manager; empty for non-managers (no Target toggle). */
   teachers?: PersonOption[];
   domains: DomainTaxonomy[];
-  difficulties: number[];
   practiceTests: PracticeTestOption[];
   lessonPacks: LessonPackOption[];
   lessons?: LessonCatalogItem[];
@@ -94,8 +99,17 @@ const STEP3_TITLE: Record<AssignmentType, string> = {
   lesson_pack: 'Which pack?',
 };
 
-function difficultyLabel(d: number): string {
-  return { 1: 'Easy', 2: 'Medium', 3: 'Hard' }[d] ?? String(d);
+/** [1,2,3,5,7] → "1–3, 5, 7". */
+export function formatBands(bands: number[]): string {
+  const sorted = [...bands].sort((a, b) => a - b);
+  const runs: string[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    let j = i;
+    while (j + 1 < sorted.length && sorted[j + 1] === sorted[j] + 1) j++;
+    runs.push(j - i >= 2 ? `${sorted[i]}–${sorted[j]}` : sorted.slice(i, j + 1).join(', '));
+    i = j;
+  }
+  return runs.join(', ');
 }
 
 function clampSize(text: string): number {
@@ -109,7 +123,6 @@ export function NewAssignmentInteractive({
   students,
   teachers = [],
   domains,
-  difficulties,
   practiceTests,
   lessonPacks,
   lessons = [],
@@ -236,11 +249,16 @@ export function NewAssignmentInteractive({
     }
     return out;
   });
-  const [globalDifficulties, setGlobalDifficulties] = useState<Set<number>>(
+  // Score bands present anywhere in the published SAT bank (1–7).
+  const bandOptions = useMemo(
+    () => [...new Set(domains.flatMap((d) => d.skills.flatMap((sk) => sk.scoreBands)))].sort((a, b) => a - b),
+    [domains],
+  );
+  const [globalBands, setGlobalBands] = useState<Set<number>>(
     () => new Set(
       prefill?.testType === 'act'
         ? []
-        : (prefill?.difficulties ?? []).filter((d) => difficulties.includes(d)),
+        : (prefill?.scoreBands ?? []).filter((b) => bandOptions.includes(b)),
     ),
   );
   const [skillSearch, setSkillSearch] = useState('');
@@ -257,7 +275,7 @@ export function NewAssignmentInteractive({
   const [lessonPackId, setLessonPackId] = useState('');
 
   const visiblePeople = target === 'trainees' ? teachers : students;
-  const peopleLabel = target === 'trainees' ? 'Trainees' : 'Students';
+  const peopleNoun = target === 'trainees' ? 'trainee' : 'student';
   const peopleEmpty =
     target === 'trainees' ? 'You have no teachers on your team yet.' : 'You have no students yet.';
 
@@ -338,20 +356,19 @@ export function NewAssignmentInteractive({
     );
   };
 
-  const toggleStudent = (id: string) => {
-    setSelectedStudents((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const addStudent = (id: string) => setSelectedStudents((prev) => new Set(prev).add(id));
+  const removeStudent = (id: string) => setSelectedStudents((prev) => {
+    const next = new Set(prev);
+    next.delete(id);
+    return next;
+  });
+  const addAllStudents = () => setSelectedStudents((prev) => new Set([...prev, ...visiblePeople.map((p) => p.id)]));
 
-  const toggleDifficulty = (d: number) => {
-    setGlobalDifficulties((prev) => {
+  const toggleBandFilter = (b: number) => {
+    setGlobalBands((prev) => {
       const next = new Set(prev);
-      if (next.has(d)) next.delete(d);
-      else next.add(d);
+      if (next.has(b)) next.delete(b);
+      else next.add(b);
       return next;
     });
   };
@@ -473,7 +490,10 @@ export function NewAssignmentInteractive({
 
   // ── Summary ─────────────────────────────────────────────────────
   const size = clampSize(sizeText);
-  const chosenPeople = visiblePeople.filter((p) => selectedStudents.has(p.id));
+  // In the order they were added, matching the chips.
+  const chosenPeople = [...selectedStudents]
+    .map((id) => visiblePeople.find((p) => p.id === id))
+    .filter((p): p is PersonOption => !!p);
   const forLabel = chosenPeople.length === 0
     ? 'No one yet'
     : chosenPeople.length <= 2
@@ -495,10 +515,9 @@ export function NewAssignmentInteractive({
     : selectedSkills.length === 0
       ? 'None yet'
       : `${selectedSkills.length} · ${skillDomains.length <= 2 ? skillDomains.join(', ') : `${skillDomains.length} domains`}`;
-  const diffs = testType === 'act' ? [...actDiffs].sort() : [...globalDifficulties].sort();
-  const difficultyText = diffs.length === 0
-    ? 'Any'
-    : diffs.map((d) => (testType === 'act' ? `Level ${d}` : difficultyLabel(d))).join(', ');
+  const levelText = testType === 'act'
+    ? (actDiffs.size === 0 ? 'Any' : [...actDiffs].sort().map((d) => `Level ${d}`).join(', '))
+    : (globalBands.size === 0 ? 'Any' : `Band${globalBands.size === 1 ? '' : 's'} ${formatBands([...globalBands])}`);
   const missing: string[] = [];
   if (chosenPeople.length === 0) missing.push(target === 'trainees' ? 'a trainee' : 'a student');
   if (assignmentType === 'questions' && testType === 'sat' && selectedSkills.length === 0) missing.push('at least one skill');
@@ -518,29 +537,40 @@ export function NewAssignmentInteractive({
     </a>
   ) : null;
 
+  const levelOptions = testType === 'act' ? actDifficulties : bandOptions;
   const questionOptions = (
     <div className={styles.optionRow}>
-      {(testType === 'act' ? actDifficulties : difficulties).length > 0 && (
+      {levelOptions.length > 0 && (
         <fieldset className={styles.inlineGroup}>
           <legend className={styles.controlLabel}>
-            {testType === 'act' ? 'Difficulty (1 easiest – 5 hardest)' : 'Difficulty'}
+            {testType === 'act' ? 'Difficulty (1 easiest – 5 hardest)' : 'Score band (1 easiest – 7 hardest)'}
           </legend>
           <div className={styles.chipRow}>
-            {(testType === 'act' ? actDifficulties : difficulties).map((d) => {
-              const active = testType === 'act' ? actDiffs.has(d) : globalDifficulties.has(d);
+            {levelOptions.map((d) => {
+              const active = testType === 'act' ? actDiffs.has(d) : globalBands.has(d);
               return (
                 <button
                   key={d}
                   type="button"
                   aria-pressed={active}
-                  className={`${styles.chip} ${active ? styles.chipActive : ''}`}
-                  onClick={() => (testType === 'act' ? toggleActDiff(d) : toggleDifficulty(d))}
+                  aria-label={testType === 'act' ? undefined : `Score band ${d}`}
+                  className={`${styles.chip} ${testType === 'sat' ? styles.chipBand : ''} ${active ? styles.chipActive : ''}`}
+                  onClick={() => (testType === 'act' ? toggleActDiff(d) : toggleBandFilter(d))}
                 >
-                  {testType === 'act' ? `Level ${d}` : difficultyLabel(d)}
+                  {testType === 'act' ? `Level ${d}` : d}
                 </button>
               );
             })}
           </div>
+          {testType === 'sat' && (
+            <span className={styles.optionHint}>
+              {globalBands.size === 0
+                ? 'Any band unless you pick some.'
+                : selectedSkills.some((sk) => sk.scoreBands.length > 0)
+                  ? 'Applies to every skill except ones fine-tuned below.'
+                  : 'Applies to every selected skill.'}
+            </span>
+          )}
         </fieldset>
       )}
       <label className={styles.checkInline}>
@@ -633,31 +663,15 @@ export function NewAssignmentInteractive({
               ))}
             </div>
           )}
-          {visiblePeople.length === 0 ? (
-            <p className={styles.empty}>{peopleEmpty}</p>
-          ) : (
-            <div className={styles.peopleRow}>
-              {visiblePeople.map((p) => {
-                const on = selectedStudents.has(p.id);
-                return (
-                  <label key={p.id} className={on ? `${styles.personChip} ${styles.personChipOn}` : styles.personChip} title={p.email ?? undefined}>
-                    <input type="checkbox" name="student_id" value={p.id} checked={on} onChange={() => toggleStudent(p.id)} className={styles.pillInput} />
-                    <span aria-hidden="true">{on ? '✓ ' : ''}</span>{p.name}
-                  </label>
-                );
-              })}
-              <button
-                type="button"
-                className={styles.linkBtn}
-                onClick={() => setSelectedStudents(
-                  selectedStudents.size === visiblePeople.length ? new Set() : new Set(visiblePeople.map((p) => p.id)),
-                )}
-              >
-                {selectedStudents.size === visiblePeople.length ? 'Clear' : 'Select all'}
-              </button>
-            </div>
-          )}
-          <span className={styles.srOnly}>{peopleLabel}</span>
+          <StudentPicker
+            people={visiblePeople}
+            selected={[...selectedStudents]}
+            onAdd={addStudent}
+            onAddAll={addAllStudents}
+            onRemove={removeStudent}
+            noun={peopleNoun}
+            emptyText={peopleEmpty}
+          />
         </section>
 
         {/* ── 3. Content ──────────────────────────────────────── */}
@@ -686,12 +700,13 @@ export function NewAssignmentInteractive({
                 onToggleDomain={toggleDomain}
                 onToggleBand={toggleBand}
                 onWeight={(domain, skill, weight) => updateSkill(domain, skill, { weight })}
+                globalBands={[...globalBands]}
                 prefillLabel={prefill?.testType !== 'act' ? prefill?.label ?? null : null}
                 weaknessLink={weaknessLink}
               />
               {questionOptions}
               <input type="hidden" name="skill_selections" value={skillSelectionsJson} />
-              {Array.from(globalDifficulties).map((d) => <input key={d} type="hidden" name="difficulty" value={String(d)} />)}
+              {Array.from(globalBands).map((b) => <input key={b} type="hidden" name="score_band" value={String(b)} />)}
             </>
           )}
 
@@ -831,7 +846,7 @@ export function NewAssignmentInteractive({
           {assignmentType === 'questions' && (
             <>
               <div><dt>{testType === 'act' ? 'Categories' : 'Skills'}</dt><dd>{skillsLabel}</dd></div>
-              <div><dt>Difficulty</dt><dd>{difficultyText}</dd></div>
+              <div><dt>{testType === 'act' ? 'Difficulty' : 'Score band'}</dt><dd>{levelText}</dd></div>
               <div><dt>Questions</dt><dd>{unattemptedOnly ? 'Unseen only' : 'Any'}</dd></div>
             </>
           )}
@@ -844,7 +859,11 @@ export function NewAssignmentInteractive({
         )}
         {state && !state.ok && <p role="alert" className={styles.error}>{state.error}</p>}
 
-        <button type="submit" disabled={isPending || (testType === 'act' && !actCatalog)} className={styles.submitButton}>
+        <button
+          type="submit"
+          disabled={isPending || chosenPeople.length === 0 || (testType === 'act' && !actCatalog)}
+          className={styles.submitButton}
+        >
           {isPending ? 'Creating…' : 'Create assignment'}
         </button>
 
