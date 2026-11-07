@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/browser';
+import { headlineResultsStats, resultsPageUrl, resultsSourceNote } from '@/lib/marketing/results';
 import s from './Home.module.css';
 
 
@@ -229,6 +230,24 @@ export function HomeClient({ emailConfirmed }) {
               sub="Run a tutoring team with real-time visibility"
             />
           </div>
+
+          <section className={s.results} aria-labelledby="home-results-title">
+            <h2 id="home-results-title" className={s.resultsTitle}>Studyworks SAT results</h2>
+            <dl className={s.resultsGrid}>
+              {headlineResultsStats.map(({ value, label }) => (
+                <div key={label} className={s.resultsStat}>
+                  <dt className={s.resultsLabel}>{label}</dt>
+                  <dd className={s.resultsValue}>{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className={s.resultsNote}>
+              {resultsSourceNote}{' '}
+              <a className={s.bylineLink} href={resultsPageUrl} target="_blank" rel="noopener noreferrer">
+                See the full results
+              </a>
+            </p>
+          </section>
         </section>
 
         <section className={s.authCard}>

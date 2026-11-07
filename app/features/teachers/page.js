@@ -6,6 +6,8 @@ import FeatureSlideshow, {
   SlideFeatureRundown,
   SlidePricing,
 } from '@/components/FeatureSlideshow';
+import { SlideResults } from '@/components/SlideResults';
+import { satResults } from '@/lib/marketing/results';
 
 // New structure (Apr 2026): every content slide carries a screenshot,
 // the second-to-last slide is a comprehensive feature rundown, and the
@@ -22,6 +24,10 @@ import FeatureSlideshow, {
 //     score reports + the Opportunity Index are equally compelling
 //     from a tutor's perspective
 //   - the comprehensive feature rundown
+//
+// Nov 2026: a results slide (SlideResults, figures from
+// lib/marketing/results.ts) follows the hero — the one content slide
+// without a screenshot, since the numbers are the visual.
 
 const slides = [
   {
@@ -32,6 +38,18 @@ const slides = [
         ctaText="See the Tools"
         onCtaClick="next"
         next={next}
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideResults
+        title="The Results Behind the Method"
+        subtitle={`Studyworks Prep tutors run their students' preparation on these same tools. Here's how ${satResults.students} of those students' SAT scores changed.`}
+        points={[
+          <>Gains came in both sections: a typical <strong>+{satResults.medianMathGain}</strong> in Math and <strong>+{satResults.medianReadingWritingGain}</strong> in Reading &amp; Writing.</>,
+          'Students who answered more practice questions and had more weeks to prepare tended to gain more. Assignments and progress tracking let you plan and watch both.',
+        ]}
       />
     ),
   },
