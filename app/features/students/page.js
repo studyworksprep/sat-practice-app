@@ -132,8 +132,8 @@ const slides = [
     showCta: true,
     content: (
       <SlidePricing
-        price="$12.99"
-        period="per month"
+        price="$28.99"
+        period="per month for accounts created November 8, 2026 or later; earlier accounts keep $12.99/month"
         items={[
           'Full question bank with explanations',
           'Unlimited adaptive practice tests',

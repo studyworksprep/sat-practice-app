@@ -136,3 +136,25 @@ column must not diverge.
   reminder email.
 - Fixture tests driving the webhook route itself; today's coverage is the
   reconciliation logic plus schema-level checks.
+
+## Student signup pricing (November 2026)
+
+Accounts created before November 8, 2026 at midnight America/New_York
+(`2026-11-08T05:00:00Z`) retain the existing `STRIPE_STUDENT_PRICE_ID`
+($12.99/month), including when starting checkout later. Keep that environment
+variable pointing to the legacy price. Later accounts pay $28.99 USD/month.
+Checkout uses the authenticated account creation timestamp, never client input,
+and selects the separate Stripe catalog price `price_1UYbGjLvbvAbthFETstrZ28v`
+for the new cohort. No inline price data is created. The new price ID is defined
+in `lib/billing/student-pricing.mjs`.
+Existing subscriptions are not modified. Studyworks exemptions and the seven-day
+trial remain unchanged.
+
+Teacher checkout uses the same signup cutoff: earlier accounts retain
+`STRIPE_TEACHER_PRICE_ID` ($29.99/month); later accounts pay $39.99/month using
+`price_1UZ9LNLvbvAbthFEuHDLEr2e`, defined in `lib/billing/teacher-pricing.mjs`.
+Keep the legacy teacher environment variable unchanged. Both plans share the
+cutoff in `lib/billing/signup-pricing.mjs`.
+
+Pricing rules and boundary tests live in `lib/billing/student-pricing.mjs` and
+`lib/billing/student-pricing.test.mjs`. Deploy the application to activate this change.

@@ -1,3 +1,5 @@
+import { teacherPriceLabel } from '@/lib/billing/teacher-pricing.mjs';
+import { studentPriceLabel } from '@/lib/billing/student-pricing.mjs';
 // Plan selection / checkout entry. Anyone landing here who already
 // has access (paid sub, exempt, or admin/manager role) is bounced
 // to /dashboard server-side — the legacy version flashed the picker
@@ -26,15 +28,23 @@ export default async function SubscribePage(props) {
   const canceled = searchParams.checkout === 'canceled';
 
   let signedIn = false;
+  const prospectiveSignup = new Date().toISOString();
+  let studentPrice = studentPriceLabel(prospectiveSignup);
+  let teacherPrice = teacherPriceLabel(prospectiveSignup);
+  let hasAccess = false;
   try {
     const ctx = await requireUser();
     signedIn = true;
+    studentPrice = studentPriceLabel(ctx.user.created_at);
+    teacherPrice = teacherPriceLabel(ctx.user.created_at);
     const access = await userHasAccess(ctx.supabase, ctx.user.id);
-    if (access.hasAccess) redirect('/dashboard');
+    hasAccess = access.hasAccess;
   } catch {
     // No session — render the picker; Stripe will route through
     // login before charging.
   }
 
-  return <SubscribeClient canceled={canceled} signedIn={signedIn} />;
+  if (hasAccess) redirect('/dashboard');
+
+  return <SubscribeClient teacherPrice={teacherPrice} studentPrice={studentPrice} canceled={canceled} signedIn={signedIn} />;
 }

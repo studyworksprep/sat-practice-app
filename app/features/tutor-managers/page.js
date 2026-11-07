@@ -152,15 +152,15 @@ const slides = [
           {
             name: 'Solo',
             range: '1 tutor',
-            price: '$29.99',
-            period: 'per tutor / month',
+            price: '$39.99',
+            period: 'per tutor / month for accounts created Nov. 8, 2026 or later; earlier accounts keep $29.99',
           },
           {
             name: 'Team',
             range: '2–10 tutors',
             price: '$24.99',
             period: 'per tutor / month',
-            savings: 'Save 17%',
+            savings: 'Save 38%',
             highlight: true,
           },
           {
@@ -168,7 +168,7 @@ const slides = [
             range: '11+ tutors',
             price: '$19.99',
             period: 'per tutor / month',
-            savings: 'Save 33%',
+            savings: 'Save 50%',
           },
         ]}
         items={[

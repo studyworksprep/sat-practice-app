@@ -439,13 +439,13 @@ export function HomeClient({ emailConfirmed }) {
                     <>
                       <span className={s.trialNoteEmph}>7-day free trial</span> — the full
                       teacher toolkit: student roster, custom assignments, and score
-                      tracking. After your trial it’s $29.99/month. Cancel anytime.
+                      tracking. After your trial it’s $39.99/month for accounts created November 8, 2026 or later ($29.99 for earlier accounts). Cancel anytime.
                       Studyworks tutor? Enter your invitation code above for free access.
                     </>
                   ) : (
                     <>
                       <span className={s.trialNoteEmph}>7-day free trial</span> — full access to the question bank,
-                      practice tests, and analytics. After your trial it’s $12.99/month. Cancel anytime.
+                      practice tests, and analytics. After your trial it’s $28.99/month for accounts created November 8, 2026 or later ($12.99 for earlier accounts). Cancel anytime.
                       Have a teacher code? Enter it above for free access.
                     </>
                   )}

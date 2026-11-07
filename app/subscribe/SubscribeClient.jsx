@@ -18,7 +18,6 @@ const PLANS = [
   {
     plan: 'student',
     label: 'Student',
-    price: '$12.99',
     accentClass: '',
     features: [
       'Full question bank',
@@ -31,7 +30,6 @@ const PLANS = [
   {
     plan: 'teacher',
     label: 'Teacher',
-    price: '$29.99',
     accentClass: 'teacher',
     features: [
       'Everything in Student',
@@ -43,7 +41,7 @@ const PLANS = [
   },
 ];
 
-export function SubscribeClient({ canceled, signedIn }) {
+export function SubscribeClient({ canceled, signedIn, studentPrice, teacherPrice }) {
   const [loading, setLoading] = useState(null);
   const [error, setError] = useState(null);
 
@@ -89,7 +87,7 @@ export function SubscribeClient({ canceled, signedIn }) {
             className={p.accentClass === 'teacher' ? `${s.planCard} ${s.planCardTeacher}` : s.planCard}
           >
             <div className={s.planEyebrow}>{p.label}</div>
-            <div className={s.planPrice}>{p.price}</div>
+            <div className={s.planPrice}>{p.plan === 'student' ? studentPrice : teacherPrice}</div>
             <div className={s.planCadence}>per month</div>
             <ul className={s.planFeatures}>
               {p.features.map((f) => (

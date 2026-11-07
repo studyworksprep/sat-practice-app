@@ -1,3 +1,5 @@
+import { teacherCheckoutItem } from '@/lib/billing/teacher-pricing.mjs';
+import { studentCheckoutItem } from '@/lib/billing/student-pricing.mjs';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { requireUser } from '@/lib/api/auth';
@@ -57,7 +59,9 @@ export const POST = legacyApiRoute(async (request) => {
     mode: 'subscription',
     payment_method_types: ['card'],
     customer_email: profile?.email || user.email,
-    line_items: [{ price: priceId, quantity: 1 }],
+    line_items: [plan === 'student'
+      ? studentCheckoutItem(priceId, user.created_at)
+      : teacherCheckoutItem(priceId, user.created_at)],
     metadata: {
       user_id: user.id,
       plan,
