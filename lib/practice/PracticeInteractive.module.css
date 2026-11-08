@@ -456,13 +456,21 @@
 
 @media (max-width: 560px) {
   .header {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr);
   }
+  .headerLeft { grid-row: 1; }
+  .progress { white-space: nowrap; }
   .headerCenter {
     grid-column: 1 / -1;
     grid-row: 2;
     justify-self: start;
     padding-top: 4px;
+  }
+  .headerRight {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-content: flex-start;
+    min-width: 0;
   }
   .navBtn { padding: 8px 14px; }
 }
