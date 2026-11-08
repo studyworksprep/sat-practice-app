@@ -23,6 +23,7 @@ import { formatDate } from '@/lib/formatters';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import { DifficultyControls } from './DifficultyControls';
 import s from './ActQuestions.module.css';
+import { listActQuestionForms } from '@/lib/act-import/list-question-forms';
 
 export const dynamic = 'force-dynamic';
 // The difficulty backfill runs inside this page's Server Action; the
@@ -107,16 +108,13 @@ export default async function AdminActQuestionsPage({
   if (filters.difficulty === 'missing') query = query.is('difficulty', null);
   if (filters.q) query = query.ilike('stem_html', `%${filters.q.replace(/[%_]/g, '')}%`);
 
-  const [{ data: rows, count, error }, { data: formRows }, { data: missingRows }] = await Promise.all([
+  const [{ data: rows, count, error }, forms, { data: missingRows }] = await Promise.all([
     query
       .order('source_test', { ascending: true, nullsFirst: false })
       .order('section', { ascending: true })
       .order('source_ordinal', { ascending: true, nullsFirst: false })
       .range(offset, offset + PAGE_SIZE - 1),
-    supabase
-      .from('act_questions')
-      .select('source_test')
-      .not('source_test', 'is', null),
+    listActQuestionForms(supabase),
     // Live rows with no difficulty, per section — drives the backfill
     // card. English/Reading arrive from the importer without one.
     supabase
@@ -125,10 +123,6 @@ export default async function AdminActQuestionsPage({
       .is('deleted_at', null)
       .is('difficulty', null),
   ]);
-
-  const forms = Array.from(
-    new Set(((formRows ?? []) as Array<{ source_test: string | null }>).map((r) => r.source_test).filter(Boolean) as string[]),
-  ).sort();
 
   const missingBySection: Record<string, number> = {};
   for (const r of (missingRows ?? []) as Array<{ section: string }>) {
