@@ -804,3 +804,11 @@
 @media (max-width: 819px) {
   .passagePane { max-height: 55dvh; min-height: 200px; }
 }
+
+/* Keep room for prose and figures after the phone's outer card margin,
+   option badge, and cross-out control have taken their share. */
+@media (max-width: 560px) {
+  .twoColLeft, .twoColRight { padding: var(--s4); }
+  .optionRow { gap: var(--s2); }
+  .option { gap: var(--s2); padding: var(--s3); }
+}
