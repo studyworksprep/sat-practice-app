@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 342" role="img" aria-labelledby="title desc">
+  <title id="title">Zero, Graph, Click</title>
+  <desc id="desc">Three steps in a row. One, Zero: move everything to one side. Two, Graph: type what is left into Desmos, using x. Three, Click: every x-intercept is a solution, so count them all. Below: if the choices are exact and Desmos shows a decimal, type each choice into Desmos and compare.</desc>
+  <rect width="760" height="342" rx="20" fill="#f8fafc" />
+  <g font-family="Arial, sans-serif">
+    <!-- step 1 -->
+    <rect x="24" y="24" width="228" height="214" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" />
+    <circle cx="62" cy="62" r="22" fill="#2d70b3" />
+    <text x="62" y="71" text-anchor="middle" font-size="24" font-weight="700" fill="#ffffff">1</text>
+    <text x="96" y="72" font-size="30" font-weight="700" fill="#111827">Zero</text>
+    <text x="44" y="122" font-size="20" fill="#1f2937">Move everything</text>
+    <text x="44" y="148" font-size="20" fill="#1f2937">to one side.</text>
+    <text x="44" y="190" font-size="19" fill="#475569">x² + 1 = 4x</text>
+    <text x="44" y="214" font-size="19" fill="#475569">→ x² − 4x + 1</text>
+    <!-- step 2 -->
+    <rect x="266" y="24" width="228" height="214" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" />
+    <circle cx="304" cy="62" r="22" fill="#2d70b3" />
+    <text x="304" y="71" text-anchor="middle" font-size="24" font-weight="700" fill="#ffffff">2</text>
+    <text x="338" y="72" font-size="30" font-weight="700" fill="#111827">Graph</text>
+    <text x="286" y="122" font-size="20" fill="#1f2937">Type what's left</text>
+    <text x="286" y="148" font-size="20" fill="#1f2937">into Desmos.</text>
+    <text x="286" y="190" font-size="19" fill="#475569">Other letter?</text>
+    <text x="286" y="214" font-size="19" fill="#475569">Swap it for x.</text>
+    <!-- step 3 -->
+    <rect x="508" y="24" width="228" height="214" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" />
+    <circle cx="546" cy="62" r="22" fill="#2d70b3" />
+    <text x="546" y="71" text-anchor="middle" font-size="24" font-weight="700" fill="#ffffff">3</text>
+    <text x="580" y="72" font-size="30" font-weight="700" fill="#111827">Click</text>
+    <text x="528" y="122" font-size="20" fill="#1f2937">Every x-intercept</text>
+    <text x="528" y="148" font-size="20" fill="#1f2937">is a solution.</text>
+    <text x="528" y="190" font-size="19" fill="#475569">Count them all,</text>
+    <text x="528" y="214" font-size="19" fill="#475569">touches too.</text>
+    <!-- caution strip -->
+    <rect x="24" y="254" width="712" height="64" rx="12" fill="#fff7ed" stroke="#fdba74" stroke-width="2" />
+    <text x="380" y="293" text-anchor="middle" font-size="19" fill="#7c2d12"><tspan font-weight="700">Exact choices, decimal graph?</tspan> Type the choices in and compare.</text>
+  </g>
+</svg>

@@ -715,7 +715,14 @@ Required: `instructions_html`, `initial_expressions` (array, may be `[]`),
 - `mode` is `normalized` or `equivalent` → `expected` must be a non-empty
   array of LaTeX strings.
 - `mode` is `equivalent` or `compare_expressions` → `test_values` must be a
-  non-empty array of numbers.
+  non-empty array of numbers. Equivalence is checked by value at each test
+  value, and polynomials, `\frac`, `\sqrt{…}` and `\left|…\right|` all
+  evaluate, so any reordering of a correct answer passes. **Every test value
+  must be inside the expression's domain** — at or above a radical's
+  starting point, never a fraction's excluded value — because an undefined
+  value fails the comparison. For a "get zero on one side" gate, list both
+  signs in `expected` (`\sqrt{x-1}-2` and `2-\sqrt{x-1}`): they graph the
+  same x-intercepts, so neither should be rejected.
 - `mode` `state` checks the calculator state via `state_rules` only (no
   `expected` needed).
 - When `progression.require_success` is `true`, the learner cannot continue
