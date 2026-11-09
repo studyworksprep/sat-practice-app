@@ -201,12 +201,13 @@ export function HomeClient({ emailConfirmed }) {
         <section>
           <h1 className={s.headline}>Targeted practice that moves your score.</h1>
           <p className={s.subhead}>
-            Studyworks gives you adaptive practice across every SAT domain and skill —
-            the same data-driven process the tutors at{' '}
+            Studyworks gives you practice for every SAT and ACT skill, full-length
+            practice tests, and short lessons, built on the same data-driven process the
+            tutors at{' '}
             <a className={s.bylineLink} href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer">
               Studyworks Prep
             </a>{' '}
-            run with every student. Track your progress question by question, pinpoint
+            use with every student. See how you're doing question by question, find
             your weak spots, and walk into test day with confidence.
           </p>
 
@@ -463,8 +464,8 @@ export function HomeClient({ emailConfirmed }) {
                     </>
                   ) : (
                     <>
-                      <span className={s.trialNoteEmph}>7-day free trial</span> — full access to the question bank,
-                      practice tests, and analytics. After your trial it’s $12.99/month. Cancel anytime.
+                      <span className={s.trialNoteEmph}>7-day free trial</span> — full access to SAT and ACT
+                      practice, practice tests, lessons, and score reports. After your trial it’s $12.99/month. Cancel anytime.
                       Have a teacher code? Enter it above for free access.
                     </>
                   )}

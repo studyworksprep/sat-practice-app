@@ -6,10 +6,10 @@ import { publicPageMetadata } from '@/lib/config/site';
 
 export const metadata = publicPageMetadata({
   path: '/features/teachers',
-  title: 'SAT Tools for Teachers & Tutors — Studyworks',
+  title: 'SAT & ACT Tools for Teachers & Tutors — Studyworks',
   description:
-    'Assign practice, track every student, and see the domains and questions ' +
-    'your whole class is struggling with — in one roster view.',
+    'Assign SAT and ACT practice and lessons, track every student’s mastery, ' +
+    'and see what your whole class is struggling with, all in one place.',
 });
 
 export default function TeachersFeatureLayout({ children }: { children: ReactNode }) {
