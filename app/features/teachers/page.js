@@ -14,8 +14,10 @@ import { satResults } from '@/lib/marketing/results';
 // Deck structure: hero, results, then one slide per feature, a full
 // feature rundown, and pricing last. Score-report and Opportunity Index
 // screenshots are shared with the student deck, with copy written for
-// tutors. Mastery, Lessons and ACT use icon cards (SlideFeatures) until
-// screenshots of those screens are captured. The old "Weighted Mastery
+// tutors. Mastery, Lessons and ACT lead with icon cards (SlideFeatures);
+// Lessons and ACT are followed by a screenshot (captured 2026-11-09 on
+// studyworks-dev with test accounts; the ACT topic counts match
+// production). Mastery has no screenshot yet. The old "Weighted Mastery
 // Analysis" slide was dropped: its screenshot showed per-skill
 // accuracy, not mastery.
 //
@@ -151,6 +153,16 @@ const slides = [
   },
   {
     content: (
+      <SlideScreenshot
+        src="/screenshots/lesson-desmos-check.png"
+        alt="A lesson's knowledge check answered correctly, with a Desmos graph beside it"
+        title="What Your Students See in a Lesson"
+        description="Lessons mix short explanations with quick check questions, and every answer gets instant feedback. In Desmos lessons the graph sits right beside the question, so students practice the calculator moves they'll use on test day."
+      />
+    ),
+  },
+  {
+    content: (
       <SlideFeatures
         label="ACT"
         title="Tutor the ACT Too"
@@ -161,6 +173,16 @@ const slides = [
           { icon: icons.report, title: 'The same detailed reports', desc: 'Composite and section scores, results by topic, and every question to go over together.' },
           { icon: icons.clock, title: 'Extended time', desc: 'A student’s extra time is saved once and applies to every timed SAT or ACT test.' },
         ]}
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideScreenshot
+        src="/screenshots/act-practice-builder.png"
+        alt="Building an ACT practice set by section and topic"
+        title="ACT Practice by Section and Topic"
+        description="Students can build their own ACT practice from more than 1,800 questions across English, Math, Reading, and Science. They pick the sections, topics, and difficulty, and the set is ready to start."
       />
     ),
   },

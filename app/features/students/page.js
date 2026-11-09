@@ -13,8 +13,10 @@ import { satResults } from '@/lib/marketing/results';
 
 // Deck structure: hero, results, then one slide per feature, a full
 // feature rundown, and pricing last. Feature slides carry a screenshot
-// where we have a current one; Mastery, Lessons and ACT use icon cards
-// (SlideFeatures) until screenshots of those screens are captured.
+// where we have a current one. Mastery, Lessons and ACT lead with icon
+// cards (SlideFeatures); Lessons and ACT are followed by a screenshot
+// (captured 2026-11-09 on studyworks-dev with test accounts; the ACT
+// topic counts match production). Mastery has no screenshot yet.
 //
 // Copy voice (Nov 2026): talk to the student, short sentences, no
 // jargon ("surfaces", "learnability"). Claims checked against
@@ -108,6 +110,16 @@ const slides = [
   },
   {
     content: (
+      <SlideScreenshot
+        src="/screenshots/lesson-desmos-check.png"
+        alt="A lesson's knowledge check answered correctly, with a Desmos graph beside it"
+        title="Learn It, Then Check It"
+        description="Lessons mix short explanations with quick questions, so you find out right away whether a new idea is clicking. In Desmos lessons the graph sits right beside the question, so you practice the same calculator moves you'll use on test day."
+      />
+    ),
+  },
+  {
+    content: (
       <SlideFeatures
         label="ACT"
         title="Taking the ACT? You're Covered Too"
@@ -118,6 +130,16 @@ const slides = [
           { icon: icons.report, title: 'Detailed score reports', desc: 'See your composite and section scores, how you did in each topic, and every question you missed.' },
           { icon: icons.clock, title: 'Extended time, if you get it', desc: 'Set your extra time once and every timed SAT or ACT practice test will use it.' },
         ]}
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideScreenshot
+        src="/screenshots/act-practice-builder.png"
+        alt="Building an ACT practice set by section and topic"
+        title="Build Your Own ACT Practice"
+        description="Choose from more than 1,800 ACT questions across English, Math, Reading, and Science. Pick the sections and topics you want to work on, set the difficulty, and start."
       />
     ),
   },
