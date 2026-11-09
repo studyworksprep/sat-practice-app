@@ -9,17 +9,15 @@
 // main at bb1ec15. If the Homepage data changes, recompute and
 // update these together.
 //
-// Who the figures describe: 121 Studyworks Prep students. 21 were
-// tracked on this platform; the other 100 come from one-on-one
-// tutoring records from before platform tracking. Copy that cites
-// these numbers should say "Studyworks students", not imply that
-// everyone used the app on their own.
+// Who the figures describe: 121 Studyworks Prep students (some tracked
+// on this platform, the rest from one-on-one tutoring records). The
+// owner chose (2026-11-09) not to show that split on the marketing
+// pages; copy just says "Studyworks students".
 
 export const resultsPageUrl = 'https://www.studyworksprep.com/results';
 
 export const satResults = {
   students: 121,
-  platformStudents: 21,
   // Medians ("typical gain"), in points.
   medianGain: 230,
   medianMathGain: 140,
@@ -43,7 +41,4 @@ export const headlineResultsStats: ResultsStat[] = [
 ];
 
 export const resultsSourceNote =
-  `Results from ${satResults.students} Studyworks students: ` +
-  `${satResults.platformStudents} tracked on this platform and ` +
-  `${satResults.students - satResults.platformStudents} from our one-on-one tutoring records. ` +
-  'Typical gain is the median.';
+  `Results from ${satResults.students} Studyworks students. Typical gain is the median.`;
