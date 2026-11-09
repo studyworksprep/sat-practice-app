@@ -6,6 +6,8 @@ import FeatureSlideshow, {
   SlideFeatureRundown,
   SlideTieredPricing,
 } from '@/components/FeatureSlideshow';
+import { SlideResults } from '@/components/SlideResults';
+import { satResults } from '@/lib/marketing/results';
 
 // Slide deck for the "Tutor Manager" persona.
 //
@@ -21,6 +23,11 @@ import FeatureSlideshow, {
 //
 // This is explicitly NOT a self-directed-development pitch. It's a
 // managed training pipeline framing. Reviewed Apr 2026.
+//
+// Nov 2026: a results slide (SlideResults, figures from
+// lib/marketing/results.ts) follows the hero. It shows what the
+// method produced for Studyworks Prep's own students; the copy stays
+// careful not to promise those numbers to another firm's students.
 //
 // Screenshot filenames in /public/screenshots that back this deck:
 //   manager-team-roster.png     — team dashboard (all tutors + stats)
@@ -44,6 +51,18 @@ const slides = [
         ctaText="See the Manager Tools"
         onCtaClick="next"
         next={next}
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideResults
+        title="The Method Behind the Training"
+        subtitle={`Studyworks Prep tutors work with their own students using the questions, reports, and mastery views your tutors will train on. Here's how ${satResults.students} of those students' SAT scores changed.`}
+        points={[
+          <>Gains came in both sections: a typical <strong>+{satResults.medianMathGain}</strong> in Math and <strong>+{satResults.medianReadingWritingGain}</strong> in Reading &amp; Writing.</>,
+          'Training your team on the same tools means every tutor reads a score report and picks what to work on next the same way.',
+        ]}
       />
     ),
   },
