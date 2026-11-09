@@ -121,6 +121,75 @@
   text-decoration-color: var(--color-navy-700);
 }
 
+/* ---------- Results strip ----------
+   Headline SAT results (lib/marketing/results.ts) under the role
+   cards: proof after the pitch, kept quiet (no fill, one hairline
+   panel) so it doesn't compete with the headline above it. */
+
+.results {
+  max-width: 540px;
+  margin-bottom: 8px;
+  padding: 18px 20px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.resultsTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-600);
+  margin: 0 0 12px;
+}
+
+.resultsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.resultsStat {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 2px;
+  min-width: 0;
+}
+
+.resultsValue {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-navy-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.resultsLabel {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--fg2);
+}
+
+.resultsNote {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg3);
+}
+
+@media (max-width: 520px) {
+  .resultsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+}
+
 /* ---------- Role cards ---------- */
 
 .roleGrid {

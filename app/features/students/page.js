@@ -6,6 +6,8 @@ import FeatureSlideshow, {
   SlideFeatureRundown,
   SlidePricing,
 } from '@/components/FeatureSlideshow';
+import { SlideResults } from '@/components/SlideResults';
+import { satResults } from '@/lib/marketing/results';
 
 // New structure (Apr 2026): every content slide carries a screenshot,
 // the second-to-last slide is a comprehensive feature rundown, and the
@@ -13,6 +15,10 @@ import FeatureSlideshow, {
 // slide and the icon-only feature card slides are removed — orgs
 // contact us directly without needing a guided slide, and a slide
 // without a screenshot felt thin compared to the rest of the deck.
+//
+// Nov 2026: a results slide (SlideResults, figures from
+// lib/marketing/results.ts) follows the hero — the one content slide
+// without a screenshot, since the numbers are the visual.
 
 const slides = [
   {
@@ -23,6 +29,18 @@ const slides = [
         ctaText="See What's Inside"
         onCtaClick="next"
         next={next}
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideResults
+        title="Real Score Gains From Real Students"
+        subtitle="The question bank, practice tests, and score reports here are the same ones Studyworks Prep tutors use with their students. Here's how those students' SAT scores changed."
+        points={[
+          <>Both sections went up: the typical gain was <strong>+{satResults.medianMathGain}</strong> in Math and <strong>+{satResults.medianReadingWritingGain}</strong> in Reading &amp; Writing.</>,
+          'Students who answered more practice questions tended to gain more points, so every question you work through counts.',
+        ]}
       />
     ),
   },

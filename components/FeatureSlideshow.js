@@ -39,7 +39,7 @@ const arrowBtnStyle = (enabled) => ({
   transition: 'all var(--dur-fast) var(--ease-std)',
 });
 
-const panelStyle = {
+export const panelStyle = {
   background: '#ffffff',
   border: `1px solid ${BORDER}`,
   borderRadius: 16,
@@ -348,7 +348,7 @@ export default function FeatureSlideshow({ slides }) {
 // slides (Pricing, Team Pricing, etc.). Pulls the next-tree
 // eyebrow tokens so the marketing tour matches the in-app eyebrow
 // styling on dashboards and reports.
-function Eyebrow({ children, color = GOLD }) {
+export function Eyebrow({ children, color = GOLD }) {
   return (
     <div
       style={{
@@ -365,7 +365,7 @@ function Eyebrow({ children, color = GOLD }) {
   );
 }
 
-const headlineStyle = {
+export const headlineStyle = {
   fontFamily: FONT_SERIF,
   fontWeight: 700,
   letterSpacing: '-0.015em',
