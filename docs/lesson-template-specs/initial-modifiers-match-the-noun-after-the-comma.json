@@ -4,20 +4,26 @@
   "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 7040ee67-9287-4aaa-9ef0-89de44f5a597 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.",
   "blocks": [
     {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Footbridge sentence",
+        "html": "<blockquote><p>Built to survive saltwater and strong winds, _____</p></blockquote>"
+      },
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Which noun belongs after the comma?</h2><p>Start with the opening words below. Do not untangle every answer choice yet. Ask one question: <strong>what was built to survive saltwater and strong winds?</strong></p><blockquote><p>Built to survive saltwater and strong winds, _____</p></blockquote><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>engineers tested the new footbridge before opening it to pedestrians.</li><li>the new footbridge was tested by engineers before it opened to pedestrians.</li><li>saltwater and strong winds led engineers to test the new footbridge.</li><li>the durability of the new footbridge was tested by engineers.</li></ol><p>Look only at the first noun phrase after the comma in each choice: <em>engineers</em>, <em>the new footbridge</em>, <em>saltwater and strong winds</em>, or <em>the durability of the new footbridge</em>.</p>",
+      "html": "<h2>Which noun belongs after the comma?</h2><p>Start with the opening words in the shared prompt. Do not untangle every answer choice yet. Ask one question: <strong>what was built to survive saltwater and strong winds?</strong></p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>engineers tested the new footbridge before opening it to pedestrians.</li><li>the new footbridge was tested by engineers before it opened to pedestrians.</li><li>saltwater and strong winds led engineers to test the new footbridge.</li><li>the durability of the new footbridge was tested by engineers.</li></ol><p>Look only at the first noun phrase after the comma in each choice: <em>engineers</em>, <em>the new footbridge</em>, <em>saltwater and strong winds</em>, or <em>the durability of the new footbridge</em>.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "raw_block",
       "id": "check_1",
       "block_type": "check",
       "content": {
         "hint": "Ask what was built: the engineers, the footbridge, the weather, or the durability?",
-        "prompt": "Built to survive saltwater and strong winds, _____. Which choice places the thing that was built immediately after the comma?",
+        "prompt": "Which choice puts the noun described by the opening phrase immediately after the comma?",
         "choices": [
           "engineers tested the new footbridge before opening it to pedestrians.",
           "the new footbridge was tested by engineers before it opened to pedestrians.",
@@ -34,6 +40,7 @@
       }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "text",
       "id": "modifier_definition",
       "html": "<h2>The opening phrase points to a noun</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Ask what the opening phrase describes, and put that noun right after the comma.</p><p><strong>Why it pays:</strong> One question answers the item, without untangling four rewritten sentences.</p><p><strong>One caution:</strong> Ask the question <em>before</em> you read the choices. Reading them first makes several of them sound acceptable.</p></div><p><strong>Built to survive saltwater and strong winds</strong> is a modifier: a word group that describes something else in the sentence. Here, it describes the new footbridge.</p><p>An opening modifier is not the sentence's main clause. It sets up an action, state, or description and then reaches across the comma for the noun phrase it belongs to.</p><blockquote><p><strong>Key idea:</strong> The noun phrase immediately after the comma must be the person or thing the opening modifier logically describes.</p></blockquote><p>If the wrong noun appears there, the modifier <em>dangles</em>: the sentence accidentally claims that the wrong item did the action or had the description.</p>",

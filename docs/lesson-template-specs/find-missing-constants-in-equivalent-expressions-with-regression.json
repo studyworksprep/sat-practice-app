@@ -4,6 +4,11 @@
   "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 4c22e546-2a07-4ffc-8f99-a2f3e3b21f59 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.",
   "blocks": [
     {
+      "shared_prompt": {
+        "id": "shared_explore_regression_identity",
+        "title": "Polynomial identity",
+        "html": "<p>\\(ax^2+bx+6\\) is equivalent to \\(3(x+1)(x+2)\\) for all \\(x\\).</p>"
+      },
       "kind": "text",
       "id": "explore_regression_identity",
       "html": "<h2>What did Desmos discover?</h2><p>The two expressions in the calculator are equivalent for every value of \\(x\\). In the first line, the input variable has been written as \\(x_1\\), and the equals sign has been replaced by the regression symbol <strong>~</strong>.</p><p>Look below the regression. Find the values Desmos assigns to \\(a\\) and \\(b\\).</p><blockquote><p><strong>Notice:</strong> The second line gives \\(x_1\\) three different values at once.</p></blockquote>",
@@ -27,6 +32,7 @@
       }
     },
     {
+      "shared_prompt": "shared_explore_regression_identity",
       "kind": "raw_block",
       "id": "check_1",
       "block_type": "check",
@@ -91,6 +97,11 @@
       "html": "<h2>Separate the input from the missing constants</h2><p>In \\(a(x+2)+b\\), the letters have different jobs:</p><ul><li>\\(x\\) is the <strong>input variable</strong>. The identity must work for many values of \\(x\\).</li><li>\\(a\\) and \\(b\\) are the <strong>missing constants</strong>. Desmos should find one fixed value for each.</li></ul><p>Keep the constant names exactly as the question gives them. Because lowercase \\(x\\) and \\(y\\) are reserved for graphing in Desmos, change an input named \\(x\\) to \\(x_1\\) or an input named \\(y\\) to \\(y_1\\). Leave other input variables, such as \\(t\\), unchanged.</p>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_check_3",
+        "title": "Linear identity in t",
+        "html": "<p>\\(p(t+4)+q(t-1)\\) is equivalent to \\(5t+10\\) for all \\(t\\).</p>"
+      },
       "kind": "raw_block",
       "id": "check_3",
       "block_type": "check",
@@ -109,6 +120,7 @@
       }
     },
     {
+      "shared_prompt": "shared_explore_regression_identity",
       "kind": "text",
       "id": "why_multiple_values",
       "html": "<h2>Why one input value is not enough</h2><p>If you test only \\(x=2\\), the identity from the opening example becomes \\(4a+2b+6=36\\). Many pairs of \\(a\\) and \\(b\\) can satisfy that one equation.</p><p>But equivalent expressions must agree at many inputs. Giving \\(x_1\\) a list makes Desmos compare the two expressions at several values at the same time. That extra evidence pins down the constants.</p><blockquote><p><strong>Watch out:</strong> If the regression panel assigns a value to the input variable, you forgot to define the input as a list.</p></blockquote>"
@@ -142,6 +154,7 @@
       "html": "<h2>The finish: read, calculate, answer</h2><ol start=\"4\"><li><strong>Read the constants.</strong> The regression panel displays the values Desmos found.</li><li><strong>Type the requested combination.</strong> If the question asks for \\(ab\\), enter <strong>a*b</strong> on a new calculator line. If it asks for \\(a/b\\), enter <strong>a/b</strong>.</li><li><strong>Report that result.</strong> The constants remain assigned, so Desmos performs the final calculation for you.</li></ol><p>Do not stop after reading \\(a\\) and \\(b\\). Answer exactly what the question asks.</p>"
     },
     {
+      "shared_prompt": "shared_explore_regression_identity",
       "kind": "text",
       "id": "model_full_setup",
       "html": "<h2>Model the complete setup</h2><p>Suppose \\(ax^2+bx+6\\) is equivalent to \\(3(x+1)(x+2)\\), and the question asks for \\(a/b\\).</p><ol><li>Enter <strong>ax₁²+bx₁+6~3(x₁+1)(x₁+2)</strong>.</li><li>Enter <strong>x₁=[2,3,4]</strong>.</li><li>Read \\(a=3\\) and \\(b=9\\).</li><li>On a new line, enter <strong>a/b</strong>.</li></ol><p>Desmos evaluates the requested expression as \\(1/3\\).</p>",
@@ -165,6 +178,7 @@
       }
     },
     {
+      "shared_prompt": "shared_check_3",
       "kind": "raw_block",
       "id": "check_5",
       "block_type": "check",
@@ -229,9 +243,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_model_restricted_identity",
+        "title": "Restricted rational identity",
+        "html": "<p>For \\(x>2\\), suppose</p><p>\\[\\frac{ax+b}{x-2}\\]</p><p>is equivalent to</p><p>\\[3+\\frac{5}{x-2}.\\]</p>"
+      },
       "kind": "text",
       "id": "model_restricted_identity",
-      "html": "<h2>Model a restricted rational identity</h2><p>For \\(x>2\\), suppose</p><p>\\[\\frac{ax+b}{x-2}\\]</p><p>is equivalent to</p><p>\\[3+\\frac{5}{x-2}.\\]</p><p>The setup uses safe values:</p><ul><li><strong>(ax₁+b)/(x₁-2)~3+5/(x₁-2)</strong></li><li><strong>x₁=[3,4,5]</strong></li></ul><p>Desmos finds \\(a=3\\) and \\(b=-1\\). If the question asks for \\(a-b\\), enter <strong>a-b</strong> to get \\(4\\).</p>",
+      "html": "<h2>Model a restricted rational identity</h2><p>The setup uses safe values:</p><ul><li><strong>(ax₁+b)/(x₁-2)~3+5/(x₁-2)</strong></li><li><strong>x₁=[3,4,5]</strong></li></ul><p>Desmos finds \\(a=3\\) and \\(b=-1\\). If the question asks for \\(a-b\\), enter <strong>a-b</strong> to get \\(4\\).</p>",
       "calculator": {
         "mode": "preset",
         "title": "Inspect the restricted setup",
@@ -252,6 +271,7 @@
       }
     },
     {
+      "shared_prompt": "shared_model_restricted_identity",
       "kind": "raw_block",
       "id": "check_8",
       "block_type": "check",
@@ -316,6 +336,7 @@
       }
     },
     {
+      "shared_prompt": "shared_check_3",
       "kind": "raw_block",
       "id": "desmos_interactive_1",
       "block_type": "desmos_interactive",
@@ -372,6 +393,7 @@
       }
     },
     {
+      "shared_prompt": "shared_check_3",
       "kind": "raw_block",
       "id": "check_11",
       "block_type": "check",
@@ -390,6 +412,7 @@
       }
     },
     {
+      "shared_prompt": "shared_model_restricted_identity",
       "kind": "raw_block",
       "id": "desmos_interactive_2",
       "block_type": "desmos_interactive",
@@ -442,6 +465,7 @@
       }
     },
     {
+      "shared_prompt": "shared_model_restricted_identity",
       "kind": "raw_block",
       "id": "check_12",
       "block_type": "check",

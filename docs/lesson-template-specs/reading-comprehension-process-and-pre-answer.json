@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Migrating birds passage",
+        "html": "<blockquote><p>Many migrating birds travel at night, using natural light to help orient themselves. In brightly lit cities, however, artificial light can draw birds away from their routes, forcing them to use additional energy before they reach a resting place.</p></blockquote>"
+      },
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Try a question without answer choices</h2><p><strong>Question:</strong> Which choice would best state the main idea of the text?</p><blockquote><p>Many migrating birds travel at night, using natural light to help orient themselves. In brightly lit cities, however, artificial light can draw birds away from their routes, forcing them to use additional energy before they reach a resting place.</p></blockquote><p>Pause and say the main idea in your own words. Do not try to make it sound like an SAT answer choice.</p>",
+      "html": "<h2>Try a question without answer choices</h2><p><strong>Question:</strong> Which choice would best state the main idea of the text?</p><p>Pause and say the main idea in your own words. Do not try to make it sound like an SAT answer choice.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "raw_block",
       "id": "opening_observation_check",
       "block_type": "check",
@@ -115,12 +121,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_dense_sentence_exploration",
+        "title": "Fox population sentence",
+        "html": "<blockquote><p>Although early surveys suggested that the island's fox population was declining, a later study that tracked individual foxes for three years found that the population had remained stable.</p></blockquote>"
+      },
       "kind": "text",
       "id": "dense_sentence_exploration",
-      "html": "<h2>Break a dense sentence into parts</h2><blockquote><p>Although early surveys suggested that the island's fox population was declining, a later study that tracked individual foxes for three years found that the population had remained stable.</p></blockquote><p>Read it in three parts:</p><ol><li>Early surveys suggested a decline.</li><li>A later study tracked individual foxes for three years.</li><li>The later study found stability, not decline.</li></ol><p>The word <strong>although</strong> warns you that the early idea will be challenged.</p>",
+      "html": "<h2>Break a dense sentence into parts</h2><p>Read it in three parts:</p><ol><li>Early surveys suggested a decline.</li><li>A later study tracked individual foxes for three years.</li><li>The later study found stability, not decline.</li></ol><p>The word <strong>although</strong> warns you that the early idea will be challenged.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_dense_sentence_exploration",
       "kind": "raw_block",
       "id": "dense_sentence_check",
       "block_type": "check",
@@ -171,12 +183,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_inference_exploration",
+        "title": "Moth study passage",
+        "html": "<blockquote><p>Biologist Erika Chen recorded visits by one moth species to white and yellow flowers. After sunset, the moths visited white flowers more often, but during daytime trials, visits to the two colors were equally frequent.</p></blockquote>"
+      },
       "kind": "text",
       "id": "inference_exploration",
-      "html": "<h2>Form a minimum inference</h2><p><strong>Question:</strong> Which conclusion about the moth study is best supported by the text?</p><blockquote><p>Biologist Erika Chen recorded visits by one moth species to white and yellow flowers. After sunset, the moths visited white flowers more often, but during daytime trials, visits to the two colors were equally frequent.</p></blockquote><p>Before continuing, say the smallest conclusion that combines the nighttime and daytime results. Do not invent a reason for the difference.</p>",
+      "html": "<h2>Form a minimum inference</h2><p><strong>Question:</strong> Which conclusion about the moth study is best supported by the text?</p><p>Before continuing, say the smallest conclusion that combines the nighttime and daytime results. Do not invent a reason for the difference.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_inference_exploration",
       "kind": "raw_block",
       "id": "inference_check",
       "block_type": "check",
@@ -252,18 +270,25 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_worked_example_setup",
+        "title": "Museum replicas passage",
+        "html": "<blockquote><p>Museums sometimes display replicas when an original object is too fragile to exhibit. In a study of one history gallery, visitors who saw a replica alongside a short explanation of how it was made recalled more about the original object than visitors who saw the replica without that context.</p></blockquote>"
+      },
       "kind": "text",
       "id": "worked_example_setup",
-      "html": "<h2>Model the full process</h2><p><strong>Question job:</strong> What is the main idea?</p><blockquote><p>Museums sometimes display replicas when an original object is too fragile to exhibit. In a study of one history gallery, visitors who saw a replica alongside a short explanation of how it was made recalled more about the original object than visitors who saw the replica without that context.</p></blockquote><p><strong>Sentence 1 contribution:</strong> Museums may use replicas to protect fragile originals.</p><p><strong>Sentence 2 contribution:</strong> Visitors learned more when the replica came with an explanation.</p><p>Pause and combine those contributions into an answer target before continuing.</p>",
+      "html": "<h2>Model the full process</h2><p><strong>Question job:</strong> What is the main idea?</p><p><strong>Sentence 1 contribution:</strong> Museums may use replicas to protect fragile originals.</p><p><strong>Sentence 2 contribution:</strong> Visitors learned more when the replica came with an explanation.</p><p>Pause and combine those contributions into an answer target before continuing.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_worked_example_setup",
       "kind": "text",
       "id": "choices_step",
       "html": "<h2>Step 5: Reveal and prove the choice</h2><p><strong>Model answer target:</strong> When a museum uses a replica, an explanation can help visitors understand the protected original.</p><p>Only now should you read the answer choices:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Original artifacts are always more valuable to visitors than replicas are.</li><li>Museums mainly use replicas to reduce the cost of gallery admission.</li><li>Context about a replica can improve what visitors learn about the original object.</li><li>Visitors remember objects best when museums provide no written explanation.</li></ol><p>Find the same meaning, then confirm that the passage supports every important part of the choice. If none fits, revisit your target instead of forcing a match.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_worked_example_setup",
       "kind": "raw_block",
       "id": "choices_matching_check",
       "block_type": "check",
@@ -283,12 +308,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_fiction_intro_variation",
+        "title": "Lena’s return",
+        "html": "<p><strong>Introduction:</strong> The following text is adapted from a story in which Lena has returned to her childhood neighborhood after living abroad for ten years.</p><blockquote><p>At the corner, Lena slowed before the bakery's bright new sign. The lettering was unfamiliar, but the warm scent drifting through the doorway was exactly as she remembered it.</p></blockquote>"
+      },
       "kind": "text",
       "id": "fiction_intro_variation",
-      "html": "<h2>Variation: an introduction carries essential context</h2><p><strong>Introduction:</strong> The following text is adapted from a story in which Lena has returned to her childhood neighborhood after living abroad for ten years.</p><blockquote><p>At the corner, Lena slowed before the bakery's bright new sign. The lettering was unfamiliar, but the warm scent drifting through the doorway was exactly as she remembered it.</p></blockquote><p><strong>Question:</strong> Which choice best describes Lena's reaction to the bakery?</p><p>Form an answer target before viewing the choices.</p>",
+      "html": "<h2>Variation: an introduction carries essential context</h2><p><strong>Question:</strong> Which choice best describes Lena's reaction to the bakery?</p><p>Form an answer target before viewing the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_fiction_intro_variation",
       "kind": "raw_block",
       "id": "fiction_intro_check",
       "block_type": "check",
@@ -308,12 +339,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_detail_variation",
+        "title": "Playground coating passage",
+        "html": "<blockquote><p>To reduce summer heat, a city painted several asphalt playgrounds with a pale coating. Measurements taken at midday showed that the coated surfaces were cooler than nearby uncoated asphalt, though air temperatures above the two surfaces were nearly identical.</p></blockquote>"
+      },
       "kind": "text",
       "id": "detail_variation",
-      "html": "<h2>Variation: a detail question needs a narrow pre-answer</h2><blockquote><p>To reduce summer heat, a city painted several asphalt playgrounds with a pale coating. Measurements taken at midday showed that the coated surfaces were cooler than nearby uncoated asphalt, though air temperatures above the two surfaces were nearly identical.</p></blockquote><p><strong>Question:</strong> According to the text, what did the midday measurements show?</p><p>The question asks for the measured result, not the project's goal and not a prediction about every city.</p>",
+      "html": "<h2>Variation: a detail question needs a narrow pre-answer</h2><p><strong>Question:</strong> According to the text, what did the midday measurements show?</p><p>The question asks for the measured result, not the project's goal and not a prediction about every city.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_detail_variation",
       "kind": "raw_block",
       "id": "detail_variation_check",
       "block_type": "check",
@@ -358,12 +395,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_independent_transfer_one",
+        "title": "Reef fish passage",
+        "html": "<blockquote><p>Some young reef fish recognize predators by detecting chemical cues in the water. In one experiment, fish raised in water containing a low level of pollution did not respond to those cues as strongly as fish raised in clean water, suggesting that even modest pollution may interfere with an important survival response.</p></blockquote>"
+      },
       "kind": "text",
       "id": "independent_transfer_one",
-      "html": "<h2>Independent transfer</h2><p>Use the entire five-step process without a worked outline.</p><p><strong>Question:</strong> Which choice best states the main idea of the text?</p><blockquote><p>Some young reef fish recognize predators by detecting chemical cues in the water. In one experiment, fish raised in water containing a low level of pollution did not respond to those cues as strongly as fish raised in clean water, suggesting that even modest pollution may interfere with an important survival response.</p></blockquote><p>Form your answer target before continuing to the choices.</p>",
+      "html": "<h2>Independent transfer</h2><p>Use the entire five-step process without a worked outline.</p><p><strong>Question:</strong> Which choice best states the main idea of the text?</p><p>Form your answer target before continuing to the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_independent_transfer_one",
       "kind": "raw_block",
       "id": "independent_transfer_one_check",
       "block_type": "check",
@@ -383,12 +426,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_independent_transfer_two",
+        "title": "Neighborhood newsletters passage",
+        "html": "<blockquote><p>Historian Mina Patel argues that neighborhood newsletters can preserve details omitted from official city records. For example, a 1978 newsletter from one neighborhood lists the names of residents who organized an informal food-delivery network during a transit strike.</p></blockquote>"
+      },
       "kind": "text",
       "id": "independent_transfer_two",
-      "html": "<h2>Transfer to a purpose question</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence in the text as a whole?</p><blockquote><p>Historian Mina Patel argues that neighborhood newsletters can preserve details omitted from official city records. For example, a 1978 newsletter from one neighborhood lists the names of residents who organized an informal food-delivery network during a transit strike.</p></blockquote><p>Form an answer target for the sentence's job before reading the choices.</p>",
+      "html": "<h2>Transfer to a purpose question</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence in the text as a whole?</p><p>Form an answer target for the sentence's job before reading the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_independent_transfer_two",
       "kind": "raw_block",
       "id": "independent_transfer_two_check",
       "block_type": "check",

@@ -9,17 +9,23 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_reverse_multiplication_retrieval",
+        "title": "Binomial product",
+        "html": "<p>\\((2x+1)(x+3)\\)</p>"
+      },
       "kind": "text",
       "id": "reverse_multiplication_retrieval",
-      "html": "<h2>Begin with the multiplication you already know</h2><p>Expand \\((2x+1)(x+3)\\) by multiplying every term in the first factor by every term in the second:</p><p>\\[(2x)(x)+(2x)(3)+(1)(x)+(1)(3)\\]</p><p>The four products are \\(2x^2\\), \\(6x\\), \\(x\\), and \\(3\\). The two middle products combine.</p>",
+      "html": "<h2>Begin with the multiplication you already know</h2><p>Expand the product by multiplying every term in the first factor by every term in the second:</p><p>\\[(2x)(x)+(2x)(3)+(1)(x)+(1)(3)\\]</p><p>The four products are \\(2x^2\\), \\(6x\\), \\(x\\), and \\(3\\). The two middle products combine.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_reverse_multiplication_retrieval",
       "kind": "raw_block",
       "id": "reverse_multiplication_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which trinomial equals \\((2x+1)(x+3)\\)?",
+        "prompt": "Which trinomial equals the product?",
         "choices": [
           "\\(2x^2+6x+3\\)",
           "\\(2x^2+4x+3\\)",
@@ -65,17 +71,23 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_first_non_monic_model",
+        "title": "Non-monic trinomial",
+        "html": "<p>Factor \\(2x^2+7x+3\\).</p>"
+      },
       "kind": "text",
       "id": "first_non_monic_model",
-      "html": "<h2>Model one complete trial</h2><p>Factor \\(2x^2+7x+3\\).</p><ul><li>To make \\(2x^2\\), the leading terms must be \\(2x\\) and \\(x\\).</li><li>To make \\(3\\), the constants must be \\(1\\) and \\(3\\).</li></ul><p>There are two meaningful arrangements:</p><table><thead><tr><th>Trial</th><th>Cross-products</th><th>Middle sum</th></tr></thead><tbody><tr><td>\\((2x+1)(x+3)\\)</td><td>\\(6x\\) and \\(x\\)</td><td>\\(7x\\)</td></tr><tr><td>\\((2x+3)(x+1)\\)</td><td>\\(2x\\) and \\(3x\\)</td><td>\\(5x\\)</td></tr></tbody></table><p>The first arrangement matches the middle term, so \\(2x^2+7x+3=(2x+1)(x+3)\\).</p>",
+      "html": "<h2>Model one complete trial</h2><ul><li>To make \\(2x^2\\), the leading terms must be \\(2x\\) and \\(x\\).</li><li>To make \\(3\\), the constants must be \\(1\\) and \\(3\\).</li></ul><p>There are two meaningful arrangements:</p><table><thead><tr><th>Trial</th><th>Cross-products</th><th>Middle sum</th></tr></thead><tbody><tr><td>\\((2x+1)(x+3)\\)</td><td>\\(6x\\) and \\(x\\)</td><td>\\(7x\\)</td></tr><tr><td>\\((2x+3)(x+1)\\)</td><td>\\(2x\\) and \\(3x\\)</td><td>\\(5x\\)</td></tr></tbody></table><p>The first arrangement matches the middle term, so \\(2x^2+7x+3=(2x+1)(x+3)\\).</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_first_non_monic_model",
       "kind": "raw_block",
       "id": "cross_products_check",
       "block_type": "check",
       "content": {
-        "prompt": "Why does \\((2x+1)(x+3)\\) work for \\(2x^2+7x+3\\)?",
+        "prompt": "Why does \\((2x+1)(x+3)\\) factor this trinomial?",
         "choices": [
           "Its leading terms add together to give the required \\(2x^2\\).",
           "Its constant terms add together to give the required \\(3\\).",

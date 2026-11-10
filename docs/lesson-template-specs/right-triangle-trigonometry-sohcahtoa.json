@@ -164,9 +164,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_tangent_model",
+        "title": "Triangle ABC",
+        "html": "<p>In right triangle \\(ABC\\), \\(\\angle C=90^\\circ\\), \\(\\angle A=35^\\circ\\), \\(AC=12\\), and \\(BC=x\\).</p>"
+      },
       "kind": "text",
       "id": "tangent_model",
-      "html": "<h2>Model 1: translate the labels, then use tangent</h2><p>In right triangle \\(ABC\\), \\(\\angle C=90^\\circ\\), \\(\\angle A=35^\\circ\\), \\(AC=12\\), and \\(BC=x\\).</p><p>Make a sketch. From \\(\\angle A\\), \\(BC\\) is opposite and \\(AC\\) is adjacent. Therefore:</p><p>\\[\\tan(35^\\circ)=\\frac{BC}{AC}=\\frac{x}{12}.\\]</p><p>Multiply by \\(12\\):</p><p>\\[x=12\\tan(35^\\circ).\\]</p><p>This trig expression is the exact side length. A decimal is only an approximation.</p><blockquote><p><strong>Exact answer:</strong> \\(BC=12\\tan(35^\\circ)\\).</p></blockquote>",
+      "html": "<h2>Model 1: translate the labels, then use tangent</h2><p>Make a sketch. From \\(\\angle A\\), \\(BC\\) is opposite and \\(AC\\) is adjacent. Therefore:</p><p>\\[\\tan(35^\\circ)=\\frac{BC}{AC}=\\frac{x}{12}.\\]</p><p>Multiply by \\(12\\):</p><p>\\[x=12\\tan(35^\\circ).\\]</p><p>This trig expression is the exact side length. A decimal is only an approximation.</p><blockquote><p><strong>Exact answer:</strong> \\(BC=12\\tan(35^\\circ)\\).</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -177,11 +182,12 @@
       }
     },
     {
+      "shared_prompt": "shared_tangent_model",
       "kind": "raw_block",
       "id": "tangent_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "In \\(\\triangle ABC\\), \\(\\angle C=90^\\circ\\), \\(\\angle A=35^\\circ\\), \\(AC=12\\), and \\(BC=x\\). Which equation is correct?",
+        "prompt": "Which equation is correct for triangle ABC?",
         "choices": [
           "\\(\\sin(35^\\circ)=12/x\\)",
           "\\(\\cos(35^\\circ)=x/12\\)",
@@ -203,11 +209,12 @@
       }
     },
     {
+      "shared_prompt": "shared_tangent_model",
       "kind": "raw_block",
       "id": "tangent_result_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which is the exact value of \\(BC\\) in the previous triangle?",
+        "prompt": "Which is the exact value of \\(BC\\)?",
         "choices": [
           "\\(\\dfrac{12}{\\tan(35^\\circ)}\\)",
           "\\(12\\tan(35^\\circ)\\)",
@@ -230,9 +237,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_sine_hypotenuse_model",
+        "title": "Triangle XYZ",
+        "html": "<p>In right triangle \\(XYZ\\), \\(\\angle Y=90^\\circ\\), \\(\\angle X=28^\\circ\\), \\(YZ=9\\), and \\(XZ=h\\).</p>"
+      },
       "kind": "text",
       "id": "sine_hypotenuse_model",
-      "html": "<h2>Model 2: identify the hypotenuse from the right angle</h2><p>In right triangle \\(XYZ\\), \\(\\angle Y=90^\\circ\\), \\(\\angle X=28^\\circ\\), \\(YZ=9\\), and \\(XZ=h\\).</p><p>On your sketch, \\(XZ\\) lies across from the right angle, so it is the hypotenuse. Relative to \\(\\angle X\\), \\(YZ\\) is opposite. Use SOH:</p><p>\\[\\sin(28^\\circ)=\\frac{YZ}{XZ}=\\frac9h.\\]</p><p>Isolate the hypotenuse:</p><p>\\[h=\\frac9{\\sin(28^\\circ)}.\\]</p><blockquote><p><strong>Exact answer:</strong> \\(XZ=\\dfrac9{\\sin(28^\\circ)}\\).</p></blockquote>",
+      "html": "<h2>Model 2: identify the hypotenuse from the right angle</h2><p>On your sketch, \\(XZ\\) lies across from the right angle, so it is the hypotenuse. Relative to \\(\\angle X\\), \\(YZ\\) is opposite. Use SOH:</p><p>\\[\\sin(28^\\circ)=\\frac{YZ}{XZ}=\\frac9h.\\]</p><p>Isolate the hypotenuse:</p><p>\\[h=\\frac9{\\sin(28^\\circ)}.\\]</p><blockquote><p><strong>Exact answer:</strong> \\(XZ=\\dfrac9{\\sin(28^\\circ)}\\).</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -243,11 +255,12 @@
       }
     },
     {
+      "shared_prompt": "shared_sine_hypotenuse_model",
       "kind": "raw_block",
       "id": "sine_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "In \\(\\triangle XYZ\\), \\(\\angle Y=90^\\circ\\), \\(\\angle X=28^\\circ\\), \\(YZ=9\\), and \\(XZ=h\\). Which equation is correct?",
+        "prompt": "Which equation is correct for triangle XYZ?",
         "choices": [
           "\\(\\cos(28^\\circ)=9/h\\)",
           "\\(\\sin(28^\\circ)=h/9\\)",
@@ -264,6 +277,7 @@
       }
     },
     {
+      "shared_prompt": "shared_sine_hypotenuse_model",
       "kind": "raw_block",
       "id": "sine_result_check",
       "block_type": "check",
@@ -291,9 +305,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_cosine_guided_model",
+        "title": "Triangle PQR",
+        "html": "<p>In right triangle \\(PQR\\), \\(\\angle Q=90^\\circ\\), \\(\\angle P=41^\\circ\\), \\(PR=18\\), and \\(PQ=a\\).</p>"
+      },
       "kind": "text",
       "id": "cosine_guided_model",
-      "html": "<h2>Guided variation: translate a new set of point labels</h2><p>In right triangle \\(PQR\\), \\(\\angle Q=90^\\circ\\), \\(\\angle P=41^\\circ\\), \\(PR=18\\), and \\(PQ=a\\).</p><p>Sketch it before continuing. The right angle makes \\(PR\\) the hypotenuse. Relative to \\(\\angle P\\), \\(PQ\\) is adjacent. Use CAH:</p><p>\\[\\cos(41^\\circ)=\\frac{PQ}{PR}=\\frac{a}{18}.\\]</p><p>Therefore:</p><p>\\[a=18\\cos(41^\\circ).\\]</p><blockquote><p><strong>Keep it exact:</strong> The requested side is \\(18\\cos(41^\\circ)\\), not a rounded decimal.</p></blockquote>",
+      "html": "<h2>Guided variation: translate a new set of point labels</h2><p>Sketch it before continuing. The right angle makes \\(PR\\) the hypotenuse. Relative to \\(\\angle P\\), \\(PQ\\) is adjacent. Use CAH:</p><p>\\[\\cos(41^\\circ)=\\frac{PQ}{PR}=\\frac{a}{18}.\\]</p><p>Therefore:</p><p>\\[a=18\\cos(41^\\circ).\\]</p><blockquote><p><strong>Keep it exact:</strong> The requested side is \\(18\\cos(41^\\circ)\\), not a rounded decimal.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -304,11 +323,12 @@
       }
     },
     {
+      "shared_prompt": "shared_cosine_guided_model",
       "kind": "raw_block",
       "id": "cosine_result_check",
       "block_type": "check",
       "content": {
-        "prompt": "For the point-labeled triangle above, which is the exact value of \\(PQ\\)?",
+        "prompt": "Which is the exact value of \\(PQ\\)?",
         "choices": [
           "\\(\\dfrac{18}{\\cos(41^\\circ)}\\)",
           "\\(18\\sin(41^\\circ)\\)",
@@ -542,9 +562,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_combined_problem_model",
+        "title": "Similar triangles ABC and DEF",
+        "html": "<p>Right triangles \\(ABC\\) and \\(DEF\\) are similar, with \\(A\\leftrightarrow D\\), \\(B\\leftrightarrow E\\), and \\(C\\leftrightarrow F\\). Also, \\(\\angle C=\\angle F=90^\\circ\\), \\(\\angle A=38^\\circ\\), \\(AC=10\\), and \\(DF=25\\). Find \\(EF\\).</p>"
+      },
       "kind": "text",
       "id": "combined_problem_model",
-      "html": "<h2>Combined model: translate two triangles</h2><p>Right triangles \\(ABC\\) and \\(DEF\\) are similar, with \\(A\\leftrightarrow D\\), \\(B\\leftrightarrow E\\), and \\(C\\leftrightarrow F\\). Also, \\(\\angle C=\\angle F=90^\\circ\\), \\(\\angle A=38^\\circ\\), \\(AC=10\\), and \\(DF=25\\). Find \\(EF\\).</p><p>Sketch both triangles and preserve the correspondence. From \\(\\angle A\\), \\(BC\\) is opposite and \\(AC\\) is adjacent:</p><p>\\[BC=10\\tan(38^\\circ).\\]</p><p>The large-to-small scale factor is \\(DF/AC=25/10\\). Because \\(BC\\leftrightarrow EF\\):</p><p>\\[EF=(10\\tan(38^\\circ))\\left(\\frac{25}{10}\\right).\\]</p><blockquote><p><strong>Keep it exact:</strong> Do not round the small triangle before scaling.</p></blockquote>",
+      "html": "<h2>Combined model: translate two triangles</h2><p>Sketch both triangles and preserve the correspondence. From \\(\\angle A\\), \\(BC\\) is opposite and \\(AC\\) is adjacent:</p><p>\\[BC=10\\tan(38^\\circ).\\]</p><p>The large-to-small scale factor is \\(DF/AC=25/10\\). Because \\(BC\\leftrightarrow EF\\):</p><p>\\[EF=(10\\tan(38^\\circ))\\left(\\frac{25}{10}\\right).\\]</p><blockquote><p><strong>Keep it exact:</strong> Do not round the small triangle before scaling.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -555,6 +580,7 @@
       }
     },
     {
+      "shared_prompt": "shared_combined_problem_model",
       "kind": "text",
       "id": "combined_problem_shortcut",
       "html": "<h2>The corresponding angle gives an exact shortcut</h2><p>Since \\(A\\leftrightarrow D\\), \\(\\angle D=38^\\circ\\). In the larger triangle, \\(EF\\) is opposite \\(\\angle D\\) and \\(DF=25\\) is adjacent:</p><p>\\[\\tan(38^\\circ)=\\frac{EF}{25}.\\]</p><p>Therefore:</p><p>\\[EF=25\\tan(38^\\circ).\\]</p><p>This equals the two-step expression because</p><p>\\[(10\\tan(38^\\circ))\\left(\\frac{25}{10}\\right)=25\\tan(38^\\circ).\\]</p><blockquote><p><strong>SAT choice:</strong> Solve one triangle and scale, or transfer the corresponding angle and use trig directly. Both routes should simplify to the same exact expression.</p></blockquote>",
@@ -568,6 +594,7 @@
       }
     },
     {
+      "shared_prompt": "shared_combined_problem_model",
       "kind": "raw_block",
       "id": "combined_setup_check",
       "block_type": "check",
@@ -594,6 +621,7 @@
       }
     },
     {
+      "shared_prompt": "shared_combined_problem_model",
       "kind": "raw_block",
       "id": "combined_result_check",
       "block_type": "check",
@@ -621,9 +649,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_independent_transfer_prompt",
+        "title": "Similar triangles JKL and MNP",
+        "html": "<p>Right triangles \\(JKL\\) and \\(MNP\\) are similar, with \\(J\\leftrightarrow M\\), \\(K\\leftrightarrow N\\), and \\(L\\leftrightarrow P\\). Angles \\(L\\) and \\(P\\) are right angles. Also, \\(\\angle J=52^\\circ\\), \\(JL=7\\), and \\(MP=20\\).</p><p>Find the exact length of \\(NP\\).</p>"
+      },
       "kind": "text",
       "id": "independent_transfer_prompt",
-      "html": "<h2>Independent transfer: make both sketches yourself</h2><p>Right triangles \\(JKL\\) and \\(MNP\\) are similar, with \\(J\\leftrightarrow M\\), \\(K\\leftrightarrow N\\), and \\(L\\leftrightarrow P\\). Angles \\(L\\) and \\(P\\) are right angles. Also, \\(\\angle J=52^\\circ\\), \\(JL=7\\), and \\(MP=20\\).</p><p>Find the exact length of \\(NP\\).</p><p>Draw both triangles, place every point label, and mark the corresponding sides. Then choose either the trig-and-scale route or the corresponding-angle shortcut.</p><blockquote><p><strong>Do not calculate a decimal:</strong> The correct answer will remain a trig expression.</p></blockquote>",
+      "html": "<h2>Independent transfer: make both sketches yourself</h2><p>Draw both triangles, place every point label, and mark the corresponding sides. Then choose either the trig-and-scale route or the corresponding-angle shortcut.</p><blockquote><p><strong>Do not calculate a decimal:</strong> The correct answer will remain a trig expression.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -634,6 +667,7 @@
       }
     },
     {
+      "shared_prompt": "shared_independent_transfer_prompt",
       "kind": "raw_block",
       "id": "independent_transfer_check",
       "block_type": "check",

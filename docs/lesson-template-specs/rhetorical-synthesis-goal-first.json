@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_first_exploration",
+        "title": "Community archivist goal",
+        "html": "<p>In a practice item, the student wants to <strong>introduce community archivist Elena Ruiz and emphasize her leadership during an archive's expansion</strong>.</p>"
+      },
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Try the goal before seeing any notes</h2><p>In a practice item, the student wants to <strong>introduce community archivist Elena Ruiz and emphasize her leadership during an archive's expansion</strong>.</p><p>Which choice sounds as though it could do that job?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Elena Ruiz, a community archivist, directed the archive's expansion into three neighborhood branches.</li><li>The archive's first neighborhood branch opened its doors to the public in 1998.</li><li>Community archivist Elena Ruiz cataloged the oral histories donated by local residents.</li><li>The archive's three neighborhood branches preserve photographs and recorded interviews.</li></ol><blockquote><p><strong>Do not ask whether each choice is true yet.</strong> Ask which choice fulfills the stated goal.</p></blockquote>",
+      "html": "<h2>Try the goal before seeing any notes</h2><p>Which choice sounds as though it could do that job?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Elena Ruiz, a community archivist, directed the archive's expansion into three neighborhood branches.</li><li>The archive's first neighborhood branch opened its doors to the public in 1998.</li><li>Community archivist Elena Ruiz cataloged the oral histories donated by local residents.</li><li>The archive's three neighborhood branches preserve photographs and recorded interviews.</li></ol><blockquote><p><strong>Do not ask whether each choice is true yet.</strong> Ask which choice fulfills the stated goal.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "raw_block",
       "id": "first_exploration_check",
       "block_type": "check",
@@ -127,12 +133,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_worked_example_prompt",
+        "title": "Packaging goal",
+        "html": "<p>The student wants to <strong>explain how a packaging material is made and emphasize one environmental advantage</strong>.</p>"
+      },
       "kind": "text",
       "id": "worked_example_prompt",
-      "html": "<h2>Model: solve without the notes</h2><p>The student wants to <strong>explain how a packaging material is made and emphasize one environmental advantage</strong>.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>A design team began testing packaging prototypes in 2022.</li><li>The packaging is grown by binding agricultural waste with fungal roots, and it can break down in home compost.</li><li>The packaging is shaped in reusable molds before it dries.</li><li>Unlike many plastics, the packaging can break down in home compost.</li></ol><p>Requirement list: <strong>how it is made + environmental advantage</strong>. Choice B is the only one that checks both boxes.</p><blockquote><p><strong>Notice:</strong> You did not need to learn every fact in the notes to identify the answer's required shape.</p></blockquote>",
+      "html": "<h2>Model: solve without the notes</h2><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>A design team began testing packaging prototypes in 2022.</li><li>The packaging is grown by binding agricultural waste with fungal roots, and it can break down in home compost.</li><li>The packaging is shaped in reusable molds before it dries.</li><li>Unlike many plastics, the packaging can break down in home compost.</li></ol><p>Requirement list: <strong>how it is made + environmental advantage</strong>. Choice B is the only one that checks both boxes.</p><blockquote><p><strong>Notice:</strong> You did not need to learn every fact in the notes to identify the answer's required shape.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_worked_example_prompt",
       "kind": "raw_block",
       "id": "worked_example_check",
       "block_type": "check",
@@ -183,12 +195,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_fact_check_example",
+        "title": "Native bee study notes and goal",
+        "html": "<p><strong>Notes:</strong></p><ul><li>Researchers observed native bee visits in twelve community gardens.</li><li>Gardens with at least five flowering plant species averaged 18 bee visits per hour.</li><li>Gardens with one or two flowering plant species averaged 7 bee visits per hour.</li><li>The researchers did not change the gardens' plant diversity.</li></ul><p><strong>Goal:</strong> Support the claim that gardens with greater flowering-plant diversity attracted more native bee visits.</p>"
+      },
       "kind": "text",
       "id": "fact_check_example",
-      "html": "<h2>Rare case: two choices support the goal</h2><p><strong>Notes:</strong></p><ul><li>Researchers observed native bee visits in twelve community gardens.</li><li>Gardens with at least five flowering plant species averaged 18 bee visits per hour.</li><li>Gardens with one or two flowering plant species averaged 7 bee visits per hour.</li><li>The researchers did not change the gardens' plant diversity.</li></ul><p><strong>Goal:</strong> Support the claim that gardens with greater flowering-plant diversity attracted more native bee visits.</p><p>Two choices may seem useful:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Gardens with at least five flowering species averaged 18 native bee visits per hour, compared with 7 for gardens with one or two species.</li><li>Adding more flowering plant species to a garden caused native bee visits to rise from 7 to 18 per hour.</li></ol><p>Both point toward the claim, so now the notes matter.</p>",
+      "html": "<h2>Rare case: two choices support the goal</h2><p>Two choices may seem useful:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Gardens with at least five flowering species averaged 18 native bee visits per hour, compared with 7 for gardens with one or two species.</li><li>Adding more flowering plant species to a garden caused native bee visits to rise from 7 to 18 per hour.</li></ol><p>Both point toward the claim, so now the notes matter.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_fact_check_example",
       "kind": "raw_block",
       "id": "fact_check_example_check",
       "block_type": "check",
@@ -208,12 +226,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_independent_transfer",
+        "title": "Seal colony notes and goal",
+        "html": "<p><strong>Goal:</strong> The student wants to <strong>compare two methods for estimating a seal colony's size and indicate which method produced the more accurate estimate</strong>.</p><p><strong>Notes:</strong></p><ul><li>A research team estimated the colony with aerial images from a drone and with observers counting from the ground.</li><li>The drone estimate was 1,240 seals.</li><li>The ground estimate was 980 seals.</li><li>A later image audit used as a benchmark counted 1,210 seals.</li></ul>"
+      },
       "kind": "text",
       "id": "independent_transfer",
-      "html": "<h2>Independent transfer</h2><p>Use the full process on this new item. Begin with the goal below, make a requirement list, and only then use the notes if you need them.</p><p><strong>Goal:</strong> The student wants to <strong>compare two methods for estimating a seal colony's size and indicate which method produced the more accurate estimate</strong>.</p><p><strong>Notes:</strong></p><ul><li>A research team estimated the colony with aerial images from a drone and with observers counting from the ground.</li><li>The drone estimate was 1,240 seals.</li><li>The ground estimate was 980 seals.</li><li>A later image audit used as a benchmark counted 1,210 seals.</li></ul><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The research team used both a drone and ground observers to study a seal colony.</li><li>The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.</li><li>A later audit of the aerial images counted 1,210 seals living in the colony.</li><li>Ground observers counted 980 seals, which makes their ground-based method more accurate than the drone method.</li></ol>",
+      "html": "<h2>Independent transfer</h2><p>Use the full process on this new item. Begin with the goal in the shared prompt, make a requirement list, and only then use the notes if you need them.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The research team used both a drone and ground observers to study a seal colony.</li><li>The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.</li><li>A later audit of the aerial images counted 1,210 seals living in the colony.</li><li>Ground observers counted 980 seals, which makes their ground-based method more accurate than the drone method.</li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_independent_transfer",
       "kind": "raw_block",
       "id": "independent_transfer_check",
       "block_type": "check",

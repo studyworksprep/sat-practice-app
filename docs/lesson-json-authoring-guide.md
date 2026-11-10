@@ -1051,6 +1051,52 @@ algebra.
 
 ---
 
+### 3h. Shared prompts — show the same question, passage, or table on selected slides
+
+In the lesson canvas, open **Shared prompts → Add shared prompt**. Enter a
+title and write or paste the content (use **Table** for an editable table).
+Check every slide that should show it, then click **Apply prompt** and
+save the lesson. Each slide can show one shared prompt. Edit a prompt in
+the same panel to update its content or slide selection.
+
+In JSON, define `shared_prompt` once on one of the slides that displays it.
+On each other selected slide, set `shared_prompt` to that prompt's id:
+
+```json
+{
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "read_table",
+      "html": "<p>Look for the group you can choose from.</p>",
+      "shared_prompt": {
+        "id": "shirts",
+        "title": "Shirt table",
+        "html": "<table><caption>Shirts in the store</caption><tr><th scope=\"col\">Color</th><th scope=\"col\">Count</th></tr><tr><th scope=\"row\">Red</th><td>12</td></tr><tr><th scope=\"row\">Blue</th><td>8</td></tr></table>"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "count_shirts",
+      "block_type": "check",
+      "shared_prompt": "shirts",
+      "content": { "prompt": "How many shirts are in the store?", "choices": ["20", "12"], "correct_index": 0 }
+    }
+  ]
+}
+```
+
+- Use a unique prompt id made of letters, digits, underscores, and hyphens,
+  starting with a letter or digit. The id is independent of block ids.
+- Only selected slides show the prompt. On wide screens it appears beside
+  the slide, or above the instructions on the left when Desmos is open. On
+  narrow screens it appears above the slide. A template that expands into
+  several slides attaches the prompt to each of them.
+- Keep the prompt limited to the information students should refer to.
+  Put answers, hints, and worked steps on the appropriate lesson blocks.
+  Use HTML table headers and a caption where helpful. Use **Edit HTML**
+  to edit a table's caption or header scope directly.
+
 ## 4. Math formatting
 
 Write math with LaTeX delimiters inside any text/HTML/prompt/choice field:

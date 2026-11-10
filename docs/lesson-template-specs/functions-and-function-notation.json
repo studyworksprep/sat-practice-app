@@ -196,9 +196,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_graph_evaluation_exploration",
+        "title": "Graph and evaluation input",
+        "html": "<p>\\(f(x)=(x-1)^2+2\\)</p><p>Find \\(f(3)\\).</p>"
+      },
       "kind": "text",
       "id": "graph_evaluation_exploration",
-      "html": "<h2>Evaluate a function from its graph</h2><p>The graph of \\(f(x)=(x-1)^2+2\\) and the vertical line \\(x=3\\) are open.</p><p>Click their intersection. The x-coordinate is the input \\(3\\), and the y-coordinate is \\(f(3)\\).</p><blockquote><p><strong>Read the point before continuing.</strong></p></blockquote>",
+      "html": "<h2>Evaluate a function from its graph</h2><p>The function and the vertical line \\(x=3\\) are open.</p><p>Click their intersection. The x-coordinate is the input \\(3\\), and the y-coordinate is \\(f(3)\\).</p><blockquote><p><strong>Read the point before continuing.</strong></p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -219,6 +224,7 @@
       }
     },
     {
+      "shared_prompt": "shared_graph_evaluation_exploration",
       "kind": "raw_block",
       "id": "graph_evaluation_check",
       "block_type": "check",
@@ -260,11 +266,17 @@
       "html": "<h2>Three ways to state the same fact</h2><p>These statements are equivalent:</p><ul><li>\\(f(3)=6\\)</li><li>the point \\((3,6)\\) lies on the graph of f</li><li>when the input is \\(3\\), the output is \\(6\\)</li></ul><p>SAT questions often give one representation and ask for another. Translate through the input-output pair.</p>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_solve_function_equation",
+        "title": "Function equation",
+        "html": "<p>\\(f(x)=x^2+3\\)</p><p>Find every input for which \\(f(x)=7\\).</p>"
+      },
       "kind": "text",
       "id": "solve_function_equation",
       "html": "<h2>When the output is given, solve for the input</h2><p>Now suppose \\(f(x)=x^2+3\\) and the question asks for all values of \\(x\\) such that \\(f(x)=7\\).</p><p>The equation \\(f(x)=7\\) asks:</p><blockquote><p><strong>At which inputs does the graph of f reach the output 7?</strong></p></blockquote><p>Graph \\(y=f(x)\\) and the horizontal line \\(y=7\\). Each intersection's x-coordinate solves the equation.</p>"
     },
     {
+      "shared_prompt": "shared_solve_function_equation",
       "kind": "text",
       "id": "solve_function_graph_exploration",
       "html": "<h2>Find every input with output 7</h2><p>The graph of \\(f(x)=x^2+3\\) and the horizontal line \\(y=7\\) are open.</p><p>Click every intersection and record the x-coordinates. Do not stop after the first point.</p>",
@@ -288,11 +300,12 @@
       }
     },
     {
+      "shared_prompt": "shared_solve_function_equation",
       "kind": "raw_block",
       "id": "solve_function_equation_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which values solve \\(f(x)=7\\) when \\(f(x)=x^2+3\\)?",
+        "prompt": "Which inputs solve the function equation?",
         "choices": [
           "\\(x=-2\\) and \\(x=2\\)",
           "\\(x=2\\) only",
@@ -352,6 +365,11 @@
       "html": "<h2>A common SAT variation: find a constant inside a function</h2><p>The question may define a function with one missing constant, then use that function in another equation.</p><p>Example:</p><p>\\[f(x)=ax^2+5\\]</p><p>\\[f(a)=13\\]</p><p>The first line defines the function. The second line supplies a condition that the same function must satisfy.</p><blockquote><p><strong>Safest Desmos path:</strong> enter the definition exactly as given, then enter the condition as a regression.</p></blockquote>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_missing_constant_substitution",
+        "title": "Function with a missing constant",
+        "html": "<p>\\(f(x)=ax^2+5\\)</p><p>\\(f(a)=13\\)</p>"
+      },
       "kind": "text",
       "id": "missing_constant_substitution",
       "html": "<h2>Understand what \\(f(a)\\) does</h2><p>In \\(f(x)=ax^2+5\\), the letter \\(a\\) is a missing constant. In \\(f(a)\\), that same value is also used as the function's input.</p><p>Replacing \\(x\\) with \\(a\\) gives</p><p>\\[f(a)=a(a)^2+5=a^3+5\\]</p><p>So the condition \\(f(a)=13\\) is a solvable equation: \\(a^3+5=13\\).</p><p>You do not need to carry out that substitution by hand if you preserve the function definition in Desmos.</p>"
@@ -375,16 +393,18 @@
       }
     },
     {
+      "shared_prompt": "shared_missing_constant_substitution",
       "kind": "text",
       "id": "regression_process",
-      "html": "<h2>The two-line regression setup</h2><p>For \\(f(x)=ax^2+5\\) and \\(f(a)=13\\):</p><ol><li>Enter the function definition exactly as given: <strong>f(x)=ax^2+5</strong>.</li><li>On a new row, enter the condition with a regression symbol: <strong>f(a)~13</strong>.</li><li>Read the value Desmos assigns to \\(a\\).</li><li>Use that value to answer the quantity the question requests.</li></ol><p>On a keyboard, type the tilde character <strong>~</strong> to create \\(\\sim\\).</p><blockquote><p><strong>Keep the symbols straight:</strong> The function definition uses \\(=\\). The condition used to find the constant uses \\(\\sim\\).</p></blockquote>"
+      "html": "<h2>The two-line regression setup</h2><ol><li>Enter the function definition exactly as given: <strong>f(x)=ax^2+5</strong>.</li><li>On a new row, enter the condition with a regression symbol: <strong>f(a)~13</strong>.</li><li>Read the value Desmos assigns to \\(a\\).</li><li>Use that value to answer the quantity the question requests.</li></ol><p>On a keyboard, type the tilde character <strong>~</strong> to create \\(\\sim\\).</p><blockquote><p><strong>Keep the symbols straight:</strong> The function definition uses \\(=\\). The condition used to find the constant uses \\(\\sim\\).</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_missing_constant_substitution",
       "kind": "raw_block",
       "id": "regression_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which Desmos setup is safest for \\(f(x)=ax^2+5\\) and \\(f(a)=13\\)?",
+        "prompt": "Which Desmos setup is safest for this function and condition?",
         "choices": [
           "\\(f(x)\\sim ax^2+5\\) and \\(f(a)=13\\)",
           "\\(f(x)=ax^2+5\\) and \\(f(a)\\sim13\\)",
@@ -398,6 +418,7 @@
       }
     },
     {
+      "shared_prompt": "shared_missing_constant_substitution",
       "kind": "text",
       "id": "regression_model",
       "html": "<h2>Read the missing constant</h2><p>The two-line setup is open:</p><ul><li>\\(f(x)=ax^2+5\\)</li><li>\\(f(a)\\sim13\\)</li></ul><p>Desmos assigns \\(a=2\\). Check the original condition:</p><p>\\[f(2)=2(2)^2+5=8+5=13\\]</p><blockquote><p><strong>Result:</strong> The missing constant is \\(a=2\\).</p></blockquote>",
@@ -421,11 +442,12 @@
       }
     },
     {
+      "shared_prompt": "shared_missing_constant_substitution",
       "kind": "raw_block",
       "id": "regression_result_check",
       "block_type": "check",
       "content": {
-        "prompt": "For \\(f(x)=ax^2+5\\) and \\(f(a)=13\\), what value does the regression assign to a?",
+        "prompt": "What value does the regression assign to \\(a\\)?",
         "choices": [
           "\\(a=1\\)",
           "\\(a=2\\)",
@@ -489,11 +511,17 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_transfer_transition",
+        "title": "Function transfer problem",
+        "html": "<p>A function is defined by</p><p>\\[r(x)=cx^2+4\\]</p><p>and \\(r(c)=31\\).</p>"
+      },
       "kind": "text",
       "id": "transfer_transition",
-      "html": "<h2>Independent transfer: build the setup yourself</h2><p>A function is defined by</p><p>\\[r(x)=cx^2+4\\]</p><p>and \\(r(c)=31\\).</p><p>On the next screen, enter exactly two rows: the function definition exactly as given and the function condition as a regression. Submit the setup, then read the value assigned to \\(c\\).</p>"
+      "html": "<h2>Independent transfer: build the setup yourself</h2><p>On the next screen, enter exactly two rows: the function definition exactly as given and the function condition as a regression. Submit the setup, then read the value assigned to \\(c\\).</p>"
     },
     {
+      "shared_prompt": "shared_transfer_transition",
       "kind": "raw_block",
       "id": "transfer_regression_setup",
       "block_type": "desmos_interactive",
@@ -564,11 +592,12 @@
       }
     },
     {
+      "shared_prompt": "shared_transfer_transition",
       "kind": "raw_block",
       "id": "transfer_result_check",
       "block_type": "check",
       "content": {
-        "prompt": "For \\(r(x)=cx^2+4\\) and \\(r(c)=31\\), what value does Desmos assign to c?",
+        "prompt": "What value does Desmos assign to \\(c\\)?",
         "choices": [
           "\\(c=1\\)",
           "\\(c=2\\)",
@@ -582,6 +611,7 @@
       }
     },
     {
+      "shared_prompt": "shared_transfer_transition",
       "kind": "raw_block",
       "id": "requested_expression_check",
       "block_type": "check",

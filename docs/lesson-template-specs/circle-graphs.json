@@ -3,12 +3,17 @@
   "description": "Graph circle equations, read the center and radius from extreme points, and use them to answer coordinate, transformation, point-location, and tangency questions.",
   "blocks": [
     {
+      "shared_prompt": {
+        "id": "shared_graphs_open",
+        "title": "Circle on the graph",
+        "html": "<p>\\(x^2-4x+y^2+2y=20\\)</p>"
+      },
       "kind": "raw_block",
       "id": "graphs_open",
       "block_type": "text",
       "content": {
         "id": "graphs_open",
-        "html": "<h2>An expanded equation can become a picture in one line</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Graph, center, read. Graph the circle, locate its center and radius, then read what the question asks.</p><p><strong>Why it pays:</strong> Desmos can reveal a circle without making you rearrange its squared terms.</p><p><strong>One caution:</strong> The distance across the circle is the diameter. Halve it to get the radius.</p></div><p>The equation \\(x^2-4x+y^2+2y=20\\) is already graphed. Click or tap the curve to reveal gray points, then click its highest and lowest points to show their coordinates. Zoom out with the minus button if either is off screen.</p><p>Use the top and bottom of the curve, not where it crosses an axis.</p>",
+        "html": "<h2>An expanded equation can become a picture in one line</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Graph, center, read. Graph the circle, locate its center and radius, then read what the question asks.</p><p><strong>Why it pays:</strong> Desmos can reveal a circle without making you rearrange its squared terms.</p><p><strong>One caution:</strong> The distance across the circle is the diameter. Halve it to get the radius.</p></div><p>The circle is already graphed. Click or tap the curve to reveal gray points, then click its highest and lowest points to show their coordinates. Zoom out with the minus button if either is off screen.</p><p>Use the top and bottom of the curve, not where it crosses an axis.</p>",
         "calculator": {
           "mode": "preset",
           "title": "Click the top and bottom",
@@ -26,6 +31,7 @@
       }
     },
     {
+      "shared_prompt": "shared_graphs_open",
       "kind": "raw_block",
       "id": "extreme_observation",
       "block_type": "check",
@@ -55,6 +61,7 @@
       }
     },
     {
+      "shared_prompt": "shared_graphs_open",
       "kind": "raw_block",
       "id": "graph_center_read",
       "block_type": "text",

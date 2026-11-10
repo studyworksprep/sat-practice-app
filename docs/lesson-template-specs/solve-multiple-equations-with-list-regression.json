@@ -3,9 +3,14 @@
   "description": "Pair equation sides in equal-length lists to solve systems, combine function conditions, apply restrictions, and find fixed ratios using a legal free base.",
   "blocks": [
     {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Opening two-equation system",
+        "html": "<p>\\[a+b=11\\qquad a-b=3\\]</p>"
+      },
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Two equations, one calculator row</h2><p>You already know that <strong>~</strong> asks Desmos to find unknown values. Here it is working on two equations together:</p><p>\\[a+b=11\\qquad a-b=3\\]</p><p>Read the assigned values below the bracketed expression. Then change the last number on the right from \\(3\\) to \\(5\\). Watch both values update. Use <strong>Reset</strong> to restore the original problem.</p><blockquote><p><strong>Before starting:</strong> Be comfortable reading regression values and using square brackets for lists. The later examples also use function notation and percents.</p></blockquote>",
+      "html": "<h2>Two equations, one calculator row</h2><p>You already know that <strong>~</strong> asks Desmos to find unknown values. Here it is working on the two equations in the shared prompt.</p><p>Read the assigned values below the bracketed expression. Then change the last number on the right from \\(3\\) to \\(5\\). Watch both values update. Use <strong>Reset</strong> to restore the original problem.</p><blockquote><p><strong>Before starting:</strong> Be comfortable reading regression values and using square brackets for lists. The later examples also use function notation and percents.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -22,11 +27,12 @@
       }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "raw_block",
       "id": "opening_values",
       "block_type": "check",
       "content": {
-        "prompt": "For the original system \\(a+b=11\\) and \\(a-b=3\\), which pair satisfies both equations?",
+        "prompt": "Which pair satisfies both original equations?",
         "allow_retry": true,
         "explanation": "The readout gives \\(a=7\\) and \\(b=4\\): their sum is 11 and their difference is 3. The pair must satisfy both conditions.",
         "choices": [
@@ -210,9 +216,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_multiple_solutions",
+        "title": "System with two possible pairs",
+        "html": "<p>\\(r+s=13\\)</p><p>\\(rs=40\\)</p>"
+      },
       "kind": "text",
       "id": "multiple_solutions",
-      "html": "<h2>A fit is one solution</h2><p>The system \\(r+s=13\\), \\(rs=40\\) has two pairs: \\((8,5)\\) and \\((5,8)\\). Enter the paired lists and note which one Desmos finds.</p><p>Either pair gives zero error. The readout does not list the entire solution set.</p><blockquote><p><strong>Choose the method for the question:</strong> If you need every solution or a solution count, use graphing or algebra to establish them. One regression result is not enough.</p></blockquote>",
+      "html": "<h2>A fit is one solution</h2><p>This system has two solution pairs: \\((8,5)\\) and \\((5,8)\\). Enter the paired lists and note which one Desmos finds.</p><p>Either pair gives zero error. The readout does not list the entire solution set.</p><blockquote><p><strong>Choose the method for the question:</strong> If you need every solution or a solution count, use graphing or algebra to establish them. One regression result is not enough.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -229,11 +240,12 @@
       }
     },
     {
+      "shared_prompt": "shared_multiple_solutions",
       "kind": "raw_block",
       "id": "solution_limit",
       "block_type": "check",
       "content": {
-        "prompt": "Regression returns \\(r=8,s=5\\) for \\(r+s=13,\\ rs=40\\). Which conclusion follows?",
+        "prompt": "Regression returns \\(r=8,s=5\\). Which conclusion follows?",
         "allow_retry": true,
         "explanation": "The swapped pair \\((5,8)\\) also satisfies both equations. A successful fit establishes a working pair, not the number of pairs.",
         "choices": [
@@ -247,6 +259,7 @@
       }
     },
     {
+      "shared_prompt": "shared_multiple_solutions",
       "kind": "text",
       "id": "restrictions",
       "html": "<h2>Carry the restriction into the search</h2><p>Now suppose the same problem states \\(r>s\\). Add that condition in braces after the right list:</p><p>\\[[r+s,rs]\\sim[13,40]\\{r>s\\}\\]</p><p>Desmos should fit \\(r=8,s=5\\). The restriction selects the pair allowed by the question.</p><p>Use the same idea for positivity or a stated interval, such as \\(\\{k>0\\}\\) or \\(\\{2<k<6\\}\\). Keep denominators nonzero and respect the domains of roots and powers.</p><blockquote><p><strong>Use the given condition:</strong> Do not invent a restriction just to force a preferred answer.</p></blockquote>",
@@ -280,11 +293,17 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_choose_a_base",
+        "title": "Relative weights question",
+        "html": "<p>A sample’s weight \\(A\\) is \\(240\\%\\) of weight \\(B\\), and \\(A\\) is \\(0.8\\%\\) of weight \\(C\\). The question asks: \\(C\\) is what percent \\(p\\) of \\(B\\)?</p>"
+      },
       "kind": "text",
       "id": "choose_a_base",
-      "html": "<h2>Relative amounts let you choose a base</h2><p>A sample’s weight \\(A\\) is \\(240\\%\\) of weight \\(B\\), and \\(A\\) is \\(0.8\\%\\) of weight \\(C\\). The question asks: \\(C\\) is what percent \\(p\\) of \\(B\\)?</p><p>Only ratios are fixed. Choose <strong>B=1</strong> to represent one unit of the base weight. This is a convenient scale, not a claim that the sample weighs one gram.</p><p>Then pair all three statements:</p><p>\\[[A,A,C]\\sim[2.4B,0.008C,(p/100)B]\\]</p><p>Percent means “divide by 100”: \\(240\\%=2.4\\), \\(0.8\\%=0.008\\), and \\(p\\%=p/100\\). Decimal multipliers keep the entries compact.</p><blockquote><p><strong>Choose only a free amount:</strong> A stated weight must keep its given value.</p></blockquote>"
+      "html": "<h2>Relative amounts let you choose a base</h2><p>Only ratios are fixed. Choose <strong>B=1</strong> to represent one unit of the base weight. This is a convenient scale, not a claim that the sample weighs one gram.</p><p>Then pair all three statements:</p><p>\\[[A,A,C]\\sim[2.4B,0.008C,(p/100)B]\\]</p><p>Percent means “divide by 100”: \\(240\\%=2.4\\), \\(0.8\\%=0.008\\), and \\(p\\%=p/100\\). Decimal multipliers keep the entries compact.</p><blockquote><p><strong>Choose only a free amount:</strong> A stated weight must keep its given value.</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_choose_a_base",
       "kind": "raw_block",
       "id": "base_choice",
       "block_type": "check",
@@ -303,16 +322,18 @@
       }
     },
     {
+      "shared_prompt": "shared_choose_a_base",
       "kind": "text",
       "id": "zero_trap",
       "html": "<h2>Do not let zero erase the question</h2><p>If all three weights are left free, \\(A=B=C=0\\) satisfies those entered equations for any \\(p\\). Zero RMSE would not identify the percent.</p><p>Defining <strong>B=1</strong> removes that meaningless case. In a fresh calculator, enter it and then the three-pair regression from the previous example. Read \\(A,C,p\\).</p><blockquote><p><strong>Check the context:</strong> Sample weights are positive. A zero-weight fit cannot answer this comparison.</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_choose_a_base",
       "kind": "raw_block",
       "id": "base_result",
       "block_type": "check",
       "content": {
-        "prompt": "Weight \\(A\\) is \\(240\\%\\) of weight \\(B\\) and \\(0.8\\%\\) of weight \\(C\\). Weight \\(C\\) is \\(p\\%\\) of weight \\(B\\). What is \\(p\\)?",
+        "prompt": "What is the percent \\(p\\) of weight \\(B\\) that equals weight \\(C\\)?",
         "allow_retry": true,
         "explanation": "With \\(B=1\\), the regression gives \\(A=2.4,C=300,p=30000\\). A multiplier of 300 is 30,000 percent, so report \\(30000\\).",
         "input": "numeric",
@@ -322,6 +343,7 @@
       }
     },
     {
+      "shared_prompt": "shared_choose_a_base",
       "kind": "text",
       "id": "base_boundary",
       "html": "<h2>Know when a chosen value changes the problem</h2><p>Choosing \\(B=1\\) worked because the question fixed ratios and asked for a ratio. It did not fix an actual weight.</p><p>If the question instead gives \\(B=75\\) grams, enter that given value. If it asks for an actual weight and provides only ratios, choosing a base does not uncover a unique weight.</p><blockquote><p><strong>The target must stay fixed:</strong> Convenient values help only when the requested answer is unchanged across the allowed choices.</p></blockquote>"
@@ -345,11 +367,17 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_exponent_extension",
+        "title": "Power equations and restrictions",
+        "html": "<p>Suppose \\(p>1\\), \\(t>1\\), and</p><p>\\[p^{3/4}=t^{5/2}\\qquad t=p^{2n-1}.\\]</p>"
+      },
       "kind": "text",
       "id": "exponent_extension",
-      "html": "<h2>Advanced: two conditions with powers</h2><p>Suppose \\(p>1\\), \\(t>1\\), and</p><p>\\[p^{3/4}=t^{5/2}\\qquad t=p^{2n-1}.\\]</p><p>Pair the sides just as before:</p><p>\\[[p^{3/4},t]\\sim[t^{5/2},p^{2n-1}]\\{p>1\\}\\{t>1\\}\\]</p><p>The restrictions matter. At \\(p=t=1\\), both equations would hold regardless of \\(n\\). That case is forbidden by the problem.</p><blockquote><p><strong>Same brackets, harder expressions:</strong> Keep the whole fraction or expression inside its exponent.</p></blockquote>"
+      "html": "<h2>Advanced: two conditions with powers</h2><p>Pair the sides just as before:</p><p>\\[[p^{3/4},t]\\sim[t^{5/2},p^{2n-1}]\\{p>1\\}\\{t>1\\}\\]</p><p>The restrictions matter. At \\(p=t=1\\), both equations would hold regardless of \\(n\\). That case is forbidden by the problem.</p><blockquote><p><strong>Same brackets, harder expressions:</strong> Keep the whole fraction or expression inside its exponent.</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_exponent_extension",
       "kind": "raw_block",
       "id": "exponent_restriction_check",
       "block_type": "check",
@@ -368,16 +396,18 @@
       }
     },
     {
+      "shared_prompt": "shared_exponent_extension",
       "kind": "text",
       "id": "exponent_friendly_value",
       "html": "<h2>A legal base can simplify this fit</h2><p>For these particular equations, each allowed \\(p>1\\) leads to the same \\(n\\): the first relationship fixes the power connecting \\(t\\) to \\(p\\), and the second describes that same power.</p><p>You can therefore define <strong>p=2</strong> and enter:</p><p>\\[[p^{3/4},t]\\sim[t^{5/2},p^{2n-1}]\\{t>1\\}\\]</p><p>Try it in a fresh calculator. Then change the definition to <strong>p=3</strong>. Compare \\(t\\) and \\(n\\) in the two runs. This is a check on the setup; two numerical trials alone do not prove a general rule.</p><blockquote><p><strong>A useful combination:</strong> Fix a legal free base, then let list regression connect the remaining quantities.</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_exponent_extension",
       "kind": "raw_block",
       "id": "exponent_result",
       "block_type": "check",
       "content": {
-        "prompt": "For \\(p^{3/4}=t^{5/2}\\) and \\(t=p^{2n-1}\\), where \\(p>1,t>1\\), what value of \\(n\\) does the regression give?",
+        "prompt": "What value of \\(n\\) does the regression give for these power equations?",
         "allow_retry": true,
         "explanation": "The fit gives \\(n=0.65=13/20\\). Changing the legal base changes \\(t\\), while this value of \\(n\\) stays the same.",
         "input": "numeric",

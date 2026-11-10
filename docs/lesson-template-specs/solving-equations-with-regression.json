@@ -3,6 +3,11 @@
   "description": "Use the regression symbol to solve equations and small systems, interpret assigned values and RMSE, build systems with definitions, restrict a search, and recognize when graphing is the better method.",
   "blocks": [
     {
+      "shared_prompt": {
+        "id": "shared_explore_regression_result",
+        "title": "Opening regression equation",
+        "html": "<p>\\(3n+4=19\\)</p>"
+      },
       "kind": "text",
       "id": "explore_regression_result",
       "html": "<h2>Notice the value Desmos finds</h2><p>The calculator shows <strong>3n+4~19</strong>. You do not need to understand the <strong>~</strong> symbol yet; the lesson will explain it next.</p><p>Look below the expression and find the value Desmos assigns to \\(n\\).</p><blockquote><p><strong>Before you continue:</strong> substitute that value into \\(3n+4\\). Check whether the result is \\(19\\).</p></blockquote>",
@@ -22,6 +27,7 @@
       }
     },
     {
+      "shared_prompt": "shared_explore_regression_result",
       "kind": "raw_block",
       "id": "exploration_check",
       "block_type": "check",
@@ -157,13 +163,18 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_guided_single_variable",
+        "title": "Guided regression equation",
+        "html": "<p>\\(5q+7=42\\)</p>"
+      },
       "kind": "raw_block",
       "id": "guided_single_variable",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
         "title": "Enter a regression",
-        "instructions_html": "<p>Use regression to solve \\(5q+7=42\\). Enter the equation with <strong>~</strong> in place of <strong>=</strong>.</p>",
+        "instructions_html": "<p>Use regression to solve the shared equation. Enter the equation with <strong>~</strong> in place of <strong>=</strong>.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -219,11 +230,12 @@
       }
     },
     {
+      "shared_prompt": "shared_guided_single_variable",
       "kind": "raw_block",
       "id": "guided_solution_check",
       "block_type": "check",
       "content": {
-        "prompt": "What value should the regression \\(5q+7\\sim42\\) assign to \\(q\\)?",
+        "prompt": "What value should the regression assign to \\(q\\)?",
         "choices": [
           "\\(q=7\\)",
           "\\(q=5\\)",
@@ -483,11 +495,17 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_transfer_prompt",
+        "title": "System for regression",
+        "html": "<p>The system is \\(u+v=13\\) and \\(u^2+v^2=85\\).</p>"
+      },
       "kind": "text",
       "id": "transfer_prompt",
-      "html": "<h2>Your turn: use the full plan</h2><p>You have learned and practiced each part of the system setup. Now you will combine all four steps on a new system.</p><p><strong>Do not solve this in the scratch calculator yet.</strong> Your task begins in the required calculator on the next screen.</p><p>The system is \\(u+v=13\\) and \\(u^2+v^2=85\\).</p><blockquote><p><strong>On the next screen:</strong> enter exactly two lines. Rewrite the easier equation as one definition, use the harder equation as the one regression, and check that no variable is defined twice.</p></blockquote>"
+      "html": "<h2>Your turn: use the full plan</h2><p>You have learned and practiced each part of the system setup. Now you will combine all four steps on a new system.</p><p><strong>Do not solve this in the scratch calculator yet.</strong> Your task begins in the required calculator on the next screen.</p><blockquote><p><strong>On the next screen:</strong> enter exactly two lines. Rewrite the easier equation as one definition, use the harder equation as the one regression, and check that no variable is defined twice.</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_transfer_prompt",
       "kind": "raw_block",
       "id": "transfer_system_entry",
       "block_type": "desmos_interactive",
@@ -542,6 +560,7 @@
       }
     },
     {
+      "shared_prompt": "shared_transfer_prompt",
       "kind": "raw_block",
       "id": "transfer_result_check",
       "block_type": "check",

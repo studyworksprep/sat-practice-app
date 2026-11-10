@@ -49,6 +49,7 @@ import {
   validateDesmosSubmission,
 } from '@/lib/lesson/desmos-interactive.mjs';
 import { normalizeLessonFigure } from '@/lib/lesson/figure.mjs';
+import { indexSharedPrompts, sharedPromptIdFor } from '@/lib/lesson/editor-utils.mjs';
 import {
   buildBlockIndexMap,
   resolveAnswerNavigation,
@@ -175,6 +176,17 @@ export function LessonSlideshow({
     () => normalizeLessonFigure(currentBlock),
     [currentBlock],
   );
+  const sharedPrompts = useMemo(() => indexSharedPrompts(blocks), [blocks]);
+  const currentPrompt = sharedPrompts.get(sharedPromptIdFor(currentBlock));
+  const showSidePane = calculatorOpen || Boolean(currentFigure);
+  const promptBesideLesson = currentPrompt && !calculatorOpen;
+  const workspaceClassName = [
+    s.workspace,
+    !showSidePane && !currentPrompt && s.workspaceSingle,
+    promptBesideLesson && s.workspaceWithPrompt,
+    promptBesideLesson && currentFigure && s.workspacePromptStacked,
+    currentPrompt && calculatorOpen && s.workspacePromptAboveLesson,
+  ].filter(Boolean).join(' ');
 
   const progressPct =
     blocks.length > 0
@@ -440,7 +452,8 @@ export function LessonSlideshow({
         </div>
       )}
 
-      <div className={`${s.workspace} ${calculatorOpen || currentFigure ? '' : s.workspaceSingle}`}>
+      <div className={workspaceClassName}>
+      {currentPrompt && <LessonSharedPrompt prompt={currentPrompt} />}
       <div className={s.lessonColumn} ref={lessonColumnRef}>
       {/* Narrow screens have no side pane, so the pinned figure renders
           inline above the block instead; CSS swaps the two at 800px. */}
@@ -754,7 +767,7 @@ export function LessonSlideshow({
       )}
       </div>
       </div>
-      {/* Side pane: pinned figure and/or the calculator. The wrapper
+      {/* Side pane: pinned figure and calculator. The wrapper
           stays mounted (hidden) while the calculator is merely closed
           so the Desmos instance survives the toggle. When both are
           visible they stack; CSS drops their individual stickiness in
@@ -762,7 +775,7 @@ export function LessonSlideshow({
       {(calculatorPresentation.display !== 'hidden' || currentFigure) && (
         <div
           className={`${s.sidePane} ${
-            calculatorOpen || currentFigure ? '' : s.sidePaneHidden
+            showSidePane ? '' : s.sidePaneHidden
           } ${calculatorOpen && currentFigure ? s.sidePaneStacked : ''}`}
         >
           {currentFigure && (
@@ -785,6 +798,15 @@ export function LessonSlideshow({
 }
 
 // ─── Block renderers ─────────────────────────────────────────────
+
+function LessonSharedPrompt({ prompt }) {
+  return (
+    <aside className={s.promptCard} aria-label={prompt.title} tabIndex={0}>
+      <p className={s.kicker}>{prompt.title}</p>
+      <HtmlBlock html={prompt.html} className={`${s.promptBody} prose lesson-prose`} />
+    </aside>
+  );
+}
 
 // Pinned figure card. Rendered twice per block that carries one — in
 // the side pane (desktop) and inline above the block (narrow screens);

@@ -11,12 +11,18 @@
     {
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Find the group before the fraction</h2><p>A store records the colors and sizes of 50 shirts:</p><table><caption>Shirts by size and color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Red</th><th scope=\"col\">Blue</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Total</th><td>30</td><td>20</td><td>50</td></tr></tbody></table><p>One shirt is selected at random from <strong>all the shirts</strong>. Before counting blue shirts, decide which number represents every shirt that could be selected.</p>",
+      "shared_prompt": {
+        "id": "shirt_table",
+        "title": "Shirt table",
+        "html": "<table><caption>Shirts by size and color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Red</th><th scope=\"col\">Blue</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Total</th><td>30</td><td>20</td><td>50</td></tr></tbody></table>"
+      },
+      "html": "<h2>Find the group before the fraction</h2><p>A store records the colors and sizes of 50 shirts:</p><p>One shirt is selected at random from <strong>all the shirts</strong>. Before counting blue shirts, decide which number represents every shirt that could be selected.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
       "id": "exploration_check",
+      "shared_prompt": "shirt_table",
       "block_type": "check",
       "content": {
         "prompt": "One shirt is selected at random from all the shirts in the table. Which number is the Total for the probability?",
@@ -42,6 +48,7 @@
     {
       "kind": "raw_block",
       "id": "formula_terms_check",
+      "shared_prompt": "shirt_table",
       "block_type": "check",
       "content": {
         "prompt": "In the shirt table, 20 of the 50 shirts are blue. For the probability of selecting a blue shirt from all shirts, what are Favorable and Total?",
@@ -73,6 +80,7 @@
     {
       "kind": "raw_block",
       "id": "total_first_check",
+      "shared_prompt": "shirt_table",
       "block_type": "check",
       "content": {
         "prompt": "A question asks for the probability that a randomly selected large shirt is blue. What should you do first?",
@@ -92,12 +100,14 @@
     {
       "kind": "text",
       "id": "read_table_totals",
+      "shared_prompt": "shirt_table",
       "html": "<h2>Tables contain three kinds of totals</h2><p>Probability tables often include:</p><ul><li><strong>row totals</strong> for everyone in one row category,</li><li><strong>column totals</strong> for everyone in one column category, and</li><li>a <strong>grand total</strong> for everyone in the table.</li></ul><p>The wording decides which Total to use. If a student is chosen from all surveyed students, use the grand total. If the student is already restricted to one grade, use that grade's row total.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
       "id": "table_totals_check",
+      "shared_prompt": "shirt_table",
       "block_type": "check",
       "content": {
         "prompt": "Using the shirt table, which choice correctly identifies a row total, a column total, and the grand total?",
@@ -117,12 +127,18 @@
     {
       "kind": "text",
       "id": "given_restricts_total",
-      "html": "<h2>Read the condition after given that</h2><p>The SAT commonly asks a question in this form:</p><blockquote><p><strong>What is the probability of selecting a fiction book, given that the book selected is hardcover?</strong></p></blockquote><ul><li><strong>Target before given:</strong> fiction describes Favorable.</li><li><strong>Condition after given that:</strong> hardcover restricts Total.</li></ul><p>The same restriction can appear as an <strong>if</strong> statement: <em>If the book selected is hardcover, what is the probability that it is fiction?</em></p><table><caption>Library books by format and genre</caption><thead><tr><th scope=\"col\">Format</th><th scope=\"col\">Nonfiction</th><th scope=\"col\">Fiction</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Hardcover</th><td>16</td><td>24</td><td>40</td></tr><tr><th scope=\"row\">Paperback</th><td>20</td><td>30</td><td>50</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>54</td><td>90</td></tr></tbody></table><blockquote><p><strong>Translation:</strong> The condition after <em>given that</em> tells you which row or column becomes the Total.</p></blockquote>",
+      "shared_prompt": {
+        "id": "library_table",
+        "title": "Library table",
+        "html": "<table><caption>Library books by format and genre</caption><thead><tr><th scope=\"col\">Format</th><th scope=\"col\">Nonfiction</th><th scope=\"col\">Fiction</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Hardcover</th><td>16</td><td>24</td><td>40</td></tr><tr><th scope=\"row\">Paperback</th><td>20</td><td>30</td><td>50</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>54</td><td>90</td></tr></tbody></table>"
+      },
+      "html": "<h2>Read the condition after given that</h2><p>The SAT commonly asks a question in this form:</p><blockquote><p><strong>What is the probability of selecting a fiction book, given that the book selected is hardcover?</strong></p></blockquote><ul><li><strong>Target before given:</strong> fiction describes Favorable.</li><li><strong>Condition after given that:</strong> hardcover restricts Total.</li></ul><p>The same restriction can appear as an <strong>if</strong> statement: <em>If the book selected is hardcover, what is the probability that it is fiction?</em></p><blockquote><p><strong>Translation:</strong> The condition after <em>given that</em> tells you which row or column becomes the Total.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
       "id": "given_total_check",
+      "shared_prompt": "library_table",
       "block_type": "check",
       "content": {
         "prompt": "A book represented in the library table is selected at random. What is the probability of selecting a fiction book, given that the book selected is hardcover? Which number is the Total?",
@@ -142,12 +158,14 @@
     {
       "kind": "text",
       "id": "favorable_within_total",
+      "shared_prompt": "library_table",
       "html": "<h2>Find Favorable inside the restricted group</h2><p>After the condition <strong>given that the book selected is hardcover</strong> restricts Total, stay inside the hardcover row.</p><ul><li><strong>Total:</strong> all 40 hardcover books</li><li><strong>Favorable:</strong> the 24 fiction books inside the hardcover row</li></ul><p>Now place Favorable over Total:</p><blockquote><p>\\[\\displaystyle \\frac{24\\text{ hardcover fiction books}}{40\\text{ hardcover books}}=\\frac{3}{5}\\]</p></blockquote><p>Both numbers come from the restricted hardcover subset.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
       "id": "favorable_within_check",
+      "shared_prompt": "library_table",
       "block_type": "check",
       "content": {
         "prompt": "A book represented in the library table is selected at random. What is the probability of selecting a fiction book, given that the book selected is hardcover?",
@@ -168,12 +186,18 @@
     {
       "kind": "text",
       "id": "grand_total_trap",
-      "html": "<h2>The grand total is the main given trap</h2><p>The grand total is visually easy to find, so it often appears in a wrong answer. Before using it, ask whether every item in the table is still allowed.</p><table><caption>Students by grade and arts choice</caption><thead><tr><th scope=\"col\">Grade</th><th scope=\"col\">Art</th><th scope=\"col\">Music</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Grade 10</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Grade 11</th><td>14</td><td>26</td><td>40</td></tr><tr><th scope=\"row\">Total</th><td>32</td><td>38</td><td>70</td></tr></tbody></table><p>For <em>the probability of selecting a student who chose art, given that the student selected is in grade 10</em>, students in grade 11 are no longer possible outcomes. The denominator must be the grade 10 row total, not 70.</p><blockquote><p><strong>Quick check:</strong> Every Favorable outcome must be inside the Total, and the Total must obey the condition after <em>given that</em>.</p></blockquote>",
+      "shared_prompt": {
+        "id": "arts_choice_table",
+        "title": "Arts choice table",
+        "html": "<table><caption>Students by grade and arts choice</caption><thead><tr><th scope=\"col\">Grade</th><th scope=\"col\">Art</th><th scope=\"col\">Music</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Grade 10</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Grade 11</th><td>14</td><td>26</td><td>40</td></tr><tr><th scope=\"row\">Total</th><td>32</td><td>38</td><td>70</td></tr></tbody></table>"
+      },
+      "html": "<h2>The grand total is the main given trap</h2><p>The grand total is visually easy to find, so it often appears in a wrong answer. Before using it, ask whether every item in the table is still allowed.</p><p>For <em>the probability of selecting a student who chose art, given that the student selected is in grade 10</em>, students in grade 11 are no longer possible outcomes. The denominator must be the grade 10 row total, not 70.</p><blockquote><p><strong>Quick check:</strong> Every Favorable outcome must be inside the Total, and the Total must obey the condition after <em>given that</em>.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
       "id": "denominator_trap_check",
+      "shared_prompt": "arts_choice_table",
       "block_type": "check",
       "content": {
         "prompt": "One student represented in the arts-choice table is selected at random. What is the probability of selecting a student who chose art, given that the student selected is in grade 10?",
@@ -193,15 +217,17 @@
     {
       "kind": "text",
       "id": "without_given",
+      "shared_prompt": "arts_choice_table",
       "html": "<h2>Without given, read the selection group</h2><p>Not every question uses <strong>given that</strong>. Read exactly which group the random selection comes from:</p><ul><li><strong>one student represented in the table</strong> → use the grand total</li><li><strong>one grade 10 student</strong> → use the grade 10 row total</li><li><strong>one student who chose music</strong> → use the music column total</li></ul><p>The phrase <strong>given that</strong> is a strong clue, but any wording that restricts the selection changes the Total.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
       "id": "without_given_check",
+      "shared_prompt": "arts_choice_table",
       "block_type": "check",
       "content": {
-        "prompt": "A table shows grade 10: 18 art and 12 music; grade 11: 14 art and 26 music. One student is selected from all 70 students. What is the probability the student chose art?",
+        "prompt": "One student is selected at random from all 70 students in the arts-choice table. What is the probability the student chose art?",
         "choices": [
           "\\(\\frac{18}{30}\\)",
           "\\(\\frac{32}{70}\\)",
@@ -219,12 +245,18 @@
     {
       "kind": "text",
       "id": "complete_model",
-      "html": "<h2>Model the complete table process</h2><p>A nursery records plant size and flower color:</p><table><caption>Plants by size and flower color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Green</th><th scope=\"col\">Yellow</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>9</td><td>6</td><td>15</td></tr><tr><th scope=\"row\">Medium</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>15</td><td>10</td><td>25</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>24</td><td>60</td></tr></tbody></table><p>One plant represented in the table is selected at random. Find the probability of selecting a green plant, <strong>given that the plant selected is medium</strong>.</p><ol><li><strong>Total first:</strong> the condition after <em>given that</em> restricts Total to 20 medium plants.</li><li><strong>Favorable inside Total:</strong> 12 plants in the medium row are green.</li><li><strong>Fraction:</strong> \\(\\frac{12}{20}=\\frac{3}{5}\\).</li></ol>",
+      "shared_prompt": {
+        "id": "plant_table",
+        "title": "Plant table",
+        "html": "<table><caption>Plants by size and flower color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Green</th><th scope=\"col\">Yellow</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>9</td><td>6</td><td>15</td></tr><tr><th scope=\"row\">Medium</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>15</td><td>10</td><td>25</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>24</td><td>60</td></tr></tbody></table>"
+      },
+      "html": "<h2>Model the complete table process</h2><p>A nursery records plant size and flower color:</p><p>One plant represented in the table is selected at random. Find the probability of selecting a green plant, <strong>given that the plant selected is medium</strong>.</p><ol><li><strong>Total first:</strong> the condition after <em>given that</em> restricts Total to 20 medium plants.</li><li><strong>Favorable inside Total:</strong> 12 plants in the medium row are green.</li><li><strong>Fraction:</strong> \\(\\frac{12}{20}=\\frac{3}{5}\\).</li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
       "id": "model_check",
+      "shared_prompt": "plant_table",
       "block_type": "check",
       "content": {
         "prompt": "The probability of selecting a green plant, given that the plant selected is medium, is set up as \\(\\frac{12}{20}\\). Which statement correctly identifies what the \\(20\\) and the \\(12\\) count?",
@@ -244,12 +276,18 @@
     {
       "kind": "text",
       "id": "reverse_table_direction",
-      "html": "<h2>The given condition may name a row or a column</h2><p>Do not assume the condition after <strong>given that</strong> always names a row. It can name either table category.</p><table><caption>Commuters by role and transportation</caption><thead><tr><th scope=\"col\">Role</th><th scope=\"col\">Bus</th><th scope=\"col\">Bike</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Student</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Teacher</th><td>6</td><td>4</td><td>10</td></tr><tr><th scope=\"row\">Total</th><td>24</td><td>16</td><td>40</td></tr></tbody></table><p>For <em>the probability of selecting a teacher, given that the person selected rides the bus</em>:</p><ul><li><strong>Total:</strong> all 24 bus riders—the bus column</li><li><strong>Favorable:</strong> 6 teachers inside that column</li><li><strong>Probability:</strong> \\(\\frac{6}{24}\\)</li></ul>",
+      "shared_prompt": {
+        "id": "commuter_table",
+        "title": "Commuter table",
+        "html": "<table><caption>Commuters by role and transportation</caption><thead><tr><th scope=\"col\">Role</th><th scope=\"col\">Bus</th><th scope=\"col\">Bike</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Student</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Teacher</th><td>6</td><td>4</td><td>10</td></tr><tr><th scope=\"row\">Total</th><td>24</td><td>16</td><td>40</td></tr></tbody></table>"
+      },
+      "html": "<h2>The given condition may name a row or a column</h2><p>Do not assume the condition after <strong>given that</strong> always names a row. It can name either table category.</p><p>For <em>the probability of selecting a teacher, given that the person selected rides the bus</em>:</p><ul><li><strong>Total:</strong> all 24 bus riders—the bus column</li><li><strong>Favorable:</strong> 6 teachers inside that column</li><li><strong>Probability:</strong> \\(\\frac{6}{24}\\)</li></ul>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
       "id": "reverse_direction_check",
+      "shared_prompt": "commuter_table",
       "block_type": "check",
       "content": {
         "prompt": "One person represented in the commuter table is selected at random. What is the probability of selecting a teacher, given that the person selected rides the bus?",
@@ -269,12 +307,18 @@
     {
       "kind": "text",
       "id": "missing_totals",
-      "html": "<h2>If totals are missing, add only the needed group</h2><p>Some tables omit the total row or column. You may need one simple addition before building the probability.</p><table><caption>Students by session and class</caption><thead><tr><th scope=\"col\">Session</th><th scope=\"col\">Algebra</th><th scope=\"col\">Geometry</th></tr></thead><tbody><tr><th scope=\"row\">Afternoon</th><td>16</td><td>9</td></tr><tr><th scope=\"row\">Evening</th><td>14</td><td>11</td></tr></tbody></table><p>For <em>the probability of selecting a geometry student, given that the student selected attends the afternoon session</em>:</p><ul><li><strong>Total:</strong> \\(16+9=25\\) afternoon students</li><li><strong>Favorable:</strong> 9 geometry students in the afternoon row</li><li><strong>Probability:</strong> \\(\\frac{9}{25}\\)</li></ul><p>You do not need to calculate every total in the table—only the Total named by the selection wording.</p>",
+      "shared_prompt": {
+        "id": "class_table",
+        "title": "Class table",
+        "html": "<table><caption>Students by session and class</caption><thead><tr><th scope=\"col\">Session</th><th scope=\"col\">Algebra</th><th scope=\"col\">Geometry</th></tr></thead><tbody><tr><th scope=\"row\">Afternoon</th><td>16</td><td>9</td></tr><tr><th scope=\"row\">Evening</th><td>14</td><td>11</td></tr></tbody></table>"
+      },
+      "html": "<h2>If totals are missing, add only the needed group</h2><p>Some tables omit the total row or column. You may need one simple addition before building the probability.</p><p>For <em>the probability of selecting a geometry student, given that the student selected attends the afternoon session</em>:</p><ul><li><strong>Total:</strong> \\(16+9=25\\) afternoon students</li><li><strong>Favorable:</strong> 9 geometry students in the afternoon row</li><li><strong>Probability:</strong> \\(\\frac{9}{25}\\)</li></ul><p>You do not need to calculate every total in the table—only the Total named by the selection wording.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
       "id": "missing_total_check",
+      "shared_prompt": "class_table",
       "block_type": "check",
       "content": {
         "prompt": "One student represented in the class table is selected at random. What is the probability of selecting a geometry student, given that the student selected attends the afternoon session?",
@@ -295,6 +339,7 @@
     {
       "kind": "text",
       "id": "match_answer_form",
+      "shared_prompt": "plant_table",
       "html": "<h2>Keep the setup visible, then match the answer form</h2><p>The unsimplified fraction shows your reasoning clearly:</p><blockquote><p>\\[\\displaystyle \\frac{12\\text{ medium green plants}}{20\\text{ medium plants}}=\\frac{12}{20}=\\frac{3}{5}\\]</p></blockquote><p>Build the Favorable-over-Total fraction before simplifying. Then match the answer format the question requests. Equivalent fractions, decimals, and percents describe the same probability, but SAT table questions often let you identify the fraction directly.</p><p>A useful check: Favorable cannot be larger than Total, so your probability fraction should not be greater than 1.</p>",
       "calculator": { "display": "hidden" }
     },
@@ -332,12 +377,18 @@
     {
       "kind": "text",
       "id": "transfer_intro",
-      "html": "<h2>Apply the process to a fresh table</h2><p>A museum records tour type and visitor age group:</p><table><caption>Museum visitors by age group and tour</caption><thead><tr><th scope=\"col\">Age group</th><th scope=\"col\">History</th><th scope=\"col\">Science</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Youth</th><td>14</td><td>21</td><td>35</td></tr><tr><th scope=\"row\">Adult</th><td>26</td><td>39</td><td>65</td></tr><tr><th scope=\"row\">Total</th><td>40</td><td>60</td><td>100</td></tr></tbody></table><p>For each question, identify the Total before looking for Favorable.</p>",
+      "shared_prompt": {
+        "id": "museum_table",
+        "title": "Museum table",
+        "html": "<table><caption>Museum visitors by age group and tour</caption><thead><tr><th scope=\"col\">Age group</th><th scope=\"col\">History</th><th scope=\"col\">Science</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Youth</th><td>14</td><td>21</td><td>35</td></tr><tr><th scope=\"row\">Adult</th><td>26</td><td>39</td><td>65</td></tr><tr><th scope=\"row\">Total</th><td>40</td><td>60</td><td>100</td></tr></tbody></table>"
+      },
+      "html": "<h2>Apply the process to a fresh table</h2><p>A museum records tour type and visitor age group:</p><p>For each question, identify the Total before looking for Favorable.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
       "id": "transfer_total_check",
+      "shared_prompt": "museum_table",
       "block_type": "check",
       "content": {
         "prompt": "One visitor represented in the museum table is selected at random. What is the Total for the probability of selecting a visitor who chose the science tour, given that the visitor selected is an adult?",
@@ -358,6 +409,7 @@
     {
       "kind": "raw_block",
       "id": "transfer_given_probability_check",
+      "shared_prompt": "museum_table",
       "block_type": "check",
       "content": {
         "prompt": "One visitor represented in the museum table is selected at random. What is the probability of selecting a visitor who chose the science tour, given that the visitor selected is an adult?",
@@ -373,6 +425,7 @@
     {
       "kind": "raw_block",
       "id": "transfer_no_given_check",
+      "shared_prompt": "museum_table",
       "block_type": "check",
       "content": {
         "prompt": "Using the museum table, one visitor is selected from all 100 visitors. What is the probability the visitor chose history?",

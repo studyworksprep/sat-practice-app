@@ -51,11 +51,16 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_numerical_gcf_check",
+        "title": "Original polynomial",
+        "html": "<p>\\(24x^2+36x\\)</p>"
+      },
       "kind": "raw_block",
       "id": "numerical_gcf_check",
       "block_type": "check",
       "content": {
-        "prompt": "What is the greatest numerical factor shared by \\(24x^2\\) and \\(36x\\)?",
+        "prompt": "What is the greatest numerical factor shared by the two terms?",
         "choices": ["\\(4\\)", "\\(6\\)", "\\(8\\)", "\\(12\\)"],
         "correct_index": 3,
         "allow_retry": true,
@@ -91,17 +96,19 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_numerical_gcf_check",
       "kind": "text",
       "id": "complete_gcf_meaning",
       "html": "<h2>Equivalent is not always fully factored</h2><p>Several products can expand to the same polynomial:</p><ul><li>\\(24x^2+36x=6x(4x+6)\\)</li><li>\\(24x^2+36x=12x(2x+3)\\)</li></ul><p>Both equal the original polynomial, but the first leaves a common factor of \\(2\\) inside. The second removes the entire GCF.</p><blockquote><p><strong>GCF step complete:</strong> the terms inside the parentheses share no numerical or variable factor greater than \\(1\\).</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_numerical_gcf_check",
       "kind": "raw_block",
       "id": "complete_gcf_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which expression factors \\(24x^2+36x\\) by its full GCF?",
+        "prompt": "Which expression factors the polynomial by its full GCF?",
         "choices": [
           "\\(4x(6x+9)\\)",
           "\\(6x(4x+6)\\)",
@@ -168,11 +175,16 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_mixed_numeric_part_check",
+        "title": "Number and variable factors",
+        "html": "<p>\\(12x^3+18x^2\\)</p>"
+      },
       "kind": "raw_block",
       "id": "mixed_numeric_part_check",
       "block_type": "check",
       "content": {
-        "prompt": "For \\(12x^3+18x^2\\), what is the numerical part of the GCF?",
+        "prompt": "What is the numerical part of the GCF?",
         "choices": ["\\(2\\)", "\\(3\\)", "\\(12\\)", "\\(6\\)"],
         "correct_index": 3,
         "allow_retry": true,
@@ -182,11 +194,12 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_mixed_numeric_part_check",
       "kind": "raw_block",
       "id": "mixed_variable_part_check",
       "block_type": "check",
       "content": {
-        "prompt": "For \\(12x^3+18x^2\\), what is the variable part of the GCF?",
+        "prompt": "What is the variable part of the GCF?",
         "choices": ["\\(x^3\\)", "\\(x^2\\)", "\\(x\\)", "\\(x^5\\)"],
         "correct_index": 1,
         "allow_retry": true,
@@ -228,11 +241,16 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_multiple_variable_parts_check",
+        "title": "Polynomial with two variables",
+        "html": "<p>\\(18m^4n^3-24m^2n^5\\)</p>"
+      },
       "kind": "raw_block",
       "id": "multiple_variable_parts_check",
       "block_type": "check",
       "content": {
-        "prompt": "What is the variable part of the GCF of \\(18m^4n^3\\) and \\(24m^2n^5\\)?",
+        "prompt": "What is the variable part of the GCF of the two terms?",
         "choices": ["\\(m^2n^3\\)", "\\(m^4n^5\\)", "\\(m^2n^2\\)", "\\(m^6n^8\\)"],
         "correct_index": 0,
         "allow_retry": true,
@@ -248,11 +266,12 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_multiple_variable_parts_check",
       "kind": "raw_block",
       "id": "multiple_variable_check",
       "block_type": "check",
       "content": {
-        "prompt": "Factor \\(18m^4n^3-24m^2n^5\\) by its GCF.",
+        "prompt": "Factor the polynomial by its GCF.",
         "choices": [
           "\\(3m^2n^3(6m^2-8n^2)\\)",
           "\\(6m^4n^5(3-4)\\)",

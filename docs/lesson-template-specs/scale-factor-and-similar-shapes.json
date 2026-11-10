@@ -356,16 +356,22 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_arbitrary_variables",
+        "title": "Corresponding sides in terms of n",
+        "html": "<p>Two similar figures have corresponding sides of lengths \\(4n\\) and \\(10n\\), respectively.</p>"
+      },
       "kind": "text",
       "id": "arbitrary_variables",
       "html": "<h2>Variables often hide a simple ratio</h2><p>Suppose corresponding sides are \\(4n\\) and \\(10n\\), and the problem asks only for a ratio. The actual value of \\(n\\) does not matter:</p><p>\\[\\frac{10n}{4n}=\\frac52.\\]</p><p>The shared variable cancels. You may set \\(n=1\\), or another convenient positive value, to replace the expressions with real numbers.</p><blockquote><p><strong>Convenient-value rule:</strong> If a variable is arbitrary and appears as the same common scale in both shapes, choose a value that makes the measurements easy.</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_arbitrary_variables",
       "kind": "raw_block",
       "id": "arbitrary_ratio_check",
       "block_type": "check",
       "content": {
-        "prompt": "Corresponding sides of two similar figures are \\(4n\\) and \\(10n\\). What is the second-to-first area ratio?",
+        "prompt": "What is the second-to-first area ratio?",
         "choices": [
           "\\(5:2\\)",
           "\\(4:25\\)",

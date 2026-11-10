@@ -11,9 +11,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_no_solution_exploration",
+        "title": "Parallel lines example",
+        "html": "<p>\\(y=2x+1\\)</p><p>\\(y=2x-3\\)</p>"
+      },
       "kind": "text",
       "id": "no_solution_exploration",
-      "html": "<h2>Explore a system with no intersection</h2><p>The equations \\(y=2x+1\\) and \\(y=2x-3\\) are graphed.</p><p>Pan and zoom. Try to find a point where the lines meet.</p><blockquote><p><strong>Before you continue:</strong> decide whether these lines will ever intersect.</p></blockquote>",
+      "html": "<h2>Explore a system with no intersection</h2><p>Both equations are graphed.</p><p>Pan and zoom. Try to find a point where the lines meet.</p><blockquote><p><strong>Before you continue:</strong> decide whether these lines will ever intersect.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -34,11 +39,12 @@
       }
     },
     {
+      "shared_prompt": "shared_no_solution_exploration",
       "kind": "raw_block",
       "id": "no_solution_observation_check",
       "block_type": "check",
       "content": {
-        "prompt": "What did the graphs of \\(y=2x+1\\) and \\(y=2x-3\\) show?",
+        "prompt": "What did the graphs show?",
         "choices": [
           "The lines intersect exactly once at the point \\((0,1)\\).",
           "The lines overlap each other at every point shown.",
@@ -93,9 +99,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_infinite_solution_exploration",
+        "title": "Coincident lines example",
+        "html": "<p>\\(2x+y=6\\)</p><p>\\(4x+2y=12\\)</p>"
+      },
       "kind": "text",
       "id": "infinite_solution_exploration",
-      "html": "<h2>Explore two equations that make one line</h2><p>Desmos contains two equations: \\(2x+y=6\\) and \\(4x+2y=12\\). The graph may look as though only one line is present because the lines sit exactly on top of each other.</p><p>Use the colored circle beside the second equation to hide and show its graph. Notice that the visible line does not move.</p><blockquote><p><strong>What this reveals:</strong> every point on one line is also on the other line.</p></blockquote>",
+      "html": "<h2>Explore two equations that make one line</h2><p>Desmos contains both equations. The graph may look as though only one line is present because the lines sit exactly on top of each other.</p><p>Use the colored circle beside the second equation to hide and show its graph. Notice that the visible line does not move.</p><blockquote><p><strong>What this reveals:</strong> every point on one line is also on the other line.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -121,11 +132,12 @@
       }
     },
     {
+      "shared_prompt": "shared_infinite_solution_exploration",
       "kind": "raw_block",
       "id": "infinite_solution_observation_check",
       "block_type": "check",
       "content": {
-        "prompt": "Why does the system \\(2x+y=6\\) and \\(4x+2y=12\\) have infinitely many solutions?",
+        "prompt": "Why does this system have infinitely many solutions?",
         "choices": [
           "The two lines are parallel to each other and therefore cannot touch.",
           "The two lines share a y-intercept while keeping different slopes.",
@@ -190,9 +202,14 @@
       "html": "<h2>Choose the method from the number of missing constants</h2><ol><li><strong>Graph first.</strong> Enter both equations and identify the requested visual state.</li><li><strong>One missing constant:</strong> use a slider and move it until the lines become parallel or overlap.</li><li><strong>Two or more missing constants:</strong> rewrite both equations in \\(y=mx+b\\) form and match the needed features.</li><li><strong>Standard form:</strong> proportions may reveal the same relationship faster.</li></ol><blockquote><p><strong>Decision rule:</strong> One unknown invites a slider; several unknowns require relationships.</p></blockquote>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_slider_no_solution_exploration",
+        "title": "System with an adjustable slope",
+        "html": "<p>Suppose the system is \\(y=ax+1\\) and \\(y=2x-3\\), and the question asks for the value of \\(a\\) that makes the system have no solution.</p>"
+      },
       "kind": "text",
       "id": "slider_no_solution_exploration",
-      "html": "<h2>One missing constant: slide to no solution</h2><p>Suppose the system is \\(y=ax+1\\) and \\(y=2x-3\\), and the question asks for the value of \\(a\\) that makes the system have no solution.</p><p>In Desmos, uppercase \\(A\\) stands for \\(a\\). Drag the \\(A\\) slider until the two lines are parallel. Record the slider value.</p><blockquote><p><strong>Target picture:</strong> same direction, different positions.</p></blockquote>",
+      "html": "<h2>One missing constant: slide to no solution</h2><p>In Desmos, uppercase \\(A\\) stands for \\(a\\). Drag the \\(A\\) slider until the two lines are parallel. Record the slider value.</p><blockquote><p><strong>Target picture:</strong> same direction, different positions.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -217,11 +234,12 @@
       }
     },
     {
+      "shared_prompt": "shared_slider_no_solution_exploration",
       "kind": "raw_block",
       "id": "slider_no_solution_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which value of a makes \\(y=ax+1\\) and \\(y=2x-3\\) have no solution?",
+        "prompt": "Which value of \\(a\\) makes this system have no solution?",
         "choices": [
           "\\(a=-3\\)",
           "\\(a=1\\)",
@@ -257,14 +275,20 @@
       }
     },
     {
+      "shared_prompt": "shared_slider_no_solution_exploration",
       "kind": "text",
       "id": "slider_no_solution_explanation",
       "html": "<h2>The slider found the matching slope</h2><p>In \\(y=ax+1\\), the missing constant \\(a\\) controls the slope. The second line's slope is \\(2\\).</p><p>Setting \\(a=2\\) makes the slopes match. The fixed y-intercepts are already different, so the resulting lines are parallel rather than overlapping.</p><blockquote><p><strong>Use the picture to identify the value, then name why it works.</strong></p></blockquote>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_slider_infinite_exploration",
+        "title": "System with an adjustable intercept",
+        "html": "<p>Now consider \\(y=3x+b\\) and \\(2y=6x+8\\). The question asks for the value of \\(b\\) that makes the system have infinitely many solutions.</p>"
+      },
       "kind": "text",
       "id": "slider_infinite_exploration",
-      "html": "<h2>One missing constant: slide to one shared line</h2><p>Now consider \\(y=3x+b\\) and \\(2y=6x+8\\). The question asks for the value of \\(b\\) that makes the system have infinitely many solutions.</p><p>In Desmos, uppercase \\(B\\) stands for \\(b\\). Move the slider until the adjustable line sits exactly on top of the fixed line. Hide and show either graph if you need to confirm the overlap.</p>",
+      "html": "<h2>One missing constant: slide to one shared line</h2><p>In Desmos, uppercase \\(B\\) stands for \\(b\\). Move the slider until the adjustable line sits exactly on top of the fixed line. Hide and show either graph if you need to confirm the overlap.</p>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -289,11 +313,12 @@
       }
     },
     {
+      "shared_prompt": "shared_slider_infinite_exploration",
       "kind": "raw_block",
       "id": "slider_infinite_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which value of b makes \\(y=3x+b\\) and \\(2y=6x+8\\) have infinitely many solutions?",
+        "prompt": "Which value of \\(b\\) makes this system have infinitely many solutions?",
         "choices": [
           "\\(b=3\\)",
           "\\(b=4\\)",
@@ -352,21 +377,28 @@
       "html": "<h2>Several missing constants need algebraic conditions</h2><p>A graph can show the target state, but moving several sliders at once is inefficient and may not reveal exact values.</p><p>When two or more constants are missing, rewrite both equations in \\(y=mx+b\\) form. Then impose the condition named by the question:</p><ul><li><strong>No solution:</strong> slopes equal, y-intercepts unequal.</li><li><strong>Infinitely many:</strong> slopes equal, y-intercepts equal.</li></ul>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_mx_plus_b_setup",
+        "title": "System with two unknown constants",
+        "html": "<p>\\[ax+2y=10\\]</p><p>\\[6x+3y=c\\]</p>"
+      },
       "kind": "text",
       "id": "mx_plus_b_setup",
-      "html": "<h2>Expose the slopes and intercepts</h2><p>Consider the system</p><p>\\[ax+2y=10\\]</p><p>\\[6x+3y=c\\]</p><p>Solve each equation for \\(y\\):</p><ul><li>\\(ax+2y=10\\) becomes \\(y=-\\frac{a}{2}x+5\\).</li><li>\\(6x+3y=c\\) becomes \\(y=-2x+\\frac{c}{3}\\).</li></ul><p>Now the slopes and y-intercepts are visible. The first slope is \\(-\\frac{a}{2}\\), and the second is \\(-2\\). The intercepts are \\(5\\) and \\(\\frac{c}{3}\\).</p>"
+      "html": "<h2>Expose the slopes and intercepts</h2><p>Solve each equation for \\(y\\):</p><ul><li>\\(ax+2y=10\\) becomes \\(y=-\\frac{a}{2}x+5\\).</li><li>\\(6x+3y=c\\) becomes \\(y=-2x+\\frac{c}{3}\\).</li></ul><p>Now the slopes and y-intercepts are visible. The first slope is \\(-\\frac{a}{2}\\), and the second is \\(-2\\). The intercepts are \\(5\\) and \\(\\frac{c}{3}\\).</p>"
     },
     {
+      "shared_prompt": "shared_mx_plus_b_setup",
       "kind": "text",
       "id": "multiple_constants_no_solution_model",
       "html": "<h2>Create no solution</h2><p>For no solution, first make the slopes equal:</p><p>\\[-\\frac{a}{2}=-2\\]</p><p>so \\(a=4\\).</p><p>Then keep the y-intercepts different:</p><p>\\[\\frac{c}{3}\\ne5\\]</p><p>so \\(c\\ne15\\).</p><blockquote><p><strong>No-solution condition:</strong> \\(a=4\\) and \\(c\\ne15\\).</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_mx_plus_b_setup",
       "kind": "raw_block",
       "id": "multiple_constants_no_solution_check",
       "block_type": "check",
       "content": {
-        "prompt": "For \\(ax+2y=10\\) and \\(6x+3y=c\\), which condition makes the system have no solution?",
+        "prompt": "Which condition makes the system have no solution?",
         "choices": [
           "\\(a=4\\) and \\(c\\ne15\\)",
           "\\(a\\ne4\\) and \\(c=15\\)",
@@ -381,16 +413,18 @@
       }
     },
     {
+      "shared_prompt": "shared_mx_plus_b_setup",
       "kind": "text",
       "id": "multiple_constants_infinite_model",
       "html": "<h2>Create infinitely many solutions</h2><p>Use the same rewritten equations:</p><ul><li>\\(y=-\\frac{a}{2}x+5\\)</li><li>\\(y=-2x+\\frac{c}{3}\\)</li></ul><p>For the lines to overlap, match both features:</p><ul><li>Equal slopes give \\(a=4\\).</li><li>Equal y-intercepts give \\(\\frac{c}{3}=5\\), so \\(c=15\\).</li></ul><blockquote><p><strong>Infinite-solution condition:</strong> \\(a=4\\) and \\(c=15\\).</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_mx_plus_b_setup",
       "kind": "raw_block",
       "id": "multiple_constants_infinite_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which values make \\(ax+2y=10\\) and \\(6x+3y=c\\) represent the same line?",
+        "prompt": "Which values make these equations represent the same line?",
         "choices": [
           "\\(a=2\\), \\(c=10\\)",
           "\\(a=4\\), \\(c=12\\)",
@@ -404,18 +438,24 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_gated_graph_transition",
+        "title": "System to verify in Desmos",
+        "html": "<p>\\[4x+2y=10\\]</p><p>\\[6x+3y=12\\]</p>"
+      },
       "kind": "text",
       "id": "gated_graph_transition",
-      "html": "<h2>Confirm the algebra with a graph</h2><p>Use the no-solution values \\(a=4\\) and \\(c=12\\). The system becomes</p><p>\\[4x+2y=10\\]</p><p>\\[6x+3y=12\\]</p><p>Enter both complete equations exactly as written. Submit the graph, then inspect the two lines.</p>"
+      "html": "<h2>Confirm the algebra with a graph</h2><p>Use the no-solution values \\(a=4\\) and \\(c=12\\).</p><p>Enter both complete equations exactly as written. Submit the graph, then inspect the two lines.</p>"
     },
     {
+      "shared_prompt": "shared_gated_graph_transition",
       "kind": "raw_block",
       "id": "gated_no_solution_graph",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
         "title": "Graph the no-solution system",
-        "instructions_html": "<p>Enter <strong>\\(4x+2y=10\\)</strong> on one row and <strong>\\(6x+3y=12\\)</strong> on another row. Keep both graphs visible, then submit.</p>",
+        "instructions_html": "<p>Enter each equation on its own row. Keep both graphs visible, then submit.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "multi_expression",
@@ -469,11 +509,12 @@
       }
     },
     {
+      "shared_prompt": "shared_gated_graph_transition",
       "kind": "raw_block",
       "id": "gated_graph_confirmation_check",
       "block_type": "check",
       "content": {
-        "prompt": "Why do \\(4x+2y=10\\) and \\(6x+3y=12\\) have no solution?",
+        "prompt": "Why does the graphed system have no solution?",
         "choices": [
           "Their slopes are different, so the lines cross once.",
           "Their slopes are equal, but their y-intercepts are different.",

@@ -43,11 +43,15 @@ import { LessonSlideshow } from '@/lib/ui/LessonSlideshow';
 import {
   createStarterBlock,
   duplicateBlock,
+  indexSharedPrompts,
   recomputeSortOrders,
+  removeBlockAt,
+  setSharedPromptOnBlocks,
 } from '@/lib/lesson/editor-utils.mjs';
 import { validateLessonBlocks } from '@/lib/lesson/lesson-validation.mjs';
 import { BlockCard } from './BlockCard';
 import { AddBlockMenu } from './AddBlockMenu';
+import { SharedPromptEditor, type SharedPrompt } from './SharedPromptEditor';
 import type { LessonBlockType } from './block-meta';
 import a from '../../../admin.module.css';
 import f from '../../../forms.module.css';
@@ -93,6 +97,8 @@ export function CanvasEditor({
   const [blocks, setBlocks] = useState<Block[]>(() => ensureIds(initialBlocks));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [view, setView] = useState<'edit' | 'preview'>('edit');
+  const [activePromptId, setActivePromptId] = useState<string | null>();
+  const editingPrompt = activePromptId !== undefined;
   const [savedSnapshot, setSavedSnapshot] = useState(() =>
     JSON.stringify(ensureIds(initialBlocks)),
   );
@@ -112,6 +118,7 @@ export function CanvasEditor({
   }, [(state as { ok?: boolean } | null)?.ok, (state as { data?: { savedAt?: number } } | null)?.data?.savedAt]);
 
   const dirty = useMemo(() => JSON.stringify(blocks) !== savedSnapshot, [blocks, savedSnapshot]);
+  const sharedPrompts = useMemo(() => indexSharedPrompts(blocks), [blocks]);
 
   // Live validation so branch-reference / schema problems show on the
   // offending card before save.
@@ -140,14 +147,14 @@ export function CanvasEditor({
   // Warn before leaving with unsaved edits — the save is a full
   // replace, so a lost tab loses the whole working set.
   useEffect(() => {
-    if (!dirty) return undefined;
+    if (!dirty && !editingPrompt) return undefined;
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = '';
     };
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
-  }, [dirty]);
+  }, [dirty, editingPrompt]);
 
   function jumpToBlock(id: string) {
     setView('edit');
@@ -203,7 +210,7 @@ export function CanvasEditor({
 
   function removeAt(index: number) {
     const removed = blocks[index];
-    commit(blocks.filter((_, i) => i !== index));
+    commit(removeBlockAt(blocks, index));
     if (editingId === removed?.id) setEditingId(null);
   }
 
@@ -226,6 +233,12 @@ export function CanvasEditor({
     const restored = JSON.parse(savedSnapshot) as Block[];
     setBlocks(restored);
     setEditingId(null);
+    setActivePromptId(undefined);
+  }
+
+  function applySharedPrompt(prompt: SharedPrompt, selectedIds: Set<string>) {
+    setBlocks((previous) => setSharedPromptOnBlocks(previous, prompt, selectedIds));
+    setActivePromptId(undefined);
   }
 
   const saveState = state as { ok?: boolean; error?: string; data?: { blockCount?: number } } | null;
@@ -252,7 +265,7 @@ export function CanvasEditor({
             <Button type="button" variant={view === 'edit' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('edit')}>
               Edit
             </Button>
-            <Button type="button" variant={view === 'preview' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('preview')}>
+            <Button type="button" variant={view === 'preview' ? 'primary' : 'secondary'} size="sm" disabled={editingPrompt} onClick={() => setView('preview')}>
               Preview as student
             </Button>
           </div>
@@ -260,7 +273,17 @@ export function CanvasEditor({
       </div>
 
       {view === 'edit' ? (
-        <ValidationSummary validation={validation} indexById={indexById} onJump={jumpToBlock} />
+        <>
+          <ValidationSummary validation={validation} indexById={indexById} onJump={jumpToBlock} />
+          <SharedPromptEditor
+            blocks={blocks}
+            prompts={sharedPrompts}
+            activeId={activePromptId}
+            onOpen={setActivePromptId}
+            onClose={() => setActivePromptId(undefined)}
+            onApply={applySharedPrompt}
+          />
+        </>
       ) : null}
 
       {view === 'preview' ? (
@@ -273,7 +296,7 @@ export function CanvasEditor({
             <Slideshow blocks={blocks} questionLinkHref={null} showCompleteButton={false} />
           )}
         </div>
-      ) : (
+      ) : !editingPrompt ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
           <SortableContext items={blocks.map((b) => b.id as string)} strategy={verticalListSortingStrategy}>
             <div style={S.canvas}>
@@ -304,15 +327,15 @@ export function CanvasEditor({
             </div>
           </SortableContext>
         </DndContext>
-      )}
+      ) : null}
 
       <form action={formAction} style={S.saveRow}>
         <input type="hidden" name="lesson_id" value={lessonId} />
         <input type="hidden" name="blocks" value={JSON.stringify(blocks)} />
-        <Button type="submit" variant="primary" disabled={pending || !validation.ok}>
+        <Button type="submit" variant="primary" disabled={pending || editingPrompt || !validation.ok}>
           {pending ? 'Saving…' : saveLabel}
         </Button>
-        <Button type="button" variant="secondary" disabled={!dirty || pending} onClick={discard}>
+        <Button type="button" variant="secondary" disabled={(!dirty && !editingPrompt) || pending} onClick={discard}>
           Discard changes
         </Button>
         {saveState?.ok && !pending ? (

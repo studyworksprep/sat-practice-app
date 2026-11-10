@@ -9,9 +9,14 @@
       "html": "<h2>Match it, don't expand it</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Give every variable a slider, then test numbers instead of expanding.</p><p><strong>Why it pays:</strong> Multi-variable \"which is equivalent\" questions stop being sign-error minefields — you check the answer rather than derive it.</p><p><strong>One caution:</strong> At the default slider values, several wrong choices can agree with the original by coincidence. Move the sliders and test a second set before you commit.</p></div><p>Some SAT questions hand you a messy expression with two or more variables — like \\(3a(2a-b)+b(a+5)\\) — and ask which answer choice is <em>equivalent</em>. Expand it by hand and you're one sign slip from the wrong answer. Or give every variable a slider and let the numbers pick the choice.</p>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_text_2",
+        "title": "Original expression and candidates",
+        "html": "<p>Original: \\(a(2b+3)\\)</p><ul><li>\\(2ab+3a\\)</li><li>\\(2ab+3\\)</li></ul>"
+      },
       "kind": "text",
       "id": "text_2",
-      "html": "<p>Let's start by watching the idea in action. The original expression is \\(a(2b+3)\\). Two \"answer choices\" are also loaded: \\(2ab+3a\\) and \\(2ab+3\\).</p><p>The sliders are set to \\(a=2\\) and \\(b=3\\). When every variable already has a value, Desmos shows an expression's value right after an equals sign. Look at the number Desmos prints for each row.</p><blockquote><p><strong>Tip:</strong> Drag the \\(a\\) and \\(b\\) sliders to new numbers and watch which row keeps matching the original.</p></blockquote>",
+      "html": "<p>The sliders are set to \\(a=2\\) and \\(b=3\\). When every variable already has a value, Desmos shows an expression's value right after an equals sign. Look at the number Desmos prints for each row.</p><blockquote><p><strong>Tip:</strong> Drag the \\(a\\) and \\(b\\) sliders to new numbers and watch which row keeps matching the original.</p></blockquote>",
       "calculator": {
         "mode": "preset",
         "title": "Compare the values",
@@ -43,11 +48,12 @@
       }
     },
     {
+      "shared_prompt": "shared_text_2",
       "kind": "raw_block",
       "id": "check_1",
       "block_type": "check",
       "content": {
-        "prompt": "With \\(a=2\\) and \\(b=3\\), the original \\(a(2b+3)\\) shows \\(18\\). Which choice also showed \\(18\\)?",
+        "prompt": "With \\(a=2\\) and \\(b=3\\), the original shows \\(18\\). Which choice also showed \\(18\\)?",
         "choices": [
           "\\(2ab+3\\)",
           "\\(2ab+3a\\)",
@@ -206,6 +212,11 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_check_6",
+        "title": "Slider transfer expression",
+        "html": "<p>\\(4x(x-2y)+3y(2x+y)\\)</p>"
+      },
       "kind": "raw_block",
       "id": "check_6",
       "block_type": "check",
@@ -241,11 +252,13 @@
       }
     },
     {
+      "shared_prompt": "shared_check_6",
       "kind": "text",
       "id": "branching_question_13_correct",
       "html": "<p>Exactly. Typing \\(4X(X-2Y)+3Y(2X+Y)\\) at \\(X=2, Y=3\\) gives \\(31\\), and only \\(4X^2-2XY+3Y^2\\) also gives \\(31\\). The \\(-8xy\\) and \\(+6xy\\) combine to \\(-2xy\\).</p>"
     },
     {
+      "shared_prompt": "shared_check_6",
       "kind": "text",
       "id": "branching_question_13_incorrect",
       "html": "<p>Not quite — that's a sign or combining slip. Expanding gives \\(4x^2-8xy+6xy+3y^2\\), and \\(-8xy+6xy=-2xy\\), not \\(-14xy\\) or \\(+14xy\\). Numerically, \\(4X(X-2Y)+3Y(2X+Y)=31\\) at \\(X=2, Y=3\\); test each choice and only one hits \\(31\\).</p>"

@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Notebook sales",
+        "html": "<p>A school store sells notebooks for \\(\\$5\\) each. Let \\(n\\) be the number of notebooks sold.</p><p>The store's notebook revenue is \\(5n\\) dollars.</p>"
+      },
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Start with one product</h2><p>A school store sells notebooks for \\(\\$5\\) each. Let \\(n\\) be the number of notebooks sold.</p><p>The store's notebook revenue is \\(5n\\) dollars.</p><p>Before continuing, say what each part means:</p><ul><li>What does \\(5\\) measure?</li><li>What does \\(n\\) count?</li><li>What does the complete product \\(5n\\) measure?</li></ul>",
+      "html": "<h2>Start with one product</h2><p>Before continuing, say what each part means:</p><ul><li>What does \\(5\\) measure?</li><li>What does \\(n\\) count?</li><li>What does the complete product \\(5n\\) measure?</li></ul>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "raw_block",
       "id": "opening_check",
       "block_type": "check",
@@ -110,17 +116,23 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_two_term_equation",
+        "title": "Carton sales and total revenue",
+        "html": "<p>A market sells small cartons for \\(\\$4.80\\) each and large cartons for \\(\\$7.25\\) each. Let \\(s\\) and \\(l\\) be the numbers sold.</p><p>\\[4.80s+7.25l=612.50\\]</p>"
+      },
       "kind": "text",
       "id": "two_term_equation",
-      "html": "<h2>Two terms are two subtotals</h2><p>A market sells small cartons for \\(\\$4.80\\) each and large cartons for \\(\\$7.25\\) each. Let \\(s\\) and \\(l\\) be the numbers sold. The equation</p><p>\\[4.80s+7.25l=612.50\\]</p><p>has a consistent structure:</p><ul><li>\\(4.80s\\): revenue from small cartons</li><li>\\(7.25l\\): revenue from large cartons</li><li>\\(4.80s+7.25l\\): combined revenue</li><li>\\(612.50\\): the stated total revenue, in dollars</li></ul><blockquote><p><strong>Equation story:</strong> subtotal 1 + subtotal 2 = grand total.</p></blockquote>",
+      "html": "<h2>Two terms are two subtotals</h2><p>Read each part of the equation:</p><ul><li>\\(4.80s\\): revenue from small cartons</li><li>\\(7.25l\\): revenue from large cartons</li><li>\\(4.80s+7.25l\\): combined revenue</li><li>\\(612.50\\): the stated total revenue, in dollars</li></ul><blockquote><p><strong>Equation story:</strong> subtotal 1 + subtotal 2 = grand total.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_two_term_equation",
       "kind": "raw_block",
       "id": "two_term_term_check",
       "block_type": "check",
       "content": {
-        "prompt": "In \\(4.80s+7.25l=612.50\\), where \\(l\\) is the number of large cartons sold, what does \\(7.25l\\) represent?",
+        "prompt": "What does \\(7.25l\\) represent?",
         "choices": [
           "The total number of cartons sold",
           "The price of one large carton",
@@ -135,11 +147,12 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_two_term_equation",
       "kind": "raw_block",
       "id": "whole_equation_check",
       "block_type": "check",
       "content": {
-        "prompt": "What does the complete equation \\(4.80s+7.25l=612.50\\) state?",
+        "prompt": "What does the complete equation state?",
         "choices": [
           "The revenue from small cartons plus the revenue from large cartons is \\(\\$612.50\\).",
           "Exactly \\(612.50\\) cartons of the two sizes were sold in total.",
@@ -268,17 +281,23 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_independent_transfer",
+        "title": "Aquarium tank capacity",
+        "html": "<p>An aquarium has \\(4\\) identical display tanks and \\(9\\) identical research tanks. Each display tank holds \\(d\\) liters, and each research tank holds \\(r\\) liters. Altogether, the tanks hold \\(690\\) liters.</p><p>The equation is</p><p>\\[4d+9r=690\\]</p><p>Each display tank holds \\(60\\) liters. Find \\(r\\).</p>"
+      },
       "kind": "text",
       "id": "independent_transfer",
-      "html": "<h2>Independent transfer</h2><p>An aquarium has \\(4\\) identical display tanks and \\(9\\) identical research tanks. Each display tank holds \\(d\\) liters, and each research tank holds \\(r\\) liters. Altogether, the tanks hold \\(690\\) liters.</p><p>The equation is</p><p>\\[4d+9r=690\\]</p><p>Each display tank holds \\(60\\) liters. Find \\(r\\).</p><p>Use the full process: label the variables, interpret each product, substitute \\(d=60\\), and solve for the requested rate.</p>",
+      "html": "<h2>Independent transfer</h2><p>Use the full process: label the variables, interpret each product, substitute \\(d=60\\), and solve for the requested rate.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_independent_transfer",
       "kind": "raw_block",
       "id": "independent_transfer_check",
       "block_type": "check",
       "content": {
-        "prompt": "For \\(4d+9r=690\\) with \\(d=60\\), how many liters does each research tank hold?",
+        "prompt": "How many liters does each research tank hold?",
         "choices": [
           "\\(30\\) liters",
           "\\(45\\) liters",

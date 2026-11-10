@@ -303,12 +303,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_sat_example_one",
+        "title": "Maps and field journals sentence",
+        "html": "<blockquote><p>The collection of maps, together with several handwritten field journals, ___ how rapidly the coastline changed.</p></blockquote>"
+      },
       "kind": "text",
       "id": "sat_example_one",
-      "html": "<h2>Apply it to an SAT-style sentence</h2><blockquote><p>The collection of maps, together with several handwritten field journals, ___ how rapidly the coastline changed.</p></blockquote><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>have revealed</strong></li><li><strong>reveal</strong></li><li><strong>reveals</strong></li><li><strong>are revealing</strong></li></ol><p>Do not analyze the sentence yet. Test the choices.</p>",
+      "html": "<h2>Apply it to an SAT-style sentence</h2><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>have revealed</strong></li><li><strong>reveal</strong></li><li><strong>reveals</strong></li><li><strong>are revealing</strong></li></ol><p>Do not analyze the sentence yet. Test the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_sat_example_one",
       "kind": "raw_block",
       "id": "sat_example_one_check",
       "block_type": "check",
@@ -328,12 +334,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_sat_example_two",
+        "title": "Distant stars sentence",
+        "html": "<blockquote><p>New measurements of the distant stars, despite the limits of the original instruments, ___ the research team's conclusion.</p></blockquote>"
+      },
       "kind": "text",
       "id": "sat_example_two",
-      "html": "<h2>Now reverse the pattern</h2><blockquote><p>New measurements of the distant stars, despite the limits of the original instruments, ___ the research team's conclusion.</p></blockquote><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>supports</strong></li><li><strong>has supported</strong></li><li><strong>is supporting</strong></li><li><strong>support</strong></li></ol>",
+      "html": "<h2>Now reverse the pattern</h2><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>supports</strong></li><li><strong>has supported</strong></li><li><strong>is supporting</strong></li><li><strong>support</strong></li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_sat_example_two",
       "kind": "raw_block",
       "id": "sat_example_two_check",
       "block_type": "check",
@@ -392,12 +404,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_independent_transfer",
+        "title": "Architects sentence",
+        "html": "<blockquote><p>The influence of the two architects, visible in the building's curved walls and open courtyards, ___ later designers throughout the region.</p></blockquote>"
+      },
       "kind": "text",
       "id": "independent_transfer",
-      "html": "<h2>Independent transfer</h2><blockquote><p>The influence of the two architects, visible in the building's curved walls and open courtyards, ___ later designers throughout the region.</p></blockquote><p>Run the complete process: scan, test, check the gate, and choose the odd one out.</p>",
+      "html": "<h2>Independent transfer</h2><p>Run the complete process: scan, test, check the gate, and choose the odd one out.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_independent_transfer",
       "kind": "raw_block",
       "id": "independent_transfer_check",
       "block_type": "check",

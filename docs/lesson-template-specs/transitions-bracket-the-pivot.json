@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Building restoration passage",
+        "html": "<blockquote><p>Modern restoration projects are rarely designed merely to freeze a building at one historical moment. _____ they adapt old structures for new uses while preserving important features.</p></blockquote>"
+      },
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Try the unusual version first</h2><p>Read this text before studying the choices:</p><blockquote><p>Modern restoration projects are rarely designed merely to freeze a building at one historical moment. _____ they adapt old structures for new uses while preserving important features.</p></blockquote><p>Translate the two ideas:</p><ul><li><strong>Uncommon:</strong> freeze the building in time</li><li><strong>Usual:</strong> adapt the building while preserving it</li></ul><p>In your own words, what should the blank say?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Nevertheless,</li><li>More often,</li><li>For example,</li><li>Therefore,</li></ol>",
+      "html": "<h2>Try the unusual version first</h2><p>Read the shared text before studying the choices.</p><p>Translate the two ideas:</p><ul><li><strong>Uncommon:</strong> freeze the building in time</li><li><strong>Usual:</strong> adapt the building while preserving it</li></ul><p>In your own words, what should the blank say?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Nevertheless,</li><li>More often,</li><li>For example,</li><li>Therefore,</li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "raw_block",
       "id": "opening_check",
       "block_type": "check",
@@ -34,6 +40,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "text",
       "id": "opening_debrief",
       "html": "<h2>The relationship can hide inside one small word</h2><p>This question still tests a relationship, but the first half of that relationship is packed into <strong>rarely</strong>. The blank completes a comparison of frequency: <strong>rarely X; more often Y</strong>.</p><p>That is why reading only for broad categories such as addition or contrast can fail. Some transitions point the reader along a scale, sequence, or alternative already set up by the sentence.</p><blockquote><p><strong>Key idea:</strong> When the usual two-sentence relationship seems missing, look for a local hinge such as <em>rarely</em>, <em>one</em>, <em>first</em>, <em>earlier</em>, or <em>not</em>.</p></blockquote>",
@@ -46,12 +53,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_bracket_exact_ideas",
+        "title": "Saltwater coating passage",
+        "html": "<blockquote><p>The new coating was expensive to produce, but it resisted corrosion twice as long as the standard coating. Therefore, manufacturers adopted it for ships exposed to saltwater.</p></blockquote>"
+      },
       "kind": "text",
       "id": "bracket_exact_ideas",
-      "html": "<h2>Step 1: Bracket ideas, not just sentences</h2><p>A sentence can contain several logical units. Keep the unit that actually drives the next idea.</p><blockquote><p>The new coating was expensive to produce, but it resisted corrosion twice as long as the standard coating. Therefore, manufacturers adopted it for ships exposed to saltwater.</p></blockquote><p>The important pivot is not simply <strong>sentence 1 to sentence 2</strong>. It is:</p><p><strong>coating lasts much longer</strong> → <strong>manufacturers adopt it</strong></p><p>The cost is a real detail, but it does not explain the adoption.</p>",
+      "html": "<h2>Step 1: Bracket ideas, not just sentences</h2><p>A sentence can contain several logical units. Keep the unit that actually drives the next idea.</p><p>The important pivot is not simply <strong>sentence 1 to sentence 2</strong>. It is:</p><p><strong>coating lasts much longer</strong> → <strong>manufacturers adopt it</strong></p><p>The cost is a real detail, but it does not explain the adoption.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_bracket_exact_ideas",
       "kind": "raw_block",
       "id": "bracket_exact_ideas_check",
       "block_type": "check",

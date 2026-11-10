@@ -10,12 +10,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Street-tree shade claim",
+        "html": "<p><strong>Claim:</strong> Shade from street trees reduces sidewalk surface temperatures at midday.</p>"
+      },
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Try one before learning the routine</h2><p><strong>Claim:</strong> Shade from street trees reduces sidewalk surface temperatures at midday.</p><p>Pause. What finding would make that claim more believable? Try to describe the comparison you need before continuing.</p>",
+      "html": "<h2>Try one before learning the routine</h2><p>Pause. What finding would make that claim more believable? Try to describe the comparison you need before continuing.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "raw_block",
       "id": "opening_check",
       "block_type": "check",
@@ -35,6 +41,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "text",
       "id": "opening_observation",
       "html": "<h2>The winning evidence mirrors the claim</h2><p>The claim contains a comparison: <strong>shade versus no shade</strong>. It names an outcome: <strong>sidewalk surface temperature</strong>. It predicts a direction: <strong>lower with shade</strong>.</p><p>The correct finding contains the same groups, the same outcome, and the predicted direction. The other findings may sound scientific or related to trees, but they do not test this claim.</p><blockquote><p><strong>Key idea:</strong> Before you inspect evidence, turn the claim into a prediction.</p></blockquote>",
@@ -66,12 +73,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_lock_claim",
+        "title": "Compound R claim",
+        "html": "<blockquote><p><strong>Claim:</strong> Worms exposed to Compound R grew faster than worms receiving no Compound R.</p></blockquote>"
+      },
       "kind": "text",
       "id": "lock_claim",
-      "html": "<h2>Lock onto the claim</h2><p>Strip away names and technical detail long enough to expose the claim's structure.</p><blockquote><p><strong>Claim:</strong> Worms exposed to Compound R grew faster than worms receiving no Compound R.</p></blockquote><ul><li><strong>Groups:</strong> Compound R versus no Compound R</li><li><strong>Outcome:</strong> growth rate</li><li><strong>Direction:</strong> higher with Compound R</li><li><strong>Scope:</strong> the worms and conditions in the study—not every organism everywhere</li></ul><p>Technical vocabulary can change. This evidence structure stays stable.</p>",
+      "html": "<h2>Lock onto the claim</h2><p>Strip away names and technical detail long enough to expose the claim's structure.</p><ul><li><strong>Groups:</strong> Compound R versus no Compound R</li><li><strong>Outcome:</strong> growth rate</li><li><strong>Direction:</strong> higher with Compound R</li><li><strong>Scope:</strong> the worms and conditions in the study—not every organism everywhere</li></ul><p>Technical vocabulary can change. This evidence structure stays stable.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_lock_claim",
       "kind": "raw_block",
       "id": "expect_evidence_check",
       "block_type": "check",
@@ -116,12 +129,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_literature_variant",
+        "title": "Literary interpretation",
+        "html": "<blockquote><p><strong>Interpretive claim:</strong> The speaker initially resists leaving home but later accepts the journey.</p></blockquote>"
+      },
       "kind": "text",
       "id": "literature_variant",
-      "html": "<h2>For literature, turn the claim into a checklist</h2><p>A literary evidence question usually gives you the interpretation and asks which quotation illustrates it. You do not need to identify the poem's full theme.</p><blockquote><p><strong>Interpretive claim:</strong> The speaker initially resists leaving home but later accepts the journey.</p></blockquote><p>Your quotation must show <strong>initial resistance</strong> and <strong>later acceptance</strong>. A quotation showing only sadness, only travel, or only acceptance is incomplete.</p>",
+      "html": "<h2>For literature, turn the claim into a checklist</h2><p>A literary evidence question usually gives you the interpretation and asks which quotation illustrates it. You do not need to identify the poem's full theme.</p><p>Your quotation must show <strong>initial resistance</strong> and <strong>later acceptance</strong>. A quotation showing only sadness, only travel, or only acceptance is incomplete.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_literature_variant",
       "kind": "raw_block",
       "id": "literature_check",
       "block_type": "check",
@@ -166,9 +185,14 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_data_passage_first",
+        "title": "Seedling growth study",
+        "html": "<p>Researchers randomly assigned otherwise comparable seedlings to grow for 14 days under low, medium, or high light. At each light level, one group received a standard solution and another received a mineral supplement. They claim that the supplement increased seedling growth at every light level.</p>"
+      },
       "kind": "text",
       "id": "data_passage_first",
-      "html": "<h2>For data questions, read the passage first</h2><p>Researchers randomly assigned otherwise comparable seedlings to grow for 14 days under low, medium, or high light. At each light level, one group received a standard solution and another received a mineral supplement. They claim that the supplement increased seedling growth at every light level.</p><p>Before looking at the graph, lock onto the structure:</p><ul><li><strong>Groups:</strong> supplement versus standard solution</li><li><strong>Outcome:</strong> average seedling height after 14 days</li><li><strong>Direction:</strong> supplement higher</li><li><strong>Scope:</strong> low, medium, and high light</li></ul><blockquote><p><strong>Prediction:</strong> At each light level, the supplement bar should be higher than the standard-solution bar.</p></blockquote>",
+      "html": "<h2>For data questions, read the passage first</h2><p>Before looking at the graph, lock onto the structure:</p><ul><li><strong>Groups:</strong> supplement versus standard solution</li><li><strong>Outcome:</strong> average seedling height after 14 days</li><li><strong>Direction:</strong> supplement higher</li><li><strong>Scope:</strong> low, medium, and high light</li></ul><blockquote><p><strong>Prediction:</strong> At each light level, the supplement bar should be higher than the standard-solution bar.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -178,14 +202,20 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_data_passage_first",
       "kind": "text",
       "id": "graph_exploration",
       "html": "<h2>Read this graph outside-in</h2><p>Start with the title. Then read both axes and the legend. Finally, choose one bar and say exactly what it represents.</p><p><img src=\"/images/command-of-evidence-seedling-growth.svg\" alt=\"Grouped bar graph of average seedling height after 14 days. Standard versus mineral-supplement heights are 4 versus 5 centimeters in low light, 8 versus 12 in medium light, and 12 versus 18 in high light.\" width=\"760\"></p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_data_passage_first",
       "kind": "raw_block",
       "id": "specific_bar_check",
+      "figure": {
+        "src": "/images/command-of-evidence-seedling-growth.svg",
+        "alt": "Grouped bar graph of average seedling height after 14 days. Standard versus mineral-supplement heights are 4 versus 5 centimeters in low light, 8 versus 12 in medium light, and 12 versus 18 in high light."
+      },
       "block_type": "check",
       "content": {
         "prompt": "What does the blue bar labeled 12 at medium light specifically mean?",
@@ -203,6 +233,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_data_passage_first",
       "kind": "raw_block",
       "id": "graph_prediction_check",
       "block_type": "check",
@@ -222,8 +253,13 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_data_passage_first",
       "kind": "raw_block",
       "id": "graph_claim_check",
+      "figure": {
+        "src": "/images/command-of-evidence-seedling-growth.svg",
+        "alt": "Grouped bar graph of average seedling height after 14 days. Standard versus mineral-supplement heights are 4 versus 5 centimeters in low light, 8 versus 12 in medium light, and 12 versus 18 in high light."
+      },
       "block_type": "check",
       "content": {
         "prompt": "Which choice best describes graph data that support the researchers' claim?",
@@ -241,14 +277,20 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_data_passage_first",
       "kind": "text",
       "id": "provably_wrong",
       "html": "<h2>Use the data as a safe elimination tool</h2><p>Some choices can be rejected without any debate. Check every number, group, unit, direction, and time point a choice names.</p><ul><li>If a choice says 14 centimeters and the bar is 12, eliminate it.</li><li>If it swaps the standard and supplement groups, eliminate it.</li><li>If it says every condition but fails in one condition, eliminate it.</li><li>If it compares individuals when the graph shows only group averages, eliminate it.</li></ul><blockquote><p><strong>Safe rule:</strong> One contradicted detail makes the whole choice wrong.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_data_passage_first",
       "kind": "raw_block",
       "id": "provably_wrong_check",
+      "figure": {
+        "src": "/images/command-of-evidence-seedling-growth.svg",
+        "alt": "Grouped bar graph of average seedling height after 14 days. Standard versus mineral-supplement heights are 4 versus 5 centimeters in low light, 8 versus 12 in medium light, and 12 versus 18 in high light."
+      },
       "block_type": "check",
       "content": {
         "prompt": "Which statement can be eliminated immediately because the graph disproves it?",
@@ -266,14 +308,20 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_data_passage_first",
       "kind": "text",
       "id": "accurate_not_enough",
       "html": "<h2>After accuracy, test usefulness</h2><p>The hardest distractors are often true. They use real numbers from the graph but make the wrong comparison.</p><p>If the claim says a treatment works, the useful comparison is usually <strong>treatment versus control under matched conditions</strong>. A change over time within only the treatment group may be accurate but cannot show that the treatment caused the difference.</p><blockquote><p><strong>Ask twice:</strong> “Is this true?” Then: “Does this truth do the job?”</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_data_passage_first",
       "kind": "raw_block",
       "id": "gap_pattern_check",
+      "figure": {
+        "src": "/images/command-of-evidence-seedling-growth.svg",
+        "alt": "Grouped bar graph of average seedling height after 14 days. Standard versus mineral-supplement heights are 4 versus 5 centimeters in low light, 8 versus 12 in medium light, and 12 versus 18 in high light."
+      },
       "block_type": "check",
       "content": {
         "prompt": "A new claim says the supplement's advantage grew as light increased. Which evidence best supports that claim?",
@@ -316,17 +364,23 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_hard_bridge",
+        "title": "Government efficiency evidence",
+        "html": "<blockquote><p><strong>Theory:</strong> If government efficiency rises, the share of expansion linked to investment should rise.</p></blockquote><p>Now suppose the graph shows that the investment-linked share fell from 38% in the earlier period to 26% in the later period.</p>"
+      },
       "kind": "text",
       "id": "hard_bridge",
-      "html": "<h2>Hard questions need a bridge sentence</h2><p>Some questions combine a theory in the passage with data in the visual. Write the logic in plain language before choosing.</p><blockquote><p><strong>Theory:</strong> If government efficiency rises, the share of expansion linked to investment should rise.</p></blockquote><p>Now suppose the graph shows that the investment-linked share fell from 38% in the earlier period to 26% in the later period.</p><p>Your bridge is: <strong>the theory predicts up, but the data go down</strong>. The evidence points toward decreased—not increased—efficiency.</p>",
+      "html": "<h2>Hard questions need a bridge sentence</h2><p>Some questions combine a theory in the passage with data in the visual. Write the logic in plain language before choosing.</p><p>Your bridge is: <strong>the theory predicts up, but the data go down</strong>. The evidence points toward decreased—not increased—efficiency.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_hard_bridge",
       "kind": "raw_block",
       "id": "hard_bridge_check",
       "block_type": "check",
       "content": {
-        "prompt": "A theory predicts that if government efficiency rises, the share of expansion linked to investment should also rise. Between the earlier and later periods, that share fell from 38% to 26%. Which conclusion is best supported?",
+        "prompt": "Which conclusion is best supported by the theory and the two percentages?",
         "choices": [
           "The data confirm that investment caused the expansion observed in both periods.",
           "Government efficiency rose in the later period, since a 26% share is still a positive value.",
