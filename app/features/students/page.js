@@ -3,29 +3,33 @@
 import FeatureSlideshow, {
   SlideHero,
   SlideScreenshot,
+  SlideFeatures,
   SlideFeatureRundown,
   SlidePricing,
 } from '@/components/FeatureSlideshow';
 import { SlideResults } from '@/components/SlideResults';
+import { icons } from '@/components/MarketingIcons';
 import { satResults } from '@/lib/marketing/results';
 
-// New structure (Apr 2026): every content slide carries a screenshot,
-// the second-to-last slide is a comprehensive feature rundown, and the
-// last slide is pricing. The previous "Schools & Organizations" contact
-// slide and the icon-only feature card slides are removed — orgs
-// contact us directly without needing a guided slide, and a slide
-// without a screenshot felt thin compared to the rest of the deck.
+// Deck structure: hero, results, then one slide per feature, a full
+// feature rundown, and pricing last. Feature slides carry a screenshot
+// where we have a current one. Mastery, Lessons and ACT lead with icon
+// cards (SlideFeatures); Lessons and ACT are followed by a screenshot
+// (captured 2026-11-09 on studyworks-dev with test accounts; the ACT
+// topic counts match production). Mastery has no screenshot yet.
 //
-// Nov 2026: a results slide (SlideResults, figures from
-// lib/marketing/results.ts) follows the hero — the one content slide
-// without a screenshot, since the numbers are the visual.
+// Copy voice (Nov 2026): talk to the student, short sentences, no
+// jargon ("surfaces", "learnability"). Claims checked against
+// production 2026-11-09: 45 published lessons (all SAT), ACT questions
+// in all four sections, 9 full-length ACT forms. ACT questions mostly
+// lack written explanations, so don't promise them for ACT.
 
 const slides = [
   {
     content: ({ next }) => (
       <SlideHero
-        title={<>SAT Practice That Actually<br/>Moves Your Score</>}
-        subtitle="Studyworks combines a massive question bank, adaptive practice tests, and detailed analytics to help you practice smarter and score higher. Use the arrows to see how it works."
+        title={<>SAT &amp; ACT Practice That<br/>Actually Moves Your Score</>}
+        subtitle="Practice questions, full-length tests, short lessons, and score reports that show you what to work on next. Use the arrows to see how it works."
         ctaText="See What's Inside"
         onCtaClick="next"
         next={next}
@@ -36,7 +40,7 @@ const slides = [
     content: (
       <SlideResults
         title="Real Score Gains From Real Students"
-        subtitle="The question bank, practice tests, and score reports here are the same ones Studyworks Prep tutors use with their students. Here's how those students' SAT scores changed."
+        subtitle="The questions, practice tests, and score reports here are the same ones Studyworks Prep tutors use with their students. Here's how those students' SAT scores changed."
         points={[
           <>Both sections went up: the typical gain was <strong>+{satResults.medianMathGain}</strong> in Math and <strong>+{satResults.medianReadingWritingGain}</strong> in Reading &amp; Writing.</>,
           'Students who answered more practice questions tended to gain more points, so every question you work through counts.',
@@ -48,9 +52,24 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/student-dashboard-1.png"
-        alt="Focus areas and accuracy"
-        title="Know Your Strengths and Weaknesses"
-        description="Your dashboard breaks down accuracy by every SAT domain and skill, so you always know exactly where you stand. Color-coded mastery indicators make it easy to spot weak areas at a glance, and the system automatically identifies which topics will have the biggest impact on your score if you improve them."
+        alt="Student dashboard with results for each section and skill"
+        title="See Where You Stand"
+        description="Your dashboard shows how you're doing in every section and skill. Colors make your weak spots easy to find, so you always know what needs work."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideFeatures
+        label="Mastery"
+        title="A Better Way to Measure Progress"
+        subtitle="Accuracy only tells you how many questions you got right. Mastery tells you whether you really know a skill, and it's how your study plan tracks your progress."
+        features={[
+          { icon: icons.weight, title: 'Harder questions count more', desc: 'Getting a hard question right says more about what you know than getting an easy one right.' },
+          { icon: icons.stack, title: 'It takes more than a lucky streak', desc: 'A skill only counts as mastered once you’ve answered enough questions to show it.' },
+          { icon: icons.hint, title: 'Hints still earn credit', desc: 'If you needed a hint to get the answer, you get half credit for it.' },
+          { icon: icons.trendDown, title: 'Slipping skills get flagged', desc: 'If a skill you’d nearly mastered starts to slide, you’ll see it so you can review before it costs you.' },
+        ]}
       />
     ),
   },
@@ -59,8 +78,8 @@ const slides = [
       <SlideScreenshot
         src="/screenshots/score-report-introview.png"
         alt="Score report overview"
-        title="Detailed Score Reports"
-        description="After every practice test, you get a full score report that goes far beyond a single number. See your scaled scores, then dive into domain-by-domain and skill-by-skill breakdowns with difficulty-level analysis. Understand not just what you got wrong, but which difficulty bands are hurting your score the most."
+        title="Score Reports That Explain Your Score"
+        description="After every practice test, you get more than a number. See your score for each section, then how you did in each skill and at each difficulty level. You'll know what you missed and which kinds of questions are costing you the most points."
       />
     ),
   },
@@ -68,9 +87,59 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/score-report-bestview.png"
-        alt="Opportunity Index and advanced metrics"
-        title="Metrics You Won't Find Anywhere Else"
-        description="The Opportunity Index is your secret weapon. It combines how many questions you missed in each skill with how learnable that skill is, then ranks them by potential score impact. The result: a prioritized list of exactly what to study next. You also get per-question timing data so you can see where you're spending too long and learn to pace yourself like test day."
+        alt="Opportunity Index and timing for each question"
+        title="The Opportunity Index Tells You What to Study Next"
+        description="Not every mistake costs you the same. The Opportunity Index looks at the skills you missed and how quickly each one can be improved, then puts them in order. Start at the top and your study time goes where it can add the most points. You'll also see how long you spent on each question, so you can work on your pacing too."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideFeatures
+        label="Lessons"
+        title="Short Lessons That Show You How"
+        subtitle="Stuck on a skill? There's probably a lesson for it. Our library has more than 40 short SAT lessons, each one focused on a single skill or strategy."
+        features={[
+          { icon: icons.book, title: 'Learn by doing', desc: 'Each lesson walks you through a skill step by step, with quick questions along the way to make sure it’s clicking.' },
+          { icon: icons.check, title: 'Hints and feedback as you go', desc: 'Get a hint when you’re stuck and a clear explanation after every answer.' },
+          { icon: icons.graph, title: 'Desmos tips built in', desc: 'Some math lessons show you how to use the Desmos calculator to solve questions faster.' },
+          { icon: icons.play, title: 'Practice right after', desc: 'When you finish a lesson, start a short set of practice questions on that same skill with one click.' },
+        ]}
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideScreenshot
+        src="/screenshots/lesson-desmos-check.png"
+        alt="A lesson's knowledge check answered correctly, with a Desmos graph beside it"
+        title="Learn It, Then Check It"
+        description="Lessons mix short explanations with quick questions, so you find out right away whether a new idea is clicking. In Desmos lessons the graph sits right beside the question, so you practice the same calculator moves you'll use on test day."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideFeatures
+        label="ACT"
+        title="Taking the ACT? You're Covered Too"
+        subtitle="Switch between SAT and ACT whenever you like. Your practice, tests, and progress follow the test you choose."
+        features={[
+          { icon: icons.grid, title: 'All four sections', desc: 'Practice English, Math, Reading, and Science questions, sorted by topic.' },
+          { icon: icons.stack, title: 'Full-length practice tests', desc: 'Take timed ACT practice tests one section at a time, in the classic format or the new 2025 format.' },
+          { icon: icons.report, title: 'Detailed score reports', desc: 'See your composite and section scores, how you did in each topic, and every question you missed.' },
+          { icon: icons.clock, title: 'Extended time, if you get it', desc: 'Set your extra time once and every timed SAT or ACT practice test will use it.' },
+        ]}
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideScreenshot
+        src="/screenshots/act-practice-builder.png"
+        alt="Building an ACT practice set by section and topic"
+        title="Build Your Own ACT Practice"
+        description="Choose from more than 1,800 ACT questions across English, Math, Reading, and Science. Pick the sections and topics you want to work on, set the difficulty, and start."
       />
     ),
   },
@@ -79,8 +148,8 @@ const slides = [
       <SlideScreenshot
         src="/screenshots/student-dashboard-2.png"
         alt="Practice history"
-        title="Track Your Progress Over Time"
-        description="Every practice session and practice test is recorded and visualized. Watch your scores trend upward as you put in the work. Review past sessions to see what you practiced, how accurate you were, and which domains you focused on. It's the accountability and motivation you need to stay consistent."
+        title="Watch Your Progress Add Up"
+        description="Every practice session and test is saved, so you can watch your scores climb over time. Look back at what you practiced, how you did, and what you focused on. It's an easy way to stay on track."
       />
     ),
   },
@@ -88,9 +157,9 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/review-hub.png"
-        alt="The Review area — weak-question drills, Error Log, and Flashcards"
+        alt="The Review area: weak questions drill, Error Log, and Flashcards"
         title="Turn Your Mistakes Into Mastery"
-        description="The Review area turns your practice history into real preparation. The weak-questions drill surfaces the questions that matter most — weighted by recency, accuracy, and learnability — so the targeted review great tutors run with their students in the days before the test becomes something the system just hands you. The Error Log captures every mistake you've made with space to write down why it happened and how you'll prevent it next time. And flashcards let you take notes on any concept, formula, or pattern worth remembering — not just vocabulary, anything that stuck with you from a question."
+        description="The Review area helps you learn from what you got wrong. The weak questions drill brings back the questions that gave you the most trouble, starting with recent misses and harder questions. It's the same kind of review a good tutor does with you before test day. Use the Error Log to write down why you missed a question and how you'll avoid it next time. And flashcards let you save anything worth remembering, from formulas to tricky ideas, not just vocabulary."
       />
     ),
   },
@@ -98,48 +167,56 @@ const slides = [
     content: (
       <SlideFeatureRundown
         title="Everything You Get"
-        subtitle="A complete rundown of what's included with a Studyworks student account."
+        subtitle="Here's everything that comes with a Studyworks student account."
         sections={[
           {
             label: 'Practice',
             items: [
-              { title: 'Targeted question bank', desc: 'Filter by topic, difficulty, and score band.' },
-              { title: 'Detailed explanations', desc: 'Every question has a worked solution.' },
-              { title: 'Mark for Review', desc: 'Flag any question to come back to it later.' },
-              { title: 'Concept tags', desc: 'Browse questions by concept across the entire bank.' },
+              { title: 'SAT question bank', desc: 'Thousands of questions. Pick your topic and difficulty.' },
+              { title: 'ACT question bank', desc: 'English, Math, Reading, and Science, sorted by topic.' },
+              { title: 'Worked solutions', desc: 'Every SAT question comes with a step-by-step explanation.' },
+              { title: 'Mark for Review', desc: 'Flag any question to come back to later.' },
             ],
           },
           {
-            label: 'Review',
+            label: 'Lessons',
             items: [
-              { title: 'Weak Questions Drill', desc: 'Revisit the questions that matter most, weighted by recency, accuracy, and learnability — exactly the targeted review tutors run in the days before the test.' },
-              { title: 'Error Log', desc: 'Every mistake you make, with space to write down why and how to prevent it.' },
-              { title: 'Flashcards', desc: 'Take notes on any concept, term, or formula worth remembering. Not just vocabulary — anything that stuck with you from a question.' },
-              { title: 'Common SAT Words', desc: '10 curated vocabulary sets, ready to study.' },
+              { title: 'Lesson library', desc: 'More than 40 short SAT lessons, one skill or strategy each.' },
+              { title: 'Practice after each lesson', desc: 'A quick set of questions on the skill you just learned.' },
             ],
           },
           {
             label: 'Practice Tests',
             items: [
-              { title: 'Full-length adaptive Digital SAT tests', desc: 'Timed multi-module simulation that adapts to you.' },
-              { title: 'Comprehensive score reports', desc: 'Scaled scores plus domain and skill breakdowns.' },
-              { title: 'Per-question timing metrics', desc: 'See where you’re spending too long.' },
-              { title: 'Opportunity Index', desc: 'Prioritized list of what to study next.' },
-              { title: 'Bluebook results upload', desc: 'Import your College Board scores for the same detailed reports.' },
+              { title: 'Full-length Digital SAT tests', desc: 'Timed and adaptive, just like test day.' },
+              { title: 'Full-length ACT tests', desc: 'All four sections, timed, in the classic or 2025 format.' },
+              { title: 'Detailed score reports', desc: 'Section scores plus how you did on every skill.' },
+              { title: 'Opportunity Index', desc: 'Your skills, ranked by how many points they could add.' },
+              { title: 'Timing for every question', desc: 'See where you’re spending too long.' },
+              { title: 'Extended time', desc: 'Set it once for every timed test.' },
+              { title: 'Bluebook results upload', desc: 'Bring in your College Board scores for the same detailed report.' },
             ],
           },
           {
-            label: 'Tools',
+            label: 'Review',
             items: [
-              { title: 'Integrated Desmos calculator', desc: 'The same calculator you’ll use on test day.' },
+              { title: 'Weak questions drill', desc: 'Go back over the questions that gave you the most trouble.' },
+              { title: 'Error Log', desc: 'Write down why you missed a question and how to avoid it next time.' },
+              { title: 'Flashcards', desc: 'Save any idea, term, or formula worth remembering.' },
+              { title: 'Common SAT Words', desc: '10 vocabulary sets, ready to study.' },
             ],
           },
           {
             label: 'Progress',
             items: [
-              { title: 'Domain & skill mastery dashboard', desc: 'Color-coded readiness for every SAT topic.' },
-              { title: 'Practice history visualization', desc: 'Every session and test, charted over time.' },
-              { title: 'Score trend lines', desc: 'Watch your scores climb as you put in the work.' },
+              { title: 'Mastery for every skill', desc: 'A truer picture of your progress than accuracy alone.' },
+              { title: 'Practice history', desc: 'Every session and test, charted over time.' },
+            ],
+          },
+          {
+            label: 'Tools',
+            items: [
+              { title: 'Desmos calculator', desc: 'The same calculator you’ll use on test day.' },
             ],
           },
         ]}
@@ -153,12 +230,12 @@ const slides = [
         price="$28.99"
         period="per month for accounts created November 8, 2026 or later; earlier accounts keep $12.99/month"
         items={[
-          'Full question bank with explanations',
-          'Unlimited adaptive practice tests',
-          'Score reports with Opportunity Index',
+          'SAT and ACT question banks',
+          'Full-length SAT and ACT practice tests',
+          'More than 40 short lessons',
+          'Score reports with the Opportunity Index',
+          'Mastery tracking for every skill',
           'Review drills, Error Log & Flashcards',
-          'Detailed timing analytics',
-          'Progress tracking & domain mastery',
         ]}
         note={{
           title: 'Working with a Studyworks Prep tutor?',

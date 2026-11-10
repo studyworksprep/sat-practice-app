@@ -10,10 +10,10 @@ import { publicPageMetadata } from '@/lib/config/site';
 
 export const metadata = publicPageMetadata({
   path: '/features/students',
-  title: 'SAT Practice for Students — Studyworks',
+  title: 'SAT & ACT Practice for Students — Studyworks',
   description:
-    'A question bank, adaptive practice tests, and score reports that show ' +
-    'you which SAT skills to study next for the biggest score gain.',
+    'SAT and ACT practice questions, full-length practice tests, short ' +
+    'lessons, and score reports that show you what to study next.',
 });
 
 export default function StudentsFeatureLayout({ children }: { children: ReactNode }) {

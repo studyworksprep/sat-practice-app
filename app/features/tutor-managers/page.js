@@ -3,10 +3,12 @@
 import FeatureSlideshow, {
   SlideHero,
   SlideScreenshot,
+  SlideFeatures,
   SlideFeatureRundown,
   SlideTieredPricing,
 } from '@/components/FeatureSlideshow';
 import { SlideResults } from '@/components/SlideResults';
+import { icons } from '@/components/MarketingIcons';
 import { satResults } from '@/lib/marketing/results';
 
 // Slide deck for the "Tutor Manager" persona.
@@ -29,6 +31,12 @@ import { satResults } from '@/lib/marketing/results';
 // method produced for Studyworks Prep's own students; the copy stays
 // careful not to promise those numbers to another firm's students.
 //
+// Nov 2026 copy pass: plain, friendly language. Tutor training itself
+// is SAT-only (training pages filter test_type = 'sat'), so the hero
+// keeps "SAT"; ACT and Lessons appear as part of what tutors get for
+// their students. The mastery slide is icon cards now: its old
+// screenshot (teacher-student-detail-2a) showed accuracy, not mastery.
+//
 // Screenshot filenames in /public/screenshots that back this deck:
 //   manager-team-roster.png     — team dashboard (all tutors + stats)
 //   manager-tutor-activity.png  — one tutor's training profile
@@ -47,7 +55,7 @@ const slides = [
     content: ({ next }) => (
       <SlideHero
         title={<>Train Your Tutors on the<br/>Real SAT Content They&rsquo;ll Teach</>}
-        subtitle="Studyworks gives tutor managers a structured way to onboard and develop new tutors: assign the real practice questions and tests they'll work from, review the hard ones together, and track each tutor's readiness to handle the material before they sit down with a student. Use the arrows to explore."
+        subtitle="Studyworks gives you a simple, structured way to train new tutors. Assign the real practice questions and tests they'll teach from, go over the hard ones together, and see when each tutor is ready for their first student. Use the arrows to explore."
         ctaText="See the Manager Tools"
         onCtaClick="next"
         next={next}
@@ -72,7 +80,7 @@ const slides = [
         src="/screenshots/manager-team-roster.png"
         alt="Manager team dashboard"
         title="Every Tutor&rsquo;s Training at a Glance"
-        description="The manager dashboard shows every tutor on your staff in one place — their training progress, accuracy across SAT domains, and volume through the practice material you've assigned. One view tells you who's ready for their first student, who's still working through the bank, and who needs more coaching before they're in front of anyone."
+        description="The manager dashboard shows every tutor on your team in one place: how far along they are in training, how they're doing in each area of the SAT, and how much of the assigned practice they've done. At a glance, you'll see who's ready for their first student, who's still working through the material, and who needs more coaching."
       />
     ),
   },
@@ -82,7 +90,7 @@ const slides = [
         src="/screenshots/manager-tutor-activity.png"
         alt="Individual tutor training profile"
         title="Coach Each Tutor Where It Counts"
-        description="Open any tutor's training profile and see their complete practice record: domain-by-domain accuracy, difficulty trends, recent session history, and every practice test they've taken. Spot the topic a tutor is weakest on, assign targeted practice on the exact questions that will stretch them, and come to your next one-on-one ready to review the hard ones together."
+        description="Open any tutor's training profile to see their full practice record: how they're doing in each area and at each difficulty level, their recent practice, and every test they've taken. Find the topic they're weakest on, assign practice that will stretch them, and come to your next one-on-one ready to go over the hard questions together."
       />
     ),
   },
@@ -90,9 +98,9 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/manager-roster-reports.png"
-        alt="Roster reports — student outcomes by tutor"
-        title="The Same Reports Your Tutors Will Hand to Students"
-        description="This is the reporting layer your tutors will use in every student session — scaled scores, domain breakdowns, prioritized improvement plans. By training new staff on these reports with real questions and real scores, they graduate from onboarding already fluent in the tools and vocabulary they'll use every day. The training and the day job run on the same screens."
+        alt="Roster reports: student results by tutor"
+        title="The Same Reports Your Tutors Will Share With Students"
+        description="These are the reports your tutors will use in every session: section scores, results for each area, and a ranked list of what to work on next. When new tutors train on these reports with real questions and real scores, they finish onboarding already comfortable with the tools they'll use every day."
       />
     ),
   },
@@ -100,19 +108,24 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/teacher-dashboard-1.png"
-        alt="Teacher dashboard — what tutors see with students"
+        alt="Tutor dashboard: what tutors see for their students"
         title="What Your Tutors Will See Every Day"
-        description="Once a tutor graduates from training, this is the command center they run their student roster from — the same dashboard they've already been living inside during onboarding. As a manager, you can step into any tutor's view to see exactly what they're working with, help a new hire read their first real roster, or walk a struggling tutor through their own data. No separate manager-only layer, just shared ground truth."
+        description="Once tutors finish training, this is where they'll manage their students, on the same dashboard they used during onboarding. You can open any tutor's view to see exactly what they see, help a new hire make sense of their first roster, or walk a struggling tutor through their own data."
       />
     ),
   },
   {
     content: (
-      <SlideScreenshot
-        src="/screenshots/teacher-student-detail-2a.png"
-        alt="Mastery analysis — the methodology your team teaches"
-        title="One Mastery Framework, Taught to Your Whole Team"
-        description="The weighted mastery view is how your tutors will decide what to work on with each student — difficulty- and recency-aware readiness scores per domain and per skill. Teaching new hires to read this view, on real questions and real data, is how you make sure every tutor on your team uses the same language and the same decision framework. Your methodology becomes repeatable."
+      <SlideFeatures
+        label="Mastery"
+        title="One Measure of Progress for Your Whole Team"
+        subtitle="Mastery tells your tutors whether a student really knows a skill, not just how many questions they got right. When every tutor reads it the same way, your methods carry over from one tutor to the next."
+        features={[
+          { icon: icons.weight, title: 'Harder questions count more', desc: 'A right answer on a hard question counts for more than one on an easy question.' },
+          { icon: icons.stack, title: 'Enough practice to be sure', desc: 'A skill isn’t marked mastered until there are enough answers to show it.' },
+          { icon: icons.hint, title: 'Hints count for half', desc: 'Answers reached with a hint get partial credit.' },
+          { icon: icons.trendDown, title: 'Slipping skills get flagged', desc: 'When a nearly mastered skill starts to slide, your tutors see it right away.' },
+        ]}
       />
     ),
   },
@@ -125,36 +138,36 @@ const slides = [
           {
             label: 'Assign & Train',
             items: [
-              { title: 'Assign practice questions', desc: 'Push targeted question sets to any tutor from your manager dashboard.' },
-              { title: 'Assign full-length practice tests', desc: 'Have new tutors sit the exact tests their students will take.' },
-              { title: 'Tutor training profiles', desc: 'Each tutor practices in their own profile, cleanly separated from student data.' },
-              { title: 'Review the hard questions', desc: 'Flag any question in the bank for a training session walkthrough.' },
+              { title: 'Assign practice questions', desc: 'Send targeted question sets to any tutor from your dashboard.' },
+              { title: 'Assign full-length practice tests', desc: 'Have new tutors take the same tests their students will take.' },
+              { title: 'Tutor training profiles', desc: 'Each tutor practices in their own profile, kept separate from student data.' },
+              { title: 'Review the hard questions', desc: 'Flag any question to go over in a training session.' },
             ],
           },
           {
             label: 'Track Strengths & Weaknesses',
             items: [
-              { title: 'Per-tutor domain mastery', desc: 'Weighted readiness per SAT domain and skill, the same view your tutors will use on students.' },
+              { title: 'Mastery for each tutor', desc: 'By SAT area and skill, the same view your tutors will use with students.' },
               { title: 'Practice test score history', desc: 'Every training test a tutor has taken, charted over time.' },
-              { title: 'Recent practice sessions', desc: 'Day-by-day activity log — volume, accuracy, topic focus.' },
-              { title: 'Opportunity Index per tutor', desc: 'Prioritized list of what each tutor should work on next.' },
+              { title: 'Recent practice', desc: 'Day-by-day activity: how much, how accurate, and which topics.' },
+              { title: 'Opportunity Index for each tutor', desc: 'A ranked list of what each tutor should work on next.' },
             ],
           },
           {
             label: 'Team Oversight',
             items: [
-              { title: 'Live tutor roster', desc: 'Every tutor with their training progress and team-wide accuracy.' },
-              { title: 'Direct tutor-student assignment', desc: 'Pair students with tutors once they’re ready for the field.' },
-              { title: 'Drop into any tutor’s view', desc: 'See exactly what your team sees when they sit down to plan a session.' },
-              { title: 'Team-wide reporting', desc: 'Roll-up views of training progress, scores, and student outcomes.' },
+              { title: 'Live tutor roster', desc: 'Every tutor’s training progress and accuracy in one list.' },
+              { title: 'Match students with tutors', desc: 'Assign students to tutors once they’re ready.' },
+              { title: 'See any tutor’s view', desc: 'See exactly what your team sees when they plan a session.' },
+              { title: 'Reports across your team', desc: 'Training progress, scores, and student results in one place.' },
             ],
           },
           {
             label: 'Plus Everything Tutors Get',
             items: [
-              { title: 'Full teacher feature set', desc: 'Every roster, assignment, score-report, and analytics tool tutors use.' },
-              { title: 'All student-facing tools', desc: 'Question bank, adaptive practice tests, Desmos, vocabulary, error log.' },
-              { title: 'Concept tags and wrong-answer tags', desc: 'Standardize how your whole team names mistakes and trap answers.' },
+              { title: 'The full tutor toolkit', desc: 'Every roster, assignment, score report, and progress tool your tutors use.' },
+              { title: 'Every student tool', desc: 'SAT and ACT practice and full-length tests, 40+ lessons, Desmos, vocabulary, and the Error Log.' },
+              { title: 'Concept and wrong-answer tags', desc: 'Help your whole team name mistakes and trap answers the same way.' },
             ],
           },
         ]}
@@ -197,8 +210,8 @@ const slides = [
           'Per-tutor mastery and practice test tracking',
           'Student–tutor assignment and reassignment',
           'Team-wide reporting and exportable CSVs',
-          'Drop-in access to any tutor’s student view',
-          'All student-facing practice tools',
+          'Access to any tutor’s student view',
+          'Every student tool, including ACT practice and lessons',
         ]}
         note={{
           title: 'Running a larger organization?',

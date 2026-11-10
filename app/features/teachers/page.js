@@ -3,38 +3,36 @@
 import FeatureSlideshow, {
   SlideHero,
   SlideScreenshot,
+  SlideFeatures,
   SlideFeatureRundown,
   SlidePricing,
 } from '@/components/FeatureSlideshow';
 import { SlideResults } from '@/components/SlideResults';
+import { icons } from '@/components/MarketingIcons';
 import { satResults } from '@/lib/marketing/results';
 
-// New structure (Apr 2026): every content slide carries a screenshot,
-// the second-to-last slide is a comprehensive feature rundown, and the
-// last slide is pricing. Removed:
-//   - the three icon-only "feature card" slides (Student Management,
-//     Testing & Scoring, Analytics & Tools) — those features now live
-//     in the rundown slide
-//   - the Schools & Organizations contact slide — orgs contact us
-//     directly without needing a guided slide
+// Deck structure: hero, results, then one slide per feature, a full
+// feature rundown, and pricing last. Score-report and Opportunity Index
+// screenshots are shared with the student deck, with copy written for
+// tutors. Mastery, Lessons and ACT lead with icon cards (SlideFeatures);
+// Lessons and ACT are followed by a screenshot (captured 2026-11-09 on
+// studyworks-dev with test accounts; the ACT topic counts match
+// production). Mastery has no screenshot yet. The old "Weighted Mastery
+// Analysis" slide was dropped: its screenshot showed per-skill
+// accuracy, not mastery.
 //
-// Added:
-//   - two reused student-deck screenshots (score-report-introview and
-//     score-report-bestview) with tutor-framed copy, since detailed
-//     score reports + the Opportunity Index are equally compelling
-//     from a tutor's perspective
-//   - the comprehensive feature rundown
-//
-// Nov 2026: a results slide (SlideResults, figures from
-// lib/marketing/results.ts) follows the hero — the one content slide
-// without a screenshot, since the numbers are the visual.
+// Copy voice (Nov 2026): plain, friendly, short sentences, no jargon.
+// Claims checked against production 2026-11-09: 45 published lessons
+// (all SAT), ACT questions in all four sections, 9 full-length ACT
+// forms. Lesson packs are question sets, not bundles of lessons, and
+// lessons have no videos.
 
 const slides = [
   {
     content: ({ next }) => (
       <SlideHero
-        title={<>The SAT Platform Built<br/>for Serious Tutors</>}
-        subtitle="Real-time visibility into every student's preparation. Tools that let you assign, track, and analyze with the precision your students deserve. Use the arrows to explore."
+        title={<>The Test Prep Platform Built<br/>for Serious Tutors</>}
+        subtitle="See how every student is doing, assign the right practice, and walk into each session knowing what to cover, for the SAT and the ACT. Use the arrows to explore."
         ctaText="See the Tools"
         onCtaClick="next"
         next={next}
@@ -48,7 +46,7 @@ const slides = [
         subtitle={`Studyworks Prep tutors run their students' preparation on these same tools. Here's how ${satResults.students} of those students' SAT scores changed.`}
         points={[
           <>Gains came in both sections: a typical <strong>+{satResults.medianMathGain}</strong> in Math and <strong>+{satResults.medianReadingWritingGain}</strong> in Reading &amp; Writing.</>,
-          'Students who answered more practice questions and had more weeks to prepare tended to gain more. Assignments and progress tracking let you plan and watch both.',
+          'Students who answered more practice questions and had more weeks to prepare tended to gain more. Assignments and progress tracking help you plan for both.',
         ]}
       />
     ),
@@ -57,9 +55,9 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/teacher-dashboard-1.png"
-        alt="Teacher dashboard — roster overview"
-        title="Your Command Center"
-        description="See your entire roster at a glance: who's been active, who's improving, and who needs attention. Performance metrics are groupable by class, so you can compare cohorts and spot the trends that matter before they become problems."
+        alt="Tutor dashboard with the student roster"
+        title="Your Whole Roster in One Place"
+        description="See all your students at a glance: who's been practicing, who's improving, and who needs your attention. Group students by class to compare them and catch problems early."
       />
     ),
   },
@@ -67,9 +65,9 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/teacher-dashboard-2.png"
-        alt="Teacher dashboard — roster-wide performance patterns"
-        title="See What's Landing — and What Isn't"
-        description="Below the roster itself, the dashboard surfaces the patterns across your whole class: the hardest questions, the easiest ones, and a heat map of accuracy across every SAT domain. When the same question trips up five students in a row, you know to revisit it in the next group session. When a domain glows red across the board, you know the way you've been teaching it needs a rethink. It's feedback on your own teaching, not just on your students."
+        alt="Tutor dashboard with patterns across the whole roster"
+        title="See What's Working and What Isn't"
+        description="The dashboard also shows patterns across your whole group: the hardest questions, the easiest ones, and a color-coded map of how students are doing in each area of the test. If the same question trips up five students, go over it in your next group session. If one area is red across the board, it may be time to teach it a different way. It's feedback on your teaching, not just on your students."
       />
     ),
   },
@@ -77,9 +75,9 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/teacher-student-detail-1a.png"
-        alt="Student detail — overview header"
+        alt="Student profile header"
         title="Every Student, Fully Visible"
-        description="Click any student to open their profile. The header gives you their vitals at a glance: target score, most recent test, active assignments, and recent activity. Everything you need to walk into a session already knowing where to start."
+        description="Click any student to open their profile. At the top you'll see their goal score, latest test, current assignments, and recent activity, so you walk into every session knowing where to start."
       />
     ),
   },
@@ -87,9 +85,34 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/teacher-student-detail-1b.png"
-        alt="Student detail — practice record"
+        alt="Student practice record"
         title="The Complete Practice Record"
-        description="Below the header, the full practice record: domain-by-domain accuracy with difficulty breakdowns, total questions attempted, recent accuracy trends, and practice test history. You'll know more about your student's SAT readiness than they do, and you'll have the data to prove it."
+        description="Below that is the student's full practice record: how they're doing in each area and at each difficulty level, how many questions they've answered, how they're trending lately, and every practice test they've taken."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideFeatures
+        label="Mastery"
+        title="Mastery: A Truer Measure Than Accuracy"
+        subtitle="Accuracy tells you how many questions a student got right. Mastery tells you whether they really know a skill. You'll see it when you prep for a session, on each student's profile, and in their study plan."
+        features={[
+          { icon: icons.weight, title: 'Harder questions count more', desc: 'A right answer on a hard question counts for more than one on an easy question.' },
+          { icon: icons.stack, title: 'Enough practice to be sure', desc: 'A skill isn’t marked mastered until the student has answered enough questions to show it.' },
+          { icon: icons.hint, title: 'Hints count for half', desc: 'Answers reached with a hint get partial credit, so you can see what a student can do on their own.' },
+          { icon: icons.trendDown, title: 'Slipping skills get flagged', desc: 'When a skill a student had nearly mastered starts to slide, you’ll know before it shows up on test day.' },
+        ]}
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideScreenshot
+        src="/screenshots/teacher-student-detail-2b.png"
+        alt="Results for each skill"
+        title="Pinpoint What to Work On"
+        description="Every area of the test breaks down into individual skills. You'll see exactly which ones need work, so you can tell a student they've nailed linear equations but need more practice on systems, and plan each session around what will help most."
       />
     ),
   },
@@ -99,7 +122,7 @@ const slides = [
         src="/screenshots/score-report-introview.png"
         alt="Score report overview"
         title="The Same Score Reports Your Students See"
-        description="When your student finishes a practice test, you and they get the exact same comprehensive report — scaled scores, domain breakdowns, skill-by-skill accuracy, difficulty-band analysis. No more re-explaining what a score means; you can both look at the same numbers and decide what to do about them together."
+        description="When a student finishes a practice test, you both get the same detailed report: section scores, results for each area and skill, and how they did at each difficulty level. You can look at the same numbers together and agree on what to do next."
       />
     ),
   },
@@ -107,29 +130,59 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/score-report-bestview.png"
-        alt="Opportunity Index and timing metrics"
-        title="The Opportunity Index Drives Your Lesson Plans"
-        description="The Opportunity Index combines how many questions a student missed in each skill with how learnable that skill is, then ranks them by potential score impact. It's the prioritized lesson plan you would have built anyway — except it updates after every test, and it factors in per-question timing so you know which weaknesses are about content and which are about pace."
+        alt="Opportunity Index and timing for each question"
+        title="The Opportunity Index Helps Plan Your Lessons"
+        description="The Opportunity Index looks at the skills a student missed and how quickly each one can be improved, then ranks them by how many points they could add. It's the lesson plan you'd build yourself, updated after every test. It also shows how long the student spent on each question, so you can tell whether they're missing questions because of the content or because of their pacing."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideFeatures
+        label="Lessons"
+        title="Lessons You Can Assign"
+        subtitle="Our library has more than 40 short SAT lessons, each focused on one skill or strategy. Assign one before a session to prepare, or after to reinforce what you covered."
+        features={[
+          { icon: icons.book, title: 'Step-by-step teaching', desc: 'Each lesson walks students through a skill, with quick check-in questions and feedback along the way.' },
+          { icon: icons.check, title: 'See who finished', desc: 'Track each student’s progress through every lesson you assign.' },
+          { icon: icons.play, title: 'Practice right after', desc: 'Students can start a short set of questions on the same skill as soon as they finish.' },
+          { icon: icons.stack, title: 'Lesson packs', desc: 'Build your own question sets from the bank to use in your lessons, and reuse them with any student.' },
+        ]}
       />
     ),
   },
   {
     content: (
       <SlideScreenshot
-        src="/screenshots/teacher-student-detail-2a.png"
-        alt="Topic mastery — domain overview"
-        title="Weighted Mastery Analysis"
-        description="Raw accuracy doesn't tell the full story. Our mastery algorithm weights each question by difficulty and score band, factors in practice volume and recency, and produces a true readiness score for every SAT domain — not just the percentage right."
+        src="/screenshots/lesson-desmos-check.png"
+        alt="A lesson's knowledge check answered correctly, with a Desmos graph beside it"
+        title="What Your Students See in a Lesson"
+        description="Lessons mix short explanations with quick check questions, and every answer gets instant feedback. In Desmos lessons the graph sits right beside the question, so students practice the calculator moves they'll use on test day."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideFeatures
+        label="ACT"
+        title="Tutor the ACT Too"
+        subtitle="Everything works for your ACT students as well. Each student picks their test, and their practice, tests, and progress follow it."
+        features={[
+          { icon: icons.grid, title: 'All four sections', desc: 'English, Math, Reading, and Science questions, sorted by topic.' },
+          { icon: icons.stack, title: 'ACT assignments', desc: 'Assign question sets or timed full-length tests, in the classic format or the new 2025 format.' },
+          { icon: icons.report, title: 'The same detailed reports', desc: 'Composite and section scores, results by topic, and every question to go over together.' },
+          { icon: icons.clock, title: 'Extended time', desc: 'A student’s extra time is saved once and applies to every timed SAT or ACT test.' },
+        ]}
       />
     ),
   },
   {
     content: (
       <SlideScreenshot
-        src="/screenshots/teacher-student-detail-2b.png"
-        alt="Topic mastery — per-skill drill-down"
-        title="Pinpoint What to Work On"
-        description="Drill deeper and every domain expands into a per-skill breakdown. You'll see exactly which skills are pulling the mastery score down, confidently tell a student they've nailed linear equations but need more work on systems, and make every session's focus decision backed by data instead of guesswork."
+        src="/screenshots/act-practice-builder.png"
+        alt="Building an ACT practice set by section and topic"
+        title="ACT Practice by Section and Topic"
+        description="Students can build their own ACT practice from more than 1,800 questions across English, Math, Reading, and Science. They pick the sections, topics, and difficulty, and the set is ready to start."
       />
     ),
   },
@@ -137,9 +190,9 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/review-hub.png"
-        alt="The Review area — weak-question drills, Error Log, and Flashcards"
-        title="A Structured Way for Students to Review"
-        description="Every gap you spot in a student's practice is addressable through one place: the Review area. The weak-questions drill rebuilds the 'revisit past wrong answers in the days before the test' playbook every great tutor runs with their students — except now it's concrete, continuously updated, and one click away. The Error Log gives students structured space to codify prevention methods for their own mistakes. Flashcards let them take notes on any concept, term, or formula you want them to remember. You direct; the Review area is where it actually happens."
+        alt="The Review area: weak questions drill, Error Log, and Flashcards"
+        title="A Simple Way for Students to Review"
+        description="When you spot a gap, send students to the Review area. The weak questions drill gives them the questions they've had the most trouble with, the same review you'd do together before test day, ready in one click. The Error Log asks them to write down why they missed a question and how they'll avoid it next time. Flashcards let them save any idea, term, or formula you want them to remember. You decide what to focus on; the Review area is where they do the work."
       />
     ),
   },
@@ -147,9 +200,9 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/teacher-student-detail-3.png"
-        alt="Score patterns and actionable data"
-        title="Actionable, Exportable Data"
-        description="Track score patterns over time and see exactly which areas are improving and which are plateauing. The system suggests review areas based on where students have the most room to grow. All data is exportable, making it easy to create detailed progress reports for families or incorporate student performance data into other platforms you already use."
+        alt="Progress over time and suggested review"
+        title="Track Progress and Share It"
+        description="See which areas are improving and which have stalled. Studyworks suggests what to review based on where each student has the most room to grow. Export the data to build progress reports for families or to use in the other tools you rely on."
       />
     ),
   },
@@ -157,60 +210,62 @@ const slides = [
     content: (
       <SlideFeatureRundown
         title="Every Tool Studyworks Gives Tutors"
-        subtitle="A complete rundown of what's included with a Studyworks educator account."
+        subtitle="Here's everything that comes with a Studyworks tutor account."
         sections={[
           {
             label: 'Roster & Profiles',
             items: [
-              { title: 'Live student roster', desc: 'Activity, accuracy, attention alerts at a glance.' },
-              { title: 'Per-student profiles', desc: 'Domain mastery, test history, sessions, official scores, assignments.' },
-              { title: 'Direct student assignment', desc: 'Match students to your roster individually or in bulk.' },
-              { title: 'Class-based grouping', desc: 'Compare cohorts and tag students by class for reporting.' },
+              { title: 'Live student roster', desc: 'Who’s active, how they’re doing, and who needs attention.' },
+              { title: 'Student profiles', desc: 'Mastery, test history, sessions, official scores, and assignments.' },
+              { title: 'Add students to your roster', desc: 'One at a time or in bulk.' },
+              { title: 'Class groups', desc: 'Group students by class to compare and report on them.' },
             ],
           },
           {
             label: 'Assignments',
             items: [
-              { title: 'Custom question sets', desc: 'Targeted assignments by topic and difficulty.' },
-              { title: 'Real-time completion tracking', desc: 'See exactly who has done what, as it happens.' },
-              { title: 'Lesson assignments', desc: 'Pair video lessons with practice from one screen.' },
+              { title: 'Custom question sets', desc: 'Pick the topics and difficulty, for the SAT or the ACT.' },
+              { title: 'Live completion tracking', desc: 'See who has finished what, as it happens.' },
+              { title: 'Lesson assignments', desc: 'Assign any lesson and follow each student’s progress through it.' },
+              { title: 'Lesson packs', desc: 'Your own reusable question sets, built from the bank.' },
             ],
           },
           {
-            label: 'Testing & Scoring',
+            label: 'Tests & Scores',
             items: [
-              { title: 'Practice test management', desc: 'Assign adaptive Digital SAT tests on demand.' },
-              { title: 'Comprehensive score reports', desc: 'Scaled scores plus domain and skill breakdowns.' },
-              { title: 'Opportunity Index', desc: 'Prioritized improvement list per student.' },
-              { title: 'Per-question timing metrics', desc: 'Pace and content weakness, separated.' },
-              { title: 'Bluebook results upload', desc: 'Import College Board scores for the same detailed reports.' },
-              { title: 'Official SAT/PSAT tracking', desc: 'Record real-world scores with all 8 domain bands.' },
+              { title: 'Full-length SAT tests', desc: 'Assign adaptive Digital SAT tests any time.' },
+              { title: 'Full-length ACT tests', desc: 'All four sections, in the classic or 2025 format.' },
+              { title: 'Detailed score reports', desc: 'Section scores plus results for every skill.' },
+              { title: 'Opportunity Index', desc: 'Each student’s skills, ranked by how many points they could add.' },
+              { title: 'Timing for every question', desc: 'Tell pacing problems apart from content gaps.' },
+              { title: 'Bluebook results upload', desc: 'Bring in College Board scores for the same detailed report.' },
+              { title: 'Official SAT/PSAT scores', desc: 'Record real test scores, including the score range for all 8 areas.' },
             ],
           },
           {
-            label: 'Analytics & Insights',
+            label: 'Progress & Insights',
             items: [
-              { title: 'Aggregate dashboard', desc: 'Accuracy trends, score distributions, hardest/easiest questions.' },
-              { title: 'Skill heatmaps', desc: 'Spot patterns across your whole roster at once.' },
-              { title: 'Weighted domain & skill mastery', desc: 'Difficulty-aware readiness, not raw percentage.' },
-              { title: 'Concept tags', desc: 'Tag and browse questions by concept across the bank.' },
-              { title: 'Wrong-answer trap tags', desc: 'Label specific trap types on each wrong answer choice.' },
+              { title: 'Mastery for every skill', desc: 'Counts harder questions more and needs enough practice to be sure.' },
+              { title: 'Class dashboard', desc: 'Accuracy trends, score spread, and the hardest and easiest questions.' },
+              { title: 'Skill heat maps', desc: 'Spot patterns across your whole roster at once.' },
+              { title: 'Concept tags', desc: 'Find questions by concept across the whole bank.' },
+              { title: 'Wrong-answer tags', desc: 'Label the trap behind each wrong answer choice.' },
             ],
           },
           {
-            label: 'Review & Retention',
+            label: 'Review',
             items: [
-              { title: 'Weak Questions Drill', desc: 'Direct any student to targeted review of their most urgent past wrongs — the playbook every great tutor runs in the days before the test, now one click away.' },
-              { title: 'Error Log', desc: 'Students capture why they missed each question and how they’ll prevent it next time; you see every entry.' },
-              { title: 'Flashcards', desc: 'Students can take notes on any concept, term, or formula you want them to remember — not just vocabulary. You can spot-check that they’re actually doing it.' },
-              { title: 'Per-question notes', desc: 'Leave notes on any question for yourself or your students.' },
+              { title: 'Weak questions drill', desc: 'Send any student back to the questions they’ve missed most.' },
+              { title: 'Error Log', desc: 'Students note why they missed each question and how to avoid it. You see every entry.' },
+              { title: 'Flashcards', desc: 'Students save any idea, term, or formula you want them to remember, and you can check they’re using them.' },
+              { title: 'Question notes', desc: 'Leave notes on any question for yourself or your students.' },
             ],
           },
           {
-            label: 'Tools & Workflow',
+            label: 'Tools',
             items: [
-              { title: 'Pre-loaded Desmos solutions', desc: 'One-click graphing solutions on most math questions.' },
-              { title: 'Exportable CSV reports', desc: 'Pipe Studyworks data into the rest of your stack.' },
+              { title: 'Desmos solutions', desc: 'One-click graphing solutions for most SAT math questions.' },
+              { title: 'CSV exports', desc: 'Take your data into the other tools you use.' },
             ],
           },
         ]}
@@ -225,12 +280,12 @@ const slides = [
         period="per month for accounts created November 8, 2026 or later; earlier accounts keep $29.99/month"
         items={[
           'Unlimited students',
-          'Full question bank & practice tests',
-          'Assignments & score tracking',
-          'Performance analytics & reports',
-          'Bluebook upload & timing metrics',
-          'Concept tags & Desmos solutions',
-          'Session notes & exportable data',
+          'SAT and ACT question banks and practice tests',
+          'Assignments, including lessons',
+          'Mastery tracking and score reports',
+          'Bluebook upload and timing for every question',
+          'Concept tags and Desmos solutions',
+          'Session notes and data exports',
         ]}
         note={{
           title: 'Studyworks Prep educators',

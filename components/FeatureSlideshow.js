@@ -408,13 +408,18 @@ export function SlideHero({ title, subtitle, ctaHref, ctaText, altHref, altText,
   );
 }
 
-export function SlideFeatures({ label, title, features, color }) {
+export function SlideFeatures({ label, title, subtitle, features, color }) {
   const accent = color || NAVY;
   return (
     <div style={panelStyle}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        {label && <Eyebrow color={accent}>{label}</Eyebrow>}
+        {label && <Eyebrow>{label}</Eyebrow>}
         <h2 style={{ ...headlineStyle, fontSize: 28, margin: 0 }}>{title}</h2>
+        {subtitle && (
+          <p style={{ fontSize: 15, color: FG2, margin: '10px auto 0', maxWidth: 580, lineHeight: 1.6 }}>
+            {subtitle}
+          </p>
+        )}
       </div>
       <div style={{ display: 'grid', gap: 12, maxWidth: 680, margin: '0 auto' }}>
         {features.map((f, i) => (
