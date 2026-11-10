@@ -11,6 +11,11 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_explore_first_graph",
+        "title": "Opening quadratic",
+        "html": "<p>\\(x^2-5x+6=0\\)</p>"
+      },
       "kind": "text",
       "id": "explore_first_graph",
       "html": "<h2>Explore two points</h2><p>The graph of \\(x^2-5x+6\\) is open. Click the two places where the curve meets the <strong>horizontal axis</strong>.</p><p>Desmos will label each point. Record the first number in each label.</p><blockquote><p><strong>Before you continue:</strong> find both labeled points.</p></blockquote>",
@@ -30,6 +35,7 @@
       }
     },
     {
+      "shared_prompt": "shared_explore_first_graph",
       "kind": "raw_block",
       "id": "exploration_check",
       "block_type": "check",
@@ -164,6 +170,11 @@
       "html": "<h2>The four-step graphing process</h2><ol><li><strong>Get zero on one side.</strong> Rewrite the equation without changing its solutions.</li><li><strong>Graph the other side.</strong> Enter the remaining expression in Desmos. A bare expression works; <strong>y=</strong> is optional.</li><li><strong>Find every x-intercept.</strong> Click every crossing or touch.</li><li><strong>Report and check.</strong> Use the variable from the original question, then respect any precision or context restriction.</li></ol><blockquote><p><strong>Keep this outline in mind.</strong> The next example models all four steps, beginning with the rewrite.</p></blockquote>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_rewrite_model",
+        "title": "Equation to graph",
+        "html": "<p>\\(x^2+1=4x\\)</p>"
+      },
       "kind": "text",
       "id": "rewrite_model",
       "html": "<h2>Step 1: Get zero on one side</h2><p>Suppose the equation is \\(x^2+1=4x\\). An x-intercept shows where an expression equals zero, so first rewrite the equation with \\(0\\) on one side.</p><p>Subtract \\(4x\\) from both sides:</p><p>\\[x^2-4x+1=0\\]</p><p><strong>The expression to graph is \\(x^2-4x+1\\).</strong></p>"
@@ -188,6 +199,7 @@
       }
     },
     {
+      "shared_prompt": "shared_rewrite_model",
       "kind": "text",
       "id": "full_model_graph",
       "html": "<h2>Steps 2 and 3: Graph and click</h2><p>The rewritten expression \\(x^2-4x+1\\) is open.</p><p><strong>Click both x-intercepts.</strong> Record their x-coordinates to three decimal places. You should see values near \\(0.268\\) and \\(3.732\\).</p><p>These x-coordinates make the graphed expression zero, so they also make the two sides of \\(x^2+1=4x\\) equal.</p>",
@@ -207,6 +219,7 @@
       }
     },
     {
+      "shared_prompt": "shared_rewrite_model",
       "kind": "raw_block",
       "id": "full_model_check",
       "block_type": "check",
@@ -358,9 +371,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_solution_count_exploration",
+        "title": "Three quadratics to compare",
+        "html": "<ol><li>\\(x^2-5x+6=0\\)</li><li>\\((x-3)^2=0\\)</li><li>\\(x^2+4=0\\)</li></ol>"
+      },
       "kind": "text",
       "id": "solution_count_exploration",
-      "html": "<h2>Explore two, one, and no intercepts</h2><p>Three graphs are loaded but hidden. <strong>Turn on only one graph at a time.</strong> Count its distinct x-intercepts, then hide it before showing the next graph.</p><ol><li>\\(x^2-5x+6\\)</li><li>\\((x-3)^2\\)</li><li>\\(x^2+4\\)</li></ol><blockquote><p><strong>Record the counts in order:</strong> first graph, second graph, third graph.</p></blockquote>",
+      "html": "<h2>Explore two, one, and no intercepts</h2><p>Three graphs are loaded but hidden. <strong>Turn on only one graph at a time.</strong> Count its distinct x-intercepts, then hide it before showing the next graph.</p><blockquote><p><strong>Record the counts in order:</strong> first graph, second graph, third graph.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -388,11 +406,13 @@
       }
     },
     {
+      "shared_prompt": "shared_solution_count_exploration",
       "kind": "text",
       "id": "solution_count_explanation",
       "html": "<h2>A touch still counts</h2><p>The first graph crosses the axis twice, so it has two distinct x-intercepts.</p><p>The second graph touches the axis at \\((3,0)\\) and turns around. It has <strong>one</strong> distinct x-intercept, so \\((x-3)^2=0\\) has one distinct real solution.</p><p>The third graph stays above the axis. It has no x-intercepts and therefore no real solutions.</p>"
     },
     {
+      "shared_prompt": "shared_solution_count_exploration",
       "kind": "raw_block",
       "id": "solution_count_check",
       "block_type": "check",
@@ -479,11 +499,17 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_transfer_transition",
+        "title": "Transfer equation",
+        "html": "<p>Solve \\(3p^2-5p-4=2\\).</p>"
+      },
       "kind": "text",
       "id": "transfer_transition",
-      "html": "<h2>Your turn: use all four steps</h2><p>Solve \\(3p^2-5p-4=2\\).</p><p>You will need to get zero on one side, replace \\(p\\) with \\(x\\) for the graph, find both intercepts, and match their decimals to an exact answer choice.</p><blockquote><p><strong>Do not solve in the scratch calculator yet.</strong> <strong>On the next screen,</strong> enter only the expression you should graph. That required calculator will check your setup.</p></blockquote>"
+      "html": "<h2>Your turn: use all four steps</h2><p>You will need to get zero on one side, replace \\(p\\) with \\(x\\) for the graph, find both intercepts, and match their decimals to an exact answer choice.</p><blockquote><p><strong>Do not solve in the scratch calculator yet.</strong> <strong>On the next screen,</strong> enter only the expression you should graph. That required calculator will check your setup.</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_transfer_transition",
       "kind": "desmos_enter_expression",
       "id": "transfer_graph",
       "title": "Build the graph yourself",
@@ -500,6 +526,7 @@
       "require_success": true
     },
     {
+      "shared_prompt": "shared_transfer_transition",
       "kind": "raw_block",
       "id": "transfer_exact_check",
       "block_type": "check",
@@ -532,6 +559,11 @@
       "html": "<h2>Practice the complete process</h2><p>You have completed the guided examples. Now you will solve three new equations <strong>from beginning to end</strong>.</p><p>For each equation, you will:</p><ol><li>get zero on one side;</li><li>enter the expression to graph;</li><li>find every x-intercept;</li><li>report the complete answer in the requested form.</li></ol><p>After those full problems, a final question will ask you to recall the whole process without looking back.</p><blockquote><p><strong>Use the required calculator on each setup screen.</strong> Do the rewrite yourself before entering the graph.</p></blockquote>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_practice_one_graph",
+        "title": "Quadratic in x",
+        "html": "<p>\\(x^2+6=5x\\)</p>"
+      },
       "kind": "desmos_enter_expression",
       "id": "practice_one_graph",
       "title": "Practice 1: build the graph",
@@ -548,11 +580,12 @@
       "require_success": true
     },
     {
+      "shared_prompt": "shared_practice_one_graph",
       "kind": "raw_block",
       "id": "practice_one_answer",
       "block_type": "check",
       "content": {
-        "prompt": "Use the graph you built to finish \\(x^2+6=5x\\). What is the complete solution?",
+        "prompt": "What is the complete solution to the equation?",
         "choices": [
           "\\(x=-3\\) and \\(x=-2\\)",
           "\\(x=0\\) and \\(x=5\\)",
@@ -581,6 +614,11 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_practice_two_graph",
+        "title": "Quadratic in r",
+        "html": "<p>\\(2r^2+r=7\\)</p>"
+      },
       "kind": "desmos_enter_expression",
       "id": "practice_two_graph",
       "title": "Practice 2: change the variable",
@@ -597,11 +635,12 @@
       "require_success": true
     },
     {
+      "shared_prompt": "shared_practice_two_graph",
       "kind": "raw_block",
       "id": "practice_two_answer",
       "block_type": "check",
       "content": {
-        "prompt": "Use the graph to finish \\(2r^2+r=7\\). Which answer gives both solutions to the nearest tenth using the original variable?",
+        "prompt": "Which answer gives both solutions to the nearest tenth using the original variable?",
         "choices": [
           "\\(x\\approx-2.1\\) and \\(x\\approx1.6\\)",
           "\\(r\\approx-7.0\\) and \\(r\\approx2.0\\)",
@@ -630,6 +669,11 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_practice_three_graph",
+        "title": "Quadratic in n",
+        "html": "<p>\\(n^2+4n=-8\\)</p>"
+      },
       "kind": "desmos_enter_expression",
       "id": "practice_three_graph",
       "title": "Practice 3: determine the solution count",
@@ -646,11 +690,12 @@
       "require_success": true
     },
     {
+      "shared_prompt": "shared_practice_three_graph",
       "kind": "raw_block",
       "id": "practice_three_answer",
       "block_type": "check",
       "content": {
-        "prompt": "Use the graph to finish \\(n^2+4n=-8\\). How many real solutions does the equation have?",
+        "prompt": "How many real solutions does the equation have?",
         "choices": [
           "No real solutions",
           "One real solution, \\(n=-2\\)",

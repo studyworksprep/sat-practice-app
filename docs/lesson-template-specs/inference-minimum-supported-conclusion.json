@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Bee study",
+        "html": "<p>In a practice study, two bee species gathered food at similar rates at \\(20^\\circ\\text{C}\\) and \\(30^\\circ\\text{C}\\). At \\(35^\\circ\\text{C}\\), species R continued gathering food at about the same rate, but species S gathered food much less often.</p>"
+      },
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Put two facts together</h2><p>In a practice study, two bee species gathered food at similar rates at \\(20^\\circ\\text{C}\\) and \\(30^\\circ\\text{C}\\). At \\(35^\\circ\\text{C}\\), species R continued gathering food at about the same rate, but species S gathered food much less often.</p><p>Before looking at any rule, ask: <strong>If those facts are true together, what else is most clearly true?</strong></p><blockquote><p><strong>Stay close to the evidence:</strong> Compare the species at the highest temperature without inventing a biological cause.</p></blockquote>",
+      "html": "<h2>Put two facts together</h2><p>Before looking at any rule, ask: <strong>If those facts are true together, what else is most clearly true?</strong></p><blockquote><p><strong>Stay close to the evidence:</strong> Compare the species at the highest temperature without inventing a biological cause.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "raw_block",
       "id": "opening_exploration_check",
       "block_type": "check",
@@ -65,12 +71,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_soundbite_method",
+        "title": "Marsh survey sentence",
+        "html": "<blockquote><p>Although an early survey suggested that the marsh was shrinking, satellite measurements collected over fifteen years showed that its total area had remained stable.</p></blockquote>"
+      },
       "kind": "text",
       "id": "soundbite_method",
-      "html": "<h2>Soundbites preserve the point, not every detail</h2><p>A soundbite is a short statement of what a sentence contributes. Keep the subject, the main claim or result, and any relationship word that changes the logic.</p><p>Example:</p><blockquote><p>Although an early survey suggested that the marsh was shrinking, satellite measurements collected over fifteen years showed that its total area had remained stable.</p></blockquote><p>Useful soundbite: <strong>Early survey said shrinkage, but longer satellite record showed stability.</strong></p><p>The word <strong>although</strong> matters because it signals that the later evidence challenges the earlier idea.</p>",
+      "html": "<h2>Soundbites preserve the point, not every detail</h2><p>A soundbite is a short statement of what a sentence contributes. Keep the subject, the main claim or result, and any relationship word that changes the logic.</p><p>Useful soundbite: <strong>Early survey said shrinkage, but longer satellite record showed stability.</strong></p><p>The word <strong>although</strong> matters because it signals that the later evidence challenges the earlier idea.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_soundbite_method",
       "kind": "raw_block",
       "id": "soundbite_check",
       "block_type": "check",
@@ -90,12 +102,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_combine_facts",
+        "title": "Frog breeding facts",
+        "html": "<ul><li>Frog species A lays eggs only in temporary ponds.</li><li>Frog species B lays eggs in temporary and permanent ponds.</li><li>During a drought, the temporary ponds disappeared while several permanent ponds remained.</li></ul>"
+      },
       "kind": "text",
       "id": "combine_facts",
-      "html": "<h2>The conclusion usually lives between sentences</h2><p>Do not treat each fact as a separate mini-question. Ask what changes when the facts are true together.</p><p>Suppose:</p><ul><li>Frog species A lays eggs only in temporary ponds.</li><li>Frog species B lays eggs in temporary and permanent ponds.</li><li>During a drought, the temporary ponds disappeared while several permanent ponds remained.</li></ul><p>Each sentence supplies one piece. Together, they tell you which species lost more of its available egg-laying habitat.</p><blockquote><p><strong>Use the overlap:</strong> A strong inference usually takes a little from more than one sentence.</p></blockquote>",
+      "html": "<h2>The conclusion usually lives between sentences</h2><p>Do not treat each fact as a separate mini-question. Ask what changes when the facts are true together.</p><p>Each sentence supplies one piece. Together, they tell you which species lost more of its available egg-laying habitat.</p><blockquote><p><strong>Use the overlap:</strong> A strong inference usually takes a little from more than one sentence.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_combine_facts",
       "kind": "raw_block",
       "id": "combine_facts_check",
       "block_type": "check",
@@ -140,12 +158,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_worked_example",
+        "title": "Rooftop insect study",
+        "html": "<blockquote><p>Ecologists surveyed insect species on twenty city rooftops. Rooftops planted with a wider variety of flowering plants had more insect species than rooftops with only one or two plant types. The pattern remained even after the researchers accounted for differences in rooftop size, suggesting that ___</p></blockquote>"
+      },
       "kind": "text",
       "id": "worked_example",
-      "html": "<h2>Model the full process</h2><p><strong>Text:</strong></p><blockquote><p>Ecologists surveyed insect species on twenty city rooftops. Rooftops planted with a wider variety of flowering plants had more insect species than rooftops with only one or two plant types. The pattern remained even after the researchers accounted for differences in rooftop size, suggesting that ___</p></blockquote><p><strong>Soundbites:</strong></p><ul><li>More plant variety went with more insect species.</li><li>Roof size did not explain away the pattern.</li></ul><p><strong>Prediction:</strong> Greater plant variety is associated with greater insect diversity on these rooftops, beyond the effect of roof size.</p><p>Now find that meaning in the choices.</p>",
+      "html": "<h2>Model the full process</h2><p><strong>Soundbites:</strong></p><ul><li>More plant variety went with more insect species.</li><li>Roof size did not explain away the pattern.</li></ul><p><strong>Prediction:</strong> Greater plant variety is associated with greater insect diversity on these rooftops, beyond the effect of roof size.</p><p>Now find that meaning in the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_worked_example",
       "kind": "raw_block",
       "id": "worked_example_check",
       "block_type": "check",
@@ -215,12 +239,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_data_variation",
+        "title": "Seed germination data",
+        "html": "<p>Researchers measured the percentage of seeds that germinated after ten days at three temperatures:</p><ul><li><strong>Species X:</strong> \\(12\\%\\) at \\(5^\\circ\\text{C}\\), \\(47\\%\\) at \\(15^\\circ\\text{C}\\), and \\(49\\%\\) at \\(25^\\circ\\text{C}\\).</li><li><strong>Species Y:</strong> \\(10\\%\\) at \\(5^\\circ\\text{C}\\), \\(32\\%\\) at \\(15^\\circ\\text{C}\\), and \\(61\\%\\) at \\(25^\\circ\\text{C}\\).</li></ul><p>The researchers concluded that ___</p>"
+      },
       "kind": "text",
       "id": "data_variation",
-      "html": "<h2>Variation: infer from a pattern in data</h2><p>Researchers measured the percentage of seeds that germinated after ten days at three temperatures:</p><ul><li><strong>Species X:</strong> \\(12\\%\\) at \\(5^\\circ\\text{C}\\), \\(47\\%\\) at \\(15^\\circ\\text{C}\\), and \\(49\\%\\) at \\(25^\\circ\\text{C}\\).</li><li><strong>Species Y:</strong> \\(10\\%\\) at \\(5^\\circ\\text{C}\\), \\(32\\%\\) at \\(15^\\circ\\text{C}\\), and \\(61\\%\\) at \\(25^\\circ\\text{C}\\).</li></ul><p>The researchers concluded that ___</p><p>Soundbite the important comparison: What changed from \\(15^\\circ\\text{C}\\) to \\(25^\\circ\\text{C}\\) for each species?</p>",
+      "html": "<h2>Variation: infer from a pattern in data</h2><p>Soundbite the important comparison: What changed from \\(15^\\circ\\text{C}\\) to \\(25^\\circ\\text{C}\\) for each species?</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_data_variation",
       "kind": "raw_block",
       "id": "data_variation_check",
       "block_type": "check",
@@ -246,12 +276,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_independent_transfer",
+        "title": "Ceramic fragments passage",
+        "html": "<blockquote><p>A historian analyzed ceramic fragments from a port city. In layers dated before 1750, most fragments were made from local clay. In layers dated after 1750, a growing share of fragments came from clay sources in distant regions. Shipping records indicate that new trade routes connecting the port to those regions opened during the 1740s. Taken together, the evidence suggests that ___</p></blockquote>"
+      },
       "kind": "text",
       "id": "independent_transfer",
-      "html": "<h2>Independent transfer</h2><p>Use the complete process without a worked outline.</p><blockquote><p>A historian analyzed ceramic fragments from a port city. In layers dated before 1750, most fragments were made from local clay. In layers dated after 1750, a growing share of fragments came from clay sources in distant regions. Shipping records indicate that new trade routes connecting the port to those regions opened during the 1740s. Taken together, the evidence suggests that ___</p></blockquote><p>Make a soundbite for each sentence, combine the timing and the change in clay sources, and predict the smallest supported conclusion before continuing.</p>",
+      "html": "<h2>Independent transfer</h2><p>Use the complete process without a worked outline.</p><p>Make a soundbite for each sentence, combine the timing and the change in clay sources, and predict the smallest supported conclusion before continuing.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_independent_transfer",
       "kind": "raw_block",
       "id": "independent_transfer_check",
       "block_type": "check",

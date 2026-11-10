@@ -28,12 +28,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_opening_question",
+        "title": "Forest clearing passage",
+        "html": "<blockquote><p>After workers cleared fallen branches from a forest plot, dormant seeds beneath the leaf litter began to sprout. Ecologist Ren Ito suggests that the clearing exposed some seeds to the light and warmer soil they needed to germinate.</p></blockquote>"
+      },
       "kind": "text",
       "id": "opening_question",
-      "html": "<h2>Try one before learning the names</h2><p><strong>Question:</strong> Which choice best states the main idea of the text?</p><blockquote><p>After workers cleared fallen branches from a forest plot, dormant seeds beneath the leaf litter began to sprout. Ecologist Ren Ito suggests that the clearing exposed some seeds to the light and warmer soil they needed to germinate.</p></blockquote><p>Pause and form an answer target. Then look at each choice for what fits and what does not.</p>",
+      "html": "<h2>Try one before learning the names</h2><p><strong>Question:</strong> Which choice best states the main idea of the text?</p><p>Pause and form an answer target. Then look at each choice for what fits and what does not.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_opening_question",
       "kind": "raw_block",
       "id": "opening_question_check",
       "block_type": "check",
@@ -103,24 +109,32 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_city_maps_example",
+        "title": "City maps passage and choices",
+        "html": "<blockquote><p>Early city maps often omit temporary street markets. Historian Lila Deren compared such maps with tax lists and diaries showing that some markets returned every week. Deren argues that the maps recorded permanent structures better than they recorded the full range of daily activity.</p></blockquote><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Early maps omitted markets because cartographers wanted to hide all commercial activity.</li><li>Tax lists and diaries suggest that recurring temporary markets may be missing from some early city maps.</li><li>Diary writers produced more accurate maps than professional cartographers did.</li><li>Weekly markets caused cities to replace temporary stalls with permanent structures.</li></ol>"
+      },
       "kind": "text",
       "id": "city_maps_example",
-      "html": "<h2>See both roles work together</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><blockquote><p>Early city maps often omit temporary street markets. Historian Lila Deren compared such maps with tax lists and diaries showing that some markets returned every week. Deren argues that the maps recorded permanent structures better than they recorded the full range of daily activity.</p></blockquote><p><strong>Answer target:</strong> Other records show that early maps may miss recurring temporary activity.</p><p>Consider these choices one at a time:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Early maps omitted markets because cartographers wanted to hide all commercial activity.</li><li>Tax lists and diaries suggest that recurring temporary markets may be missing from some early city maps.</li><li>Diary writers produced more accurate maps than professional cartographers did.</li><li>Weekly markets caused cities to replace temporary stalls with permanent structures.</li></ol>",
+      "html": "<h2>See both roles work together</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><p><strong>Answer target:</strong> Other records show that early maps may miss recurring temporary activity.</p><p>Consider the choices in the shared prompt one at a time.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_city_maps_example",
       "kind": "text",
       "id": "city_maps_choice_a",
       "html": "<h2>Choice A: something fits, but something fails</h2><blockquote><p>Early maps omitted markets because cartographers wanted to hide all commercial activity.</p></blockquote><p><strong>Good Cop:</strong> It correctly notices that markets were omitted from early maps.</p><p><strong>Bad Cop:</strong> The passage never says cartographers wanted to hide anything, and it never says all commercial activity was missing.</p><p><strong>Decision:</strong> Cross it out. A partly right choice is still wrong.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_city_maps_example",
       "kind": "text",
       "id": "city_maps_remaining_choices",
       "html": "<h2>Finish the choices</h2><p><strong>Choice B:</strong> It matches the answer target, keeps the limited word <em>some</em>, and adds nothing unsupported. Keep it.</p><p><strong>Choice C:</strong> It mentions diaries and maps, but the passage never says diary writers made maps or compares the skill of the two groups. Cross it out.</p><p><strong>Choice D:</strong> It repeats <em>weekly</em>, <em>temporary</em>, and <em>permanent</em>, but invents a cause-and-effect claim. Cross it out.</p><blockquote><p><strong>Choice B is the only choice with a Good Cop reason to keep it and no Bad Cop reason to reject it.</strong></p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_city_maps_example",
       "kind": "raw_block",
       "id": "city_maps_check",
       "block_type": "check",
@@ -165,12 +179,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_function_question",
+        "title": "City murals passage",
+        "html": "<blockquote><p>Researcher Omar Velez argues that city murals can preserve neighborhood memories that official records overlook. For example, one mural lists businesses that were demolished to build a highway.</p></blockquote>"
+      },
       "kind": "text",
       "id": "function_question",
-      "html": "<h2>A true detail can still miss the question</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence?</p><blockquote><p>Researcher Omar Velez argues that city murals can preserve neighborhood memories that official records overlook. For example, one mural lists businesses that were demolished to build a highway.</p></blockquote><p>Form an answer target for what the second sentence <strong>does</strong>, not merely what it says.</p>",
+      "html": "<h2>A true detail can still miss the question</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence?</p><p>Form an answer target for what the second sentence <strong>does</strong>, not merely what it says.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_function_question",
       "kind": "raw_block",
       "id": "function_question_check",
       "block_type": "check",
@@ -196,12 +216,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_island_lizards_question",
+        "title": "Island lizards passage",
+        "html": "<blockquote><p>Researchers observed the same lizard species on two islands. On Island A, fruit remained available through winter, and the lizards stayed active throughout the year. On Island B, fruit became scarce in winter, and the lizards were inactive for three winter months. The researchers did not test what caused the difference in activity.</p></blockquote>"
+      },
       "kind": "text",
       "id": "island_lizards_question",
-      "html": "<h2>Try a careful inference</h2><p><strong>Question:</strong> Which conclusion is best supported by the text?</p><blockquote><p>Researchers observed the same lizard species on two islands. On Island A, fruit remained available through winter, and the lizards stayed active throughout the year. On Island B, fruit became scarce in winter, and the lizards were inactive for three winter months. The researchers did not test what caused the difference in activity.</p></blockquote><p>Form the smallest conclusion the facts support before viewing the choices.</p>",
+      "html": "<h2>Try a careful inference</h2><p><strong>Question:</strong> Which conclusion is best supported by the text?</p><p>Form the smallest conclusion the facts support before viewing the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_island_lizards_question",
       "kind": "raw_block",
       "id": "island_lizards_check",
       "block_type": "check",
@@ -221,6 +247,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_island_lizards_question",
       "kind": "raw_block",
       "id": "island_lizards_wrong_choice_check",
       "block_type": "check",
@@ -246,12 +273,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_roof_coating_question",
+        "title": "Reflective roofs passage",
+        "html": "<blockquote><p>Engineers applied a reflective coating to the roofs of several buildings. The coated roofs were cooler at midday, but changes in indoor temperature varied depending on features such as insulation. The team concluded that the coating's effect inside a building depends partly on that building's design.</p></blockquote>"
+      },
       "kind": "text",
       "id": "roof_coating_question",
-      "html": "<h2>Separate two close choices</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><blockquote><p>Engineers applied a reflective coating to the roofs of several buildings. The coated roofs were cooler at midday, but changes in indoor temperature varied depending on features such as insulation. The team concluded that the coating's effect inside a building depends partly on that building's design.</p></blockquote><p><strong>Answer target:</strong> The coating cooled roof surfaces, but its effect indoors varied with building features.</p>",
+      "html": "<h2>Separate two close choices</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><p><strong>Answer target:</strong> The coating cooled roof surfaces, but its effect indoors varied with building features.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_roof_coating_question",
       "kind": "raw_block",
       "id": "roof_coating_check",
       "block_type": "check",
@@ -271,6 +304,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_roof_coating_question",
       "kind": "raw_block",
       "id": "roof_coating_runner_up_check",
       "block_type": "check",
@@ -315,12 +349,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_bee_navigation_question",
+        "title": "Bee navigation passage",
+        "html": "<blockquote><p>Some bees use patterns of polarized light to navigate. In a laboratory test, bees took longer to reach a feeder when a coating blocked those light patterns. The researchers did not measure whether the extra travel time changed how much energy the bees used.</p></blockquote>"
+      },
       "kind": "text",
       "id": "bee_navigation_question",
-      "html": "<h2>Practice: a tempting added idea</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><blockquote><p>Some bees use patterns of polarized light to navigate. In a laboratory test, bees took longer to reach a feeder when a coating blocked those light patterns. The researchers did not measure whether the extra travel time changed how much energy the bees used.</p></blockquote><p>Form an answer target. Then take the choices one at a time: what fits, and what fails?</p>",
+      "html": "<h2>Practice: a tempting added idea</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><p>Form an answer target. Then take the choices one at a time: what fits, and what fails?</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_bee_navigation_question",
       "kind": "raw_block",
       "id": "bee_navigation_check",
       "block_type": "check",
@@ -340,6 +380,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_bee_navigation_question",
       "kind": "raw_block",
       "id": "bee_navigation_wrong_choice_check",
       "block_type": "check",
@@ -359,12 +400,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_devon_poem_question",
+        "title": "Devon’s poem",
+        "html": "<p><strong>Introduction:</strong> The following text is adapted from a story in which Devon has submitted a poem anonymously to a school publication.</p><blockquote><p>Devon listened from the next table as the editors praised the poem's imagery. He opened his mouth to tell them who had written it, then stopped and folded the acceptance email into a smaller square beneath the table.</p></blockquote>"
+      },
       "kind": "text",
       "id": "devon_poem_question",
-      "html": "<h2>Practice: a character's reaction</h2><p><strong>Introduction:</strong> The following text is adapted from a story in which Devon has submitted a poem anonymously to a school publication.</p><blockquote><p>Devon listened from the next table as the editors praised the poem's imagery. He opened his mouth to tell them who had written it, then stopped and folded the acceptance email into a smaller square beneath the table.</p></blockquote><p><strong>Question:</strong> Which choice best describes Devon's reaction?</p><p>Form an answer target before viewing the choices.</p>",
+      "html": "<h2>Practice: a character's reaction</h2><p><strong>Question:</strong> Which choice best describes Devon's reaction?</p><p>Form an answer target before viewing the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_devon_poem_question",
       "kind": "raw_block",
       "id": "devon_poem_check",
       "block_type": "check",
@@ -384,6 +431,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_devon_poem_question",
       "kind": "raw_block",
       "id": "devon_poem_wrong_choice_check",
       "block_type": "check",
@@ -403,12 +451,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_transportation_question",
+        "title": "Public transportation passage",
+        "html": "<blockquote><p>Economist Priya Sen argues that average travel time alone can hide unequal access to public transportation. Two neighborhoods may have the same average commute, for instance, even if residents of one have frequent trains while residents of the other must rely on a single unpredictable bus route.</p></blockquote>"
+      },
       "kind": "text",
       "id": "transportation_question",
-      "html": "<h2>Practice: what does the example do?</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence?</p><blockquote><p>Economist Priya Sen argues that average travel time alone can hide unequal access to public transportation. Two neighborhoods may have the same average commute, for instance, even if residents of one have frequent trains while residents of the other must rely on a single unpredictable bus route.</p></blockquote><p>Form an answer target for the second sentence's job, then test each choice.</p>",
+      "html": "<h2>Practice: what does the example do?</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence?</p><p>Form an answer target for the second sentence's job, then test each choice.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_transportation_question",
       "kind": "raw_block",
       "id": "transportation_check",
       "block_type": "check",
@@ -455,12 +509,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_final_question",
+        "title": "Dolphin visits passage",
+        "html": "<blockquote><p>Oceanographers placed sound sensors near two reefs. Before nearby construction began, sound levels and dolphin visits were similar at both reefs. During construction, the reef near the site became louder and received fewer dolphin visits, while the distant reef showed little change. The researchers did not determine what caused the decline in visits.</p></blockquote>"
+      },
       "kind": "text",
       "id": "final_question",
-      "html": "<h2>Finish with a new passage</h2><p><strong>Question:</strong> Which conclusion is best supported by the text?</p><blockquote><p>Oceanographers placed sound sensors near two reefs. Before nearby construction began, sound levels and dolphin visits were similar at both reefs. During construction, the reef near the site became louder and received fewer dolphin visits, while the distant reef showed little change. The researchers did not determine what caused the decline in visits.</p></blockquote><p>Form an answer target. Then take each choice once: what fits, and what fails?</p>",
+      "html": "<h2>Finish with a new passage</h2><p><strong>Question:</strong> Which conclusion is best supported by the text?</p><p>Form an answer target. Then take each choice once: what fits, and what fails?</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_final_question",
       "kind": "raw_block",
       "id": "final_question_check",
       "block_type": "check",
@@ -480,6 +540,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_final_question",
       "kind": "raw_block",
       "id": "final_wrong_choice_check",
       "block_type": "check",

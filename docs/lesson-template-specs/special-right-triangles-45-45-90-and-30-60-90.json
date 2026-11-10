@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_square_exploration",
+        "title": "Square with a diagonal",
+        "html": "<p>A square has side length \\(6\\). A diagonal divides it into two triangles.</p>"
+      },
       "kind": "text",
       "id": "square_exploration",
-      "html": "<h2>Start with a square</h2><p>A square has side length \\(6\\). Draw one diagonal. Each half is a right triangle whose two legs are sides of the square, so both legs have length \\(6\\).</p><p>Do not calculate the diagonal yet. First ask what the words <strong>right triangle with two equal legs</strong> reveal.</p>",
+      "html": "<h2>Start with a square</h2><p>Sketch the square and its diagonal. Each half is a right triangle whose two legs are sides of the square, so both legs have length \\(6\\).</p><p>Do not calculate the diagonal yet. First ask what the words <strong>right triangle with two equal legs</strong> reveal.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_square_exploration",
       "kind": "raw_block",
       "id": "square_exploration_check",
       "block_type": "check",
@@ -135,12 +141,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_equilateral_exploration",
+        "title": "Equilateral triangle with an altitude",
+        "html": "<p>An equilateral triangle has side length \\(12\\). Draw an altitude from the top vertex to the opposite side.</p>"
+      },
       "kind": "text",
       "id": "equilateral_exploration",
-      "html": "<h2>Now split an equilateral triangle</h2><p>An equilateral triangle has side length \\(12\\). Draw an altitude from the top vertex to the opposite side.</p><p>The altitude makes two right triangles. In either half, the original side of length \\(12\\) is the hypotenuse, and half of the base is a leg of length \\(6\\).</p><p>Before learning the full ratio, compare those two sides: the hypotenuse is exactly twice the shorter leg.</p>",
+      "html": "<h2>Now split an equilateral triangle</h2><p>Sketch the triangle and mark the altitude.</p><p>The altitude makes two right triangles. In either half, the original side of length \\(12\\) is the hypotenuse, and half of the base is a leg of length \\(6\\).</p><p>Before learning the full ratio, compare those two sides: the hypotenuse is exactly twice the shorter leg.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_equilateral_exploration",
       "kind": "raw_block",
       "id": "equilateral_exploration_check",
       "block_type": "check",

@@ -1,0 +1,58 @@
+.panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--s4);
+  margin-block: var(--s4);
+}
+
+.panel summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.draft,
+.field {
+  display: grid;
+  gap: var(--s2);
+  min-width: 0;
+}
+
+.draft {
+  max-width: 54rem;
+  gap: var(--s3);
+}
+
+.promptRow,
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.promptRow {
+  justify-content: space-between;
+  margin-block: var(--s2);
+}
+
+.fieldset {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--s3);
+}
+
+.slides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--s2) var(--s4);
+  max-height: 18rem;
+  overflow: auto;
+}
+
+.slide {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  overflow-wrap: anywhere;
+}

@@ -277,6 +277,11 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_desmos_direct_entry",
+        "title": "Data for direct and named-list entry",
+        "html": "<p>\\(2, 3, 4, 5, 6\\)</p>"
+      },
       "kind": "text",
       "id": "desmos_direct_entry",
       "html": "<h2>Calculate standard deviation directly in Desmos</h2><p>The <strong>stdev</strong> function finds standard deviation. In the embedded SAT calculator, you can type the data values directly:</p><p>\\[\\operatorname{stdev}(2,3,4,5,6)\\]</p><p>Use commas between values and close the parenthesis. Desmos displays approximately \\(1.58\\).</p><blockquote><p><strong>Try it:</strong> Type <strong>stdev(2,3,4,5,6)</strong> in the open calculator and read the result.</p></blockquote>",
@@ -290,6 +295,7 @@
       }
     },
     {
+      "shared_prompt": "shared_desmos_direct_entry",
       "kind": "raw_block",
       "id": "desmos_direct_result_check",
       "block_type": "check",
@@ -322,6 +328,7 @@
       }
     },
     {
+      "shared_prompt": "shared_desmos_direct_entry",
       "kind": "text",
       "id": "desmos_named_list",
       "html": "<h2>A named list is better when data may change</h2><p>On the first line, assign the list to a variable:</p><p>\\[A=[2,3,4,5,6]\\]</p><p>On the second line, enter:</p><p>\\[\\operatorname{stdev}(A)\\]</p><p>This gives the same result as direct entry. The advantage is that you can edit \\(A\\) once and every expression using \\(A\\) updates automatically.</p><blockquote><p><strong>Preferred workflow:</strong> define the list, then apply <strong>stdev</strong> to its name.</p></blockquote>",
@@ -335,6 +342,7 @@
       }
     },
     {
+      "shared_prompt": "shared_desmos_direct_entry",
       "kind": "raw_block",
       "id": "named_list_benefit_check",
       "block_type": "check",
@@ -371,9 +379,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_desmos_compare_sets",
+        "title": "Sets A and B",
+        "html": "<p>\\[A=[8,9,10,11,12]\\]</p><p>\\[B=[2,6,10,14,18]\\]</p>"
+      },
       "kind": "text",
       "id": "desmos_compare_sets",
-      "html": "<h2>Use named lists to compare two sets</h2><p>The calculator shows:</p><p>\\[A=[8,9,10,11,12]\\]</p><p>\\[B=[2,6,10,14,18]\\]</p><p>and calculates both standard deviations. The lists have the same mean, but \\(B\\) is much more spread out.</p><blockquote><p><strong>Connect the ideas:</strong> your visual prediction and the Desmos values should agree.</p></blockquote>",
+      "html": "<h2>Use named lists to compare two sets</h2><p>Desmos calculates both standard deviations. The lists have the same mean, but \\(B\\) is much more spread out.</p><blockquote><p><strong>Connect the ideas:</strong> your visual prediction and the Desmos values should agree.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -402,6 +415,7 @@
       }
     },
     {
+      "shared_prompt": "shared_desmos_compare_sets",
       "kind": "raw_block",
       "id": "desmos_compare_check",
       "block_type": "check",
@@ -446,9 +460,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_desmos_test_outlier",
+        "title": "Sets C and D",
+        "html": "<p>Set \\(C\\) is \\([8,9,10,11,12]\\). Set \\(D\\) replaces \\(12\\) with \\(20\\).</p>"
+      },
       "kind": "text",
       "id": "desmos_test_outlier",
-      "html": "<h2>Predict first, then check a changed value</h2><p>Set \\(C\\) is \\([8,9,10,11,12]\\). Set \\(D\\) replaces \\(12\\) with \\(20\\).</p><p>Before reading the outputs, predict which set has the larger standard deviation. Then compare \\(\\operatorname{stdev}(C)\\) and \\(\\operatorname{stdev}(D)\\).</p><blockquote><p><strong>Use Desmos as a check:</strong> the value farther from the cluster should stretch the spread.</p></blockquote>",
+      "html": "<h2>Predict first, then check a changed value</h2><p>Before reading the outputs, predict which set has the larger standard deviation. Then compare \\(\\operatorname{stdev}(C)\\) and \\(\\operatorname{stdev}(D)\\).</p><blockquote><p><strong>Use Desmos as a check:</strong> the value farther from the cluster should stretch the spread.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -477,6 +496,7 @@
       }
     },
     {
+      "shared_prompt": "shared_desmos_test_outlier",
       "kind": "raw_block",
       "id": "outlier_result_check",
       "block_type": "check",

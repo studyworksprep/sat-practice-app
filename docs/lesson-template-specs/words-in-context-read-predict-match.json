@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Okafor’s designs",
+        "html": "<blockquote><p>Although early critics described Mara Okafor's installations as chaotic, later researchers found recurring measurements and repeated ratios in nearly every piece. Those discoveries made the designs seem far less <strong>_____</strong> than they first appeared.</p></blockquote>"
+      },
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Start with the evidence around the blank</h2><blockquote><p>Although early critics described Mara Okafor's installations as chaotic, later researchers found recurring measurements and repeated ratios in nearly every piece. Those discoveries made the designs seem far less <strong>_____</strong> than they first appeared.</p></blockquote><p>Before looking at any answer choices, say a simple word or phrase that could complete the thought. You do not need an impressive vocabulary word. You need the right meaning.</p>",
+      "html": "<h2>Start with the evidence around the blank</h2><p>Before looking at any answer choices, say a simple word or phrase that could complete the thought. You do not need an impressive vocabulary word. You need the right meaning.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_opening_exploration",
       "kind": "raw_block",
       "id": "opening_observation_check",
       "block_type": "check",
@@ -120,17 +126,23 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_hypothesis_model",
+        "title": "Neuroscience hypothesis",
+        "html": "<blockquote><p>The new hypothesis _____ the field of neuroscience by providing a framework that united previously separate findings.</p></blockquote>"
+      },
       "kind": "text",
       "id": "hypothesis_model",
-      "html": "<h2>Model the subject–verb–object test</h2><blockquote><p>The new hypothesis _____ the field of neuroscience by providing a framework that united previously separate findings.</p></blockquote><p>First identify the roles:</p><ul><li><strong>Subject:</strong> the hypothesis</li><li><strong>Action:</strong> what the hypothesis did</li><li><strong>Object:</strong> the field of neuroscience</li><li><strong>Result clue:</strong> it united separate findings</li></ul><p>A useful prediction is <strong>changed or reshaped the field</strong>. The missing verb must describe something a hypothesis can reasonably do to a field, and it must agree with the positive result in the final phrase.</p>",
+      "html": "<h2>Model the subject–verb–object test</h2><p>First identify the roles:</p><ul><li><strong>Subject:</strong> the hypothesis</li><li><strong>Action:</strong> what the hypothesis did</li><li><strong>Object:</strong> the field of neuroscience</li><li><strong>Result clue:</strong> it united separate findings</li></ul><p>A useful prediction is <strong>changed or reshaped the field</strong>. The missing verb must describe something a hypothesis can reasonably do to a field, and it must agree with the positive result in the final phrase.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_hypothesis_model",
       "kind": "raw_block",
       "id": "hypothesis_fit_check",
       "block_type": "check",
       "content": {
-        "prompt": "The new hypothesis _____ the field of neuroscience by providing a framework that united previously separate findings. Which choice completes the text most logically and precisely?",
+        "prompt": "Which choice completes the text most logically and precisely?",
         "choices": ["mistrusted", "transformed", "postponed", "contradicted"],
         "correct_index": 1,
         "allow_retry": true,
@@ -140,6 +152,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_hypothesis_model",
       "kind": "text",
       "id": "reject_nearby_words",
       "html": "<h2>Why related-looking choices can still fail</h2><p>In the hypothesis example:</p><ul><li><strong>Mistrusted</strong> does not work because a hypothesis is not a person capable of mistrusting a field.</li><li><strong>Postponed</strong> does not describe a sensible relationship between a hypothesis and a scientific field.</li><li><strong>Contradicted</strong> can describe what a hypothesis does to a claim, prediction, or piece of evidence. Here, however, saying it &ldquo;contradicted the field&rdquo; does not express the supported idea that the hypothesis united findings and reshaped the discipline.</li></ul><blockquote><p><strong>Key test:</strong> Do not ask only, &ldquo;Is this word related to science?&rdquo; Ask, &ldquo;Can this subject do this action to this object in this exact context?&rdquo;</p></blockquote>",
@@ -305,12 +318,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_complete_worked_example",
+        "title": "Harbor logs",
+        "html": "<blockquote><p>Historians once treated the harbor logs as minor records of local trade. Yet the logs documented shipments from ports across three continents and revealed commercial relationships absent from official treaties. The records therefore _____ historians' understanding of the city's international influence.</p></blockquote>"
+      },
       "kind": "text",
       "id": "complete_worked_example",
-      "html": "<h2>Work the complete process</h2><blockquote><p>Historians once treated the harbor logs as minor records of local trade. Yet the logs documented shipments from ports across three continents and revealed commercial relationships absent from official treaties. The records therefore _____ historians' understanding of the city's international influence.</p></blockquote><ol><li><strong>Read:</strong> The second sentence contains the decisive evidence.</li><li><strong>Connect:</strong> <em>Yet</em> reverses the idea that the logs were minor; <em>therefore</em> introduces their result.</li><li><strong>Predict:</strong> &ldquo;greatly expanded or changed the understanding.&rdquo;</li><li><strong>Match:</strong> Test each answer against that prediction and the subject–object relationship.</li></ol>",
+      "html": "<h2>Work the complete process</h2><ol><li><strong>Read:</strong> The second sentence contains the decisive evidence.</li><li><strong>Connect:</strong> <em>Yet</em> reverses the idea that the logs were minor; <em>therefore</em> introduces their result.</li><li><strong>Predict:</strong> &ldquo;greatly expanded or changed the understanding.&rdquo;</li><li><strong>Match:</strong> Test each answer against that prediction and the subject–object relationship.</li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_complete_worked_example",
       "kind": "raw_block",
       "id": "worked_example_check",
       "block_type": "check",

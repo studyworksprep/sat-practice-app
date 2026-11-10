@@ -11,14 +11,20 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_first_exploration",
+        "title": "Museum sentence",
+        "html": "<blockquote><p>The museum displayed one object from the expedition ___ a compass recovered from the wreck.</p></blockquote>"
+      },
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Try the order before learning every rule</h2><p>Consider this sentence:</p><blockquote><p>The museum displayed one object from the expedition ___ a compass recovered from the wreck.</p></blockquote><p>The choices offer a semicolon, a colon, a dash, and a comma.</p><p><strong>Do not choose by sound.</strong> First, identify which category the semicolon belongs to and where that category appears in the order.</p>",
+      "html": "<h2>Try the order before learning every rule</h2><p>The choices offer a semicolon, a colon, a dash, and a comma.</p><p><strong>Do not choose by sound.</strong> First, identify which category the semicolon belongs to and where that category appears in the order.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "raw_block",
       "id": "exploration_check",
       "block_type": "check",

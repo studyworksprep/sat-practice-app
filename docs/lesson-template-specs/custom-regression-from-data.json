@@ -24,13 +24,18 @@
       "html": "<h2>What stays the same—and what changes</h2><p>You still begin by finding input-output pairs from a table, graph, or word problem. You still enter those points in a Desmos table.</p><p>The change comes after the table is filled:</p><ul><li><strong>Standard regression:</strong> click the Regression button and choose a supplied model.</li><li><strong>Custom regression:</strong> type the required equation yourself, connect it to the table with \\(x_1\\) and \\(y_1\\), and replace the equals sign with \\(\\sim\\).</li></ul>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_first_custom_exploration",
+        "title": "Quadratic form and points",
+        "html": "<p>A function has the required form</p><p>\\[q(t)=a(t-2)^2+5\\]</p><p>and its graph contains \\((2,5)\\) and \\((4,17)\\).</p>"
+      },
       "kind": "raw_block",
       "id": "first_custom_exploration",
       "block_type": "desmos_interactive",
       "content": {
         "id": "first_custom_exploration",
         "title": "Explore a missing constant",
-        "instructions_html": "<p>A function has the required form</p><p>\\[q(t)=a(t-2)^2+5\\]</p><p>and its graph contains \\((2,5)\\) and \\((4,17)\\).</p><p>In this activity’s calculator, select <strong>Add Item (+) → Table</strong> and enter those two points. Then add a new expression and type:</p><p>\\[y_1\\sim a(x_1-2)^2+5\\]</p><blockquote><p><strong>Explore first:</strong> read the value Desmos assigns to \\(a\\). Do not use the table's Regression button.</p></blockquote>",
+        "instructions_html": "<p>In this activity’s calculator, select <strong>Add Item (+) → Table</strong> and enter those two points. Then add a new expression and type:</p><p>\\[y_1\\sim a(x_1-2)^2+5\\]</p><blockquote><p><strong>Explore first:</strong> read the value Desmos assigns to \\(a\\). Do not use the table's Regression button.</p></blockquote>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -103,6 +108,7 @@
       }
     },
     {
+      "shared_prompt": "shared_first_custom_exploration",
       "kind": "raw_block",
       "id": "first_custom_result_check",
       "block_type": "check",
@@ -129,6 +135,7 @@
       }
     },
     {
+      "shared_prompt": "shared_first_custom_exploration",
       "kind": "text",
       "id": "why_custom_regression",
       "html": "<h2>Why the custom equation matters</h2><p>The question did not ask for an arbitrary standard-form quadratic. It supplied the vertex-form structure \\(a(t-2)^2+5\\) and asked you to determine its missing constant.</p><p>Typing that same structure into the regression lets Desmos adjust only \\(a\\). The known values \\(2\\) and \\(5\\) stay fixed.</p><blockquote><p><strong>Use custom regression when:</strong> the question supplies a form with missing constants, requires a special form, or gives additional relationships among the constants.</p></blockquote>"
@@ -226,13 +233,18 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_guided_definition_problem",
+        "title": "Quadratic with related constants",
+        "html": "<p>A function has the form</p><p>\\[r(t)=at^2+bt+4\\]</p><p>The question tells you that \\(a+b=10\\) and \\(r(2)=34\\).</p>"
+      },
       "kind": "raw_block",
       "id": "guided_definition_problem",
       "block_type": "desmos_interactive",
       "content": {
         "id": "guided_definition_problem",
         "title": "Guided practice: use a coefficient relationship",
-        "instructions_html": "<p>A function has the form</p><p>\\[r(t)=at^2+bt+4\\]</p><p>The question tells you that \\(a+b=10\\) and \\(r(2)=34\\).</p><p>This activity opens its own blank calculator. Follow these steps:</p><ol><li>Enter the point \\((2,34)\\) in a table.</li><li>Enter the definition \\(a=10-b\\).</li><li>Enter the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\).</li></ol><p>Desmos adjusts the remaining free constant \\(b\\); the definition then supplies \\(a\\).</p>",
+        "instructions_html": "<p>This activity opens its own blank calculator. Follow these steps:</p><ol><li>Enter the point \\((2,34)\\) in a table.</li><li>Enter the definition \\(a=10-b\\).</li><li>Enter the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\).</li></ol><p>Desmos adjusts the remaining free constant \\(b\\); the definition then supplies \\(a\\).</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -301,6 +313,7 @@
       }
     },
     {
+      "shared_prompt": "shared_guided_definition_problem",
       "kind": "raw_block",
       "id": "guided_definition_result_check",
       "block_type": "check",
@@ -328,6 +341,7 @@
       }
     },
     {
+      "shared_prompt": "shared_guided_definition_problem",
       "kind": "text",
       "id": "why_definitions_reduce_unknowns",
       "html": "<h2>A definition reduces the unknowns</h2><p>The table supplied one point equation. By itself, one point could not determine both \\(a\\) and \\(b\\).</p><p>The relationship \\(a+b=10\\) supplied another piece of information. Rewriting it as \\(a=10-b\\) reduced the model to one free constant, so the one data point could determine the result.</p><blockquote><p><strong>Before you regress:</strong> count the missing constants and look for every independent fact that connects them.</p></blockquote>"
@@ -397,13 +411,18 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_guided_function_constant",
+        "title": "Two function rules",
+        "html": "<p>The table contains points from \\(g\\). The problem gives:</p><p>\\[f(x)=x^2+5\\qquad\\text{and}\\qquad g(x)=f(x)-c\\]</p><p>It also states \\(g(0)=-3\\), \\(g(2)=1\\), and \\(g(3)=6\\).</p>"
+      },
       "kind": "raw_block",
       "id": "guided_function_constant",
       "block_type": "desmos_interactive",
       "content": {
         "id": "guided_function_constant",
         "title": "Find a constant after substitution",
-        "instructions_html": "<p>The table contains points from \\(g\\). The problem gives:</p><p>\\[f(x)=x^2+5\\qquad\\text{and}\\qquad g(x)=f(x)-c\\]</p><p>It also states \\(g(0)=-3\\), \\(g(2)=1\\), and \\(g(3)=6\\).</p><p>In this activity’s blank calculator, enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table. Substitute the rule for \\(f\\), then enter:</p><p>\\[y_1\\sim x_1^2+5-c\\]</p><p>Read the value Desmos assigns to \\(c\\).</p>",
+        "instructions_html": "<p>In this activity’s blank calculator, enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table. Substitute the rule for \\(f\\), then enter:</p><p>\\[y_1\\sim x_1^2+5-c\\]</p><p>Read the value Desmos assigns to \\(c\\).</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -480,6 +499,7 @@
       }
     },
     {
+      "shared_prompt": "shared_guided_function_constant",
       "kind": "raw_block",
       "id": "guided_function_constant_check",
       "block_type": "check",
@@ -530,13 +550,18 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_special_exponential_task",
+        "title": "Exponential growth data",
+        "html": "<p>A sample follows \\(N(t)=A(1+r)^t\\), where \\(A=200\\). The data are:</p><p>\\[(0,200),\\ (1,220),\\ (2,242)\\]</p>"
+      },
       "kind": "raw_block",
       "id": "special_exponential_task",
       "block_type": "desmos_interactive",
       "content": {
         "id": "special_exponential_task",
         "title": "Fit a growth rate directly",
-        "instructions_html": "<p>A sample follows \\(N(t)=A(1+r)^t\\), where \\(A=200\\). The data are:</p><p>\\[(0,200),\\ (1,220),\\ (2,242)\\]</p><p>In this activity’s blank calculator, enter the points in a table, define \\(A=200\\), and enter \\(y_1\\sim A(1+r)^{x_1}\\).</p><p>Desmos reports \\(r\\) as a decimal. Translate it to a percent if the question asks for a percent growth rate.</p>",
+        "instructions_html": "<p>In this activity’s blank calculator, enter the points in a table, define \\(A=200\\), and enter \\(y_1\\sim A(1+r)^{x_1}\\).</p><p>Desmos reports \\(r\\) as a decimal. Translate it to a percent if the question asks for a percent growth rate.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -614,6 +639,7 @@
       }
     },
     {
+      "shared_prompt": "shared_special_exponential_task",
       "kind": "raw_block",
       "id": "special_exponential_result_check",
       "block_type": "check",
@@ -663,11 +689,17 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_transfer_problem",
+        "title": "Custom regression transfer problem",
+        "html": "<p>A function has the required form</p><p>\\[H(t)=u(t-1)^2+v\\]</p><p>The question states that \\(u+v=6\\) and \\(H(3)=18\\).</p>"
+      },
       "kind": "text",
       "id": "transfer_problem",
-      "html": "<h2>Independent transfer: combine every move</h2><p>A function has the required form</p><p>\\[H(t)=u(t-1)^2+v\\]</p><p>The question states that \\(u+v=6\\) and \\(H(3)=18\\).</p><p>Your task is to use custom regression to find \\(u\\) and \\(v\\). Decide:</p><ul><li>which point belongs in the table;</li><li>how to rewrite \\(u+v=6\\) as a definition;</li><li>how to translate the required function form into \\(x_1\\), \\(y_1\\), and \\(\\sim\\).</li></ul>"
+      "html": "<h2>Independent transfer: combine every move</h2><p>Your task is to use custom regression to find \\(u\\) and \\(v\\). Decide:</p><ul><li>which point belongs in the table;</li><li>how to rewrite \\(u+v=6\\) as a definition;</li><li>how to translate the required function form into \\(x_1\\), \\(y_1\\), and \\(\\sim\\).</li></ul>"
     },
     {
+      "shared_prompt": "shared_transfer_problem",
       "kind": "raw_block",
       "id": "transfer_setup_check",
       "block_type": "check",
@@ -686,6 +718,7 @@
       }
     },
     {
+      "shared_prompt": "shared_transfer_problem",
       "kind": "raw_block",
       "id": "transfer_calculator_task",
       "block_type": "desmos_interactive",
@@ -761,6 +794,7 @@
       }
     },
     {
+      "shared_prompt": "shared_transfer_problem",
       "kind": "raw_block",
       "id": "transfer_constants_check",
       "block_type": "check",
@@ -788,6 +822,7 @@
       }
     },
     {
+      "shared_prompt": "shared_transfer_problem",
       "kind": "raw_block",
       "id": "transfer_equation_check",
       "block_type": "check",

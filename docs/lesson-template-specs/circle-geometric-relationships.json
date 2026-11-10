@@ -3,12 +3,17 @@
   "description": "Use circle measurements, arcs, equal radii, and tangent relationships to find missing lengths and angles with Mark, relate, solve.",
   "blocks": [
     {
+      "shared_prompt": {
+        "id": "shared_geometry_open",
+        "title": "Highlighted arc",
+        "html": "<p>Points \\(A\\) and \\(B\\) lie on a circle centered at \\(O\\). Radii \\(OA\\) and \\(OB\\) are perpendicular. Use the highlighted arc from \\(A\\) to \\(B\\).</p>"
+      },
       "kind": "raw_block",
       "id": "geometry_open",
       "block_type": "text",
       "content": {
         "id": "geometry_open",
-        "html": "<h2>The circle gives you relationships before you calculate</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Mark, relate, solve. Mark what the circle tells you, choose the matching relationship, then calculate.</p><p><strong>Why it pays:</strong> A radius, an angle, or a tangent can supply information the question never writes as a number.</p><p><strong>One caution:</strong> An arc measure is an angle; an arc length is a distance. Keep those jobs separate.</p></div><p>Start with the graph. The blue arc runs from the rightmost point A to the top point B. Trace the rest of the circle: how many copies of that arc make one full turn?</p>",
+        "html": "<h2>The circle gives you relationships before you calculate</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Mark, relate, solve. Mark what the circle tells you, choose the matching relationship, then calculate.</p><p><strong>Why it pays:</strong> A radius, an angle, or a tangent can supply information the question never writes as a number.</p><p><strong>One caution:</strong> An arc measure is an angle; an arc length is a distance. Keep those jobs separate.</p></div><p>Start with the highlighted arc. Trace the rest of the circle: how many copies of that arc make one full turn?</p>",
         "calculator": {
           "mode": "preset",
           "title": "Compare the arc with the whole circle",
@@ -59,13 +64,14 @@
       }
     },
     {
+      "shared_prompt": "shared_geometry_open",
       "kind": "raw_block",
       "id": "quarter_observation",
       "block_type": "check",
       "content": {
         "id": "quarter_observation",
         "hint": "Trace equal copies of the highlighted arc around the circle. Compare one copy with the whole.",
-        "prompt": "The highlighted arc runs between the two perpendicular radii. What fraction of the circumference does it cover?",
+        "prompt": "What fraction of the circumference does the highlighted arc cover?",
         "choices": [
           "\\(\\frac12\\)",
           "\\(\\frac14\\)",

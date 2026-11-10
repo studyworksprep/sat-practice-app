@@ -90,11 +90,16 @@
       "html": "<h2>Translate the boundary, not just the verb</h2><p>Context problems often hide the inequality in a limit.</p><ul><li><strong>At least</strong>, <strong>no less than</strong>, and <strong>minimum</strong> point to \\(\\geq\\).</li><li><strong>At most</strong>, <strong>no more than</strong>, and <strong>maximum</strong> point to \\(\\leq\\).</li><li><strong>More than</strong> and <strong>fewer than</strong> are strict: \\(&gt;\\) and \\(&lt;\\).</li></ul><p>Always ask whether the boundary value itself is allowed. That question is safer than memorizing words alone.</p>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_context_setup_check",
+        "title": "Theater ticket budget",
+        "html": "<p>A theater charges $12 per ticket plus a one-time $8 fee. Priya can spend no more than $80. Let \\(t\\) be the number of tickets.</p>"
+      },
       "kind": "raw_block",
       "id": "context_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "A theater charges $12 per ticket plus a one-time $8 fee. Priya can spend no more than $80. If \\(t\\) is the number of tickets, which inequality models the situation?",
+        "prompt": "Which inequality models the ticket budget?",
         "choices": [
           "\\(12t+8\\geq80\\)",
           "\\(12(t+8)\\leq80\\)",
@@ -109,6 +114,7 @@
       }
     },
     {
+      "shared_prompt": "shared_context_setup_check",
       "kind": "raw_block",
       "id": "context_solution_check",
       "block_type": "check",

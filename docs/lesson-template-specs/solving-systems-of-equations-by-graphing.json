@@ -11,9 +11,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_first_exploration",
+        "title": "Opening system",
+        "html": "<p>\\(y=2x+1\\)</p><p>\\(y=-x+7\\)</p>"
+      },
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Find the shared point</h2><p>The equations \\(y=2x+1\\) and \\(y=-x+7\\) are already graphed.</p><p><strong>Click the point where the two lines intersect.</strong> Desmos will label it with an ordered pair. Record both coordinates before you continue.</p>",
+      "html": "<h2>Find the shared point</h2><p><strong>Click the point where the two lines intersect.</strong> Desmos will label it with an ordered pair. Record both coordinates before you continue.</p>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -34,6 +39,7 @@
       }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "raw_block",
       "id": "first_observation_check",
       "block_type": "check",
@@ -121,9 +127,14 @@
       "html": "<h2>The four-step systems process</h2><ol><li><strong>Enter both equations.</strong> Put one complete equation on each Desmos row.</li><li><strong>Keep them as written.</strong> Desmos can graph equations such as \\(3x+2y=16\\); you do not need to solve for \\(y\\) first.</li><li><strong>Click every intersection.</strong> Each labeled point is one solution.</li><li><strong>Answer what was asked.</strong> Report \\(x\\), \\(y\\), an ordered pair, or the requested expression.</li></ol><blockquote><p><strong>Shortcut to remember:</strong> Enter both, click intersections, answer the question.</p></blockquote>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_no_simplifying_model",
+        "title": "System in standard form",
+        "html": "<p>\\[3x+2y=16\\]</p><p>\\[4x-y=3\\]</p>"
+      },
       "kind": "text",
       "id": "no_simplifying_model",
-      "html": "<h2>Do not create extra algebra</h2><p>Consider this system:</p><p>\\[3x+2y=16\\]</p><p>\\[4x-y=3\\]</p><p>You could rearrange both equations into \\(y=\\) form, but Desmos does not require that. Enter each original equation exactly as it appears.</p><p>The graphs are open. Click their intersection and read the label.</p>",
+      "html": "<h2>Do not create extra algebra</h2><p>You could rearrange both equations into \\(y=\\) form, but Desmos does not require that. Enter each original equation exactly as it appears.</p><p>The graphs are open. Click their intersection and read the label.</p>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -144,11 +155,12 @@
       }
     },
     {
+      "shared_prompt": "shared_no_simplifying_model",
       "kind": "raw_block",
       "id": "no_simplifying_check",
       "block_type": "check",
       "content": {
-        "prompt": "What is the most direct Desmos setup for the system \\(3x+2y=16\\) and \\(4x-y=3\\)?",
+        "prompt": "What is the most direct Desmos setup for this system?",
         "choices": [
           "Enter \\(3x+2y=16\\) on one row and \\(4x-y=3\\) on another row.",
           "Eliminate y by hand before opening Desmos.",
@@ -180,11 +192,12 @@
       }
     },
     {
+      "shared_prompt": "shared_no_simplifying_model",
       "kind": "raw_block",
       "id": "first_system_solution_check",
       "block_type": "check",
       "content": {
-        "prompt": "The graphs of \\(3x+2y=16\\) and \\(4x-y=3\\) are open in the calculator. Click the point where they cross. What is the solution to the system?",
+        "prompt": "The graphs are open in the calculator. Click the point where they cross. What is the solution to the system?",
         "choices": [
           "\\(x=5\\), \\(y=2\\)",
           "\\(x=2\\) by itself",
@@ -339,18 +352,24 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_first_gated_setup_transition",
+        "title": "System to solve",
+        "html": "<p>Find the value of \\(y\\) at the intersection of these two lines.</p><p>\\(2x+y=7\\)</p><p>\\(y=x-2\\)</p>"
+      },
       "kind": "text",
       "id": "first_gated_setup_transition",
-      "html": "<h2>Build a complete system graph</h2><p>Now you will enter both equations yourself. Do not rearrange or combine them.</p><p>For the system \\(2x+y=7\\) and \\(y=x-2\\), put one complete equation on each row. Then submit the graph and click the intersection.</p>"
+      "html": "<h2>Build a complete system graph</h2><p>Now you will enter both equations yourself. Do not rearrange or combine them.</p><p>Put one complete equation on each row. Then submit the graph and click the intersection.</p>"
     },
     {
+      "shared_prompt": "shared_first_gated_setup_transition",
       "kind": "raw_block",
       "id": "first_gated_system_graph",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
         "title": "Enter both equations",
-        "instructions_html": "<p>Enter <strong>\\(2x+y=7\\)</strong> on one row and <strong>\\(y=x-2\\)</strong> on another row. Keep both graphs visible, then submit.</p>",
+        "instructions_html": "<p>Enter each equation from the shared prompt on its own Desmos row. Keep both graphs visible, then submit.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "multi_expression",
@@ -404,11 +423,12 @@
       }
     },
     {
+      "shared_prompt": "shared_first_gated_setup_transition",
       "kind": "raw_block",
       "id": "first_gated_solution_check",
       "block_type": "check",
       "content": {
-        "prompt": "The system \\(2x+y=7\\) and \\(y=x-2\\) you just graphed is open in the calculator. Click the intersection. If the question asks for y, what is the answer?",
+        "prompt": "Click the intersection of the two lines. What is its y-coordinate?",
         "choices": [
           "\\(y=3\\)",
           "\\(y=1\\)",
@@ -440,9 +460,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_nonlinear_transition",
+        "title": "Line and parabola",
+        "html": "<p>\\(y=x+2\\)</p><p>\\(y=x^2\\)</p>"
+      },
       "kind": "text",
       "id": "nonlinear_transition",
-      "html": "<h2>Variation 3: A nonlinear equation can create multiple solutions</h2><p>A system does not have to contain two lines. One equation might graph as a curve.</p><p>When two graphs intersect more than once, <strong>each intersection is a solution</strong>. Do not stop after clicking the first point.</p><p>The line \\(y=x+2\\) and the parabola \\(y=x^2\\) are open. Click every intersection and record both ordered pairs.</p>",
+      "html": "<h2>Variation 3: A nonlinear equation can create multiple solutions</h2><p>A system does not have to contain two lines. One equation might graph as a curve.</p><p>When two graphs intersect more than once, <strong>each intersection is a solution</strong>. Do not stop after clicking the first point.</p><p>The graphs are open in Desmos. Click every intersection and record both ordered pairs.</p>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -463,11 +488,12 @@
       }
     },
     {
+      "shared_prompt": "shared_nonlinear_transition",
       "kind": "raw_block",
       "id": "nonlinear_count_check",
       "block_type": "check",
       "content": {
-        "prompt": "How many solutions does the system \\(y=x+2\\) and \\(y=x^2\\) have?",
+        "prompt": "How many solutions does this system have?",
         "choices": [
           "One, because a system can have only one solution",
           "Four, because there are two graphs and two coordinates",
@@ -499,11 +525,12 @@
       }
     },
     {
+      "shared_prompt": "shared_nonlinear_transition",
       "kind": "raw_block",
       "id": "nonlinear_points_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which list gives every solution to \\(y=x+2\\) and \\(y=x^2\\)?",
+        "prompt": "Which list gives every solution to this system?",
         "choices": [
           "\\((-1,1)\\) by itself",
           "\\((2,4)\\) only",
@@ -535,11 +562,17 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_transfer_transition",
+        "title": "System in p and q",
+        "html": "<p>\\[p+q=5\\]</p><p>\\[q=p^2-1\\]</p>"
+      },
       "kind": "text",
       "id": "transfer_transition",
-      "html": "<h2>Independent transfer: combine the variations</h2><p>Solve this system:</p><p>\\[p+q=5\\]</p><p>\\[q=p^2-1\\]</p><p>The variables are not x and y, and one graph is nonlinear. In Desmos, let \\(x\\) stand for \\(p\\) and \\(y\\) stand for \\(q\\). Enter both renamed equations without simplifying them, submit, and then click <strong>every</strong> intersection.</p>"
+      "html": "<h2>Independent transfer: combine the variations</h2><p>The variables are not x and y, and one graph is nonlinear. In Desmos, let \\(x\\) stand for \\(p\\) and \\(y\\) stand for \\(q\\). Enter both renamed equations without simplifying them, submit, and then click <strong>every</strong> intersection.</p>"
     },
     {
+      "shared_prompt": "shared_transfer_transition",
       "kind": "raw_block",
       "id": "transfer_system_graph",
       "block_type": "desmos_interactive",
@@ -608,6 +641,7 @@
       }
     },
     {
+      "shared_prompt": "shared_transfer_transition",
       "kind": "raw_block",
       "id": "transfer_answer_check",
       "block_type": "check",

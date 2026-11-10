@@ -112,15 +112,14 @@
   display: none;
 }
 
-/* Figure and calculator stacked: neither may be sticky, or the stuck
-   figure would overlap the calculator scrolling beneath it. The aside
-   is the calculator pane (its position lives in its own module). */
+/* Stacked side panels scroll together to avoid overlapping one another. */
 .sidePaneStacked .figureCard,
 .sidePaneStacked > aside {
   position: static;
 }
 
-.figureCard {
+.figureCard,
+.promptCard {
   margin: 0;
   padding: var(--s4);
   background: var(--card);
@@ -163,6 +162,74 @@
 
   .figurePane {
     display: none;
+  }
+}
+
+.promptCard {
+  min-width: 0;
+  display: block;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  margin-bottom: var(--s4);
+}
+
+.promptBody {
+  min-width: 0;
+}
+
+@media (min-width: 801px) {
+  .workspaceWithPrompt:not(.workspacePromptStacked) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.88fr);
+  }
+
+  .workspaceWithPrompt > .lessonColumn {
+    grid-area: 1 / 1;
+  }
+
+  .promptCard {
+    grid-area: 1 / 2;
+    align-self: start;
+    position: sticky;
+    top: 16px;
+    max-height: calc(100dvh - 32px);
+    margin-bottom: 0;
+  }
+
+  .workspacePromptStacked,
+  .workspacePromptAboveLesson {
+    grid-template-rows: auto 1fr;
+  }
+
+  .workspacePromptStacked > .lessonColumn {
+    grid-row: 1 / 3;
+  }
+
+  .workspacePromptStacked > .sidePane {
+    grid-area: 2 / 2;
+  }
+
+  .workspacePromptStacked > .promptCard,
+  .workspacePromptStacked > .sidePane .figurePane,
+  .workspacePromptStacked > .sidePane > aside {
+    position: static;
+  }
+
+  .workspacePromptStacked > .promptCard {
+    max-height: none;
+  }
+
+  .workspacePromptAboveLesson > .promptCard {
+    grid-area: 1 / 1;
+    position: static;
+    max-height: none;
+  }
+
+  .workspacePromptAboveLesson > .lessonColumn {
+    grid-area: 2 / 1;
+  }
+
+  .workspacePromptAboveLesson > .sidePane {
+    grid-area: 1 / 2 / 3;
   }
 }
 

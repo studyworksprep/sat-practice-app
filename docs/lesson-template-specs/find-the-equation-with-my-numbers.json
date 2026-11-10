@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_first_exploration",
+        "title": "Gym membership",
+        "html": "<p>A gym charges a one-time sign-up fee of $15 and $8 for each month. Let \\(m\\) be the number of months and \\(c\\) be the total cost.</p>"
+      },
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Start with a real membership</h2><p>A gym charges a one-time sign-up fee of $15 and $8 for each month. Let \\(m\\) be the number of months and \\(c\\) be the total cost.</p><p><strong>Ignore the equations for now.</strong> Choose \\(m=4\\). Four months cost $32, and the sign-up fee adds $15, so your total is \\(c=47\\).</p><p>Now test the choices with the pair \\((m,c)=(4,47)\\).</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(c=15m+8\\)</li><li>\\(c=8(m+15)\\)</li><li>\\(c=8m+15\\)</li><li>\\(c=23m\\)</li></ol>",
+      "html": "<h2>Start with a real membership</h2><p><strong>Ignore the equations for now.</strong> Choose \\(m=4\\). Four months cost $32, and the sign-up fee adds $15, so your total is \\(c=47\\).</p><p>Now test the choices with the pair \\((m,c)=(4,47)\\).</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(c=15m+8\\)</li><li>\\(c=8(m+15)\\)</li><li>\\(c=8m+15\\)</li><li>\\(c=23m\\)</li></ol>",
       "calculator": { "display": "open", "mode": "scratch", "title": "Test m = 4 and c = 47" }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "raw_block",
       "id": "first_exploration_check",
       "block_type": "check",
@@ -117,12 +123,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_museum_example",
+        "title": "Museum ticket revenue",
+        "html": "<p>A museum charges $18 for each adult ticket and $11 for each student ticket. Let \\(a\\) be the number of adult tickets, \\(s\\) the number of student tickets, and \\(r\\) the total revenue.</p>"
+      },
       "kind": "text",
       "id": "museum_example",
-      "html": "<h2>Model the complete strategy</h2><p>A museum charges $18 for each adult ticket and $11 for each student ticket. Let \\(a\\) be the number of adult tickets, \\(s\\) the number of student tickets, and \\(r\\) the total revenue.</p><p>Ignore the choices. Choose \\(a=2\\) and \\(s=3\\). The revenue is \\(2(18)+3(11)=69\\), so record:</p><blockquote><p>\\(a=2,\\quad s=3,\\quad r=69\\)</p></blockquote><p>Now test that same set in every candidate equation.</p>",
+      "html": "<h2>Model the complete strategy</h2><p>Ignore the choices. Choose \\(a=2\\) and \\(s=3\\). The revenue is \\(2(18)+3(11)=69\\), so record:</p><blockquote><p>\\(a=2,\\quad s=3,\\quad r=69\\)</p></blockquote><p>Now test that same set in every candidate equation.</p>",
       "calculator": { "display": "open", "mode": "scratch", "title": "Test a = 2, s = 3, r = 69" }
     },
     {
+      "shared_prompt": "shared_museum_example",
       "kind": "raw_block",
       "id": "museum_equation_check",
       "block_type": "check",
@@ -137,6 +149,7 @@
       "calculator": { "display": "available", "mode": "scratch" }
     },
     {
+      "shared_prompt": "shared_museum_example",
       "kind": "text",
       "id": "same_values_rule",
       "html": "<h2>Keep the evidence fixed</h2><p>Your value set is one real situation. Every equation must face the same evidence.</p><p>If you use \\(a=2\\), \\(s=3\\), and \\(r=69\\) in choice A, keep those exact values for choices B, C, and D.</p><blockquote><p><strong>Nonnegotiable:</strong> Never choose new numbers just to make a different equation work.</p></blockquote>",
@@ -202,18 +215,25 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_percent_context",
+        "title": "Hardcover books",
+        "html": "<p>A bookstore says 35% of its books are hardcover. Let \\(b\\) be the total number of books and \\(h\\) the number of hardcover books.</p>"
+      },
       "kind": "text",
       "id": "percent_context",
-      "html": "<h2>Make percentages friendly</h2><p>A bookstore says 35% of its books are hardcover. Let \\(b\\) be the total number of books and \\(h\\) the number of hardcover books.</p><p>Choose a total that makes 35% easy: \\(b=200\\). Then \\(10\\%\\) is 20, \\(30\\%\\) is 60, and \\(5\\%\\) is 10, so \\(h=70\\).</p><blockquote><p>Record \\(b=200,\\quad h=70\\).</p></blockquote>",
+      "html": "<h2>Make percentages friendly</h2><p>Choose a total that makes 35% easy: \\(b=200\\). Then \\(10\\%\\) is 20, \\(30\\%\\) is 60, and \\(5\\%\\) is 10, so \\(h=70\\).</p><blockquote><p>Record \\(b=200,\\quad h=70\\).</p></blockquote>",
       "calculator": { "display": "open", "mode": "scratch", "title": "Test b = 200 and h = 70" }
     },
     {
+      "shared_prompt": "shared_percent_context",
       "kind": "text",
       "id": "percent_test_setup",
       "html": "<h2>Trust the values, not the equation's appearance</h2><p>Percent equations can be written in unfamiliar orientations. Do not decide which form looks right.</p><p>Insert \\(b=200\\) and \\(h=70\\) into each choice. The correct equation is simply the statement that remains true.</p>",
       "calculator": { "display": "available", "mode": "scratch" }
     },
     {
+      "shared_prompt": "shared_percent_context",
       "kind": "raw_block",
       "id": "percent_check",
       "block_type": "check",
@@ -274,12 +294,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_collision_example",
+        "title": "Two equations that match one value",
+        "html": "<p>\\(y\\) is 2 more than twice \\(x\\). Which candidate equation describes that relationship?</p><ul><li>\\(y=2x+2\\)</li><li>\\(y=4x\\)</li></ul>"
+      },
       "kind": "text",
       "id": "collision_example",
-      "html": "<h2>When two equations work by accident</h2><p>A context says \\(y\\) is 2 more than twice \\(x\\). You choose \\(x=1\\), so \\(y=4\\).</p><p>Two choices happen to work:</p><ul><li>\\(y=2x+2\\) gives \\(4=4\\).</li><li>\\(y=4x\\) also gives \\(4=4\\).</li></ul><p>This does not mean the question has two answers. Your first value set created a <strong>collision</strong>.</p>",
+      "html": "<h2>When two equations work by accident</h2><p>Choose \\(x=1\\), so \\(y=4\\).</p><p>Two choices happen to work:</p><ul><li>\\(y=2x+2\\) gives \\(4=4\\).</li><li>\\(y=4x\\) also gives \\(4=4\\).</li></ul><p>This does not mean the question has two answers. Your first value set created a <strong>collision</strong>.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_collision_example",
       "kind": "raw_block",
       "id": "collision_action_check",
       "block_type": "check",
@@ -299,12 +325,14 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_collision_example",
       "kind": "text",
       "id": "retest_deliberately",
       "html": "<h2>Change the starting value on purpose</h2><p>For the same context, choose \\(x=3\\). Then twice \\(x\\) is \\(6\\), and 2 more gives \\(y=8\\).</p><ul><li>\\(y=2x+2\\) gives \\(8=8\\).</li><li>\\(y=4x\\) gives \\(8=12\\), which is false.</li></ul><p>The second set, \\((x,y)=(3,8)\\), identifies \\(y=2x+2\\).</p><blockquote><p><strong>Retest rule:</strong> Change the value you originally chose, then rebuild every dependent value from the story.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_collision_example",
       "kind": "raw_block",
       "id": "retest_check",
       "block_type": "check",
@@ -330,12 +358,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_multi_step_context",
+        "title": "Delivery fees",
+        "html": "<p>A delivery company charges $9 to start an order, $2.50 per pound, and $4 for insurance. Let \\(w\\) be the package weight in pounds and \\(t\\) be the total charge.</p>"
+      },
       "kind": "text",
       "id": "multi_step_context",
-      "html": "<h2>A context can have more than one step</h2><p>A delivery company charges $9 to start an order, $2.50 per pound, and $4 for insurance. Let \\(w\\) be the package weight in pounds and \\(t\\) be the total charge.</p><p>Ignore the equations. Choose \\(w=4\\):</p><ul><li>Weight charge: \\(4(2.50)=10\\)</li><li>Start fee: \\(9\\)</li><li>Insurance: \\(4\\)</li></ul><p>Now combine every part of the story to find \\(t\\).</p>",
+      "html": "<h2>A context can have more than one step</h2><p>Ignore the equations. Choose \\(w=4\\):</p><ul><li>Weight charge: \\(4(2.50)=10\\)</li><li>Start fee: \\(9\\)</li><li>Insurance: \\(4\\)</li></ul><p>Now combine every part of the story to find \\(t\\).</p>",
       "calculator": { "display": "open", "mode": "scratch", "title": "Build the delivery charge" }
     },
     {
+      "shared_prompt": "shared_multi_step_context",
       "kind": "raw_block",
       "id": "multi_step_value_check",
       "block_type": "check",
@@ -350,6 +384,7 @@
       "calculator": { "display": "available", "mode": "scratch" }
     },
     {
+      "shared_prompt": "shared_multi_step_context",
       "kind": "raw_block",
       "id": "multi_step_equation_check",
       "block_type": "check",

@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_first_exploration",
+        "title": "Rectangle perimeter question",
+        "html": "<p>A rectangle has width \\(w\\) and length \\(w+6\\). Which expression gives its perimeter?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(2w+6\\)</li><li>\\(4w+12\\)</li><li>\\(w^2+12\\)</li><li>\\(4w+6\\)</li></ol>"
+      },
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Start with a concrete rectangle</h2><p>A rectangle has width \\(w\\) and length \\(w+6\\). Which expression gives its perimeter?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(2w+6\\)</li><li>\\(4w+12\\)</li><li>\\(w^2+12\\)</li><li>\\(4w+6\\)</li></ol><p>Choose \\(w=4\\). That forces the length to be \\(10\\). Find the perimeter of your rectangle.</p>",
+      "html": "<h2>Start with a concrete rectangle</h2><p>Choose \\(w=4\\). That forces the length to be \\(10\\). Find the perimeter of your rectangle.</p>",
       "calculator": { "display": "open", "mode": "scratch", "title": "Use w = 4" }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "raw_block",
       "id": "first_value_check",
       "block_type": "check",
@@ -29,12 +35,14 @@
       "calculator": { "display": "available", "mode": "scratch" }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "text",
       "id": "first_collision",
       "html": "<h2>Test every choice</h2><p>Substitute the same value, \\(w=4\\), into all four choices:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(2w+6=14\\)</li><li>\\(4w+12=28\\)</li><li>\\(w^2+12=28\\)</li><li>\\(4w+6=22\\)</li></ol><p>Two choices match your perimeter. That does not mean My Numbers failed. Your first number created a coincidence.</p>",
       "calculator": { "display": "available", "mode": "scratch" }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "raw_block",
       "id": "collision_response_check",
       "block_type": "check",
@@ -54,12 +62,14 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "text",
       "id": "rerun_new_number",
       "html": "<h2>Use a second number to break the tie</h2><p>Now choose \\(w=5\\). The length must be \\(11\\), so the perimeter is \\(32\\).</p><p>Test the two choices that previously matched:</p><ul><li>\\(4w+12=32\\)</li><li>\\(w^2+12=37\\)</li></ul><p>The coincidence is gone.</p>",
       "calculator": { "display": "available", "mode": "scratch" }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "raw_block",
       "id": "rerun_check",
       "block_type": "check",
@@ -186,12 +196,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_ratio_worked_example",
+        "title": "Ratio question",
+        "html": "<p>Suppose \\(x/y=3\\), where \\(y&gt;0\\), and the question asks for</p><p>\\[\\frac{2x+y}{y}.\\]</p>"
+      },
       "kind": "text",
       "id": "ratio_worked_example",
-      "html": "<h2>Worked example: let one value determine the other</h2><p>Suppose \\(x/y=3\\), where \\(y&gt;0\\), and the question asks for</p><p>\\[\\frac{2x+y}{y}.\\]</p><p>Choose \\(y=2\\). The relationship forces \\(x=6\\). Now use those values:</p><p>\\[\\frac{2(6)+2}{2}=\\frac{14}{2}=7.\\]</p>",
+      "html": "<h2>Worked example: let one value determine the other</h2><p>Choose \\(y=2\\). The relationship forces \\(x=6\\). Now use those values:</p><p>\\[\\frac{2(6)+2}{2}=\\frac{14}{2}=7.\\]</p>",
       "calculator": { "display": "open", "mode": "scratch", "title": "Check the ratio example" }
     },
     {
+      "shared_prompt": "shared_ratio_worked_example",
       "kind": "raw_block",
       "id": "ratio_process_check",
       "block_type": "check",
@@ -236,12 +252,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_word_problem_example",
+        "title": "Junior and senior club members",
+        "html": "<p>A club has twice as many junior members as senior members. If \\(s\\) is the number of seniors, which expression gives the total number of junior and senior members?</p>"
+      },
       "kind": "text",
       "id": "word_problem_example",
-      "html": "<h2>Use My Numbers in a word problem</h2><p>A club has twice as many junior members as senior members. If \\(s\\) is the number of seniors, which expression gives the total number of junior and senior members?</p><p>Choose \\(s=10\\). The relationship forces the number of juniors to be \\(20\\), so the total is \\(30\\).</p>",
+      "html": "<h2>Use My Numbers in a word problem</h2><p>Choose \\(s=10\\). The relationship forces the number of juniors to be \\(20\\), so the total is \\(30\\).</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_word_problem_example",
       "kind": "raw_block",
       "id": "word_problem_check",
       "block_type": "check",
@@ -256,12 +278,18 @@
       "calculator": { "display": "available", "mode": "scratch" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_relative_geometry_example",
+        "title": "Rectangle with a variable width",
+        "html": "<p>A rectangle's length is \\(2w+3\\), where \\(w\\) is its width. Which expression gives its perimeter?</p>"
+      },
       "kind": "text",
       "id": "relative_geometry_example",
-      "html": "<h2>Use My Numbers with relative geometry</h2><p>A rectangle's length is \\(2w+3\\), where \\(w\\) is its width. Which expression gives its perimeter?</p><p>Choose \\(w=5\\). The length is \\(13\\), so the perimeter is</p><p>\\[2(5)+2(13)=36.\\]</p>",
+      "html": "<h2>Use My Numbers with relative geometry</h2><p>Choose \\(w=5\\). The length is \\(13\\), so the perimeter is</p><p>\\[2(5)+2(13)=36.\\]</p>",
       "calculator": { "display": "open", "mode": "scratch", "title": "Test the perimeter choices" }
     },
     {
+      "shared_prompt": "shared_relative_geometry_example",
       "kind": "raw_block",
       "id": "relative_geometry_check",
       "block_type": "check",
@@ -344,12 +372,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_independent_transfer",
+        "title": "Theater tickets",
+        "html": "<p>A theater sells three times as many standard tickets as premium tickets. Let \\(p\\) be the number of premium tickets. Which expression gives the total number of tickets?</p>"
+      },
       "kind": "text",
       "id": "independent_transfer",
-      "html": "<h2>Independent transfer</h2><p>A theater sells three times as many standard tickets as premium tickets. Let \\(p\\) be the number of premium tickets. Which expression gives the total number of tickets?</p><p>Choose a legal value for \\(p\\), let the relationship determine the number of standard tickets, find the total, and test the choices.</p>",
+      "html": "<h2>Independent transfer</h2><p>Choose a legal value for \\(p\\), let the relationship determine the number of standard tickets, find the total, and test the choices.</p>",
       "calculator": { "display": "open", "mode": "scratch", "title": "Choose and test your numbers" }
     },
     {
+      "shared_prompt": "shared_independent_transfer",
       "kind": "raw_block",
       "id": "independent_transfer_check",
       "block_type": "check",

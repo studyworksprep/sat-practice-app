@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_first_exploration",
+        "title": "School start-time survey",
+        "html": "<p>A principal wants to estimate what <strong>all students at a high school</strong> think about a later start time.</p>"
+      },
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Start with the selection method</h2><p>A principal wants to estimate what <strong>all students at a high school</strong> think about a later start time.</p><p>Imagine four possible plans: ask students entering the library, post an optional poll on social media, randomly select students from the complete enrollment list, or ask only the student council.</p><p>Before learning the formal terms, decide which plan gives every kind of student the best chance to be represented.</p>",
+      "html": "<h2>Start with the selection method</h2><p>Imagine four possible plans: ask students entering the library, post an optional poll on social media, randomly select students from the complete enrollment list, or ask only the student council.</p><p>Before learning the formal terms, decide which plan gives every kind of student the best chance to be represented.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "raw_block",
       "id": "exploration_check",
       "block_type": "check",
@@ -296,12 +302,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_complete_model",
+        "title": "District tutoring-period survey",
+        "html": "<p>A school district randomly selects 400 eleventh-grade students from its complete list of eleventh graders. Of the sampled students, 54% support a new tutoring period. The margin of error is 3 percentage points.</p>"
+      },
       "kind": "text",
       "id": "complete_model",
-      "html": "<h2>Model the complete SAT process</h2><p>A school district randomly selects 400 eleventh-grade students from its complete list of eleventh graders. Of the sampled students, 54% support a new tutoring period. The margin of error is 3 percentage points.</p><ol><li><strong>Population:</strong> all eleventh-grade students in the district</li><li><strong>Sample quality:</strong> random selection from the complete target list</li><li><strong>Sample result:</strong> exactly 54% of the sample supports the plan</li><li><strong>Plausible population range:</strong> 51% to 57%</li><li><strong>Careful conclusion:</strong> support among all district eleventh graders is plausibly in that range, but it is not guaranteed</li></ol>",
+      "html": "<h2>Model the complete SAT process</h2><ol><li><strong>Population:</strong> all eleventh-grade students in the district</li><li><strong>Sample quality:</strong> random selection from the complete target list</li><li><strong>Sample result:</strong> exactly 54% of the sample supports the plan</li><li><strong>Plausible population range:</strong> 51% to 57%</li><li><strong>Careful conclusion:</strong> support among all district eleventh graders is plausibly in that range, but it is not guaranteed</li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_complete_model",
       "kind": "raw_block",
       "id": "model_check",
       "block_type": "check",

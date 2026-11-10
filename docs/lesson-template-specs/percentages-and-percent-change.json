@@ -3,6 +3,11 @@
   "description": "Translate percent statements into equations, use Desmos percent-of notation with regression, apply the percent-change template, and solve multi-step percent problems.",
   "blocks": [
     {
+      "shared_prompt": {
+        "id": "shared_explore_percent_regression",
+        "title": "Opening percent question",
+        "html": "<p>What percent of \\(90\\) is \\(75\\)?</p>"
+      },
       "kind": "text",
       "id": "explore_percent_regression",
       "html": "<h2>Start by reading what Desmos finds</h2><p>The calculator shows <strong>75~p% of 90</strong>. You do not need to understand every symbol yet.</p><p>Look below the expression and find the value Desmos assigns to \\(p\\). Then notice the RMSE value.</p><blockquote><p><strong>Next step:</strong> Use the assigned value to estimate what percent \\(75\\) is of \\(90\\).</p></blockquote>",
@@ -22,6 +27,7 @@
       }
     },
     {
+      "shared_prompt": "shared_explore_percent_regression",
       "kind": "raw_block",
       "id": "exploration_check",
       "block_type": "check",
@@ -221,18 +227,24 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_basic_percent_process",
+        "title": "Guided percent question",
+        "html": "<p>What percent of \\(60\\) is \\(48\\)?</p>"
+      },
       "kind": "text",
       "id": "basic_percent_process",
       "html": "<h2>A four-step process for percent sentences</h2><ol><li><strong>Find the result and the base.</strong> In the statement <em>48 is what percent of 60</em>, the result is \\(48\\) and the base after <em>of</em> is \\(60\\).</li><li><strong>Choose an acceptable variable.</strong> Use \\(p\\) for an unknown percent unless the question requires another letter.</li><li><strong>Translate the complete sentence.</strong> Enter <strong>48~p% of 60</strong>.</li><li><strong>Read and check.</strong> Report \\(p\\) as a percent, confirm RMSE is zero or tiny, and substitute the value into the sentence.</li></ol><blockquote><p><strong>Next step:</strong> Build this regression yourself on the next screen.</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_basic_percent_process",
       "kind": "raw_block",
       "id": "guided_percent_entry",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
         "title": "Translate the whole percent sentence",
-        "instructions_html": "<p>Use regression to answer: <strong>48 is what percent of 60?</strong></p><p>Enter the complete translation with <strong>~</strong>, the variable <strong>p</strong>, and Desmos <strong>% of</strong> notation.</p>",
+        "instructions_html": "<p>Enter the complete translation with <strong>~</strong>, the variable <strong>p</strong>, and Desmos <strong>% of</strong> notation.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -267,6 +279,7 @@
       }
     },
     {
+      "shared_prompt": "shared_basic_percent_process",
       "kind": "raw_block",
       "id": "guided_percent_result",
       "block_type": "check",
@@ -328,13 +341,18 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_model_percent_increase",
+        "title": "Price increase",
+        "html": "<p>A price of \\(\\$80\\) increases by \\(15\\%\\). Let \\(n\\) be the new price.</p>"
+      },
       "kind": "raw_block",
       "id": "model_percent_increase",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
         "title": "Build an increase equation",
-        "instructions_html": "<p>A price of \\(\\$80\\) increases by \\(15\\%\\). Let \\(n\\) be the new price.</p><p><strong>Enter the complete regression</strong> using New = Old + percent of Old. Then read the value assigned to \\(n\\) and check the RMSE.</p>",
+        "instructions_html": "<p><strong>Enter the complete regression</strong> using New = Old + percent of Old. Then read the value assigned to \\(n\\) and check the RMSE.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -369,11 +387,12 @@
       }
     },
     {
+      "shared_prompt": "shared_model_percent_increase",
       "kind": "raw_block",
       "id": "increase_result_check",
       "block_type": "check",
       "content": {
-        "prompt": "An \\(\\$80\\) price increases by \\(15\\%\\). What is the new price?",
+        "prompt": "What is the new price?",
         "choices": [
           "\\(\\$92\\)",
           "\\(\\$95\\)",
@@ -387,13 +406,18 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_model_percent_decrease",
+        "title": "Membership fee decrease",
+        "html": "<p>A membership fee falls from \\(\\$80\\) to \\(\\$68\\). Let \\(p\\) be the percent decrease.</p>"
+      },
       "kind": "raw_block",
       "id": "model_percent_decrease",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
         "title": "Build a decrease equation",
-        "instructions_html": "<p>A membership fee falls from \\(\\$80\\) to \\(\\$68\\). Let \\(p\\) be the percent decrease.</p><p><strong>Enter the complete regression.</strong> Use New = Old - percent of Old, then read \\(p\\) and check the RMSE.</p>",
+        "instructions_html": "<p><strong>Enter the complete regression.</strong> Use New = Old - percent of Old, then read \\(p\\) and check the RMSE.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -428,11 +452,12 @@
       }
     },
     {
+      "shared_prompt": "shared_model_percent_decrease",
       "kind": "raw_block",
       "id": "decrease_result_check",
       "block_type": "check",
       "content": {
-        "prompt": "A value decreases from \\(80\\) to \\(68\\). What is the percent decrease?",
+        "prompt": "What is the percent decrease?",
         "choices": [
           "\\(12\\%\\)",
           "\\(17.6\\%\\)",
@@ -533,33 +558,42 @@
       "html": "<h2>Translate the complete mathematical sentence</h2><p>Most complete mathematical sentences tell you how their quantities are related. Percent language is one useful example.</p><ul><li><strong>is</strong> becomes <strong>~</strong> when regression will solve an unknown;</li><li><strong>of</strong> tells you the multiplication base;</li><li><strong>greater than</strong> becomes Old plus a percent of Old;</li><li><strong>less than</strong> becomes Old minus a percent of Old.</li></ul><blockquote><p><strong>Key idea:</strong> Read the entire mathematical sentence, give every number and phrase a job, and translate it in the same logical order.</p></blockquote><p>Then check that the result matches the original meaning.</p>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_complex_section_overview",
+        "title": "Sale price and fee",
+        "html": "<p>A sale price \\(s\\) is \\(20\\%\\) less than an original price \\(a\\). After a \\(\\$12\\) fee, the total is \\(\\$92\\).</p>"
+      },
       "kind": "text",
       "id": "complex_section_overview",
-      "html": "<h2>Next: connect two percent statements</h2><p>A more complex question may describe an intermediate value and then use that value in another step.</p><p>Example: a sale price is \\(20\\%\\) less than an original price, and a \\(\\$12\\) fee makes the total \\(\\$92\\).</p><p>Desmos can connect those statements with two lines. Before seeing the complete setup, you will learn the job of each line.</p><blockquote><p><strong>Next step:</strong> Do not enter anything yet; first learn the supporting definition.</p></blockquote>"
+      "html": "<h2>Next: connect two percent statements</h2><p>A more complex question may describe an intermediate value and then use that value in another step.</p><p>Desmos can connect those statements with two lines. Before seeing the complete setup, you will learn the job of each line.</p><blockquote><p><strong>Next step:</strong> Do not enter anything yet; first learn the supporting definition.</p></blockquote>"
     },
     {
+      "shared_prompt": "shared_complex_section_overview",
       "kind": "text",
       "id": "definition_rule",
       "html": "<h2>Write the intermediate value as a definition</h2><p>A <strong>definition</strong> places one variable alone on the left and tells Desmos how to calculate it.</p><p>If \\(a\\) is the original price and \\(s\\) is the sale price after a \\(20\\%\\) discount, enter:</p><p>\\[s=a-20\\%\\text{ of }a\\]</p><p>This line defines \\(s\\) from \\(a\\). It does not use regression.</p>"
     },
     {
+      "shared_prompt": "shared_complex_section_overview",
       "kind": "text",
       "id": "one_regression_rule",
       "html": "<h2>Use exactly one regression line</h2><p>After defining the intermediate value, translate the remaining statement with <strong>one</strong> regression.</p><p>If a \\(\\$12\\) fee makes the total \\(\\$92\\), enter:</p><p>\\[s+12\\sim92\\]</p><blockquote><p><strong>Rule:</strong> Exactly one line uses <strong>~</strong>.</p></blockquote><p>The definition connects \\(s\\) and \\(a\\); the regression adjusts the remaining unknown until the total matches.</p>"
     },
     {
+      "shared_prompt": "shared_complex_section_overview",
       "kind": "text",
       "id": "define_once_rule",
       "html": "<h2>Define each variable only once</h2><blockquote><p><strong>Rule:</strong> Define each variable only once.</p></blockquote><p>Before submitting a multi-line setup, check that no variable receives two definitions.</p><p>Keep \\(s=a-20\\%\\text{ of }a\\). Do not add another line such as \\(s=92-12\\), because that would define \\(s\\) twice.</p><p>If a relationship would define the same variable again, use that relationship as the one regression instead.</p>"
     },
     {
+      "shared_prompt": "shared_complex_section_overview",
       "kind": "raw_block",
       "id": "model_complex_percent",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
         "title": "Put the complex setup together",
-        "instructions_html": "<p>A sale price \\(s\\) is \\(20\\%\\) less than an original price \\(a\\). After a \\(\\$12\\) fee, the total is \\(\\$92\\).</p><p><strong>Enter exactly two lines:</strong> first define \\(s\\) from \\(a\\), then use one regression for the fee and total. Define each variable only once.</p>",
+        "instructions_html": "<p><strong>Enter exactly two lines:</strong> first define \\(s\\) from \\(a\\), then use one regression for the fee and total. Define each variable only once.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "multi_expression",
@@ -636,13 +670,18 @@
       "html": "<h2>Practice the complete process</h2><p>The next three problems require you to use the tool from beginning to end.</p><ol><li>Translate a basic percent sentence and report the percent.</li><li>Translate a percent decrease and report the change.</li><li>Build a two-line definition-plus-regression setup and report the original value.</li></ol><blockquote><p><strong>Tip:</strong> Continue only after each full equation setup is accepted; then read the assigned values and answer the result check.</p></blockquote>"
     },
     {
+      "shared_prompt": {
+        "id": "shared_practice_basic_entry",
+        "title": "Percent of a number",
+        "html": "<p><strong>51 is what percent of 85?</strong></p>"
+      },
       "kind": "raw_block",
       "id": "practice_basic_entry",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
         "title": "Practice 1: translate a percent sentence",
-        "instructions_html": "<p><strong>51 is what percent of 85?</strong></p><p>Enter one complete regression using \\(p\\), <strong>~</strong>, and Desmos <strong>% of</strong> notation.</p>",
+        "instructions_html": "<p>Enter one complete regression using \\(p\\), <strong>~</strong>, and Desmos <strong>% of</strong> notation.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -677,11 +716,12 @@
       }
     },
     {
+      "shared_prompt": "shared_practice_basic_entry",
       "kind": "raw_block",
       "id": "practice_basic_result",
       "block_type": "check",
       "content": {
-        "prompt": "What percent of \\(85\\) is \\(51\\)?",
+        "prompt": "What value should Desmos assign to \\(p\\)?",
         "choices": [
           "\\(51\\%\\)",
           "\\(60\\%\\)",
@@ -710,13 +750,18 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_practice_change_entry",
+        "title": "Population decrease",
+        "html": "<p>A population decreases from \\(240\\) to \\(198\\). Find the percent decrease.</p>"
+      },
       "kind": "raw_block",
       "id": "practice_change_entry",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
         "title": "Practice 2: translate a percent decrease",
-        "instructions_html": "<p>A population decreases from \\(240\\) to \\(198\\). Find the percent decrease.</p><p>Enter the complete regression using the percent-change template and the variable \\(p\\).</p>",
+        "instructions_html": "<p>Enter the complete regression using the percent-change template and the variable \\(p\\).</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -751,11 +796,12 @@
       }
     },
     {
+      "shared_prompt": "shared_practice_change_entry",
       "kind": "raw_block",
       "id": "practice_change_result",
       "block_type": "check",
       "content": {
-        "prompt": "A population decreases from \\(240\\) to \\(198\\). What is the percent decrease?",
+        "prompt": "What is the percent decrease?",
         "choices": [
           "\\(15\\%\\)",
           "\\(20\\%\\)",
@@ -784,13 +830,18 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_practice_complex_entry",
+        "title": "Museum ticket and fee",
+        "html": "<p>A museum ticket has original price \\(b\\). Its student price \\(d\\) is \\(30\\%\\) less than \\(b\\). After a \\(\\$7\\) fee, the total is \\(\\$42\\).</p>"
+      },
       "kind": "raw_block",
       "id": "practice_complex_entry",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
         "title": "Practice 3: connect two statements",
-        "instructions_html": "<p>A museum ticket has original price \\(b\\). Its student price \\(d\\) is \\(30\\%\\) less than \\(b\\). After a \\(\\$7\\) fee, the total is \\(\\$42\\).</p><p><strong>Enter exactly two lines:</strong> one definition of \\(d\\), then one regression for the total. Do not define a variable twice.</p>",
+        "instructions_html": "<p><strong>Enter exactly two lines:</strong> one definition of \\(d\\), then one regression for the total. Do not define a variable twice.</p>",
         "initial_expressions": [],
         "goal": {
           "type": "multi_expression",
@@ -838,11 +889,12 @@
       }
     },
     {
+      "shared_prompt": "shared_practice_complex_entry",
       "kind": "raw_block",
       "id": "practice_complex_result",
       "block_type": "check",
       "content": {
-        "prompt": "The student ticket is \\(30\\%\\) less than the original price, and a \\(\\$7\\) fee makes the total \\(\\$42\\). What is the original ticket price \\(b\\)?",
+        "prompt": "What is the original ticket price \\(b\\)?",
         "choices": [
           "\\(\\$50\\)",
           "\\(\\$42\\)",

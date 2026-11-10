@@ -9,12 +9,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_first_exploration",
+        "title": "Two pollen samples",
+        "html": "<blockquote><p><strong>Version 1:</strong> The first soil sample contained pollen. The second sample, however, contained no pollen.</p><p><strong>Version 2:</strong> The first soil sample contained pollen. The second sample contained no pollen, however.</p></blockquote>"
+      },
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Compare two placements</h2><p>Read these versions:</p><blockquote><p><strong>Version 1:</strong> The first soil sample contained pollen. The second sample, however, contained no pollen.</p><p><strong>Version 2:</strong> The first soil sample contained pollen. The second sample contained no pollen, however.</p></blockquote><p>The word <strong>however</strong> moves, but the relationship it expresses does not. In both versions, notice which two facts contrast.</p>",
+      "html": "<h2>Compare two placements</h2><p>The word <strong>however</strong> moves, but the relationship it expresses does not. In both versions, notice which two facts contrast.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_first_exploration",
       "kind": "raw_block",
       "id": "exploration_check",
       "block_type": "check",
@@ -171,12 +177,18 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_model_before_full_stop",
+        "title": "Backup telescope passage",
+        "html": "<blockquote><p><strong>A:</strong> The observatory's main telescope was under repair. <strong>B:</strong> Astronomers used a smaller backup telescope ___ <strong>C:</strong> The backup instrument had been installed in 2018.</p></blockquote>"
+      },
       "kind": "text",
       "id": "model_before_full_stop",
-      "html": "<h2>Model: the transition belongs to B</h2><p>Read all three clauses:</p><blockquote><p><strong>A:</strong> The observatory's main telescope was under repair. <strong>B:</strong> Astronomers used a smaller backup telescope ___ <strong>C:</strong> The backup instrument had been installed in 2018.</p></blockquote><p>The two serious choices are <strong>, therefore;</strong> and <strong>; therefore,</strong>.</p><p>First test the logic. The repair caused the astronomers to use a backup, so <strong>A leads to B</strong>. Using the backup did not cause it to be installed in 2018, so B does not lead to C.</p>",
+      "html": "<h2>Model: the transition belongs to B</h2><p>Read all three clauses in the shared passage.</p><p>The two serious choices are <strong>, therefore;</strong> and <strong>; therefore,</strong>.</p><p>First test the logic. The repair caused the astronomers to use a backup, so <strong>A leads to B</strong>. Using the backup did not cause it to be installed in 2018, so B does not lead to C.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_model_before_full_stop",
       "kind": "raw_block",
       "id": "model_logic_check",
       "block_type": "check",
@@ -196,6 +208,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_model_before_full_stop",
       "kind": "text",
       "id": "model_before_answer",
       "html": "<h2>Complete the model</h2><p>The correct punctuation is:</p><blockquote><p>The observatory's main telescope was under repair. Astronomers used a smaller backup telescope<strong>, therefore;</strong> the backup instrument had been installed in 2018.</p><p><strong>Mental rewrite:</strong> The observatory's main telescope was under repair. <strong>Therefore,</strong> astronomers used a smaller backup telescope. The backup instrument had been installed in 2018.</p></blockquote><p>The original sentence-final placement is less familiar, but it expresses the same A-to-B logic.</p>",
@@ -222,17 +235,23 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_model_after_full_stop",
+        "title": "Telescope repairs passage",
+        "html": "<blockquote><p><strong>A:</strong> Repairs to the telescope ended on Monday. <strong>B:</strong> Astronomers expected to resume observations that night ___ <strong>C:</strong> Dense clouds covered the sky.</p></blockquote>"
+      },
       "kind": "text",
       "id": "model_after_full_stop",
-      "html": "<h2>Now the transition belongs to C</h2><p>Read a new set of clauses:</p><blockquote><p><strong>A:</strong> Repairs to the telescope ended on Monday. <strong>B:</strong> Astronomers expected to resume observations that night ___ <strong>C:</strong> Dense clouds covered the sky.</p></blockquote><p>A naturally leads to B: finished repairs explain the expectation. The contrast occurs between B and C: the astronomers expected to observe, but clouds blocked the sky.</p><p>Therefore, <strong>however</strong> must belong to C and appear after the full stop between B and C.</p>",
+      "html": "<h2>Now the transition belongs to C</h2><p>Read the new set of clauses in the shared passage.</p><p>A naturally leads to B: finished repairs explain the expectation. The contrast occurs between B and C: the astronomers expected to observe, but clouds blocked the sky.</p><p>Therefore, <strong>however</strong> must belong to C and appear after the full stop between B and C.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_model_after_full_stop",
       "kind": "raw_block",
       "id": "guided_after_check",
       "block_type": "check",
       "content": {
-        "prompt": "Repairs to the telescope ended on Monday. Astronomers expected to resume observations that night ___ dense clouds covered the sky. Which choice fits the logic?",
+        "prompt": "Which choice fits the logic of the telescope repairs passage?",
         "choices": [
           ", however;",
           ", however,",

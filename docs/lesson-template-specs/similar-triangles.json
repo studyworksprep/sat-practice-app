@@ -108,14 +108,20 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_parallel_exploration",
+        "title": "Parallel lines and nested triangles",
+        "html": "<p>In the diagram, \\(DE\\parallel BC\\). The smaller triangle \\(ADE\\) sits inside the larger triangle \\(ABC\\).</p><p><img src=\"/images/similar-triangles-parallel-lines.svg\" alt=\"Triangle ABC with segment DE parallel to base BC, creating the smaller triangle ADE inside the larger triangle\" width=\"1000\"></p>"
+      },
       "kind": "text",
       "id": "parallel_exploration",
-      "html": "<h2>Parallel lines often hide similar triangles</h2><p>In the diagram, \\(DE\\parallel BC\\). The smaller triangle \\(ADE\\) sits inside the larger triangle \\(ABC\\).</p><p><img src=\"/images/similar-triangles-parallel-lines.svg\" alt=\"Triangle ABC with segment DE parallel to base BC, creating the smaller triangle ADE inside the larger triangle\" width=\"1000\"></p><p>The triangles share angle \\(A\\). The parallel lines also create equal green angles at \\(D\\) and \\(B\\), plus equal blue angles at \\(E\\) and \\(C\\).</p><blockquote><p><strong>Before you continue:</strong> identify the two angle pairs that are enough for AA.</p></blockquote>",
+      "html": "<h2>Parallel lines often hide similar triangles</h2><p>The triangles share angle \\(A\\). The parallel lines also create equal green angles at \\(D\\) and \\(B\\), plus equal blue angles at \\(E\\) and \\(C\\).</p><blockquote><p><strong>Before you continue:</strong> identify the two angle pairs that are enough for AA.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
+      "shared_prompt": "shared_parallel_exploration",
       "kind": "raw_block",
       "id": "parallel_similarity_check",
       "block_type": "check",
@@ -279,6 +285,7 @@
       }
     },
     {
+      "shared_prompt": "shared_parallel_exploration",
       "kind": "text",
       "id": "parallel_model",
       "html": "<h2>Apply the same process inside one diagram</h2><p>Return to the parallel-lines diagram. Because \\(\\triangle ADE\\sim\\triangle ABC\\), the order tells you</p><p>\\[AD\\leftrightarrow AB,\\qquad AE\\leftrightarrow AC,\\qquad DE\\leftrightarrow BC.\\]</p><p>Suppose \\(AD=6\\), \\(AB=15\\), \\(DE=8\\), and \\(BC=x\\). Compare small triangle to large triangle:</p><p>\\[\\frac{AD}{AB}=\\frac{DE}{BC}\\qquad\\Longrightarrow\\qquad\\frac6{15}=\\frac8x.\\]</p><p>Cross multiplying gives \\(6x=120\\), so \\(x=20\\).</p><blockquote><p><strong>Notice:</strong> The question never needed to say “similar.” The shared angle and parallel-line angle match gave you permission to use the proportion.</p></blockquote>",
@@ -292,6 +299,7 @@
       }
     },
     {
+      "shared_prompt": "shared_parallel_exploration",
       "kind": "raw_block",
       "id": "parallel_transfer_check",
       "block_type": "check",
@@ -435,9 +443,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_projection_model",
+        "title": "Hypotenuse piece problem",
+        "html": "<p>Suppose the large triangle has \\(AB=25\\) and \\(AC=15\\). Find \\(AD=d\\).</p>"
+      },
       "kind": "text",
       "id": "projection_model",
-      "html": "<h2>Model 1: find a hypotenuse piece</h2><p>Suppose the large triangle has \\(AB=25\\) and \\(AC=15\\). Find \\(AD=d\\).</p><p>Use the large triangle and the left triangle:</p><ul><li>large side: \\(AB=25\\leftrightarrow AC=15\\);</li><li>small side: \\(AC=15\\leftrightarrow AD=d\\).</li></ul><p>Keep large triangle over left triangle:</p><p>\\[\\frac{25}{15}=\\frac{15}{d}.\\]</p><p>Then \\(25d=225\\), so \\(d=9\\).</p><blockquote><p><strong>Size check:</strong> \\(AD=9\\) is smaller than \\(CD=12\\) and \\(AC=15\\), so it fits the left triangle's small position.</p></blockquote>",
+      "html": "<h2>Model 1: find a hypotenuse piece</h2><p>Use the large triangle and the left triangle:</p><ul><li>large side: \\(AB=25\\leftrightarrow AC=15\\);</li><li>small side: \\(AC=15\\leftrightarrow AD=d\\).</li></ul><p>Keep large triangle over left triangle:</p><p>\\[\\frac{25}{15}=\\frac{15}{d}.\\]</p><p>Then \\(25d=225\\), so \\(d=9\\).</p><blockquote><p><strong>Size check:</strong> \\(AD=9\\) is smaller than \\(CD=12\\) and \\(AC=15\\), so it fits the left triangle's small position.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -448,11 +461,12 @@
       }
     },
     {
+      "shared_prompt": "shared_projection_model",
       "kind": "raw_block",
       "id": "projection_proportion_check",
       "block_type": "check",
       "content": {
-        "prompt": "For the same large and left triangles, which proportion correctly solves for \\(AD=d\\) from \\(AB=25\\) and \\(AC=15\\)?",
+        "prompt": "Which proportion correctly solves for \\(AD=d\\)?",
         "choices": [
           "\\(\\frac{25}{d}=\\frac{15}{15}\\)",
           "\\(\\frac{25}{15}=\\frac{15}{d}\\)",
@@ -544,11 +558,16 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_leg_setup_check",
+        "title": "Leg length problem",
+        "html": "<p>Altitude \\(CD\\) meets the hypotenuse \\(AB\\) at \\(D\\). Given \\(AB=18\\) and \\(DB=8\\), find \\(BC=x\\).</p>"
+      },
       "kind": "raw_block",
       "id": "leg_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "For the large triangle and right triangle, \\(AB=18\\), \\(DB=8\\), and \\(BC=x\\). Which equation correctly matches large side with large side and medium side with medium side?",
+        "prompt": "Which equation correctly matches large side with large side and medium side with medium side?",
         "choices": [
           "\\(\\frac{18}{8}=\\frac{x}{x}\\)",
           "\\(\\frac{18}{x}=\\frac{8}{x}\\)",
@@ -565,6 +584,7 @@
       }
     },
     {
+      "shared_prompt": "shared_leg_setup_check",
       "kind": "raw_block",
       "id": "right_altitude_transfer_check",
       "block_type": "check",

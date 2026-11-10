@@ -88,11 +88,16 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_pair_search_check",
+        "title": "Factor-pair example",
+        "html": "<p>\\(x^2+9x+20\\)</p>"
+      },
       "kind": "raw_block",
       "id": "pair_search_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which pair should you use to factor \\(x^2+9x+20\\)?",
+        "prompt": "Which pair should you use to factor this trinomial?",
         "choices": [
           "\\(2\\) and \\(10\\)",
           "\\(4\\) and \\(5\\)",
@@ -107,17 +112,23 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_pair_search_check",
       "kind": "text",
       "id": "pair_to_factors",
       "html": "<h2>Put the pair into binomials, then verify</h2><p>The pair \\(4,5\\) gives:</p><p>\\[x^2+9x+20=(x+4)(x+5)\\]</p><p>Verify by distributing: \\(x^2+5x+4x+20=x^2+9x+20\\). Checking both the middle term and the constant catches sign and pair errors.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_guided_positive_pair_check",
+        "title": "Guided factoring problem",
+        "html": "<p>\\(x^2+11x+24\\)</p>"
+      },
       "kind": "raw_block",
       "id": "guided_positive_pair_check",
       "block_type": "check",
       "content": {
-        "prompt": "For \\(x^2+11x+24\\), which factor pair of \\(24\\) has the needed sum?",
+        "prompt": "Which factor pair of \\(24\\) has the needed sum?",
         "choices": [
           "\\(4\\) and \\(6\\)",
           "\\(2\\) and \\(12\\)",
@@ -133,11 +144,12 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_guided_positive_pair_check",
       "kind": "raw_block",
       "id": "guided_positive_factor_check",
       "block_type": "check",
       "content": {
-        "prompt": "Now factor \\(x^2+11x+24\\).",
+        "prompt": "Now factor the trinomial.",
         "choices": [
           "\\((x+3)(x+8)\\)",
           "\\((x-3)(x-8)\\)",
@@ -261,11 +273,16 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_square_roots_check",
+        "title": "Difference of squares",
+        "html": "<p>\\(49x^4-81\\)</p>"
+      },
       "kind": "raw_block",
       "id": "square_roots_check",
       "block_type": "check",
       "content": {
-        "prompt": "What are the square roots of the two terms in \\(49x^4-81\\)?",
+        "prompt": "What are the square roots of the two terms?",
         "choices": [
           "\\(7x^2\\) and \\(9\\)",
           "\\(49x^2\\) and \\(81\\)",
@@ -280,6 +297,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_square_roots_check",
       "kind": "text",
       "id": "difference_model",
       "html": "<h2>Use the two square roots as conjugates</h2><p>For \\(49x^4-81\\), let \\(A=7x^2\\) and \\(B=9\\). Then:</p><p>\\[49x^4-81=(7x^2-9)(7x^2+9)\\]</p><p>The factors use the same two expressions, once with subtraction and once with addition. Expanding them makes the middle products cancel.</p>",

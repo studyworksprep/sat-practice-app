@@ -18,6 +18,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Image } from '@tiptap/extension-image';
+import { TableKit } from '@tiptap/extension-table';
 import { uploadFigure } from '@/lib/content/upload-figure-client';
 import { MathField } from '../../questions/new/MathField';
 import { MathInline, MathBlock, MathPopoverBridge } from './lesson-math-extensions';
@@ -27,9 +28,13 @@ type Popover = { pos: number | null; latex: string; display: boolean };
 export function RichTextEditor({
   html,
   onChange,
+  allowTables = false,
+  label = 'Lesson text',
 }: {
   html: string;
   onChange: (html: string) => void;
+  allowTables?: boolean;
+  label?: string;
 }) {
   const [, setTick] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,6 +55,7 @@ export function RichTextEditor({
     extensions: [
       StarterKit,
       Image.configure({ inline: false }),
+      ...(allowTables ? [TableKit] : []),
       MathInline,
       MathBlock,
       // getApi is inferred as () => null from the JS extension's default
@@ -61,6 +67,10 @@ export function RichTextEditor({
     immediatelyRender: false,
     editorProps: {
       attributes: {
+        role: 'textbox',
+        'aria-label': label,
+        'aria-multiline': 'true',
+        class: allowTables ? 'prose lesson-prose' : '',
         style:
           'min-height:120px;outline:none;padding:10px;font-size:15px;line-height:1.6;',
       },
@@ -173,6 +183,23 @@ export function RichTextEditor({
           {uploading ? '…' : '🖼'}
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={onPickImage} />
+        {allowTables ? (
+          <>
+            <span style={S.sep} />
+            <Tool ed={editor} onClick={() => editor.chain().focus().insertTable({ rows: 2, cols: 2, withHeaderRow: true }).run()} title="Insert table">
+              Table
+            </Tool>
+            {editor.isActive('table') ? (
+              <>
+                <Tool ed={editor} onClick={() => editor.chain().focus().addRowAfter().run()} title="Add row">+ Row</Tool>
+                <Tool ed={editor} onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add column">+ Column</Tool>
+                <Tool ed={editor} onClick={() => editor.chain().focus().deleteRow().run()} title="Remove row">− Row</Tool>
+                <Tool ed={editor} onClick={() => editor.chain().focus().deleteColumn().run()} title="Remove column">− Column</Tool>
+                <Tool ed={editor} onClick={() => editor.chain().focus().deleteTable().run()} title="Remove table">Remove table</Tool>
+              </>
+            ) : null}
+          </>
+        ) : null}
       </div>
 
       {popover ? (

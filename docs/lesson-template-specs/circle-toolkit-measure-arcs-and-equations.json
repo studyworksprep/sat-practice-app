@@ -12,6 +12,11 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_radius_exploration",
+        "title": "Circle diameter endpoints",
+        "html": "<p>A circle centered at \\((0,0)\\) passes through \\((-4,0)\\) and \\((4,0)\\).</p>"
+      },
       "kind": "text",
       "id": "radius_exploration",
       "html": "<h2>Start with the center</h2><p>The open graph shows a circle centered at \\((0,0)\\). Click the three marked points.</p><p>The segment from \\((0,0)\\) to \\((4,0)\\) is a radius. The segment from \\((-4,0)\\) to \\((4,0)\\) is a diameter.</p><blockquote><p><strong>Notice:</strong> A diameter crosses the center and contains two radii.</p></blockquote>",
@@ -43,12 +48,13 @@
       }
     },
     {
+      "shared_prompt": "shared_radius_exploration",
       "kind": "raw_block",
       "id": "check_1",
       "block_type": "check",
       "content": {
         "hint": "Measure from the center to one edge for the radius, then across the entire circle for the diameter.",
-        "prompt": "The circle reaches from \\((-4,0)\\) to \\((4,0)\\) through its center. What are its radius and diameter?",
+        "prompt": "What are the radius and diameter of the circle?",
         "choices": [
           "Radius \\(8\\); diameter \\(4\\)",
           "Radius \\(2\\); diameter \\(4\\)",
@@ -405,9 +411,14 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_equation_graph_exploration",
+        "title": "Circle in standard form",
+        "html": "<p>\\((x-3)^2+(y+2)^2=25\\)</p>"
+      },
       "kind": "text",
       "id": "equation_graph_exploration",
-      "html": "<h2>Use Desmos to make the equation visible</h2><p>The graph of \\((x-3)^2+(y+2)^2=25\\) is open. The center should be \\((3,-2)\\), and the radius should be \\(5\\).</p><p>Trace the circle and confirm that its leftmost and rightmost x-values are \\(-2\\) and \\(8\\). Their midpoint is \\(3\\), and each is \\(5\\) units from the center.</p>",
+      "html": "<h2>Use Desmos to make the equation visible</h2><p>The graph of the shared equation is open. The center should be \\((3,-2)\\), and the radius should be \\(5\\).</p><p>Trace the circle and confirm that its leftmost and rightmost x-values are \\(-2\\) and \\(8\\). Their midpoint is \\(3\\), and each is \\(5\\) units from the center.</p>",
       "calculator": {
         "mode": "preset",
         "title": "Trace the circle",
@@ -428,12 +439,13 @@
       }
     },
     {
+      "shared_prompt": "shared_equation_graph_exploration",
       "kind": "raw_block",
       "id": "check_13",
       "block_type": "check",
       "content": {
         "hint": "Start at the center (3,-2) and move one radius, 5 units, upward.",
-        "prompt": "For \\((x-3)^2+(y+2)^2=25\\), which point is the top of the circle?",
+        "prompt": "Which point is the top of the circle?",
         "choices": [
           "\\((3,3)\\)",
           "\\((3,7)\\)",

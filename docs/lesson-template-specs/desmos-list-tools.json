@@ -34,17 +34,23 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_define_a_list",
+        "title": "List A data",
+        "html": "<p>List \\(A\\) holds the values \\(2,3,4,5\\) in that order.</p>"
+      },
       "kind": "text",
       "id": "define_a_list",
       "html": "<h2>Assign the list to a variable</h2><p>Use square brackets around comma-separated values:</p><p>\\[A=[2,3,4,5]\\]</p><p>This is a <strong>definition</strong>. The variable \\(A\\) now stands for the entire list \\([2,3,4,5]\\).</p><ul><li>Use an equals sign to define the list.</li><li>Use square brackets, not parentheses.</li><li>Separate values with commas.</li></ul><blockquote><p><strong>Efficient habit:</strong> Give the original data a short name such as \\(A\\), then reuse that name.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_define_a_list",
       "kind": "raw_block",
       "id": "list_syntax_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which entry correctly assigns the values 2, 3, 4, and 5 to list A?",
+        "prompt": "Which entry correctly defines \\(A\\)?",
         "choices": [
           "\\(A=(2,3,4,5)\\)",
           "\\(A=2+3+4+5\\)",
@@ -59,6 +65,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_define_a_list",
       "kind": "text",
       "id": "try_defining_list",
       "html": "<h2>Try it in Desmos</h2><p>In the open calculator, enter:</p><p>\\[A=[2,3,4,5]\\]</p><p>Desmos stores all four values under the name \\(A\\). You can now use \\(A\\) anywhere you would otherwise have to type the full list.</p><blockquote><p><strong>Check your entry:</strong> You should see a four-value list, not one combined number.</p></blockquote>",
@@ -72,6 +79,7 @@
       }
     },
     {
+      "shared_prompt": "shared_define_a_list",
       "kind": "raw_block",
       "id": "definition_result_check",
       "block_type": "check",
@@ -101,17 +109,19 @@
       }
     },
     {
+      "shared_prompt": "shared_define_a_list",
       "kind": "text",
       "id": "add_to_list",
       "html": "<h2>Arithmetic acts on every value</h2><p>Once \\(A=[2,3,4,5]\\), define:</p><p>\\[B=A+2\\]</p><p>Desmos adds \\(2\\) to <strong>each</strong> value in \\(A\\):</p><p>\\[B=[4,5,6,7]\\]</p><p>The \\(+2\\) does not add one new item to the list. It changes all four existing items.</p><blockquote><p><strong>Read list arithmetic as a repeated instruction:</strong> “For every value in A, add 2.”</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_define_a_list",
       "kind": "raw_block",
       "id": "add_scalar_prediction_check",
       "block_type": "check",
       "content": {
-        "prompt": "If \\(A=[2,3,4,5]\\), what list does \\(A+2\\) produce?",
+        "prompt": "What list does \\(A+2\\) produce?",
         "choices": [
           "\\([2,3,4,5,2]\\)",
           "\\([2,3,4,7]\\)",
@@ -126,6 +136,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_define_a_list",
       "kind": "raw_block",
       "id": "add_scalar_desmos_check",
       "block_type": "check",
@@ -156,17 +167,19 @@
       }
     },
     {
+      "shared_prompt": "shared_define_a_list",
       "kind": "text",
       "id": "basic_scalar_operations",
       "html": "<h2>Use the usual arithmetic operations</h2><p>If \\(A=[2,3,4,5]\\), Desmos applies each operation element by element:</p><ul><li>\\(A-1=[1,2,3,4]\\)</li><li>\\(3A=[6,9,12,15]\\)</li><li>\\(A/2=[1,1.5,2,2.5]\\)</li><li>\\(A^2=[4,9,16,25]\\)</li></ul><p>This is especially useful when every data value receives the same adjustment, conversion, or scale factor.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_define_a_list",
       "kind": "raw_block",
       "id": "multiply_scalar_check",
       "block_type": "check",
       "content": {
-        "prompt": "If \\(A=[2,3,4,5]\\), what does \\(3A\\) produce?",
+        "prompt": "What does \\(3A\\) produce?",
         "choices": [
           "\\([2,3,4,5,2,3,4,5,2,3,4,5]\\)",
           "\\([5,6,7,8]\\)",
@@ -181,6 +194,7 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_define_a_list",
       "kind": "text",
       "id": "practice_scalar_operations",
       "html": "<h2>Build several transformed lists</h2><p>The calculator starts with \\(A=[2,3,4,5]\\). Add expressions such as \\(A-1\\), \\(3A\\), \\(A/2\\), and \\(A^2\\).</p><p>Each output should have four values because each input value produces one result.</p><blockquote><p><strong>Fast error check:</strong> If A has four elements, an ordinary arithmetic transformation of A should also have four elements.</p></blockquote>",
@@ -197,11 +211,12 @@
       }
     },
     {
+      "shared_prompt": "shared_define_a_list",
       "kind": "raw_block",
       "id": "square_list_check",
       "block_type": "check",
       "content": {
-        "prompt": "What does Desmos return for \\(A^2\\) when \\(A=[2,3,4,5]\\)?",
+        "prompt": "What does Desmos return for \\(A^2\\)?",
         "choices": [
           "\\([4,9,16,25]\\)",
           "\\([4,6,8,10]\\)",
@@ -227,17 +242,23 @@
       }
     },
     {
+      "shared_prompt": {
+        "id": "shared_two_list_arithmetic",
+        "title": "Lists A and B",
+        "html": "<p>\\(A=[1,2,3]\\)</p><p>\\(B=[10,20,30]\\)</p>"
+      },
       "kind": "text",
       "id": "two_list_arithmetic",
       "html": "<h2>Two equal-length lists can work in pairs</h2><p>If</p><p>\\[A=[1,2,3]\\qquad B=[10,20,30]\\]</p><p>then \\(A+B\\) pairs values in the same positions:</p><p>\\[A+B=[1+10,2+20,3+30]=[11,22,33]\\]</p><p>This is different from joining lists. Arithmetic combines corresponding elements; <strong>join</strong> places one complete list after another.</p>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_two_list_arithmetic",
       "kind": "raw_block",
       "id": "two_list_arithmetic_check",
       "block_type": "check",
       "content": {
-        "prompt": "If \\(A=[1,2,3]\\) and \\(B=[10,20,30]\\), what is \\(A+B\\)?",
+        "prompt": "What is \\(A+B\\)?",
         "choices": [
           "\\([1,2,3,10,20,30]\\)",
           "\\([11,22,33]\\)",
@@ -252,12 +273,14 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_two_list_arithmetic",
       "kind": "text",
       "id": "join_lists",
-      "html": "<h2>Use join to combine complete lists</h2><p>Suppose:</p><p>\\[A=[1,2,3]\\qquad B=[10,20,30]\\]</p><p>Enter:</p><p>\\[C=\\operatorname{join}(A,B)\\]</p><p>Desmos places every value from \\(B\\) after every value from \\(A\\):</p><p>\\[C=[1,2,3,10,20,30]\\]</p><blockquote><p><strong>join means concatenate:</strong> keep both lists and connect them end to end.</p></blockquote>",
+      "html": "<h2>Use join to combine complete lists</h2><p>Enter:</p><p>\\[C=\\operatorname{join}(A,B)\\]</p><p>Desmos places every value from \\(B\\) after every value from \\(A\\):</p><p>\\[C=[1,2,3,10,20,30]\\]</p><blockquote><p><strong>join means concatenate:</strong> keep both lists and connect them end to end.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_two_list_arithmetic",
       "kind": "text",
       "id": "try_join",
       "html": "<h2>Compare addition and join</h2><p>The calculator shows both \\(A+B\\) and \\(\\operatorname{join}(A,B)\\).</p><ul><li>\\(A+B\\) produces three pairwise sums.</li><li>\\(\\operatorname{join}(A,B)\\) produces one six-value list.</li></ul><p>Read both outputs before continuing.</p>",
@@ -321,6 +344,11 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": {
+        "id": "shared_explore_statistics",
+        "title": "Data for list statistics",
+        "html": "<p>\\(A=[2,3,4,5]\\)</p>"
+      },
       "kind": "text",
       "id": "explore_statistics",
       "html": "<h2>Read three statistics from one list</h2><p>The calculator defines \\(A=[2,3,4,5]\\), then applies <strong>mean</strong>, <strong>median</strong>, and <strong>total</strong>.</p><p>Try changing one value in \\(A\\). All three results update immediately because every expression uses the same named list.</p>",
@@ -340,11 +368,12 @@
       }
     },
     {
+      "shared_prompt": "shared_explore_statistics",
       "kind": "raw_block",
       "id": "mean_check",
       "block_type": "check",
       "content": {
-        "prompt": "What does \\(\\operatorname{mean}([2,3,4,5])\\) return?",
+        "prompt": "What does \\(\\operatorname{mean}(A)\\) return?",
         "choices": [
           "\\(3\\)",
           "\\(3.5\\)",
@@ -389,11 +418,12 @@
       "calculator": { "display": "hidden" }
     },
     {
+      "shared_prompt": "shared_explore_statistics",
       "kind": "raw_block",
       "id": "total_check",
       "block_type": "check",
       "content": {
-        "prompt": "If \\(A=[2,3,4,5]\\), what does \\(\\operatorname{total}(A)\\) return?",
+        "prompt": "What does \\(\\operatorname{total}(A)\\) return?",
         "choices": [
           "\\(3.5\\)",
           "\\(4\\)",
