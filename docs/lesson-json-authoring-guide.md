@@ -157,6 +157,10 @@ modeled.
   of relying on bold text inside a longer paragraph.
 - Prefer plain English before formal notation. Use technical vocabulary only
   when the learner needs the term, and define it immediately.
+- Bold an important new term on its first use, with its plain-language
+  definition nearby. Keep emphasis selective and use the term consistently
+  afterward. In calculator questions, follow the visible readout: “What
+  does z equal now?” is clearer than “What value has been assigned to z?”
 - Avoid unnecessary precision or scope. Do not introduce function notation,
   formal proof language, or a new representation unless it helps perform the
   tool being taught.
@@ -629,10 +633,10 @@ the first try:
   one step.
 - **The solution demonstrates the lesson's technique, not a general math
   solution.** In a Desmos-method lesson the steps are the calculator
-  workflow (what to enter, what Desmos assigns/displays/returns), and even
+  workflow (what to enter and what Desmos shows), and even
   the confirmation stays in the tool's terms — the RMSE readout, the
-  intercept labels, the assigned value — using only vocabulary the lesson
-  itself teaches. A by-hand algebra path in a lesson that exists to
+  intercept labels, the value beside the variable — using only vocabulary
+  the lesson itself teaches. A by-hand algebra path in a lesson that exists to
   replace by-hand algebra undermines the method; hand steps appear only
   where the lesson's own workflow includes them (e.g. rewriting to zero
   form before graphing).
@@ -1198,13 +1202,12 @@ Use these full-quality references when planning a substantial lesson:
   comparison, an interface-control image, a gated transfer task, and final
   retrieval.
 - `docs/lesson-template-specs/solving-equations-with-regression.json`
-  demonstrates slower concept pacing across roughly 40 blocks. It previews
-  new sections before introducing unfamiliar terms, teaches one important
-  concept per block, defines vocabulary before checking it, uses explicit
-  transitions and concrete process outlines to preserve the lesson's logic,
-  bolds instructions and terms that students might skim, distributes correct
-  answers across choice positions, fades from guided calculator work to
-  independent transfer, and ends with a focused cumulative practice set.
+  demonstrates a problem-first progression across 31 blocks. It introduces
+  regression in plain language, bolds important new terms, separates
+  explanations from calculator actions, and returns to the opening
+  equation. It teaches one variation at a time, uses explicit transitions,
+  fades from guided calculator work to independent transfer, and ends
+  with a focused cumulative practice set.
 
 Treat these as models for instructional decisions, not rigid templates. Match
 the number and type of blocks to the tool being taught.

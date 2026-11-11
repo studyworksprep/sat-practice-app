@@ -68,6 +68,11 @@ the opening question can show a clear reason to learn the method.
 - **Use familiar, accurate language.** Say “Move every term to one side,
   changing the sign of each term you move. That leaves zero on the other
   side.” Explain the connection to the familiar form immediately.
+- **Make new terms easy to notice.** Bold an important new term on its
+  first use and explain it in plain language nearby. Keep emphasis
+  selective, and use the same term consistently afterward. Match
+  calculator questions to the visible readout: “What does z equal now?”
+  is clearer than “What value has been assigned to z?”
 - **Teach the direct calculator entry.** Type an expression in \(x\) to
   graph it when that is sufficient. Include extra notation when the
   method needs it.
