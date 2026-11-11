@@ -543,7 +543,8 @@ video, and advanced Desmos. Shape:
   `correct_index` (required, **0-based** index into `choices`),
   `explanation` (optional, shown after answering).
 - The learner picks an answer, sees the explanation inline, then clicks
-  **Continue**. For a simple linear question, that's all you need. To send
+  **Continue**. Correct answers also show a confirmation on both
+  multiple-choice and numeric-entry checks. To send
   correct and incorrect answers down different paths, add branch fields —
   see **§5 Branching**.
 

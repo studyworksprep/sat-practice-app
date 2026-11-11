@@ -1121,13 +1121,13 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
         </div>
       )}
 
-      {numeric && revealed && (
+      {revealed && (numeric || answeredCorrect) && (
         <div
           className={`${s.numericResult} ${answeredCorrect ? s.numericResultCorrect : s.numericResultWrong}`}
           role="status"
         >
           {answeredCorrect ? (
-            <>✓ Correct</>
+            <>✓ Correct. Nice work!</>
           ) : (
             <>✗ The correct answer was <strong>{formatNumericCheckAnswer(content)}</strong></>
           )}
