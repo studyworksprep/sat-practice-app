@@ -587,9 +587,8 @@
   font-size: 12px;
 }
 
-/* The graded result line — a typed answer has no choice row to carry
-   the ✓ / ✗, so this says how it graded and, when wrong, what was
-   keyed (the runner's "The correct answer was" line). */
+/* Confirm correct answers on either answer surface. For a wrong typed
+   answer, show the keyed value because there is no choice row to mark. */
 .numericResult {
   margin-top: var(--s3);
   font-size: 14px;

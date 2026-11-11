@@ -35,6 +35,7 @@ authorization matrix to prove it's fresh.
 | `sat-import-comparison.md` | Reviewed bulk imports, guarded replacements, searchable supplemental access, and local testing |
 | `billing.md` | Subscription enforcement, the Stripe webhook contract, reconciliation |
 | `lesson-json-authoring-guide.md` | Lesson JSON authoring format |
+| `lesson-revision-guidelines.md` | Teaching sequence, focused cards, independent practice, and feedback conventions for revising lessons |
 | `design/runner-spec.md` | Runner design contract — the codified Bluebook exception (parity-locked vs brand-adjustable) |
 | `lesson-template-specs/` | Lesson template specifications |
 | `../supabase/migrations/README.md` | Migration-directory state — **read before any `supabase db` command** |

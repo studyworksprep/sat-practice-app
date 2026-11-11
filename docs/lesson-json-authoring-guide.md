@@ -43,6 +43,11 @@ import, errors block the import; warnings do not.
 > are re-enabled by the reviewing admin after verifying the expected
 > expressions.
 
+> **Lesson revision standard (2026-11-11).** Use
+> [Lesson revision guidelines](lesson-revision-guidelines.md) for the
+> progression, pacing, and feedback established in Solving Equations by
+> Graphing. The sections below define the supported authoring format.
+
 ---
 
 ## 1. Output format
@@ -108,25 +113,27 @@ Plan the lesson around:
 For a full strategy lesson, use this sequence as the default. Combine steps
 only when the content is genuinely simple.
 
-1. **Invite a short exploration.** Give the learner something concrete to
-   inspect, click, compare, or try before explaining everything.
-2. **Check the observation.** Ask a question that can be answered directly
-   from that exploration.
-3. **Name and explain the idea.** Give the minimum definition or principle
-   needed to make sense of what the learner just saw.
-4. **Check the meaning.** Confirm the learner can connect the definition to
-   a new but closely related example.
-5. **State a short repeatable process.** Prefer three to five named steps.
-6. **Model or guide one complete use of the process.** Keep the calculator,
-   diagram, or other relevant evidence visible.
-7. **Vary one feature at a time.** Examples include a different variable,
+1. **Invite a short attempt.** Start with a question that shows why the
+   method helps. Keep the attempt ungraded and let the learner continue
+   with partial work.
+2. **Explain the purpose.** Connect the opening difficulty to the method.
+   Explain why an easier example helps the learner see what to do.
+3. **Teach the simplest useful instance.** Give the minimum explanation
+   needed for the action, then let the learner perform it and read the
+   result. Give substantial explanations their own cards with the
+   calculator hidden.
+4. **State a short repeatable process.** Name the method and include only
+   the steps needed to obtain a valid answer.
+5. **Vary one feature at a time.** Examples include a different variable,
    exact versus decimal answers, one/two/no solutions, restrictions, or a
-   requested intermediate quantity.
-8. **Check each important variation after it has been taught or explored.**
-9. **Require transfer.** Give a fresh problem without telling the learner
-   every step or which answer is correct.
-10. **End with retrieval.** Ask the learner to recall the process, decision
-    rule, or sequence without looking back, then close with a concise summary.
+   requested intermediate quantity. Explain how the variation connects to
+   the familiar procedure and check it after teaching it.
+6. **Return to the opening question.** Invite the learner to use the method
+   and choose the setup. Give targeted help after an attempt.
+7. **Require transfer.** Give fresh applications that require the learner
+   to choose and carry out the method.
+8. **Retrieve and practice independently.** Ask for a short recall of the
+   method, then finish with independent questions and a brief sign-off.
 
 This order matters. A knowledge check must never depend on information that
 appears only after the check. A learner should be able to answer from a
@@ -139,7 +146,8 @@ modeled.
   than “Identify all points at which the relation intersects the abscissa.”
 - Address the learner as “you” and use short paragraphs and sentences.
 - Introduce one new idea per slide. Break long explanations into a sequence
-  of explanation, action, and check blocks.
+  of explanation, action, and check blocks. Hide the calculator on
+  explanation cards unless the explanation needs the visible graph.
 - Alternate the block kinds. Three or more text blocks in a row is a
   lecture; three or more checks in a row is a quiz. The linter reports
   both runs (`lint_text_run`, `lint_check_run`) — put an explanation,
@@ -167,10 +175,10 @@ first (plan Phase 6):
 
 1. **Open with the payoff, in one line.** Not "In this lesson you will…"
    but the test-day reason: *"This turns a two-minute factoring problem
-   into a 20-second graph read."* The intro card (§3a) carries the move,
-   the payoff, and one caution; the opener's body then sets up the first
-   activity. It does not repeat the card and it does not list an agenda —
-   cut "By the end of this lesson, you will be able to…".
+   into a 20-second graph read."* When the lesson starts with a challenge,
+   give that attempt first and explain the payoff in its debrief. An
+   optional intro card (§3a) can carry this explanation. Keep the
+   orientation brief and focused on why the method helps.
 2. **Name the move, and use the name.** A student remembers "Good Cop /
    Bad Cop" and "My Numbers"; a tutor references them in session. Every
    lesson gets a handle, and the handle is reused in hints, explanations,
@@ -338,7 +346,10 @@ from pretending the SAT assesses a response format it does not use.
 
 A retry hint should help the learner inspect the relevant evidence or redo
 one step without giving away the answer. The success explanation should
-connect the answer to the underlying idea.
+connect the answer to the underlying idea. Confirm success on both answer
+surfaces, then give a short explanation. Desmos success messages should
+acknowledge the completed action. Show encouragement only after correct
+work, including on restored answers, and keep worked solutions neutral.
 
 ```json
 {
@@ -385,14 +396,16 @@ passive explanation alone:
 
 ### 2g. Quality target for a complete lesson
 
-A substantial tool lesson will often contain 15–40 short blocks, including:
+A substantial tool lesson should give each explanation, action, and check
+the space it needs, including:
 
 - at least one learner-controlled exploration;
 - checks after each major idea and important variation;
 - one fully independent or gated Desmos task when graphing is part of the
   tool;
 - a transfer problem that combines multiple steps;
-- a final retrieval check and, optionally, a `lesson_complete` block.
+- a retrieval check before independent practice and, optionally, a
+  `lesson_complete` block with a brief sign-off.
 
 This is a quality target, not a block quota. A shorter lesson is better than
 padding; a longer lesson is appropriate only when each block performs a
@@ -477,13 +490,12 @@ viewer. Preserve the answer order used by any following check. Reserve the
 class for actual candidate answers; processes, examples, and ordinary
 instructional lists should keep normal `ul` or `ol` formatting.
 
-#### Intro card — the three beats a lesson opens with
+#### Optional intro card
 
-A lesson's orienting block leads with a **`lesson-intro` card**: the move
-in the words a tutor says in session, the test-day payoff, and exactly one
-caution. It carries the same three beats, in the same order, as the intro
-video convention in §3b — so a lesson opens the way it would be introduced
-out loud whether or not a recording exists yet.
+A short explanation after the opening attempt can orient the learner on
+its own. When a **`lesson-intro` card** helps, use it to explain the move
+and the test-day payoff in the words a tutor would use. Add a caution when
+it affects a decision the learner must make.
 
 ```html
 <div class="lesson-intro">
@@ -493,26 +505,20 @@ out loud whether or not a recording exists yet.
 </div>
 ```
 
-- **Three `p` elements, in that order, with those bold labels.** The shared
-  lesson stylesheet supplies the card appearance; do not add inline styles.
-- **Exactly one caution** — the failure that actually happens, not a list of
-  everything that can go wrong. Draw it from the lesson's own confirmed
-  traps (`docs/trap-catalog.md`), not from general advice.
-- **Place it on the block that orients the lesson**, immediately after that
-  block's `<h2>`. That is block 1 in most lessons, with two exceptions: when
-  block 1 is a prerequisite gate, the card goes after the prerequisite
-  Callout so the gate stays first; when block 1 is a cold-open exploration
-  whose discovery *is* the move, the card goes on the first teaching block
-  after that exploration's check, because naming the move above the hook
-  spoils it.
+- Use `p` elements in the order shown, with the bold labels. The caution
+  paragraph is optional. The shared lesson stylesheet supplies the
+  appearance.
+- Draw a useful caution from the lesson's confirmed traps
+  (`docs/trap-catalog.md`) and teach it when it becomes relevant.
+- Place the card on the orienting block after the opening attempt.
+  Keep the explanation short enough to read comfortably on its own.
 - **Don't restate the block's own `<h2>` or goal Callout.** The card is the
   tutor's framing; the Callout is the formal objective. When the two land on
   the same words, reword the card.
 - **Don't point at a figure the slide doesn't carry** ("the diagram", "the
   picture"). `lint_missing_figure` catches it.
-- A recorded intro video does **not** replace the card. The `video` block
-  goes in above it as block 1, and the card stays as the read-it version for
-  learners who don't watch.
+- When using a recorded introduction, keep a short written orientation for
+  learners who prefer to read.
 
 ### 3b. `raw_block` — full control over any block type
 
@@ -543,7 +549,8 @@ video, and advanced Desmos. Shape:
   `correct_index` (required, **0-based** index into `choices`),
   `explanation` (optional, shown after answering).
 - The learner picks an answer, sees the explanation inline, then clicks
-  **Continue**. For a simple linear question, that's all you need. To send
+  **Continue**. Correct answers also show a confirmation on both
+  multiple-choice and numeric-entry checks. To send
   correct and incorrect answers down different paths, add branch fields —
   see **§5 Branching**.
 
@@ -650,13 +657,11 @@ the first try:
   unlisted Vimeo link must keep its privacy hash
   (`vimeo.com/123456789/abcd1234` — paste the full link; the runtime
   passes the hash to the player).
-- **Intro-video convention:** when a lesson has a tutor-recorded intro,
-  it is a 60–90 second video as **block 1** — face + whiteboard: name
-  the move, the test-day payoff, and one caution. Give it a one-line
-  `caption` naming the move. Never invent a URL; leave the block out
-  until the recording exists. Until then the lesson's three
-  beats live in its intro card (§3a), which stays in place once the video
-  lands.
+- **Intro-video convention:** when a tutor-recorded introduction helps,
+  use a 60–90 second video to name the move and its payoff. Place it after
+  the opening attempt and keep a short written orientation (§3a). Give it
+  a one-line `caption` naming the move. Add a caution when it affects use
+  of the skill. Include the block when a real recording URL is available.
 
 **Complete-lesson block** — the terminal block that ends the lesson:
 ```json
