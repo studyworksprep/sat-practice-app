@@ -1,0 +1,394 @@
+{
+  "title": "Find the Point: Central Ideas and Details",
+  "description": "Use Find the Point to distinguish a whole-text central idea from a requested detail, preserve qualifications, and match a supported paraphrase.",
+  "blocks": [
+    {
+      "id": "cd9f26ce-8da4-41c8-b67c-4c6476cfba97",
+      "kind": "raw_block",
+      "content": {
+        "id": "intro",
+        "html": "<h2>A true detail can still be the wrong answer</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Find the Point: set the size of the answer before choosing it.</p><p><strong>Why it pays:</strong> You can reject a memorable detail when the question asks for the whole message.</p><p><strong>One caution:</strong> A choice must answer the question, not merely repeat something the passage says.</p></div><p>Read the short garden text next. Decide what you would tell a friend who had time for only one sentence.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "2eb1aa7d-86a8-43ff-b35f-b1f6bb3fabc6",
+      "kind": "raw_block",
+      "content": {
+        "id": "explore",
+        "html": "<h2>What would you keep?</h2><p>A neighborhood garden was originally planted to supply vegetables to a food pantry. Its harvests remain modest, but residents now gather there to exchange recipes and teach children to grow seedlings. The garden has become as valuable as a meeting place as it is as a source of food.</p><p><strong>Pause and say the point in your own words.</strong> Would “the garden grows seedlings” give your friend the whole message?</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "633ebcdc-9215-419e-bfd3-d2987eccf3a8",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Keep the original purpose and the new value together.",
+        "prompt": "A neighborhood garden was originally planted to supply vegetables to a food pantry. Its harvests remain modest, but residents now gather there to exchange recipes and teach children to grow seedlings. The garden has become as valuable as a meeting place as it is as a source of food.\n\nWhich choice best states the main idea of the text?",
+        "choices": [
+          "The garden teaches children how to grow vegetables for the food pantry.",
+          "The garden has gained social value alongside its original role of supplying food.",
+          "The garden has stopped growing vegetables because residents prefer to exchange recipes.",
+          "The garden’s harvests have increased as more residents have started visiting."
+        ],
+        "solution": "Identify the original role: supplying food. Identify the added role: bringing neighbors together. Combine them: the garden now serves both food and social purposes. That is choice B.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The point is the garden’s expanded value. Seedlings are one detail; the text never says that food production stopped or increased.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "3af8af43-becf-40db-b546-96cc90b8179b",
+      "kind": "raw_block",
+      "content": {
+        "id": "meaning",
+        "html": "<h2>Topic, point, and detail</h2><p>A <strong>topic</strong> names the subject: a neighborhood garden. A <strong>central idea</strong> says what the text communicates about that subject: its value has expanded. A <strong>detail</strong> gives one supporting fact: residents exchange recipes.</p><blockquote><p><strong>Key idea:</strong> The point is a claim about the topic, not just the topic’s name.</p></blockquote>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "d146edc7-f639-47f0-9a1d-69f9f0533562",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Look for a statement of what happened, not a label for what is discussed.",
+        "prompt": "An essay explains that a theater’s low-cost afternoon performances attracted people who had never attended before. Which option is a central idea rather than a topic label?",
+        "choices": [
+          "A neighborhood theater and its afternoon schedule",
+          "Ticket prices for the theater’s afternoon performances",
+          "New audience members at a neighborhood theater",
+          "Affordable afternoon shows helped the theater reach a new audience"
+        ],
+        "solution": "The last option says what the text communicates about the theater. The others only name subjects or details.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The last option says what the text communicates about the theater. The others only name subjects or details.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "43781c7b-b2cb-49dd-ae50-5d6af09dac63",
+      "kind": "raw_block",
+      "content": {
+        "id": "process",
+        "html": "<h2>Find the Point in four moves</h2><ol><li><strong>Size:</strong> Does the question want the whole text or a named detail?</li><li><strong>Read:</strong> Turn each important sentence into a short soundbite.</li><li><strong>Predict:</strong> State the whole message, or locate the evidence for the requested detail.</li><li><strong>Match:</strong> Keep the choice with the same meaning and limits.</li></ol><p>You do not need to preserve every date or name. Keep words such as <strong>but</strong>, <strong>some</strong>, and <strong>still</strong> when they change the claim.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "bd8919f4-adf4-41fb-ad2d-d3875c271f51",
+      "kind": "raw_block",
+      "content": {
+        "id": "model",
+        "html": "<h2>Watch the answer take shape</h2><p>The town archive holds hundreds of maps, many with damaged edges. Archivists first repaired the maps that visitors requested most often, leaving rarer maps in storage. A new scanning program now allows visitors to examine the fragile maps digitally without handling the originals. Repairs continue, but access no longer depends on a map being sturdy enough to unfold.</p><p><strong>Size:</strong> main idea. <strong>Soundbites:</strong> fragile maps; repairs favored popular maps; scanning opens access; repairs still continue.</p><p><strong>Prediction:</strong> Scanning expands access to fragile maps while physical repair continues. “The archive holds hundreds of maps” is true, but too small.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "e56e9628-0b21-4369-8ab5-5753c1beb4d7",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Match both access and continuing repair; avoid adding a reason for the repair order.",
+        "prompt": "The town archive holds hundreds of maps, many with damaged edges. Archivists first repaired the maps that visitors requested most often, leaving rarer maps in storage. A new scanning program now allows visitors to examine the fragile maps digitally without handling the originals. Repairs continue, but access no longer depends on a map being sturdy enough to unfold.\n\nWhich choice best states the main idea of the text?",
+        "choices": [
+          "Digitization gives visitors access to fragile maps while archivists continue repairing the collection.",
+          "Archivists repaired popular maps first because those maps had suffered the most damage.",
+          "Scanning has made physical repairs unnecessary for the town’s entire collection of maps.",
+          "The town archive contains many old maps whose edges need careful physical repair."
+        ],
+        "solution": "Size the question as whole-text. Combine scanning with the final sentence: digital access now works even when maps remain fragile, and repairs continue. Only A keeps both parts.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The first choice preserves the change and its limit. The last choice gives background; the middle choices add an unsupported cause or overstate the effect.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "13ae927b-883f-458d-b538-3f718c8f6265",
+      "kind": "raw_block",
+      "content": {
+        "id": "detail_rule",
+        "html": "<h2>When the question zooms in, you zoom in</h2><p>“According to the text, why…?” or “Which choice best describes the artist’s approach?” may target a particular fact or relationship. Locate that evidence and read its surroundings.</p><blockquote><p><strong>Size check:</strong> A main-idea answer covers the central message. A detail answer covers the detail actually requested.</p></blockquote><p>A good detail answer can paraphrase. It does not have to repeat the passage word for word.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "684e4b05-eec4-496b-b35c-982d092e8ea9",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Locate the sentence that names the repair priority.",
+        "prompt": "The town archive holds hundreds of maps, many with damaged edges. Archivists first repaired the maps that visitors requested most often, leaving rarer maps in storage. A new scanning program now allows visitors to examine the fragile maps digitally without handling the originals. Repairs continue, but access no longer depends on a map being sturdy enough to unfold.\n\nAccording to the text, which maps did the archivists repair first?",
+        "choices": [
+          "Those that visitors asked to see most frequently",
+          "Those whose edges had the most severe damage",
+          "Those that were too large to scan digitally",
+          "Those that had remained in storage the longest"
+        ],
+        "solution": "The question asks about repair order, not scanning. The second sentence says visitors’ most-requested maps were repaired first. Match that frequency relationship to A.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "“Requested most often” means asked to see most frequently. Severity, size, and time in storage are not the stated selection rule.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "c3a9b66f-354f-428f-b091-27497c16749c",
+      "kind": "raw_block",
+      "content": {
+        "id": "limits",
+        "html": "<h2>Keep the passage’s limits</h2><p>A text can support “some,” “often,” or “in this study” without supporting “all,” “always,” or “everywhere.” Preserve those limits when you shorten it.</p><p>Strong wording is not automatically wrong. It is wrong when the passage has not earned it. Likewise, a cautious word such as “may” does not rescue an unrelated claim.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "cad97512-aa0a-41e3-998c-f3815ef842a6",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Keep the measured group, the comparison, and the trial’s time limit.",
+        "prompt": "During a six-week trial, a library’s evening workshops attracted more first-time visitors than its morning workshops. Attendance at both types of workshop varied from week to week.\n\nWhich statement is supported by the text?",
+        "choices": [
+          "Evening workshops attract more first-time visitors at every library.",
+          "The evening workshops attracted more visitors of every kind than the morning workshops.",
+          "In the trial, evening workshops drew more first-time visitors than morning workshops.",
+          "The morning workshops became less popular each week during the trial."
+        ],
+        "solution": "Keep who was counted: first-time visitors. Keep where and when: one library’s six-week trial. Keep the direction: evening exceeds morning. C preserves all three.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The text compares first-time visitors during one trial. It does not compare every visitor, establish a weekly trend, or cover other libraries.",
+        "correct_index": 2
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "041e9993-4988-4284-b93e-ccdc6b20709a",
+      "kind": "raw_block",
+      "content": {
+        "id": "contrast",
+        "html": "<h2>A turn can carry the point</h2><p>Words such as <strong>but</strong> and <strong>although</strong> often tell you how the parts fit. Do not automatically choose the final sentence; connect it with what it changes.</p><p>“The device is small, but it stores a large amount of data” means small size with substantial capacity. A summary of only the size loses the contrast.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "93dcddb0-b60a-4d74-9419-466025df6668",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Preserve the change in how critics assessed the same feature.",
+        "prompt": "Although early reviewers called the novel’s many narrators confusing, later critics argued that the shifts in viewpoint reveal how differently the characters interpret the same event.\n\nWhich choice best states the main idea?",
+        "choices": [
+          "Early reviewers disagreed about which character should narrate the novel.",
+          "A feature first criticized as confusing was later valued for showing contrasting perspectives.",
+          "Later critics found the novel’s events less convincing than its early reviewers did.",
+          "The novel became easier to understand after its author removed several narrators."
+        ],
+        "solution": "Early view: multiple narrators are confusing. Later view: those shifts reveal different interpretations. Combine the two evaluations into B.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The narrators remain the same; the evaluation changes. The other choices invent a revision or misstate what the critics discuss.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "8c823f12-8edb-4656-9ce4-b865c53985c9",
+      "kind": "raw_block",
+      "content": {
+        "id": "literary",
+        "html": "<h2>For a scene, track the person’s situation</h2><p>A literary passage may reveal a character’s attitude or a small change instead of announcing an argument. Use actions and exact details. Avoid inventing a dramatic backstory.</p><p>If someone checks a letter repeatedly and delays opening it, that supports hesitation. It does not by itself identify the letter’s sender or predict its contents.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "2933d847-f975-4c4c-8ec2-e3e50fc943d4",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Compare her original intention with what she actually does.",
+        "prompt": "Mara had meant to discard the old radio. Yet when its dial lit up, she settled beside it, listening through the hiss until the familiar evening tune began. The unopened box for her new speaker remained on the table.\n\nWhich choice best states the main idea of the text?",
+        "choices": [
+          "Mara is frustrated that repairing her old radio has taken so much time.",
+          "Mara discovers that her new speaker cannot receive her favorite station.",
+          "Mara decides that older technology produces clearer sound than newer technology.",
+          "Mara feels drawn to a familiar object despite having planned to replace it."
+        ],
+        "solution": "Find the initial intention: discard the radio. Track the action: she sits and waits for a familiar tune. D captures that attachment without inventing a technical judgment.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Her plan to discard the radio gives way to listening. The new speaker is unopened, so no comparison of performance has occurred.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "9c7bee1e-5d60-4fc1-b5da-d2030b61c940",
+      "kind": "raw_block",
+      "content": {
+        "id": "paraphrase",
+        "html": "<h2>Match the relationship, not the repeated words</h2><p>The SAT can build a wrong choice from the passage’s own nouns. Check <strong>who does what</strong>, the direction of a comparison, and any reason given.</p><p>“Artists interview residents to plan murals” does not mean “residents interview artists about completed murals.” Familiar words cannot fix a reversed relationship.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "6851cefe-6f3f-42d9-88d3-e779bb188233",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Check the source of the words and the difference between near and distant viewing.",
+        "prompt": "An artist collects short phrases from neighborhood conversations and paints them into large murals. From a distance, the phrases blend into broad bands of color. Up close, viewers can read individual remarks about work, school, and family. The artist uses this shift in scale to connect a neighborhood’s collective appearance with the lives of its residents.\n\nWhich choice best describes the artist’s approach, as presented in the text?",
+        "choices": [
+          "The artist asks residents to choose the colors of murals that describe local history.",
+          "The artist turns existing murals into written accounts of residents’ private lives.",
+          "The artist uses residents’ words in images that offer different experiences at different viewing distances.",
+          "The artist records neighborhood conversations to show that residents agree about public art."
+        ],
+        "solution": "Locate the action: collecting phrases and painting them. Locate the effect: color bands from far away, readable remarks nearby. C preserves both.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The words come from residents, and the viewing distance changes what viewers perceive. The text does not say residents choose colors or agree.",
+        "correct_index": 2
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "edc127ff-8485-4614-8e95-a5f1b9e1e054",
+      "kind": "raw_block",
+      "content": {
+        "prompt": "A small museum once displayed only finished ceramic vessels. Its redesigned gallery places cracked trial pieces and handwritten firing notes beside the polished works. Visitors can now follow how potters adjusted their methods after unsuccessful attempts. The museum has retained its celebrated vessels, but it presents them as the outcomes of experimentation rather than as isolated masterpieces.\n\nWhich choice best states the main idea of the text?",
+        "choices": [
+          "The museum replaced its celebrated vessels with examples of unsuccessful experiments.",
+          "Visitors prefer cracked trial pieces to the polished works in the museum’s collection.",
+          "The museum’s notes explain why contemporary potters are more successful than earlier ones.",
+          "The redesigned gallery places finished works in the context of the experimentation that produced them."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "The central change is added context, not replacement. Notes and trial pieces show a process; visitor preferences and comparisons between generations are unstated.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "10e8f6fb-c56f-4fb8-b1c9-4d7ff7e49496",
+      "kind": "raw_block",
+      "content": {
+        "prompt": "For a neighborhood history project, Elena first cataloged photographs donated by residents. She then interviewed the donors to identify the streets and people in images with missing labels. When memories conflicted, she kept both accounts in the catalog and marked the identification as uncertain.\n\nAccording to the text, how did Elena handle conflicting memories?",
+        "choices": [
+          "She recorded the different accounts and indicated that the identification was unresolved.",
+          "She selected the account offered by the person who donated the photograph.",
+          "She treated the earliest interview as the most reliable identification.",
+          "She removed the photographs from the neighborhood history project."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "Keeping both accounts and marking uncertainty matches A. The text specifies no rule for choosing one account or removing an image.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "36e29450-ecbd-421b-aae4-859fcf651899",
+      "kind": "raw_block",
+      "content": {
+        "prompt": "You remember a striking detail, but the question asks for the main idea. What does Find the Point tell you to do?",
+        "choices": [
+          "Discard the detail and assume the final sentence must contain the complete answer.",
+          "Choose the detail if its wording appears unchanged in one of the answer choices.",
+          "Combine the important ideas, predict the overall message, and test each choice against that scope.",
+          "Choose the broadest claim about the topic even if it extends beyond the passage."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "Set the answer’s size from the question. A main idea is broad enough for the message and narrow enough for the evidence.",
+        "correct_index": 2
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "73197e7a-ec89-4da1-b77d-f06888e9945b",
+      "kind": "raw_block",
+      "content": {
+        "prompt": "For years, a city’s tree inventory listed the species and location of each street tree but recorded little about its surroundings. A volunteer team recently added photographs showing pavement, nearby buildings, and the amount of open soil at each site. The photographs do not replace the original measurements. Instead, they supply context that helps planners interpret why trees of the same species may fare differently on neighboring streets. The revised inventory thus preserves a useful record while making it more informative for future planting decisions.\n\nWhich choice best states the main idea of the text?",
+        "choices": [
+          "The photographs show that species has little influence on how well street trees grow.",
+          "Adding information about surroundings has made an existing tree inventory more useful to planners.",
+          "The volunteers replaced unreliable tree measurements with photographs of nearby buildings.",
+          "Future planting decisions will require planners to photograph every tree in the city each year."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "The passage centers on enriching an existing record. A dismisses species without support, C falsely replaces the measurements, and D invents an annual requirement.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "2505c1a0-8aa3-4df1-b105-36abaaae5857",
+      "kind": "raw_block",
+      "content": {
+        "html": "<h2>Find the Point.</h2><p>Let the question set the size of your answer.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "button_label": "Complete Lesson"
+      },
+      "block_type": "lesson_complete"
+    }
+  ]
+}

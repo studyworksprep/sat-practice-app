@@ -4,8 +4,21 @@
   "blocks": [
     {
       "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The standard deviation of data set A is less than the standard deviation of data set B.</li><li>The standard deviation of data set A is greater than the standard deviation of data set B.</li><li>The standard deviations are equal because both data sets contain four values.</li><li>The standard deviations cannot be compared without knowing each data set&#x27;s median.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "revision_opening_question",
+        "title": "Opening question",
+        "html": "<p>Data set A consists of the values \\(42, 44, 45, 47\\), and data set B consists of the values \\(30, 40, 50, 60\\). Which statement correctly compares the standard deviations of the two data sets?</p>"
+      }
+    },
+    {
+      "kind": "text",
       "id": "lesson_objective",
-      "html": "<h2>Standard deviation tells you about spread</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Read it as a spread meter — compare by eye, don't compute.</p><p><strong>Why it pays:</strong> Comparing two sets, or saying what happens when a value moves, is answerable from the shape of the data, with no formula.</p><p><strong>One caution:</strong> A bigger mean does not mean a bigger standard deviation. Compare each set's spread around its <em>own</em> center.</p></div><p>Look for questions that use the term <strong>standard deviation</strong>. They may ask you to compare two data sets, predict what happens after a value changes, or calculate a standard deviation.</p><p>You do not need to calculate standard deviation by hand. You need to understand what it says and know how to ask Desmos for it.</p><blockquote><p><strong>Goal:</strong> Read standard deviation as a measure of spread from the center, predict whether it increases or decreases, and calculate it with <strong>stdev</strong> in Desmos.</p></blockquote>",
+      "html": "<h2>Compare spread instead of size</h2><p>The opening sets have different values, but standard deviation asks how spread out they are. We can often compare that without a long calculation.</p><p>We’ll start with two pictures sharing the same mean so the difference in spread is easy to see.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -13,7 +26,7 @@
     {
       "kind": "text",
       "id": "spread_visual_exploration",
-      "html": "<h2>Start by comparing the pictures</h2><p>Both sets have mean \\(10\\). Set A stays close to \\(10\\), while Set B reaches much farther away.</p><p><img src=\"/images/standard-deviation-spread.svg\" alt=\"Two dot plots with mean 10: Set A is clustered at 8 through 12, while Set B is spread from 2 through 18\" width=\"1000\"></p><blockquote><p><strong>Before you continue:</strong> decide which set has values that are typically farther from its mean.</p></blockquote>",
+      "html": "<h2>Which picture spreads farther?</h2><p><img src=\"/images/standard-deviation-spread.svg\" alt=\"Two dot plots with mean 10: A spans 8 to 12, while B spans 2 to 18\" width=\"1000\"></p><p>Both means are 10. Which set’s values typically lie farther from it?</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -38,7 +51,7 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Standard deviation is about spread. Compare how far the dots usually sit from the mean line.",
-        "explanation": "Correct. Set B has the larger standard deviation because its values are typically farther from the mean."
+        "explanation": "Set B has the larger standard deviation because its values are typically farther from the mean."
       },
       "calculator": {
         "display": "hidden"
@@ -47,28 +60,7 @@
     {
       "kind": "text",
       "id": "standard_deviation_meaning",
-      "html": "<h2>A non-technical meaning</h2><p>Standard deviation describes a data set's <strong>typical distance from its mean</strong>. You can think of it as a spread meter.</p><ul><li><strong>Small standard deviation:</strong> values cluster near the mean.</li><li><strong>Large standard deviation:</strong> values spread farther from the mean.</li></ul><p>Standard deviation is never negative. A value of \\(0\\) means there is no spread at all.</p><blockquote><p><strong>Plain-English rule:</strong> more spread from the center means a larger standard deviation.</p></blockquote>",
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "meaning_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "A data set has a very small standard deviation. What does that tell you?",
-        "choices": [
-          "Its mean has to be small as well",
-          "It must contain very few values",
-          "Most values are close to the mean",
-          "Most values are negative"
-        ],
-        "correct_index": 2,
-        "allow_retry": true,
-        "hint": "Separate center from spread. Standard deviation describes how far values sit from the center.",
-        "explanation": "Exactly. A small standard deviation means the values are tightly clustered around their mean."
-      },
+      "html": "<h2>Use standard deviation as a spread measure</h2><p><strong>Standard deviation</strong> describes how spread out values are around their mean. Smaller values indicate tighter clustering; larger values indicate greater spread. It is never negative.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -76,28 +68,7 @@
     {
       "kind": "text",
       "id": "center_and_spread",
-      "html": "<h2>Mean and standard deviation answer different questions</h2><ul><li><strong>Mean:</strong> Where is the center?</li><li><strong>Standard deviation:</strong> How spread out are the values around that center?</li></ul><p>Two sets can have the same mean and different standard deviations. Two sets can also have different means but the same standard deviation.</p><p>For example, \\([1,2,3]\\) and \\([11,12,13]\\) have the same shape and spread. The second set is simply shifted \\(10\\) units to the right.</p>",
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "center_spread_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Set P is \\([4,5,6]\\), and Set Q is \\([14,15,16]\\). How do their standard deviations compare?",
-        "choices": [
-          "They are equal because the sets have the same spread",
-          "Set P's is larger because its values are smaller",
-          "Set Q's is larger because its mean is larger",
-          "They cannot be compared without combining the sets"
-        ],
-        "correct_index": 0,
-        "allow_retry": true,
-        "hint": "Every value in Set Q is exactly 10 more than the matching value in Set P. Did the distances among the values change?",
-        "explanation": "Correct. The entire set shifted, but the spread stayed the same, so the standard deviations are equal."
-      },
+      "html": "<h2>A shift does not change spread</h2><p>The mean describes the center; standard deviation describes spread around that center. The lists [1,2,3] and [11,12,13] have different means but the same spread.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -105,7 +76,7 @@
     {
       "kind": "text",
       "id": "conceptual_comparison_process",
-      "html": "<h2>Compare standard deviations without calculating</h2><ol><li><strong>Find each set's center.</strong> A rough center is enough.</li><li><strong>Look at typical distances.</strong> Which set stays close to its own center?</li><li><strong>Notice extreme values.</strong> A value far from the rest usually increases spread.</li></ol><p>Do not compare means and assume the larger mean has the larger standard deviation. Compare each set's spread around its own mean.</p><blockquote><p><strong>Decision:</strong> the set whose values are typically farther from its center has the larger standard deviation.</p></blockquote>",
+      "html": "<h2>Center, Spread, Change</h2><ol><li>Locate each set’s own mean.</li><li>Compare how far its values spread around that mean.</li><li>For a change, inspect the values that remain.</li></ol><p>If the comparison is unclear, calculate both rather than deciding from the means or endpoints alone.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -125,7 +96,7 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Ignore which set has the largest values. Compare how far each set spreads around its own center.",
-        "explanation": "Right. \\([2,6,10,14,18]\\) reaches farthest from its center. The other three sets have the same narrow five-number pattern shifted to different centers."
+        "explanation": "\\([2,6,10,14,18]\\) reaches farthest from its center. The other three sets have the same narrow five-number pattern shifted to different centers."
       },
       "calculator": {
         "display": "hidden"
@@ -134,7 +105,7 @@
     {
       "kind": "text",
       "id": "adding_one_value",
-      "html": "<h2>Adding one value: ask where it lands</h2><p>When one new data value is added, compare it with the current center.</p><ul><li>A new value <strong>near the center</strong> usually decreases the standard deviation.</li><li>A new value <strong>far from the center</strong> usually increases the standard deviation.</li></ul><p>The mean may move a little, but distance from the main cluster is still the key idea.</p><blockquote><p><strong>Prediction question:</strong> Does the new value join the cluster or stretch the set outward?</p></blockquote>",
+      "html": "<h2>Adding a value can change the spread</h2><p>A value at the mean adds to the cluster; a very distant value stretches it. For [8,9,10,11,12], adding 30 creates much more spread than adding another 10.</p><p>Inspect the whole set after the change, since its mean can move too.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -154,7 +125,7 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "The current set clusters around 10. Which choice would stretch the set farthest away?",
-        "explanation": "Correct. Adding \\(30\\) creates a value far from the cluster, so the spread and standard deviation increase."
+        "explanation": "Adding \\(30\\) creates a value far from the cluster, so the spread and standard deviation increase."
       },
       "calculator": {
         "display": "hidden"
@@ -163,7 +134,7 @@
     {
       "kind": "text",
       "id": "removing_one_value",
-      "html": "<h2>Removing one value reverses the question</h2><ul><li>Removing a value <strong>far from the center</strong> usually decreases the standard deviation.</li><li>Removing a value <strong>near the center</strong> can increase the standard deviation because the remaining values are less concentrated.</li></ul><p>Focus on what remains. If the removal makes the set tighter, standard deviation decreases. If it leaves mostly farther-apart values, standard deviation increases.</p>",
+      "html": "<h2>Focus on what remains after removal</h2><p>Removing a distant value can tighten a set. Removing a central value can leave a less concentrated set. Compare the remaining values around their new mean.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -183,7 +154,7 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Which value is farthest from the main cluster near 5?",
-        "explanation": "Exactly. Removing \\(20\\) removes the farthest value and makes the remaining set much tighter."
+        "explanation": "Removing \\(20\\) removes the farthest value and makes the remaining set much tighter."
       },
       "calculator": {
         "display": "hidden"
@@ -192,7 +163,7 @@
     {
       "kind": "text",
       "id": "replacing_one_value",
-      "html": "<h2>Replacing a value: track its movement</h2><p>A replacement removes one value and adds another. Compare the old and new positions.</p><ul><li>Move a value <strong>toward the center</strong> and standard deviation usually decreases.</li><li>Move a value <strong>away from the center</strong> and standard deviation usually increases.</li></ul><p>You usually do not need exact arithmetic. Decide whether the replacement tightens or stretches the set.</p>",
+      "html": "<h2>A replacement can tighten or stretch the set</h2><p>For [3,4,5,6,20], replacing 20 with 7 removes the distant value and puts it near the cluster. The standard deviation decreases. If a change is less clear, calculate both versions.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -212,7 +183,7 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Compare how far 20 and 7 sit from the main cluster near 5.",
-        "explanation": "Correct. Replacing \\(20\\) with \\(7\\) pulls the extreme value toward the center, so the set becomes less spread out."
+        "explanation": "Replacing \\(20\\) with \\(7\\) pulls the extreme value toward the center, so the set becomes less spread out."
       },
       "calculator": {
         "display": "hidden"
@@ -221,7 +192,7 @@
     {
       "kind": "text",
       "id": "shift_every_value",
-      "html": "<h2>Do not confuse adding a value with adding to every value</h2><p>Adding one new value can change spread. Adding the same amount to <strong>every</strong> value only shifts the whole set.</p><p>For example:</p><p>\\[[2,4,6]\\longrightarrow[12,14,16]\\]</p><p>Every value increased by \\(10\\), but the gaps and distances from the mean stayed the same.</p><blockquote><p><strong>Shift rule:</strong> adding or subtracting the same constant from every value does not change standard deviation.</p></blockquote>",
+      "html": "<h2>Changing every value by the same amount is a shift</h2><p>Adding or subtracting a constant from every value moves the mean by that amount too. Distances from the mean stay the same, so standard deviation stays the same.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -241,7 +212,7 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "The center shifts by 7 too. Think about whether any distance from the center changes.",
-        "explanation": "Right. The entire set shifts together, so its spread and standard deviation stay the same."
+        "explanation": "The entire set shifts together, so its spread and standard deviation stay the same."
       },
       "calculator": {
         "display": "hidden"
@@ -250,7 +221,7 @@
     {
       "kind": "text",
       "id": "zero_standard_deviation",
-      "html": "<h2>Zero means every value is identical</h2><p>If all values equal the mean, every distance from the mean is zero. Therefore the standard deviation is zero.</p><p>For example, \\([7,7,7,7]\\) has standard deviation \\(0\\).</p><p>If even one value differs, the set has some spread and its standard deviation is greater than zero.</p>",
+      "html": "<h2>Zero spread means identical values</h2><p>[7,7,7,7] has standard deviation 0 because every value equals the mean. If any value differs, there is some spread.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -270,7 +241,7 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Zero spread means no value is different from any other value.",
-        "explanation": "Correct. Every value in \\([6,6,6,6]\\) is identical, so every distance from the mean is zero."
+        "explanation": "Every value in \\([6,6,6,6]\\) is identical, so every distance from the mean is zero."
       },
       "calculator": {
         "display": "hidden"
@@ -284,7 +255,7 @@
       },
       "kind": "text",
       "id": "desmos_direct_entry",
-      "html": "<h2>Calculate standard deviation directly in Desmos</h2><p>The <strong>stdev</strong> function finds standard deviation. In the embedded SAT calculator, you can type the data values directly:</p><p>\\[\\operatorname{stdev}(2,3,4,5,6)\\]</p><p>Use commas between values and close the parenthesis. Desmos displays approximately \\(1.58\\).</p><blockquote><p><strong>Try it:</strong> Type <strong>stdev(2,3,4,5,6)</strong> in the open calculator and read the result.</p></blockquote>",
+      "html": "<h2>Ask Desmos for a numerical result</h2><p>Type stdev(2,3,4,5,6). Read the result, about 1.58. This command returns the <strong>sample standard deviation</strong>.</p><p>For a question explicitly treating the listed data as the entire population, use stdevp instead. Follow any command or definition the question specifies.</p>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -310,7 +281,7 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Read the decimal displayed below the stdev expression.",
-        "explanation": "Correct. Desmos reports approximately \\(1.58\\). You can use the displayed decimal; you do not need the hand-calculation formula."
+        "explanation": "Desmos reports approximately \\(1.58\\). You can use the displayed decimal; you do not need the hand-calculation formula."
       },
       "calculator": {
         "display": "open",
@@ -331,130 +302,12 @@
       "shared_prompt": "shared_desmos_direct_entry",
       "kind": "text",
       "id": "desmos_named_list",
-      "html": "<h2>A named list is better when data may change</h2><p>On the first line, assign the list to a variable:</p><p>\\[A=[2,3,4,5,6]\\]</p><p>On the second line, enter:</p><p>\\[\\operatorname{stdev}(A)\\]</p><p>This gives the same result as direct entry. The advantage is that you can edit \\(A\\) once and every expression using \\(A\\) updates automatically.</p><blockquote><p><strong>Preferred workflow:</strong> define the list, then apply <strong>stdev</strong> to its name.</p></blockquote>",
+      "html": "<h2>Store a set you want to change</h2><p>Enter A=[2,3,4,5,6], then stdev(A) on another row. Change the list once and its result updates. Use the same standard-deviation command when comparing two versions.</p>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
         "title": "Define A, then use stdev(A)",
         "editable": true,
-        "resettable": true,
-        "lock_viewport": false
-      }
-    },
-    {
-      "shared_prompt": "shared_desmos_direct_entry",
-      "kind": "raw_block",
-      "id": "named_list_benefit_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Why is \\(A=[2,3,4,5,6]\\) followed by \\(\\operatorname{stdev}(A)\\) often better than direct entry?",
-        "choices": [
-          "You can edit the list once and every calculation using \\(A\\) updates",
-          "A named list always makes the standard deviation smaller",
-          "Desmos cannot calculate a standard deviation from direct values",
-          "The letter \\(A\\) changes the data into an equation"
-        ],
-        "correct_index": 0,
-        "allow_retry": true,
-        "hint": "Think about comparing an original set with a changed version or correcting one mistyped value.",
-        "explanation": "Exactly. A named list keeps the data reusable, so editing the list updates \\(\\operatorname{stdev}(A)\\) automatically."
-      },
-      "calculator": {
-        "display": "open",
-        "mode": "preset",
-        "title": "See a reusable list",
-        "initial_expressions": [
-          {
-            "id": "named_list_a",
-            "latex": "A=[2,3,4,5,6]"
-          },
-          {
-            "id": "named_list_a_stdev",
-            "latex": "\\operatorname{stdev}(A)"
-          }
-        ],
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
-      }
-    },
-    {
-      "shared_prompt": {
-        "id": "shared_desmos_compare_sets",
-        "title": "Sets A and B",
-        "html": "<p>\\[A=[8,9,10,11,12]\\]</p><p>\\[B=[2,6,10,14,18]\\]</p>"
-      },
-      "kind": "text",
-      "id": "desmos_compare_sets",
-      "html": "<h2>Use named lists to compare two sets</h2><p>Desmos calculates both standard deviations. The lists have the same mean, but \\(B\\) is much more spread out.</p><blockquote><p><strong>Connect the ideas:</strong> your visual prediction and the Desmos values should agree.</p></blockquote>",
-      "calculator": {
-        "display": "open",
-        "mode": "preset",
-        "title": "Compare two named lists",
-        "initial_expressions": [
-          {
-            "id": "compare_list_a",
-            "latex": "A=[8,9,10,11,12]"
-          },
-          {
-            "id": "compare_list_b",
-            "latex": "B=[2,6,10,14,18]"
-          },
-          {
-            "id": "compare_stdev_a",
-            "latex": "\\operatorname{stdev}(A)"
-          },
-          {
-            "id": "compare_stdev_b",
-            "latex": "\\operatorname{stdev}(B)"
-          }
-        ],
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
-      }
-    },
-    {
-      "shared_prompt": "shared_desmos_compare_sets",
-      "kind": "raw_block",
-      "id": "desmos_compare_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "What do the Desmos results confirm about Sets A and B?",
-        "choices": [
-          "Set A has the larger standard deviation because its values are consecutive",
-          "The standard deviations are equal because the means are equal",
-          "Set B has the smaller standard deviation because it includes 10",
-          "Set B has the larger standard deviation because it is more spread out"
-        ],
-        "correct_index": 3,
-        "allow_retry": true,
-        "hint": "Compare the two displayed stdev values and connect the larger value with the more spread-out list.",
-        "explanation": "Correct. Desmos confirms the conceptual comparison: Set B is more spread out, so its standard deviation is larger."
-      },
-      "calculator": {
-        "display": "open",
-        "mode": "preset",
-        "title": "Confirm the larger spread",
-        "initial_expressions": [
-          {
-            "id": "check_list_a",
-            "latex": "A=[8,9,10,11,12]"
-          },
-          {
-            "id": "check_list_b",
-            "latex": "B=[2,6,10,14,18]"
-          },
-          {
-            "id": "check_stdev_a",
-            "latex": "\\operatorname{stdev}(A)"
-          },
-          {
-            "id": "check_stdev_b",
-            "latex": "\\operatorname{stdev}(B)"
-          }
-        ],
-        "editable": false,
         "resettable": true,
         "lock_viewport": false
       }
@@ -467,7 +320,7 @@
       },
       "kind": "text",
       "id": "desmos_test_outlier",
-      "html": "<h2>Predict first, then check a changed value</h2><p>Before reading the outputs, predict which set has the larger standard deviation. Then compare \\(\\operatorname{stdev}(C)\\) and \\(\\operatorname{stdev}(D)\\).</p><blockquote><p><strong>Use Desmos as a check:</strong> the value farther from the cluster should stretch the spread.</p></blockquote>",
+      "html": "<h2>Predict, then compare the results</h2><p>Compare C and D before reading their standard deviations. Then read stdev(C) and stdev(D) to check whether the change stretched or tightened the spread.</p>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -511,7 +364,7 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Compare the positions of the old value 12 and the new value 20 relative to the other four values.",
-        "explanation": "Right. The replacement stretches the set outward. The reason is distance from the cluster, not the list name or the fact that a replacement occurred."
+        "explanation": "The replacement stretches the set outward. The reason is distance from the cluster, not the list name or the fact that a replacement occurred."
       },
       "calculator": {
         "display": "open",
@@ -543,28 +396,66 @@
     {
       "kind": "text",
       "id": "prediction_process",
-      "html": "<h2>A four-step process for standard-deviation questions</h2><ol><li><strong>Identify the task.</strong> Compare, predict a change, or calculate.</li><li><strong>Find the center and spread.</strong> Look for clustering and far values.</li><li><strong>Track the change.</strong> Does it tighten the set, stretch it, or shift every value together?</li><li><strong>Use Desmos when a number is required.</strong> Enter <strong>stdev(values)</strong>, or define a named list and enter <strong>stdev(list name)</strong>.</li></ol><blockquote><p><strong>Do not calculate by hand unless explicitly required:</strong> reason about spread first, then use Desmos for the value.</p></blockquote>",
+      "html": "<h2>Choose reasoning or calculation</h2><p>For a clear spread comparison, use Center, Spread, Change. When a number is requested or the effect is uncertain, enter the data in Desmos and use the appropriate standard-deviation command.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the two data sets</h2><p>Try the opening comparison again. Decide which set is more spread out around its own center.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "prediction_process_check",
+      "id": "authentic_item",
       "block_type": "check",
       "content": {
-        "prompt": "A question replaces one data value and asks whether standard deviation increases or decreases. What should you examine first?",
+        "prompt": "Return to the opening question. What answer do you get now?",
         "choices": [
-          "Whether the newly inserted value is positive or negative",
-          "Whether the total number of values stayed the same",
-          "Whether the replacement moved toward or away from the set's center",
-          "Whether the set's mean works out to a whole number"
+          "The standard deviation of data set A is less than the standard deviation of data set B.",
+          "The standard deviation of data set A is greater than the standard deviation of data set B.",
+          "The standard deviations are equal because both data sets contain four values.",
+          "The standard deviations cannot be compared without knowing each data set's median."
         ],
-        "correct_index": 2,
+        "correct_index": 0,
         "allow_retry": true,
-        "hint": "Standard deviation measures spread from the center.",
-        "explanation": "Correct. Track the replacement's distance from the center: toward the center usually decreases spread; away usually increases it."
+        "hint": "Compare how far values sit from each set’s own mean. A higher mean alone does not mean more spread.",
+        "explanation": "Set A's values cluster within a few units of their mean, while set B's sit \\(10\\) or more away, so B has the larger spread. Equal counts do not make spreads equal, and Desmos stdev confirms: about \\(2.1\\) versus \\(12.9\\).",
+        "solution": "Set A's values cluster within a few units of their mean, while set B's sit \\(10\\) or more away, so B has the larger spread. Equal counts do not make spreads equal, and Desmos stdev confirms: about \\(2.1\\) versus \\(12.9\\)."
       },
+      "calculator": {
+        "display": "open"
+      },
+      "shared_prompt": "revision_opening_question"
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "From memory: what does standard deviation measure, what makes it bigger, and how do you ask Desmos for it?",
+        "choices": [
+          "Standard deviation measures spread from the mean; farther values decrease spread, and Desmos stdev can calculate it",
+          "Standard deviation measures spread from the median; values above the mean increase spread, and Desmos total can calculate it",
+          "Standard deviation measures the gap between the largest and smallest values; adding any value increases it, and Desmos mean calculates it",
+          "Standard deviation measures spread from the mean; farther values increase spread, and Desmos stdev can calculate it"
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "You have it. Standard deviation describes spread around the mean. Reason about whether values move toward or away from the center, and use stdev in Desmos when you need the numerical value."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -582,13 +473,13 @@
           "It becomes zero because the mean was added"
         ],
         "correct_index": 0,
-        "allow_retry": true,
-        "solution": "The set \\([0,10]\\) has mean \\(5\\), and both values sit \\(5\\) away from that center.\nAdding the value \\(5\\) places a new data point exactly at the mean, so ask the prediction question: does it join the cluster or stretch the set outward?\nIt joins the center: the set becomes \\([0,5,10]\\), the endpoints stay put, and a larger share of the data now sits at zero distance from the mean.\nMore concentration near the center means a smaller typical distance from the mean, so the standard deviation decreases.\nSo the answer is choice A, it decreases because the new value joins the center of the set.",
-        "hint": "Ask whether adding 5 makes the values more concentrated around the center.",
-        "explanation": "Correct. Adding a value at the mean increases the concentration near the center, so the standard deviation decreases."
+        "allow_retry": false,
+        "explanation": "Adding a value at the mean increases the concentration near the center, so the standard deviation decreases."
       },
       "calculator": {
-        "display": "hidden"
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
       }
     },
     {
@@ -604,13 +495,13 @@
           "It increases because only the two far-apart endpoints remain"
         ],
         "correct_index": 3,
-        "allow_retry": true,
-        "solution": "The set \\([0,5,10]\\) has mean \\(5\\): the value \\(5\\) sits at the center, while \\(0\\) and \\(10\\) sit at the edges.\nRemoving \\(5\\) takes away the only value at zero distance from the mean, leaving \\([0,10]\\).\nEvery remaining value is now a full \\(5\\) from the mean, so the typical distance from the center goes up even though the endpoints never moved.\nLess concentration near the center means a larger standard deviation.\nSo the answer is choice D, it increases because only the two far-apart endpoints remain.",
-        "hint": "Compare the concentration of [0,5,10] with the remaining set [0,10].",
-        "explanation": "Right. Removing the central value leaves only the far-apart endpoints, so the remaining set is more spread out."
+        "allow_retry": false,
+        "explanation": "Removing the central value leaves only the far-apart endpoints, so the remaining set is more spread out."
       },
       "calculator": {
-        "display": "hidden"
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
       }
     },
     {
@@ -619,25 +510,17 @@
       "block_type": "check",
       "content": {
         "prompt": "Use Desmos to find \\(\\operatorname{stdev}(1,2,3)\\). What is the result?",
-        "choices": [
-          "\\(0\\)",
-          "\\(1\\)",
-          "\\(2\\)",
-          "\\(3\\)"
-        ],
-        "correct_index": 1,
-        "allow_retry": true,
-        "solution": "In Desmos, type \\(\\operatorname{stdev}(1,2,3)\\) exactly, with commas between the values.\nDesmos handles the computation and returns \\(1\\).\nThe result is reasonable: the mean of the set is \\(2\\), and every value sits within \\(1\\) of that center, so a spread of \\(1\\) fits the data.\nSo the answer is choice B, \\(1\\).",
-        "hint": "Type stdev(1,2,3) exactly, using commas between the values.",
-        "explanation": "Correct. Desmos returns \\(1\\). The calculator handles the computation; your job is to enter the data accurately and interpret the result."
+        "choices": null,
+        "correct_index": null,
+        "allow_retry": false,
+        "explanation": "Desmos returns \\(1\\). The calculator handles the computation; your job is to enter the data accurately and interpret the result.",
+        "input": "numeric",
+        "answer": "1"
       },
       "calculator": {
-        "display": "open",
+        "display": "available",
         "mode": "scratch",
-        "title": "Calculate stdev(1,2,3)",
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
+        "title": "Scratch calculator"
       }
     },
     {
@@ -654,53 +537,12 @@
         ],
         "correct_index": 2,
         "allow_retry": false,
-        "hint": "P has no spread. Q stays close to 5. R reaches farthest from 5.",
-        "explanation": "Exactly. P has standard deviation 0, Q has a small spread around 5, and R has the largest spread."
+        "explanation": "P has standard deviation 0, Q has a small spread around 5, and R has the largest spread."
       },
       "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "final_retrieval_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "From memory: what does standard deviation measure, what makes it bigger, and how do you ask Desmos for it?",
-        "choices": [
-          "Standard deviation measures spread from the mean; farther values decrease spread, and Desmos stdev can calculate it",
-          "Standard deviation measures spread from the median; values above the mean increase spread, and Desmos total can calculate it",
-          "Standard deviation measures the gap between the largest and smallest values; adding any value increases it, and Desmos mean calculates it",
-          "Standard deviation measures spread from the mean; farther values increase spread, and Desmos stdev can calculate it"
-        ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "Recall the plain-English meaning and the Desmos function name.",
-        "explanation": "You have it. Standard deviation describes spread around the mean. Reason about whether values move toward or away from the center, and use stdev in Desmos when you need the numerical value."
-      },
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "authentic_item",
-      "block_type": "check",
-      "content": {
-        "prompt": "Data set A consists of the values \\(42, 44, 45, 47\\), and data set B consists of the values \\(30, 40, 50, 60\\). Which statement correctly compares the standard deviations of the two data sets?",
-        "choices": [
-          "The standard deviation of data set A is less than the standard deviation of data set B.",
-          "The standard deviation of data set A is greater than the standard deviation of data set B.",
-          "The standard deviations are equal because both data sets contain four values.",
-          "The standard deviations cannot be compared without knowing each data set's median."
-        ],
-        "correct_index": 0,
-        "allow_retry": false,
-        "hint": "Reason about spread from each mean before calculating anything.",
-        "explanation": "Correct. Set A's values cluster within a few units of their mean, while set B's sit \\(10\\) or more away, so B has the larger spread. Equal counts do not make spreads equal, and Desmos stdev confirms: about \\(2.1\\) versus \\(12.9\\)."
-      },
-      "calculator": {
-        "display": "open"
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
       }
     },
     {
@@ -708,8 +550,11 @@
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>Read the spread; don't compute it</h2><p>Standard deviation is how far values typically sit from their own center — compare it by eye, and when a value moves, ask whether it moved away from the middle or toward it. A bigger mean does not mean a bigger spread.</p>",
+        "html": "<h2>Read the Spread</h2><p>Compare distances from each set’s own mean.</p>",
         "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
       }
     }
   ]

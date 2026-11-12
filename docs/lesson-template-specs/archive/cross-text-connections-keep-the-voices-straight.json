@@ -1,0 +1,386 @@
+{
+  "title": "Keep the Voices Straight: Cross-Text Connections",
+  "description": "Separate two texts’ claims, identify the exact relationship the question asks about, and prove agreement, difference, or a likely response using both texts.",
+  "blocks": [
+    {
+      "id": "3a61362b-e354-449d-8e3d-c61d06c9a6c6",
+      "kind": "raw_block",
+      "content": {
+        "id": "intro",
+        "html": "<h2>Two passages do not have to mean two opposing sides</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Keep the Voices Straight: one claim per text, then the connection.</p><p><strong>Why it pays:</strong> You can predict the relationship before the choices blur who believes what.</p><p><strong>One caution:</strong> A writer can accept a finding while challenging the conclusion drawn from it.</p></div><p>Start with two views of the same town square. Decide whether the second writer rejects everything the first writer says.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "397d4e24-bad4-4616-9f2e-be87fc2f4be8",
+      "kind": "raw_block",
+      "content": {
+        "id": "explore",
+        "html": "<h2>Where do these writers overlap?</h2><p><strong>Text 1</strong></p><p>The new benches in the square have made it a better place to spend time. More people stop there to talk instead of simply passing through.</p><p><strong>Text 2</strong></p><p>The benches have encouraged people to linger in the square. However, because none are shaded, they are difficult to use on hot afternoons. The next improvement should be shade.</p><p><strong>Pause:</strong> Name one thing both writers say, then one point only Text 2 adds.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "157070a3-d2e6-4e30-bc8c-d8b9233ebb03",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Find a claim with evidence in each text, not just a shared topic.",
+        "prompt": "Text 1\nThe new benches in the square have made it a better place to spend time. More people stop there to talk instead of simply passing through.\n\nText 2\nThe benches have encouraged people to linger in the square. However, because none are shaded, they are difficult to use on hot afternoons. The next improvement should be shade.\n\nWhich statement do both writers support?",
+        "choices": [
+          "The square needs shade before any benches can be useful.",
+          "The square was rarely used before the benches were installed.",
+          "The benches have encouraged people to spend time in the square.",
+          "The benches have made the square comfortable in every season."
+        ],
+        "solution": "Text 1: people stop to talk. Text 2: people linger. These support the same claim, C. Text 2’s criticism of heat does not cancel that agreement.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Both describe people staying longer. Shade is Text 2’s addition; neither supplies a history of usage or a claim about every season.",
+        "correct_index": 2
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "64e7d7c3-742b-408f-a62b-645d69d2d358",
+      "kind": "raw_block",
+      "content": {
+        "id": "relationships",
+        "html": "<h2>Name the connection precisely</h2><p><strong>Agreement:</strong> both support the same claim. <strong>Disagreement:</strong> they make incompatible claims about the same issue. <strong>Qualification:</strong> one accepts part of a claim but limits or complicates it.</p><p>A text can also extend another with an additional example or explanation.</p><blockquote><p><strong>Key idea:</strong> “Yes, but…” is not the same as “No.”</p></blockquote>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "06897965-136c-4a76-9251-e81dbe850dc4",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Separate agreement about searching from the criticism about completeness.",
+        "prompt": "Text 1 says a new catalog makes an archive easier to search. Text 2 agrees that searching is easier but says the catalog still leaves many documents unlisted.\n\nHow does Text 2 relate to Text 1?",
+        "choices": [
+          "It accepts the improvement while pointing out a remaining limitation.",
+          "It rejects the claim that the catalog improves access to documents.",
+          "It explains why the archive’s documents are difficult to preserve.",
+          "It argues that the catalog lists documents that do not belong in the archive."
+        ],
+        "solution": "Easier searching is shared ground. Missing documents limit the achievement rather than reverse it.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Easier searching is shared ground. Missing documents limit the achievement rather than reverse it.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "8cb1ad29-68d5-48b3-9e29-23f02a713cca",
+      "kind": "raw_block",
+      "content": {
+        "id": "process",
+        "html": "<h2>Keep the Voices Straight in four moves</h2><ol><li><strong>Target:</strong> Identify who responds to whom, or whether the question asks for agreement or difference.</li><li><strong>Separate:</strong> Give each text a short claim, keeping its evidence and limits attached.</li><li><strong>Connect:</strong> Predict the relationship on the exact issue named.</li><li><strong>Prove:</strong> Check every part of the chosen answer against the appropriate text.</li></ol><p>For a response question, finish this thought: “Using Text 2’s view, Text 2 would say ___ about that claim in Text 1.”</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "526a550b-7142-496c-835b-5d9353a50856",
+      "kind": "raw_block",
+      "content": {
+        "id": "model",
+        "html": "<h2>Model a likely response</h2><p><strong>Text 1</strong></p><p>A music critic argues that recordings are sufficient for preserving a local song tradition. They retain the melodies accurately, allowing future listeners to hear songs that might otherwise disappear.</p><p><strong>Text 2</strong></p><p>A folklorist values recordings but notes that a song tradition includes more than melody. The occasions when people sing, and the ways they teach songs to one another, also carry meaning that a recording alone may not capture.</p><p><strong>Target:</strong> How would Text 2 respond to “recordings are sufficient”?</p><p><strong>Separate:</strong> Text 1: recordings preserve melodies, so they are enough. Text 2: recordings help, but practices and context also matter.</p><p><strong>Prediction:</strong> Useful, but not enough by themselves. That is a qualification, not a claim that recordings are worthless.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "ab7e0992-1536-4ec6-8dac-3f14609496de",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Respond to sufficiency using the folklorist’s actual concern.",
+        "prompt": "Text 1\nA music critic argues that recordings are sufficient for preserving a local song tradition. They retain the melodies accurately, allowing future listeners to hear songs that might otherwise disappear.\n\nText 2\nA folklorist values recordings but notes that a song tradition includes more than melody. The occasions when people sing, and the ways they teach songs to one another, also carry meaning that a recording alone may not capture.\n\nHow would the folklorist most likely respond to the critic’s claim that recordings are sufficient?",
+        "choices": [
+          "By arguing that recordings usually fail to reproduce a song’s melody accurately",
+          "By explaining that recordings preserve melodies but may omit other meaningful parts of the tradition",
+          "By questioning whether future listeners will be interested in traditional songs",
+          "By recommending that recordings replace the practice of teaching songs in person"
+        ],
+        "solution": "Locate “sufficient” in Text 1. Apply Text 2’s distinction between melody and social practice. B preserves both the usefulness of recordings and their limitation.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Text 2 values recordings and identifies what they omit. It neither rejects their accuracy nor predicts future listeners’ interest.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "cbade0c7-f985-4ae8-9c0d-ffea24eb4017",
+      "kind": "raw_block",
+      "content": {
+        "id": "direction",
+        "html": "<h2>Keep the direction of the response straight</h2><p>“How would the author of Text 1 respond to Text 2?” asks you to use <strong>Text 1’s</strong> position. The order of the text boxes does not settle the direction.</p><p>Mark the responding voice mentally before comparing choices. A statement can accurately summarize the other author and still answer the wrong question.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "05ce9cc4-049d-4c83-a936-5a02c372a54a",
+      "kind": "raw_block",
+      "content": {
+        "hint": "The responder is the curator. Use the benefit that the curator actually names.",
+        "prompt": "Text 1: A curator argues that replicas let visitors handle objects without damaging the originals.\n\nText 2: A critic argues that a replica cannot convey the marks left by centuries of use.\n\nHow would the curator in Text 1 most likely respond to the critic?",
+        "choices": [
+          "By agreeing that replicas should be removed from every museum display",
+          "By claiming that visitors cannot distinguish replicas from original objects",
+          "By denying that original objects can show signs of long use",
+          "By emphasizing that replicas offer hands-on access while protecting original objects"
+        ],
+        "solution": "Identify the responding voice: curator. Retrieve that voice’s reason: handling replicas protects originals. Apply it to the criticism; D offers the stated benefit rather than inventing a denial.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The curator’s stated reason is access without damage. D uses that position without pretending to disprove the critic’s point.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "4ab69eb8-a788-4af7-b447-73157476fa26",
+      "kind": "raw_block",
+      "content": {
+        "id": "target_claim",
+        "html": "<h2>Respond to the exact claim</h2><p>A passage can report someone else’s claim before questioning it. Keep the speaker attached: “Some researchers argue X” does not automatically mean the author endorses X.</p><blockquote><p><strong>Target check:</strong> If the question quotes a claim, compare that claim—not a neighboring fact—with the other text.</p></blockquote>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "6c631b4a-c9d7-4273-8713-2e7a71c9d601",
+      "kind": "raw_block",
+      "content": {
+        "hint": "The question targets the historians’ explanation, not Text 1’s later objection.",
+        "prompt": "Text 1: Some historians argue that the theater closed because local interest declined. The author notes, however, that ticket sales were steady during its final year.\n\nText 2: Building records show that the theater was declared unsafe shortly before it closed, although its audience remained substantial.\n\nHow would the author of Text 2 most likely respond to the historians’ claim reported in Text 1?",
+        "choices": [
+          "By challenging it with evidence of a safety problem despite continued audience interest",
+          "By arguing that the theater had never attracted a substantial audience",
+          "By supporting it with evidence that ticket sales steadily fell",
+          "By rejecting the building records because they were produced after the closure"
+        ],
+        "solution": "Identify the quoted explanation: declining interest. Text 2 supplies a different possible reason and states that an audience remained. That supports the challenge in A.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Safety records and an audience that remained substantial undermine the declining-interest explanation. The records precede the closure.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "be87084c-b3d4-4eca-9b39-e783ef8e6169",
+      "kind": "raw_block",
+      "content": {
+        "id": "evidence_conclusion",
+        "html": "<h2>A result and its interpretation are different</h2><p>A writer may trust a measured result but question what it proves. Separate <strong>what happened</strong> from <strong>what someone concludes</strong>.</p><p>“Scores rose after the new program, so the program caused the rise” contains both a result and a causal conclusion. Another writer could accept the rise but ask what else changed.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "1f4c58ab-7eb4-4505-a8cf-8b0257ea5e8e",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Check whether Text 2 rejects the recorded change or the explanation for it.",
+        "prompt": "Text 1: After a school introduced a reading club, participants borrowed more books. The organizer concludes that the club caused the increase.\n\nText 2: The borrowing increase is encouraging. However, the school extended library hours at the same time, so the records alone cannot show which change produced the increase.\n\nWhich choice best describes the relationship between the texts?",
+        "choices": [
+          "Text 2 proves that longer hours caused the entire increase in borrowing.",
+          "Text 2 disputes whether the records show any increase in borrowing.",
+          "Text 2 accepts the increase but questions whether the club alone explains it.",
+          "Text 2 agrees that the club’s effect can be isolated from the records."
+        ],
+        "solution": "Separate result from conclusion in Text 1. Text 2 calls the increase encouraging but introduces simultaneous longer hours. C captures the limited challenge.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Text 2 questions attribution, not the increase itself. It raises another explanation without establishing that explanation as the sole cause.",
+        "correct_index": 2
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "16063931-5848-4340-ac7d-ae82472420b9",
+      "kind": "raw_block",
+      "content": {
+        "id": "agreement",
+        "html": "<h2>Agreement needs two pieces of support</h2><p>For “both authors would agree,” test the proposed claim twice: once against each text.</p><p>A topic both mention is not necessarily a belief both hold. A plausible statement that only one author supports fails the two-text test.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "2d9dfd3e-0689-4355-a357-7a51c78867f2",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Look for the common limit on what a translation can preserve.",
+        "prompt": "Text 1: Translating a poem requires choices because a single phrase may combine sound and meaning in ways another language cannot reproduce exactly.\n\nText 2: A useful translation preserves a poem’s central images, even if doing so requires changing its rhythm. No version can retain every feature of the original.\n\nBoth authors would most likely agree with which statement?",
+        "choices": [
+          "A poem’s rhythm should always be preserved at the expense of its meaning.",
+          "The best translations reproduce every feature of the original poem.",
+          "Readers should study only poems written in languages they already know.",
+          "Translating poetry involves tradeoffs among features of the original."
+        ],
+        "solution": "Text 1 says sound and meaning cannot always be reproduced exactly. Text 2 says no version retains every feature. Both support the tradeoffs in D.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Both describe an inability to preserve everything at once. Only Text 2 gives a specific priority, and neither tells readers what languages to study.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "bcee3108-df8f-42a4-814f-1de2f52c04f8",
+      "kind": "raw_block",
+      "content": {
+        "id": "difference",
+        "html": "<h2>A difference has to get both sides right</h2><p>Difference answers often have two halves: “Text 1 emphasizes X, whereas Text 2 emphasizes Y.” Verify each half separately.</p><p>If the first half is accurate and the second exaggerates, the whole choice fails. Writers can emphasize different things without directly contradicting each other.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "ab22655b-29d4-4b2b-971a-f60c31f933d7",
+      "kind": "raw_block",
+      "content": {
+        "hint": "Keep the shared observation about repeated scenes; compare their evaluations.",
+        "prompt": "Text 1: A reviewer praises a novel’s repeated scenes because each retelling reveals a new character’s perspective.\n\nText 2: Another reviewer acknowledges the different perspectives but argues that the repetitions slow the novel’s momentum.\n\nWhich choice best describes a difference between the reviewers’ views?",
+        "choices": [
+          "Text 1 values the plot’s speed, whereas Text 2 values the absence of repeated scenes.",
+          "Text 1 emphasizes what repetition reveals, whereas Text 2 emphasizes its cost to the pace.",
+          "Text 1 denies that the scenes repeat, whereas Text 2 argues that they repeat too often.",
+          "Text 1 favors a single narrator, whereas Text 2 favors several different narrators."
+        ],
+        "solution": "Check Text 1: repeated scenes reveal perspectives. Check Text 2: repetition slows the story. B gets both sides right without inventing disagreement about whether repetition occurs.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Both recognize repetition and differing perspectives. Their emphasis differs: added insight versus slower momentum.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "7c191320-a9cd-4288-87db-fee6fc78cfef",
+      "kind": "raw_block",
+      "content": {
+        "id": "traps",
+        "html": "<h2>Do not let the choices merge the voices</h2><p>The SAT can offer the right idea with the wrong speaker, agreement inflated into complete agreement, or a criticism that goes further than the text.</p><blockquote><p><strong>Final check:</strong> Who believes this, about which claim, and how strongly?</p></blockquote>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "08f19382-936b-4693-b1e3-2194023ef3b7",
+      "kind": "raw_block",
+      "content": {
+        "prompt": "Text 1: An archaeologist argues that identical pottery designs at distant sites show that the vessels came from one production center.\n\nText 2: A researcher finds that the clay in those vessels comes from several local sources. Potters may have shared designs while making vessels locally.\n\nHow would the researcher in Text 2 most likely respond to the argument in Text 1?",
+        "choices": [
+          "By denying that the pottery designs at the sites are similar",
+          "By arguing that shared designs need not imply a shared place of manufacture",
+          "By proposing that all local clay sources were abandoned at the same time",
+          "By asserting that the distant communities never communicated with one another"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "Text 2 distinguishes shared appearance from shared manufacture. Local clay is evidence against the single-center inference, not against design similarity or communication.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "36b212d2-316b-47af-9b10-99ffb02e3a61",
+      "kind": "raw_block",
+      "content": {
+        "prompt": "Two texts are on screen, and the question asks how one writer would respond to a specific claim. What is your first job in Keep the Voices Straight?",
+        "choices": [
+          "Choose the answer that best summarizes the longer passage, then check the other passage.",
+          "Assume the second writer disagrees, then choose the strongest objection in the answer set.",
+          "Combine both texts into one opinion, then search for the choice with matching vocabulary.",
+          "Identify the responding writer and the exact claim, then connect that writer’s position to it."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "Fix the direction and target first. Then separate the claims, predict the connection, and verify it against both texts.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "c87b05ea-175d-4a81-9070-d4722ccc0be4",
+      "kind": "raw_block",
+      "content": {
+        "prompt": "Text 1\nA historian argues that the opening of a railway transformed a mountain town’s craft industry. In the decade after the station opened, sales of locally made baskets rose sharply. The historian attributes this growth chiefly to access to distant markets: trains allowed makers to send their goods beyond the valley in larger quantities than before. In this account, the railway’s main contribution was carrying finished baskets outward.\n\nText 2\nA second historian agrees that the railway helped the basket industry grow but emphasizes travelers arriving in the town. Workshop diaries describe increasing numbers of visitors who bought baskets directly and requested unfamiliar designs. These records suggest that the railway changed not only where baskets could be sold but also what customers asked makers to produce.\n\nBased on the texts, how would the second historian most likely respond to the first historian’s account?",
+        "choices": [
+          "By agreeing that the railway mattered while arguing that incoming customers also influenced the industry’s growth and products",
+          "By questioning whether the workshop diaries can reveal anything about the preferences of customers who visited the town",
+          "By maintaining that distant markets were irrelevant because basket makers sold all their goods directly to visiting customers",
+          "By arguing that basket sales had already peaked before the station opened and then declined as outside goods arrived"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "Text 2 accepts the railway’s importance and adds an influence: arriving customers and their requests. D invents a decline, B rejects evidence Text 2 uses, and C turns an additional explanation into an exclusive one.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "543de2d5-ec23-49a0-8c20-98847fb03e9c",
+      "kind": "raw_block",
+      "content": {
+        "html": "<h2>Keep the Voices Straight.</h2><p>Two claims first. The connection second.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "button_label": "Complete Lesson"
+      },
+      "block_type": "lesson_complete"
+    }
+  ]
+}

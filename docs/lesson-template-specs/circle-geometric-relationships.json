@@ -3,6 +3,19 @@
   "description": "Use circle measurements, arcs, equal radii, and tangent relationships to find missing lengths and angles with Mark, relate, solve.",
   "blocks": [
     {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "revision_opening_question",
+        "title": "Opening question",
+        "html": "<p>A circle has center O and radius \\(5\\). From a point P outside the circle, PA and PB are tangent segments. The perimeter of quadrilateral OAPB is \\(34\\). What is the length of OP?</p>"
+      }
+    },
+    {
       "shared_prompt": {
         "id": "shared_geometry_open",
         "title": "Highlighted arc",
@@ -13,53 +26,9 @@
       "block_type": "text",
       "content": {
         "id": "geometry_open",
-        "html": "<h2>The circle gives you relationships before you calculate</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Mark, relate, solve. Mark what the circle tells you, choose the matching relationship, then calculate.</p><p><strong>Why it pays:</strong> A radius, an angle, or a tangent can supply information the question never writes as a number.</p><p><strong>One caution:</strong> An arc measure is an angle; an arc length is a distance. Keep those jobs separate.</p></div><p>Start with the highlighted arc. Trace the rest of the circle: how many copies of that arc make one full turn?</p>",
+        "html": "<h2>Find the information the circle gives you</h2><p>The opening question gives a perimeter but asks for a different length. Circle relationships supply the connections between them.</p><p>We’ll use <strong>Mark, Relate, Solve</strong>, starting with an <strong>arc</strong>, a part of the circumference, and its fraction of a full turn.</p>",
         "calculator": {
-          "mode": "preset",
-          "title": "Compare the arc with the whole circle",
-          "display": "open",
-          "editable": false,
-          "resettable": true,
-          "lock_viewport": false,
-          "initial_expressions": [
-            {
-              "id": "e0",
-              "color": "#64748b",
-              "latex": "x^2+y^2=16"
-            },
-            {
-              "id": "e1",
-              "color": "#2563eb",
-              "latex": "y=\\sqrt{16-x^2}\\{0<=x<=4\\}",
-              "lineWidth": 5
-            },
-            {
-              "id": "e2",
-              "latex": "y=0\\{0<=x<=4\\}"
-            },
-            {
-              "id": "e3",
-              "latex": "x=0\\{0<=y<=4\\}"
-            },
-            {
-              "id": "e4",
-              "label": "O",
-              "latex": "(0,0)",
-              "showLabel": true
-            },
-            {
-              "id": "e5",
-              "label": "A",
-              "latex": "(4,0)",
-              "showLabel": true
-            },
-            {
-              "id": "e6",
-              "label": "B",
-              "latex": "(0,4)",
-              "showLabel": true
-            }
-          ]
+          "display": "hidden"
         }
       }
     },
@@ -137,7 +106,7 @@
       "block_type": "text",
       "content": {
         "id": "geometry_process",
-        "html": "<h2>Mark, relate, solve</h2><ol><li><strong>Mark:</strong> locate the center, the given measurements, and the requested length or angle.</li><li><strong>Relate:</strong> use the clue: a whole-circle measurement, a fraction of a turn, equal radii, or a tangent.</li><li><strong>Solve:</strong> write the relationship with the numbers given, then calculate the quantity actually requested.</li></ol><blockquote><p><strong>Start with the clue:</strong> do not choose a formula just because its letters look familiar.</p></blockquote><p>You will use the same three steps as the clue changes.</p>",
+        "html": "<h2>Mark, Relate, Solve</h2><ol><li>Mark the center, given measurements, and requested quantity.</li><li>Choose the relationship supplied by the clue.</li><li>Calculate and return to the quantity asked for.</li></ol><p>We’ll add a relationship when its clue first appears.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -149,7 +118,7 @@
       "block_type": "text",
       "content": {
         "id": "whole_circle_model",
-        "html": "<h2>Whole-circle clue: find the radius</h2><p>A radius runs from the center to the edge. A diameter passes through the center and contains two radii.</p><p>\\[d=2r,\\qquad C=2\\pi r,\\qquad A=\\pi r^2.\\]</p><p>If the circumference is \\(12\\pi\\), then \\(r=12\\pi/(2\\pi)=6\\). If the question asks for area, continue: \\(A=\\pi(6)^2=36\\pi\\).</p><blockquote><p><strong>Watch out:</strong> finding the radius may be a middle step. Circle the requested quantity.</p></blockquote>",
+        "html": "<h2>Use the radius to connect whole-circle measurements</h2><p>A <strong>radius</strong> runs from center to edge; a <strong>diameter</strong> is twice the radius. Use \\(d=2r\\), \\(C=2\\pi r\\), and \\(A=\\pi r^2\\).</p><p>For circumference \\(12\\pi\\), r=6. The area is then \\(36\\pi\\). Keep going if the radius is only an intermediate result.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -184,7 +153,7 @@
       "block_type": "text",
       "content": {
         "id": "arc_fraction_model",
-        "html": "<h2>Arc clue: use the fraction of a turn</h2><p>A <strong>central angle</strong> has its vertex at the center. The arc it opens onto takes the same fraction of the circumference as the angle takes of a full turn.</p><p>\\[\\frac{s}{C}=\\frac{\\theta}{360}\\]</p><p>Here \\(s\\) is arc length and \\(\\theta\\) is the central angle in degrees. For radius \\(9\\) and angle \\(80^\\circ\\), the circumference is \\(18\\pi\\), so the arc length is \\((80/360)(18\\pi)=4\\pi\\).</p><blockquote><p><strong>Either direction:</strong> multiply by the fraction to find the arc; divide by the fraction to recover the circumference.</p></blockquote>",
+        "html": "<h2>A central angle gives a fraction of the circle</h2><p>A <strong>central angle</strong> has its vertex at the center. Its arc uses the same fraction of the circumference as the angle uses of 360°:</p><p>\\[s/C=\\theta/360\\]</p><p>For radius 9 and angle 80°, the arc is \\((80/360)(18\\pi)=4\\pi\\).</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -214,7 +183,7 @@
       "block_type": "text",
       "content": {
         "id": "angle_vertex_model",
-        "html": "<h2>Angle clue: locate the vertex</h2><p>In the graph, O is the center; A, B, and C are on the circle. Angles AOB and ACB open onto the same arc AB, the arc that does not contain C.</p><ul><li><strong>At the center:</strong> the central angle equals its intercepted arc measure.</li><li><strong>On the edge:</strong> the inscribed angle is half its intercepted arc measure.</li></ul><p>Here the central angle is \\(90^\\circ\\), while the inscribed angle is \\(45^\\circ\\).</p><blockquote><p><strong>Check the vertex before halving:</strong> the location decides the rule.</p></blockquote>",
+        "html": "<h2>Locate the angle’s vertex</h2><p>A central angle equals its intercepted arc’s degree measure. An <strong>inscribed angle</strong>, with vertex on the circle, is half that same arc measure.</p><p>For the shown arc AB, the central angle is 90° and the inscribed angle is 45°. Locate the vertex before deciding whether to halve.</p>",
         "calculator": {
           "mode": "preset",
           "title": "Compare the two vertices",
@@ -292,7 +261,7 @@
       "block_type": "text",
       "content": {
         "id": "major_arc_model",
-        "html": "<h2>The other arc completes the circle</h2><p>The <strong>minor arc</strong> is the shorter path between the endpoints; the <strong>major arc</strong> is the longer path. Together they make the full circumference, and their measures total \\(360^\\circ\\).</p><p>If the minor arc measures \\(120^\\circ\\), the major arc measures \\(240^\\circ\\). With circumference \\(18\\pi\\), its length is \\((240/360)(18\\pi)=12\\pi\\).</p><blockquote><p><strong>Name the requested path:</strong> use the angle for that arc, or subtract the other arc length from the circumference.</p></blockquote>",
+        "html": "<h2>The other arc completes the turn</h2><p>The <strong>minor arc</strong> is the shorter path; the <strong>major arc</strong> is the longer path. Their measures add to 360°.</p><p>A minor arc of 120° leaves a major arc of 240°. Use 240/360 of the circumference for its length.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -327,7 +296,7 @@
       "block_type": "text",
       "content": {
         "id": "radian_arcs",
-        "html": "<h2>If the arc angle is in radians, keep it there</h2><p>A full turn is \\(2\\pi\\) radians. Use the same fraction-of-a-turn idea:</p><p>\\[s=\\frac{\\theta}{2\\pi}(2\\pi r)=r\\theta.\\]</p><p>For radius \\(6\\) and central angle \\(\\pi/3\\) radians, \\(s=6(\\pi/3)=2\\pi\\).</p><blockquote><p><strong>Units decide:</strong> \\(s=r\\theta\\) uses a central angle in radians. For a degree angle, use its fraction of \\(360\\).</p></blockquote><p>No angle conversion is needed for either route.</p>",
+        "html": "<h2>For radians, use the same fraction of a turn</h2><p>A full turn is 2π radians. The arc formula simplifies to \\(s=r\\theta\\) when θ is in radians. For r=6 and θ=π/3, the length is 2π.</p><p>Arc measure is an angle; arc length is a distance.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -362,7 +331,7 @@
       "block_type": "text",
       "content": {
         "id": "equal_radii_model",
-        "html": "<h2>Triangle clue: mark the radii equal</h2><p>O is the center, and A and B lie on the circle. Both OA and OB are radii, so triangle AOB is <strong>isosceles</strong>: its base angles at A and B are equal.</p><p>The marked radii in this graph are perpendicular, so the central angle is \\(90^\\circ\\). The two base angles share the remaining \\(180-90=90^\\circ\\). Each is \\(45^\\circ\\).</p><blockquote><p><strong>Mark before solving:</strong> two radii give two equal sides and two equal base angles. Use the given angle measures, not the apparent size of a drawing.</p></blockquote>",
+        "html": "<h2>Mark the two radii equal</h2><p>OA and OB are radii of the same circle, so triangle AOB is <strong>isosceles</strong>, with equal base angles. If its center angle is 90°, the base angles share the remaining 90°, giving 45° each.</p>",
         "calculator": {
           "mode": "preset",
           "title": "Find the two radii",
@@ -433,7 +402,7 @@
       "block_type": "text",
       "content": {
         "id": "tangent_right_angle",
-        "html": "<h2>Tangent clue: draw the radius to the contact point</h2><p>A <strong>tangent</strong> touches the circle at one point. The radius to that point is perpendicular to the tangent.</p><p>In the graph, OA is a radius and AP is tangent at A, so angle OAP is \\(90^\\circ\\). If \\(OA=3\\) and \\(AP=4\\), then the right triangle gives \\(OP=\\sqrt{3^2+4^2}=5\\).</p><blockquote><p><strong>Use the contact point:</strong> that is where the right angle belongs. The side opposite it is the hypotenuse.</p></blockquote>",
+        "html": "<h2>A tangent gives a right angle</h2><p>A <strong>tangent</strong> touches the circle at one point. The radius to that point is perpendicular to it.</p><p>Here OA=3 and tangent AP=4 are legs of a right triangle, so \\(OP=\\sqrt{3^2+4^2}=5\\).</p>",
         "calculator": {
           "mode": "preset",
           "title": "Follow the radius to the contact point",
@@ -504,7 +473,7 @@
       "block_type": "text",
       "content": {
         "id": "paired_tangents_model",
-        "html": "<h2>Two tangents from one outside point are equal</h2><p>In the graph, PA and PB are tangent segments from the same external point P. Their lengths are equal: \\(PA=PB\\).</p><p>If \\(PA=2u\\) and \\(PB=3u-2\\), set \\(2u=3u-2\\). Then \\(u=2\\), and either segment has length \\(4\\), matching the graph.</p><blockquote><p><strong>Return to the question:</strong> the value of a variable and the length of a segment may be different answers.</p></blockquote>",
+        "html": "<h2>Two tangents from one point are equal</h2><p>Tangent segments PA and PB from the same outside point have equal lengths. If PA=2u and PB=3u-2, set 2u=3u-2. This gives u=2 and tangent length 4.</p>",
         "calculator": {
           "mode": "preset",
           "title": "Trace the two tangent segments",
@@ -577,7 +546,7 @@
       "block_type": "text",
       "content": {
         "id": "tangent_area_model",
-        "html": "<h2>For area, split the tangent shape into two triangles</h2><p>Join the center O to the outside point P. Quadrilateral OAPB becomes two right triangles, OAP and OBP.</p><p>Each has a radius and a tangent segment as its perpendicular legs. In the graph, each area is \\(\\tfrac12(3)(4)=6\\), so the quadrilateral has area \\(12\\).</p><blockquote><p><strong>Use the right angle:</strong> radius and tangent supply the base and height. If the tangent length is missing, find it with the Pythagorean theorem first.</p></blockquote>",
+        "html": "<h2>Use the right angles for area</h2><p>Join O to P to split quadrilateral OAPB into two right triangles. Each has a radius and tangent as perpendicular legs. For radius 3 and tangent 4, each area is 6, so the total is 12.</p><p>If a leg is missing, find it with the Pythagorean theorem first.</p>",
         "calculator": {
           "mode": "preset",
           "title": "Split the quadrilateral into right triangles",
@@ -640,50 +609,31 @@
       }
     },
     {
-      "kind": "raw_block",
-      "id": "tangent_area_check",
-      "block_type": "check",
-      "content": {
-        "id": "tangent_area_check",
-        "input": "numeric",
-        "answer": "120",
-        "prompt": "A circle has center O and radius \\(8\\). Tangents PA and PB meet it at A and B, and \\(OP=17\\). What is the area of quadrilateral OAPB?",
-        "allow_retry": true,
-        "hint": "Find the tangent length from a right triangle, then add the areas of the two right triangles.",
-        "solution": "The tangent length is \\(\\sqrt{17^2-8^2}=15\\).\nEach right triangle has area \\(\\tfrac12(8)(15)=60\\).\nThe quadrilateral contains two of these triangles, so its area is \\(120\\).",
-        "explanation": "The perpendicular legs are 8 and 15. Adding the two triangle areas gives 120 square units.",
-        "calculator": {
-          "display": "available"
-        }
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the tangent shape</h2><p>Try the opening question again. Mark the circle relationships and decide which measurements you need along the way.</p>",
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "geometry_transfer_setup",
-      "block_type": "text",
-      "content": {
-        "id": "geometry_transfer_setup",
-        "html": "<h2>Let the clue choose the relationship</h2><p>The remaining problems will not name the rule for you. Mark the given information, relate it to the requested measurement, and solve.</p><p>If a problem combines clues, finish one relationship before starting the next.</p>",
-        "calculator": {
-          "display": "hidden"
-        }
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "transfer_angles_to_arc",
+      "id": "authentic_item",
       "block_type": "check",
       "content": {
-        "id": "transfer_angles_to_arc",
+        "id": "authentic_item",
         "input": "numeric",
-        "answer": "5",
-        "prompt": "A circle has center O and radius \\(9\\). Points A and B lie on the circle, and \\(\\angle OAB=40^\\circ\\). The length of minor arc AB is \\(k\\pi\\). What is the value of \\(k\\)?",
+        "answer": "13",
+        "prompt": "Return to the opening question. What answer do you get now?",
         "calculator": {
           "display": "open"
         },
-        "allow_retry": false,
-        "explanation": "Equal radii make both base angles \\(40^\\circ\\), so the central angle is \\(100^\\circ\\). The arc length is \\((100/360)(18\\pi)=5\\pi\\), giving \\(k=5\\)."
-      }
+        "allow_retry": true,
+        "explanation": "The two radii total \\(10\\), leaving \\(24\\) for two equal tangent segments. Each tangent is \\(12\\). Radius OA is perpendicular to PA, so \\(OP=\\sqrt{5^2+12^2}=13\\).",
+        "hint": "The perimeter includes two radii and two equal tangent segments. Find a tangent length, then use the right triangle formed with the radius and OP.",
+        "solution": "The two radii total \\(10\\), leaving \\(24\\) for two equal tangent segments. Each tangent is \\(12\\). Radius OA is perpendicular to PA, so \\(OP=\\sqrt{5^2+12^2}=13\\)."
+      },
+      "shared_prompt": "revision_opening_question"
     },
     {
       "kind": "raw_block",
@@ -699,7 +649,7 @@
           "Mark the requested measurement; choose a relationship from the answer sizes; calculate; return to the requested quantity."
         ],
         "calculator": {
-          "display": "available"
+          "display": "hidden"
         },
         "allow_retry": false,
         "explanation": "The stated clues justify the relationship. The drawing size and the answer sizes do not. Finish at the requested quantity.",
@@ -707,31 +657,47 @@
       }
     },
     {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
       "kind": "raw_block",
-      "id": "geometry_final_setup",
-      "block_type": "text",
+      "id": "tangent_area_check",
+      "block_type": "check",
       "content": {
-        "id": "geometry_final_setup",
-        "html": "<h2>One final circle</h2><p>Take this one from the question to the answer on your own.</p>",
+        "id": "tangent_area_check",
+        "input": "numeric",
+        "answer": "120",
+        "prompt": "A circle has center O and radius \\(8\\). Tangents PA and PB meet it at A and B, and \\(OP=17\\). What is the area of quadrilateral OAPB?",
+        "allow_retry": false,
+        "explanation": "The perpendicular legs are 8 and 15. Adding the two triangle areas gives 120 square units.",
         "calculator": {
-          "display": "hidden"
+          "display": "available",
+          "mode": "scratch",
+          "title": "Scratch calculator"
         }
       }
     },
     {
       "kind": "raw_block",
-      "id": "authentic_item",
+      "id": "transfer_angles_to_arc",
       "block_type": "check",
       "content": {
-        "id": "authentic_item",
+        "id": "transfer_angles_to_arc",
         "input": "numeric",
-        "answer": "13",
-        "prompt": "A circle has center O and radius \\(5\\). From a point P outside the circle, PA and PB are tangent segments. The perimeter of quadrilateral OAPB is \\(34\\). What is the length of OP?",
+        "answer": "5",
+        "prompt": "A circle has center O and radius \\(9\\). Points A and B lie on the circle, and \\(\\angle OAB=40^\\circ\\). The length of minor arc AB is \\(k\\pi\\). What is the value of \\(k\\)?",
         "calculator": {
-          "display": "open"
+          "display": "available",
+          "mode": "scratch",
+          "title": "Scratch calculator"
         },
         "allow_retry": false,
-        "explanation": "The two radii total \\(10\\), leaving \\(24\\) for two equal tangent segments. Each tangent is \\(12\\). Radius OA is perpendicular to PA, so \\(OP=\\sqrt{5^2+12^2}=13\\)."
+        "explanation": "Equal radii make both base angles \\(40^\\circ\\), so the central angle is \\(100^\\circ\\). The arc length is \\((100/360)(18\\pi)=5\\pi\\), giving \\(k=5\\)."
       }
     },
     {
@@ -740,7 +706,7 @@
       "block_type": "lesson_complete",
       "content": {
         "id": "geometry_finish",
-        "html": "<h2>Mark the clue. Make the connection.</h2><p>Circle geometric relationships turn the information you are given into the measurement you need.</p>",
+        "html": "<h2>Mark, Relate, Solve</h2><p>Let the given circle clues choose the relationship.</p>",
         "calculator": {
           "display": "hidden"
         },

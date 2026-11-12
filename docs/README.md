@@ -66,6 +66,7 @@ authorization matrix to prove it's fresh.
 | `architecture-plan.md` | The v1→v2 rebuild design (shipped) |
 | `decommission-plan.md` | Legacy-tree decommission tracker (complete) |
 | `greenfield-build-plan.md` | Restart-from-scratch exploration; adopted ideas tracked in the upgrade plan |
+| `lesson-bank-revision-review-2026-11.md` | Coverage, archives, content corrections, and verification for the 43 remaining lesson-bank revisions |
 | `lesson-suite-review-2026-08-18.md` | Instructional-quality review of the 30 lesson specs (best-practice scorecard, system recommendations, per-lesson ratings, verified fix list) |
 | `bracket-pivot-draft-preserved-2026-08.md` | Snapshot of the in-app Bracket the Pivot draft replaced at the 2026-08-25 re-import — Phase 6 voice material |
 | `lesson-builder-feature-audit-2026-04-25.md` | Lesson-builder audit — **contains a known error** (see banner) |

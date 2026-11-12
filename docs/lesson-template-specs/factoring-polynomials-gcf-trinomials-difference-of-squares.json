@@ -4,57 +4,32 @@
   "blocks": [
     {
       "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(3x(x+3)^2\\)</li><li>\\(3x(x+3)(x-3)\\)</li><li>\\(3(x^3+6x^2+9x)\\)</li><li>\\(3x(x^2+6x+9)\\)</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "revision_opening_question",
+        "title": "Opening question",
+        "html": "<p>Factor \\(3x^3+18x^2+27x\\) completely.</p>"
+      }
+    },
+    {
+      "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Turn expanded polynomials back into products</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Factoring is multiplication run backwards.</p><p><strong>Why it pays:</strong> Two patterns cover most of what the SAT asks, and knowing <em>why</em> they work means you can rebuild them under pressure instead of recalling a rule.</p><p><strong>One caution:</strong> Not everything factors. When no integer pair works, \"prime\" is a real answer — don't invent a pair because the directions said to factor.</p></div><p>Factoring is multiplication run backwards — which is why two patterns cover most of what the SAT asks, and why you can rebuild either one under pressure instead of recalling a rule.</p><p>A short GCF check comes first; if it's shaky, the lesson pauses to rebuild it. Otherwise you'll move fast.</p><blockquote><p><strong>Scope:</strong> We will factor trinomials whose \\(x^2\\)-coefficient is \\(1\\). Trinomials such as \\(2x^2+7x+3\\) require a later method.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Choose a pattern after the common factor</h2><p>The opening polynomial needs more than one factoring move. We’ll first remove a GCF, then learn two patterns that can finish the job.</p><p>Start with a short GCF review before trying a simple three-term expression.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "gcf_refresher",
-      "html": "<h2>First move: check the GCF</h2><p>Before using any other pattern, look for a greatest common factor shared by every term.</p><ol><li>Find the greatest number that divides every coefficient.</li><li>For each shared variable, use its smallest exponent.</li><li>Put the GCF outside parentheses.</li><li>Divide every term by the GCF to fill the parentheses.</li></ol><p>For example, \\(18x^2+30x=6x(3x+5)\\).</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "branching_question",
-      "id": "gcf_identification_diagnostic",
-      "question_html": "<p>What is the greatest common factor of \\(18x^2\\) and \\(30x\\)?</p>",
-      "choices": [
-        { "id": "two_x", "text": "\\(2x\\)" },
-        { "id": "six_x", "text": "\\(6x\\)" },
-        { "id": "six_x_squared", "text": "\\(6x^2\\)" },
-        { "id": "eighteen_x", "text": "\\(18x\\)" }
-      ],
-      "correct_choice_id": "six_x",
-      "correct_html": "<h2>Your GCF foundation is ready</h2><p>Exactly. The greatest number dividing \\(18\\) and \\(30\\) is \\(6\\), and both terms contain at least one \\(x\\). So the GCF is \\(6x\\).</p>",
-      "incorrect_html": "<h2>Build the GCF in two pieces</h2><p>Start with the coefficients: the factors of \\(18\\) are \\(1,2,3,6,9,18\\), and the factors of \\(30\\) are \\(1,2,3,5,6,10,15,30\\). Their greatest shared factor is \\(6\\).</p><p>Then inspect the variables. Both \\(x^2\\) and \\(x\\) contain one \\(x\\), but only the first term contains a second one. Therefore the variable part is \\(x\\), and the full GCF is \\(6x\\).</p>",
-      "rejoin_html": "<p>Whether this was review or new learning, keep the two-part test: greatest shared number, then every shared variable at its smallest exponent.</p>"
-    },
-    {
-      "kind": "branching_question",
-      "id": "gcf_division_diagnostic",
-      "question_html": "<p>Which expression factors \\(24x^2+36x\\) completely by its GCF?</p>",
-      "choices": [
-        { "id": "six_x", "text": "\\(6x(4x+6)\\)" },
-        { "id": "twelve", "text": "\\(12(2x^2+3x)\\)" },
-        { "id": "twelve_x", "text": "\\(12x(2x+3)\\)" },
-        { "id": "four_x", "text": "\\(4x(6x+9)\\)" }
-      ],
-      "correct_choice_id": "twelve_x",
-      "correct_html": "<h2>You removed the full GCF</h2><p>Right. Divide term by term: \\(24x^2\\div12x=2x\\) and \\(36x\\div12x=3\\). Thus \\(24x^2+36x=12x(2x+3)\\).</p>",
-      "incorrect_html": "<h2>Equivalent is not always completely factored</h2><p>Several choices multiply back to the original expression, but “factor by the GCF” means taking out the entire greatest common factor. Here the coefficients share \\(12\\), and both terms share \\(x\\), so use \\(12x\\).</p><p>Now divide each term: \\(24x^2\\div12x=2x\\) and \\(36x\\div12x=3\\). The complete result is \\(12x(2x+3)\\).</p>",
-      "rejoin_html": "<p>Use distribution to check: \\(12x(2x+3)=24x^2+36x\\). If the terms inside parentheses still share a factor, you have not removed the full GCF.</p>"
-    },
-    {
-      "kind": "text",
-      "id": "after_gcf",
-      "html": "<h2>After the GCF, inspect what remains</h2><p>Sometimes taking out the GCF finishes the problem. Sometimes the expression inside parentheses can also be factored.</p><p>A polynomial is <strong>factored completely</strong> when it is written as a product and none of its nonconstant polynomial factors can be factored further using the methods you know.</p><p>Next, we will build two more methods from multiplication itself.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "box_model",
-      "html": "<h2>Factoring reverses an area model</h2><p>Imagine a rectangle with side lengths \\(x+p\\) and \\(x+q\\). Split each side into its two terms. The four smaller regions have areas \\(x^2\\), \\(px\\), \\(qx\\), and \\(pq\\).</p><figure><img src=\"/images/factoring-trinomial-box-model.svg\" alt=\"A two-by-two area model for the product (x plus p)(x plus q), with cells x squared, px, qx, and pq.\" /><figcaption>The four products in \\((x+p)(x+q)\\).</figcaption></figure><p>The two middle regions combine because both contain \\(x\\):</p><p>\\[(x+p)(x+q)=x^2+(p+q)x+pq\\]</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Remove what every term shares</h2><p>The <strong>greatest common factor</strong> uses the greatest shared number and smallest exponent of each shared variable. Divide every term by it: \\(18x^2+30x=6x(3x+5)\\).</p><p>For complete factoring, inspect what remains inside for another pattern.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -71,21 +46,27 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "The middle terms are \\(px\\) and \\(qx\\); the corner region is \\(pq\\).",
-        "explanation": "Correct. \\(px+qx=(p+q)x\\), while the constant region has area \\(pq\\)."
+        "explanation": "\\(px+qx=(p+q)x\\), while the constant region has area \\(pq\\)."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "reverse_relationship",
-      "html": "<h2>Reverse the relationship</h2><p>To factor \\(x^2+bx+c\\), you need two integers \\(p\\) and \\(q\\) such that:</p><ul><li>their <strong>sum</strong> is \\(b\\), because the middle terms combine;</li><li>their <strong>product</strong> is \\(c\\), because the corner region is \\(pq\\).</li></ul><p>Then \\(x^2+bx+c=(x+p)(x+q)\\). This is not a rule to memorize blindly; it is distribution running backward.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Find a Sum-Product Pair</h2><p>For \\(x^2+bx+c\\), find integers p and q with sum b and product c. Then write \\((x+p)(x+q)\\). This version applies when the coefficient of \\(x^2\\) is 1.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "systematic_pair_search",
-      "html": "<h2>Search factor pairs systematically</h2><p>For \\(x^2+7x+12\\), list the positive factor pairs of \\(12\\) in order:</p><table><thead><tr><th>Pair</th><th>Sum</th></tr></thead><tbody><tr><td>\\(1,12\\)</td><td>\\(13\\)</td></tr><tr><td>\\(2,6\\)</td><td>\\(8\\)</td></tr><tr><td>\\(3,4\\)</td><td>\\(7\\)</td></tr></tbody></table><p>The pair \\(3,4\\) has the needed sum, so \\(x^2+7x+12=(x+3)(x+4)\\).</p><blockquote><p>Start at \\(1\\) and list pairs in order. This prevents random guessing and tells you when no pair works.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>List pairs in order</h2><p>For \\(x^2+7x+12\\), the positive factor pairs of 12 are (1,12), (2,6), and (3,4). Their sums are 13, 8, and 7. Use 3 and 4: \\((x+3)(x+4)\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": {
@@ -107,16 +88,20 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "The pair must multiply to \\(20\\) and add to \\(9\\).",
-        "explanation": "Correct. \\(4\\cdot5=20\\) and \\(4+5=9\\)."
+        "explanation": "\\(4\\cdot5=20\\) and \\(4+5=9\\)."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": "shared_pair_search_check",
       "kind": "text",
       "id": "pair_to_factors",
-      "html": "<h2>Put the pair into binomials, then verify</h2><p>The pair \\(4,5\\) gives:</p><p>\\[x^2+9x+20=(x+4)(x+5)\\]</p><p>Verify by distributing: \\(x^2+5x+4x+20=x^2+9x+20\\). Checking both the middle term and the constant catches sign and pair errors.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Put the pair into the factors</h2><p>For \\(x^2+9x+20\\), the pair 4 and 5 gives \\((x+4)(x+5)\\). You can distribute to check: the middle terms add to 9x and the constant is 20.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": {
@@ -139,9 +124,11 @@
         "allow_retry": true,
         "solution": "For \\(x^2+11x+24\\), the pair needs product \\(24\\) and sum \\(11\\).\nList the factor pairs of \\(24\\) in order: \\(1,24\\) sums to \\(25\\); \\(2,12\\) sums to \\(14\\); \\(3,8\\) sums to \\(11\\); \\(4,6\\) sums to \\(10\\).\nOnly \\(3,8\\) gives the needed sum of \\(11\\).\nSo the answer is choice C, \\(3\\) and \\(8\\).",
         "hint": "List the pairs \\(1,24\\), \\(2,12\\), \\(3,8\\), and \\(4,6\\), then compare their sums with \\(11\\).",
-        "explanation": "Right. \\(3\\cdot8=24\\) and \\(3+8=11\\)."
+        "explanation": "\\(3\\cdot8=24\\) and \\(3+8=11\\)."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": "shared_guided_positive_pair_check",
@@ -160,15 +147,19 @@
         "allow_retry": true,
         "solution": "The pair \\(3,8\\) has product \\(24\\) and sum \\(11\\).\nPut the pair into binomials: \\(x^2+11x+24=(x+3)(x+8)\\).\nVerify by distributing: \\(x^2+8x+3x+24=x^2+11x+24\\).\nSo the answer is choice A, \\((x+3)(x+8)\\).",
         "hint": "Use the pair \\(3,8\\) from the previous question.",
-        "explanation": "Correct. The pair becomes \\((x+3)(x+8)\\), and expansion returns \\(x^2+11x+24\\)."
+        "explanation": "The pair becomes \\((x+3)(x+8)\\), and expansion returns \\(x^2+11x+24\\)."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "positive_constant_signs",
-      "html": "<h2>A positive constant means matching signs</h2><p>If \\(c\\) is positive, \\(p\\) and \\(q\\) have the same sign.</p><ul><li>If \\(b\\) is positive, both are positive.</li><li>If \\(b\\) is negative, both are negative.</li></ul><p>For \\(x^2-10x+21\\), the pair \\(3,7\\) has the right product. To make the sum \\(-10\\), use \\(-3\\) and \\(-7\\).</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>A positive product needs matching signs</h2><p>If the constant is positive, the pair has the same sign. A positive middle coefficient needs two positives; a negative one needs two negatives.</p><p>For \\(x^2-10x+21\\), use -3 and -7.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -186,15 +177,19 @@
         "allow_retry": true,
         "solution": "The constant \\(21\\) is positive, so the two numbers have matching signs; the middle term \\(-10x\\) is negative, so both are negative.\nFind the pair: \\((-3)(-7)=21\\) and \\(-3+(-7)=-10\\).\nPut the pair into binomials: \\(x^2-10x+21=(x-3)(x-7)\\).\nVerify by distributing: \\(x^2-7x-3x+21=x^2-10x+21\\).\nSo the answer is choice D, \\((x-3)(x-7)\\).",
         "hint": "The product is positive, so the signs match. Their sum must be \\(-10\\).",
-        "explanation": "Correct. \\((-3)(-7)=21\\) and \\(-3+(-7)=-10\\)."
+        "explanation": "\\((-3)(-7)=21\\) and \\(-3+(-7)=-10\\)."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "negative_constant_signs",
-      "html": "<h2>A negative constant means opposite signs</h2><p>If \\(c\\) is negative, one number is positive and the other is negative. The number with the greater absolute value determines whether their sum is positive or negative.</p><p>For \\(x^2+x-12\\), use \\(4\\) and \\(-3\\): their product is \\(-12\\), and their sum is \\(1\\). Therefore \\(x^2+x-12=(x+4)(x-3)\\).</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>A negative product needs opposite signs</h2><p>For \\(x^2+x-12\\), use 4 and -3: their product is -12 and sum is 1. This gives \\((x+4)(x-3)\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -212,15 +207,19 @@
         "allow_retry": true,
         "solution": "The constant \\(-15\\) is negative, so one number is positive and the other is negative.\nThe sum must be \\(-2\\), so the number with the greater absolute value is negative: \\((-5)(3)=-15\\) and \\(-5+3=-2\\).\nPut the pair into binomials: \\(x^2-2x-15=(x-5)(x+3)\\).\nVerify by distributing: \\(x^2+3x-5x-15=x^2-2x-15\\).\nSo the answer is choice B, \\((x-5)(x+3)\\).",
         "hint": "Find a pair with product \\(-15\\) and sum \\(-2\\).",
-        "explanation": "Right. \\((-5)(3)=-15\\) and \\(-5+3=-2\\), so the factors are \\((x-5)(x+3)\\)."
+        "explanation": "\\((-5)(3)=-15\\) and \\(-5+3=-2\\), so the factors are \\((x-5)(x+3)\\)."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "prime_trinomial",
-      "html": "<h2>Sometimes no integer pair works</h2><p>For \\(x^2+x+1\\), a product of \\(1\\) allows the integer pairs \\(1,1\\) and \\(-1,-1\\). Their sums are \\(2\\) and \\(-2\\), not \\(1\\).</p><p>Because the full factor-pair list contains no match, the trinomial is <strong>prime over the integers</strong>. Do not invent a pair just because the directions say to factor.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>No matching pair means stop</h2><p>For \\(x^2+x+1\\), the integer pairs for product 1 have sums 2 or -2, never 1. It is <strong>prime over the integers</strong>: it has no further integer polynomial factors.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -237,40 +236,19 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "List every integer pair for each constant and check the required sum.",
-        "explanation": "Correct. No integer pair multiplies to \\(1\\) and adds to \\(1\\). The others have matching pairs."
+        "explanation": "No integer pair multiplies to \\(1\\) and adds to \\(1\\). The others have matching pairs."
       },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "conjugate_expansion",
-      "html": "<h2>Build another pattern from distribution</h2><p>Now expand two binomials with the same terms but opposite signs:</p><p>\\[(A-B)(A+B)\\]</p><p>The four products are \\(A^2\\), \\(AB\\), \\(-AB\\), and \\(-B^2\\). The middle terms cancel:</p><p>\\[(A-B)(A+B)=A^2+AB-AB-B^2=A^2-B^2\\]</p><p>Running this equation backward produces the difference-of-squares pattern.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
-      "id": "conjugate_cancellation_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Why does \\((A-B)(A+B)\\) have no middle term after expansion?",
-        "choices": [
-          "The two middle products are both zero.",
-          "The outer terms combine into the middle term.",
-          "The middle products \\(AB\\) and \\(-AB\\) cancel.",
-          "The square terms cancel."
-        ],
-        "correct_index": 2,
-        "allow_retry": true,
-        "hint": "Compare the signs of the two products containing one \\(A\\) and one \\(B\\).",
-        "explanation": "Exactly. \\(AB+(-AB)=0\\), leaving only \\(A^2-B^2\\)."
-      },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "difference_pattern",
-      "html": "<h2>Recognize a difference of perfect squares</h2><p>The pattern is:</p><p>\\[A^2-B^2=(A-B)(A+B)\\]</p><p>Check three features: exactly two terms, subtraction between them, and a perfect square on each side. Numerical perfect squares include \\(1,4,9,16,25,36,49,64,81,100\\). A variable power is a perfect square when its exponent is even, because \\(x^{2k}=(x^k)^2\\).</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Two subtracted squares use a different pattern</h2><p>A <strong>difference of squares</strong> factors as \\(A^2-B^2=(A-B)(A+B)\\). Find the two square-root expressions, then use them once with minus and once with plus.</p><p>For variable squares, halve the even exponent.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": {
@@ -292,16 +270,20 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Ask what expression squares to \\(49x^4\\), and what number squares to \\(81\\).",
-        "explanation": "Correct. \\((7x^2)^2=49x^4\\), and \\(9^2=81\\)."
+        "explanation": "\\((7x^2)^2=49x^4\\), and \\(9^2=81\\)."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": "shared_square_roots_check",
       "kind": "text",
       "id": "difference_model",
-      "html": "<h2>Use the two square roots as conjugates</h2><p>For \\(49x^4-81\\), let \\(A=7x^2\\) and \\(B=9\\). Then:</p><p>\\[49x^4-81=(7x^2-9)(7x^2+9)\\]</p><p>The factors use the same two expressions, once with subtraction and once with addition. Expanding them makes the middle products cancel.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Use the two square-root expressions</h2><p>For \\(49x^4-81\\), use \\(7x^2\\) and 9. The product is \\((7x^2-9)(7x^2+9)\\). Its middle products cancel when multiplied.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -319,15 +301,19 @@
         "allow_retry": true,
         "solution": "Check the pattern: exactly two terms, subtraction between them, and a perfect square on each side.\nFind the square roots: \\(25x^2=(5x)^2\\) and \\(64=8^2\\), so \\(A=5x\\) and \\(B=8\\).\nApply \\(A^2-B^2=(A-B)(A+B)\\): \\(25x^2-64=(5x-8)(5x+8)\\).\nExpanding verifies it: the middle products \\(40x\\) and \\(-40x\\) cancel.\nSo the answer is choice C, \\((5x-8)(5x+8)\\).",
         "hint": "The square roots are \\(5x\\) and \\(8\\). Use one minus factor and one plus factor.",
-        "explanation": "Correct. \\(25x^2-64=(5x)^2-8^2=(5x-8)(5x+8)\\)."
+        "explanation": "\\(25x^2-64=(5x)^2-8^2=(5x-8)(5x+8)\\)."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "multiple_variables",
-      "html": "<h2>The same pattern works with several variables</h2><p>In \\(36a^2-49b^4\\), both terms are squares:</p><ul><li>\\(36a^2=(6a)^2\\)</li><li>\\(49b^4=(7b^2)^2\\)</li></ul><p>Therefore \\(36a^2-49b^4=(6a-7b^2)(6a+7b^2)\\).</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>The pattern can include several letters</h2><p>\\(36a^2-49b^4\\) uses \\(6a\\) and \\(7b^2\\), so it factors as \\((6a-7b^2)(6a+7b^2)\\). The same square-root step handles each variable.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -345,15 +331,19 @@
         "allow_retry": true,
         "solution": "Both terms are perfect squares: halve each even exponent to find the entire square roots.\n\\(81m^4=(9m^2)^2\\) and \\(16n^6=(4n^3)^2\\), so \\(A=9m^2\\) and \\(B=4n^3\\).\nApply \\(A^2-B^2=(A-B)(A+B)\\): \\(81m^4-16n^6=(9m^2-4n^3)(9m^2+4n^3)\\).\nSo the answer is choice A, \\((9m^2-4n^3)(9m^2+4n^3)\\).",
         "hint": "Find each entire square root, including half of every even variable exponent.",
-        "explanation": "Right. The square roots are \\(9m^2\\) and \\(4n^3\\), so use their conjugate factors."
+        "explanation": "The square roots are \\(9m^2\\) and \\(4n^3\\), so use their conjugate factors."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "sum_warning",
-      "html": "<h2>Subtraction is essential</h2><p>The real-number identity factors \\(A^2-B^2\\), not \\(A^2+B^2\\). For example, \\(x^2+25\\) is a sum of squares and does not factor over the real numbers by this pattern.</p><p>Also distinguish \\(A^2-B^2\\) from a perfect-square trinomial such as \\(A^2-2AB+B^2=(A-B)^2\\). Count the terms before choosing a method.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Check the subtraction sign</h2><p>The pattern needs two squares being subtracted. It does not factor a sum such as \\(x^2+25\\). A three-term expression such as \\(x^2-10x+25\\) uses the Sum-Product Pair instead.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -370,21 +360,27 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Look for exactly two square terms with subtraction between them.",
-        "explanation": "Correct. \\(x^2-36=x^2-6^2=(x-6)(x+6)\\)."
+        "explanation": "\\(x^2-36=x^2-6^2=(x-6)(x+6)\\)."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "complete_gcf_trinomial",
-      "html": "<h2>Complete factorization may take two stages</h2><p>Factor \\(2x^3+14x^2+24x\\).</p><ol><li>Remove the GCF: \\(2x(x^2+7x+12)\\).</li><li>The trinomial still factors. Its needed pair is \\(3,4\\).</li><li>Finish: \\(2x(x+3)(x+4)\\).</li></ol><p>Stopping after the first step would be equivalent to the original expression, but it would not be factored completely.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Combine GCF and a three-term pattern</h2><p>\\(2x^3+14x^2+24x=2x(x^2+7x+12)\\). The inside pair is 3 and 4, giving \\(2x(x+3)(x+4)\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "complete_gcf_difference",
-      "html": "<h2>GCF can reveal a difference of squares</h2><p>Factor \\(12a^2-75b^2\\).</p><ol><li>The GCF is \\(3\\): \\(3(4a^2-25b^2)\\).</li><li>Inside the parentheses, \\(4a^2=(2a)^2\\) and \\(25b^2=(5b)^2\\).</li><li>Finish: \\(3(2a-5b)(2a+5b)\\).</li></ol>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Combine GCF and two squares</h2><p>\\(12a^2-75b^2=3(4a^2-25b^2)\\). The inside is a difference of squares, giving \\(3(2a-5b)(2a+5b)\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -401,22 +397,26 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "First write \\(5x^3-45x=5x(x^2-9)\\).",
-        "explanation": "Correct. \\(x^2-9=x^2-3^2\\) is a difference of squares, so the complete factorization is \\(5x(x-3)(x+3)\\)."
+        "explanation": "\\(x^2-9=x^2-3^2\\) is a difference of squares, so the complete factorization is \\(5x(x-3)(x+3)\\)."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
-      "id": "independent_transfer_intro",
-      "html": "<h2>Now choose the method yourself</h2><p>The next problems do not name a factoring pattern. Use this decision process:</p><ol><li>Take out any GCF.</li><li>Count the terms and inspect what remains.</li><li>For a monic trinomial, search for a sum-product pair.</li><li>For two subtracted square terms, use conjugates.</li><li>Multiply the final factors to verify.</li></ol>",
-      "calculator": { "display": "hidden" }
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the polynomial</h2><p>Try the opening question again. Choose the pattern after removing any common factor.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
       "id": "transfer_one",
       "block_type": "check",
       "content": {
-        "prompt": "Factor \\(3x^3+18x^2+27x\\) completely.",
+        "prompt": "Return to the opening question. What answer do you get now?",
         "choices": [
           "\\(3x(x+3)^2\\)",
           "\\(3x(x+3)(x-3)\\)",
@@ -424,55 +424,15 @@
           "\\(3x(x^2+6x+9)\\)"
         ],
         "correct_index": 0,
-        "allow_retry": false,
-        "hint": "First remove \\(3x\\). Then decide whether \\(x^2+6x+9\\) can factor further.",
-        "explanation": "Correct. \\(3x^3+18x^2+27x=3x(x^2+6x+9)=3x(x+3)^2\\)."
+        "allow_retry": true,
+        "hint": "Remove the GCF, then look for two numbers whose product is the constant and whose sum is the middle coefficient. Keep factoring until the factors are complete.",
+        "explanation": "\\(3x^3+18x^2+27x=3x(x^2+6x+9)=3x(x+3)^2\\).",
+        "solution": "\\(3x^3+18x^2+27x=3x(x^2+6x+9)=3x(x+3)^2\\)."
       },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
-      "id": "transfer_two",
-      "block_type": "check",
-      "content": {
-        "prompt": "Factor \\(20a^2-45b^2\\) completely.",
-        "choices": [
-          "\\(5(4a-9b)(a+b)\\)",
-          "\\(5(2a-3b)^2\\)",
-          "\\(5(2a-3b)(2a+3b)\\)",
-          "\\((2a-3b)(10a+15b)\\)"
-        ],
-        "correct_index": 2,
-        "allow_retry": false,
-        "hint": "Remove the GCF before inspecting the expression inside parentheses.",
-        "explanation": "Right. \\(20a^2-45b^2=5(4a^2-9b^2)=5(2a-3b)(2a+3b)\\)."
+      "calculator": {
+        "display": "hidden"
       },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
-      "id": "transfer_three",
-      "block_type": "check",
-      "content": {
-        "prompt": "Factor \\(x^2-5x-24\\).",
-        "choices": [
-          "\\((x-6)(x+4)\\)",
-          "\\((x-8)(x+3)\\)",
-          "\\((x+8)(x-3)\\)",
-          "Prime over the integers"
-        ],
-        "correct_index": 1,
-        "allow_retry": false,
-        "hint": "Search factor pairs of \\(-24\\) for a sum of \\(-5\\).",
-        "explanation": "Correct. \\((-8)(3)=-24\\) and \\(-8+3=-5\\), so \\(x^2-5x-24=(x-8)(x+3)\\)."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "final_process",
-      "html": "<h2>A reliable factoring routine</h2><ol><li><strong>GCF first:</strong> divide every term by the full shared factor.</li><li><strong>Inspect what remains:</strong> count terms and notice signs and squares.</li><li><strong>Trinomial:</strong> list factor pairs of the constant until one has the middle coefficient as its sum.</li><li><strong>Difference of squares:</strong> find the two square roots and write one minus factor and one plus factor.</li><li><strong>Keep going:</strong> factor every nonconstant factor that still matches a known pattern.</li><li><strong>Verify:</strong> distribute to recover the original polynomial.</li></ol>",
-      "calculator": { "display": "hidden" }
+      "shared_prompt": "revision_opening_question"
     },
     {
       "kind": "raw_block",
@@ -488,10 +448,59 @@
         ],
         "correct_index": 2,
         "allow_retry": false,
-        "hint": "This step comes before choosing any pattern.",
-        "explanation": "Correct. Removing the full GCF simplifies the expression and may reveal the next factoring pattern."
+        "explanation": "Removing the full GCF simplifies the expression and may reveal the next factoring pattern."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_two",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(20a^2-45b^2\\) completely.",
+        "choices": [
+          "\\(5(4a-9b)(a+b)\\)",
+          "\\(5(2a-3b)^2\\)",
+          "\\(5(2a-3b)(2a+3b)\\)",
+          "\\((2a-3b)(10a+15b)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "explanation": "\\(20a^2-45b^2=5(4a^2-9b^2)=5(2a-3b)(2a+3b)\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_three",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(x^2-5x-24\\).",
+        "choices": [
+          "\\((x-6)(x+4)\\)",
+          "\\((x-8)(x+3)\\)",
+          "\\((x+8)(x-3)\\)",
+          "Prime over the integers"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "\\((-8)(3)=-24\\) and \\(-8+3=-5\\), so \\(x^2-5x-24=(x-8)(x+3)\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -507,11 +516,10 @@
         ],
         "correct_index": 3,
         "allow_retry": false,
-        "hint": "Check for a GCF first, then decide which pattern the remaining trinomial fits.",
-        "explanation": "Correct. Pull the GCF first: \\(2(x^2-6x+9)\\). The trinomial is a perfect square, so the result is \\(2(x-3)^2\\). The sign, the misplaced GCF, and the difference-of-squares shape each expand to something else."
+        "explanation": "Pull the GCF first: \\(2(x^2-6x+9)\\). The trinomial is a perfect square, so the result is \\(2(x-3)^2\\). The sign, the misplaced GCF, and the difference-of-squares shape each expand to something else."
       },
       "calculator": {
-        "display": "open"
+        "display": "hidden"
       }
     },
     {
@@ -519,10 +527,12 @@
       "id": "lesson_complete",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>Run the multiplication backwards</h2><p>Sum-and-product for trinomials, difference of squares on sight, GCF first every time — and when no integer pair works, \"prime\" is a real answer. Distribute your factors to check; the original polynomial should come back.</p>",
+        "html": "<h2>GCF First, Then Pattern</h2><p>Keep factoring while another known pattern remains.</p>",
         "button_label": "Complete Lesson"
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     }
   ]
 }
