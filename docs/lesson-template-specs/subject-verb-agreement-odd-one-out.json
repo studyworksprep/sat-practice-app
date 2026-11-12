@@ -4,15 +4,32 @@
   "blocks": [
     {
       "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>are</li><li>is</li><li>were</li><li>have been</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "revision_opening_question",
+        "title": "Opening question",
+        "html": "<p>In 1911, a university expedition crossed the high plateau collecting alpine plants. The collection of field notebooks, sketches, and pressed specimens assembled by the expedition&#x27;s two botanists ______ now housed in the university&#x27;s herbarium, where conservators recently began digitizing it. Which choice completes the text so that it conforms to the conventions of Standard English?</p>"
+      }
+    },
+    {
+      "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>A faster way to solve subject–verb agreement</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Test each choice after <strong>he</strong> and after <strong>they</strong>. The odd one out is the answer.</p><p><strong>Why it pays:</strong> You answer without finding the subject or untangling the sentence — which is exactly where the test hides its interrupting phrases.</p><p><strong>One caution:</strong> This is a shortcut with a gate. If the four choices differ in tense rather than in singular versus plural, close it and read the sentence.</p></div><p>Some verb questions never make you find the subject. Put each choice after <strong>he</strong> and after <strong>they</strong>: when three choices go one way and one goes the other, the odd one out is the answer — and the interrupting phrase the test buried in the sentence never mattered.</p><blockquote><p><strong>The safety rule matters:</strong> use the trick only when every answer fits exactly one of <strong>he</strong> or <strong>they</strong>.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Start with the choices</h2><p>The long opening sentence has details you may not need for this shortcut. We can start with its answer choices instead.</p><p>We’ll learn the <strong>he/they test</strong> and the eligibility checks for choosing the odd one out. First, practise with shorter choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Try the test before learning the rule</h2><p>Look only at these four answer choices:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>is studying</strong></li><li><strong>study</strong></li><li><strong>have studied</strong></li><li><strong>are studying</strong></li></ol><p>Put <strong>he</strong> before each choice. Then put <strong>they</strong> before each choice. Which answer behaves differently from the other three?</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Try both frames</h2><p>Test “is studying,” “study,” “have studied,” and “are studying” after “he” and after “they.” Which one fits a different frame from the other three?</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -29,27 +46,27 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Say each full phrase aloud after he, then after they. Three fit they; one fits he.",
-        "explanation": "Right. <strong>He is studying</strong> works, while <strong>they study</strong>, <strong>they have studied</strong>, and <strong>they are studying</strong> work. The first answer is the singular odd one out."
+        "explanation": "He is studying works, while they study, they have studied, and they are studying work. The first answer is the singular odd one out."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "name_the_pattern",
-      "html": "<h2>The odd-one-out pattern</h2><p>The SAT repeatedly builds subject–verb agreement questions with a visible answer pattern:</p><ul><li>three choices are definitely plural and one is definitely singular, or</li><li>three choices are definitely singular and one is definitely plural.</li></ul><p>The one that differs is the correct answer.</p><p>In our review of released digital SAT and earlier SAT forms, this pattern has held in every question where the safety conditions are met.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "why_use_it",
-      "html": "<h2>Strong students should use it too</h2><p>This is not a backup for students who do not know grammar. It is faster than searching a complicated sentence for its subject, and it avoids traps built around nearby nouns.</p><blockquote><p><strong>Your job is not to explain the sentence.</strong> Your job is to verify the answer pattern.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Recognize the three-to-one pattern</h2><p>The eligible SAT pattern has three choices that fit one frame and one choice that fits the other. The <strong>Odd-One-Out</strong> shortcut selects that different choice. The eligibility checks are part of the method.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "he_they_test",
-      "html": "<h2>Use he and they as testing frames</h2><p>For each complete verb choice, try both frames:</p><ul><li><strong>He ___</strong> tests whether the choice is singular.</li><li><strong>They ___</strong> tests whether the choice is plural.</li></ul><p>For example, <strong>he inspires</strong> works but <strong>they inspires</strong> does not. So <strong>inspires</strong> is singular. <strong>They inspire</strong> works but <strong>he inspire</strong> does not. So <strong>inspire</strong> is plural.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Use “he” and “they” as frames</h2><p>A <strong>singular</strong> form fits “he”: “he inspires.” A <strong>plural</strong> form fits “they”: “they inspire.” Test the actual words in both frames to classify a choice.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -66,15 +83,19 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Say the full phrase after they. Then check whether it also works after he.",
-        "explanation": "Correct. <strong>They inspire</strong> works, but <strong>he inspire</strong> does not. The other three choices fit after he."
+        "explanation": "They inspire works, but he inspire does not. The other three choices fit after he."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "multiword_phrases",
-      "html": "<h2>Test the whole verb phrase</h2><p>An answer may contain more than one word. Keep the words together:</p><ul><li><strong>he has discovered</strong> → singular</li><li><strong>they have discovered</strong> → plural</li><li><strong>he is discovering</strong> → singular</li><li><strong>they are discovering</strong> → plural</li></ul><p>You do not need to name the tense. Just test the entire answer.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Keep the whole choice together</h2><p>“He has discovered” and “he is discovering” fit the singular frame. “They have discovered” and “they are discovering” fit the plural frame. Test the complete phrase, including its helping verb.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -91,15 +112,19 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Try the complete phrase after both testing words.",
-        "explanation": "Exactly. <strong>They have transformed</strong> works; <strong>he have transformed</strong> does not. The phrase is plural."
+        "explanation": "They have transformed works; he have transformed does not. The phrase is plural."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "eligibility_gate",
-      "html": "<h2>The trick has an eligibility gate</h2><p>Before choosing the odd answer, verify all three conditions:</p><ol><li>All four choices are complete verb choices or verb phrases.</li><li>Each choice fits <strong>he</strong> or <strong>they</strong>, but not both.</li><li>The split is three to one: one singular and three plural, or three singular and one plural.</li></ol><blockquote><p><strong>If any condition fails, stop.</strong> It is not this pattern.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Check when the shortcut works</h2><ol><li>All four choices are complete verbs or verb phrases.</li><li>Each fits “he” or “they,” never both or neither.</li><li>The split is three to one.</li></ol><p>If a condition fails, use a different verb strategy.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -116,21 +141,27 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Every choice must fit exactly one of he or they, and the final split must be three to one.",
-        "explanation": "Right. <strong>Develops</strong> fits he; the other three fit they. In the second set, <strong>developed</strong> fits both. In the third, <strong>developing</strong> fits neither. The fourth set splits two and two."
+        "explanation": "Develops fits he; the other three fit they. In the second set, developed fits both. In the third, developing fits neither. The fourth set splits two and two."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "four_step_process",
-      "html": "<h2>Run the same four steps</h2><ol><li><strong>Scan the choices.</strong> Confirm that all four are verb choices.</li><li><strong>Test he and they.</strong> Classify every choice as singular or plural.</li><li><strong>Check the gate.</strong> Every choice must fit exactly one frame, and the split must be three to one.</li><li><strong>Pick the odd one out.</strong> Do not let the sentence talk you out of it.</li></ol>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Run the Odd-One-Out routine</h2><ol><li>Scan the complete verb choices.</li><li>Test each after “he” and “they.”</li><li>Check all eligibility conditions.</li><li>Choose the form in the minority.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "worked_unique_singular",
-      "html": "<h2>Worked example: one singular answer</h2><p>Suppose the answers are:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>are restoring</li><li>restore</li><li>have restored</li><li>restores</li></ol><p><strong>They are restoring</strong>, <strong>they restore</strong>, and <strong>they have restored</strong> all work. <strong>He restores</strong> works.</p><p>The split is three plural to one singular, so <strong>restores</strong> is correct.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>One singular choice</h2><p>“They are restoring,” “they restore,” and “they have restored” work. “He restores” works. Three fit “they” and one fits “he,” so “restores” is the odd one out.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -147,15 +178,19 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Try he before each complete answer. Only one will work.",
-        "explanation": "Correct. <strong>He documents</strong> works. The other three choices fit after <strong>they</strong>."
+        "explanation": "He documents works. The other three choices fit after they."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "worked_unique_plural",
-      "html": "<h2>Worked example: one plural answer</h2><p>The pattern can reverse:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>supports</li><li>has supported</li><li>is supporting</li><li>support</li></ol><p>The first three fit <strong>he</strong>. Only <strong>they support</strong> works.</p><p>The split is three singular to one plural, so <strong>support</strong> is correct.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>The pattern can reverse</h2><p>“He supports,” “he has supported,” and “he is supporting” work. Only “they support” fits the other frame. With a three-to-one split, “support” is the odd one out.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -172,15 +207,19 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Three choices fit after he. Find the one that fits after they.",
-        "explanation": "Yes. <strong>They influence</strong> works, while the other three choices fit after <strong>he</strong>."
+        "explanation": "They influence works, while the other three choices fit after he."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "ignore_sentence_after_gate",
-      "html": "<h2>Once the gate passes, trust the pattern</h2><p>A difficult SAT sentence may place several nouns near the blank. Those nouns are there to tempt you into matching the verb with the wrong word.</p><p>If the four choices pass the eligibility gate and produce a three-to-one split, you already have the answer.</p><blockquote><p><strong>Do not go hunting for the subject as a second check.</strong> That slower check can reintroduce the trap you just avoided.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Use the shortcut once the checks pass</h2><p>When the choices meet every eligibility condition, use their three-to-one pattern. You do not need to hunt through the sentence for the subject as an extra step in this shortcut.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -197,21 +236,19 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "The first three fit after they. Which one fits after he?",
-        "explanation": "Correct. <strong>Shapes</strong> is the singular odd one out. You did not need the sentence."
+        "explanation": "Shapes is the singular odd one out. You did not need the sentence."
       },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "danger_intro",
-      "html": "<h2>The main danger: a tense or form question</h2><p>Many SAT questions also place four verb forms in the answers but test tense, sequence, or sentence structure instead of singular versus plural.</p><p>The odd-one-out shortcut is likely to fail on those questions. That is why you must perform the eligibility test rather than merely noticing four verbs.</p>",
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "both_warning",
-      "html": "<h2>Stop when a choice fits both</h2><p>A regular past-tense form often fits both testing frames:</p><ul><li><strong>he walked</strong></li><li><strong>they walked</strong></li></ul><p>Because <strong>walked</strong> is both singular and plural, the safety condition fails. Do not use the shortcut.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>What if a choice fits both?</h2><p>“He walked” and “they walked” both work. That choice cannot be classified into just one frame, so the shortcut is ineligible. Switch to a different verb strategy for the sentence.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -220,23 +257,27 @@
       "content": {
         "prompt": "How should you classify discovered?",
         "choices": [
-          "Singular only",
-          "Plural only",
-          "Both singular and plural",
-          "Neither singular nor plural"
+          "Fits the he frame, but not the they frame",
+          "Fits the they frame, but not the he frame",
+          "Fits both the he and they frames",
+          "Fits neither the he nor they frame"
         ],
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Try both: he discovered; they discovered.",
-        "explanation": "Right. Both frames work, so <strong>discovered</strong> is not exclusive. A choice like this blocks the shortcut."
+        "explanation": "Both frames work, so discovered is not exclusive. A choice like this blocks the shortcut."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "neither_warning",
-      "html": "<h2>Stop when a choice fits neither</h2><p>An <strong>-ing</strong> form by itself is not a complete verb:</p><ul><li><strong>he cataloging</strong> does not work</li><li><strong>they cataloging</strong> does not work</li></ul><p>That choice is neither singular nor plural. The safety condition fails, so do not use the shortcut.</p><p>A complete phrase such as <strong>is cataloging</strong> or <strong>are cataloging</strong> can still be classified normally.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>What if a choice fits neither?</h2><p>“He cataloging” and “they cataloging” are both incomplete. A bare “-ing” form fails the eligibility check. “Is cataloging” and “are cataloging” can be tested normally as complete phrases.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -253,15 +294,19 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Try placing each entire choice after both he and they.",
-        "explanation": "Correct. Neither <strong>he recording</strong> nor <strong>they recording</strong> works. The standalone -ing form blocks the shortcut."
+        "explanation": "Neither he recording nor they recording works. The standalone -ing form blocks the shortcut."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "was_were_exception",
-      "html": "<h2>Test the actual word—do not reject every past form</h2><p><strong>Was</strong> and <strong>were</strong> are past tense, but they still separate cleanly:</p><ul><li><strong>he was</strong> → singular</li><li><strong>they were</strong> → plural</li></ul><p>The rule is not “avoid past tense.” The rule is “every choice must fit exactly one testing frame.”</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Test the word instead of rejecting all past forms</h2><p>“He was” and “they were” separate cleanly. Past tense by itself does not close the shortcut. The test is whether each actual choice fits exactly one frame.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -269,19 +314,28 @@
       "block_type": "check",
       "content": {
         "prompt": "Which choice is the singular odd one out, making this set eligible for the shortcut?",
-        "choices": ["were", "are", "have been", "was"],
+        "choices": [
+          "were",
+          "are",
+          "have been",
+          "was"
+        ],
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Try each complete choice after he and they. Three fit they; one fits he.",
-        "explanation": "Correct. <strong>Was</strong> fits he; <strong>were</strong>, <strong>are</strong>, and <strong>have been</strong> fit they. Every choice fits exactly one frame, so the three-to-one set is eligible."
+        "explanation": "Was fits he; were, are, and have been fit they. Every choice fits exactly one frame, so the three-to-one set is eligible."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "two_two_warning",
-      "html": "<h2>A two-to-two split also fails</h2><p>Suppose every choice fits exactly one frame, but two are singular and two are plural:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>is</li><li>are</li><li>has been</li><li>have been</li></ol><p>There is no single odd answer. Stop and solve the question using another verb strategy.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>A two-to-two split has no odd answer</h2><p>“Is” and “has been” fit “he”; “are” and “have been” fit “they.” Every choice fits one frame, but the split is two to two. The shortcut is ineligible.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -298,9 +352,11 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Retrieve both parts of the gate: exclusive classification and one odd answer.",
-        "explanation": "Correct. Every answer must fit one—and only one—of the testing frames, and exactly one answer must differ from the other three."
+        "explanation": "Every answer must fit one—and only one—of the testing frames, and exactly one answer must differ from the other three."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": {
@@ -310,8 +366,10 @@
       },
       "kind": "text",
       "id": "sat_example_one",
-      "html": "<h2>Apply it to an SAT-style sentence</h2><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>have revealed</strong></li><li><strong>reveal</strong></li><li><strong>reveals</strong></li><li><strong>are revealing</strong></li></ol><p>Do not analyze the sentence yet. Test the choices.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Try the full sentence pattern</h2><p>Test the four verb choices in the shared sentence. Use the he/they frames before deciding whether the shortcut is eligible.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": "shared_sat_example_one",
@@ -329,9 +387,11 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Three choices fit after they. Find the one that fits after he.",
-        "explanation": "Correct. <strong>Reveals</strong> is the singular odd one out. The nearby plural nouns never needed to enter your decision."
+        "explanation": "Reveals is the singular odd one out. The nearby plural nouns never needed to enter your decision."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": {
@@ -341,8 +401,10 @@
       },
       "kind": "text",
       "id": "sat_example_two",
-      "html": "<h2>Now reverse the pattern</h2><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>supports</strong></li><li><strong>has supported</strong></li><li><strong>is supporting</strong></li><li><strong>support</strong></li></ol>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Now look for the other frame</h2><p>Run the same eligibility checks on this new set. The odd choice can be plural as well as singular.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": "shared_sat_example_two",
@@ -360,15 +422,19 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "The first three fit after he. Which one fits only after they?",
-        "explanation": "Right. <strong>Support</strong> is the plural odd one out, so it is correct."
+        "explanation": "Support is the plural odd one out, so it is correct."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "tense_trap_example",
-      "html": "<h2>Recognize a question where the trick is unsafe</h2><blockquote><p>The laboratory ___ the samples last night.</p></blockquote><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>analyzed</strong></li><li><strong>has analyzed</strong></li><li><strong>will analyze</strong></li><li><strong>analyzes</strong></li></ol><p>Several choices fit both <strong>he</strong> and <strong>they</strong>. This is not the odd-one-out subject–verb pattern.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Recognize a set that fails the checks</h2><p>For “The laboratory ___ the samples last night,” compare “analyzed,” “has analyzed,” “will analyze,” and “analyzes.” Some fit both frames. That closes the shortcut, even though all four choices are verbs.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -385,9 +451,11 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Test analyzed and will analyze after both he and they.",
-        "explanation": "Correct. <strong>He analyzed</strong> and <strong>they analyzed</strong> both work; so do <strong>he will analyze</strong> and <strong>they will analyze</strong>. The eligibility gate fails."
+        "explanation": "He analyzed and they analyzed both work; so do he will analyze and they will analyze. The eligibility gate fails."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -395,63 +463,51 @@
       "block_type": "check",
       "content": {
         "prompt": "Which choice makes this answer set ineligible because it fits neither he nor they?",
-        "choices": ["documenting", "documents", "document", "is documenting"],
+        "choices": [
+          "documenting",
+          "documents",
+          "document",
+          "is documenting"
+        ],
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Try each entire choice after both he and they. One choice cannot complete either frame.",
-        "explanation": "Correct. <strong>Documenting</strong> alone is not a complete verb, so it fits neither frame and makes the set ineligible. <strong>Is documenting</strong> is a complete singular phrase."
+        "explanation": "Documenting alone is not a complete verb, so it fits neither frame and makes the set ineligible. Is documenting is a complete singular phrase."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
-      "shared_prompt": {
-        "id": "shared_independent_transfer",
-        "title": "Architects sentence",
-        "html": "<blockquote><p>The influence of the two architects, visible in the building's curved walls and open courtyards, ___ later designers throughout the region.</p></blockquote>"
-      },
       "kind": "text",
-      "id": "independent_transfer",
-      "html": "<h2>Independent transfer</h2><p>Run the complete process: scan, test, check the gate, and choose the odd one out.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "shared_prompt": "shared_independent_transfer",
-      "kind": "raw_block",
-      "id": "independent_transfer_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which choice completes the sentence?",
-        "choices": [
-          "has inspired",
-          "inspire",
-          "are inspiring",
-          "have inspired"
-        ],
-        "correct_index": 0,
-        "allow_retry": false,
-        "hint": "Classify every complete phrase with he and they. Three fit they; one fits he.",
-        "explanation": "Correct. <strong>Has inspired</strong> is the singular odd one out. Once the three-to-one split appeared, the sentence could not distract you."
-      },
-      "calculator": { "display": "hidden" }
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the expedition’s collection</h2><p>Try the opening question again. Use the he/they frames and check every eligibility condition before choosing the odd one out.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
-      "id": "final_eligibility_check",
+      "id": "authentic_item",
       "block_type": "check",
       "content": {
-        "prompt": "Which set should make you stop and use a different verb strategy?",
+        "prompt": "Return to the opening question. What answer do you get now?",
         "choices": [
-          "has changed; change; are changing; have changed",
-          "was; were; are; have been",
-          "predicts; predict; are predicting; have predicted",
-          "predicted; predicts; predict; is predicting"
+          "are",
+          "is",
+          "were",
+          "have been"
         ],
-        "correct_index": 3,
-        "allow_retry": false,
-        "hint": "One set contains a choice that works after both he and they.",
-        "explanation": "Right. <strong>Predicted</strong> fits both <strong>he</strong> and <strong>they</strong>, so that set fails the eligibility gate. Each of the other sets creates a clean three-to-one split."
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Test each complete choice after he and after they. Check that every choice fits exactly one frame and the split is three to one.",
+        "explanation": "The subject is the singular \"collection\" — the notebooks, sketches, specimens, and botanists are all inside interrupting phrases. In the frames, \"is\" fits \"he\" while \"are,\" \"were,\" and \"have been\" fit \"they\": a three-to-one split, so the odd one out wins.",
+        "solution": "The subject is the singular \"collection\" — the notebooks, sketches, specimens, and botanists are all inside interrupting phrases. In the frames, \"is\" fits \"he\" while \"are,\" \"were,\" and \"have been\" fit \"they\": a three-to-one split, so the odd one out wins."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": "revision_opening_question"
     },
     {
       "kind": "raw_block",
@@ -467,27 +523,60 @@
         ],
         "correct_index": 3,
         "allow_retry": false,
-        "hint": "Retrieve the testing frames, the safety gate, and the final action.",
-        "explanation": "You have it: <strong>he or they, exactly one, three to one, choose the different answer</strong>."
+        "explanation": "You have it: he or they, exactly one, three to one, choose the different answer."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_independent_transfer",
+        "title": "Architects sentence",
+        "html": "<blockquote><p>The influence of the two architects, visible in the building's curved walls and open courtyards, ___ later designers throughout the region.</p></blockquote>"
+      },
+      "kind": "raw_block",
+      "id": "independent_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice completes the sentence?",
+        "choices": [
+          "has inspired",
+          "inspire",
+          "are inspiring",
+          "have inspired"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "Has inspired is the singular odd one out. Once the three-to-one split appeared, the sentence could not distract you."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
-      "id": "authentic_item",
+      "id": "final_eligibility_check",
       "block_type": "check",
       "content": {
-        "prompt": "In 1911, a university expedition crossed the high plateau collecting alpine plants. The collection of field notebooks, sketches, and pressed specimens assembled by the expedition's two botanists ______ now housed in the university's herbarium, where conservators recently began digitizing it. Which choice completes the text so that it conforms to the conventions of Standard English?",
+        "prompt": "Which set should make you stop and use a different verb strategy?",
         "choices": [
-          "are",
-          "is",
-          "were",
-          "have been"
+          "has changed; change; are changing; have changed",
+          "was; were; are; have been",
+          "predicts; predict; are predicting; have predicted",
+          "predicted; predicts; predict; is predicting"
         ],
-        "correct_index": 1,
+        "correct_index": 3,
         "allow_retry": false,
-        "hint": "Run the frames: which choices fit after 'they,' and which fits after 'he'? Check the split.",
-        "explanation": "Correct. The subject is the singular \"collection\" — the notebooks, sketches, specimens, and botanists are all inside interrupting phrases. In the frames, \"is\" fits \"he\" while \"are,\" \"were,\" and \"have been\" fit \"they\": a three-to-one split, so the odd one out wins."
+        "explanation": "Predicted fits both he and they, so that set fails the eligibility gate. Each of the other sets creates a clean three-to-one split."
       },
       "calculator": {
         "display": "hidden"
@@ -498,10 +587,12 @@
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>The odd one out — when the gate is open</h2><p>He or they, three to one, done. If the four choices differ in tense instead of number, the gate is closed: read the sentence the long way.</p>",
+        "html": "<h2>The Odd One Out</h2><p>He or they, then check the split. Use the shortcut only when every eligibility condition passes.</p>",
         "button_label": "Complete Lesson"
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     }
   ]
 }

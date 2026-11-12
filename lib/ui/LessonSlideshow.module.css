@@ -29,6 +29,19 @@
   padding: var(--s5);
 }
 
+/* Long identities still need their full notation on narrow screens. Keep
+   the expression scrollable inside its card instead of widening the page. */
+.viewer :global(mjx-container) {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  vertical-align: middle;
+}
+
+.viewer :global(mjx-container:not([display="true"])) {
+  display: inline-block;
+}
+
 /* Full-width band above both columns: progress plus the Desmos
    re-open affordance. One horizontal line that both columns hang
    from, so their cards top-align. */
@@ -112,10 +125,15 @@
   display: none;
 }
 
-/* Stacked side panels scroll together to avoid overlapping one another. */
-.sidePaneStacked .figureCard,
-.sidePaneStacked > aside {
+/* Stack desktop side panels together; keep the mobile calculator overlay. */
+.sidePaneStacked .figureCard {
   position: static;
+}
+
+@media (min-width: 801px) {
+  .sidePaneStacked > aside {
+    position: static;
+  }
 }
 
 .figureCard,
@@ -505,6 +523,11 @@
   color: var(--fg3);
   width: 20px;
   flex-shrink: 0;
+}
+
+.choice > span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
 }
 
 .choiceMark {

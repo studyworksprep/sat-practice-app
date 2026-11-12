@@ -1,0 +1,838 @@
+{
+  "title": "Equivalent Expressions by Graphing: Graph Match",
+  "description": "Identify equivalent single-variable expressions by renaming the variable x when needed, graphing the original, and comparing each answer-choice graph, including expressions written in function notation.",
+  "blocks": [
+    {
+      "id": "ca7a78da-4b9e-45b0-8f38-8b0b4ec1d13d",
+      "kind": "raw_block",
+      "content": {
+        "id": "opening_exploration",
+        "html": "<h2>Let the graph check the expression</h2><p>A graph can reveal a matching answer choice without expanding the original.</p><p>The line for \\(2(x+1)\\) is already showing. The second row, \\(2x+2\\), is hidden.</p><p>Each expression row has a colored circle at its far left. <strong>Click that circle to show or hide the graph.</strong> The expression stays in the list.</p><p><img src=\"/images/desmos-graph-visibility-toggle.svg\" alt=\"An arrow points to the colored circle at the left of a Desmos expression row. Click this circle to show or hide its graph.\" width=\"760\"></p><p>Show the second line, then hide and show it again. Does it follow a new path or cover the first line?</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Toggle the second line",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "original",
+              "latex": "2(x+1)"
+            },
+            {
+              "id": "comparison",
+              "latex": "2x+2",
+              "hidden": true
+            }
+          ]
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "32af532e-ae6e-4661-b263-384dc6d2a4e0",
+      "kind": "raw_block",
+      "content": {
+        "id": "opening_observation",
+        "hint": "Keep the first row visible. Hide and show the second row while watching several places along the line.",
+        "prompt": "Show both \\(2(x+1)\\) and \\(2x+2\\). What happens when you toggle the second line?",
+        "choices": [
+          "It crosses the first line and then follows a different path.",
+          "It covers the first line, leaving the same path on screen.",
+          "It runs parallel to the first line along a different path.",
+          "It meets the first line at zero and then curves away."
+        ],
+        "solution": "Show \\(2(x+1)\\), then show \\(2x+2\\) as well.\nHide and show the second line. Its color may cover the first, but the path does not change.\nThe second line covers the first line: choice B.",
+        "calculator": {
+          "mode": "preset",
+          "title": "Toggle the second line",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "original",
+              "latex": "2(x+1)"
+            },
+            {
+              "id": "comparison",
+              "latex": "2x+2",
+              "hidden": true
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "The color may change, but the path stays put. Both rows give the same height at each input, so the two lines lie on top of each other.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "3bab25e7-bc18-4dbe-bd79-2740e6fc908c",
+      "kind": "raw_block",
+      "content": {
+        "id": "name_graph_match",
+        "html": "<h2>Call it Graph Match</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Graph Match: compare the original with each choice and look for matching curves.</p><p><strong>Why it pays:</strong> Different-looking expressions can reveal their match before you do any expanding or factoring.</p><p><strong>One caution:</strong> A shared point is a coincidence to investigate, not an answer to select.</p></div><p><strong>Equivalent expressions give the same output for every input the question considers.</strong> On a graph, the input is the horizontal position and the output is the height. Equivalent expressions therefore trace the same path.</p><p>We'll use expressions with one variable. Slider Match remains useful, especially with several variables; graphing gives you another way to compare single-variable choices.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "b35d5571-02ba-4008-a0d1-57ef1ed30f2b",
+      "kind": "raw_block",
+      "content": {
+        "id": "shared_intercepts_exploration",
+        "html": "<h2>Two shared points can still fool you</h2><p>The original is \\(x^2-4\\). Use the circle to show the comparison row, \\(2(x^2-4)\\).</p><p>Both curves meet the horizontal axis at \\(x=-2\\) and \\(x=2\\). Now inspect them <strong>between</strong> those points. At the vertical axis, their heights are \\(-4\\) and \\(-8\\).</p><blockquote><p><strong>Watch out:</strong> The SAT can give you a choice with the same zeros but different values elsewhere. Compare the curves, not just their intercepts.</p></blockquote>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare more than the intercepts",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "original",
+              "latex": "x^2-4"
+            },
+            {
+              "id": "comparison",
+              "latex": "2(x^2-4)",
+              "hidden": true
+            }
+          ]
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "11522e8b-7437-4737-8d0f-d8312305f29d",
+      "kind": "raw_block",
+      "content": {
+        "id": "whole_graph_check",
+        "hint": "Look at the two heights on the vertical axis. Does the same input produce the same output there?",
+        "prompt": "The graphs of \\(x^2-4\\) and \\(2(x^2-4)\\) share both x-intercepts but separate between them. What does this show?",
+        "choices": [
+          "The expressions match because their two x-intercepts agree.",
+          "The expressions match because both curves have the same shape.",
+          "The expressions match because both graphs contain a squared term.",
+          "The expressions differ because their heights disagree at some inputs."
+        ],
+        "solution": "At \\(x=0\\), the original graph has height \\(-4\\), while the comparison graph has height \\(-8\\).\nOne disagreement is enough to rule out equivalence, even though the two zeros match.\nChoose D: the expressions differ.",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare more than the intercepts",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "original",
+              "latex": "x^2-4"
+            },
+            {
+              "id": "comparison",
+              "latex": "2(x^2-4)",
+              "hidden": true
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "Matching zeros do not make matching expressions. The height difference at \\(x=0\\) rules this choice out; Graph Match requires the whole path to agree.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "c0f7ff89-e96f-4a5c-b2f7-6e1a4fec5e65",
+      "kind": "raw_block",
+      "content": {
+        "id": "three_step_process",
+        "html": "<h2>Graph Match in three steps</h2><ol><li><strong>Use x.</strong> If the input variable is not \\(x\\), change it to \\(x\\) in the original and every choice.</li><li><strong>Graph the original.</strong> Enter the complete expression on its own row. A bare expression works; \\(y=\\) is optional.</li><li><strong>Graph each choice.</strong> Keep the original visible and compare one candidate at a time. Hide each candidate before testing the next. Select the one whose curve follows the original.</li></ol><p>A matching candidate may cover the original's color. Toggle either curve to check that it leaves the same path underneath. Pan or zoom if the useful part is outside the window.</p><blockquote><p><strong>Compare where the question tells you:</strong> If it says \\(x>0\\), compare to the right of \\(0\\). Differences outside the stated region do not matter.</p></blockquote><p>A shared point is not enough: look for the curves to stay together across the region you are comparing.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "a4b96ac0-376d-4203-a7f8-54cefef1020f",
+      "kind": "raw_block",
+      "content": {
+        "id": "worked_x_example",
+        "html": "<h2>Watch a complete Graph Match</h2><p>Which expression is equivalent to \\((x+1)(x-3)\\)?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(x^2+2x-3\\)</li><li>\\(x^2-2x+3\\)</li><li>\\(x^2-2x-3\\)</li><li>\\(x^2-3\\)</li></ol><p><strong>Use x:</strong> it's already the input. <strong>Graph the original:</strong> that row is loaded.</p><p><strong>Graph each choice:</strong> type A on a new row, compare, and hide it. Repeat with B, C, and D. A separates from the original even though both pass through \\((0,-3)\\); B is shifted upward; D also separates away from the vertical axis.</p><p>C covers the original curve. Toggle C off and on to see the same path underneath. <strong>Select C.</strong> The original stays visible throughout; you never need to expand it.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Type and compare A through D",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "row_1",
+              "latex": "(x+1)(x-3)"
+            }
+          ]
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "f3730c1c-1836-4814-a9db-04abfd851154",
+      "kind": "raw_block",
+      "content": {
+        "id": "guided_x_match",
+        "hint": "Several choices pass through the same point on the vertical axis. Compare their paths to the left and right as well.",
+        "prompt": "Which expression is equivalent to \\(2x(x-3)+4(x-3)\\)? Keep the original visible and graph each choice on a separate row.",
+        "choices": [
+          "\\(2x^2-2x-12\\)",
+          "\\(2x^2+2x-12\\)",
+          "\\(2x^2-6x-12\\)",
+          "\\(2x^2-2x+12\\)"
+        ],
+        "solution": "Keep \\(2x(x-3)+4(x-3)\\) visible.\nEnter each choice on a new row, hiding the previous candidate as you go.\nThe graph of \\(2x^2-2x-12\\) follows the original; toggling it leaves the same curve underneath.\nB and C separate from the original away from the vertical axis. D is shifted upward.\nChoose A.",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare all four choices",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "row_1",
+              "latex": "2x(x-3)+4(x-3)"
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "A traces the original curve. The SAT's sign and missing-term traps in B and C keep the same height at \\(x=0\\), so that one point cannot pick the answer; D has the wrong constant and sits higher.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "58368ba3-25c8-40aa-880a-9c9b39edbfe1",
+      "kind": "raw_block",
+      "content": {
+        "id": "rational_entry_and_restriction",
+        "html": "<h2>Fractions are where the graph earns its keep</h2><p>Consider \\(\\frac{3x+5}{x-2}\\), with \\(x>2\\). This is a <strong>rational expression</strong>: a fraction whose numerator or denominator contains the variable.</p><p>Type <strong>(3x+5)/(x-2)</strong>. Parentheses keep the whole numerator above the whole denominator.</p><p>Graph each choice on another row and compare the curves to the right of \\(2\\), as the question specifies. Keep the original visible while you test the choices.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Inspect the fraction for x > 2",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "row_1",
+              "latex": "\\frac{3x+5}{x-2}"
+            }
+          ]
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "0f627d13-4744-4af0-ba76-82d9016161e9",
+      "kind": "raw_block",
+      "content": {
+        "id": "guided_rational_match",
+        "hint": "Compare just to the right of 2 as well as farther along the curve. Keep the entire denominator grouped.",
+        "prompt": "Which expression is equivalent to \\(\\frac{3x+5}{x-2}\\) for \\(x>2\\)? Graph the candidates and compare to the right of \\(2\\).",
+        "choices": [
+          "\\(3+\\frac{5}{x-2}\\)",
+          "\\(3+\\frac{11}{x-2}\\)",
+          "\\(3-\\frac{1}{x-2}\\)",
+          "\\(\\frac{3x+5}{x}-2\\)"
+        ],
+        "solution": "Keep \\(\\frac{3x+5}{x-2}\\) visible.\nEnter each candidate on another row and compare to the right of 2.\nThe curve for \\(3+\\frac{11}{x-2}\\) covers the original throughout that region. The others separate.\nSelect B. No long division is needed to find the match.",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare near and away from x = 2",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "row_1",
+              "latex": "\\frac{3x+5}{x-2}"
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "B gives the matching curve. A fails to account for the denominator's shift, C has the wrong remainder, and D puts the subtraction outside the fraction. Far to the right, some curves get close; checking near \\(x=2\\) exposes the differences.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "af3990de-ed45-4fa9-80e0-caaa41a34bd5",
+      "kind": "raw_block",
+      "content": {
+        "id": "rename_the_variable",
+        "html": "<h2>Change the input letter, not the expression</h2><p>For \\(\\frac{2p+1}{p-3}\\), let lowercase \\(x\\) stand in for every \\(p\\). Enter <strong>(2x+1)/(x-3)</strong>, keeping the numerator and denominator grouped.</p><p>Make the same letter change in each answer choice. Keep all numbers, signs, powers, and parentheses.</p><blockquote><p><strong>Use x consistently:</strong> A leftover \\(p\\) can become a slider. Graph Match needs the same input in every row; capital \\(X\\) belongs to the slider setup.</p></blockquote><p>Select the printed choice in the problem's original letter when you finish.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "4b932099-4df0-4097-9610-574a02c758b0",
+      "kind": "raw_block",
+      "content": {
+        "id": "renamed_fraction_entry",
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "type": "desmos_interactive",
+        "title": "Build the fraction graph yourself",
+        "feedback": {
+          "solution_html": "<p>Enter <strong>(2x+1)/(x-3)</strong> on one row. It should display as \\(\\frac{2x+1}{x-3}\\). Keep it visible and check again.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "uses_forbidden_variables",
+              "message_html": "<p>Replace every p with lowercase x. Do not add a p or capital X slider.</p>"
+            },
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>This check needs one visible expression: the original fraction. Hide or remove extra rows.</p>"
+            },
+            {
+              "trigger": "too_few_expressions",
+              "message_html": "<p>Enter the fraction and leave its graph visible.</p>"
+            }
+          ],
+          "retry_message_html": "<p>Check both copies of the input letter and both pairs of parentheses. The denominator is the whole expression x minus 3.</p>",
+          "attempt_based_hints": [
+            {
+              "message_html": "<p>Type the whole numerator in parentheses, then /, then the whole denominator in parentheses.</p>",
+              "min_attempts": 2
+            }
+          ],
+          "success_message_html": "<p>The fraction is ready to compare: the input letter changed, and both groups stayed intact.</p>",
+          "reveal_solution_after_attempts": 3
+        },
+        "validation": {
+          "mode": "equivalent",
+          "expected": [
+            "\\frac{2x+1}{x-3}"
+          ],
+          "tolerance": 0.000001,
+          "state_rules": {
+            "max_expressions": 1,
+            "min_expressions": 1,
+            "require_visible_only": true,
+            "must_include_variables": [
+              "x"
+            ],
+            "must_not_include_variables": [
+              "p",
+              "X"
+            ]
+          },
+          "test_values": [
+            -3,
+            -1,
+            0,
+            1,
+            2,
+            4,
+            6
+          ]
+        },
+        "progression": {
+          "require_success": true
+        },
+        "instructions_html": "<p>The original is \\(\\frac{2p+1}{p-3}\\).</p><p>Replace every \\(p\\) with lowercase \\(x\\), then enter the original on one row. Use parentheses around the complete numerator and denominator.</p><p>A bare expression works; \\(y=\\) is optional.</p>",
+        "initial_expressions": []
+      },
+      "block_type": "desmos_interactive"
+    },
+    {
+      "id": "2897e39d-f1ad-4e2e-b5cb-28671c1b3b7e",
+      "kind": "raw_block",
+      "content": {
+        "id": "radical_graphing_model",
+        "html": "<h2>Keep the whole expression under the root</h2><p>For \\(\\sqrt{18t^2}\\), with \\(t>0\\), use \\(x\\) for \\(t\\) and type <strong>sqrt(18x^2)</strong>.</p><p>As a worked comparison, enter \\(3x\\sqrt{2}\\) on another row. The curves overlap to the right of \\(0\\), but separate to the left.</p><blockquote><p><strong>Keep the match:</strong> The question says \\(t>0\\), so compare the positive side after changing the letter to \\(x\\). The difference on the negative side does not matter.</p></blockquote><p>Leave both graphs as entered; simply look at the part the question asks about.</p><p>If a choice has a fractional exponent, keep that exponent together: type \\(x^{3/2}\\) as <strong>x^(3/2)</strong>. You can compare its graph without rewriting it first.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare on positive inputs",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "row_1",
+              "latex": "\\sqrt{18x^2}"
+            }
+          ]
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "23e65a08-a1b5-41ba-9d27-b2539dc5d048",
+      "kind": "raw_block",
+      "content": {
+        "id": "guided_radical_match",
+        "hint": "Keep the square inside the original root. Compare at several positive inputs; the curves may agree at one convenient value.",
+        "prompt": "Which expression is equivalent to \\(\\sqrt{8r^2}\\) for \\(r>0\\)? Use \\(x\\) for \\(r\\) and compare the positive-input graphs.",
+        "choices": [
+          "\\(4r\\sqrt{2}\\)",
+          "\\(2\\sqrt{2r}\\)",
+          "\\(2r\\sqrt{2}\\)",
+          "\\(-2r\\sqrt{2}\\)"
+        ],
+        "solution": "Graph \\(\\sqrt{8x^2}\\).\nGraph each candidate using x instead of r, and compare to the right of 0.\nThe line for \\(2x\\sqrt{2}\\) covers the original there. A is too steep, B curves away, and D is below the horizontal axis.\nSelect C, \\(2r\\sqrt{2}\\).",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare the radical choices",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "row_1",
+              "latex": "\\sqrt{8x^2}"
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "C matches on the required positive inputs. A mishandles the factor under the root, B loses the squared input, and D has the wrong sign for a square root. At \\(x=1\\), B happens to agree, so one point would be a trap.",
+        "correct_index": 2
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "efaaa55a-415e-4eab-8331-22a5a6df0da1",
+      "kind": "raw_block",
+      "content": {
+        "id": "functions_combined_workflow",
+        "html": "<h2>Let Desmos combine the functions</h2><p>Function notation becomes especially useful when the original uses several rules. The letters \\(f\\), \\(g\\), and \\(h\\) name the functions; \\(x\\) is their shared input.</p><p>Suppose \\(f(x)=x+2\\), \\(g(x)=2x-1\\), and \\(h(x)=3x+4\\). Enter each definition on its own row. Then enter exactly the requested combination on another row:</p><ul><li>\\(f(x)+g(x)\\): add the two outputs.</li><li>\\(f(x)\\cdot g(x)\\): multiply the outputs; type <strong>f(x)*g(x)</strong>.</li><li>\\(f(x)\\cdot g(x)-h(x)\\): multiply, then subtract the third output.</li></ul><blockquote><p><strong>Your original graph is the combination.</strong> Hide the individual function graphs with their circles, but keep their definition rows. Hidden definitions still work.</p></blockquote><p>The definitions are loaded and hidden here. Enter <strong>f(x)*g(x)-h(x)</strong>, then compare choices on separate rows. Keep the definitions unchanged.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Build the requested combination",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "definition_1",
+              "latex": "f(x)=x+2",
+              "hidden": true
+            },
+            {
+              "id": "definition_2",
+              "latex": "g(x)=2x-1",
+              "hidden": true
+            },
+            {
+              "id": "definition_3",
+              "latex": "h(x)=3x+4",
+              "hidden": true
+            }
+          ]
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "2958e70a-6664-482a-a3e2-16d5144d405b",
+      "kind": "raw_block",
+      "content": {
+        "id": "guided_three_function_match",
+        "hint": "The original row should multiply f and g before subtracting h. Comparing a choice with f or g alone answers a different question.",
+        "prompt": "Let \\(f(x)=x+2\\), \\(g(x)=2x-1\\), and \\(h(x)=3x+4\\). Which expression is equivalent to \\(f(x)\\cdot g(x)-h(x)\\)? Enter the combination, then compare its graph with the choices.",
+        "choices": [
+          "\\(2x^2+6x+2\\)",
+          "\\(-x^2-7x-10\\)",
+          "\\(-3\\)",
+          "\\(2x^2-6\\)"
+        ],
+        "solution": "The three definition rows are already present. Leave them hidden.\nEnter \\(f(x)\\cdot g(x)-h(x)\\) as the original graph.\nEnter each choice separately. The curve for \\(2x^2-6\\) covers that combination.\nSelect D.",
+        "calculator": {
+          "mode": "preset",
+          "title": "Graph the combination before the choices",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "definition_1",
+              "latex": "f(x)=x+2",
+              "hidden": true
+            },
+            {
+              "id": "definition_2",
+              "latex": "g(x)=2x-1",
+              "hidden": true
+            },
+            {
+              "id": "definition_3",
+              "latex": "h(x)=3x+4",
+              "hidden": true
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "D matches the requested combination. A adds h instead of subtracting it; B groups the original as f times (g minus h); C adds f and g instead of multiplying. Desmos can perform the combination as written, so you do not have to expand it by hand.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "d612d4e2-73dc-4001-8390-fbccd2a4cce0",
+      "kind": "raw_block",
+      "content": {
+        "id": "function_quotient_workflow",
+        "html": "<h2>A quotient is one more original graph</h2><p>Now let \\(f(x)=x^3-4x\\) and \\(g(x)=x^2-x-2\\). To compare an expression with \\(\\frac{f(x)}{g(x)}\\), enter <strong>f(x)/g(x)</strong> after the two definitions.</p><p>The question below uses \\(x>2\\), so compare the quotient with each choice to the right of \\(2\\). Keep the individual function graphs hidden.</p><blockquote><p><strong>Read the operation:</strong> \\(f(x)/g(x)\\) divides outputs at the same input. It does not mean \\(f(g(x))\\), which puts one function inside another.</p></blockquote><p>You are still matching a single graph to each choice, even though two function definitions build the original.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Enter the quotient",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "definition_1",
+              "latex": "f(x)=x^3-4x",
+              "hidden": true
+            },
+            {
+              "id": "definition_2",
+              "latex": "g(x)=x^2-x-2",
+              "hidden": true
+            }
+          ]
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "4055ab81-a291-4e91-969a-05d064f99f97",
+      "kind": "raw_block",
+      "content": {
+        "id": "guided_function_quotient",
+        "hint": "Graph the entire quotient before testing the choices, then compare to the right of 2. A shared denominator alone does not make two outputs equal.",
+        "prompt": "The functions \\(f\\) and \\(g\\) are defined by \\(f(x)=x^3-4x\\) and \\(g(x)=x^2-x-2\\). Which expression is equivalent to \\(\\frac{f(x)}{g(x)}\\) for \\(x>2\\)?",
+        "choices": [
+          "\\(\\frac{x(x+2)}{x+1}\\)",
+          "\\(\\frac{x+2}{x+1}\\)",
+          "\\(\\frac{x(x-2)}{x+1}\\)",
+          "\\(\\frac{1}{x+1}\\)"
+        ],
+        "solution": "Use the two hidden definitions, then enter \\(f(x)/g(x)\\).\nGraph each candidate and compare to the right of 2, toggling candidates one at a time.\nThe graph of \\(\\frac{x(x+2)}{x+1}\\) matches the quotient. The other three separate from it.\nSelect A.",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare with the quotient",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "definition_1",
+              "latex": "f(x)=x^3-4x",
+              "hidden": true
+            },
+            {
+              "id": "definition_2",
+              "latex": "g(x)=x^2-x-2",
+              "hidden": true
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "A gives the matching quotient graph on x > 2. B drops an x factor, C changes a sign, and D drops the remaining numerator factors.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "76b81d22-58fd-494b-bdca-d1f86c6d1192",
+      "kind": "raw_block",
+      "content": {
+        "id": "composition_worked_model",
+        "html": "<h2>Composition: feed one output into another rule</h2><p>\\(f(g(x))\\), also written \\((f\\circ g)(x)\\), means <strong>use g first, then feed its output into f</strong>. It does not multiply two outputs.</p><p>With \\(f(x)=\\sqrt{x+4}\\) and \\(g(x)=2x+1\\), enter both definitions, then type <strong>f(g(x))</strong> on a new row. Desmos performs the inside function first.</p><p>For a worked match, add \\(\\sqrt{2x+5}\\) on another row. It covers \\(f(g(x))\\). For example, at \\(x=0\\), g outputs 1 and f turns that input into \\(\\sqrt{5}\\).</p><blockquote><p><strong>Order matters:</strong> \\(g(f(x))\\) uses f first instead. It gives \\(2\\sqrt{x+4}+1\\), a different graph. Keep the nesting exactly as the question writes it.</p></blockquote>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Type f(g(x)) and compare",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "definition_1",
+              "latex": "f(x)=\\sqrt{x+4}",
+              "hidden": true
+            },
+            {
+              "id": "definition_2",
+              "latex": "g(x)=2x+1",
+              "hidden": true
+            }
+          ]
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "720e0e8a-632f-4088-b4d6-55fa8195a68b",
+      "kind": "raw_block",
+      "content": {
+        "id": "composition_order_check",
+        "hint": "The function acting on the original input sits inside the parentheses of the function that acts second.",
+        "prompt": "The question asks for the result of applying \\(g\\) first and then applying \\(f\\) to that output. After defining both functions, which row graphs the requested rule?",
+        "choices": [
+          "\\(g(f(x))\\)",
+          "\\(f(x)\\cdot g(x)\\)",
+          "\\(f(x)+g(x)\\)",
+          "\\(f(g(x))\\)"
+        ],
+        "solution": "Start with the input x.\nApplying g first gives g(x).\nApplying f to that result places the whole g(x) inside f: f(g(x)).\nEnter that row: choice D.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The inside function acts first. A reverses the order; B multiplies two outputs; C adds them. Those are three different rules, even though all use the same two definitions.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "696a66d8-0a61-4916-9047-e07698f3c5aa",
+      "kind": "raw_block",
+      "content": {
+        "id": "guided_radical_composition",
+        "hint": "Use f(g(x)) as the original row. Keep the square root’s full input together, and compare on x ≥ 0.",
+        "prompt": "Let \\(f(x)=\\sqrt{x+6}\\) and \\(g(x)=3x-2\\). For \\(x\\ge0\\), which expression is equivalent to \\(f(g(x))\\)? Graph the composition before comparing choices.",
+        "choices": [
+          "\\(3\\sqrt{x+6}-2\\)",
+          "\\(\\sqrt{3x+4}\\)",
+          "\\(\\sqrt{3x-2}+6\\)",
+          "\\((3x-2)\\sqrt{x+6}\\)"
+        ],
+        "solution": "Keep \\(f(x)=\\sqrt{x+6}\\) and \\(g(x)=3x-2\\) as hidden definitions.\nEnter \\(f(g(x))\\) as the original graph.\nEnter each choice and compare from x = 0 to the right. \\(\\sqrt{3x+4}\\) covers the original curve.\nSelect B.",
+        "calculator": {
+          "mode": "preset",
+          "title": "Build and compare the composition",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "definition_1",
+              "latex": "f(x)=\\sqrt{x+6}",
+              "hidden": true
+            },
+            {
+              "id": "definition_2",
+              "latex": "g(x)=3x-2",
+              "hidden": true
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "B matches the composition. A reverses the function order, C moves the added 6 outside the root, and D multiplies outputs.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "330d6c30-0236-4262-97b3-d5a27fad141d",
+      "kind": "raw_block",
+      "content": {
+        "id": "choose_and_confirm",
+        "html": "<h2>Choose the tool, then check the view</h2><p>Graph Match is useful for complicated one-input expressions: fractions, roots, products of functions, and compositions. Slider Match can also work; graphing is not automatically faster or better.</p><p>With several independent variables, sliders let you give each its own value. Do not turn two independent variables into the same x. Several functions of one shared input are different: f(x), g(x), and their composition still use one input.</p><blockquote><p><strong>A close-looking graph is a reason to inspect:</strong> Toggle candidates and zoom near where they may separate. Compare several parts of the curve within any region the question specifies.</p></blockquote><p>For functions written in another letter, such as f(t) and g(t), define them with x in both the input label and the rule. Then graph the requested combination using x. Keep each definition; change only the candidate row.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "ab6236a7-444a-4ddd-8a56-d1fec4fec252",
+      "kind": "raw_block",
+      "content": {
+        "id": "final_retrieval",
+        "prompt": "A question uses \\(f(t)\\) and \\(g(t)\\), asks for \\(f(g(t))\\), and says \\(t>1\\). Recall Graph Match: how do you compare the choices?",
+        "choices": [
+          "Use x throughout; define f and g; graph f(g(x)); compare each choice to the right of 1 and select the matching curve.",
+          "Use x throughout; define f and g; graph g(f(x)); compare each choice to the right of 1 and select the matching curve.",
+          "Use x throughout; define f and g; graph f(x) times g(x); compare each choice to the right of 1 and select a matching curve.",
+          "Use x throughout; define f and g; graph f(g(x)); compare each choice at x = 2 and select the first matching point."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "Use x consistently, graph the exact requested rule, and compare curves in the region the question specifies. B reverses the composition, C replaces it with multiplication, and D stops at one shared point.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "2bc92889-545f-4ddd-a0eb-bfea70ee56ef",
+      "kind": "raw_block",
+      "content": {
+        "id": "mixed_practice_intro",
+        "html": "<h2>Four questions, four different originals</h2><p>Use Graph Match on these fresh questions. The calculators start empty, and the answers are one attempt each.</p><p>Read the requested expression and note which part of the graph the question asks about. Keep the original and each candidate on separate rows.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "da1478b4-434d-41d2-a5f1-a0e0a5ae6d64",
+      "kind": "raw_block",
+      "content": {
+        "id": "transfer_radical",
+        "prompt": "Which expression is equivalent to \\(\\sqrt{27r^3}\\) for all \\(r>0\\)?",
+        "choices": [
+          "\\(3r\\sqrt{3}\\)",
+          "\\(9r\\sqrt{3r}\\)",
+          "\\(3r\\sqrt{3r}\\)",
+          "\\(3r^2\\sqrt{3}\\)"
+        ],
+        "calculator": {
+          "mode": "preset",
+          "title": "Mixed practice 1",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": []
+        },
+        "allow_retry": false,
+        "explanation": "Graph \\(\\sqrt{27x^3}\\), then each choice using x instead of r. Compare to the right of 0. C, \\(3x\\sqrt{3x}\\), follows the original curve. A loses a factor of the input under the root, B is scaled too high, and D grows too quickly. A and D happen to match at x = 1, so compare farther along the curve. Select C.",
+        "correct_index": 2
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "987f3515-ee41-4b3b-beb9-c8fe62c83c97",
+      "kind": "raw_block",
+      "content": {
+        "id": "transfer_rational_difference",
+        "prompt": "For \\(x>1\\), which expression is equivalent to \\(\\frac{3}{2x-1}-\\frac{1}{x+2}\\)?",
+        "choices": [
+          "\\(\\frac{2}{x-3}\\)",
+          "\\(\\frac{x+5}{(2x-1)(x+2)}\\)",
+          "\\(\\frac{5x+5}{(2x-1)(x+2)}\\)",
+          "\\(\\frac{x+7}{(2x-1)(x+2)}\\)"
+        ],
+        "calculator": {
+          "mode": "preset",
+          "title": "Mixed practice 2",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": []
+        },
+        "allow_retry": false,
+        "explanation": "Graph the complete difference, \\(3/(2x-1)-1/(x+2)\\), then each candidate. Compare to the right of 1. D covers the original. A subtracts denominators as though they were separate numbers, B loses a sign in the numerator, and C adds the two fractions instead. Inspect near x = 1 as well as farther right, where several curves approach zero.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "1b6c40c2-d8a7-4410-9283-a3438d495a75",
+      "kind": "raw_block",
+      "content": {
+        "id": "fresh_function_definitions",
+        "html": "<h2>Build each new function problem from its own definitions</h2><p>The last two questions use different functions with familiar names. Each calculator starts empty so an old f or g cannot change the new question.</p><p>Enter the given definitions, hide their individual curves, and enter the requested combination. Then let the answer choices compete with that graph.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "7df1cad3-9b50-4cfb-8c61-94bf9a10345b",
+      "kind": "raw_block",
+      "content": {
+        "id": "transfer_function_product",
+        "prompt": "The functions \\(f\\) and \\(g\\) are defined by \\(f(x)=\\frac{2}{3}x+1\\) and \\(g(x)=3x-4\\). Which expression is equivalent to \\(f(x)\\cdot g(x)\\)?",
+        "choices": [
+          "\\(2x^2-\\frac{1}{3}x-4\\)",
+          "\\(2x^2+\\frac{1}{3}x-4\\)",
+          "\\(2x^2+\\frac{17}{3}x-4\\)",
+          "\\(2x^2-4\\)"
+        ],
+        "calculator": {
+          "mode": "preset",
+          "title": "Mixed practice 3",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": []
+        },
+        "allow_retry": false,
+        "explanation": "Define f and g as given, hide their individual curves, and graph f(x)*g(x). B, \\(2x^2+\\frac{1}{3}x-4\\), covers the product. A reverses the middle term's sign, C loses a negative sign during multiplication, and D drops the middle term. All four choices pass through the same point at x = 0, so comparing that point alone cannot decide the answer.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "47e85e9c-c27d-4773-b077-49e3eb9b2dbc",
+      "kind": "raw_block",
+      "content": {
+        "id": "transfer_rational_composition",
+        "prompt": "The functions \\(f\\) and \\(g\\) are defined by \\(f(t)=\\frac{1}{t-2}\\) and \\(g(t)=3t+1\\). For \\(t>1\\), which expression is equivalent to \\(f(g(t))\\)?",
+        "choices": [
+          "\\(\\frac{1}{3t-1}\\)",
+          "\\(\\frac{1}{3t-5}\\)",
+          "\\(\\frac{3}{t-2}+1\\)",
+          "\\(\\frac{3t+1}{t-2}\\)"
+        ],
+        "calculator": {
+          "mode": "preset",
+          "title": "Mixed practice 4",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": []
+        },
+        "allow_retry": false,
+        "explanation": "Use x throughout: define \\(f(x)=1/(x-2)\\) and \\(g(x)=3x+1\\). Graph \\(f(g(x))\\), then each candidate, and compare to the right of 1. A, \\(1/(3x-1)\\), covers the composition there. B uses 1/g(x-2), C graphs g(f(x)), and D multiplies outputs. Select A in the original letter t.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "b35df798-980c-4ba7-a4b2-f3deaf629c98",
+      "kind": "raw_block",
+      "content": {
+        "id": "finish",
+        "html": "<p>Graph Match is ready for the expression that looks awkward to simplify.</p><p>Let the choices earn their match.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "button_label": "Complete Lesson"
+      },
+      "block_type": "lesson_complete"
+    }
+  ]
+}

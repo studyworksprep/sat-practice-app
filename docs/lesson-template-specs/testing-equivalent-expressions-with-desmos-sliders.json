@@ -5,8 +5,20 @@
   "blocks": [
     {
       "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Which expression is equivalent to \\(4x(x-2y)+3y(2x+y)\\)?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(4x^2-14xy+3y^2\\)</li><li>\\(4x^2+14xy+3y^2\\)</li><li>\\(4x^2-2xy-3y^2\\)</li><li>\\(4x^2-2xy+3y^2\\)</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": "shared_check_6"
+    },
+    {
+      "kind": "text",
       "id": "text_1",
-      "html": "<h2>Match it, don't expand it</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Give every variable a slider, then test numbers instead of expanding.</p><p><strong>Why it pays:</strong> Multi-variable \"which is equivalent\" questions stop being sign-error minefields — you check the answer rather than derive it.</p><p><strong>One caution:</strong> At the default slider values, several wrong choices can agree with the original by coincidence. Move the sliders and test a second set before you commit.</p></div><p>Some SAT questions hand you a messy expression with two or more variables — like \\(3a(2a-b)+b(a+5)\\) — and ask which answer choice is <em>equivalent</em>. Expand it by hand and you're one sign slip from the wrong answer. Or give every variable a slider and let the numbers pick the choice.</p>"
+      "html": "<h2>Test the expressions without expanding</h2><p>The opening expression has several products and signs. We can compare numerical values instead of expanding everything.</p><p>A <strong>slider</strong> gives a variable a value you can change. We’ll use sliders to test the original and the choices at the same inputs, starting with two simple letters.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": {
@@ -16,7 +28,7 @@
       },
       "kind": "text",
       "id": "text_2",
-      "html": "<p>The sliders are set to \\(a=2\\) and \\(b=3\\). When every variable already has a value, Desmos shows an expression's value right after an equals sign. Look at the number Desmos prints for each row.</p><blockquote><p><strong>Tip:</strong> Drag the \\(a\\) and \\(b\\) sliders to new numbers and watch which row keeps matching the original.</p></blockquote>",
+      "html": "<h2>Read the numerical values</h2><p>The calculator starts at \\(a=2,b=3\\). Read the value of the original and compare the choices. Then move the sliders and see which choice keeps matching.</p>",
       "calculator": {
         "mode": "preset",
         "title": "Compare the values",
@@ -67,7 +79,10 @@
     {
       "kind": "text",
       "id": "text_4",
-      "html": "<p>Here's why that works. Two expressions are <strong>equivalent</strong> when they are just different-looking versions of the same thing.</p><blockquote><p><strong>Key idea:</strong> Equivalent expressions always produce the <em>same output</em> from the <em>same input</em>. Feed both the same numbers and you'll get the same value — every time.</p></blockquote><p>So if a choice ever gives a <em>different</em> number than the original, it can't be equivalent. And the one choice that keeps matching for your test numbers is the answer.</p>"
+      "html": "<h2>A mismatch rules out a choice</h2><p><strong>Equivalent</strong> expressions match at every allowed set of inputs. If a choice gives a different value once, eliminate it.</p><p>A single matching test can be a coincidence, so test another set when choices tie. Numerical tests help select among choices; they do not prove an identity.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -90,12 +105,18 @@
     {
       "kind": "text",
       "id": "text_6",
-      "html": "<h3>The process</h3><p>Turn that idea into a repeatable routine you can run on test day:</p><ol><li><strong>Type the original</strong> expression into Desmos.</li><li><strong>Add a slider</strong> for each variable (Desmos offers this automatically).</li><li><strong>Set the sliders</strong> to different random values — not \\(0\\) and not \\(1\\).</li><li><strong>Type each answer choice</strong> until one shows the same value as the original. That's your answer.</li></ol>"
+      "html": "<h2>Set, Compare, Retest</h2><ol><li>Type the original and give each variable a slider.</li><li>Use distinct ordinary values, such as 2 and 3.</li><li>Test every choice with those same values.</li><li>If choices tie, change the values and retest the survivors.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "text_7",
-      "html": "<p>Why avoid \\(0\\) and \\(1\\)? Because those values make too many <em>different</em> expressions accidentally agree, and you could pick the wrong choice.</p><blockquote><p><strong>Watch out:</strong> At \\(a=1, b=1\\), both \\(2ab\\) and \\(a+b\\) equal \\(2\\) — yet they're not equivalent. At \\(a=2, b=3\\) they split apart: \\(12\\) versus \\(5\\).</p></blockquote><p>Random, boring numbers like \\(2\\) and \\(3\\) keep the imposters from hiding.</p>"
+      "html": "<h2>Choose values that separate the choices</h2><p>At \\(a=b=1\\), \\(2ab\\) and \\(a+b\\) both equal 2. At \\(a=2,b=3\\), they differ. Zero, one, and repeated values can hide differences; use other allowed values when they do.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -116,7 +137,7 @@
     {
       "kind": "text",
       "id": "text_9",
-      "html": "<h3>Watch one all the way through</h3><p>Original: \\(a(3a+2b)-2b(a-b)\\). The choices are loaded below with \\(a=2\\) and \\(b=3\\). Read each value:</p><ul><li>\\(a(3a+2b)-2b(a-b) = 30\\) (the original)</li><li>\\(3a^2+2b^2 = 30\\)  — matches!</li><li>\\(3a^2-4ab+2b^2 = 6\\)</li><li>\\(3a^2+2ab+2b^2 = 42\\)</li></ul><p>Only \\(3a^2+2b^2\\) matches. Notice the middle \\(ab\\) terms in the original cancel — easy to miss by hand, impossible to miss with sliders. Drag \\(a\\) and \\(b\\) to confirm the match holds.</p>",
+      "html": "<h2>Compare another original</h2><p>At \\(a=2,b=3\\), read \\(a(3a+2b)-2b(a-b)\\). Compare its output with each candidate row, then change the sliders to test the surviving match again.</p>",
       "calculator": {
         "mode": "preset",
         "title": "Find the matching value",
@@ -156,7 +177,7 @@
       "id": "check_4",
       "block_type": "check",
       "content": {
-        "hint": "Type each choice into the calculator with \\(p=2, q=3\\) and read the value after the equals sign. Only one shows \\(45\\).",
+        "hint": "Use the two slider values shown. Compare each candidate’s number with the original, then retest any tie.",
         "prompt": "Try one yourself. The original is \\(2p(3p-q)+q(4p+q)\\). Use the calculator with \\(p=2, q=3\\) (original value \\(=45\\)). Which choice is equivalent?",
         "choices": [
           "\\(6p^2+2pq+q^2\\)",
@@ -193,7 +214,10 @@
     {
       "kind": "text",
       "id": "text_11",
-      "html": "<h3>One catch: the letters \\(x\\) and \\(y\\)</h3><p>Desmos treats lowercase \\(x\\) and \\(y\\) as the graphing axes, so it won't hand you sliders for them. If your question uses \\(x\\) and/or \\(y\\), just retype them as <strong>capital</strong> \\(X\\) and \\(Y\\).</p><blockquote><p><strong>Key idea:</strong> Capital \\(X\\) and \\(Y\\) are ordinary variables to Desmos — it will give them sliders like any other letter. Change every \\(x\\to X\\) and \\(y\\to Y\\), in the original and in every choice.</p></blockquote><p>(One limit of the method: if a question has no answer choices to test, there's nothing to match against — this trick won't help there.)</p>"
+      "html": "<h2>For x and y, use uppercase</h2><p>Lowercase x and y have graphing jobs in Desmos. Replace every x with X and every y with Y, in the original and all choices. Uppercase X and Y can have sliders, so the comparison works the same way.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -212,6 +236,14 @@
       }
     },
     {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the expression in x and y</h2><p>Try the opening question again. Choose your test values and compare every choice with the original.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
       "shared_prompt": {
         "id": "shared_check_6",
         "title": "Slider transfer expression",
@@ -221,7 +253,7 @@
       "id": "check_6",
       "block_type": "check",
       "content": {
-        "prompt": "Transfer task. Which expression is equivalent to \\(4x(x-2y)+3y(2x+y)\\)? Use the calculator: retype the variables as \\(X\\) and \\(Y\\), give them sliders (they start at \\(X=2, Y=3\\)), and test each choice.",
+        "prompt": "Which expression is equivalent to \\(4x(x-2y)+3y(2x+y)\\)?",
         "choices": [
           "\\(4x^2-14xy+3y^2\\)",
           "\\(4x^2+14xy+3y^2\\)",
@@ -229,77 +261,42 @@
           "\\(4x^2-2xy+3y^2\\)"
         ],
         "correct_index": 3,
-        "rejoin_at_block_id": "branching_question_13_rejoin",
-        "on_correct_block_id": "branching_question_13_correct",
-        "on_incorrect_block_id": "branching_question_13_incorrect"
-      },
-      "calculator": {
-        "mode": "preset",
-        "title": "Test the choices (use capital X and Y)",
-        "display": "open",
-        "editable": true,
-        "resettable": true,
-        "initial_expressions": [
-          {
-            "id": "x",
-            "latex": "X=2"
-          },
-          {
-            "id": "y",
-            "latex": "Y=3"
-          }
-        ]
+        "calculator": {
+          "display": "open",
+          "mode": "scratch"
+        },
+        "explanation": "The expression simplifies to 4x²-2xy+3y². At X=2,Y=3, both original and this choice give 31.",
+        "solution": "Enter X=2,Y=3 and the original using X,Y. It gives 31. Compare each choice at those same values; only 4X²-2XY+3Y² gives 31. You can retest with another set.",
+        "allow_retry": true,
+        "hint": "Use X and Y in place of x and y. Give them distinct allowed values, compare the original with each choice, and retest a tie."
       }
-    },
-    {
-      "shared_prompt": "shared_check_6",
-      "kind": "text",
-      "id": "branching_question_13_correct",
-      "html": "<p>Exactly. Typing \\(4X(X-2Y)+3Y(2X+Y)\\) at \\(X=2, Y=3\\) gives \\(31\\), and only \\(4X^2-2XY+3Y^2\\) also gives \\(31\\). The \\(-8xy\\) and \\(+6xy\\) combine to \\(-2xy\\).</p>"
-    },
-    {
-      "shared_prompt": "shared_check_6",
-      "kind": "text",
-      "id": "branching_question_13_incorrect",
-      "html": "<p>Not quite — that's a sign or combining slip. Expanding gives \\(4x^2-8xy+6xy+3y^2\\), and \\(-8xy+6xy=-2xy\\), not \\(-14xy\\) or \\(+14xy\\). Numerically, \\(4X(X-2Y)+3Y(2X+Y)=31\\) at \\(X=2, Y=3\\); test each choice and only one hits \\(31\\).</p>"
-    },
-    {
-      "kind": "text",
-      "id": "branching_question_13_rejoin",
-      "html": "<p>The safest move is always the same: sliders on random numbers, then match the value. No hand-expanding required.</p>"
     },
     {
       "kind": "raw_block",
       "id": "check_7",
       "block_type": "check",
       "content": {
-        "prompt": "Recall the routine. Before you start typing answer choices, what must you do so Desmos gives fair, trustworthy results?",
+        "prompt": "How do you compare expressions fairly with sliders, and what do you do if choices tie?",
         "choices": [
-          "Set every variable's slider to \\(0\\) so the arithmetic stays as simple as possible",
-          "Set each variable to \\(1\\), since multiplying by \\(1\\) cannot change an expression's value",
-          "Give each variable a slider and set them to different values other than \\(0\\) or \\(1\\)",
-          "Give a slider to just one of the variables and leave the other letters fixed at their defaults"
+          "Give each expression sliders set to zeros, and keep the first choice that matches.",
+          "Give each expression its own values, then compare its result with the original.",
+          "Give every variable a slider, compare expressions at the same allowed values, and retest ties.",
+          "Give one variable a slider, leave the others undefined, and compare the expressions."
         ],
         "correct_index": 2,
-        "rejoin_at_block_id": "branching_question_14_rejoin",
-        "on_correct_block_id": "branching_question_14_correct",
-        "on_incorrect_block_id": "branching_question_14_incorrect"
+        "explanation": "Each comparison uses one complete value set. If choices tie, change to another allowed set and retest them."
+      },
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
       "kind": "text",
-      "id": "branching_question_14_correct",
-      "html": "<p>Right. Every variable gets a slider, and you set them to distinct, ordinary numbers like \\(2\\) and \\(3\\) — never \\(0\\) or \\(1\\), which let imposters sneak through.</p>"
-    },
-    {
-      "kind": "text",
-      "id": "branching_question_14_incorrect",
-      "html": "<p>Careful — \\(0\\) and \\(1\\) are exactly the values to avoid, because different expressions often coincide there. Give each variable its own slider and choose different, non-trivial numbers so only the true match survives.</p>"
-    },
-    {
-      "kind": "text",
-      "id": "branching_question_14_rejoin",
-      "html": "<p>That's the whole tool: original in, sliders on random values, type choices, match the number.</p>"
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -315,8 +312,11 @@
       "id": "lesson_complete_1",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You've got it</h2><p>For any \"which is equivalent?\" question in two or more variables: <strong>type the original, slider every variable, set random values (not \\(0\\) or \\(1\\)), and match the value.</strong> If the variables are \\(x\\) and \\(y\\), switch them to capital \\(X\\) and \\(Y\\) first. Let the numbers pick your answer.</p>",
+        "html": "<h2>Compare at the same values</h2><p>Eliminate mismatches and retest any tied choices.</p>",
         "button_label": "Finish lesson"
+      },
+      "calculator": {
+        "display": "hidden"
       }
     }
   ]

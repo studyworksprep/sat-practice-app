@@ -4,9 +4,24 @@
   "blocks": [
     {
       "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Which choice compares the two estimates and identifies the more accurate method?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The research team used both a drone and ground observers to study a seal colony.</li><li>The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.</li><li>A later audit of the aerial images counted 1,210 seals living in the colony.</li><li>Ground observers counted 980 seals, which makes their ground-based method more accurate than the drone method.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "shared_independent_transfer",
+        "title": "Seal colony notes and goal",
+        "html": "<p><strong>Goal:</strong> The student wants to <strong>compare two methods for estimating a seal colony's size and indicate which method produced the more accurate estimate</strong>.</p><p><strong>Notes:</strong></p><ul><li>A research team estimated the colony with aerial images from a drone and with observers counting from the ground.</li><li>The drone estimate was 1,240 seals.</li><li>The ground estimate was 980 seals.</li><li>A later image audit used as a benchmark counted 1,210 seals.</li></ul>"
+      }
+    },
+    {
+      "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>The question tells you what to build</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Turn the goal into a requirement list, then eliminate.</p><p><strong>Why it pays:</strong> Most choices are perfectly true statements drawn from the notes, so \"is this true?\" separates nothing. Goal-fit separates everything.</p><p><strong>One caution:</strong> When the goal has two parts joined by \"and,\" treat it as a contract. A choice that nails one half and drops the other is out.</p></div><p>The notes look like the task. They aren't — the student's stated goal is the decision-maker, and most choices are perfectly true statements from the notes that fail it. Start with the goal and no notes at all.</p><blockquote><p><strong>Core move:</strong> Start with \"The student wants to...\" — not with the notes.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>The goal tells you what to build</h2><p>Several seal choices repeat accurate notes, but the student needs a particular comparison. We’ll use <strong>Let the Goal Lead</strong>: turn the goal into requirements before choosing.</p><p>First, practise with a short goal about an archivist.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": {
@@ -16,8 +31,10 @@
       },
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Try the goal before seeing any notes</h2><p>Which choice sounds as though it could do that job?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Elena Ruiz, a community archivist, directed the archive's expansion into three neighborhood branches.</li><li>The archive's first neighborhood branch opened its doors to the public in 1998.</li><li>Community archivist Elena Ruiz cataloged the oral histories donated by local residents.</li><li>The archive's three neighborhood branches preserve photographs and recorded interviews.</li></ol><blockquote><p><strong>Do not ask whether each choice is true yet.</strong> Ask which choice fulfills the stated goal.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Find the sentence that does the job</h2><p>The goal is to introduce Elena Ruiz and emphasize her leadership during the expansion. Look for a choice that does both. You can identify that shape before learning every archive detail.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": "shared_first_exploration",
@@ -35,21 +52,27 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "The answer needs both Elena Ruiz and evidence that she led the expansion.",
-        "explanation": "Exactly. The first choice names Ruiz and shows her directing the expansion. The goal alone identifies the needed content."
+        "explanation": "The first choice names Ruiz and shows her directing the expansion. The goal alone identifies the needed content."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "name_the_principle",
-      "html": "<h2>The goal is your filter</h2><p>The notes contain more information than the answer needs. If you read them first, every detail can feel important. If you read the goal first, you know what evidence the answer must select.</p><p>Most wrong choices in these questions can be accurate statements about the notes and still be wrong because they do not perform the requested job.</p><blockquote><p><strong>Question first:</strong> Relevance to the goal matters before completeness as a summary.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Use the goal as a filter</h2><p>A choice can be true and still do the wrong job. Read the goal first so you know which facts the answer needs and which details can stay in the notes.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "stem_anatomy",
-      "html": "<h2>Find the useful sentence in the stem</h2><p>The ending of a Rhetorical Synthesis item usually contains two parts:</p><ul><li><strong>The goal:</strong> \"The student wants to...\" followed by a specific task.</li><li><strong>The routine direction:</strong> a request to choose the option that most effectively uses relevant information from the notes.</li></ul><p>The routine direction repeats across the question type. The changing goal gives you the useful information.</p><blockquote><p><strong>Read carefully:</strong> The few words after \"wants to\" control the answer.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Find “The student wants to…”</h2><p>The words after that phrase give the goal. Read them carefully: introduce whom, explain what, or compare which things? Those details control the answer.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -66,21 +89,27 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Look for the part that changes from one Rhetorical Synthesis question to the next.",
-        "explanation": "Right. The student's specific goal changes each time and defines what the correct answer must accomplish."
+        "explanation": "The student's specific goal changes each time and defines what the correct answer must accomplish."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "four_step_process",
-      "html": "<h2>Use a four-step process</h2><ol><li><strong>Read the question first.</strong> Go directly to the sentence beginning \"The student wants to...\"</li><li><strong>List the requirements.</strong> Identify the action, subject, focus, and every part joined by <strong>and</strong>.</li><li><strong>Test the choices.</strong> Eliminate any choice that is off focus or misses even one requirement.</li><li><strong>Check notes only if needed.</strong> If two choices still seem to do the job, verify their facts against the notes.</li></ol><blockquote><p><strong>Short version:</strong> Goal, requirements, choices, then notes if needed.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Let the Goal Lead</h2><ol><li>Read the student’s goal.</li><li>List its requirements.</li><li>Test the choices against every requirement.</li><li>Use the notes to check facts when more than one choice seems to fit.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "action_words",
-      "html": "<h2>The action word defines the relationship</h2><p>Start your requirement list with the verb in the goal.</p><ul><li><strong>Introduce:</strong> identify the subject and give the requested context.</li><li><strong>Emphasize:</strong> make one specified feature especially clear.</li><li><strong>Compare or contrast:</strong> mention both subjects and state a similarity or difference.</li><li><strong>Illustrate:</strong> give a concrete example of the idea.</li><li><strong>Support a claim:</strong> provide evidence that makes the claim more convincing.</li></ul><p>A choice can mention the right topic while performing the wrong action.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>The verb gives you the job</h2><p>To <strong>introduce</strong>, identify the subject in the requested context. To <strong>illustrate</strong>, give an example. To compare, state a similarity or difference between the subjects. Keep the required relationship in your checklist.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -97,21 +126,27 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "To illustrate a claim, look for an example that shows the claim in action.",
-        "explanation": "Correct. A concrete water-saving feature illustrates the claim; merely discussing deserts or researchers does not."
+        "explanation": "A concrete water-saving feature illustrates the claim; merely discussing deserts or researchers does not."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "requirement_checklist",
-      "html": "<h2>Turn the whole goal into a checklist</h2><p>After the action word, capture the goal's content limits:</p><ul><li><strong>Who or what?</strong> Which person, object, study, or idea must appear?</li><li><strong>Which feature?</strong> What result, quality, difference, or example matters?</li><li><strong>What relationship?</strong> Must the answer show a cause, a contrast, a sequence, or evidence for a claim?</li><li><strong>How many jobs?</strong> Does <strong>and</strong> join two requirements?</li></ul><p>Keep the list short enough to use while scanning four choices.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Make a short checklist</h2><p>Name the action, the subject, and the feature the answer should emphasize. Keep every part joined by “and.” Use that list while scanning the choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "and_rule",
-      "html": "<h2>Treat 'and' as a two-part contract</h2><p>Suppose the student wants to <strong>describe a new transit map and explain how it improved accessibility</strong>.</p><p>The correct answer must do two jobs:</p><ol><li>describe the new map;</li><li>explain its accessibility benefit.</li></ol><p>A choice that does only one job is incomplete, even if every word in it matches the notes.</p><blockquote><p><strong>Circle every and:</strong> It often creates a second requirement that tempting choices omit.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>“And” can add another requirement</h2><p>If the goal is to describe a map and explain its accessibility benefit, the answer must do both. A choice that describes the map alone leaves the goal unfinished.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -128,9 +163,11 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Look for one choice that both names the new exhibit and explains the visitor's interaction.",
-        "explanation": "Exactly. The final choice introduces the exhibit and explains the interactive action. The other choices do only one job or neither."
+        "explanation": "The final choice introduces the exhibit and explains the interactive action. The other choices do only one job or neither."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": {
@@ -140,8 +177,10 @@
       },
       "kind": "text",
       "id": "worked_example_prompt",
-      "html": "<h2>Model: solve without the notes</h2><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>A design team began testing packaging prototypes in 2022.</li><li>The packaging is grown by binding agricultural waste with fungal roots, and it can break down in home compost.</li><li>The packaging is shaped in reusable molds before it dries.</li><li>Unlike many plastics, the packaging can break down in home compost.</li></ol><p>Requirement list: <strong>how it is made + environmental advantage</strong>. Choice B is the only one that checks both boxes.</p><blockquote><p><strong>Notice:</strong> You did not need to learn every fact in the notes to identify the answer's required shape.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Apply a two-part checklist</h2><p>The packaging goal asks how it is made and what environmental advantage it has. Look for one sentence that covers both requirements. A date or a manufacturing detail alone will not finish the job.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": "shared_worked_example_prompt",
@@ -149,50 +188,37 @@
       "id": "worked_example_check",
       "block_type": "check",
       "content": {
-        "prompt": "Why is 'The packaging is grown by binding agricultural waste with fungal roots, and it can break down in home compost' the best answer?",
+        "prompt": "Which checklist matches the student’s goal for the packaging?",
         "choices": [
-          "It is the longest of the four choices and includes the greatest number of details.",
-          "It explains how the material is made and gives an environmental advantage.",
-          "It mentions the year in which the design team began testing prototypes.",
-          "It summarizes every note the student collected about the packaging."
+          "Name the material and report when its design was first tested.",
+          "Explain how the material is made and give an environmental advantage.",
+          "Describe the material’s appearance and compare its production costs.",
+          "List the research notes in order and identify the design team."
         ],
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Match the two clauses in the answer to the two requirements in the goal.",
-        "explanation": "Right. The first clause explains production; the second gives the composting advantage. Goal-fit, not length, makes it correct."
+        "explanation": "The first clause explains production; the second gives the composting advantage. Goal-fit, not length, makes it correct."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "distractor_patterns",
-      "html": "<h2>Most wrong answers fail the goal in predictable ways</h2><ul><li><strong>Off focus:</strong> true information about the topic, but not the requested feature.</li><li><strong>Half right:</strong> fulfills one part of a goal joined by <strong>and</strong>.</li><li><strong>Wrong action:</strong> describes when the goal asks for a comparison, or gives background when the goal asks for evidence.</li><li><strong>Wrong relationship:</strong> mentions both subjects without stating the requested similarity, difference, cause, or result.</li></ul><p>Labeling the failure is faster than judging which sentence sounds nicest.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
-      "id": "comparison_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "The student wants to compare the migration routes of two whale populations. Which choice has the right structure?",
-        "choices": [
-          "Researchers attached satellite tracking tags to several whales from each population.",
-          "The eastern population traveled mostly in shallow waters near the coastline.",
-          "The eastern population followed the coast, whereas the western population crossed deeper offshore waters.",
-          "Both whale populations began their spring migrations during exactly the same month of the year."
-        ],
-        "correct_index": 2,
-        "allow_retry": true,
-        "hint": "A comparison must include both populations and state a relationship between their routes.",
-        "explanation": "Correct. The third choice names both routes and directly contrasts them. The second mentions only one population, and the fourth compares timing rather than routes."
-      },
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Give an incomplete choice a reason to go</h2><p>Does it miss the requested feature, cover only half the goal, or name two subjects without comparing them? Use the checklist to identify the missing part.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "text",
       "id": "notes_fallback",
-      "html": "<h2>When should you finally read the notes?</h2><p>Usually, the requirement list leaves only one choice. Occasionally, two choices both appear to fulfill the goal. Then - and only then - compare their claims with the notes.</p><p>Look for a choice that changes a number, reverses a relationship, exaggerates a finding, or treats an observed association as proof of cause.</p><blockquote><p><strong>Fallback rule:</strong> Goal-fit creates the finalists; the notes break a real tie.</p></blockquote>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>When two choices seem to fit</h2><p>Use the notes to check the claims that separate them. Look for a changed number, a reversed comparison, or a cause that the notes never establish.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": {
@@ -202,8 +228,10 @@
       },
       "kind": "text",
       "id": "fact_check_example",
-      "html": "<h2>Rare case: two choices support the goal</h2><p>Two choices may seem useful:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Gardens with at least five flowering species averaged 18 native bee visits per hour, compared with 7 for gardens with one or two species.</li><li>Adding more flowering plant species to a garden caused native bee visits to rise from 7 to 18 per hour.</li></ol><p>Both point toward the claim, so now the notes matter.</p>",
-      "calculator": { "display": "hidden" }
+      "html": "<h2>Check what the bee survey supports</h2><p>The goal is to support a claim about plant variety and bee visits. Compare the two possible sentences with the notes. Does the survey establish a difference, or does it show that one change caused the other?</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": "shared_fact_check_example",
@@ -221,20 +249,19 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "The researchers observed existing gardens; they did not add plant species themselves.",
-        "explanation": "Correct. The first choice reports the observed difference. The second invents a causal experiment that the notes do not describe."
+        "explanation": "The first choice reports the observed difference. The second invents a causal experiment that the notes do not describe."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
-      "shared_prompt": {
-        "id": "shared_independent_transfer",
-        "title": "Seal colony notes and goal",
-        "html": "<p><strong>Goal:</strong> The student wants to <strong>compare two methods for estimating a seal colony's size and indicate which method produced the more accurate estimate</strong>.</p><p><strong>Notes:</strong></p><ul><li>A research team estimated the colony with aerial images from a drone and with observers counting from the ground.</li><li>The drone estimate was 1,240 seals.</li><li>The ground estimate was 980 seals.</li><li>A later image audit used as a benchmark counted 1,210 seals.</li></ul>"
-      },
       "kind": "text",
-      "id": "independent_transfer",
-      "html": "<h2>Independent transfer</h2><p>Use the full process on this new item. Begin with the goal in the shared prompt, make a requirement list, and only then use the notes if you need them.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The research team used both a drone and ground observers to study a seal colony.</li><li>The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.</li><li>A later audit of the aerial images counted 1,210 seals living in the colony.</li><li>Ground observers counted 980 seals, which makes their ground-based method more accurate than the drone method.</li></ol>",
-      "calculator": { "display": "hidden" }
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the seal estimates</h2><p>Try the first question again. Make the student’s goal into a short requirement list, then use it to test the choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "shared_prompt": "shared_independent_transfer",
@@ -250,11 +277,14 @@
           "Ground observers counted 980 seals, which makes their ground-based method more accurate than the drone method."
         ],
         "correct_index": 1,
-        "allow_retry": false,
-        "hint": "The answer must compare both estimates and name the method closer to the 1,210 benchmark.",
-        "explanation": "Correct. The second choice includes both estimates and shows that the drone's estimate was closer to the benchmark. The first only names the methods, and the fourth reverses the result."
+        "allow_retry": true,
+        "hint": "The goal asks for a comparison and a decision about accuracy. Compare both estimates with the audit value.",
+        "explanation": "The second choice includes both estimates and shows that the drone's estimate was closer to the benchmark. The first only names the methods, and the fourth reverses the result.",
+        "solution": "The second choice includes both estimates and shows that the drone's estimate was closer to the benchmark. The first only names the methods, and the fourth reverses the result."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -270,10 +300,39 @@
         ],
         "correct_index": 3,
         "allow_retry": false,
-        "hint": "Retrieve the order: goal, requirements, choices, notes if needed.",
         "explanation": "You have it. Let the goal define the answer first; use the notes as a tiebreaker only when goal-fit does not decide the question."
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "comparison_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The student wants to compare the migration routes of two whale populations. Which choice has the right structure?",
+        "choices": [
+          "Researchers attached satellite tracking tags to several whales from each population.",
+          "The eastern population traveled mostly in shallow waters near the coastline.",
+          "The eastern population followed the coast, whereas the western population crossed deeper offshore waters.",
+          "Both whale populations began their spring migrations during exactly the same month of the year."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "explanation": "The third choice names both routes and directly contrasts them. The second mentions only one population, and the fourth compares timing rather than routes."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
     },
     {
       "kind": "raw_block",
@@ -289,8 +348,7 @@
         ],
         "correct_index": 2,
         "allow_retry": false,
-        "hint": "Two requirements: the newest instrument, and service to researchers outside the observatory.",
-        "explanation": "Correct. The goal needs the newest instrument and its reach beyond the staff — the sky survey plus the worldwide public archive does both jobs. The first choice is history, the second introduces the telescope without the outside-service half, and the fourth invents a prediction."
+        "explanation": "The goal needs the newest instrument and its reach beyond the staff — the sky survey plus the worldwide public archive does both jobs. The first choice is history, the second introduces the telescope without the outside-service half, and the fourth invents a prediction."
       },
       "calculator": {
         "display": "hidden"
@@ -301,10 +359,12 @@
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>The goal is a contract</h2><p>Turn \"the student wants to…\" into a requirement list, then eliminate. A goal joined by \"and\" has two halves; a choice that nails one and drops the other is out. The notes only break a tie.</p>",
+        "html": "<h2>Let the Goal Lead</h2><p>Keep every part of the student’s goal in view as you choose.</p>",
         "button_label": "Complete Lesson"
       },
-      "calculator": { "display": "hidden" }
+      "calculator": {
+        "display": "hidden"
+      }
     }
   ]
 }

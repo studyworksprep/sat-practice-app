@@ -1,0 +1,509 @@
+{
+  "title": "Process and Pre-Answer Reading Comprehension Questions",
+  "description": "Use a five-step routine to identify the question's job, build a usable understanding of a short SAT passage, form a flexible answer target, and prove the matching choice from the text.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Take control before the choices do</h2><div class=\"lesson-intro\"><p><strong>The move:</strong> Name the question's job, build a usable read, then say the answer in your own words.</p><p><strong>Why it pays:</strong> Four polished choices are designed to look reasonable one at a time. Arriving with a target means you're matching instead of being persuaded.</p><p><strong>One caution:</strong> Your target is a rough idea in your own words. Don't polish it into something that sounds like an answer choice — that's how you talk yourself into one.</p></div><p>Four polished choices are built to look reasonable one at a time. Arrive with your own rough answer and you're matching instead of being persuaded — that's the whole difference on main-idea, detail, function, and inference questions.</p><blockquote><p><strong>Core habit:</strong> Think before you look at the answer choices.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Migrating birds passage",
+        "html": "<blockquote><p>Many migrating birds travel at night, using natural light to help orient themselves. In brightly lit cities, however, artificial light can draw birds away from their routes, forcing them to use additional energy before they reach a resting place.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "opening_exploration",
+      "html": "<h2>Try a question without answer choices</h2><p><strong>Question:</strong> Which choice would best state the main idea of the text?</p><p>Pause and say the main idea in your own words. Do not try to make it sound like an SAT answer choice.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": "shared_opening_exploration",
+      "kind": "raw_block",
+      "id": "opening_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice best states the main idea of the text?",
+        "choices": [
+          "Natural moonlight is the only reliable guide for every migrating bird.",
+          "Exposure to city lights causes migrating birds to reach their resting places sooner than usual.",
+          "Artificial city light can disrupt nighttime bird migration and cost birds extra energy.",
+          "Scientists cannot reliably study bird migration in brightly lit modern cities."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Include the passage's central problem and its stated result without adding a new claim.",
+        "explanation": "Right. The passage says that artificial city light can pull migrating birds off route, causing them to spend additional energy."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "name_the_process",
+      "html": "<h2>The five-step process</h2><ol><li><strong>Read the context</strong>: use the introduction if one is present.</li><li><strong>Name the job</strong>: translate the question into exactly what you must find.</li><li><strong>Build the meaning</strong>: read the whole passage and know what each sentence contributes; repair only when the meaning breaks down.</li><li><strong>Form an answer target</strong>: answer the question in your own words before viewing the choices.</li><li><strong>Prove the choice</strong>: select the option that matches your target and is supported by the text.</li></ol><p>You will practice each step, then use the full process independently.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "process_order_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which sequence follows the reading process?",
+        "choices": [
+          "Read the choices; skim for repeated words; guess the passage's topic; reread the question.",
+          "Read the context; name the job; build the meaning; form an answer target; prove the choice.",
+          "Read the passage; choose the longest answer; check the introduction only if stuck.",
+          "Read the question; eliminate two choices; use the remaining choices to interpret the passage."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The process gathers context and defines the task before it exposes you to the choices.",
+        "explanation": "Correct. Context and task come first, then passage meaning and your own answer target. Only after that do the choices appear."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "introduction_step",
+      "html": "<h2>Step 1: Read the introduction</h2><p>Some fiction and poetry passages begin with a short note that identifies the author, speaker, setting, or situation. That information is part of the question, even though it appears outside the passage.</p><p>An introduction can tell you who is speaking, what has just happened, or why a character reacts in a certain way.</p><blockquote><p><strong>Do not invent an introduction.</strong> If none is present, move directly to the question.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "introduction_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A passage is introduced as an excerpt in which a gardener sees her restored greenhouse for the first time after a storm. What should you do with that information?",
+        "choices": [
+          "Set it aside completely, since information printed outside the passage itself is not supposed to matter.",
+          "Assume from the situation that the gardener dislikes every change the storm made to the greenhouse.",
+          "Read the answer choices before the passage to decide whether the introduction is worth using.",
+          "Use it as context for the gardener's reactions while still checking every claim against the passage."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The introduction supplies context, but it does not give permission to invent the character's feelings.",
+        "explanation": "Exactly. The storm and restoration help frame the scene, while the passage itself must still support any conclusion about the gardener."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "question_step",
+      "html": "<h2>Step 2: Read the question and name the job</h2><p>Many SAT reading questions look similar, but their tasks differ. Before reading the passage, translate the question into a short job:</p><ul><li><strong>Main idea:</strong> What is the passage mostly saying?</li><li><strong>Detail:</strong> What does the passage state about one specific thing?</li><li><strong>Purpose or function:</strong> Why did the author include this sentence or example?</li><li><strong>Inference:</strong> What is the smallest conclusion the text supports?</li></ul><blockquote><p><strong>Keep the whole passage:</strong> The question tells you what to produce, not what you can safely ignore.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "question_job_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The question asks, 'Which choice best states the main purpose of the text?' What is your job?",
+        "choices": [
+          "Identify what the text as a whole is trying to communicate or accomplish.",
+          "Find the most surprising individual fact in the text.",
+          "Decide whether the author's writing style is entertaining.",
+          "Choose a statement that is generally true about the passage's topic."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Focus on the whole text, not one isolated detail or outside fact.",
+        "explanation": "Right. A main-purpose question asks what the entire text is doing, such as explaining a result, contrasting views, or describing a change."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "sentence_step",
+      "html": "<h2>Step 3: Build usable meaning</h2><p>After a clear sentence, move on if you can quickly say what it contributed. You do not need an elaborate paraphrase of every easy sentence, and you do not need to memorize every name or number.</p><ul><li>Who or what is the sentence about?</li><li>What happened, changed, or was claimed?</li><li>Does it agree, contrast, explain, qualify, or provide evidence?</li></ul><blockquote><p><strong>Know the contribution:</strong> If you cannot say what a sentence added, stop and repair it before moving on.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_dense_sentence_exploration",
+        "title": "Fox population sentence",
+        "html": "<blockquote><p>Although early surveys suggested that the island's fox population was declining, a later study that tracked individual foxes for three years found that the population had remained stable.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "dense_sentence_exploration",
+      "html": "<h2>Break a dense sentence into parts</h2><p>Read it in three parts:</p><ol><li>Early surveys suggested a decline.</li><li>A later study tracked individual foxes for three years.</li><li>The later study found stability, not decline.</li></ol><p>The word <strong>although</strong> warns you that the early idea will be challenged.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": "shared_dense_sentence_exploration",
+      "kind": "raw_block",
+      "id": "dense_sentence_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which sound bite best preserves the dense sentence's meaning?",
+        "choices": [
+          "Both studies proved that the island's fox population was rapidly declining.",
+          "The later researchers were studying a different fox species from the one in the early surveys.",
+          "Early evidence suggested a decline, but a longer later study found the fox population stable.",
+          "The new tracking program caused the island's fox population to become stable."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep both viewpoints and the contrast between them. Do not turn a study method into a cause.",
+        "explanation": "Correct. The sound bite keeps the early claim, the later result, and the contrast while dropping unneeded detail."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "repair_strategy",
+      "html": "<h2>Repair a sentence that did not land</h2><p>If you finish a sentence and cannot say what it contributed, use a specific repair instead of rereading the same way.</p><ol><li>Return to the sentence.</li><li>Read one clause at a time.</li><li>Replace names with roles such as <strong>a researcher</strong> or <strong>an earlier theory</strong>.</li><li>Notice words that signal contrast, cause, evidence, or qualification.</li><li>State the relationship in plain language.</li></ol><p>This pause takes seconds and often saves a much longer struggle with the choices.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "repair_strategy_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "You finish a sentence but cannot explain what it said. What should you do next?",
+        "choices": [
+          "Continue reading and use the answer choices to guess what the sentence probably meant.",
+          "Reread the sentence in smaller parts until you can state its basic contribution.",
+          "Ignore the sentence because SAT passages always include unnecessary information.",
+          "Choose the answer containing the most words from the sentence."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The goal is to repair your understanding before a misunderstanding spreads to the rest of the passage.",
+        "explanation": "Right. Chunk the sentence and identify its basic contribution before moving on."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "warranted_inference",
+      "html": "<h2>Inference is allowed—guessing is not</h2><p>Understanding a passage often requires you to connect information across sentences. An inference question asks you to make the smallest conclusion that those connections support.</p><ul><li><strong>Allowed:</strong> connect facts and relationships the passage gives you.</li><li><strong>Not allowed:</strong> add a new cause, motive, fact, or prediction just because it seems possible.</li></ul><blockquote><p><strong>Inference rule:</strong> Connect the dots the passage gives you. Do not add new dots.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_inference_exploration",
+        "title": "Moth study passage",
+        "html": "<blockquote><p>Biologist Erika Chen recorded visits by one moth species to white and yellow flowers. After sunset, the moths visited white flowers more often, but during daytime trials, visits to the two colors were equally frequent.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "inference_exploration",
+      "html": "<h2>Form a minimum inference</h2><p><strong>Question:</strong> Which conclusion about the moth study is best supported by the text?</p><p>Before continuing, say the smallest conclusion that combines the nighttime and daytime results. Do not invent a reason for the difference.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": "shared_inference_exploration",
+      "kind": "raw_block",
+      "id": "inference_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which conclusion about the moth study is best supported by the text?",
+        "choices": [
+          "The moths were physically unable to detect the yellow flowers once the sun had set.",
+          "The yellow flowers produced less nectar than the white flowers throughout the study.",
+          "Flower color was associated with different visit rates after sunset but not during the daytime trials.",
+          "Moths of this species visit white flowers more often than yellow flowers at any hour of the day or night."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep the contrast between the nighttime and daytime results, but do not add a mechanism or universal claim.",
+        "explanation": "Correct. The passage supports a difference after sunset and no difference during the daytime trials. It does not explain why."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "background_knowledge",
+      "html": "<h2>Use what you know—but do not use it as proof</h2><p>Background knowledge helps language and situations make sense. It can help you understand why a fact matters, but the SAT answer must still be supported by the passage.</p><blockquote><p><strong>Evidence rule:</strong> Use what you know to understand the passage. Use the passage to prove the answer.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "background_knowledge_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A passage states that a desert plant opens its pores only at night. You know that daytime deserts can be hot and dry. How should you use that knowledge?",
+        "choices": [
+          "Treat anything generally true about deserts as adequate proof of the correct answer.",
+          "Use it to understand why nighttime opening may matter, but require the passage to support the answer.",
+          "Replace the passage's stated explanation with whatever you already happen to know about desert plants.",
+          "Set the passage aside whenever its facts differ from what you expected to read."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Separate what helps you understand the situation from what can prove an answer choice.",
+        "explanation": "Right. Prior knowledge can help the passage make sense, but the passage remains the evidence for the SAT answer."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "preanswer_step",
+      "html": "<h2>Step 4: Form an answer target</h2><p>Answer the question in your own words while the passage is still controlling your thinking. Your target can be a short phrase, not a polished sentence.</p><ul><li><strong>Main idea:</strong> topic plus central point.</li><li><strong>Detail:</strong> the exact requested fact.</li><li><strong>Purpose:</strong> what the sentence or example does.</li><li><strong>Inference:</strong> the smallest supported conclusion.</li></ul><p>Do not peek at the choices for vocabulary or inspiration. Attractive wrong answers can reshape an uncertain reading.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "preanswer_quality",
+      "html": "<h2>Make the target specific but flexible</h2><p>A useful answer target captures the required meaning without demanding identical wording.</p><ul><li><strong>Too broad:</strong> The passage discusses insects.</li><li><strong>Useful:</strong> City noise changes when crickets begin their evening calls.</li><li><strong>Too specific:</strong> Every cricket delays its call by exactly seventeen minutes.</li></ul><p>Your target is a hypothesis, not a verdict. If no choice fits, reread the question and passage and revise the target instead of forcing a match.</p><blockquote><p><strong>Match meaning, not wording.</strong> The correct choice may sharpen or paraphrase your idea.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "preanswer_quality_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A passage says that crickets near busy roads begin calling later than crickets in quiet fields. Which is the most useful answer target for a main-idea question?",
+        "choices": [
+          "Crickets are insects that produce loud calling sounds.",
+          "Living near roads is harmful to every animal.",
+          "Quiet fields contain larger cricket populations than roadside areas do.",
+          "Being near busy roads may delay when crickets begin calling."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Choose the statement that preserves the comparison and does not add a new universal claim or a new cause.",
+        "explanation": "Correct. It captures the reported relationship between busy roads and calling time without overclaiming, demanding exact wording, or naming a cause (such as noise) that the passage never states."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_worked_example_setup",
+        "title": "Museum replicas passage",
+        "html": "<blockquote><p>Museums sometimes display replicas when an original object is too fragile to exhibit. In a study of one history gallery, visitors who saw a replica alongside a short explanation of how it was made recalled more about the original object than visitors who saw the replica without that context.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "worked_example_setup",
+      "html": "<h2>Model the full process</h2><p><strong>Question job:</strong> What is the main idea?</p><p><strong>Sentence 1 contribution:</strong> Museums may use replicas to protect fragile originals.</p><p><strong>Sentence 2 contribution:</strong> Visitors learned more when the replica came with an explanation.</p><p>Pause and combine those contributions into an answer target before continuing.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": "shared_worked_example_setup",
+      "kind": "text",
+      "id": "choices_step",
+      "html": "<h2>Step 5: Reveal and prove the choice</h2><p><strong>Model answer target:</strong> When a museum uses a replica, an explanation can help visitors understand the protected original.</p><p>Only now should you read the answer choices:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Original artifacts are always more valuable to visitors than replicas are.</li><li>Museums mainly use replicas to reduce the cost of gallery admission.</li><li>Context about a replica can improve what visitors learn about the original object.</li><li>Visitors remember objects best when museums provide no written explanation.</li></ol><p>Find the same meaning, then confirm that the passage supports every important part of the choice. If none fits, revisit your target instead of forcing a match.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": "shared_worked_example_setup",
+      "kind": "raw_block",
+      "id": "choices_matching_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which answer choice matches the pre-answer and the museum passage?",
+        "choices": [
+          "Original artifacts are always more valuable to visitors than replicas are.",
+          "Museums mainly display replicas in order to reduce the cost of gallery admission.",
+          "Context about a replica can improve what visitors learn about the original object.",
+          "Visitors remember museum objects best when no written explanation competes for their attention."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Look for the same meaning, not repeated vocabulary alone, and confirm it against the passage.",
+        "explanation": "Right. The third choice restates the study's result without adding a claim the passage never made."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_fiction_intro_variation",
+        "title": "Lena’s return",
+        "html": "<p><strong>Introduction:</strong> The following text is adapted from a story in which Lena has returned to her childhood neighborhood after living abroad for ten years.</p><blockquote><p>At the corner, Lena slowed before the bakery's bright new sign. The lettering was unfamiliar, but the warm scent drifting through the doorway was exactly as she remembered it.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "fiction_intro_variation",
+      "html": "<h2>Variation: an introduction carries essential context</h2><p><strong>Question:</strong> Which choice best describes Lena's reaction to the bakery?</p><p>Form an answer target before viewing the choices.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": "shared_fiction_intro_variation",
+      "kind": "raw_block",
+      "id": "fiction_intro_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice best describes Lena's reaction?",
+        "choices": [
+          "She is angry that the bakery has closed during her absence.",
+          "She cannot remember having visited the bakery before.",
+          "She prefers the bakery's new sign to every feature she remembers.",
+          "She notices both change and familiarity in a place she knew before."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Use the introduction to understand why the contrast between the new sign and familiar scent matters.",
+        "explanation": "Correct. Her long absence makes the mixture of unfamiliar appearance and remembered scent meaningful."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_detail_variation",
+        "title": "Playground coating passage",
+        "html": "<blockquote><p>To reduce summer heat, a city painted several asphalt playgrounds with a pale coating. Measurements taken at midday showed that the coated surfaces were cooler than nearby uncoated asphalt, though air temperatures above the two surfaces were nearly identical.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "detail_variation",
+      "html": "<h2>Variation: a detail question needs a narrow pre-answer</h2><p><strong>Question:</strong> According to the text, what did the midday measurements show?</p><p>The question asks for the measured result, not the project's goal and not a prediction about every city.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": "shared_detail_variation",
+      "kind": "raw_block",
+      "id": "detail_variation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which pre-answer precisely answers the detail question?",
+        "choices": [
+          "The pale coating will permanently lower air temperatures in cities that adopt it.",
+          "The coated playground surfaces were cooler, but the measured air temperatures were about the same.",
+          "The city had removed the original asphalt from its playgrounds before taking any of the midday measurements.",
+          "The uncoated asphalt surfaces measured cooler than the coated surfaces at midday."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Report both measured comparisons and avoid turning one project into a universal claim.",
+        "explanation": "Right. The surfaces differed in temperature, while the air temperatures were nearly identical."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "keyword_trap",
+      "html": "<h2>Do not trade meaning for matching words</h2><p>A wrong answer may repeat several words from the passage while changing the relationship among them. Your pre-answer gives you a meaning to match, so repeated vocabulary should never be enough by itself.</p><blockquote><p><strong>Watch out:</strong> A familiar noun can hide a reversed comparison, a new cause, or an exaggerated claim.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "keyword_trap_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A passage states that shaded ponds lost less water than unshaded ponds during a heat wave. Which answer preserves the meaning?",
+        "choices": [
+          "Shade was associated with less water loss from ponds during the heat wave.",
+          "The heat wave caused shaded ponds to lose more water than unshaded ponds.",
+          "The ponds without shade dried up completely during the weeks of the heat wave.",
+          "Researchers added the shade structures after most of the pond water had evaporated."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Keep the direction of the comparison: shaded ponds lost less water.",
+        "explanation": "Correct. The first choice paraphrases the comparison. The second repeats key words but reverses the result."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_independent_transfer_one",
+        "title": "Reef fish passage",
+        "html": "<blockquote><p>Some young reef fish recognize predators by detecting chemical cues in the water. In one experiment, fish raised in water containing a low level of pollution did not respond to those cues as strongly as fish raised in clean water, suggesting that even modest pollution may interfere with an important survival response.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "independent_transfer_one",
+      "html": "<h2>Independent transfer</h2><p>Use the entire five-step process without a worked outline.</p><p><strong>Question:</strong> Which choice best states the main idea of the text?</p><p>Form your answer target before continuing to the choices.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": "shared_independent_transfer_one",
+      "kind": "raw_block",
+      "id": "independent_transfer_one_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice best states the main idea?",
+        "choices": [
+          "Young reef fish learn to recognize predators mainly by watching how older fish react.",
+          "Pollution causes predators near reefs to release stronger chemical cues into the water.",
+          "A modest level of pollution may weaken young reef fish's response to chemical signs of predators.",
+          "Fish raised in completely clean water were the group unable to detect the predators' chemical cues."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Combine the fish's normal use of chemical cues with the experiment's pollution result.",
+        "explanation": "Correct. The choice captures both the survival response and the evidence that modest pollution may weaken it."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_independent_transfer_two",
+        "title": "Neighborhood newsletters passage",
+        "html": "<blockquote><p>Historian Mina Patel argues that neighborhood newsletters can preserve details omitted from official city records. For example, a 1978 newsletter from one neighborhood lists the names of residents who organized an informal food-delivery network during a transit strike.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "independent_transfer_two",
+      "html": "<h2>Transfer to a purpose question</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence in the text as a whole?</p><p>Form an answer target for the sentence's job before reading the choices.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "shared_prompt": "shared_independent_transfer_two",
+      "kind": "raw_block",
+      "id": "independent_transfer_two_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What function does the second sentence serve?",
+        "choices": [
+          "It challenges Patel's argument by showing that official records contain more detail.",
+          "It explains why the transit strike permanently ended food delivery in the city.",
+          "It introduces a second historian who disagrees with Patel about the value of neighborhood newsletters.",
+          "It provides a specific example of the local detail that a neighborhood newsletter can preserve."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "hint": "Connect the example in sentence 2 to the general claim in sentence 1.",
+        "explanation": "Right. The newsletter's record of the delivery network is concrete evidence for Patel's broader point."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Your tutor asks you to teach the reading routine in twenty seconds. Which version is right?",
+        "choices": [
+          "Read the choices, name the job, borrow the meaning from the closest choice, then prove your target from the choices.",
+          "Read the context, name the job, build the meaning, form an answer target, then prove the choice from the text.",
+          "Read the context, build the meaning, name the job last, form an answer target from a familiar claim, then select without proving.",
+          "Name the job, form an answer target, read the context only if two choices tie, then prove the choice from the text."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "hint": "Retrieve all five steps in order, especially the point at which you first view the choices.",
+        "explanation": "Exactly. Context and task come first, then usable passage meaning and your own answer target. Only then do you reveal and prove a choice."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "For decades, the standard account held that the medieval city of Gerena declined because its river port silted up, cutting off trade. Archaeologist Nadia Boulos questioned this explanation after excavating the city's eastern quarter, where she found warehouses that were expanded, not abandoned, during the supposed decline. Boulos proposes instead that trade shifted overland, and that the city's fortunes fell later, when a new road bypassed Gerena entirely. Her account has prompted other researchers to re-examine sediment records from the port. Which choice best describes the overall structure of the text?",
+        "choices": [
+          "A discovery is announced, its authenticity is questioned, and the doubts are finally dismissed.",
+          "Two competing explanations are shown to be equally supported by the archaeological evidence.",
+          "A traditional explanation is presented, evidence against it is described, and an alternative account is offered.",
+          "A city's history is told in chronological order from its founding to its eventual abandonment."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "hint": "Name the job first: trace what the text does first, second, and third, not what any one sentence says.",
+        "explanation": "Correct. The text opens with the standard account, presents excavation evidence that undermines it, and ends with Boulos's alternative and its reception. The passage does not dismiss doubts, treat the accounts as equal, or narrate the city's full history in order."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Think before the choices can</h2><p>Name the job, build a usable read, say the answer in your own words, then prove the match from the text. Keep your target rough — polish it into something that sounds like a choice and you'll talk yourself into one. Good Cop / Bad Cop sharpens the last step.</p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}
