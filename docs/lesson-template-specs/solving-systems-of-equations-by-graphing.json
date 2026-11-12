@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which values of q solve the system in the prompt?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(q=2\\) and \\(q=-3\\)</li><li>\\(q=3\\) by itself</li><li>\\(q=3\\) and \\(q=8\\)</li><li>\\(q=8\\) only</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "shared_transfer_transition",
-        "title": "System in p and q",
-        "html": "<p>\\[p+q=5\\]</p><p>\\[q=p^2-1\\]</p>"
+        "id": "opening_radical_and_line_system",
+        "title": "Two equations to solve",
+        "html": "<p>\\[y=\\sqrt{x+7}+\\sqrt{x-5}\\]</p><p>\\[y=\\frac{x+3}{2}\\]</p><p>Of all solutions \\((x,y)\\) to this system, what is the greatest value of \\(y\\)?</p>"
       }
     },
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Let the graphs find the shared values</h2><p>The opening question asks for values that satisfy two equations together. Graphing lets us see those shared values without a long algebra solution.</p><p>We’ll start with two simple equations so you can see what to click and what the coordinates mean.</p>",
+      "html": "<h2>Let the graphs find the shared values</h2><p>Substitution in the opening system leaves an equation with two square roots. Solving it by algebra would take several steps.</p><p>Graphing lets you enter both equations as written and find the shared points. We’ll start with two short equations so you can learn what to click and which coordinate to read.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -507,33 +507,31 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the system in p and q</h2><p>Try the opening question again. Decide how to enter the system and which values to report.</p>",
+      "html": "<h2>Return to the square-root system</h2><p>Try the opening question again. Find the solutions and answer the question it asks.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "shared_prompt": "shared_transfer_transition",
+      "shared_prompt": "opening_radical_and_line_system",
       "kind": "raw_block",
-      "id": "transfer_answer_check",
+      "id": "opening_radical_and_line_system_result",
       "block_type": "check",
       "content": {
-        "prompt": "Which values of q solve the system in the prompt?",
-        "choices": [
-          "\\(q=2\\) and \\(q=-3\\)",
-          "\\(q=3\\) by itself",
-          "\\(q=3\\) and \\(q=8\\)",
-          "\\(q=8\\) only"
-        ],
-        "correct_index": 2,
+        "id": "opening_radical_and_line_system_result",
+        "prompt": "What is the greatest value of \\(y\\) among the solutions?",
         "allow_retry": true,
-        "hint": "Use x for p and y for q in both equations. Graph the full equations, click every intersection, and read the coordinates representing q.",
-        "explanation": "The intersections are \\((2,3)\\) and \\((-3,8)\\). The two y-coordinates are \\(3\\) and \\(8\\), so the original system has possible q-values \\(3\\) and \\(8\\). The x-coordinates \\(2\\) and \\(-3\\) are the p-values, and stopping after one intersection misses a solution.",
-        "calculator": {
-          "display": "open",
-          "mode": "scratch"
-        },
-        "solution": "The intersections are \\((2,3)\\) and \\((-3,8)\\). The two y-coordinates are \\(3\\) and \\(8\\), so the original system has possible q-values \\(3\\) and \\(8\\). The x-coordinates \\(2\\) and \\(-3\\) are the p-values, and stopping after one intersection misses a solution."
+        "hint": "Enter both complete equations. Find every intersection, then compare the coordinates representing the quantity the question asks for.",
+        "solution": "Enter \\(y=\\sqrt{x+7}+\\sqrt{x-5}\\) and \\(y=(x+3)/2\\) on separate rows.\nClick both intersections. One lies between \\(x=5\\) and \\(x=6\\); the other is \\((9,6)\\).\nThe larger y-coordinate is \\(6\\). Report \\(6\\), not the x-coordinate \\(9\\).",
+        "explanation": "You found \\(6\\). The intersections solved the square-root system directly, and you reported the requested coordinate.",
+        "input": "numeric",
+        "answer": "6"
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
       }
     },
     {
@@ -611,5 +609,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Calculator opening revision 2026-11-12: A line and a sum of square roots meet twice; algebra requires repeated squaring. Graphing exposes both solutions and the largest requested y-coordinate directly. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
 }

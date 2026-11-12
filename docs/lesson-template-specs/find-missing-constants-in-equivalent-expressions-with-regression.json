@@ -1,25 +1,25 @@
 {
   "title": "Find Missing Constants in Equivalent Expressions with Regression",
   "description": "Use Desmos regression with a list of allowed input values to find missing constants in expressions that are equivalent for every permitted value of the variable.",
-  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 4c22e546-2a07-4ffc-8f99-a2f3e3b21f59 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 4c22e546-2a07-4ffc-8f99-a2f3e3b21f59 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nCalculator opening revision 2026-11-12: Two products with squared binomials require substantial expansion and collection; four constants are fitted using five distinct inputs. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.",
   "blocks": [
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>The expression \\(z^2+az+b\\) is equivalent to \\((z+4)(z-3)\\) for all z. What is ab?</p>"
+        "id": "opening_cubic_identity",
+        "title": "Equivalent expressions",
+        "html": "<p>For every real number \\(z\\),</p><p>\\[az^3+bz^2+cz+d=(2z-3)(z+4)^2+(z-2)(z+1)^2.\\]</p><p>What is the value of \\(b+c\\)?</p>"
       }
     },
     {
       "kind": "text",
       "id": "explore_regression_identity",
-      "html": "<h2>Make equivalent expressions match at several inputs</h2><p>The opening question asks for constants that work for every input. Expanding can be tedious. Instead, <strong>regression</strong> can find constants that make the two expressions match at several inputs together.</p><p>We’ll start with a simple identity so you can see which letters get values and which letter gets a list.</p>",
+      "html": "<h2>Let Desmos collect the constants</h2><p>Expanding both products means keeping track of several powers and signs. <strong>Regression</strong> can find the constants by matching the two expressions at several inputs.</p><p>We’ll start with a shorter identity so you can see which letter gets a list and which letters Desmos finds.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -434,29 +434,32 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the missing constants</h2><p>Try the opening question again. Decide which letter needs several inputs and which letters Desmos should find.</p>",
+      "html": "<h2>Return to the longer identity</h2><p>Try the opening question again. Choose the inputs and find the requested combination of constants.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "check_18",
+      "id": "opening_cubic_identity_result",
       "block_type": "check",
       "content": {
-        "prompt": "Return to the opening question. What answer do you get now?",
-        "input": "numeric",
-        "answer": "-12",
-        "calculator": {
-          "display": "open",
-          "mode": "scratch"
-        },
-        "explanation": "The equivalent polynomial is z²+z-12. Thus a=1 and b=-12, so ab=-12.",
-        "solution": "Enter z=[2,3,4] and z²+az+b~(z+4)(z-3). Desmos shows a=1 and b=-12. Their product is -12.",
+        "id": "opening_cubic_identity_result",
+        "prompt": "What is the value of \\(b+c\\)?",
         "allow_retry": true,
-        "hint": "Give z several input values, connect the equivalent expressions with a tilde, and read a and b before calculating ab."
+        "hint": "Give z a list of distinct inputs. There are four unknown constants, so use at least four distinct values. Fit the expressions, then enter the requested sum.",
+        "solution": "Enter \\(z=[-3,-1,0,2,4]\\).\nEnter \\(az^3+bz^2+cz+d\\sim(2z-3)(z+4)^2+(z-2)(z+1)^2\\).\nDesmos shows \\(a=3,\\ b=13,\\ c=5,\\ d=-50\\), with zero or tiny RMSE.\nOn a new row, enter \\(b+c\\). The result is \\(18\\).",
+        "explanation": "You found \\(18\\). The input list let Desmos find all four constants without expanding the two products.",
+        "input": "numeric",
+        "answer": "18"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_cubic_identity",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
+      }
     },
     {
       "kind": "raw_block",

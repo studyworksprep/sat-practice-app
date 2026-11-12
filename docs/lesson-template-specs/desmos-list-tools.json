@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(4\\)</li><li>\\(4.5\\)</li><li>\\(5\\)</li><li>\\(27\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>Let \\(A=[1,4,7]\\) and \\(B=[2,5,8]\\). What is \\(\\operatorname{median}(\\operatorname{join}(A,B))\\)?</p>"
+        "id": "opening_corrected_measurements",
+        "title": "Two sensors’ measurements",
+        "html": "<p>Sensor A reported each measurement as twice its actual value plus 3. Sensor B reported actual values correctly.</p><table><caption>Reported measurements</caption><thead><tr><th scope=\"col\">Sensor</th><th scope=\"col\">Values</th></tr></thead><tbody><tr><th scope=\"row\">A</th><td>47, 29, 63, 35, 51, 39, 55</td></tr><tr><th scope=\"row\">B</th><td>15, 27, 21, 19, 25, 17</td></tr></tbody></table><p>What is the median of all 13 actual measurements?</p>"
       }
     },
     {
       "kind": "text",
       "id": "lesson_objective",
-      "html": "<h2>Let Desmos handle the whole group</h2><p>Combining groups and sorting their values by hand can get tedious. A <strong>list</strong> stores several numbers so one command can work on all of them.</p><p>We’ll start with four values, then combine groups like the ones in the opening question.</p>",
+      "html": "<h2>Correct a whole group at once</h2><p>The opening question asks you to correct seven measurements, combine them with six others, and find the middle value. Repeating those calculations and sorting by hand is tedious.</p><p>A <strong>list</strong> lets one operation work on a whole group. We’ll start with four values, then return to the sensors.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -513,38 +513,32 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the combined data</h2><p>Try the opening question again. Choose how to keep all six values together and find their median.</p>",
+      "html": "<h2>Return to the sensor measurements</h2><p>Try the opening question again. Find the median of the actual measurements from both sensors.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "practice_join_median",
+      "id": "opening_corrected_measurements_result",
       "block_type": "check",
       "content": {
-        "prompt": "Return to the opening question. What answer do you get now?",
-        "choices": [
-          "\\(4\\)",
-          "\\(4.5\\)",
-          "\\(5\\)",
-          "\\(27\\)"
-        ],
-        "correct_index": 1,
+        "id": "opening_corrected_measurements_result",
+        "prompt": "What is the median of all 13 actual measurements?",
         "allow_retry": true,
-        "solution": "Define \\(A=[1,4,7]\\) and \\(B=[2,5,8]\\), then enter \\(\\operatorname{median}(\\operatorname{join}(A,B))\\).\njoin concatenates the lists end to end into one six-value list, and median finds its middle value.\nDesmos returns \\(4.5\\) — with six values, the median averages the two middle values.\nSo the answer is choice B, \\(4.5\\).",
-        "hint": "Store both groups in lists, combine all six values, then find the middle of the combined data.",
-        "explanation": "The combined values have middle pair 4 and 5, so their median is 4.5."
+        "hint": "Store the two groups separately. Undo Sensor A’s added 3 and doubling before combining the actual values and finding the median.",
+        "solution": "Enter \\(A=[47,29,63,35,51,39,55]\\) and \\(B=[15,27,21,19,25,17]\\).\nEnter \\(C=(A-3)/2\\) to correct every Sensor A measurement.\nEnter \\(\\operatorname{median}(\\operatorname{join}(C,B))\\).\nDesmos displays \\(21\\).",
+        "explanation": "You found \\(21\\). List arithmetic corrected the seven values together; join and median handled the combined group.",
+        "input": "numeric",
+        "answer": "21"
       },
       "calculator": {
         "display": "open",
         "mode": "scratch",
-        "title": "Join, then find the median",
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
+        "title": "Try the opening question again",
+        "resettable": true
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_corrected_measurements"
     },
     {
       "kind": "raw_block",
@@ -664,5 +658,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Calculator opening revision 2026-11-12: Correcting a group before combining thirteen unsorted measurements demonstrates list arithmetic, join, and median without requiring unfamiliar commands in the opening prompt. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
 }

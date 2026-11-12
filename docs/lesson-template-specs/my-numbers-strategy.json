@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(k^2+3m\\)</li><li>\\(k+3m\\)</li><li>\\(k+3km\\)</li><li>\\(\\frac{k+3m}{k}\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(\\frac{a^2+3b^2}{2a}\\)</li><li>\\(\\frac{3a^2+b^2}{2a}\\)</li><li>\\(\\frac{3a^2-b^2}{2a}\\)</li><li>\\(\\frac{3a^2+b^2}{2b}\\)</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>If \\(k\\neq0\\), which expression is equivalent to \\(\\frac{k^2+3km}{k}\\)?</p>"
+        "id": "opening_binomial_quotient",
+        "title": "Equivalent expression",
+        "html": "<p>If \\(a>b>0\\), which expression is equivalent to</p><p>\\[\\frac{(a+b)^3-(a-b)^3}{(a+b)^2-(a-b)^2}\\text{?}\\]</p>"
       }
     },
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Make the variables concrete</h2><p>The opening choices are expressions that must work for every allowed value. We can eliminate a wrong choice by finding one legal example where it fails.</p><p>This is <strong>My Numbers</strong>: choose easy values, calculate the result, and test the choices. We’ll begin with a rectangle so the quantities are easy to picture.</p>",
+      "html": "<h2>Try numbers before expanding cubes</h2><p>The opening expression would take several expansions and careful sign changes. <strong>My Numbers</strong> lets you compare the choices using a legal numerical example instead.</p><p>We’ll start with a rectangle so you can practise choosing values and keeping the same example in every choice.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -394,33 +394,37 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the expression</h2><p>Try the opening question again. Make a legal numerical example and use it to compare the choices.</p>",
+      "html": "<h2>Return to the powers and fractions</h2><p>Try the opening question again. Choose a legal numerical example and use it to compare every choice.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "authentic_item",
+      "id": "opening_binomial_quotient_result",
       "block_type": "check",
       "content": {
-        "prompt": "Return to the opening question. What answer do you get now?",
-        "choices": [
-          "\\(k^2+3m\\)",
-          "\\(k+3m\\)",
-          "\\(k+3km\\)",
-          "\\(\\frac{k+3m}{k}\\)"
-        ],
-        "correct_index": 1,
+        "id": "opening_binomial_quotient_result",
+        "prompt": "Which expression matches the opening quotient?",
         "allow_retry": true,
-        "hint": "Choose easy legal values for k and m, evaluate the original expression, then use the same values in every choice. Retest a tie.",
-        "explanation": "With easy legal values like \\(k=2, m=3\\): the original is \\(\\frac{4+18}{2}=11\\), and \\(k+3m=2+9=11\\) — the only match. The other choices give \\(13\\), \\(20\\), and \\(5.5\\) with those same values.",
-        "solution": "With easy legal values like \\(k=2, m=3\\): the original is \\(\\frac{4+18}{2}=11\\), and \\(k+3m=2+9=11\\) — the only match. The other choices give \\(13\\), \\(20\\), and \\(5.5\\) with those same values."
+        "hint": "Choose distinct positive values with a greater than b. Calculate the full original quotient and use those same values in every choice.",
+        "solution": "Choose \\(a=3,\\ b=2\\), which satisfies \\(a>b>0\\).\nThe original is \\((5^3-1^3)/(5^2-1^2)=124/24=31/6\\).\nThe choices give \\(7/2,\\ 31/6,\\ 23/6,\\ 31/4\\), respectively.\nOnly choice B matches: \\((3a^2+b^2)/(2a)\\).",
+        "explanation": "B is the match. Your legal example separated all four choices without expanding the cubes or squared binomials.",
+        "choices": [
+          "\\(\\frac{a^2+3b^2}{2a}\\)",
+          "\\(\\frac{3a^2+b^2}{2a}\\)",
+          "\\(\\frac{3a^2-b^2}{2a}\\)",
+          "\\(\\frac{3a^2+b^2}{2b}\\)"
+        ],
+        "correct_index": 1
       },
       "calculator": {
-        "display": "open"
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_binomial_quotient"
     },
     {
       "kind": "raw_block",
@@ -489,5 +493,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Calculator opening revision 2026-11-12: A quotient involving two cubed and two squared binomials gives numerical testing a substantial simplification advantage. All four choices separate at a=3,b=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
 }

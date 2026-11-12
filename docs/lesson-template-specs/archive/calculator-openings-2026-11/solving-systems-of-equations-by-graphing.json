@@ -1,0 +1,615 @@
+{
+  "title": "Solve Systems of Equations by Graphing in Desmos",
+  "description": "Graph both equations exactly as written, use every intersection as a solution, and report the variable or expression the SAT asks for.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Which values of q solve the system in the prompt?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(q=2\\) and \\(q=-3\\)</li><li>\\(q=3\\) by itself</li><li>\\(q=3\\) and \\(q=8\\)</li><li>\\(q=8\\) only</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "shared_transfer_transition",
+        "title": "System in p and q",
+        "html": "<p>\\[p+q=5\\]</p><p>\\[q=p^2-1\\]</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Let the graphs find the shared values</h2><p>The opening question asks for values that satisfy two equations together. Graphing lets us see those shared values without a long algebra solution.</p><p>We’ll start with two simple equations so you can see what to click and what the coordinates mean.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_first_exploration",
+        "title": "Opening system",
+        "html": "<p>\\(y=2x+1\\)</p><p>\\(y=-x+7\\)</p>"
+      },
+      "kind": "text",
+      "id": "first_exploration",
+      "html": "<h2>Find the shared point</h2><p>Click where the two graphs meet. Record both coordinates.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click the intersection",
+        "initial_expressions": [
+          {
+            "id": "first_line",
+            "latex": "y=2x+1"
+          },
+          {
+            "id": "second_line",
+            "latex": "y=-x+7"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "shared_prompt": "shared_first_exploration",
+      "kind": "raw_block",
+      "id": "first_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which point did you find where the two lines intersect?",
+        "choices": [
+          "\\((0,7)\\)",
+          "\\((5,2)\\)",
+          "\\((2,5)\\)",
+          "\\((0,1)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Click the one point that lies on both lines, then read the complete ordered pair.",
+        "explanation": "The two lines meet at \\((2,5)\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Use the labeled intersection",
+        "initial_expressions": [
+          {
+            "id": "first_check_line",
+            "latex": "y=2x+1"
+          },
+          {
+            "id": "second_check_line",
+            "latex": "y=-x+7"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "equation_graph_meaning",
+      "html": "<h2>Each graph shows values that work</h2><p>A point on an equation’s graph makes that equation true. For \\(y=2x+1\\), the point \\((2,5)\\) works because 5=2(2)+1.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "intersection_meaning",
+      "html": "<h2>An intersection works in both equations</h2><p>An <strong>intersection</strong> is a point shared by the graphs. Its same x and y make both equations true, so it solves the <strong>system</strong>, a group of equations considered together.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "intersection_meaning_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The graphs of two equations intersect at \\((-3,4)\\). What does that prove?",
+        "choices": [
+          "Just \\(x=-3\\) makes both equations true; \\(y\\) can be any value.",
+          "Just \\(y=4\\) makes both equations true; \\(x\\) can be any value.",
+          "Every point on either graph solves the system.",
+          "The pair \\(x=-3\\), \\(y=4\\) makes both equations true."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "An intersection is one complete ordered pair shared by both graphs.",
+        "explanation": "The shared point \\((-3,4)\\) satisfies both equations, so \\(x=-3\\) and \\(y=4\\) solve the system."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "process_outline",
+      "html": "<h2>Enter Both, Find Intersections</h2><ol><li>Enter each complete equation on its own row.</li><li>Click every intersection.</li><li>Read the coordinates and answer what was asked.</li></ol><p>Desmos accepts equations such as \\(3x+2y=16\\) directly. You do not need to rearrange them first.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_no_simplifying_model",
+        "title": "System in standard form",
+        "html": "<p>\\[3x+2y=16\\]</p><p>\\[4x-y=3\\]</p>"
+      },
+      "kind": "raw_block",
+      "id": "first_system_solution_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The graphs are open in the calculator. Click the point where they cross. What is the solution to the system?",
+        "choices": [
+          "\\(x=5\\), \\(y=2\\)",
+          "\\(x=2\\) by itself",
+          "\\(x=2\\), \\(y=5\\)",
+          "\\(y=5\\) only"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Click the intersection to see its coordinates. In \\((x,y)\\), the first coordinate is x and the second is y.",
+        "explanation": "The intersection \\((2,5)\\) means \\(x=2\\) and \\(y=5\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click the intersection and read the ordered pair",
+        "initial_expressions": [
+          {
+            "id": "solution_check_one",
+            "latex": "3x+2y=16"
+          },
+          {
+            "id": "solution_check_two",
+            "latex": "4x-y=3"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "different_variables_rule",
+      "html": "<h2>Use x and y for other letters</h2><p>If the system uses a and b, let x stand for a and y for b. Make that same replacement throughout both equations, then translate the coordinates back when answering.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "different_variables_mapping_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "If x stands for a and y stands for b, how should you enter \\(3a-2b=7\\) in Desmos?",
+        "choices": [
+          "\\(3y-2x=7\\)",
+          "\\(3x-2y=7\\)",
+          "\\(3a-2b=7\\)",
+          "\\(3x-2y=0\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Replace every a with x and every b with y. Keep the numbers and operations unchanged.",
+        "explanation": "The consistent replacement produces \\(3x-2y=7\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "different_variables_graph",
+      "html": "<h2>Read the coordinates in their original roles</h2><p>Click the intersection of \\(2x+y=11\\) and \\(x-y=1\\). Here the first coordinate represents a and the second represents b.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Let x stand for a and y for b",
+        "initial_expressions": [
+          {
+            "id": "renamed_one",
+            "latex": "2x+y=11"
+          },
+          {
+            "id": "renamed_two",
+            "latex": "x-y=1"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "different_variables_answer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For the original system \\(2a+b=11\\) and \\(a-b=1\\), the renamed graphs intersect at \\((4,3)\\). If the question asks for b, what should you answer?",
+        "choices": [
+          "\\(b=4\\)",
+          "\\(y=3\\)",
+          "\\(a=3\\)",
+          "\\(b=3\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The y-coordinate stood for b. Translate the second coordinate back to the original variable.",
+        "explanation": "The y-coordinate is \\(3\\), and y was standing in for b, so report \\(b=3\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Use the variable map",
+        "initial_expressions": [
+          {
+            "id": "renamed_check_one",
+            "latex": "2x+y=11"
+          },
+          {
+            "id": "renamed_check_two",
+            "latex": "x-y=1"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "requested_quantity_rule",
+      "html": "<h2>The question may ask for a combination</h2><p>If the intersection is \\((3,6)\\), then x=3 and y=6. For \\(2x+y\\), calculate 2(3)+6=12. Use the point to find the requested quantity.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "requested_quantity_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The graphs of \\(x+y=8\\) and \\(y=3x\\) are open in the calculator. Click their intersection. What is the value of \\(x-y\\)?",
+        "choices": [
+          "\\(-4\\)",
+          "\\(4\\)",
+          "\\(8\\)",
+          "\\(12\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Click the intersection to read x and y, then substitute both values into \\(x-y\\). Watch the order of subtraction.",
+        "explanation": "The intersection is \\((2,6)\\), so \\(x-y=2-6=-4\\). The requested expression, not the ordered pair, is the final answer."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click the intersection, then calculate",
+        "initial_expressions": [
+          {
+            "id": "quantity_one",
+            "latex": "x+y=8"
+          },
+          {
+            "id": "quantity_two",
+            "latex": "y=3x"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_first_gated_setup_transition",
+        "title": "System to solve",
+        "html": "<p>Find the value of \\(y\\) at the intersection of these two lines.</p><p>\\(2x+y=7\\)</p><p>\\(y=x-2\\)</p>"
+      },
+      "kind": "raw_block",
+      "id": "first_gated_system_graph",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Enter both equations",
+        "instructions_html": "<p>Enter each equation from the prompt on its own row. Keep both graphs visible, submit, then click their intersection.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "multi_expression",
+          "required_count": 2,
+          "roles": [
+            "first equation",
+            "second equation"
+          ]
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "2x+y=7",
+            "y=x-2"
+          ],
+          "state_rules": {
+            "min_expressions": 2,
+            "max_expressions": 2,
+            "require_visible_only": true,
+            "must_include_variables": [
+              "x",
+              "y"
+            ]
+          }
+        },
+        "feedback": {
+          "success_message_html": "<p>Nice. Both original equations are graphed. Click their intersection before you continue.</p>",
+          "retry_message_html": "<p>Check that you entered both complete equations exactly as written, one per row.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_second_expression",
+              "message_html": "<p>A system needs two graphs. Enter the second complete equation on another row.</p>"
+            },
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>Keep exactly two expression rows: one for each equation.</p>"
+            }
+          ],
+          "attempt_based_hints": [
+            {
+              "min_attempts": 2,
+              "message_html": "<p>Compare each row character by character with \\(2x+y=7\\) and \\(y=x-2\\). No rearranging is needed.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 4,
+          "solution_html": "<p>Enter \\(2x+y=7\\) on the first row and \\(y=x-2\\) on the second row.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      }
+    },
+    {
+      "shared_prompt": "shared_first_gated_setup_transition",
+      "kind": "raw_block",
+      "id": "first_gated_solution_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Click the intersection of the two lines. What is its y-coordinate?",
+        "choices": [
+          "\\(y=3\\)",
+          "\\(y=1\\)",
+          "\\(x=1\\)",
+          "\\(x+y=3\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Click the intersection to read its coordinates. In the ordered pair (x, y), y is the second coordinate.",
+        "explanation": "The intersection \\((3,1)\\) gives \\(x=3\\) and \\(y=1\\), so the requested value is \\(y=1\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click the intersection",
+        "initial_expressions": [
+          {
+            "id": "gated_solution_one",
+            "latex": "2x+y=7"
+          },
+          {
+            "id": "gated_solution_two",
+            "latex": "y=x-2"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_nonlinear_transition",
+        "title": "Line and parabola",
+        "html": "<p>\\(y=x+2\\)</p><p>\\(y=x^2\\)</p>"
+      },
+      "kind": "text",
+      "id": "nonlinear_transition",
+      "html": "<h2>Look for every intersection</h2><p>The method stays the same when the graphs meet more than once. Click every intersection in this system and record each pair. Each shared point is another solution.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click every intersection",
+        "initial_expressions": [
+          {
+            "id": "nonlinear_line",
+            "latex": "y=x+2"
+          },
+          {
+            "id": "nonlinear_curve",
+            "latex": "y=x^2"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "shared_prompt": "shared_nonlinear_transition",
+      "kind": "raw_block",
+      "id": "nonlinear_count_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "How many solutions does this system have?",
+        "choices": [
+          "One, because a system can have only one solution",
+          "Four, because there are two graphs and two coordinates",
+          "Two, because the graphs have two intersection points",
+          "Three, because the parabola changes direction"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Count the distinct points that lie on both the line and the curve.",
+        "explanation": "The graphs intersect twice, so the system has two solutions."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Count the intersections",
+        "initial_expressions": [
+          {
+            "id": "nonlinear_count_line",
+            "latex": "y=x+2"
+          },
+          {
+            "id": "nonlinear_count_curve",
+            "latex": "y=x^2"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "shared_prompt": "shared_nonlinear_transition",
+      "kind": "raw_block",
+      "id": "nonlinear_points_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which list gives every solution to this system?",
+        "choices": [
+          "\\((-1,1)\\) by itself",
+          "\\((2,4)\\) only",
+          "\\((-1,2)\\) and \\((1,4)\\)",
+          "\\((-1,1)\\) and \\((2,4)\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Click both intersections and read each complete ordered pair. Include both shared points.",
+        "explanation": "Both \\((-1,1)\\) and \\((2,4)\\) lie on the line and the parabola, so both solve the system."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Read both ordered pairs",
+        "initial_expressions": [
+          {
+            "id": "nonlinear_points_line",
+            "latex": "y=x+2"
+          },
+          {
+            "id": "nonlinear_points_curve",
+            "latex": "y=x^2"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the system in p and q</h2><p>Try the opening question again. Decide how to enter the system and which values to report.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_transfer_transition",
+      "kind": "raw_block",
+      "id": "transfer_answer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which values of q solve the system in the prompt?",
+        "choices": [
+          "\\(q=2\\) and \\(q=-3\\)",
+          "\\(q=3\\) by itself",
+          "\\(q=3\\) and \\(q=8\\)",
+          "\\(q=8\\) only"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Use x for p and y for q in both equations. Graph the full equations, click every intersection, and read the coordinates representing q.",
+        "explanation": "The intersections are \\((2,3)\\) and \\((-3,8)\\). The two y-coordinates are \\(3\\) and \\(8\\), so the original system has possible q-values \\(3\\) and \\(8\\). The x-coordinates \\(2\\) and \\(-3\\) are the p-values, and stopping after one intersection misses a solution.",
+        "calculator": {
+          "display": "open",
+          "mode": "scratch"
+        },
+        "solution": "The intersections are \\((2,3)\\) and \\((-3,8)\\). The two y-coordinates are \\(3\\) and \\(8\\), so the original system has possible q-values \\(3\\) and \\(8\\). The x-coordinates \\(2\\) and \\(-3\\) are the p-values, and stopping after one intersection misses a solution."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A system with \\(t\\) and \\(u\\) instead of \\(x\\) and \\(y\\), and the question wants \\(t+u\\). From memory: the Desmos routine, in order.",
+        "choices": [
+          "Use x and y as the coordinate variables; simplify both equations by hand before entering them; click the first intersection; report its x-coordinate.",
+          "Use x and y as the coordinate variables; enter both complete equations; click every intersection; translate variables if needed; answer the requested quantity.",
+          "Use x and y as the coordinate variables; enter both complete equations; click every x-intercept; translate variables if needed; answer the requested quantity.",
+          "Enter both complete equations with the problem's original letters; click every intersection; answer with the coordinates Desmos lists first."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "You have it. Entering both equations directly makes every shared point visible, and the final steps ensure you report exactly what the question asks."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the system of equations \\(3x+2y=19\\) and \\(y=2x-1\\), what is the value of \\(x\\)?",
+        "input": "numeric",
+        "answer": "3",
+        "allow_retry": false,
+        "explanation": "Graphing both equations shows the intersection \\((3,5)\\). The question asks for \\(x\\), so the answer is \\(3\\) — reporting \\(5\\) answers with the wrong coordinate."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "revision_system_quantity",
+      "block_type": "check",
+      "content": {
+        "id": "revision_system_quantity",
+        "input": "numeric",
+        "prompt": "The numbers a and b satisfy \\(2a+b=14\\) and \\(a-b=1\\). What is \\(a+b\\)?",
+        "answer": "9",
+        "allow_retry": false,
+        "explanation": "The graphs intersect at (5,4) after using x for a and y for b. Thus a+b=9."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Enter Both, Find Intersections</h2><p>Read every solution and report the quantity the question requests.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

@@ -1,21 +1,25 @@
 {
   "title": "Testing Equivalent Expressions with Desmos Sliders",
   "description": "Learn a fast, reliable way to answer \"which expression is equivalent?\" questions in two or more variables: give each variable a Desmos slider, pick random values, and let the numbers pick the matching answer choice.",
-  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 32188826-a78c-448d-86c9-808113b23e58 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 32188826-a78c-448d-86c9-808113b23e58 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nCalculator opening revision 2026-11-12: Products of binomials and squared binomials produce cubic terms and a whole-product subtraction. All choices separate at X=2,Y=3 and the match persists at X=3,Y=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.",
   "blocks": [
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which expression is equivalent to \\(4x(x-2y)+3y(2x+y)\\)?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(4x^2-14xy+3y^2\\)</li><li>\\(4x^2+14xy+3y^2\\)</li><li>\\(4x^2-2xy-3y^2\\)</li><li>\\(4x^2-2xy+3y^2\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(x^3+14x^2y+12xy^2-13y^3\\)</li><li>\\(x^3+8x^2y+12xy^2-13y^3\\)</li><li>\\(x^3+14x^2y+12xy^2-5y^3\\)</li><li>\\(3x^3+8x^2y+12xy^2-5y^3\\)</li></ol>",
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "shared_check_6"
+      "shared_prompt": {
+        "id": "opening_slider_products",
+        "title": "Equivalent expression",
+        "html": "<p>Which expression is equivalent to</p><p>\\[(2x-y)(x+3y)^2-(x+y)(x-2y)^2\\text{?}\\]</p>"
+      }
     },
     {
       "kind": "text",
       "id": "text_1",
-      "html": "<h2>Test the expressions without expanding</h2><p>The opening expression has several products and signs. We can compare numerical values instead of expanding everything.</p><p>A <strong>slider</strong> gives a variable a value you can change. We’ll use sliders to test the original and the choices at the same inputs, starting with two simple letters.</p>",
+      "html": "<h2>Let the values compare the long products</h2><p>The opening expression needs several expansions, followed by a subtraction of an entire product. A <strong>slider</strong> gives a variable a value you can change, so Desmos can compare numerical results instead.</p><p>We’ll start with two simple letters to learn the controls, then return to the longer expression.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -238,37 +242,36 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the expression in x and y</h2><p>Try the opening question again. Choose your test values and compare every choice with the original.</p>",
+      "html": "<h2>Return to the longer products</h2><p>Try the opening question again. Choose your test values and compare every choice with the original.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "shared_prompt": {
-        "id": "shared_check_6",
-        "title": "Slider transfer expression",
-        "html": "<p>\\(4x(x-2y)+3y(2x+y)\\)</p>"
-      },
+      "shared_prompt": "opening_slider_products",
       "kind": "raw_block",
-      "id": "check_6",
+      "id": "opening_slider_products_result",
       "block_type": "check",
       "content": {
-        "prompt": "Which expression is equivalent to \\(4x(x-2y)+3y(2x+y)\\)?",
-        "choices": [
-          "\\(4x^2-14xy+3y^2\\)",
-          "\\(4x^2+14xy+3y^2\\)",
-          "\\(4x^2-2xy-3y^2\\)",
-          "\\(4x^2-2xy+3y^2\\)"
-        ],
-        "correct_index": 3,
-        "calculator": {
-          "display": "open",
-          "mode": "scratch"
-        },
-        "explanation": "The expression simplifies to 4x²-2xy+3y². At X=2,Y=3, both original and this choice give 31.",
-        "solution": "Enter X=2,Y=3 and the original using X,Y. It gives 31. Compare each choice at those same values; only 4X²-2XY+3Y² gives 31. You can retest with another set.",
+        "id": "opening_slider_products_result",
+        "prompt": "Which expression matches the original?",
         "allow_retry": true,
-        "hint": "Use X and Y in place of x and y. Give them distinct allowed values, compare the original with each choice, and retest a tie."
+        "hint": "Use X and Y in place of x and y throughout. Give them distinct values, keep the full subtracted product grouped, and compare all four choices. Retest any tie.",
+        "solution": "Enter sliders \\(X=2,\\ Y=3\\).\nEnter \\((2X-Y)(X+3Y)^2-(X+Y)(X-2Y)^2\\). Desmos displays \\(41\\).\nEnter all four choices using those same capital letters. They display \\(41,-31,257,201\\).\nOnly A matches. At \\(X=3,Y=2\\), the original and A both display \\(319\\).",
+        "explanation": "A matches. The sliders separated the choices without expanding and collecting the cubic terms.",
+        "choices": [
+          "\\(x^3+14x^2y+12xy^2-13y^3\\)",
+          "\\(x^3+8x^2y+12xy^2-13y^3\\)",
+          "\\(x^3+14x^2y+12xy^2-5y^3\\)",
+          "\\(3x^3+8x^2y+12xy^2-5y^3\\)"
+        ],
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
       }
     },
     {

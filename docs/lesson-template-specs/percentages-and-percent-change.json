@@ -5,16 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>What is the original ticket price \\(b\\)?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(\\$50\\)</li><li>\\(\\$42\\)</li><li>\\(\\$35\\)</li><li>\\(\\$60\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "shared_practice_complex_entry"
+      "shared_prompt": {
+        "id": "opening_discount_and_two_fees",
+        "title": "Discount and fees",
+        "html": "<p>A ticket’s discounted price \\(d\\) is \\(35\\%\\) less than its original price \\(b\\). A tax of \\(8\\%\\) of the discounted price and a service fee of \\(5\\%\\) of the original price are added.</p><p>The customer pays \\(\\$94\\) in total. What is the original ticket price?</p>"
+      }
     },
     {
       "kind": "text",
       "id": "explore_percent_regression",
-      "html": "<h2>Turn the words into calculator entries</h2><p>The ticket problem combines a discount with a fee. We’ll learn to translate percent statements in Desmos, then connect two statements.</p><p>Start with one simple percent calculation so you can see how the calculator handles it.</p>",
+      "html": "<h2>Keep the different percent bases straight</h2><p>The opening question uses the original price for the discount and service fee, but the discounted price for tax. Rearranging everything at once can get messy.</p><p>We’ll learn to translate each percent statement directly in Desmos, then connect them. Start with one simple percent calculation.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -685,106 +689,31 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the museum ticket</h2><p>The opening problem has two connected percent statements. Try it again using the technique you’ve learned. Choose the setup, then find the original price.</p>",
+      "html": "<h2>Return to the ticket and fees</h2><p>Try the opening question again. Choose a connected setup and find the original price.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "shared_prompt": {
-        "id": "shared_practice_complex_entry",
-        "title": "Museum ticket and fee",
-        "html": "<p>A museum ticket has original price \\(b\\). Its student price \\(d\\) is \\(30\\%\\) less than \\(b\\). After a \\(\\$7\\) fee, the total is \\(\\$42\\).</p>"
-      },
+      "shared_prompt": "opening_discount_and_two_fees",
       "kind": "raw_block",
-      "id": "practice_complex_entry",
-      "block_type": "desmos_interactive",
-      "content": {
-        "type": "desmos_interactive",
-        "title": "Practice 3: connect two statements",
-        "instructions_html": "<p>Try the opening ticket problem again. Choose a connected setup in Desmos to find the original price b.</p>",
-        "initial_expressions": [],
-        "goal": {
-          "type": "multi_expression",
-          "required_count": 2,
-          "roles": [
-            "definition",
-            "regression"
-          ]
-        },
-        "validation": {
-          "mode": "normalized",
-          "expected": [
-            "d=b-30\\%\\operatorname{of}b",
-            "d+7\\sim42"
-          ],
-          "state_rules": {
-            "min_expressions": 2,
-            "max_expressions": 2,
-            "require_visible_only": true
-          }
-        },
-        "feedback": {
-          "success_message_html": "<p>Nice work! Well built: one percent definition and one regression. Now read \\(b\\) and \\(d\\).</p>",
-          "retry_message_html": "<p>Use exactly two lines. Define the discounted price from the original price, then use one regression for the fee and total.</p>",
-          "targeted_hints": [
-            {
-              "trigger": "too_many_expressions",
-              "message_html": "<p>Use only two lines: one definition and one regression.</p>"
-            },
-            {
-              "trigger": "too_few_expressions",
-              "message_html": "<p>You need both the discount definition and the total regression.</p>"
-            },
-            {
-              "trigger": "missing_second_expression",
-              "message_html": "<p>Add the fee-and-total relationship on its own line.</p>"
-            }
-          ],
-          "reveal_solution_after_attempts": 3,
-          "solution_html": "<p>Enter <strong>d=b-30% of b</strong> and <strong>d+7~42</strong>.</p>"
-        },
-        "progression": {
-          "require_success": true
-        }
-      }
-    },
-    {
-      "shared_prompt": "shared_practice_complex_entry",
-      "kind": "raw_block",
-      "id": "practice_complex_result",
+      "id": "opening_discount_and_two_fees_result",
       "block_type": "check",
       "content": {
-        "prompt": "What is the original ticket price \\(b\\)?",
-        "choices": [
-          "\\(\\$50\\)",
-          "\\(\\$42\\)",
-          "\\(\\$35\\)",
-          "\\(\\$60\\)"
-        ],
-        "correct_index": 0,
+        "id": "opening_discount_and_two_fees_result",
+        "prompt": "What is the original ticket price \\(b\\), in dollars?",
         "allow_retry": true,
-        "hint": "Translate the student discount using the original ticket price as the base. Connect that discounted price with the fee and total.",
-        "explanation": "Desmos shows \\(b=50\\) and \\(d=35\\). A \\(30\\%\\) discount on \\(50\\) is \\(15\\), so \\(50-15=35\\), and \\(35+7=42\\).",
-        "solution": "Desmos shows \\(b=50\\) and \\(d=35\\). A \\(30\\%\\) discount on \\(50\\) is \\(15\\), so \\(50-15=35\\), and \\(35+7=42\\)."
+        "hint": "Define the discounted price from the original. In the total, keep each fee attached to the amount named after “of,” and use one regression.",
+        "solution": "Enter \\(d=b-35\\%\\text{ of }b\\).\nEnter \\(d+8\\%\\text{ of }d+5\\%\\text{ of }b\\sim94\\).\nDesmos shows \\(b=125\\), with zero or tiny RMSE. Type \\(d\\) on another row to read \\(81.25\\).\nThe original ticket price is \\(\\$125\\).",
+        "explanation": "You found \\(\\$125\\). The definition and regression kept the original-price and discounted-price percentages connected to their correct bases.",
+        "input": "numeric",
+        "answer": "125"
       },
       "calculator": {
         "display": "open",
-        "mode": "preset",
-        "title": "Finish practice 3",
-        "initial_expressions": [
-          {
-            "id": "practice_complex_definition",
-            "latex": "d=b-30\\%\\operatorname{of}b"
-          },
-          {
-            "id": "practice_complex_regression",
-            "latex": "d+7\\sim42"
-          }
-        ],
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
       }
     },
     {
@@ -1000,5 +929,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Calculator opening revision 2026-11-12: Three percent operations use two different bases. The return requires an independent two-row setup and a numeric answer, without preloading the solution or rejecting valid alternative setups. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
 }

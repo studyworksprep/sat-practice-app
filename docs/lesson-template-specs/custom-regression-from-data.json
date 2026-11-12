@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>What is the function in the original notation?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(H(t)=4(t-1)^2+2\\)</li><li>\\(H(t)=2(t-1)^2+4\\)</li><li>\\(H(t)=4(t+1)^2+2\\)</li><li>\\(H(t)=4t^2-1+2\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "shared_transfer_problem",
-        "title": "Custom regression transfer problem",
-        "html": "<p>A function has the required form</p><p>\\[H(t)=u(t-1)^2+v\\]</p><p>The question states that \\(u+v=6\\) and \\(H(3)=18\\).</p>"
+        "id": "opening_shifted_quadratic",
+        "title": "Function in the required form",
+        "html": "<p>A function has the form \\(H(t)=u(t-v)^2+5\\), where \\(u\\) and \\(v\\) are constants.</p><p>\\[H(1)=37,\\qquad H(3)=13,\\qquad H(8)=23.\\]</p><p>What is the value of \\(v\\)?</p>"
       }
     },
     {
       "kind": "text",
       "id": "lesson_prerequisite",
-      "html": "<h2>Use the form the problem gives you</h2><p>The opening question gives a particular function form and a relationship between its constants. We can enter that form directly and let Desmos find the missing values.</p><p>This is <strong>custom regression</strong>. It uses the same input-output table as standard regression, with a model you type yourself. We’ll begin with just one missing constant.</p>",
+      "html": "<h2>Find the constant inside the square</h2><p>The opening question hides a constant inside a square. Substituting the points gives several equations to untangle.</p><p><strong>Custom regression</strong> lets Desmos fit the exact form the question gives you. We’ll start with one missing constant, then return to this function.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -624,7 +624,7 @@
     {
       "kind": "text",
       "id": "troubleshooting",
-      "html": "<h2>If a constant is missing</h2><p>Check the table headers, the tilde on the model, and any extra relationships. The problem must supply enough independent information to determine its constants.</p><p>A constant you defined may not appear under Regression Parameters. Type it on another row to read its value. For exact data, inspect RMSE for zero or a tiny mismatch.</p>",
+      "html": "<h2>If a constant is missing</h2><p>Check the table headers, the tilde on the model, and any extra relationships. The problem must supply enough independent information to determine its constants.</p><p>A constant you defined may not appear under Regression Parameters. Type it on another row to read its value. For exact data, check that the fitted equation matches every table point.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -632,34 +632,31 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to H</h2><p>Try the opening question again. Use the given form and both conditions to find the function.</p>",
+      "html": "<h2>Return to H</h2><p>Try the opening question again. Use its required form to find the missing value inside the square.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "shared_prompt": "shared_transfer_problem",
+      "shared_prompt": "opening_shifted_quadratic",
       "kind": "raw_block",
-      "id": "transfer_equation_check",
+      "id": "opening_shifted_quadratic_result",
       "block_type": "check",
       "content": {
-        "prompt": "What is the function in the original notation?",
-        "choices": [
-          "\\(H(t)=4(t-1)^2+2\\)",
-          "\\(H(t)=2(t-1)^2+4\\)",
-          "\\(H(t)=4(t+1)^2+2\\)",
-          "\\(H(t)=4t^2-1+2\\)"
-        ],
-        "correct_index": 0,
+        "id": "opening_shifted_quadratic_result",
+        "prompt": "What is the value of \\(v\\)?",
         "allow_retry": true,
-        "hint": "Enter the point from H(3)=18 in a table. Use the relationship u+v=6 as a definition, then fit the given form with the table variables.",
-        "explanation": "The required function is \\(H(t)=4(t-1)^2+2\\), and \\(H(3)=4(2)^2+2=18\\).",
-        "calculator": {
-          "display": "open",
-          "mode": "scratch",
-          "title": "Find the function H"
-        },
-        "solution": "The required function is \\(H(t)=4(t-1)^2+2\\), and \\(H(3)=4(2)^2+2=18\\)."
+        "hint": "Enter the three input-output pairs in a table. Keep the given form, including the square around the whole difference, and use the table’s column names.",
+        "solution": "Enter \\((1,37),(3,13),(8,23)\\) in a Desmos table.\nEnter \\(y_1\\sim u(x_1-v)^2+5\\).\nDesmos shows \\(u=2,\\ v=5\\), matching all three points.\nReport \\(v=5\\).",
+        "explanation": "You found \\(v=5\\). Fitting the required form made that constant available directly, without rewriting a standard-form quadratic.",
+        "input": "numeric",
+        "answer": "5"
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
       }
     },
     {
@@ -737,5 +734,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Calculator opening revision 2026-11-12: Three nonvertex points determine a shifted quadratic; custom regression returns its horizontal-shift parameter directly. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
 }
