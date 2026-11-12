@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>The mass of sample R is 360% of the mass of sample S and 0.9% of the mass of sample T. The samples have positive masses. If the mass of sample T is \\(q\\%\\) of the mass of sample S, what is the value of \\(q\\)?</p>"
+        "id": "opening_coupled_percent_masses",
+        "title": "Three related samples",
+        "html": "<p>Samples R, S, and T have positive masses. The mass of R is \\(75\\%\\) of the combined mass of S and T. The mass of S is \\(20\\%\\) of the combined mass of R and T.</p><p>The mass of T is \\(p\\%\\) of the combined mass of R and S. What is the value of \\(p\\)?</p>"
       }
     },
     {
@@ -20,7 +20,7 @@
       "kind": "raw_block",
       "content": {
         "id": "lesson_preview",
-        "html": "<h2>Connect all the percent statements</h2><p>The opening question links three masses. Rather than rearranging each statement, we can translate them and use one list regression to match them together.</p><p>First, we’ll refresh how paired lists work, then add the percent statements.</p>"
+        "html": "<h2>Let the percent statements work together</h2><p>In the opening question, each percentage uses a combined mass, and the unknown amounts depend on one another. Solving the statements one at a time would require several rearrangements.</p><p>One <strong>list regression</strong> can connect them as written. We’ll refresh the paired-list entry, then add the percent statements.</p>"
       },
       "block_type": "text",
       "calculator": {
@@ -355,27 +355,64 @@
     },
     {
       "kind": "text",
-      "id": "revision_return_to_opening",
-      "html": "<h2>Return to the three samples</h2><p>Try the opening question again. Translate the comparisons yourself and choose how to connect them.</p>",
+      "id": "percent_of_combined_amount",
+      "html": "<h2>A combined amount is one base</h2><p>“A is \\(30\\%\\) of the combined mass of B and C” becomes \\(A=30\\%\\text{ of }(B+C)\\).</p><p>Put the whole sum in parentheses after “of.” The rest of Translate, then Pair stays the same.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "id": "7eaf96f7-a975-4fea-96db-13d446621529",
+      "kind": "raw_block",
+      "id": "combined_percent_base_check",
+      "block_type": "check",
+      "content": {
+        "id": "combined_percent_base_check",
+        "prompt": "A is \\(30\\%\\) of the combined mass of B and C. Which entry keeps the complete base?",
+        "choices": [
+          "\\(A=30\\%\\text{ of }B+C\\)",
+          "\\(A=(B+C)+30\\%\\text{ of }(B+C)\\)",
+          "\\(A=30\\%\\text{ of }(B+C)\\)",
+          "\\(A=30\\%\\text{ of }(B-C)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The percent applies to the combined mass. Keep everything in that combined amount grouped after “of.”",
+        "solution": "The base is the sum \\(B+C\\).\nPut parentheses around that sum: \\(A=30\\%\\text{ of }(B+C)\\).",
+        "explanation": "C keeps the combined mass together. Without those parentheses, the entry adds all of C after taking a percent of B."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the three samples</h2><p>Try the opening question again. Translate the linked comparisons and find the requested percent.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "opening_coupled_percent_masses_result",
       "kind": "raw_block",
       "content": {
-        "id": "sat_percent_transfer",
-        "input": "numeric",
-        "answer": "40000",
-        "prompt": "Return to the opening question. What answer do you get now?",
+        "id": "opening_coupled_percent_masses_result",
+        "prompt": "What is the value of \\(p\\)?",
         "allow_retry": true,
-        "explanation": "Enter \\([R,R,T]\\sim[360\\%\\text{ of }S,0.9\\%\\text{ of }T,q\\%\\text{ of }S]\\). Read q from a valid positive fit. If the masses zero out, define the free base \\(S=1\\) and refit; then \\(R=3.6,T=400,q=40000\\). Report the percent 40000.",
-        "hint": "Translate each comparison and the requested percent into equations, then pair matching sides in one regression. Inspect the positive amounts and RMSE.",
-        "solution": "Enter \\([R,R,T]\\sim[360\\%\\text{ of }S,0.9\\%\\text{ of }T,q\\%\\text{ of }S]\\). Read q from a valid positive fit. If the masses zero out, define the free base \\(S=1\\) and refit; then \\(R=3.6,T=400,q=40000\\). Report the percent 40000."
+        "hint": "Treat each combined mass as one parenthesized base. Include the requested percent as another paired equation, then inspect the amounts and RMSE. Repair a zero-mass fit if needed.",
+        "solution": "Enter \\([R,S,T]\\sim[75\\%\\text{ of }(S+T),20\\%\\text{ of }(R+T),p\\%\\text{ of }(R+S)]\\).\nRead p only from positive masses with zero or tiny RMSE.\nIf the masses all become zero, define a free mass, such as \\(T=100\\), and refit.\nAt that scale, \\(R\\approx105.882353,\\ S\\approx41.176471\\), and \\(p=68\\).\nReport \\(68\\).",
+        "explanation": "You found \\(p=68\\). One regression connected all three comparisons while keeping each combined mass as its own percent base.",
+        "input": "numeric",
+        "answer": "68"
       },
       "block_type": "check",
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_coupled_percent_masses",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
+      }
     },
     {
       "id": "2d708e45-8f1d-4f8b-ada3-ee0d9785da56",
@@ -437,5 +474,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Calculator opening revision 2026-11-12: Coupled percentages of combined amounts require simultaneous equations rather than one direct ratio. A short grouping explanation and check prepare this genuine variation before the return. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
 }

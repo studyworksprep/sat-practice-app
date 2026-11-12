@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(\\frac{2}{x-3}\\)</li><li>\\(\\frac{x+5}{(2x-1)(x+2)}\\)</li><li>\\(\\frac{5x+5}{(2x-1)(x+2)}\\)</li><li>\\(\\frac{x+7}{(2x-1)(x+2)}\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(\\frac{2x^2-x+10}{x^2+3x-4}\\)</li><li>\\(\\frac{2x^2+x-10}{x^2+3x-4}\\)</li><li>\\(\\frac{2x^2-x-10}{x^2+3x-4}\\)</li><li>\\(\\frac{2x^2+x+10}{x^2+3x-4}\\)</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>For \\(x&gt;1\\), which expression is equivalent to \\(\\frac{3}{2x-1}-\\frac{1}{x+2}\\)?</p>"
+        "id": "opening_three_fractions",
+        "title": "Equivalent expression",
+        "html": "<p>For \\(x&gt;1\\), which expression is equivalent to</p><p>\\[\\frac{x+2}{x-1}+\\frac{2x-3}{x+4}-\\frac{x^2+1}{(x-1)(x+4)}\\text{?}\\]</p>"
       }
     },
     {
@@ -20,7 +20,7 @@
       "kind": "raw_block",
       "content": {
         "id": "opening_exploration",
-        "html": "<h2>Compare the expressions without simplifying</h2><p>The opening fractions could take several algebra steps. We can use <strong>Graph Match</strong>: graph the original and each choice, then look for the same path.</p><p>We’ll start with \\(2(x+1)\\) and \\(2x+2\\), where it is easy to see what a match looks like.</p>",
+        "html": "<h2>Compare paths instead of combining fractions</h2><p>The opening expression has three fractions, two products to expand, and a subtraction to track. <strong>Graph Match</strong> lets you compare the original with each choice as written.</p><p>We’ll start with two short expressions so you can see what a matching path looks like, then return to these fractions.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -628,40 +628,37 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the fraction difference</h2><p>Try the opening question again. Let the graphs help you compare the choices without combining the fractions by hand.</p>",
+      "html": "<h2>Return to the three fractions</h2><p>Try the opening question again. Use the graphs to find the matching expression.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "id": "987f3515-ee41-4b3b-beb9-c8fe62c83c97",
+      "id": "opening_three_fractions_result",
       "kind": "raw_block",
       "content": {
-        "id": "transfer_rational_difference",
-        "prompt": "Return to the opening question. What answer do you get now?",
-        "choices": [
-          "\\(\\frac{2}{x-3}\\)",
-          "\\(\\frac{x+5}{(2x-1)(x+2)}\\)",
-          "\\(\\frac{5x+5}{(2x-1)(x+2)}\\)",
-          "\\(\\frac{x+7}{(2x-1)(x+2)}\\)"
-        ],
-        "calculator": {
-          "mode": "preset",
-          "title": "Mixed practice 2",
-          "display": "open",
-          "editable": true,
-          "resettable": true,
-          "lock_viewport": false,
-          "initial_expressions": []
-        },
+        "id": "opening_three_fractions_result",
+        "prompt": "Which expression matches the original for the allowed inputs?",
         "allow_retry": true,
-        "explanation": "Graph the complete difference, \\(3/(2x-1)-1/(x+2)\\), then each candidate. Compare to the right of 1. D covers the original. A subtracts denominators as though they were separate numbers, B loses a sign in the numerator, and C adds the two fractions instead. Inspect near x = 1 as well as farther right, where several curves approach zero.",
-        "correct_index": 3,
-        "hint": "Graph the original fraction difference as one expression. Compare each choice on the allowed region x>1, keeping whole numerators and denominators grouped.",
-        "solution": "Graph the complete difference, \\(3/(2x-1)-1/(x+2)\\), then each candidate. Compare to the right of 1. D covers the original. A subtracts denominators as though they were separate numbers, B loses a sign in the numerator, and C adds the two fractions instead. Inspect near x = 1 as well as farther right, where several curves approach zero."
+        "hint": "Graph the complete original as one expression. Keep each full numerator and denominator grouped, and compare the candidates to the right of x=1.",
+        "solution": "Graph \\((x+2)/(x-1)+(2x-3)/(x+4)-(x^2+1)/((x-1)(x+4))\\).\nAdd each choice on another row; hide it before testing the next. Compare several parts of the region \\(x>1\\), including near \\(x=2\\) and \\(x=4\\).\nOnly D, \\((2x^2+x+10)/(x^2+3x-4)\\), covers the original path throughout that region.",
+        "explanation": "D matches. The paths overlap in the allowed region, so you identified the equivalent expression without combining the three fractions.",
+        "choices": [
+          "\\(\\frac{2x^2-x+10}{x^2+3x-4}\\)",
+          "\\(\\frac{2x^2+x-10}{x^2+3x-4}\\)",
+          "\\(\\frac{2x^2-x-10}{x^2+3x-4}\\)",
+          "\\(\\frac{2x^2+x+10}{x^2+3x-4}\\)"
+        ],
+        "correct_index": 3
       },
       "block_type": "check",
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_three_fractions",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
+      }
     },
     {
       "id": "ab6236a7-444a-4ddd-8a56-d1fec4fec252",
@@ -774,5 +771,6 @@
       },
       "block_type": "lesson_complete"
     }
-  ]
+  ],
+  "authoring_notes": "Calculator opening revision 2026-11-12: Three rational terms require common-denominator work, product expansion, and sign tracking; graph comparison avoids that algebra. Choices have the same denominator and separate visibly near x=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
 }

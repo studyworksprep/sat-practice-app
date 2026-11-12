@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>The function \\(h\\) is defined by \\(h(x)=a(x-3)^2+b\\), where \\(a\\) and \\(b\\) are constants. If \\(h(1)=26\\) and \\(a+b=11\\), what is the value of \\(a-b\\)?</p>"
+        "id": "opening_connected_radicals",
+        "title": "Two equations together",
+        "html": "<p>The positive numbers \\(a\\) and \\(b\\) satisfy</p><p>\\[\\sqrt{2a+7}+b=9\\]</p><p>\\[a+\\sqrt{3b+4}=13.\\]</p><p>What is the value of \\(a-b\\)?</p>"
       }
     },
     {
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Let one regression connect the conditions</h2><p>The opening question gives two conditions about the same constants. Solving each separately would miss that connection.</p><p><strong>List regression</strong> asks Desmos to match several pairs of expressions at once. We’ll start with two simple equations so you can see how to enter the pairs.</p>",
+      "html": "<h2>Let Desmos connect the equations</h2><p>Each opening equation mixes both unknowns, and the square roots make the algebra awkward. <strong>List regression</strong> lets Desmos match both equations together as written.</p><p>We’ll start with two short equations so you can learn how to pair the sides, then return to the square roots.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -387,25 +387,32 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the function</h2><p>Try the opening question again. Decide how to combine its conditions, then find the quantity it asks for.</p>",
+      "html": "<h2>Return to the square-root system</h2><p>Try the opening question again. Choose how to connect its equations and find the quantity it asks for.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "independent_function_transfer",
+      "id": "opening_connected_radicals_result",
       "block_type": "check",
       "content": {
-        "prompt": "Return to the opening question. What answer do you get now?",
+        "id": "opening_connected_radicals_result",
+        "prompt": "What is the value of \\(a-b\\)?",
         "allow_retry": true,
-        "explanation": "Define \\(h(x)=a(x-3)^2+b\\), then enter \\([h(1),a+b]\\sim[26,11]\\). The values are \\(a=5,b=6\\). Typing \\(a-b\\) gives \\(-1\\).",
+        "hint": "Pair each full left side with its right side in the same position. Include the positive-number conditions and inspect RMSE.",
+        "solution": "Enter \\([\\sqrt{2a+7}+b,a+\\sqrt{3b+4}]\\sim[9,13]\\{a>0\\}\\{b>0\\}\\).\nDesmos shows \\(a=9,\\ b=4\\), with zero or tiny RMSE.\nEnter \\(a-b\\) on a new row. The result is \\(5\\).",
+        "explanation": "You got \\(5\\). One list regression connected both square-root equations, so you could use the two values together.",
         "input": "numeric",
-        "answer": "-1",
-        "hint": "Define h(x), then pair h(1)=26 and a+b=11 in one regression. Use the resulting a and b to evaluate a-b.",
-        "solution": "Define \\(h(x)=a(x-3)^2+b\\), then enter \\([h(1),a+b]\\sim[26,11]\\). The values are \\(a=5,b=6\\). Typing \\(a-b\\) gives \\(-1\\)."
+        "answer": "5"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_connected_radicals",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
+      }
     },
     {
       "kind": "raw_block",
@@ -498,5 +505,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Calculator opening revision 2026-11-12: Coupled radical equations make algebraic elimination costly while the same paired-list procedure applies unchanged. The positive solution is unique. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
 }

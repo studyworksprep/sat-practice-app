@@ -115,7 +115,11 @@ only when the content is genuinely simple.
 
 1. **Invite a short attempt.** Start with a question that shows why the
    method helps. Keep the attempt ungraded and let the learner continue
-   with partial work.
+   with partial work. First try the question with ordinary algebra, a basic
+   calculator, and any shortcuts its choices permit. Choose an obstacle
+   the taught method actually removes; avoid an opening whose direct
+   solution is easier than the proposed tool. See the opening-selection
+   checks in the [lesson revision guidelines](lesson-revision-guidelines.md).
 2. **Explain the purpose.** Connect the opening difficulty to the method.
    Explain why an easier example helps the learner see what to do.
 3. **Teach the simplest useful instance.** Give the minimum explanation

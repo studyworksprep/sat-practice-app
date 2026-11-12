@@ -46,6 +46,29 @@ the opening question can show a clear reason to learn the method.
    core skill and the variations taught. Students should choose their own
    setup. Close with a brief sign-off.
 
+## Choose an opening that earns the method
+
+Try the candidate problem with ordinary algebra, a basic calculator, and
+the shortcuts its answer choices allow. The opening should expose a
+specific obstacle that the lesson's method removes. Several products to
+expand, coupled equations, or a group of values to transform and combine
+can make the benefit visible. Larger numbers alone do not.
+
+- Compare the work both ways. A one-step cancellation or a short
+  substitution is a poor introduction to a longer calculator setup.
+- Keep the obstacle inside the lesson's scope. Do not make the question
+  difficult by using an untaught command or adding an unrelated concept.
+- Check for accidental shortcuts. A modeling question whose choices all
+  have different starting values may need no regression at all.
+- Keep the first attempt brief and ungraded. The student needs to notice
+  the difficulty, not finish a long calculation before continuing.
+- In the debrief, name that difficulty and explain how the tool helps.
+  Save the simple example for teaching the mechanics.
+- At the return, let the student choose the setup. Update the shared
+  question, answer, hints, worked solution, calculator state, and any
+  validation together. Give a genuinely new question a new block ID so
+  an earlier answer cannot be mistaken for an attempt at the replacement.
+
 ## Keep each card focused
 
 - **Give explanations room.** Put a substantial explanation or transition
