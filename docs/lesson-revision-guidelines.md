@@ -69,6 +69,27 @@ can make the benefit visible. Larger numbers alone do not.
   validation together. Give a genuinely new question a new block ID so
   an earlier answer cannot be mistaken for an attempt at the replacement.
 
+For Reading and Writing, test the opening both with and without the
+lesson's process. The obstacle should be a distinction the process helps
+students make, not obscure vocabulary or an unnecessarily long passage.
+
+- Make each wrong answer worth considering. Reuse a real detail, preserve
+  part of a claim, or offer a natural but mismatched grammatical structure.
+  Then give it a specific reason to fail: scope, attribution, evidence,
+  relationship, the writing goal, or sentence structure.
+- Write down why a student might choose each distractor and what rules it
+  out. For the closest competitor, point to the exact evidence or language
+  that makes the key better. Revise the item if two choices remain
+  defensible; difficulty should come from the reading task.
+- Check for shortcuts in the choices. The key should not stand out by
+  length, cautious wording, or repeated vocabulary while the distractors
+  advertise themselves with extreme or irrelevant claims.
+- Show the same passage, task, and choices at the opening and the return.
+  Keep the first attempt ungraded, explain what made the choices hard to
+  separate, and let the student apply the method independently at the
+  return. Use the retry hint and worked solution to show the deciding
+  distinction and explain each tempting wrong choice.
+
 ## Keep each card focused
 
 - **Give explanations room.** Put a substantial explanation or transition

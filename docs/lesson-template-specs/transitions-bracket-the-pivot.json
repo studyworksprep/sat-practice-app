@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>More often,</li><li>In particular,</li><li>Consequently,</li><li>Nevertheless,</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which choice completes the text with the most logical transition?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Consequently,</li><li>Nevertheless,</li><li>Similarly,</li><li>For example,</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>To protect archival documents, conservators rarely seal fragile paper in rigid plastic sleeves because trapped moisture can accelerate decay. ______ they place each sheet in a breathable, acid-free folder that reduces handling without trapping moisture.</p>"
+        "id": "opening_brake_adoption",
+        "title": "A new railway brake",
+        "html": "<p>Early prototypes of a new railway brake were costly, but the version offered to small operators now costs about the same as conventional brakes. Independent trials show that the new system shortens stopping distances and reduces wheel wear. _____ several operators have placed orders, saying that the safety and maintenance benefits justify replacing their old brakes.</p>"
       }
     },
     {
       "kind": "text",
       "id": "test_day_payoff",
-      "html": "<h2>Find the connection before choosing a word</h2><p>A <strong>transition</strong> tells readers how ideas connect. In the opening question, one small word helps set up that connection. We’ll use <strong>Bracket the Pivot</strong> to find it.</p><p>First, practise on a clearer cause-and-result pair.</p>",
+      "html": "<h2>Find the ideas that drive the connection</h2><p>The opening passage mentions an early drawback, test results, and a decision. A <strong>transition</strong> tells readers how ideas connect. It can sound plausible if you connect it to the wrong part.</p><p>We’ll use <strong>Bracket the Pivot</strong> to find the ideas around the blank and predict their relationship. First, practise with a shorter cause-and-result pair.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -259,33 +259,34 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the conservators</h2><p>Try the opening question again. Shrink the two ideas and keep the small word that sets up their relationship.</p>",
+      "html": "<h2>Return to the railway brake</h2><p>Try the opening question again. Find the relevant ideas around the blank before comparing the transitions.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "independent_transfer_local_scale",
+      "id": "opening_brake_adoption_result",
       "block_type": "check",
       "content": {
-        "prompt": "Return to the opening question. What answer do you get now?",
+        "id": "opening_brake_adoption_result",
+        "prompt": "Which choice completes the text with the most logical transition?",
         "choices": [
-          "More often,",
-          "In particular,",
           "Consequently,",
-          "Nevertheless,"
+          "Nevertheless,",
+          "Similarly,",
+          "For example,"
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "The first clause says what conservators rarely do. Look for the transition that introduces what they do more commonly.",
-        "explanation": "The text says rigid sleeves are rare and contrasts them with the method used at a higher frequency. More often completes that scale precisely.",
-        "solution": "The text says rigid sleeves are rare and contrasts them with the method used at a higher frequency. More often completes that scale precisely."
+        "hint": "Keep the current version separate from the prototypes. What connection do the trial results and the operators’ stated reasons create?",
+        "solution": "Shrink the relevant ideas: trials show benefits; operators order the brakes because they value those benefits.\nPredict a result relationship. The prototype cost is background, and the passage says the current price concern is resolved.\nChoose the transition that carries the test findings into the resulting decision.\nChoose A.\nB: The early cost may attract attention, but the current cost concern has been resolved and adoption follows the benefits rather than defying them.\nC: The trial findings and the operators’ orders are not parallel examples of the same action.\nD: An order is a response to the measured benefits, not a specific example of shorter stopping distances or reduced wear.",
+        "explanation": "That connection fits. The operators’ decision follows from the benefits, so the earlier cost detail does not call for a contrast here."
       },
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_brake_adoption"
     },
     {
       "kind": "raw_block",
@@ -367,5 +368,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use local bracketing to resist a contrast reflex triggered by resolved background information. Result is distinct from comparison or example. Previous specification: archive/rw-openings-2026-11/transitions-bracket-the-pivot.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
 }

@@ -5,18 +5,22 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice best describes the overall structure of the text?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>It introduces an interpretation, presents new evidence, and offers a qualified revision.</li><li>It gives instructions for conducting a survey and evaluates its cost.</li><li>It presents two unrelated discoveries and asks which is more important.</li><li>It states a prediction, reports that it failed, and dismisses further study.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which choice best describes the overall structure of the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>It introduces an interpretation, presents a test designed to confirm it, and explains why part of the original account remains plausible.</li><li>It introduces two interpretations, presents evidence favoring the earlier one, and keeps the later explanation as a possibility.</li><li>It introduces an interpretation, presents evidence that overturns it, and replaces the original account with a competing explanation.</li><li>It introduces an interpretation, presents evidence that broadens it, and explains why part of the original account remains plausible.</li></ol>",
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "passage_781a71a6-62d1-451d-aee3-b69feca2a926"
+      "shared_prompt": {
+        "id": "opening_channels_structure",
+        "title": "Interpreting stone channels",
+        "html": "<p>Early accounts describe a valley’s stone channels as boundaries between farms. A recent survey mapped the channels’ slopes and their connections to several storage pools. Water released experimentally at the higher end flowed toward low fields, including fields separated by different property lines. The survey team proposes that the channels distributed water as well as marking land. Some stretches still follow old property edges, so the team does not discard the boundary interpretation. Instead, the team argues that the surviving layout makes more sense if the structures served both purposes.</p>"
+      }
     },
     {
       "id": "06b2891d-a1b6-4f02-a13e-3730f4f8709d",
       "kind": "raw_block",
       "content": {
         "id": "intro",
-        "html": "<h2>Find how the passage is built</h2><p>The opening question asks how the parts connect, so a summary of its topic will not be enough. We’ll use <strong>Name the Job</strong> to describe what each part does.</p><p>Start with a shorter problem-and-response passage so those jobs are easier to see.</p>",
+        "html": "<h2>Track what the evidence does to an idea</h2><p>The opening choices use similar descriptions of an interpretation and new evidence. The important difference is how they say that evidence changes the account.</p><p>We’ll use <strong>Name the Job</strong> to track those roles in order. Start with a shorter problem-and-response passage.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -359,36 +363,33 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the stone channels</h2><p>Try the opening question again. Label what the parts do, then look for the choice that keeps those jobs in the passage’s order.</p>",
+      "html": "<h2>Return to the stone channels</h2><p>Try the opening question again. Give the parts their jobs, then check their order and relationship in each choice.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "id": "781a71a6-62d1-451d-aee3-b69feca2a926",
+      "id": "opening_channels_structure_result",
       "kind": "raw_block",
       "content": {
+        "id": "opening_channels_structure_result",
         "prompt": "Which choice best describes the overall structure of the text?",
         "choices": [
-          "It introduces an interpretation, presents new evidence, and offers a qualified revision.",
-          "It gives instructions for conducting a survey and evaluates its cost.",
-          "It presents two unrelated discoveries and asks which is more important.",
-          "It states a prediction, reports that it failed, and dismisses further study."
+          "It introduces an interpretation, presents a test designed to confirm it, and explains why part of the original account remains plausible.",
+          "It introduces two interpretations, presents evidence favoring the earlier one, and keeps the later explanation as a possibility.",
+          "It introduces an interpretation, presents evidence that overturns it, and replaces the original account with a competing explanation.",
+          "It introduces an interpretation, presents evidence that broadens it, and explains why part of the original account remains plausible."
         ],
-        "calculator": {
-          "display": "hidden"
-        },
+        "correct_index": 3,
         "allow_retry": true,
-        "explanation": "An older interpretation is broadened by evidence for water movement. The final sentence explicitly preserves the possibility that the channels also marked boundaries.",
-        "correct_index": 0,
-        "hint": "Give each part a job: the older explanation, the new survey evidence, and the revised interpretation. Keep the revision’s limit.",
-        "solution": "An older interpretation is broadened by evidence for water movement. The final sentence explicitly preserves the possibility that the channels also marked boundaries."
+        "hint": "Ask what the flow evidence adds to the old interpretation and what the property-edge observation keeps. Check the role of the evidence, not just the final sentence.",
+        "solution": "The opening gives the old boundary interpretation.\nThe survey and flow test supply evidence for an additional water-distribution role.\nThe property edges preserve part of the earlier account, so the ending broadens rather than simply confirms or replaces it.\nChoose D.\nA: The flow test supports an additional water-distribution role rather than confirming the boundary account as the test’s purpose.\nB: This changes both the order and the evidence’s role: the water explanation emerges from the survey rather than being introduced alongside the older one.\nC: This correctly notices new evidence but turns a broader account into total replacement, contrary to the retained boundary role.",
+        "explanation": "You tracked the structure. The new evidence broadens the account while the ending preserves a role for the original interpretation."
       },
       "block_type": "check",
-      "shared_prompt": {
-        "id": "passage_781a71a6-62d1-451d-aee3-b69feca2a926",
-        "title": "Passage to use",
-        "html": "<p>Early accounts describe the valley’s stone channels as boundaries between farms. A recent survey found that the channels slope consistently toward low fields and connect to several storage pools. The survey team argues that the structures probably carried water as well as marking property lines. The older description may therefore be incomplete rather than wholly mistaken.</p>"
+      "shared_prompt": "opening_channels_structure",
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -481,5 +482,6 @@
       },
       "block_type": "lesson_complete"
     }
-  ]
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Name the Job to distinguish broadening from confirmation or replacement; the closest distractor preserves the same ending but misstates the job of the test. Previous specification: archive/rw-openings-2026-11/text-structure-and-purpose-name-the-job.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
 }

@@ -1,0 +1,415 @@
+{
+  "title": "Inference Questions: Make the Smallest Supported Leap",
+  "description": "Recognize SAT Inference questions, combine sentence-level soundbites, predict the smallest conclusion supported by the whole text, and reject answers that infer too much.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Which choice most logically completes the ceramic text?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>local clay had become too scarce for the city&#x27;s potters to keep using after 1750.</li><li>the new trade routes were opened chiefly so that potters could import distant clay.</li><li>the new trade connections likely contributed to the increased use of clay from distant regions after 1750.</li><li>most fragments in layers dated before 1750 were made from clay found near the port city.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "shared_independent_transfer",
+        "title": "Ceramic fragments passage",
+        "html": "<blockquote><p>A historian analyzed ceramic fragments from a port city. In layers dated before 1750, most fragments were made from local clay. In layers dated after 1750, a growing share of fragments came from clay sources in distant regions. Shipping records indicate that new trade routes connecting the port to those regions opened during the 1740s. Taken together, the evidence suggests that ___</p></blockquote>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Some conclusions add more than the text gives you</h2><p>The ceramic choices offer several explanations, but each needs evidence. An <strong>inference</strong> is a conclusion supported by the text even when it is not stated directly.</p><p>We’ll practise connecting two simple findings before returning to the trade evidence.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Bee study",
+        "html": "<p>In a practice study, two bee species gathered food at similar rates at \\(20^\\circ\\text{C}\\) and \\(30^\\circ\\text{C}\\). At \\(35^\\circ\\text{C}\\), species R continued gathering food at about the same rate, but species S gathered food much less often.</p>"
+      },
+      "kind": "text",
+      "id": "opening_exploration",
+      "html": "<h2>Put two findings together</h2><p>Compare the two bee species at the highest temperature. If both findings are true, what conclusion follows? Leave out a biological cause the passage never tested.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_opening_exploration",
+      "kind": "raw_block",
+      "id": "opening_exploration_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice most logically completes the description of the bee study?",
+        "choices": [
+          "Species S gathered food at a noticeably lower rate than species R at each of the three temperatures tested in the study.",
+          "Species R's food-gathering behavior was less affected by the highest tested temperature than species S's was.",
+          "Species R increased its food gathering at \\(35^\\circ\\text{C}\\) to make up for species S's decline.",
+          "Neither species can gather food in habitats where temperatures regularly rise above \\(35^\\circ\\text{C}\\)."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Use the contrast at \\(35^\\circ\\text{C}\\), but do not add a cause or make a claim about every possible habitat.",
+        "explanation": "Species R stayed near its earlier rate while species S declined, so R's behavior was less affected by the highest tested temperature."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "definition_and_cue",
+      "html": "<h2>Look for the supported conclusion</h2><p>“Which choice most logically completes the text?” asks you to finish the passage’s reasoning. Use its facts and relationships to make a short answer target before you read the choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "definition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which statement best defines an SAT inference?",
+        "choices": [
+          "Any explanation that seems reasonable when you combine the topic with your own background knowledge",
+          "A detail restated word for word from one sentence, supported by that sentence alone",
+          "A reasonable prediction about what will most likely happen after the passage ends",
+          "A conclusion not stated directly but supported by the facts and relationships in the text"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The answer can go one small step beyond the wording, but the passage must supply the path.",
+        "explanation": "An inference connects stated information into a supported conclusion; it does not depend on outside knowledge or speculation."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "four_step_process",
+      "html": "<h2>Soundbite, combine, predict, check</h2><ol><li>Summarize each important sentence.</li><li>Connect the summaries.</li><li>Predict the smallest supported conclusion.</li><li>Choose the answer that keeps that meaning without an unsupported addition.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_soundbite_method",
+        "title": "Marsh survey sentence",
+        "html": "<blockquote><p>Although an early survey suggested that the marsh was shrinking, satellite measurements collected over fifteen years showed that its total area had remained stable.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "soundbite_method",
+      "html": "<h2>Keep the relationship in the summary</h2><p>A <strong>soundbite</strong> is a short statement of what a sentence contributes. Keep its main finding and any important contrast. “Early survey: shrinkage; longer record: stability” preserves the turn in the marsh sentence.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_soundbite_method",
+      "kind": "raw_block",
+      "id": "soundbite_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which soundbite best preserves the marsh sentence's meaning?",
+        "choices": [
+          "An early survey suggested shrinkage, but a longer satellite record found the marsh stable.",
+          "Two independent surveys agreed that the marsh's total area was gradually shrinking.",
+          "After satellite monitoring began, the marsh gradually stopped losing area.",
+          "The early survey and the satellite study likely measured different parts of the marsh."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Keep both findings and the contrast between them. Do not turn a measurement into a cause.",
+        "explanation": "The soundbite preserves the early claim, the later result, and the contrast while dropping unneeded detail."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_combine_facts",
+        "title": "Frog breeding facts",
+        "html": "<ul><li>Frog species A lays eggs only in temporary ponds.</li><li>Frog species B lays eggs in temporary and permanent ponds.</li><li>During a drought, the temporary ponds disappeared while several permanent ponds remained.</li></ul>"
+      },
+      "kind": "text",
+      "id": "combine_facts",
+      "html": "<h2>Ask what the facts mean together</h2><p>The frog passage gives each species’ egg-laying needs and what happened to the ponds. Connect those facts to compare the available habitat. One fact by itself will not give the full conclusion.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_combine_facts",
+      "kind": "raw_block",
+      "id": "combine_facts_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which inference is best supported by the frog facts?",
+        "choices": [
+          "Species B laid most of its eggs in permanent ponds even before the drought began.",
+          "During the drought, both species shifted their egg laying into the remaining permanent ponds.",
+          "Fewer egg-laying sites remained available to species A than to species B during the drought.",
+          "Species A can survive only in regions that never experience drought."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Combine each species' pond options with the fact that only permanent ponds remained.",
+        "explanation": "Species A lost its only type of egg-laying site, while species B could still use the remaining permanent ponds."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "minimum_inference_rule",
+      "html": "<h2>Match the passage’s reach</h2><p>A finding from one study supports a claim about that study. It may not support a claim about every place or time. Check the group, conditions, and certainty in each choice.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "strength_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In one study, twelve mulched trees retained more soil moisture than twelve nearby unmulched trees. Which inference matches the evidence's strength and scope?",
+        "choices": [
+          "Applying mulch prevents trees from losing soil moisture in every climate and season.",
+          "In this study, the mulched trees retained more soil moisture than the unmulched trees.",
+          "The unmulched trees probably suffered lasting damage in the seasons after the study.",
+          "Differences in soil moisture between the two groups were caused entirely by the mulch."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Keep the conclusion limited to the studied trees and the measured result.",
+        "explanation": "The second choice reports exactly what the study supports without turning a limited result into a universal rule."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_worked_example",
+        "title": "Rooftop insect study",
+        "html": "<blockquote><p>Ecologists surveyed insect species on twenty city rooftops. Rooftops planted with a wider variety of flowering plants had more insect species than rooftops with only one or two plant types. The pattern remained even after the researchers accounted for differences in rooftop size, suggesting that ___</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "worked_example",
+      "html": "<h2>Build one answer target</h2><p>The rooftop study links more plant variety with more insect species, and roof size does not explain away that pattern. Combine those findings in your target. Then look for the choice that keeps both.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_worked_example",
+      "kind": "raw_block",
+      "id": "worked_example_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice most logically completes the rooftop text?",
+        "choices": [
+          "the number of insect species on a rooftop depends mainly on the rooftop's size rather than its plantings.",
+          "greater insect diversity led rooftop gardeners to plant a wider variety of flowering species.",
+          "flowering-plant variety is associated with insect diversity on the surveyed rooftops even when rooftop size is considered.",
+          "every insect species found in the survey depends on flowering plants for its food supply."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep both soundbites: plant variety relates to insect diversity, and rooftop size does not erase that relationship.",
+        "explanation": "The third choice combines both findings and uses the cautious phrase 'is associated with' rather than inventing a cause."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "distractor_patterns",
+      "html": "<h2>Find the added step</h2><p>Check whether a choice reverses the comparison, ignores an important fact, invents a cause, or widens the claim beyond the study. Something that sounds possible still needs support from the passage.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "one_sentence_trap_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A survey found that towers with ventilation slits had lower summer indoor temperatures than nearby towers without slits; the towers were similar in height and building material. Which conclusion best combines the facts?",
+        "choices": [
+          "The surveyed towers were alike in height and in the materials used to build them.",
+          "Builders added ventilation slits mainly in regions with especially hot summers.",
+          "Cooler indoor temperatures led builders to cut additional slits into their towers.",
+          "The presence of ventilation slits was associated with cooler summer interiors among the surveyed towers."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Keep the measured comparison and its limited scope. Do not reverse the relationship or invent a design motive.",
+        "explanation": "The final choice states the observed association and stays limited to the surveyed towers."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "association_caution",
+      "html": "<h2>A relationship does not always establish a cause</h2><p>An <strong>association</strong> means two things vary together. A survey can show that readers report lower stress without showing that reading caused the difference. Use the relationship the passage actually supports.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "association_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A survey found that commuters who read during train trips reported lower stress than commuters who did not. The survey did not assign people to read. Which inference is safest?",
+        "choices": [
+          "Reading during train trips was associated with lower reported stress in the survey.",
+          "Reading during a train trip eliminates commuting stress for every type of rider.",
+          "Feeling less stress is what led some commuters to take up reading during their trips.",
+          "The survey shows that reading is a more effective way to reduce stress than podcasts or music."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The groups were observed, not created by an experiment, so report the relationship without claiming cause.",
+        "explanation": "The survey supports an association between reading and lower reported stress, not a universal causal claim."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "prove_and_disprove",
+      "html": "<h2>Test the whole choice</h2><p>Ask what matches your prediction and what goes beyond the evidence. Keep a choice only when its full meaning works. A correct first half cannot rescue an unsupported second half.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the ceramic evidence</h2><p>Try the first question again. Combine the important facts and choose the smallest conclusion they support together.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_independent_transfer",
+      "kind": "raw_block",
+      "id": "independent_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice most logically completes the ceramic text?",
+        "choices": [
+          "local clay had become too scarce for the city's potters to keep using after 1750.",
+          "the new trade routes were opened chiefly so that potters could import distant clay.",
+          "the new trade connections likely contributed to the increased use of clay from distant regions after 1750.",
+          "most fragments in layers dated before 1750 were made from clay found near the port city."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Connect the timing of the trade connections with the change in clay sources. Avoid inventing why the routes opened.",
+        "explanation": "The timing and source change support a likely contribution from expanded trade. The passage does not say local clay disappeared or that ceramics alone caused the routes to open.",
+        "solution": "The timing and source change support a likely contribution from expanded trade. The passage does not say local clay disappeared or that ceramics alone caused the routes to open."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "How would you explain the inference routine to a friend before they read the choices?",
+        "choices": [
+          "Summarize the facts, combine them, and keep a conclusion when it seems plausible.",
+          "Summarize the facts, combine them, and keep a conclusion unless the text rules it out.",
+          "Summarize one striking fact and keep the conclusion with the most familiar wording.",
+          "Summarize the facts, combine them, and keep the conclusion the text establishes."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "You have it. The correct inference comes from the whole text and makes only the smallest leap the evidence supports."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_data_variation",
+        "title": "Seed germination data",
+        "html": "<p>Researchers measured the percentage of seeds that germinated after ten days at three temperatures:</p><ul><li><strong>Species X:</strong> \\(12\\%\\) at \\(5^\\circ\\text{C}\\), \\(47\\%\\) at \\(15^\\circ\\text{C}\\), and \\(49\\%\\) at \\(25^\\circ\\text{C}\\).</li><li><strong>Species Y:</strong> \\(10\\%\\) at \\(5^\\circ\\text{C}\\), \\(32\\%\\) at \\(15^\\circ\\text{C}\\), and \\(61\\%\\) at \\(25^\\circ\\text{C}\\).</li></ul><p>The researchers concluded that ___</p>"
+      },
+      "kind": "raw_block",
+      "id": "data_variation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice most logically completes the seed text?",
+        "choices": [
+          "species X consistently germinated at higher rates than species Y across each of the three tested temperatures.",
+          "between \\(15^\\circ\\text{C}\\) and \\(25^\\circ\\text{C}\\), germination increased much more for species Y than for species X.",
+          "germination rates for species X would likely decline at temperatures above \\(25^\\circ\\text{C}\\).",
+          "temperature was the only factor that influenced germination for either species."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "Species X increased by only 2 percentage points, while species Y increased by 29 points over the same temperature interval."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Ecologist Priya Raman compared two wetlands that receive runoff from the same farming region. The first wetland drains through a broad stand of native reeds before reaching open water, while the second empties directly into its pond. Water sampled where each wetland meets open water showed nitrate levels three times higher at the second site than at the first, even though both received similar runoff after storms. Raman's team did not measure how nitrate affects the ponds' algae, but the site comparison suggests that ______ Which choice most logically completes the text?",
+        "choices": [
+          "native reeds are the most effective tool available for removing farm nitrate from wetlands.",
+          "the reed stand may have removed some of the nitrate before the runoff reached open water.",
+          "the elevated nitrate at the second site probably caused harmful algae to spread across its pond.",
+          "the second wetland once contained a reed stand of its own that farming runoff destroyed."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "The only difference described is the reed stand, and the nitrate gap points to it — hedged with \"may,\" matching the evidence. The first choice ranks methods never compared, the third adds an unmeasured algae result, and the fourth invents a backstory."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Take the smallest supported step</h2><p>Connect the facts the passage gives you, then stop where its support stops.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

@@ -1,0 +1,371 @@
+{
+  "title": "Bracket the Pivot: Choose Precise SAT Transitions",
+  "description": "Bracket the exact ideas around a transition blank, reduce them to short logical statements, predict their relationship, and match that prediction to the precise job of a transition word or phrase.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>More often,</li><li>In particular,</li><li>Consequently,</li><li>Nevertheless,</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "revision_opening_question",
+        "title": "Opening question",
+        "html": "<p>To protect archival documents, conservators rarely seal fragile paper in rigid plastic sleeves because trapped moisture can accelerate decay. ______ they place each sheet in a breathable, acid-free folder that reduces handling without trapping moisture.</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "test_day_payoff",
+      "html": "<h2>Find the connection before choosing a word</h2><p>A <strong>transition</strong> tells readers how ideas connect. In the opening question, one small word helps set up that connection. We’ll use <strong>Bracket the Pivot</strong> to find it.</p><p>First, practise on a clearer cause-and-result pair.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "bracket_the_pivot_process",
+      "html": "<h2>Bracket the Pivot</h2><ol><li>Find the exact ideas on either side of the blank.</li><li>Say each in a few plain words.</li><li>Predict their relationship.</li><li>Choose the transition whose meaning fits.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_bracket_exact_ideas",
+        "title": "Saltwater coating passage",
+        "html": "<blockquote><p>The new coating was expensive to produce, but it resisted corrosion twice as long as the standard coating. Therefore, manufacturers adopted it for ships exposed to saltwater.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "bracket_exact_ideas",
+      "html": "<h2>Find the ideas that matter</h2><p>In the coating passage, focus on “lasts longer” and “manufacturers adopt it.” The extra cost is real, but the longer life explains the adoption. Connect the ideas that drive the next statement.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_bracket_exact_ideas",
+      "kind": "raw_block",
+      "id": "bracket_exact_ideas_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which pair of ideas most directly supports therefore in the coating passage?",
+        "choices": [
+          "The coating was expensive → saltwater damages ships.",
+          "The standard coating was cheaper → manufacturers adopted the new coating.",
+          "The new coating resisted corrosion longer → manufacturers adopted it for exposed ships.",
+          "Manufacturers build ships → coatings contain standard materials."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Find the property of the new coating that gives manufacturers a reason to choose it.",
+        "explanation": "Greater corrosion resistance explains the adoption. The price creates a complication, but it is not the reason signaled by therefore."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "shrink_the_ideas",
+      "html": "<h2>Make the relationship easy to see</h2><p>“Seeds need cold; researchers chill them before planting” keeps the logic of the poppy sentence. You can leave out a difficult name when it does not change that relationship.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "shrink_the_ideas_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A museum digitized a set of fragile manuscripts. As a result, scholars around the world could study the manuscripts without handling the originals. Which translation best preserves the logic?",
+        "choices": [
+          "Museum creates digital copies → access expands without physical handling.",
+          "Manuscripts are fragile → every scholar visits the museum.",
+          "Scholars handle originals → museum stops digitizing them.",
+          "The museum is international → manuscripts become less fragile."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Keep the action before the transition and the result after it; remove only background detail.",
+        "explanation": "The digitization makes wider, no-handling access possible. That short map preserves the cause-and-result direction."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "predict_relationship_menu",
+      "html": "<h2>Say how the second idea connects</h2><p>Does it give an example, add support, show a difference, or describe a result? Predict the job in plain words before reading the choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "predict_relationship_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A city converted paper bus schedules into live digital displays. Consequently, riders could see delays before reaching a stop. Which prediction best describes the relationship?",
+        "choices": [
+          "The second idea gives one example of a broad claim in the first.",
+          "The second idea concedes a weakness in the first.",
+          "The second idea happens at the same time but is otherwise unrelated.",
+          "The second idea is a result made possible by the first."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Ask whether live information merely agrees with rider access or actually makes that access possible.",
+        "explanation": "The digital displays cause or enable the new access to delay information. That is stronger than simple agreement or addition."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "same_direction_words",
+      "html": "<h2>Similar topics can do different jobs</h2><p><strong>Moreover</strong> adds a supporting point. <strong>For example</strong> gives a specific case of a broader statement. <strong>In other words</strong> restates the same meaning. Choose the job the second idea actually does.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "same_direction_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Many desert beetles collect water from moisture in the air. ______ the Namib desert beetle's textured back helps droplets condense and roll toward its mouth.",
+        "choices": [
+          "Moreover,",
+          "Therefore,",
+          "For example,",
+          "Nevertheless,"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The first sentence makes a broad statement; the second names one species that illustrates it.",
+        "explanation": "The Namib desert beetle is a specific case of the broader statement, so for example performs the exact job."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "result_and_purpose_words",
+      "html": "<h2>A result is different from a goal</h2><p><strong>Therefore</strong> means “because of that” or “it follows that.” <strong>To that end</strong> introduces an action taken to achieve a goal. Ask whether the second idea is an outcome or a deliberate step toward something.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "result_and_purpose_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The research team wanted to prevent vibrations from affecting its measurements. ______ it placed the instrument on a platform designed to absorb movement.",
+        "choices": [
+          "To that end,",
+          "In other words,",
+          "Conversely,",
+          "For example,"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The first idea states a goal. The second describes an action chosen to achieve it.",
+        "explanation": "To that end means the platform was used in service of the stated goal. The second sentence is not a restatement, reversal, or example of a category."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "turning_words",
+      "html": "<h2>Look at the kind of turn</h2><p><strong>However</strong> introduces a difference. <strong>Nevertheless</strong> means “despite that.” <strong>Instead</strong> replaces an alternative. Translate the choice into plain words and test that meaning against the two ideas.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "turning_words_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The imaging method requires expensive equipment. ______ several small laboratories continue to use it because it reveals structures that cheaper methods miss.",
+        "choices": [
+          "As a result,",
+          "For instance,",
+          "Similarly,",
+          "Nevertheless,"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "High cost creates an expectation that small laboratories would avoid the method, yet they still use it.",
+        "explanation": "Nevertheless means despite the cost, the laboratories still use the method. The sentence defeats an expectation rather than giving a result, example, or parallel."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "sequence_and_local_signals",
+      "html": "<h2>A small word can set up the next idea</h2><p><strong>First</strong> can lead to “next.” <strong>Rarely</strong> can lead to “more often.” A rejected option can lead to “instead.” Keep these signals when you shrink the ideas.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "local_signal_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The laboratory rarely replaces a sensor after its first abnormal reading. ______ technicians recalibrate the sensor and run a second test before deciding whether it has failed.",
+        "choices": [
+          "Therefore,",
+          "More often,",
+          "For example,",
+          "Nevertheless,"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The text contrasts an uncommon response with the response that happens at a higher frequency.",
+        "explanation": "More often completes the frequency comparison begun by rarely. The recalibration is the usual alternative to immediate replacement."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "match_and_substitute",
+      "html": "<h2>Test the meaning of the word</h2><p>Try “one case is” for “for example,” or “despite that” for “nevertheless.” Keep a choice when its plain meaning matches your predicted connection.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "no_match_diagnostic",
+      "html": "<h2>When no choice seems to fit</h2><p>Look one idea farther back and check for a small signal you missed. Then translate the serious choices more precisely. Your prediction may need a small adjustment before a choice fits.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the conservators</h2><p>Try the opening question again. Shrink the two ideas and keep the small word that sets up their relationship.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_transfer_local_scale",
+      "block_type": "check",
+      "content": {
+        "prompt": "Return to the opening question. What answer do you get now?",
+        "choices": [
+          "More often,",
+          "In particular,",
+          "Consequently,",
+          "Nevertheless,"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The first clause says what conservators rarely do. Look for the transition that introduces what they do more commonly.",
+        "explanation": "The text says rigid sleeves are rare and contrasts them with the method used at a higher frequency. More often completes that scale precisely.",
+        "solution": "The text says rigid sleeves are rare and contrasts them with the method used at a higher frequency. More often completes that scale precisely."
+      },
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": "revision_opening_question"
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which routine best handles both ordinary transition questions and local-signal questions?",
+        "choices": [
+          "Paraphrase choices first, bracket the ideas they suggest, predict a link, and skip local signals.",
+          "Bracket exact ideas, predict their link before shrinking them, and label each choice positive or negative.",
+          "Bracket the sentence after the blank only, shrink it, predict its tone, and keep the smoothest paraphrase.",
+          "Bracket exact ideas, shrink them, predict their link, paraphrase choices, and check local signals."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "You have the routine. Build the logic before the choices, demand an exact definition, and inspect a local hinge when the relationship seems to live mostly inside the current sentence."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "guided_transfer_result",
+      "block_type": "check",
+      "content": {
+        "prompt": "Biologists once assumed that a certain moth migrated only at night because nearly all tagged moths were detected after sunset. A new tracking system, however, detected many individuals moving in daylight as well. ______ the earlier conclusion reflected limits of the old equipment rather than the moths' actual behavior.",
+        "choices": [
+          "For example,",
+          "Meanwhile,",
+          "Therefore,",
+          "Additionally,"
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "explanation": "The new daytime detections support the conclusion that the old equipment distorted the earlier picture. Therefore signals a warranted conclusion, not simple agreement."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the early sculptures that made her reputation, Reiko Tanaka polished every bronze surface to a mirror finish, hiding all trace of the casting process. ______, her recent pieces leave the seams and rough mold marks visible, presenting them as part of the finished work. Which choice completes the text with the most logical transition?",
+        "choices": [
+          "By contrast,",
+          "For instance,",
+          "Similarly,",
+          "In other words,"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "The early practice hides the casting process and the recent practice displays it — opposite treatments, so the link is contrast. The other choices claim an example, a similarity, or a restatement that the two ideas do not have."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Bracket the Pivot</h2><p>Make the two ideas small, then choose the transition that connects them.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

@@ -5,18 +5,22 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice best states the main idea of the text?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The museum replaced its celebrated vessels with unsuccessful experiments.</li><li>Visitors prefer cracked trial pieces to polished works in the collection.</li><li>The museum’s notes show why modern potters outperform earlier ones.</li><li>The gallery connects finished works to their experimental beginnings.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which choice best states the main idea of the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The museum’s labels continue to identify when its vessels were made and which potters produced them.</li><li>Trial pieces and firing notes document temperature adjustments that one potter made while developing a polished jar.</li><li>The gallery compares similar-looking bowls to show that different makers can arrive at related forms through different experiments.</li><li>The gallery presents finished vessels alongside evidence of their making, directing attention to how potters developed their results.</li></ol>",
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "passage_edc127ff-8485-4614-8e95-a5f1b9e1e054"
+      "shared_prompt": {
+        "id": "opening_museum_process",
+        "title": "A redesigned pottery gallery",
+        "html": "<p>A museum once grouped ceramic vessels by date and region. In its redesigned gallery, a polished jar stands next to three misshapen trial versions, while firing notes document how the potter changed temperature between attempts. Labels still identify each finished piece’s date and maker, but they also connect its surface to choices recorded in the notes. Elsewhere, two similar-looking bowls appear beside records showing that their makers reached those forms through different experiments. The museum has kept its permanent collection while giving visitors more material to examine beside each finished object.</p>"
+      }
     },
     {
       "id": "cd9f26ce-8da4-41c8-b67c-4c6476cfba97",
       "kind": "raw_block",
       "content": {
         "id": "intro",
-        "html": "<h2>Choose the right size of answer</h2><p>The museum passage contains several true details. A main-idea answer needs the message they build together. We’ll practise <strong>Find the Point</strong>: use the question to decide how much the answer should cover.</p><p>Start with a shorter passage about a garden.</p>",
+        "html": "<h2>A true detail can still be too small</h2><p>The museum choices each describe something in the passage. The challenge is choosing the answer that covers what those details build together.</p><p>We’ll practise <strong>Find the Point</strong>: let the question decide the size of your answer. Start with a shorter passage about a garden.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -343,36 +347,33 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the museum</h2><p>Try the opening passage again. Decide whether the question needs the whole message or one detail, then make an answer target of that size.</p>",
+      "html": "<h2>Return to the museum</h2><p>Try the opening passage again. Form an answer target that fits the question before comparing the choices.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "id": "edc127ff-8485-4614-8e95-a5f1b9e1e054",
+      "id": "opening_museum_process_result",
       "kind": "raw_block",
       "content": {
+        "id": "opening_museum_process_result",
         "prompt": "Which choice best states the main idea of the text?",
         "choices": [
-          "The museum replaced its celebrated vessels with unsuccessful experiments.",
-          "Visitors prefer cracked trial pieces to polished works in the collection.",
-          "The museum’s notes show why modern potters outperform earlier ones.",
-          "The gallery connects finished works to their experimental beginnings."
+          "The museum’s labels continue to identify when its vessels were made and which potters produced them.",
+          "Trial pieces and firing notes document temperature adjustments that one potter made while developing a polished jar.",
+          "The gallery compares similar-looking bowls to show that different makers can arrive at related forms through different experiments.",
+          "The gallery presents finished vessels alongside evidence of their making, directing attention to how potters developed their results."
         ],
-        "calculator": {
-          "display": "hidden"
-        },
-        "allow_retry": true,
-        "explanation": "The central change is added context, not replacement. Notes and trial pieces show a process; visitor preferences and comparisons between generations are unstated.",
         "correct_index": 3,
-        "hint": "Keep both the finished vessels and the added experiments in your summary. What did the gallery change about how visitors understand the finished work?",
-        "solution": "The central change is added context, not replacement. Notes and trial pieces show a process; visitor preferences and comparisons between generations are unstated."
+        "allow_retry": true,
+        "hint": "Check the size of the task. What connects the jar, the notes, and the two bowls, rather than describing only one display?",
+        "solution": "The question asks for the whole text’s main idea, not a requested detail.\nThe displays pair finished vessels with evidence of the decisions and experiments behind them.\nUse that connection as your target, then check which choice covers both examples and the gallery’s overall change.\nChoose D.\nA: This accurately describes the labels but leaves out the gallery’s new emphasis.\nB: This is a supported example from one display, rather than the whole passage’s point.\nC: This accurately describes the second display, but it does not cover the rest of the redesign.",
+        "explanation": "That’s the whole point. The matching answer connects the displays; the other choices are accurate but narrower details."
       },
       "block_type": "check",
-      "shared_prompt": {
-        "id": "passage_edc127ff-8485-4614-8e95-a5f1b9e1e054",
-        "title": "Passage to use",
-        "html": "<p>A small museum once displayed only finished ceramic vessels. Its redesigned gallery places cracked trial pieces and handwritten firing notes beside the polished works. Visitors can now follow how potters adjusted their methods after unsuccessful attempts. The museum has retained its celebrated vessels, but it presents them as the outcomes of experimentation rather than as isolated masterpieces.</p>"
+      "shared_prompt": "opening_museum_process",
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -465,5 +466,6 @@
       },
       "block_type": "lesson_complete"
     }
-  ]
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Find the Point to reject three genuinely supported details that are too narrow for a main-idea question. Previous specification: archive/rw-openings-2026-11/central-ideas-and-details-find-the-point.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
 }

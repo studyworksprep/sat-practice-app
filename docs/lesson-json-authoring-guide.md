@@ -281,6 +281,19 @@ named trap, and the explanation or solution should say which (§2c rule 3).
 A distractor that does not correspond to a catalog trap is either a new
 trap worth adding to the catalog or filler that should go.
 
+**Make Reading and Writing openings earn the process.** Give each wrong
+choice a plausible attraction and a precise reason to fail. A true detail
+may be too narrow for the main idea; evidence may meet only part of the
+claim; a notes-based sentence may satisfy only part of the goal. Grammar
+choices can preserve the intended fact while mismatching the required
+sentence structure. Avoid making the key obvious through length, hedging,
+or vocabulary shared only with the passage. For the closest competitor,
+identify the exact evidence or rule that distinguishes it from the key;
+revise if both are defensible. Repeat the same stimulus, stem, and choices
+at the return, let the student choose independently, and update the hint,
+solution, feedback, and question ID together when replacing an item. See
+the [opening checks](lesson-revision-guidelines.md#choose-an-opening-that-earns-the-method).
+
 **The rules the linter measures.** `lib/lesson/lesson-lint.mjs` runs on
 every spec in CI (`scripts/check-lesson-specs.mjs`) and per spec on demand
 (§8). Its findings are warnings, not errors, but the corpus target is a

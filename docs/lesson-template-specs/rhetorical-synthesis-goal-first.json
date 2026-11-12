@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice compares the two estimates and identifies the more accurate method?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The research team used both a drone and ground observers to study a seal colony.</li><li>The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.</li><li>A later audit of the aerial images counted 1,210 seals living in the colony.</li><li>Ground observers counted 980 seals, which makes their ground-based method more accurate than the drone method.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which choice most effectively uses relevant information from the notes to accomplish this goal?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The drone estimate was closer to the audit and required less time in the field than the ground count did.</li><li>The drone survey required less time in the field but more processing time than the ground count required.</li><li>The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s two hours.</li><li>The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s three hours.</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "shared_independent_transfer",
-        "title": "Seal colony notes and goal",
-        "html": "<p><strong>Goal:</strong> The student wants to <strong>compare two methods for estimating a seal colony's size and indicate which method produced the more accurate estimate</strong>.</p><p><strong>Notes:</strong></p><ul><li>A research team estimated the colony with aerial images from a drone and with observers counting from the ground.</li><li>The drone estimate was 1,240 seals.</li><li>The ground estimate was 980 seals.</li><li>A later image audit used as a benchmark counted 1,210 seals.</li></ul>"
+        "id": "opening_seal_tradeoff",
+        "title": "Notes and writing goal",
+        "html": "<p>While researching estimates of a seal colony’s size, a student has taken these notes:</p><ul><li>A drone survey estimated 1,240 seals; a ground count estimated 980.</li><li>A later comprehensive audit established a benchmark of 1,210 seals.</li><li>Collecting drone images took one hour in the field; the ground count took three.</li><li>Processing the drone images took six hours; processing the ground records took two.</li></ul><p>The student wants to contrast the drone method’s accuracy advantage with its processing-time disadvantage.</p>"
       }
     },
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>The goal tells you what to build</h2><p>Several seal choices repeat accurate notes, but the student needs a particular comparison. We’ll use <strong>Let the Goal Lead</strong>: turn the goal into requirements before choosing.</p><p>First, practise with a short goal about an archivist.</p>",
+      "html": "<h2>Make every part of the goal count</h2><p>The seal choices compare real methods and repeat useful numbers. Some describe a different trade-off; two look close enough that a fact check matters.</p><p>We’ll use <strong>Let the Goal Lead</strong> to turn the goal into requirements, then check the notes where needed. Start with a shorter goal about an archivist.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -258,29 +258,30 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the seal estimates</h2><p>Try the first question again. Make the student’s goal into a short requirement list, then use it to test the choices.</p>",
+      "html": "<h2>Return to the seal estimates</h2><p>Try the opening question again. Use the student’s goal to test the choices, then check any facts that separate the remaining possibilities.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "shared_prompt": "shared_independent_transfer",
+      "shared_prompt": "opening_seal_tradeoff",
       "kind": "raw_block",
-      "id": "independent_transfer_check",
+      "id": "opening_seal_tradeoff_result",
       "block_type": "check",
       "content": {
-        "prompt": "Which choice compares the two estimates and identifies the more accurate method?",
+        "id": "opening_seal_tradeoff_result",
+        "prompt": "Which choice most effectively uses relevant information from the notes to accomplish this goal?",
         "choices": [
-          "The research team used both a drone and ground observers to study a seal colony.",
-          "The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.",
-          "A later audit of the aerial images counted 1,210 seals living in the colony.",
-          "Ground observers counted 980 seals, which makes their ground-based method more accurate than the drone method."
+          "The drone estimate was closer to the audit and required less time in the field than the ground count did.",
+          "The drone survey required less time in the field but more processing time than the ground count required.",
+          "The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s two hours.",
+          "The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s three hours."
         ],
-        "correct_index": 1,
+        "correct_index": 2,
         "allow_retry": true,
-        "hint": "The goal asks for a comparison and a decision about accuracy. Compare both estimates with the audit value.",
-        "explanation": "The second choice includes both estimates and shows that the drone's estimate was closer to the benchmark. The first only names the methods, and the fourth reverses the result.",
-        "solution": "The second choice includes both estimates and shows that the drone's estimate was closer to the benchmark. The first only names the methods, and the fourth reverses the result."
+        "hint": "Keep accuracy and processing time on your requirement list. If two choices seem to do that job, check which kind of time each number measures.",
+        "solution": "The goal has two requirements: the drone’s accuracy advantage and its processing-time disadvantage.\nKeep a sentence that contrasts those two features, rather than comparing fieldwork time or two kinds of time.\nCheck the notes: the drone estimate is closer to 1,210; processing takes six hours for the drone and two for the ground count. Three hours describes fieldwork.\nChoose C.\nA: Both facts are accurate, but fieldwork time is not the requested processing-time disadvantage.\nB: This compares two kinds of time and gives a trade-off, but omits the requested accuracy advantage.\nD: This has the right rhetorical shape but substitutes the ground count’s fieldwork time for its processing time.",
+        "explanation": "You completed both parts of the goal. The final notes check also caught a fieldwork number being used as processing time."
       },
       "calculator": {
         "display": "hidden"
@@ -366,5 +367,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use a two-part goal checklist and the notes fallback. Distractors give the wrong attribute, omit accuracy, or substitute a nearby but incorrect time value. Previous specification: archive/rw-openings-2026-11/rhetorical-synthesis-goal-first.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
 }

@@ -1,25 +1,25 @@
 {
   "title": "CLEAR the Claim: Command of Evidence",
   "description": "Use the CLEAR routine to predict the evidence a claim needs, control strengthen-versus-weaken direction, and choose textual or quantitative evidence that is both accurate and relevant.",
-  "authoring_notes": "COUPLING: the debrief text blocks 'authentic_textual_debrief' and 'authentic_quant_debrief' restate the content and answers of the two linked bank questions (question_link ids 7d1178af-ad95-466c-ab85-78f98cbefa25 and 80df19d8-611c-47f8-9a20-49078658f64e). If either bank question is edited or replaced, rewrite the matching debrief in the same change — it will not go stale on its own.",
+  "authoring_notes": "COUPLING: the debrief text blocks 'authentic_textual_debrief' and 'authentic_quant_debrief' restate the content and answers of the two linked bank questions (question_link ids 7d1178af-ad95-466c-ab85-78f98cbefa25 and 80df19d8-611c-47f8-9a20-49078658f64e). If either bank question is edited or replaced, rewrite the matching debrief in the same change — it will not go stale on its own.\nReading and Writing opening revision 2026-11-12: Use CLEAR to distinguish a complete matched comparison from familiar-material, immediate-only, and unmatched before/after findings. Previous specification: archive/rw-openings-2026-11/command-of-evidence-clear-the-claim.json. The replacement question has a new block ID; unrelated lesson items retain their identities.",
   "blocks": [
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The trained group completed the identification task faster than it had completed a different task earlier in the study.</li><li>The trained group identified 84% of targets correctly, compared with 61% for the untrained control group.</li><li>Most participants in the trained group described the training videos as interesting and useful.</li><li>The untrained control group completed more total practice trials than the trained group did.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which finding, if true, would most directly support the researchers’ claim?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>One week after training, trained volunteers identified 84% of training recordings correctly, compared with 61% for the untrained group.</li><li>One week after training, trained volunteers identified 84% of new recordings correctly, compared with 61% for the untrained group.</li><li>Immediately after training, trained volunteers identified 84% of new recordings correctly, compared with 61% for the untrained group.</li><li>One week after training, trained volunteers identified 84% of new recordings correctly, compared with their own 61% pre-program score.</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>A study concludes that a training program improves identification accuracy. Which finding most directly supports that conclusion?</p>"
+        "id": "opening_retained_training",
+        "title": "A training claim",
+        "html": "<p>Researchers designed a short program to help volunteers identify bird species from recordings. They argued that the program would improve identification of recordings the volunteers had not heard during training, and that the benefit would still be detectable a week later. To test the claim, they compared volunteers who completed the program with volunteers of similar starting ability who did not. Both groups took identification tests under the same conditions.</p>"
       }
     },
     {
       "kind": "text",
       "id": "lesson_goal",
-      "html": "<h2>Related evidence is not always useful evidence</h2><p>The training choices discuss the same study, but only one tests the claim about accuracy. We’ll use <strong>CLEAR</strong> to predict the evidence a claim needs before comparing choices.</p><p>Start with a simpler shade-and-temperature claim.</p>",
+      "html": "<h2>Make the evidence meet the whole claim</h2><p>Every opening choice reports identification accuracy. They differ in which recordings were tested, when, and against which comparison.</p><p>We’ll use <strong>CLEAR</strong> to predict the evidence the exact claim needs. Start with a simpler shade-and-temperature claim.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -459,33 +459,34 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the training study</h2><p>Try the opening question again. Predict the evidence the claim needs, then use that prediction to test the choices.</p>",
+      "html": "<h2>Return to the training study</h2><p>Try the opening question again. Predict a useful finding before testing the choices.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "true_but_irrelevant_check",
+      "id": "opening_retained_training_result",
       "block_type": "check",
       "content": {
-        "prompt": "Return to the opening question. What answer do you get now?",
+        "id": "opening_retained_training_result",
+        "prompt": "Which finding, if true, would most directly support the researchers’ claim?",
         "choices": [
-          "The trained group completed the identification task faster than it had completed a different task earlier in the study.",
-          "The trained group identified 84% of targets correctly, compared with 61% for the untrained control group.",
-          "Most participants in the trained group described the training videos as interesting and useful.",
-          "The untrained control group completed more total practice trials than the trained group did."
+          "One week after training, trained volunteers identified 84% of training recordings correctly, compared with 61% for the untrained group.",
+          "One week after training, trained volunteers identified 84% of new recordings correctly, compared with 61% for the untrained group.",
+          "Immediately after training, trained volunteers identified 84% of new recordings correctly, compared with 61% for the untrained group.",
+          "One week after training, trained volunteers identified 84% of new recordings correctly, compared with their own 61% pre-program score."
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "The claim is about identification accuracy. Look for a comparison that measures that outcome for trained and untrained groups.",
-        "explanation": "Only B compares the groups on identification accuracy. The other findings may be true, but they measure speed, interest, or trial count.",
-        "solution": "Only B compares the groups on identification accuracy. The other findings may be true, but they measure speed, interest, or trial count."
+        "hint": "Keep all parts of the claim together: unfamiliar recordings, a benefit that lasts, and the comparison that can isolate the training’s effect.",
+        "solution": "Capture the task: find support. Lock onto improved accuracy on new recordings that remains after one week.\nExpect a delayed test of new recordings comparing trained and untrained volunteers under matching conditions.\nAudit each choice against that full pattern; a finding that misses a condition supplies less direct support.\nChoose B.\nA: This gives the delayed comparison, but on familiar training recordings rather than new ones.\nC: This compares the right groups on new recordings but does not establish the one-week benefit.\nD: This improvement is promising, but the before-and-after comparison does not separate the program’s benefit from changes also affecting untrained volunteers.",
+        "explanation": "Good choice. The finding matches the new recordings, the delay, and the comparison group. Mentioning accuracy by itself was not enough."
       },
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_retained_training"
     },
     {
       "kind": "raw_block",

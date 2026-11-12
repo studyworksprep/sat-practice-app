@@ -5,18 +5,22 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Based on the texts, how would the second historian most likely respond to the first historian’s account?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>By agreeing that the railway mattered while arguing that incoming customers also influenced the industry’s growth and products</li><li>By questioning whether the workshop diaries can reveal anything about the preferences of customers who visited the town</li><li>By maintaining that distant markets were irrelevant because basket makers sold all their goods directly to visiting customers</li><li>By arguing that basket sales had already peaked before the station opened and then declined as outside goods arrived</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Based on the texts, how would the author of Text 2 most likely respond to the underlined claim in Text 1?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>By accepting the railway’s role in growth while adding that incoming visitors also helped shape the goods being made</li><li>By accepting the railway’s role in growth while arguing that visiting buyers replaced distant markets as the industry’s main source of demand</li><li>By accepting that visitors requested new designs while arguing that those requests reflected the preferences of buyers in distant markets</li><li>By accepting the evidence of increased sales while arguing that the timing leaves the connection between growth and railway traffic uncertain</li></ol>",
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "passage_c87b05ea-175d-4a81-9070-d4722ccc0be4"
+      "shared_prompt": {
+        "id": "opening_railway_views",
+        "title": "Two accounts of a railway",
+        "html": "<p><strong>Text 1</strong><br>Basket sales in a mountain town rose sharply during the decade after its railway station opened. One historian explains the increase using shipping records: local makers could now send more goods to markets outside the valley. The records document baskets moving outward in growing quantities. <u>The railway’s main contribution, the historian argues, was making distant buyers accessible to the town’s craftworkers.</u></p><p><strong>Text 2</strong><br>A second historian accepts that the railway helped the industry grow, but examines workshop diaries rather than shipping totals. The diaries record visitors arriving by train, buying baskets directly, and requesting shapes and patterns absent from earlier catalogs. Makers adopted some of those requests. The diaries do not establish whether local or distant purchases accounted for more sales, but they reveal customer contact that shipping figures do not capture.</p>"
+      }
     },
     {
       "id": "3a61362b-e354-449d-8e3d-c61d06c9a6c6",
       "kind": "raw_block",
       "content": {
         "id": "intro",
-        "html": "<h2>Keep each writer’s claim separate</h2><p>The historians both think the railway mattered, but they emphasize different effects. We’ll use <strong>Keep the Voices Straight</strong> to name each view before connecting them.</p><p>Let’s practise first with two short views of a town square.</p>",
+        "html": "<h2>Keep agreement separate from an added claim</h2><p>The railway choices reuse facts from both texts, but they connect those facts differently. A response can accept one part of an account while adding something it misses.</p><p>We’ll use <strong>Keep the Voices Straight</strong> to state each writer’s view before connecting them. Start with two shorter views of a town square.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -332,36 +336,33 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the two historians</h2><p>Give each historian a short claim. Then use the second historian’s position to respond to the first. Try the opening question again without a worked outline.</p>",
+      "html": "<h2>Return to the two historians</h2><p>Try the opening question again. State the views separately, then decide how the second writer would respond to the targeted claim.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "id": "c87b05ea-175d-4a81-9070-d4722ccc0be4",
+      "id": "opening_railway_views_result",
       "kind": "raw_block",
       "content": {
-        "prompt": "Based on the texts, how would the second historian most likely respond to the first historian’s account?",
+        "id": "opening_railway_views_result",
+        "prompt": "Based on the texts, how would the author of Text 2 most likely respond to the underlined claim in Text 1?",
         "choices": [
-          "By agreeing that the railway mattered while arguing that incoming customers also influenced the industry’s growth and products",
-          "By questioning whether the workshop diaries can reveal anything about the preferences of customers who visited the town",
-          "By maintaining that distant markets were irrelevant because basket makers sold all their goods directly to visiting customers",
-          "By arguing that basket sales had already peaked before the station opened and then declined as outside goods arrived"
+          "By accepting the railway’s role in growth while adding that incoming visitors also helped shape the goods being made",
+          "By accepting the railway’s role in growth while arguing that visiting buyers replaced distant markets as the industry’s main source of demand",
+          "By accepting that visitors requested new designs while arguing that those requests reflected the preferences of buyers in distant markets",
+          "By accepting the evidence of increased sales while arguing that the timing leaves the connection between growth and railway traffic uncertain"
         ],
-        "calculator": {
-          "display": "hidden"
-        },
-        "allow_retry": true,
-        "explanation": "Text 2 accepts the railway’s importance and adds an influence: arriving customers and their requests. D invents a decline, B rejects evidence Text 2 uses, and C turns an additional explanation into an exclusive one.",
         "correct_index": 0,
-        "hint": "State what each historian says the railway changed. Look for what the second historian accepts and what that historian adds.",
-        "solution": "Text 2 accepts the railway’s importance and adds an influence: arriving customers and their requests. D invents a decline, B rejects evidence Text 2 uses, and C turns an additional explanation into an exclusive one."
+        "allow_retry": true,
+        "hint": "Separate what Text 2 accepts from what its diary evidence adds. Do not turn an additional effect into a claim about which market mattered most.",
+        "solution": "Text 1 emphasizes access to distant buyers. Text 2 accepts railway-related growth and describes visiting customers’ requests for new designs.\nThe connection is an added dimension: customer contact affected production as well as sales opportunities.\nCheck both halves of each response against Text 2, including how strongly it treats the evidence.\nChoose A.\nB: The visitors are real, but Text 2 explicitly says the diaries do not establish which market produced more sales.\nC: This borrows designs from Text 2 and distant markets from Text 1, but invents a connection between those buyers and the visitors’ requests.\nD: Text 2 accepts the railway’s contribution; it adds a dimension rather than questioning that connection.",
+        "explanation": "You kept the voices straight. The response adds an effect on what makers produced without inventing a winner between local and distant markets."
       },
       "block_type": "check",
-      "shared_prompt": {
-        "id": "passage_c87b05ea-175d-4a81-9070-d4722ccc0be4",
-        "title": "Passage to use",
-        "html": "<p>Text 1<br>A historian argues that the opening of a railway transformed a mountain town’s craft industry. In the decade after the station opened, sales of locally made baskets rose sharply. The historian attributes this growth chiefly to access to distant markets: trains allowed makers to send their goods beyond the valley in larger quantities than before. In this account, the railway’s main contribution was carrying finished baskets outward.</p><p>Text 2<br>A second historian agrees that the railway helped the basket industry grow but emphasizes travelers arriving in the town. Workshop diaries describe increasing numbers of visitors who bought baskets directly and requested unfamiliar designs. These records suggest that the railway changed not only where baskets could be sold but also what customers asked makers to produce.</p>"
+      "shared_prompt": "opening_railway_views",
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -454,5 +455,6 @@
       },
       "block_type": "lesson_complete"
     }
-  ]
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Keep the Voices Straight to distinguish an additive qualification from replacement, blended attribution, and invented doubt about accepted evidence. Previous specification: archive/rw-openings-2026-11/cross-text-connections-keep-the-voices-straight.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
 }
