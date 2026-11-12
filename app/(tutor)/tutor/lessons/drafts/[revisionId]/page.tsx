@@ -36,6 +36,7 @@ const Slideshow = LessonSlideshow as unknown as (props: {
   blocks: PreviewBlock[];
   questionLinkHref: string | null;
   showCompleteButton?: boolean;
+  reviewMode?: boolean;
   calculatorStoragePrefix: string;
 }) => React.ReactElement;
 
@@ -187,12 +188,14 @@ export default async function TutorLessonDraftPage({
         <section className={a.section}>
           <div>
             <h2 className={a.h2}>Submitted preview</h2>
+            <p className={a.help}>Browse every slide with answers and feedback shown. No answers required.</p>
             {revision.change_summary && <p className={a.help}>{revision.change_summary}</p>}
           </div>
           <Slideshow
             blocks={blocks ?? []}
             questionLinkHref={null}
             showCompleteButton={false}
+            reviewMode
             calculatorStoragePrefix={`lesson-revision:${revision.id}`}
           />
         </section>
