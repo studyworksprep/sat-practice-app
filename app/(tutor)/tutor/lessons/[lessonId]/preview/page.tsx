@@ -18,6 +18,7 @@ const Slideshow = LessonSlideshow as unknown as (props: {
   blocks: PreviewBlock[];
   questionLinkHref: string | null;
   showCompleteButton?: boolean;
+  reviewMode?: boolean;
   calculatorStoragePrefix: string;
 }) => React.ReactElement;
 
@@ -54,13 +55,14 @@ export default async function TutorLessonPreviewPage({
         <div className={a.eyebrow}>Tutor preview · Published lesson</div>
         <h1 className={a.h1}>{lesson.title}</h1>
         <p className={a.sub}>
-          Read-only student-style preview. This does not write lesson progress.
+          Browse every slide with answers and feedback shown. No answers required.
         </p>
       </header>
       <Slideshow
         blocks={blocks ?? []}
         questionLinkHref={null}
         showCompleteButton={false}
+        reviewMode
         calculatorStoragePrefix={`tutor-lesson-preview:${lessonId}`}
       />
     </main>

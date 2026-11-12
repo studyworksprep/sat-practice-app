@@ -23,6 +23,8 @@
 // preview leaves them undefined and the runtime keeps progress in
 // local state only, so admins can step through a lesson exactly
 // the way a student would without writing to lesson_progress.
+// Tutor and manager previews enable reviewMode: linear navigation,
+// visible answer feedback, and no progress or completion recording.
 //
 // questionLinkHref is a function (questionId) => href used by
 // question_link blocks. Pass null to render question_link blocks
@@ -41,6 +43,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import HtmlBlock from '@/components/HtmlBlock';
 import { MathText } from '@/lib/ui/MathText';
 import { LessonCalculatorPane } from '@/lib/ui/LessonCalculatorPane';
+import { CheckAnswerReview, DesmosAnswerReview } from '@/lib/ui/LessonAnswerReview';
 import s from './LessonSlideshow.module.css';
 import {
   isLessonCompletionLocked,
@@ -90,6 +93,8 @@ export function LessonSlideshow({
   showProgressBar = true,
   showCompleteButton = true,
   debugMode = false,
+  // Enabled by staff preview routes, never inferred from missing callbacks.
+  reviewMode = false,
   calculatorStoragePrefix = 'lesson-desmos',
   // Optional call-to-action on the completion banner. The admin preview
   // leaves these unset so a read-only playthrough has no exit ramp.
@@ -102,7 +107,7 @@ export function LessonSlideshow({
   completionPrimary = null,
 }) {
   const [currentIndex, setCurrentIndex] = useState(() =>
-    resolveResumeIndex({
+    reviewMode ? 0 : resolveResumeIndex({
       blocks,
       completedBlockIds: initialCompletedBlockIds,
       isComplete: initialIsComplete,
@@ -110,6 +115,7 @@ export function LessonSlideshow({
   );
   const [showResumeNotice, setShowResumeNotice] = useState(
     () =>
+      !reviewMode &&
       resolveResumeIndex({
         blocks,
         completedBlockIds: initialCompletedBlockIds,
@@ -190,7 +196,7 @@ export function LessonSlideshow({
 
   const progressPct =
     blocks.length > 0
-      ? Math.round((completedBlockIds.size / blocks.length) * 100)
+      ? Math.round(((reviewMode ? currentIndex + 1 : completedBlockIds.size) / blocks.length) * 100)
       : 0;
 
   // First-try tally for the completion banner. Counts only blocks the
@@ -205,7 +211,7 @@ export function LessonSlideshow({
   // isn't. A silently dead button reads as a broken page, so the footer
   // renders this alongside it.
   const lockReason = (() => {
-    if (!currentBlock) return null;
+    if (reviewMode || !currentBlock) return null;
     if (
       currentBlock.block_type === 'desmos_interactive' &&
       currentBlock.content?.progression?.require_success &&
@@ -237,6 +243,7 @@ export function LessonSlideshow({
   }, []);
 
   const recordBlocksComplete = useCallback((blockIds) => {
+    if (reviewMode) return;
     const freshIds = [...new Set(blockIds || [])]
       .filter(Boolean)
       .filter((blockId) => !completedBlockIdsRef.current.has(blockId));
@@ -252,7 +259,7 @@ export function LessonSlideshow({
         }
       });
     }
-  }, [enqueueProgressWrite, onMarkBlockComplete]);
+  }, [enqueueProgressWrite, onMarkBlockComplete, reviewMode]);
 
   const recordBlockComplete = useCallback((blockId) => {
     recordBlocksComplete([blockId]);
@@ -295,6 +302,11 @@ export function LessonSlideshow({
 
   const goNext = useCallback(() => {
     setShowResumeNotice(false);
+    if (reviewMode) {
+      const result = resolveContinueNavigation({ blocks, currentIndex, reviewMode });
+      setCurrentIndex(result.nextIndex);
+      return;
+    }
     const departingBlock = blocks[currentIndex];
     if (shouldCompleteOnContinue(departingBlock)) {
       recordBlockComplete(departingBlock.id);
@@ -321,7 +333,7 @@ export function LessonSlideshow({
     );
     setCurrentIndex(result.nextIndex);
     setActiveBranchState(result.activeBranchState);
-  }, [activeBranchState, blockIndexById, blocks, currentIndex, pendingAdvance, recordBlockComplete, recordBlocksComplete]);
+  }, [activeBranchState, blockIndexById, blocks, currentIndex, pendingAdvance, recordBlockComplete, recordBlocksComplete, reviewMode]);
 
   const goPrev = useCallback(() => {
     setShowResumeNotice(false);
@@ -385,6 +397,7 @@ export function LessonSlideshow({
   }
 
   function handleMarkComplete() {
+    if (reviewMode) return;
     if (currentBlock?.block_type === 'lesson_complete') {
       recordBlockComplete(currentBlock.id);
     }
@@ -421,7 +434,7 @@ export function LessonSlideshow({
                     <span
                       key={block.id ?? i}
                       className={`${s.segment} ${
-                        completedBlockIds.has(block.id) ? s.segmentDone : ''
+                        (reviewMode ? i < currentIndex : completedBlockIds.has(block.id)) ? s.segmentDone : ''
                       } ${i === currentIndex ? s.segmentCurrent : ''}`}
                     />
                   ))}
@@ -429,13 +442,13 @@ export function LessonSlideshow({
               ) : (
                 <div className={s.progressTrack} aria-hidden="true">
                   <div
-                    className={`${s.progressFill} ${isComplete ? s.progressFillComplete : ''}`}
+                    className={`${s.progressFill} ${!reviewMode && isComplete ? s.progressFillComplete : ''}`}
                     style={{ width: `${progressPct}%` }}
                   />
                 </div>
               )}
               <span className={s.progressPct}>
-                {isComplete ? 'Complete' : `${progressPct}%`}
+                {!reviewMode && isComplete ? 'Complete' : `${progressPct}%`}
               </span>
             </>
           )}
@@ -487,7 +500,10 @@ export function LessonSlideshow({
               onWatched={() => recordBlockComplete(currentBlock.id)}
             />
           )}
-          {currentBlock.block_type === 'check' && (
+          {currentBlock.block_type === 'check' && reviewMode && (
+            <CheckAnswerReview block={currentBlock} />
+          )}
+          {currentBlock.block_type === 'check' && !reviewMode && (
             <CheckBlock
               block={currentBlock}
               previousAnswer={checkAnswers[currentBlock.id]}
@@ -535,6 +551,7 @@ export function LessonSlideshow({
           {currentBlock.block_type === 'desmos_interactive' && (
             <DesmosInteractiveBlock
               block={currentBlock}
+              reviewMode={reviewMode}
               calculator={lessonCalculator}
               previousAnswer={checkAnswers[currentBlock.id]}
               onResult={(isCorrect) => {
@@ -581,6 +598,7 @@ export function LessonSlideshow({
           {currentBlock.block_type === 'lesson_complete' && (
             <LessonCompleteBlock
               block={currentBlock}
+              reviewMode={reviewMode}
               isComplete={isComplete}
               onComplete={handleMarkComplete}
             />
@@ -674,7 +692,7 @@ export function LessonSlideshow({
         </p>
       )}
 
-      {showCompleteButton &&
+      {!reviewMode && showCompleteButton &&
         !isComplete &&
         currentBlock?.block_type !== 'lesson_complete' &&
         currentIndex >= blocks.length - 1 && (
@@ -690,7 +708,7 @@ export function LessonSlideshow({
           </div>
         )}
 
-      {isComplete && (
+      {!reviewMode && isComplete && (
         <div className={s.completeBanner} role="status">
           <div className={s.completeCheck} aria-hidden="true">
             ✓
@@ -844,7 +862,7 @@ function TextBlock({ block, isRead, onRead }) {
 
 // Terminal block: closing content plus a single "Complete Lesson" button
 // that finishes the lesson. No Continue button and no dead-end.
-function LessonCompleteBlock({ block, isComplete, onComplete }) {
+function LessonCompleteBlock({ block, isComplete, onComplete, reviewMode = false }) {
   const label = block.content?.button_label || 'Complete Lesson';
   return (
     <div className={s.card}>
@@ -852,16 +870,18 @@ function LessonCompleteBlock({ block, isComplete, onComplete }) {
         className={`prose lesson-prose ${s.prosePane}`}
         html={block.content?.html || ''}
       />
-      <div className={s.completeBlockActions}>
-        <button
-          type="button"
-          onClick={onComplete}
-          disabled={isComplete}
-          className={s.completeBtn}
-        >
-          {isComplete ? 'Lesson Complete' : label}
-        </button>
-      </div>
+      {!reviewMode && (
+        <div className={s.completeBlockActions}>
+          <button
+            type="button"
+            onClick={onComplete}
+            disabled={isComplete}
+            className={s.completeBtn}
+          >
+            {isComplete ? 'Lesson Complete' : label}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1199,6 +1219,7 @@ function DesmosInteractiveBlock({
   onDebug,
   onCaptureWorkflowContext,
   debugMode = false,
+  reviewMode = false,
 }) {
   const [feedbackState, setFeedbackState] = useState(
     previousAnswer?.correct ? 'success' : 'idle',
@@ -1356,48 +1377,56 @@ function DesmosInteractiveBlock({
         className={`prose lesson-prose ${s.prosePane}`}
         html={content.instructions_html}
       />
-      <div className={s.calculatorCallout}>
-        Complete this activity in the Desmos pane, then check your work here.
-      </div>
+      {!reviewMode && (
+        <div className={s.calculatorCallout}>
+          Complete this activity in the Desmos pane, then check your work here.
+        </div>
+      )}
       {content.caption_html && (
         <HtmlBlock className="prose lesson-prose muted" html={content.caption_html} />
       )}
-      {!calculator && (
-        <p className={s.loadingText}>
-          Desmos is still loading. If it does not appear, refresh and try again.
-        </p>
-      )}
+      {reviewMode ? (
+        <DesmosAnswerReview content={content} />
+      ) : (
+        <>
+          {!calculator && (
+            <p className={s.loadingText}>
+              Desmos is still loading. If it does not appear, refresh and try again.
+            </p>
+          )}
 
-      <button
-        type="button"
-        onClick={handleCheck}
-        disabled={!calculator}
-        className={`${s.primaryBtn} ${s.checkSubmit}`}
-      >
-        Check Answer
-      </button>
+          <button
+            type="button"
+            onClick={handleCheck}
+            disabled={!calculator}
+            className={`${s.primaryBtn} ${s.checkSubmit}`}
+          >
+            Check Answer
+          </button>
 
-      {feedbackState === 'success' && (
-        <div role="status" aria-live="polite" className={s.feedbackSuccess}>
-          <HtmlBlock
-            html={feedbackHtml || content.feedback.success_message_html}
-          />
-        </div>
-      )}
-      {feedbackState === 'retry' && (
-        <div role="status" aria-live="polite" className={s.feedbackRetry}>
-          <HtmlBlock html={feedbackHtml || content.feedback.retry_message_html} />
-        </div>
-      )}
-      {progressiveHintHtml && (
-        <div aria-live="polite" className={s.progressiveHint}>
-          <HtmlBlock html={progressiveHintHtml} />
-        </div>
-      )}
-      {solutionHtml && (
-        <div aria-live="polite" className={s.solution}>
-          <HtmlBlock html={solutionHtml} />
-        </div>
+          {feedbackState === 'success' && (
+            <div role="status" aria-live="polite" className={s.feedbackSuccess}>
+              <HtmlBlock
+                html={feedbackHtml || content.feedback.success_message_html}
+              />
+            </div>
+          )}
+          {feedbackState === 'retry' && (
+            <div role="status" aria-live="polite" className={s.feedbackRetry}>
+              <HtmlBlock html={feedbackHtml || content.feedback.retry_message_html} />
+            </div>
+          )}
+          {progressiveHintHtml && (
+            <div aria-live="polite" className={s.progressiveHint}>
+              <HtmlBlock html={progressiveHintHtml} />
+            </div>
+          )}
+          {solutionHtml && (
+            <div aria-live="polite" className={s.solution}>
+              <HtmlBlock html={solutionHtml} />
+            </div>
+          )}
+        </>
       )}
     </div>
   );
