@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>,</li><li>:</li><li>;</li><li>—</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which choice completes the text so that it conforms to the conventions of Standard English?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>observations;</li><li>observations:</li><li>observations</li><li>observations,</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>The violin—made in 1721 ___ remains in remarkably good condition.</p>"
+        "id": "opening_logbook_boundary",
+        "title": "Shipboard observations",
+        "html": "<p>Historian Mara Vidal used ships’ logbooks to study the routines of nineteenth-century navigators. The pattern of small corrections in the star charts that the navigators kept beside their written _____ suggests that they revised their positions throughout each voyage rather than recording a single final estimate.</p>"
       }
     },
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Give each mark a test</h2><p>The violin question asks you to notice how the sentence is built. We’ll use one routine: <strong>Full Stop, Colon, Dash, Comma</strong>. Each category has a job you can check.</p><p>First, learn how to recognize a complete sentence.</p>",
+      "html": "<h2>Give a pause a grammatical test</h2><p>The long opening sentence can make several marks sound reasonable. A pause alone does not tell you where a sentence can stop.</p><p>We’ll use <strong>Full Stop, Colon, Dash, Comma</strong> to test what each mark would do. First, practise recognizing a complete sentence.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -515,33 +515,34 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the violin sentence</h2><p>Try the first question again using the punctuation routine. Read the whole sentence so you keep any matching marks in view.</p>",
+      "html": "<h2>Return to the logbooks</h2><p>Try the opening question again. Use the punctuation tests to decide which version completes the sentence.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "practice_dash",
+      "id": "opening_logbook_boundary_result",
       "block_type": "check",
       "content": {
-        "prompt": "Return to the opening question. What answer do you get now?",
+        "id": "opening_logbook_boundary_result",
+        "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
         "choices": [
-          ",",
-          ":",
-          ";",
-          "—"
+          "observations;",
+          "observations:",
+          "observations",
+          "observations,"
         ],
-        "correct_index": 3,
+        "correct_index": 2,
         "allow_retry": true,
-        "hint": "Look for punctuation already in the sentence. Is there an opening mark that needs a matching closing mark?",
-        "explanation": "Matching dashes surround made in 1721. Removing the detail leaves The violin remains in remarkably good condition.",
-        "solution": "Matching dashes surround made in 1721. Removing the detail leaves The violin remains in remarkably good condition."
+        "hint": "Find the main verb after the blank. Read the words before the blank on their own, then ask whether a comma has a job between these essential parts.",
+        "solution": "Shrink the sentence to its essential parts: “The pattern suggests a revision.”\nThe words before the blank are the subject and its descriptions; they have not reached the main verb, suggests.\nA semicolon or colon cannot follow that unfinished thought. A comma has no job between the subject and its verb.\nChoose C.\nA: The long lead-in may sound finished, but it has not reached the main verb. A semicolon would split an unfinished thought.\nB: The material after the blank sounds explanatory, but the words before a colon must first form a complete sentence.\nD: A pause after the long subject may sound natural, but a comma would separate that subject from suggests.",
+        "explanation": "You got it. Leaving out the punctuation keeps the long subject attached to suggests. You tested the sentence’s structure instead of its pauses."
       },
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_logbook_boundary"
     },
     {
       "kind": "raw_block",
@@ -683,5 +684,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use the full-stop/colon/comma tests on a long subject; the distractors are a false sentence boundary, a colon after an unfinished thought, and a subject–verb comma. Previous specification: archive/rw-openings-2026-11/boundaries-punctuation-order.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
 }

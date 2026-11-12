@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice most logically completes the ceramic text?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>local clay had become too scarce for the city&#x27;s potters to keep using after 1750.</li><li>the new trade routes were opened chiefly so that potters could import distant clay.</li><li>the new trade connections likely contributed to the increased use of clay from distant regions after 1750.</li><li>most fragments in layers dated before 1750 were made from clay found near the port city.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which choice most logically completes the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>a change in customers’ preferences may have encouraged workshops in both areas to adopt clay from distant regions.</li><li>workshops’ access to the new import route may help explain their different rates of adopting clay from distant regions.</li><li>increasing prices for local clay may have encouraged harbor workshops to seek cheaper materials from distant regions.</li><li>improved access to imported clay may have led harbor workshops to sell their pottery in new and more distant markets.</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "shared_independent_transfer",
-        "title": "Ceramic fragments passage",
-        "html": "<blockquote><p>A historian analyzed ceramic fragments from a port city. In layers dated before 1750, most fragments were made from local clay. In layers dated after 1750, a growing share of fragments came from clay sources in distant regions. Shipping records indicate that new trade routes connecting the port to those regions opened during the 1740s. Taken together, the evidence suggests that ___</p></blockquote>"
+        "id": "opening_clay_access",
+        "title": "Clay sources in a port city",
+        "html": "<p>A historian compared pottery from harbor and inland workshops in a port city. Before 1750, both groups mainly used local clay. A new trade route began bringing distant clay to the harbor in the 1740s. After 1750, distant clay became common in harbor pottery but remained unusual inland. Sales records indicate that both workshop groups continued selling to their previous customers, and local clay prices stayed stable over the period. Together, the findings suggest that _____</p>"
       }
     },
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Some conclusions add more than the text gives you</h2><p>The ceramic choices offer several explanations, but each needs evidence. An <strong>inference</strong> is a conclusion supported by the text even when it is not stated directly.</p><p>We’ll practise connecting two simple findings before returning to the trade evidence.</p>",
+      "html": "<h2>Choose an explanation the findings can support</h2><p>The opening choices offer plausible accounts of the pottery change. Plausible is not enough: the conclusion has to fit the findings the passage supplies.</p><p>We’ll practise the <strong>smallest supported leap</strong>, starting with two simpler findings about bees.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -298,29 +298,30 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the ceramic evidence</h2><p>Try the first question again. Combine the important facts and choose the smallest conclusion they support together.</p>",
+      "html": "<h2>Return to the pottery evidence</h2><p>Try the opening question again. Combine the findings before choosing a conclusion.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "shared_prompt": "shared_independent_transfer",
+      "shared_prompt": "opening_clay_access",
       "kind": "raw_block",
-      "id": "independent_transfer_check",
+      "id": "opening_clay_access_result",
       "block_type": "check",
       "content": {
-        "prompt": "Which choice most logically completes the ceramic text?",
+        "id": "opening_clay_access_result",
+        "prompt": "Which choice most logically completes the text?",
         "choices": [
-          "local clay had become too scarce for the city's potters to keep using after 1750.",
-          "the new trade routes were opened chiefly so that potters could import distant clay.",
-          "the new trade connections likely contributed to the increased use of clay from distant regions after 1750.",
-          "most fragments in layers dated before 1750 were made from clay found near the port city."
+          "a change in customers’ preferences may have encouraged workshops in both areas to adopt clay from distant regions.",
+          "workshops’ access to the new import route may help explain their different rates of adopting clay from distant regions.",
+          "increasing prices for local clay may have encouraged harbor workshops to seek cheaper materials from distant regions.",
+          "improved access to imported clay may have led harbor workshops to sell their pottery in new and more distant markets."
         ],
-        "correct_index": 2,
+        "correct_index": 1,
         "allow_retry": true,
-        "hint": "Connect the timing of the trade connections with the change in clay sources. Avoid inventing why the routes opened.",
-        "explanation": "The timing and source change support a likely contribution from expanded trade. The passage does not say local clay disappeared or that ceramics alone caused the routes to open.",
-        "solution": "The timing and source change support a likely contribution from expanded trade. The passage does not say local clay disappeared or that ceramics alone caused the routes to open."
+        "hint": "Keep the harbor–inland difference, the route’s location, and the unchanged prices and customers in your summaries. Which explanation needs the fewest extra assumptions?",
+        "solution": "Shrink the findings: new clay arrives at the harbor; harbor workshops adopt it more often; inland workshops do not.\nPrices and customers stayed stable, so do not invent changes in either to explain the pattern.\nPredict a cautious connection between access to the route and adoption, then check the full proposed conclusion.\nChoose B.\nA: Customer preferences are not measured, and widespread adoption in both areas does not match the inland pattern.\nC: This plausible economic explanation conflicts with the stated stable local prices and adds an unreported cost comparison.\nD: This switches from imported materials to exported pottery; the records instead describe sales to previous customers.",
+        "explanation": "That conclusion stays with the evidence. It connects access and adoption without inventing rising prices, new customers, or an export market."
       },
       "calculator": {
         "display": "hidden"
@@ -411,5 +412,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use sentence summaries to infer a modest access/adoption relationship while rejecting plausible but unsupported price, demand, and export explanations. Previous specification: archive/rw-openings-2026-11/inference-minimum-supported-conclusion.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
 }

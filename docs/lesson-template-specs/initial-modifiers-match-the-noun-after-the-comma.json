@@ -1,25 +1,25 @@
 {
   "title": "Initial Modifiers: Match the Noun After the Comma",
   "description": "Identify an opening modifier, predict the noun phrase it describes or compares, and choose the answer that places that noun phrase immediately after the comma.",
-  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 7040ee67-9287-4aaa-9ef0-89de44f5a597 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 7040ee67-9287-4aaa-9ef0-89de44f5a597 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nReading and Writing opening revision 2026-11-12: Use Modifier Match on a property comparison; all options reuse the same finding, but three attach the comparison to a different grammatical head. Previous specification: archive/rw-openings-2026-11/initial-modifiers-match-the-noun-after-the-comma.json. The replacement question has a new block ID; unrelated lesson items retain their identities.",
   "blocks": [
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>a gradual change in the star&#x27;s brightness appeared on the photographic plates</li><li>the old photographic plates preserved evidence of a gradual change in brightness</li><li>astronomer Keiko Tan detected a gradual change in the star&#x27;s brightness</li><li>the star&#x27;s gradual change in brightness was detected from old photographic plates</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which choice completes the text so that it conforms to the conventions of Standard English?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>juveniles raised in bright tanks grew at an 18% higher rate in the researcher’s study.</li><li>the researcher measured an 18% higher growth rate for juveniles raised in bright tanks.</li><li>raising juveniles in bright tanks produced an 18% higher growth rate in the researcher’s study.</li><li>the growth rate of juveniles raised in bright tanks was 18% higher in the researcher’s study.</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>The passage explains that astronomer Keiko Tan used old photographic plates to measure a star&#x27;s changing brightness. Comparing plates taken decades apart, _____. Which choice completes the text?</p>"
+        "id": "opening_growth_comparison",
+        "title": "Comparing growth rates",
+        "html": "<p>A researcher compares the growth rate of juvenile fish raised in bright tanks with that of juveniles raised in shaded tanks. The bright-tank juveniles grew 18% faster. Compared with that of juveniles raised in shaded tanks, _____</p>"
       }
     },
     {
       "kind": "text",
       "id": "opening_exploration",
-      "html": "<h2>Make the long choices easier to compare</h2><p>The opening phrase points to someone who did the comparing. <strong>Modifier Match</strong> helps you predict that noun before untangling the choices.</p><p>First, try a simpler description about a footbridge.</p>",
+      "html": "<h2>Find what the comparison is comparing</h2><p>The opening choices reuse the same result, but they put different noun phrases after the comma. The first position can decide the answer.</p><p>We’ll use <strong>Modifier Match</strong> to predict that position. Start with a simpler description about a footbridge, then build up to comparisons.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -363,33 +363,34 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the photographic plates</h2><p>Try the opening question again. Predict who the opening phrase describes before reading the complete choices.</p>",
+      "html": "<h2>Return to the fish comparison</h2><p>Try the opening question again. Predict the noun phrase the comparison needs before reading the complete choices.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "check_12",
+      "id": "opening_growth_comparison_result",
       "block_type": "check",
       "content": {
-        "prompt": "Return to the opening question. What answer do you get now?",
+        "id": "opening_growth_comparison_result",
+        "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
         "choices": [
-          "a gradual change in the star's brightness appeared on the photographic plates",
-          "the old photographic plates preserved evidence of a gradual change in brightness",
-          "astronomer Keiko Tan detected a gradual change in the star's brightness",
-          "the star's gradual change in brightness was detected from old photographic plates"
+          "juveniles raised in bright tanks grew at an 18% higher rate in the researcher’s study.",
+          "the researcher measured an 18% higher growth rate for juveniles raised in bright tanks.",
+          "raising juveniles in bright tanks produced an 18% higher growth rate in the researcher’s study.",
+          "the growth rate of juveniles raised in bright tanks was 18% higher in the researcher’s study."
         ],
+        "correct_index": 3,
         "allow_retry": true,
-        "explanation": "Keiko Tan compared the plates, so her name must immediately follow the opening modifier.",
-        "correct_index": 2,
-        "hint": "Ask who compared the photographic plates. Look for that person in the first noun phrase after the comma.",
-        "solution": "Keiko Tan compared the plates, so her name must immediately follow the opening modifier."
+        "hint": "Replace “that” with the quantity it stands for. Compare each choice’s first noun phrase with that same kind of quantity.",
+        "solution": "In this comparison, that stands for the growth rate of juveniles in shaded tanks.\nThe noun phrase after the comma must name the corresponding growth rate in bright tanks.\nA choice can preserve the 18% finding and still compare the wrong kinds of things.\nChoose D.\nA: The finding is accurate, but the opening compares a growth rate with juveniles rather than another rate.\nB: The finding is preserved, but the first noun phrase names the researcher rather than the growth rate being compared.\nC: The first noun phrase is the activity of raising fish, not the growth rate that the comparison needs.",
+        "explanation": "Good match. The sentence compares one growth rate with another, keeping the right noun phrase immediately after the comma."
       },
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_growth_comparison"
     },
     {
       "kind": "raw_block",

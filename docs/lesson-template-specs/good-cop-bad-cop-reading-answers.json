@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Kelp cover declined most sharply at the sites where sea otters patrolled the coastline.</li><li>Kelp forests can be protected from urchin grazing by more than one mechanism, not by otters alone.</li><li>Sea otters are the only reliable protection that kelp forests have against urchin grazing.</li><li>Herrera found that strong wave action attracted sea otters to the two sites with the densest kelp.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which choice best states the main idea of the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Otters can limit urchin grazing, but their absence allows urchins to deplete kelp even at the wave-exposed sites Herrera surveyed.</li><li>Strong waves can limit urchin grazing, and otters tend to concentrate at the exposed headlands where kelp remains particularly dense.</li><li>Protection from urchin grazing can depend on both otter activity and wave exposure, helping explain differences among kelp sites.</li><li>Otters and wave action can both protect kelp, and their effects appear equally strong at the coastal sites Herrera surveyed.</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>Marine biologist Tomás Herrera studied kelp forests along a rocky coastline. In areas where sea urchin populations had grown unchecked, kelp cover declined sharply, while areas patrolled by sea otters kept dense kelp canopies. Herrera notes, however, that otters are not the whole story: at two sites with few otters, strong wave action appeared to limit urchin grazing and preserve the kelp. He concludes that several different mechanisms can keep urchin populations in check, with similar benefits for the forest. Which choice best states the main idea of the text?</p>"
+        "id": "opening_kelp_conditions",
+        "title": "Kelp along a coastline",
+        "html": "<p>Marine biologist Tomás Herrera compared kelp forests along the same coastline. Sites patrolled by sea otters had few sea urchins and dense kelp, fitting the explanation that otters protect kelp by eating urchins. Sites with few otters, however, were not uniform. At exposed headlands, strong waves limited urchin grazing and kelp remained dense. Sheltered bays with similarly few otters had heavily grazed kelp. Herrera proposed considering local wave conditions alongside otter counts when predicting whether a kelp forest would remain abundant.</p>"
       }
     },
     {
       "kind": "text",
       "id": "before_you_start",
-      "html": "<h2>A partly right answer can still be wrong</h2><p>The kelp choices use real details from the passage, but some change what those details mean. We’ll use <strong>Good Cop / Bad Cop</strong>: find what fits in each choice, then look for what fails.</p><p>Let’s practise on a shorter passage first.</p>",
+      "html": "<h2>Check the part that follows the true fact</h2><p>Each opening choice includes a real idea about otters or waves. An added claim can still make the whole answer fail.</p><p>We’ll use <strong>Good Cop / Bad Cop</strong>: notice what fits, then look for what does not. Practise first on a shorter passage.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -565,33 +565,34 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the kelp passage</h2><p>Try the first question again. For each choice, look for a reason to keep it and a reason to cross it out. Keep the choice whose whole meaning works.</p>",
+      "html": "<h2>Return to the kelp passage</h2><p>Try the first question again. Test the whole meaning of each choice, including the part that initially seems plausible.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "authentic_item",
+      "id": "opening_kelp_conditions_result",
       "block_type": "check",
       "content": {
-        "prompt": "Return to the opening question. What answer do you get now?",
+        "id": "opening_kelp_conditions_result",
+        "prompt": "Which choice best states the main idea of the text?",
         "choices": [
-          "Kelp cover declined most sharply at the sites where sea otters patrolled the coastline.",
-          "Kelp forests can be protected from urchin grazing by more than one mechanism, not by otters alone.",
-          "Sea otters are the only reliable protection that kelp forests have against urchin grazing.",
-          "Herrera found that strong wave action attracted sea otters to the two sites with the densest kelp."
+          "Otters can limit urchin grazing, but their absence allows urchins to deplete kelp even at the wave-exposed sites Herrera surveyed.",
+          "Strong waves can limit urchin grazing, and otters tend to concentrate at the exposed headlands where kelp remains particularly dense.",
+          "Protection from urchin grazing can depend on both otter activity and wave exposure, helping explain differences among kelp sites.",
+          "Otters and wave action can both protect kelp, and their effects appear equally strong at the coastal sites Herrera surveyed."
         ],
-        "correct_index": 1,
+        "correct_index": 2,
         "allow_retry": true,
-        "hint": "Look for the conclusion that accounts for the kelp at both the otter sites and the strong-wave sites.",
-        "explanation": "The passage reports two different checks on urchin grazing — otter predation and wave action — and concludes that several mechanisms can protect the forest. The first choice reverses the results, the third overstates the otters, and the fourth invents a connection.",
-        "solution": "The passage reports two different checks on urchin grazing — otter predation and wave action — and concludes that several mechanisms can protect the forest. The first choice reverses the results, the third overstates the otters, and the fourth invents a connection."
+        "hint": "Keep a reason to consider a choice separate from a reason to accept it. Check its ending against the exposed and sheltered sites, and watch for an unstated comparison.",
+        "solution": "Use the passage to form a target: otters and waves can each limit grazing, and wave exposure helps explain sites with few otters.\nGood Cop: identify the real observation in each choice.\nBad Cop: check the rest for a contradiction, an added relationship, or a comparison the study never established.\nChoose C.\nA: The otter effect is supported, but the ending contradicts the dense kelp at exposed sites with few otters.\nB: The wave effect is supported, but the claimed concentration of otters is not; those headlands had few otters.\nD: Both mechanisms are supported, but the passage does not measure their comparative strength.",
+        "explanation": "You caught the added claims. The matching answer explains the different sites without inventing otter concentrations or equal effectiveness."
       },
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_kelp_conditions"
     },
     {
       "kind": "text",
@@ -667,5 +668,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Apply Good Cop / Bad Cop to three partly true answers whose added clauses contradict or exceed the evidence. Previous specification: archive/rw-openings-2026-11/good-cop-bad-cop-reading-answers.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
 }

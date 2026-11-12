@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice best states the main idea?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Young reef fish learn to recognize predators mainly by watching how older fish react.</li><li>Pollution causes predators near reefs to release stronger chemical cues into the water.</li><li>A modest level of pollution may weaken young reef fish&#x27;s response to chemical signs of predators.</li><li>Fish raised in completely clean water were the group unable to detect the predators&#x27; chemical cues.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which choice best states the main idea of the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Exposure to a low pollutant level may weaken young reef fish’s response to one kind of predator warning.</li><li>Young reef fish exposed to pollution may rely more heavily on shadows to compensate for less reliable chemical warnings.</li><li>Pollutant levels found near harbors may reduce young reef fish’s ability to respond to visual and chemical predator warnings.</li><li>Pollution may reduce how much of a predator’s chemical cue reaches young reef fish, changing their patterns of swimming.</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "shared_independent_transfer_one",
-        "title": "Reef fish passage",
-        "html": "<blockquote><p>Some young reef fish recognize predators by detecting chemical cues in the water. In one experiment, fish raised in water containing a low level of pollution did not respond to those cues as strongly as fish raised in clean water, suggesting that even modest pollution may interfere with an important survival response.</p></blockquote>"
+        "id": "opening_reef_warning",
+        "title": "A reef-fish experiment",
+        "html": "<p>In a laboratory study, juvenile reef fish were raised either in clean water or in water containing a low concentration of a common pollutant. After a predator’s chemical cue was introduced, fish from the clean-water group reduced their swimming, a response that can make them less noticeable to predators. Fish from the polluted-water group continued swimming at nearly their previous rate. Both groups reacted normally to a sudden shadow over their tanks. The researchers noted that the pollutant level was similar to levels measured near some harbors.</p>"
       }
     },
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Give yourself an answer to look for</h2><p>Those choices can all sound reasonable until you decide what the passage actually says. We’ll learn a reading routine that gives you an <strong>answer target</strong>: a rough answer in your own words.</p><p>Let’s start with a shorter passage so you can practise that habit, then return to the reef fish.</p>",
+      "html": "<h2>Give yourself a meaning to look for</h2><p>Every opening choice mentions pollution and predator warnings. Small additions change what each one claims.</p><p>We’ll use <strong>Process and Pre-Answer</strong> to build an <strong>answer target</strong>, a rough answer in your own words, before the choices pull you toward another story. Start with a shorter bird passage.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -472,29 +472,30 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Back to the first passage</h2><p>You now have a way to form an answer before the choices pull you in different directions. Try the opening question again using the reading routine.</p>",
+      "html": "<h2>Return to the reef fish</h2><p>Try the opening question again. Form your own answer target before comparing the choices.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "shared_prompt": "shared_independent_transfer_one",
+      "shared_prompt": "opening_reef_warning",
       "kind": "raw_block",
-      "id": "independent_transfer_one_check",
+      "id": "opening_reef_warning_result",
       "block_type": "check",
       "content": {
-        "prompt": "Which choice best states the main idea?",
+        "id": "opening_reef_warning_result",
+        "prompt": "Which choice best states the main idea of the text?",
         "choices": [
-          "Young reef fish learn to recognize predators mainly by watching how older fish react.",
-          "Pollution causes predators near reefs to release stronger chemical cues into the water.",
-          "A modest level of pollution may weaken young reef fish's response to chemical signs of predators.",
-          "Fish raised in completely clean water were the group unable to detect the predators' chemical cues."
+          "Exposure to a low pollutant level may weaken young reef fish’s response to one kind of predator warning.",
+          "Young reef fish exposed to pollution may rely more heavily on shadows to compensate for less reliable chemical warnings.",
+          "Pollutant levels found near harbors may reduce young reef fish’s ability to respond to visual and chemical predator warnings.",
+          "Pollution may reduce how much of a predator’s chemical cue reaches young reef fish, changing their patterns of swimming."
         ],
-        "correct_index": 2,
+        "correct_index": 0,
         "allow_retry": true,
-        "hint": "Say what happened to the reef fish and what the comparison group showed. Keep the conclusion within those results.",
-        "explanation": "The choice captures both the survival response and the evidence that modest pollution may weaken it.",
-        "solution": "The choice captures both the survival response and the evidence that modest pollution may weaken it."
+        "hint": "Name what changed between the groups and what did not. Make your target describe the result rather than adding a reason the study never established.",
+        "solution": "The question asks for the main idea. Read for the study’s comparison before studying the choices.\nA useful answer target is: low pollution may weaken the response to chemical warnings; the shadow response stayed normal.\nMatch that limited result. Do not turn it into a new explanation about cue delivery or compensating behavior.\nChoose A.\nB: Normal shadow responses are reported, but greater reliance or compensation was not tested.\nC: This keeps the topic and context but extends the result to visual warnings, which both groups responded to normally.\nD: This supplies a mechanism affecting the cue itself; the study describes the fish’s response without establishing that mechanism.",
+        "explanation": "Your answer target worked. It kept the chemical-warning result separate from the unaffected shadow response and from untested explanations."
       },
       "calculator": {
         "display": "hidden"
@@ -585,5 +586,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Process and Pre-Answer to form a bounded main-idea target before partly overlapping choices suggest compensation, a broader impairment, or an untested mechanism. Previous specification: archive/rw-openings-2026-11/reading-comprehension-process-and-pre-answer.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
 }

@@ -5,20 +5,20 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>enthusiasm</li><li>skepticism</li><li>precision</li><li>acclaim</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Which choice completes the text with the most logical and precise word or phrase?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>authoritative</li><li>provisional</li><li>comprehensive</li><li>controversial</li></ol>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
-        "id": "revision_opening_question",
-        "title": "Opening question",
-        "html": "<p>The researchers expected other laboratories to question their surprising result. Despite this initial _____, several teams agreed to repeat the experiment, and all obtained similar findings. Which choice completes the text?</p>"
+        "id": "opening_bird_map_scope",
+        "title": "An ecologist’s maps",
+        "html": "<p>Liu’s spring census of birds on a forest’s northern slopes recorded each nest precisely, but her teams had not yet surveyed the southern slopes or returned in other seasons. The initial maps proved useful to land managers, who praised their detail. Although she welcomed that response, Liu continued to describe her account of the forest’s year-round bird distribution as _____.</p>"
       }
     },
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Decide what the blank needs to mean</h2><p>The research choices suggest different reactions. The surrounding ideas tell you which one fits. We’ll use <strong>Read, Predict, Match</strong> to find that meaning before choosing a word.</p><p>Start with a simpler example about designs.</p>",
+      "html": "<h2>Read past the praise</h2><p>The opening choices could fit different reactions to a useful study. The earlier sentence tells you what the account still lacks.</p><p>We’ll use <strong>Read, Predict, Match</strong> to decide what the blank needs to mean before choosing a word. Start with a simpler example about designs.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -422,33 +422,34 @@
     {
       "kind": "text",
       "id": "revision_return_to_opening",
-      "html": "<h2>Return to the surprising research result</h2><p>Try the opening question again. Predict a plain meaning for the blank, then match that meaning with a choice.</p>",
+      "html": "<h2>Return to Liu’s maps</h2><p>Try the opening question again. Predict a plain meaning for the blank, then match it to a choice.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "transfer_one_check",
+      "id": "opening_bird_map_scope_result",
       "block_type": "check",
       "content": {
-        "prompt": "Return to the opening question. What answer do you get now?",
+        "id": "opening_bird_map_scope_result",
+        "prompt": "Which choice completes the text with the most logical and precise word or phrase?",
         "choices": [
-          "enthusiasm",
-          "skepticism",
-          "precision",
-          "acclaim"
+          "authoritative",
+          "provisional",
+          "comprehensive",
+          "controversial"
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "The teams expected others to question the result. Predict a word for that initial reaction before looking at the later agreement.",
-        "explanation": "'Skepticism' means doubt, matching both the expected questioning and the contrast introduced by 'Despite.'",
-        "solution": "'Skepticism' means doubt, matching both the expected questioning and the contrast introduced by 'Despite.'"
+        "hint": "Read the first sentence as well as the one with the blank. Separate precise measurements and praise from how complete the geographic and seasonal coverage is.",
+        "solution": "The maps are useful, but the team still has regions and seasons to survey.\nPredict “still subject to change as more observations arrive.”\nMatch that meaning rather than the praise: provisional means subject to later revision; it does not mean comprehensive or controversial.\nChoose B.\nA: The praise and precise measurements are tempting, but they do not establish a definitive account of the whole forest across the year.\nC: Detailed maps are not necessarily complete; regions and seasons have not yet been covered.\nD: An unfinished account is not necessarily disputed, and the passage describes praise rather than disagreement.",
+        "explanation": "You found the intended meaning. Provisional fits an account that may be revised when the unfinished fieldwork is completed."
       },
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": "opening_bird_map_scope"
     },
     {
       "kind": "raw_block",
@@ -550,5 +551,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use whole-text prediction to resist positive-tone choices and distinguish incomplete knowledge from controversy; the deciding coverage clues precede the blank sentence. Previous specification: archive/rw-openings-2026-11/words-in-context-read-predict-match.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
 }
