@@ -1,0 +1,573 @@
+{
+  "title": "Find the Equation with My Numbers",
+  "description": "Build one realistic set of values from a word problem, then test every answer choice to identify the equation that always matches the context.",
+  "authoring_notes": "Exact live specification before the second optional quality batch, 2026-11-13. Prior confirmed audit fixes are preserved.",
+  "blocks": [
+    {
+      "kind": "raw_block",
+      "id": "76625b55-3da8-461f-8346-5c24afc474a8",
+      "block_type": "text",
+      "content": {
+        "id": "revision_opening_attempt",
+        "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "opening_two_hoses",
+          "html": "<p>One hose can fill an empty tank in \\(a\\) hours, and another can fill it in \\(b\\) hours. Each runs at a constant rate, and \\(a,b>0\\).</p><p>The tank is already one-third full when both hoses are turned on. They finish filling it together in \\(t\\) hours. Which equation relates \\(a,b,t\\)?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(t=\\frac{3ab}{2(a+b)}\\)</li><li>\\(t=\\frac{2(a+b)}{3ab}\\)</li><li>\\(t=\\frac{2ab}{3(a+b)}\\)</li><li>\\(t=\\frac{2ab}{a+b}\\)</li></ol>",
+          "title": "Two hoses filling a tank"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "b59d7db6-6d41-4acf-a875-117c59999496",
+      "block_type": "text",
+      "content": {
+        "id": "lesson_preview",
+        "html": "<h2>Build one filling story</h2><p>The hose question combines two rates and a partly filled tank. Writing a general equation means working with several fractions.</p><p><strong>Find the Equation</strong> lets you build one easy numerical situation and test which equation describes it. We’ll start with a simpler membership fee, then return to the tank.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "158659eb-f7d2-417d-a28c-f16ff8b17dc0",
+      "block_type": "text",
+      "content": {
+        "id": "first_exploration",
+        "html": "<h2>Build a membership example</h2><p>Choose 4 months. At $8 per month plus a $15 sign-up fee, the total is $47. Record \\(m=4,c=47\\), then test the choices.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "shared_first_exploration",
+          "html": "<p>A gym charges a one-time sign-up fee of $15 and $8 for each month. Let \\(m\\) be the number of months and \\(c\\) be the total cost.</p>",
+          "title": "Gym membership"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "79732699-d705-498d-8d7e-02a524dc8a5f",
+      "block_type": "check",
+      "content": {
+        "id": "first_exploration_check",
+        "hint": "Put \\(4\\) everywhere you see \\(m\\). Which right side equals \\(47\\)?",
+        "prompt": "Which equation is true when \\(m=4\\) and \\(c=47\\)?",
+        "choices": [
+          "\\(c=15m+8\\)",
+          "\\(c=8(m+15)\\)",
+          "\\(c=8m+15\\)",
+          "\\(c=23m\\)"
+        ],
+        "calculator": {
+          "mode": "scratch",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "\\(8(4)+15=47\\), so \\(c=8m+15\\) agrees with the membership you built.",
+        "correct_index": 2,
+        "shared_prompt": "shared_first_exploration"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "47f4785f-1426-4a7f-9243-341c19aabcea",
+      "block_type": "text",
+      "content": {
+        "id": "name_the_strategy",
+        "html": "<h2>Your example tests a claim</h2><p>An equation describing the story must be true for every possible situation in it. If it fails for your legal example, eliminate it. If several choices work, try a different example.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "8c2ddc98-d6f1-4d3f-80ae-8747ae5c0d1e",
+      "block_type": "text",
+      "content": {
+        "id": "five_step_process",
+        "html": "<h2>Build, Record, Test</h2><ol><li>Set the equations aside.</li><li>Choose a legal starting value and build the rest from the story.</li><li>Record the complete set.</li><li>Test every equation with that same set.</li><li>Rebuild and retest a tie.</li></ol>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "d6b9422f-672b-4456-8e17-127a5c264a77",
+      "block_type": "text",
+      "content": {
+        "id": "choose_the_driver",
+        "html": "<h2>Choose a starting quantity</h2><p>For five more red objects than blue objects, choose 10 blue objects. That forces 15 red objects. Choosing both counts independently could break the story.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "72405c70-2fe4-4b83-a40d-76ae0d34c7ff",
+      "block_type": "check",
+      "content": {
+        "id": "driver_check",
+        "hint": "Premium is the smaller quantity: take \\(7\\) away from \\(20\\).",
+        "prompt": "A theater sold \\(7\\) fewer premium tickets than standard tickets. If you choose \\(s=20\\) standard tickets, which value must you use for the number \\(p\\) of premium tickets?",
+        "choices": [
+          "\\(p=27\\)",
+          "\\(p=13\\)",
+          "\\(p=20\\)",
+          "Any convenient value of \\(p\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The story forces \\(p=20-7=13\\), so the legal value set is \\((s,p)=(20,13)\\).",
+        "correct_index": 1
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "cfe05f7d-3415-4ca4-bf28-b4dd1a712f32",
+      "block_type": "text",
+      "content": {
+        "id": "record_the_set",
+        "html": "<h2>Keep the complete set in view</h2><p>Write down every value from the situation you built, including the dependent amounts. Reuse that complete set in every answer choice.</p><p>Each equation must face the same numerical test.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "f7c8395a-4034-4087-8024-f7275a56af1f",
+      "block_type": "text",
+      "content": {
+        "id": "museum_example",
+        "html": "<h2>Build two groups and their total</h2><p>Choose 2 adult tickets and 3 student tickets. The revenue is \\(2(18)+3(11)=69\\). Record \\(a=2,s=3,r=69\\) before testing the equations.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "shared_museum_example",
+          "html": "<p>A museum charges $18 for each adult ticket and $11 for each student ticket. Let \\(a\\) be the number of adult tickets, \\(s\\) the number of student tickets, and \\(r\\) the total revenue.</p>",
+          "title": "Museum ticket revenue"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "6bd92bb3-574d-4746-a51a-876789b97da0",
+      "block_type": "check",
+      "content": {
+        "id": "museum_equation_check",
+        "hint": "Substitute all three recorded values. The correct right side must equal \\(69\\).",
+        "prompt": "Which equation is true for \\(a=2\\), \\(s=3\\), and \\(r=69\\)?",
+        "choices": [
+          "\\(r=18a+11s\\)",
+          "\\(r=29(a+s)\\)",
+          "\\(r=18s+11a\\)",
+          "\\(r=11as+18\\)"
+        ],
+        "calculator": {
+          "mode": "scratch",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "\\(18(2)+11(3)=69\\), so \\(r=18a+11s\\) tells the truth about your museum purchase.",
+        "correct_index": 0,
+        "shared_prompt": "shared_museum_example"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "3da38b89-e7a8-4f86-a86c-88e0ea95403b",
+      "block_type": "text",
+      "content": {
+        "id": "direction_language",
+        "html": "<h2>Picture “fewer than” first</h2><p>When a story compares two amounts, choose one amount and work out the other from the words. Keep track of which amount is smaller.</p><p>Test the equations with that concrete pair instead of deciding from their appearance.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ec7d6201-4fc5-4384-a2a4-475b76c7065d",
+      "block_type": "check",
+      "content": {
+        "id": "direction_check",
+        "hint": "Substitute \\(f=20\\) and \\(s=14\\) into each equation; do not rely on the order of the words.",
+        "prompt": "A garden has \\(6\\) fewer shrubs than flowers. You choose \\(f=20\\) flowers, so \\(s=14\\) shrubs. Which equation agrees with your values?",
+        "choices": [
+          "\\(f=s-6\\)",
+          "\\(s=f+6\\)",
+          "\\(s=f-6\\)",
+          "\\(f=6s\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "\\(14=20-6\\), so \\(s=f-6\\). The numbers reveal the direction without a translation rule.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "8007514c-7338-4d4c-805c-ce09f6f9c03d",
+      "block_type": "text",
+      "content": {
+        "id": "rate_context",
+        "html": "<h2>Build a rate example</h2><p>For a rate, choose an easy amount of time and calculate how much is produced or used. Record both values with their units.</p><p>Use that same complete situation to test every equation.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "1cae1635-b3de-4388-85de-5f7b82976e4f",
+      "block_type": "check",
+      "content": {
+        "id": "rate_check",
+        "hint": "Test \\(t=5\\) and \\(v=60\\). Which statement becomes true?",
+        "prompt": "Water flows at \\(12\\) liters per minute. Let \\(t\\) be minutes and \\(v\\) be liters. Which equation is true for \\(t=5\\) and \\(v=60\\)?",
+        "choices": [
+          "\\(t=12v\\)",
+          "\\(v=12t\\)",
+          "\\(v=t+12\\)",
+          "\\(t=v+12\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "\\(60=12(5)\\), so \\(v=12t\\) matches the rate situation.",
+        "correct_index": 1
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "9bb60da7-3e1d-4c0c-97f6-de14de89cb79",
+      "block_type": "text",
+      "content": {
+        "id": "percent_context",
+        "html": "<h2>Make the percent easy</h2><p>If 35% of the books are hardcover, choose 200 books. That gives 70 hardcover books. Record \\(b=200,h=70\\) and test the choices.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "shared_percent_context",
+          "html": "<p>A bookstore says 35% of its books are hardcover. Let \\(b\\) be the total number of books and \\(h\\) the number of hardcover books.</p>",
+          "title": "Hardcover books"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "7835b900-4623-429d-a616-8c264fb920dc",
+      "block_type": "check",
+      "content": {
+        "id": "percent_check",
+        "hint": "Substitute \\(200\\) for \\(b\\) and \\(70\\) for \\(h\\). Check which equality is true.",
+        "prompt": "Which equation is true for \\(b=200\\) total books and \\(h=70\\) hardcover books?",
+        "choices": [
+          "\\(b=0.35h\\)",
+          "\\(h=b+0.35\\)",
+          "\\(b=35h\\)",
+          "\\(h=0.35b\\)"
+        ],
+        "calculator": {
+          "mode": "scratch",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "\\(70=0.35(200)\\), so \\(h=0.35b\\).",
+        "correct_index": 3,
+        "shared_prompt": "shared_percent_context"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "4e3abfd3-b0f0-470e-a254-3a8648041df3",
+      "block_type": "text",
+      "content": {
+        "id": "helpful_numbers",
+        "html": "<h2>Keep the arithmetic easy</h2><p>Use a friendly percent base, small counts, or multiples of a ratio. The values must describe a possible situation and satisfy every condition.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "b1fd352e-fda8-4f78-906b-4accd7c6b8bf",
+      "block_type": "text",
+      "content": {
+        "id": "respect_constraints",
+        "html": "<h2>Respect the problem’s limits</h2><p>Counts must be whole numbers; required positive quantities must stay positive. Keep any stated minimum, maximum, total, or ordering true in your example.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "43d92aaf-92de-4e85-b096-d5f1d1d1cecf",
+      "block_type": "check",
+      "content": {
+        "id": "constraints_check",
+        "hint": "The value must be a whole number, positive, and at least \\(4\\).",
+        "prompt": "A tournament has a positive whole number \\(n\\) of teams, and \\(n\\ge4\\). Which is a legal, convenient choice for \\(n\\)?",
+        "choices": [
+          "\\(n=-4\\)",
+          "\\(n=2.5\\)",
+          "\\(n=6\\)",
+          "\\(n=0\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "\\(6\\) satisfies every stated condition and is easy to use.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "70e362ac-8efe-4350-a4e1-3d6da634fc42",
+      "block_type": "text",
+      "content": {
+        "id": "collision_example",
+        "html": "<h2>Two equations can tie</h2><p>For this relationship, \\(x=1\\) gives \\(y=4\\). Both \\(y=2x+2\\) and \\(y=4x\\) happen to be true there. That example does not distinguish the choices.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "shared_collision_example",
+          "html": "<p>\\(y\\) is 2 more than twice \\(x\\). Which candidate equation describes that relationship?</p><ul><li>\\(y=2x+2\\)</li><li>\\(y=4x\\)</li></ul>",
+          "title": "Two equations that match one value"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "d746725d-afa6-40b9-94da-42e0a7d3fd54",
+      "block_type": "check",
+      "content": {
+        "id": "collision_action_check",
+        "hint": "One example did not separate the choices, so create new evidence from the same story.",
+        "prompt": "Two candidate equations are true for your first legal value set. What should you do next?",
+        "choices": [
+          "Pick whichever tied equation is written with fewer symbols.",
+          "Build a different legal value set and retest only the tied equations.",
+          "Change one variable separately inside each tied equation.",
+          "Conclude that both tied equations describe the story's relationship."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "A second legal situation breaks an accidental tie without requiring you to translate the equations.",
+        "correct_index": 1,
+        "shared_prompt": "shared_collision_example"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ee5e9b8b-61fb-4373-9f1d-fae73b3d32d0",
+      "block_type": "text",
+      "content": {
+        "id": "retest_deliberately",
+        "html": "<h2>Rebuild from a new starting value</h2><p>Choose \\(x=3\\). The story gives \\(y=8\\). Now \\(y=2x+2\\) works and \\(y=4x\\) fails. Recalculate dependent values whenever you change the starting value.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": "shared_collision_example"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "4586f3dd-3b9c-4bca-a16b-c8fe6ea83f3d",
+      "block_type": "text",
+      "content": {
+        "id": "supplied_values",
+        "html": "<h2>Use a supplied example</h2><p>If the story already provides a complete value set, test it directly. If it fixes a total, your example must also have that total; do not choose all the parts independently.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "a5084792-f493-457d-b6dd-2318df54f0b1",
+      "block_type": "text",
+      "content": {
+        "id": "multi_step_context",
+        "html": "<h2>Include every part of the charge</h2><p>For the insured package, choose a weight and calculate its full charge from the story. Test the equations using that weight and total.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "shared_multi_step_context",
+          "html": "<p>A delivery company charges $9 to start an order, $2.50 per pound, and $4 for insurance. Let \\(w\\) be the package weight in pounds and \\(t\\) be the total charge.</p>",
+          "title": "Delivery fees"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "41385f6b-effa-4b1e-85a7-dd92ad631692",
+      "block_type": "text",
+      "content": {
+        "id": "rearranged_equations",
+        "html": "<h2>A rearranged equation can still work</h2><p>If q is 5 more than p, the pair \\(p=12,q=17\\) makes both \\(q=p+5\\) and \\(q-p=5\\) true. Test the equality rather than rejecting an unfamiliar arrangement.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "5ea9c234-fa8e-46d5-8694-1c6fa3051118",
+      "block_type": "text",
+      "content": {
+        "id": "revision_return_to_opening",
+        "html": "<h2>Return to the two hoses</h2><p>Try the opening question again. Build a possible filling situation before comparing the equations.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "17dfbaa3-1f66-47ca-af4a-4db29de82a57",
+      "block_type": "check",
+      "content": {
+        "id": "opening_two_hoses_result",
+        "hint": "Choose hose times that make the fractions easy. Work out how much both hoses fill in one hour and how much of the tank is still empty; test the same complete situation in every equation.",
+        "prompt": "Which equation describes the filling time?",
+        "choices": [
+          "\\(t=\\frac{3ab}{2(a+b)}\\)",
+          "\\(t=\\frac{2(a+b)}{3ab}\\)",
+          "\\(t=\\frac{2ab}{3(a+b)}\\)",
+          "\\(t=\\frac{2ab}{a+b}\\)"
+        ],
+        "solution": "Choose \\(a=2,\\ b=6\\) hours.\nIn one hour the hoses fill \\(1/2+1/6=2/3\\) of the tank. Exactly \\(2/3\\) is still empty, so \\(t=1\\) hour.\nUsing \\(a=2,b=6\\), choices A–D give \\(9/4,\\ 4/9,\\ 1,\\ 3\\) hours.\nOnly C agrees with your story: \\(t=2ab/[3(a+b)]\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Try the opening question again",
+          "display": "open",
+          "resettable": true
+        },
+        "allow_retry": true,
+        "explanation": "C works. Your example gave a one-hour filling time, and only that equation matched the same hose times and starting amount.",
+        "correct_index": 2,
+        "shared_prompt": {
+          "id": "opening_two_hoses_return",
+          "html": "<p>One hose can fill an empty tank in \\(a\\) hours, and another can fill it in \\(b\\) hours. Each runs at a constant rate, and \\(a,b>0\\).</p><p>The tank is already one-third full when both hoses are turned on. They finish filling it together in \\(t\\) hours. Which equation relates \\(a,b,t\\)?</p>",
+          "title": "Two hoses filling a tank"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "41c1167f-c62b-40b9-8952-e005c7773c63",
+      "block_type": "check",
+      "content": {
+        "id": "final_retrieval",
+        "prompt": "A friend texts you a Find the Equation question. Without checking the lesson, what do you tell them to do — start to finish?",
+        "choices": [
+          "Read the equations first; build one legal value set from the story; test only the two closest choices; rebuild if both fail.",
+          "Ignore the story; build and record one legal value set from the equations; test every choice with it; accept the first that works.",
+          "Ignore the equations; build a new legal value set for each choice; test each choice with its own values; retest if choices tie.",
+          "Ignore the equations; build and record one legal value set from the story; test every choice with it; rebuild and retest if choices tie."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "You have it. The story creates the evidence, every equation faces the same evidence, and a second legal example resolves an accidental tie.",
+        "correct_index": 3
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "400b545d-d0bf-42f0-89aa-936f97daccbc",
+      "block_type": "text",
+      "content": {
+        "id": "revision_independent_practice",
+        "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "4c5f4e3c-112a-4fc6-811f-e84168f7eeef",
+      "block_type": "check",
+      "content": {
+        "id": "multi_step_equation_check",
+        "prompt": "Which equation represents the insured package charge?",
+        "choices": [
+          "\\(t=9w+6.5\\)",
+          "\\(t=2.5(w+13)\\)",
+          "\\(t=2.5w+13\\)",
+          "\\(t=13w+2.5\\)"
+        ],
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": false,
+        "explanation": "\\(2.5(4)+13=23\\). The \\(13\\) combines the $9 start fee and $4 insurance charge.",
+        "correct_index": 2,
+        "shared_prompt": "shared_multi_step_context"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "551ba325-a514-4b47-b14e-b2feec7b0989",
+      "block_type": "check",
+      "content": {
+        "id": "authentic_item",
+        "prompt": "A cafe sells drip coffee for $2.75 per cup and cold brew for $4.25 per cup. It sells c cups of drip coffee and b cups of cold brew for a total of R dollars. Which equation represents this situation?",
+        "choices": [
+          "\\(2.75c+4.25b=R\\)",
+          "\\(4.25c+2.75b=R\\)",
+          "\\((2.75+4.25)(c+b)=R\\)",
+          "\\(c+b=R\\)"
+        ],
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": false,
+        "explanation": "Choose, for example, c=2 and b=4. The story gives R=22.50. Only \\(2.75c+4.25b=R\\) is true for that complete value set.",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "3214703c-c445-425b-a6f5-aed1e37bad33",
+      "block_type": "lesson_complete",
+      "content": {
+        "id": "finish",
+        "html": "<h2>Story first, equations second</h2><p>Build the values from the story and test each equation against them.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}

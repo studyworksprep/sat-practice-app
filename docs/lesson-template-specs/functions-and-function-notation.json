@@ -572,6 +572,30 @@
     },
     {
       "kind": "raw_block",
+      "id": "independent_missing_constant",
+      "block_type": "check",
+      "content": {
+        "id": "independent_missing_constant",
+        "input": "numeric",
+        "answer": "11",
+        "tolerance": 0,
+        "allow_retry": false,
+        "prompt": "What is the value of \\(2d+3\\)?",
+        "shared_prompt": {
+          "id": "fresh_function_condition",
+          "title": "A new function condition",
+          "html": "<p>The function \\(h\\) is defined by</p><p>\\[h(x)=d(x+1)^2-2\\]</p><p>where \\(d\\) is a positive constant. If \\(h(d)=98\\), what is the value of \\(2d+3\\)?</p>"
+        },
+        "calculator": {
+          "mode": "scratch",
+          "display": "open",
+          "title": "Try the new condition"
+        },
+        "explanation": "Define \\(h(x)=d(x+1)^2-2\\), then enter \\(h(d)\\sim98\\) on a second row. Desmos shows \\(d=4\\). Enter \\(2d+3\\) to get \\(11\\). Reporting 4 would stop at the constant instead of the requested expression."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
@@ -583,5 +607,5 @@
       }
     }
   ],
-  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Introduce the missing-constant variation generally and let Desmos use the function notation directly. Remove the hand-substitution quiz before the regression workflow; assess finding the constant with the tool instead. Introduce fixed numerical inputs without solving the upcoming example in advance. Keep missing-constant feedback in the Desmos workflow. Use the taught function-definition and regression path in the return solution. Reuse the fitted constant in Desmos when reporting a requested expression. Previous specification: archive/tool-focus-2026-11/functions-and-function-notation.json."
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Introduce the missing-constant variation generally and let Desmos use the function notation directly. Remove the hand-substitution quiz before the regression workflow; assess finding the constant with the tool instead. Introduce fixed numerical inputs without solving the upcoming example in advance. Keep missing-constant feedback in the Desmos workflow. Use the taught function-definition and regression path in the return solution. Reuse the fitted constant in Desmos when reporting a requested expression. Previous specification: archive/tool-focus-2026-11/functions-and-function-notation.json.\nSecond optional quality batch 2026-11-13: Retain the existing final practice and add a fresh one-shot missing-constant condition whose setup and constant are not supplied."
 }

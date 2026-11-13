@@ -1,0 +1,774 @@
+{
+  "title": "Circle Geometric Relationships",
+  "description": "Use circle measurements, arcs, equal radii, and tangent relationships to find missing lengths and angles with Mark, relate, solve.",
+  "authoring_notes": "Exact live specification before the second optional quality batch, 2026-11-13. Prior confirmed audit fixes are preserved.",
+  "blocks": [
+    {
+      "kind": "raw_block",
+      "id": "44e94eb8-144e-4cc1-8278-e812fbac14bf",
+      "block_type": "text",
+      "content": {
+        "id": "revision_opening_attempt",
+        "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "revision_opening_question",
+          "html": "<p>A circle has center O and radius \\(5\\). From a point P outside the circle, PA and PB are tangent segments. The perimeter of quadrilateral OAPB is \\(34\\). What is the length of OP?</p>",
+          "title": "Opening question"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "193eca93-1b6e-45cc-966c-994b6e0bd41a",
+      "block_type": "text",
+      "content": {
+        "id": "geometry_open",
+        "html": "<h2>Find the information the circle gives you</h2><p>The opening question gives a perimeter but asks for a different length. Circle relationships supply the connections between them.</p><p>We’ll use <strong>Mark, Relate, Solve</strong>, starting with an <strong>arc</strong>, a part of the circumference, and its fraction of a full turn.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Find the highlighted arc",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "color": "#64748b",
+              "latex": "x^2+y^2=16"
+            },
+            {
+              "id": "e1",
+              "color": "#2563eb",
+              "latex": "y=\\sqrt{16-x^2}\\{0<=x<=4\\}",
+              "lineWidth": 5
+            },
+            {
+              "id": "e2",
+              "latex": "y=0\\{0<=x<=4\\}"
+            },
+            {
+              "id": "e3",
+              "latex": "x=0\\{0<=y<=4\\}"
+            },
+            {
+              "id": "e4",
+              "label": "O",
+              "latex": "(0,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e5",
+              "label": "A",
+              "latex": "(4,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e6",
+              "label": "B",
+              "latex": "(0,4)",
+              "showLabel": true
+            }
+          ]
+        },
+        "shared_prompt": {
+          "id": "shared_geometry_open",
+          "html": "<p>Points \\(A\\) and \\(B\\) lie on a circle centered at \\(O\\). Radii \\(OA\\) and \\(OB\\) are perpendicular. Use the highlighted arc from \\(A\\) to \\(B\\).</p>",
+          "title": "Highlighted arc"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "51264414-a0be-4e9a-ad80-0ba592017894",
+      "block_type": "check",
+      "content": {
+        "id": "quarter_observation",
+        "hint": "Trace equal copies of the highlighted arc around the circle. Compare one copy with the whole.",
+        "prompt": "What fraction of the circumference does the highlighted arc cover?",
+        "choices": [
+          "\\(\\frac12\\)",
+          "\\(\\frac14\\)",
+          "\\(\\frac34\\)",
+          "\\(\\frac18\\)"
+        ],
+        "solution": "Four equal copies complete the circle, so this arc has one fourth of the full circumference.",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare the arc with the whole circle",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "color": "#64748b",
+              "latex": "x^2+y^2=16"
+            },
+            {
+              "id": "e1",
+              "color": "#2563eb",
+              "latex": "y=\\sqrt{16-x^2}\\{0<=x<=4\\}",
+              "lineWidth": 5
+            },
+            {
+              "id": "e2",
+              "latex": "y=0\\{0<=x<=4\\}"
+            },
+            {
+              "id": "e3",
+              "latex": "x=0\\{0<=y<=4\\}"
+            },
+            {
+              "id": "e4",
+              "label": "O",
+              "latex": "(0,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e5",
+              "label": "A",
+              "latex": "(4,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e6",
+              "label": "B",
+              "latex": "(0,4)",
+              "showLabel": true
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "Four equal copies complete the circle, so this arc has one fourth of the full circumference.",
+        "correct_index": 1,
+        "shared_prompt": "shared_geometry_open"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "21153d74-6a84-4a56-aebe-8e2d4f1d6515",
+      "block_type": "text",
+      "content": {
+        "id": "geometry_process",
+        "html": "<h2>Mark, Relate, Solve</h2><ol><li>Mark the center, given measurements, and requested quantity.</li><li>Choose the relationship supplied by the clue.</li><li>Calculate and return to the quantity asked for.</li></ol><p>We’ll add a relationship when its clue first appears.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "0b84ed66-8e87-410f-9593-7a9f493bf662",
+      "block_type": "text",
+      "content": {
+        "id": "whole_circle_model",
+        "html": "<h2>Use the radius to connect whole-circle measurements</h2><p>A <strong>radius</strong> runs from center to edge; a <strong>diameter</strong> is twice the radius. Use \\(d=2r\\), \\(C=2\\pi r\\), and \\(A=\\pi r^2\\).</p><p>For circumference \\(12\\pi\\), r=6. The area is then \\(36\\pi\\). Keep going if the radius is only an intermediate result.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "30c88e63-c346-45e9-96d0-9891100b7d18",
+      "block_type": "check",
+      "content": {
+        "id": "circumference_to_area",
+        "hint": "Use the circumference to recover the radius, then use that radius in the area formula.",
+        "prompt": "A circle has circumference \\(16\\pi\\) centimeters. What is its area, in square centimeters?",
+        "choices": [
+          "\\(16\\pi\\)",
+          "\\(256\\pi\\)",
+          "\\(64\\pi\\)",
+          "\\(8\\pi\\)"
+        ],
+        "solution": "Mark the circumference and the requested area.\nRelate: \\(16\\pi=2\\pi r\\), giving \\(r=8\\).\nSolve for area: \\(A=\\pi(8)^2=64\\pi\\).",
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The radius is \\(8\\), so the area is \\(64\\pi\\). The \\(256\\pi\\) choice squares the diameter instead.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "80ae4339-a5b6-462b-b0f0-72078fc15002",
+      "block_type": "text",
+      "content": {
+        "id": "arc_fraction_model",
+        "html": "<h2>A central angle gives a fraction of the circle</h2><p>A <strong>central angle</strong> has its vertex at the center. Its arc uses the same fraction of the circumference as the angle uses of 360°:</p><p>\\[s/C=\\theta/360\\]</p><p>For radius 9 and angle 80°, the arc is \\((80/360)(18\\pi)=4\\pi\\).</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "c4b748de-5476-4d68-af89-816c40f7aa4b",
+      "block_type": "check",
+      "content": {
+        "id": "arc_to_circumference",
+        "hint": "Find what fraction of a full turn the central angle represents. The given length is that fraction of the whole circumference.",
+        "input": "numeric",
+        "answer": "30",
+        "prompt": "An arc cut off by a \\(60^\\circ\\) central angle has length \\(5\\) inches. What is the circumference of the circle, in inches?",
+        "solution": "Mark: arc length \\(5\\), central angle \\(60^\\circ\\).\nRelate: \\(60/360=1/6\\), so \\(5=C/6\\).\nSolve: \\(C=30\\) inches.",
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The arc is one sixth of the full circumference. Six copies of a 5-inch arc make 30 inches."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "c11ef2e7-c5a3-4d0b-82c5-110165abf524",
+      "block_type": "text",
+      "content": {
+        "id": "angle_vertex_model",
+        "html": "<h2>Locate the angle’s vertex</h2><p>A central angle equals its intercepted arc’s degree measure. An <strong>inscribed angle</strong>, with vertex on the circle, is half that same arc measure.</p><p>For the shown arc AB, the central angle is 90° and the inscribed angle is 45°. Locate the vertex before deciding whether to halve.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare the two vertices",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "color": "#64748b",
+              "latex": "x^2+y^2=16"
+            },
+            {
+              "id": "e1",
+              "latex": "y=0\\{-4<=x<=4\\}"
+            },
+            {
+              "id": "e2",
+              "latex": "x=0\\{0<=y<=4\\}"
+            },
+            {
+              "id": "e3",
+              "latex": "y=x+4\\{-4<=x<=0\\}"
+            },
+            {
+              "id": "e4",
+              "label": "O",
+              "latex": "(0,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e5",
+              "label": "A",
+              "latex": "(4,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e6",
+              "label": "B",
+              "latex": "(0,4)",
+              "showLabel": true
+            },
+            {
+              "id": "e7",
+              "label": "C",
+              "latex": "(-4,0)",
+              "showLabel": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "39d0fa80-e4d2-4361-9701-24f31456adca",
+      "block_type": "check",
+      "content": {
+        "id": "inscribed_to_central",
+        "hint": "Recover the intercepted arc from the inscribed angle, then match the central angle to that same arc.",
+        "input": "numeric",
+        "answer": 104,
+        "prompt": "An inscribed angle measures \\(52^\\circ\\). A central angle intercepts the same arc. What is the central angle, in degrees?",
+        "solution": "The inscribed angle is half its intercepted arc, so the arc measure is \\(2(52)=104^\\circ\\).\nThe central angle has that same arc measure: \\(104^\\circ\\).",
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The central angle is twice the inscribed angle when both intercept the same arc: \\(104^\\circ\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "2a9acf23-fb61-4a2d-bf66-3fe696cd8939",
+      "block_type": "text",
+      "content": {
+        "id": "major_arc_model",
+        "html": "<h2>The other arc completes the turn</h2><p>The <strong>minor arc</strong> is the shorter path; the <strong>major arc</strong> is the longer path. Their measures add to 360°.</p><p>A minor arc of 120° leaves a major arc of 240°. Use 240/360 of the circumference for its length.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "be46aae9-058f-40ef-bb66-c18903398e12",
+      "block_type": "check",
+      "content": {
+        "id": "major_arc_check",
+        "hint": "Find the angle left for the longer path, then apply its fraction to the full circumference.",
+        "prompt": "A circle has radius \\(6\\). A minor arc measures \\(90^\\circ\\). What is the length of the corresponding major arc?",
+        "choices": [
+          "\\(9\\pi\\)",
+          "\\(3\\pi\\)",
+          "\\(6\\pi\\)",
+          "\\(12\\pi\\)"
+        ],
+        "solution": "The circumference is \\(2\\pi(6)=12\\pi\\).\nThe major arc measures \\(360-90=270^\\circ\\).\nIts length is \\((270/360)(12\\pi)=9\\pi\\).",
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The major arc is three fourths of the circle, so its length is \\(9\\pi\\). The \\(3\\pi\\) choice measures the minor arc.",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "22ccbcee-3d65-4b73-a769-d958deebb285",
+      "block_type": "text",
+      "content": {
+        "id": "radian_arcs",
+        "html": "<h2>For radians, use the same fraction of a turn</h2><p>A full turn is 2π radians. The arc formula simplifies to \\(s=r\\theta\\) when θ is in radians. For r=6 and θ=π/3, the length is 2π.</p><p>Arc measure is an angle; arc length is a distance.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "bf10dda4-7751-4e27-a917-d1f6f19e87a7",
+      "block_type": "check",
+      "content": {
+        "id": "radian_arc_check",
+        "hint": "The angle is already in radians. Multiply the radius by the given central angle.",
+        "prompt": "A circle has radius \\(8\\). What is the length of an arc with central angle \\(3\\pi/4\\) radians?",
+        "choices": [
+          "\\(3\\pi\\)",
+          "\\(12\\pi\\)",
+          "\\(6\\pi\\)",
+          "\\(32\\pi/3\\)"
+        ],
+        "solution": "Use \\(s=r\\theta\\) because the central angle is in radians.\n\\(s=8(3\\pi/4)=6\\pi\\).",
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "Keeping the angle in radians gives \\(6\\pi\\) directly. No conversion step is necessary.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "339f4da4-c329-42f5-9d76-04a73ba882a6",
+      "block_type": "text",
+      "content": {
+        "id": "equal_radii_model",
+        "html": "<h2>Mark the two radii equal</h2><p>OA and OB are radii of the same circle, so triangle AOB is <strong>isosceles</strong>, with equal base angles. If its center angle is 90°, the base angles share the remaining 90°, giving 45° each.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Find the two radii",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "x^2+y^2=18"
+            },
+            {
+              "id": "e1",
+              "latex": "y=-x\\{-3<=x<=0\\}"
+            },
+            {
+              "id": "e2",
+              "latex": "y=x\\{0<=x<=3\\}"
+            },
+            {
+              "id": "e3",
+              "latex": "y=3\\{-3<=x<=3\\}"
+            },
+            {
+              "id": "e4",
+              "label": "O",
+              "latex": "(0,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e5",
+              "label": "A",
+              "latex": "(-3,3)",
+              "showLabel": true
+            },
+            {
+              "id": "e6",
+              "label": "B",
+              "latex": "(3,3)",
+              "showLabel": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "8c4258c3-85e9-4bd5-a4ec-d97402543ad6",
+      "block_type": "check",
+      "content": {
+        "id": "equal_radii_check",
+        "hint": "Mark the two radii equal, then identify the second base angle before using the triangle total.",
+        "input": "numeric",
+        "answer": "104",
+        "prompt": "O is the center of a circle, and A and B lie on it. If \\(\\angle OAB=38^\\circ\\), what is \\(\\angle AOB\\), in degrees?",
+        "solution": "Because \\(OA=OB\\), both base angles are \\(38^\\circ\\).\nThe central angle is \\(180-38-38=104^\\circ\\).",
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The two equal base angles use \\(76^\\circ\\), leaving \\(104^\\circ\\) at the center."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "76ae5e0e-db5c-41d5-812e-4e69cc0a5ac3",
+      "block_type": "text",
+      "content": {
+        "id": "tangent_right_angle",
+        "html": "<h2>A tangent gives a right angle</h2><p>A <strong>tangent</strong> touches the circle at one point. The radius to that point is perpendicular to it.</p><p>Here OA=3 and tangent AP=4 are legs of a right triangle, so \\(OP=\\sqrt{3^2+4^2}=5\\).</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Follow the radius to the contact point",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "x^2+y^2=9"
+            },
+            {
+              "id": "e1",
+              "latex": "x=0\\{0<=y<=3\\}"
+            },
+            {
+              "id": "e2",
+              "latex": "y=3\\{0<=x<=4\\}"
+            },
+            {
+              "id": "e3",
+              "latex": "y=3x/4\\{0<=x<=4\\}"
+            },
+            {
+              "id": "e4",
+              "label": "O",
+              "latex": "(0,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e5",
+              "label": "A",
+              "latex": "(0,3)",
+              "showLabel": true
+            },
+            {
+              "id": "e6",
+              "label": "P",
+              "latex": "(4,3)",
+              "showLabel": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "c5de4b2e-15c4-4b66-b382-bc0b1696e855",
+      "block_type": "check",
+      "content": {
+        "id": "tangent_triangle_check",
+        "hint": "Draw OA to the contact point. Locate the right angle and identify which given side is the hypotenuse.",
+        "input": "numeric",
+        "answer": "12",
+        "prompt": "PA is tangent to a circle at A. The circle has center O, \\(OA=5\\), and \\(OP=13\\). What is the length of PA?",
+        "solution": "The radius OA is perpendicular to tangent PA, so OAP is a right triangle.\nOP is the hypotenuse: \\(5^2+PA^2=13^2\\).\n\\(PA=\\sqrt{169-25}=12\\).",
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The tangent length is 12. Adding the two given squares would incorrectly treat OP as a leg."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "91c6878e-ceda-45c4-9c54-b04fa74e0305",
+      "block_type": "text",
+      "content": {
+        "id": "paired_tangents_model",
+        "html": "<h2>Two tangents from one point are equal</h2><p>Tangent segments PA and PB from the same outside point have equal lengths. If PA=2u and PB=3u-2, set 2u=3u-2. This gives u=2 and tangent length 4.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Trace the two tangent segments",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "x^2+y^2=9"
+            },
+            {
+              "id": "e1",
+              "latex": "y=-3x/4+15/4\\{1.8<=x<=5\\}"
+            },
+            {
+              "id": "e2",
+              "latex": "y=3x/4-15/4\\{1.8<=x<=5\\}"
+            },
+            {
+              "id": "e3",
+              "label": "O",
+              "latex": "(0,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e4",
+              "label": "A",
+              "latex": "(1.8,2.4)",
+              "showLabel": true
+            },
+            {
+              "id": "e5",
+              "label": "B",
+              "latex": "(1.8,-2.4)",
+              "showLabel": true
+            },
+            {
+              "id": "e6",
+              "label": "P",
+              "latex": "(5,0)",
+              "showLabel": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "b1e1c40d-69b8-44c9-a54e-76d685bdca39",
+      "block_type": "check",
+      "content": {
+        "id": "paired_tangents_check",
+        "hint": "Set the two segment expressions equal. After finding the variable, evaluate the requested segment.",
+        "input": "numeric",
+        "answer": 14,
+        "prompt": "Tangent segments PA and PB start at the same outside point P. If \\(PA=3v+2\\) and \\(PB=5v-6\\), what is the length of PA?",
+        "solution": "Equal tangent segments give \\(3v+2=5v-6\\).\nSolving gives \\(v=4\\).\nThe requested length is \\(PA=3(4)+2=14\\).",
+        "calculator": {
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "PA is 14. Reporting 4 would stop at the variable instead of finding the segment."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "34707ed6-c749-47d5-b3f2-9d08650897bf",
+      "block_type": "text",
+      "content": {
+        "id": "tangent_area_model",
+        "html": "<h2>Use the right angles for area</h2><p>Join O to P to split quadrilateral OAPB into two right triangles. Each has a radius and tangent as perpendicular legs. For radius 3 and tangent 4, each area is 6, so the total is 12.</p><p>If a leg is missing, find it with the Pythagorean theorem first.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Split the quadrilateral into right triangles",
+          "display": "open",
+          "editable": false,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "e0",
+              "latex": "x^2+y^2=9"
+            },
+            {
+              "id": "e1",
+              "latex": "y=-3x/4+15/4\\{1.8<=x<=5\\}"
+            },
+            {
+              "id": "e2",
+              "latex": "y=3x/4-15/4\\{1.8<=x<=5\\}"
+            },
+            {
+              "id": "e3",
+              "label": "O",
+              "latex": "(0,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e4",
+              "label": "A",
+              "latex": "(1.8,2.4)",
+              "showLabel": true
+            },
+            {
+              "id": "e5",
+              "label": "B",
+              "latex": "(1.8,-2.4)",
+              "showLabel": true
+            },
+            {
+              "id": "e6",
+              "label": "P",
+              "latex": "(5,0)",
+              "showLabel": true
+            },
+            {
+              "id": "e7",
+              "latex": "y=4x/3\\{0<=x<=1.8\\}"
+            },
+            {
+              "id": "e8",
+              "latex": "y=-4x/3\\{0<=x<=1.8\\}"
+            },
+            {
+              "id": "e9",
+              "latex": "y=0\\{0<=x<=5\\}",
+              "lineStyle": "DASHED"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "be4adeb9-c92e-41e7-a20d-ef76de922c92",
+      "block_type": "text",
+      "content": {
+        "id": "revision_return_to_opening",
+        "html": "<h2>Return to the tangent shape</h2><p>Try the opening question again. Mark the circle relationships and decide which measurements you need along the way.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "7a25b659-44f9-4a58-85df-d6776c8fbce3",
+      "block_type": "check",
+      "content": {
+        "id": "authentic_item",
+        "hint": "The perimeter includes two radii and two equal tangent segments. Find a tangent length, then use the right triangle formed with the radius and OP.",
+        "input": "numeric",
+        "answer": "13",
+        "prompt": "Return to the opening question. What answer do you get now?",
+        "solution": "The two radii total \\(10\\), leaving \\(24\\) for two equal tangent segments. Each tangent is \\(12\\). Radius OA is perpendicular to PA, so \\(OP=\\sqrt{5^2+12^2}=13\\).",
+        "calculator": {
+          "display": "open"
+        },
+        "allow_retry": true,
+        "explanation": "The two radii total \\(10\\), leaving \\(24\\) for two equal tangent segments. Each tangent is \\(12\\). Radius OA is perpendicular to PA, so \\(OP=\\sqrt{5^2+12^2}=13\\).",
+        "shared_prompt": "revision_opening_question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "664433bb-55b2-4d2b-96ad-080cbd521001",
+      "block_type": "check",
+      "content": {
+        "id": "final_retrieval",
+        "prompt": "A circle question gives several lengths and angles. Which version of Mark, relate, solve keeps the work on track?",
+        "choices": [
+          "Mark the requested measurement; choose a relationship from the given clue; calculate; return to the requested quantity.",
+          "Mark the requested measurement; choose a relationship from the drawing size; calculate; return to the requested quantity.",
+          "Mark the requested measurement; choose a relationship from the given clue; calculate; report the first value found.",
+          "Mark the requested measurement; choose a relationship from the answer sizes; calculate; return to the requested quantity."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "The stated clues justify the relationship. The drawing size and the answer sizes do not. Finish at the requested quantity.",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ced179a4-d204-4da8-b230-4455c4e1526b",
+      "block_type": "text",
+      "content": {
+        "id": "revision_independent_practice",
+        "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "03a7a3bf-2277-422d-b748-b76d282ce335",
+      "block_type": "check",
+      "content": {
+        "id": "tangent_area_check",
+        "input": "numeric",
+        "answer": "120",
+        "prompt": "A circle has center O and radius \\(8\\). Tangents PA and PB meet it at A and B, and \\(OP=17\\). What is the area of quadrilateral OAPB?",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": false,
+        "explanation": "The perpendicular legs are 8 and 15. Adding the two triangle areas gives 120 square units."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "c3b56c04-fa11-4608-ac17-905b7acedb47",
+      "block_type": "check",
+      "content": {
+        "id": "transfer_angles_to_arc",
+        "input": "numeric",
+        "answer": "5",
+        "prompt": "A circle has center O and radius \\(9\\). Points A and B lie on the circle, and \\(\\angle OAB=40^\\circ\\). The length of minor arc AB is \\(k\\pi\\). What is the value of \\(k\\)?",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": false,
+        "explanation": "Equal radii make both base angles \\(40^\\circ\\), so the central angle is \\(100^\\circ\\). The arc length is \\((100/360)(18\\pi)=5\\pi\\), giving \\(k=5\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "2379c86f-f228-4491-8fc9-514fc35280ca",
+      "block_type": "lesson_complete",
+      "content": {
+        "id": "geometry_finish",
+        "html": "<h2>Mark, Relate, Solve</h2><p>Let the given circle clues choose the relationship.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}

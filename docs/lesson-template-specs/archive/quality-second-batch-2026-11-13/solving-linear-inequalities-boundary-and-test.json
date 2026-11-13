@@ -1,0 +1,453 @@
+{
+  "title": "Solve Linear Inequalities: Boundary and Test",
+  "description": "Solve linear inequalities in one variable and test values or ordered pairs in inequalities with two variables.",
+  "authoring_notes": "Exact live specification before the second optional quality batch, 2026-11-13. Prior confirmed audit fixes are preserved.",
+  "blocks": [
+    {
+      "kind": "raw_block",
+      "id": "2579c6e3-d706-41e5-a4cd-b159a917e8f0",
+      "block_type": "text",
+      "content": {
+        "id": "revision_opening_attempt",
+        "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "revision_opening_question",
+          "html": "<p>Solve \\(7-4(2x-1)&gt;27\\). What is the greatest integer value of \\(x\\) that satisfies the inequality?</p>",
+          "title": "Opening question"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "7016778f-5283-405f-a7e9-e4f26e82cc2f",
+      "block_type": "text",
+      "content": {
+        "id": "lesson_objective",
+        "html": "<h2>Keep track of the allowed side</h2><p>The opening question needs more than the value at equality: it asks which integers are allowed. We’ll use <strong>Boundary and Test</strong> to track that range.</p><p>First, look at why multiplying by a negative changes an inequality’s direction.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "6149cd77-dcd1-42d2-afff-8f22ac201225",
+      "block_type": "text",
+      "content": {
+        "id": "opening_exploration",
+        "html": "<h2>Watch the order reverse</h2><p>Start with 2&lt;5. Multiplying both by -1 gives -2 and -5. Since -2 is greater than -5, the true statement is -2&gt;-5.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "62e700ce-fec4-4d90-ab5e-3e1332f53b3c",
+      "block_type": "check",
+      "content": {
+        "id": "opening_observation_check",
+        "hint": "Locate \\(-6\\) and \\(-14\\) on a number line. The number farther right is greater.",
+        "prompt": "If \\(3<7\\), which statement is true after both sides are multiplied by \\(-2\\)?",
+        "choices": [
+          "\\(-6<-14\\)",
+          "\\(-6>-14\\)",
+          "\\(6>14\\)",
+          "\\(-6=-14\\)"
+        ],
+        "solution": "Multiply: \\(3(-2)=-6\\) and \\(7(-2)=-14\\). Since \\(-6\\) is greater than \\(-14\\), the true comparison is \\(-6>-14\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The order reverses: \\(-6>-14\\). Multiplication by a negative reflects both values across zero.",
+        "correct_index": 1
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "4f196c09-c8d2-4c41-84d4-cb2bb32fcd23",
+      "block_type": "text",
+      "content": {
+        "id": "name_the_rule",
+        "html": "<h2>Reverse only for a negative multiplier or divisor</h2><p>Multiplying or dividing both sides by a negative reverses their order. Flip the inequality sign at that step. Adding, subtracting, or multiplying or dividing by a positive keeps its direction.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ab1e5598-5c4e-4ca4-9993-e9e9de6380d1",
+      "block_type": "check",
+      "content": {
+        "id": "flip_trigger_check",
+        "hint": "Look for multiplication or division whose factor is negative.",
+        "prompt": "During which step must the inequality sign reverse?",
+        "choices": [
+          "Subtracting 8 from both sides",
+          "Dividing both sides by 4",
+          "Adding \\(-3\\) to both sides",
+          "Dividing both sides by \\(-5\\)"
+        ],
+        "solution": "Only choice D divides both sides by a negative number. That operation reverses the order of the values and therefore reverses the inequality.",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "Dividing by \\(-5\\) triggers the flip. Adding a negative number is still addition, so it does not.",
+        "correct_index": 3
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "f47d6c3a-fb11-4edb-9905-4bacf1d089c4",
+      "block_type": "text",
+      "content": {
+        "id": "one_variable_process",
+        "html": "<h2>Isolate and keep the boundary</h2><ol><li>Isolate the variable with equation moves.</li><li>Reverse the sign if you multiply or divide by a negative.</li><li>Read the allowed range; test an easy value if you want reassurance.</li></ol><p>The <strong>boundary</strong> is the value at equality. &lt; and &gt; exclude it; ≤ and ≥ include it.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "dfcb852b-91fa-44b1-b947-eb97f6e0521b",
+      "block_type": "text",
+      "content": {
+        "id": "worked_one_variable",
+        "html": "<h2>Follow one example</h2><p>For \\(-3x+7\\ge22\\), subtract 7 to get \\(-3x\\ge15\\). Divide by -3 and reverse: \\(x\\le-5\\).</p><p>The boundary -5 is included. As a quick check, -6 makes the original statement true.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "592b7608-c989-4bfd-91b5-5232c69c6171",
+      "block_type": "check",
+      "content": {
+        "id": "guided_one_variable_check",
+        "hint": "Subtract 5, then divide by \\(-2\\). That last step has the flip trigger.",
+        "prompt": "What is the solution to \\(5-2x<17\\)?",
+        "choices": [
+          "\\(x<-6\\)",
+          "\\(x>-6\\)",
+          "\\(x<6\\)",
+          "\\(x>6\\)"
+        ],
+        "solution": "\\(5-2x<17\\Rightarrow-2x<12\\Rightarrow x>-6\\). A check such as \\(x=0\\) makes the original statement \\(5<17\\), which is true.",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "Subtracting gives \\(-2x<12\\). Divide by \\(-2\\), reverse the sign, and get \\(x>-6\\).",
+        "correct_index": 1
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "1be78f29-1b91-49b9-8b06-9ae3f879af78",
+      "block_type": "text",
+      "content": {
+        "id": "boundary_language",
+        "html": "<h2>Ask whether equality counts</h2><p>“At least” includes the minimum: ≥. “At most” includes the maximum: ≤. “More than” and “fewer than” exclude the boundary: &gt; and &lt;.</p><p>Use that distinction to translate a budget or limit.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "dcce75b6-8edc-46b1-b023-5528b0af4ffa",
+      "block_type": "check",
+      "content": {
+        "id": "context_setup_check",
+        "hint": "The $12 charge repeats for each ticket; the $8 fee happens once. Can the total equal $80?",
+        "prompt": "Which inequality models the ticket budget?",
+        "choices": [
+          "\\(12t+8\\geq80\\)",
+          "\\(12(t+8)\\leq80\\)",
+          "\\(12t+8\\leq80\\)",
+          "\\(8t+12<80\\)"
+        ],
+        "solution": "Tickets cost \\(12t\\), and the fee adds 8, so the total is \\(12t+8\\). No more than $80 means the total may equal 80 but cannot exceed it: \\(12t+8\\leq80\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "\\(12t+8\\leq80\\). The SAT's traps either reverse “no more than” or put the one-time fee inside the repeated charge.",
+        "correct_index": 2,
+        "shared_prompt": {
+          "id": "shared_context_setup_check",
+          "html": "<p>A theater charges $12 per ticket plus a one-time $8 fee. Priya can spend no more than $80. Let \\(t\\) be the number of tickets.</p>",
+          "title": "Theater ticket budget"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "fc9f4b86-f9d7-49d2-a2be-f602b687547e",
+      "block_type": "check",
+      "content": {
+        "id": "context_solution_check",
+        "hint": "Subtract 8 and divide by 12. Then remember that a ticket count must be a whole number.",
+        "input": "numeric",
+        "answer": "6",
+        "prompt": "Using \\(12t+8\\leq80\\), what is the greatest possible number of tickets Priya can buy?",
+        "solution": "\\(12t+8\\leq80\\Rightarrow12t\\leq72\\Rightarrow t\\leq6\\). Therefore, the greatest possible number is 6.",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The inequality gives \\(t\\leq6\\), so 6 is the greatest possible whole-number ticket count.",
+        "shared_prompt": "shared_context_setup_check"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "522cf2a0-be90-44ed-bd22-82fd70177df5",
+      "block_type": "text",
+      "content": {
+        "id": "two_variable_meaning",
+        "html": "<h2>A solution can be a pair</h2><p>For a two-variable inequality, a pair works when substituting both coordinates makes the statement true. For \\(2x+y&lt;7\\), the pair \\((2,1)\\) gives 5&lt;7, so it works.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "834ffe4f-b4b7-4b32-8b76-8f1ba0ae8279",
+      "block_type": "check",
+      "content": {
+        "id": "pair_substitution_check",
+        "hint": "Substitute each x-coordinate for \\(x\\) and its matching y-coordinate for \\(y\\). Look for a result at least 4.",
+        "prompt": "Which ordered pair is a solution to \\(3x-2y\\geq4\\)?",
+        "choices": [
+          "\\((0,1)\\)",
+          "\\((1,2)\\)",
+          "\\((2,1)\\)",
+          "\\((-1,-1)\\)"
+        ],
+        "solution": "The left sides are \\(-2,-1,4,-1\\), respectively. Only 4 is greater than or equal to 4, so \\((2,1)\\) works.",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "For \\((2,1)\\), \\(3(2)-2(1)=4\\), and equality is allowed by \\(\\geq\\).",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "2df26188-299c-4133-a008-f32ae420e98d",
+      "block_type": "text",
+      "content": {
+        "id": "two_variable_process",
+        "html": "<h2>Substitute, Simplify, Compare</h2><ol><li>Put the first coordinate into x and the second into y.</li><li>Calculate both sides.</li><li>Decide whether the inequality is true.</li></ol><p>If a table claims all its rows work, check every row. One false row eliminates the table.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "5c8a3beb-e636-4edf-9074-cc1f3aaa33e1",
+      "block_type": "check",
+      "content": {
+        "id": "all_rows_check",
+        "hint": "Check the rows one at a time: compare each y-value with its x-value plus 3.",
+        "prompt": "A table lists \\((-1,2)\\), \\((0,3)\\), and \\((2,5)\\). Do all three pairs satisfy \\(y\\geq x+3\\)?",
+        "choices": [
+          "Yes; each row makes the inequality true.",
+          "No; the first row makes the inequality false.",
+          "No; the second row makes the inequality false.",
+          "No; the third row makes the inequality false."
+        ],
+        "solution": "Substitution produces \\(2\\geq2\\), \\(3\\geq3\\), and \\(5\\geq5\\). Every statement is true, so every row is a solution.",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "All three land on the boundary: \\(2=-1+3\\), \\(3=0+3\\), and \\(5=2+3\\). The \\(\\geq\\) sign includes equality.",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "8f5e421b-b00d-40f1-8c36-6da21f43b44d",
+      "block_type": "text",
+      "content": {
+        "id": "graph_boundary",
+        "html": "<h2>A graph shows the allowed region</h2><p>Use equality for the boundary line. A dashed line excludes its points; a solid line includes them.</p><p>Test a point off the line. If it makes the inequality true, shade its side. For \\(y&gt;2x-1\\), that is the region above a dashed boundary.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "763fecd1-6b51-4cc9-8c1d-39f427d4afc1",
+      "block_type": "check",
+      "content": {
+        "id": "graph_feature_check",
+        "hint": "First decide whether equality is included. Then test \\((0,0)\\): is \\(0<4\\) true?",
+        "prompt": "Which description matches the graph of \\(y<-x+4\\)?",
+        "choices": [
+          "A solid boundary with the region above it shaded",
+          "A dashed boundary with the region below it shaded",
+          "A dashed boundary with the region above it shaded",
+          "A solid boundary with the region below it shaded"
+        ],
+        "solution": "The boundary \\(y=-x+4\\) is dashed because \\(<\\) excludes equality. The test point \\((0,0)\\) gives \\(0<4\\), so shade the side containing the origin: below the line.",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The strict sign makes the boundary dashed. Since \\((0,0)\\) satisfies the inequality and lies below the line, shade below.",
+        "correct_index": 1
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "f764fe6f-7777-4cf7-ab25-0c4eab9ca614",
+      "block_type": "text",
+      "content": {
+        "id": "revision_return_to_opening",
+        "html": "<h2>Return to the integer question</h2><p>Try the opening inequality again. Track which values are allowed, then report the kind of value the question asks for.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "9be2b263-6ef5-495e-8e48-f00926faa79d",
+      "block_type": "check",
+      "content": {
+        "id": "one_variable_transfer",
+        "hint": "Expand the parentheses and isolate x. Dividing by a negative reverses the sign. Then choose the greatest integer in the allowed range.",
+        "input": "numeric",
+        "answer": "-3",
+        "prompt": "Return to the opening question. What answer do you get now?",
+        "solution": "The inequality simplifies to \\(11-8x>27\\), then \\(-8x>16\\), so \\(x<-2\\). The greatest integer below \\(-2\\) is \\(-3\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": true,
+        "explanation": "The inequality simplifies to \\(11-8x>27\\), then \\(-8x>16\\), so \\(x<-2\\). The greatest integer below \\(-2\\) is \\(-3\\).",
+        "shared_prompt": "revision_opening_question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "c25e8a51-035a-4d1d-adc5-9c34c526bf0d",
+      "block_type": "check",
+      "content": {
+        "id": "retrieval_check",
+        "prompt": "The Boundary and Test move has to survive test day. Which routine keeps both one- and two-variable inequalities honest?",
+        "choices": [
+          "Isolate the variable, flip after subtraction, and test a pair by substituting both coordinates.",
+          "Isolate the variable, keep the sign after negative division, and test a pair by substituting both coordinates.",
+          "Isolate the variable, flip after negative multiplication or division, and test a pair by substituting both coordinates.",
+          "Isolate the variable, flip after positive division, and test a pair by substituting both coordinates."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "That is Boundary and Test: protect the sign during isolation, then substitute into the original statement. For a table, every claimed pair must pass.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "57cc8eaf-212d-460c-85a6-ff8f060a7519",
+      "block_type": "text",
+      "content": {
+        "id": "revision_independent_practice",
+        "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "3e75d95f-2e06-45fe-9c10-7eeec7aca2a8",
+      "block_type": "check",
+      "content": {
+        "id": "two_variable_transfer",
+        "prompt": "Which ordered pair does not satisfy \\(2x+3y\\leq12\\)?",
+        "choices": [
+          "\\((0,4)\\)",
+          "\\((3,2)\\)",
+          "\\((6,0)\\)",
+          "\\((2,3)\\)"
+        ],
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": false,
+        "explanation": "\\((2,3)\\) gives \\(2(2)+3(3)=13\\), which is not at most 12. Each other pair gives exactly 12.",
+        "correct_index": 3
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "6ef472c2-cedc-45eb-a678-b0f5a4705d43",
+      "block_type": "check",
+      "content": {
+        "id": "authentic_item",
+        "input": "numeric",
+        "answer": "9",
+        "prompt": "A delivery service charges a one-time fee of $18 plus $6 for each package. A customer can spend at most $75. What is the greatest number of packages the customer can send?",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Scratch calculator",
+          "display": "available"
+        },
+        "allow_retry": false,
+        "explanation": "\\(18+6p\\leq75\\) gives \\(p\\leq9.5\\). Packages come in whole numbers, so the greatest possible count is 9—not the decimal boundary."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "29202bc0-472d-421f-b352-2b37f126fa0c",
+      "block_type": "lesson_complete",
+      "content": {
+        "id": "lesson_complete",
+        "html": "<h2>Boundary and Test</h2><p>Track equality, reverse on negative multiplication or division, and answer in context.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}

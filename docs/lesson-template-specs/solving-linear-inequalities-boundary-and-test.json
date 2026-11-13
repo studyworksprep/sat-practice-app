@@ -251,9 +251,14 @@
     {
       "kind": "text",
       "id": "graph_boundary",
-      "html": "<h2>A graph shows the allowed region</h2><p>Use equality for the boundary line. A dashed line excludes its points; a solid line includes them.</p><p>Test a point off the line. If it makes the inequality true, shade its side. For \\(y&gt;2x-1\\), that is the region above a dashed boundary.</p>",
+      "html": "<h2>A graph shows the allowed region</h2><p>Use equality for the boundary line. A dashed line excludes its points; a solid line includes them.</p><p>For \\(y&gt;2x-1\\), draw a dashed boundary at \\(y=2x-1\\). Test \\((0,0)\\): \\(0&gt;-1\\) is true, so shade its side, above the line.</p><p>For \\(y\\ge2x-1\\), keep the same shaded side but make the boundary solid to include equality.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/8208a60ea3cc84953ca8e5dd0abf54035c7d57f4/public/images/lesson-quality-second-batch/inequality-dashed-above.svg",
+        "alt": "Coordinate graph of y greater than 2x minus 1. The boundary line y equals 2x minus 1 is dashed; the region above it is shaded blue. The point (0,0) is marked inside the shaded region.",
+        "caption": "The test point lies on the shaded side of the dashed boundary."
       }
     },
     {
@@ -387,5 +392,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "\nSecond optional quality batch 2026-11-13: Illustrate the strict-boundary model with a dashed line, shaded half-plane, and tested origin. Preserve the changed graph-description check without supplying its shaded answer."
 }
