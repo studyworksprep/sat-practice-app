@@ -95,6 +95,12 @@ students make, not obscure vocabulary or an unnecessarily long passage.
 - **Give explanations room.** Put a substantial explanation or transition
   on its own card. Hide Desmos when the student is reading an idea that
   needs no graph. A short explanation card can use the full reading width.
+- **Introduce the variation before its example.** An informational card
+  should explain what changes and how the method still applies. It must
+  make sense before the student sees the next question. Put that example's
+  definitions, numbers, restrictions, and task on its activity card. A
+  worked example can discuss a specific problem when that problem is
+  visible alongside it; a debrief can refer back to an attempt already seen.
 - **Keep action instructions short.** Aim for one clear task. “Move
   \(7x\) to the left side, then graph that side” is enough after the reason
   for the move has been taught. Choose the number of cards from the
@@ -103,12 +109,25 @@ students make, not obscure vocabulary or an unnecessarily long passage.
   question, passage, or table that several steps refer to. Show it on the
   blocks that need it. With Desmos open, keep the prompt above the
   instructions on the left and give the calculator the right column.
+- **Keep a complete question together.** On an ungraded multiple-choice
+  attempt, put the stem and all answer choices in the question card. Keep
+  the brief attempt instructions in the instructional card. On a graded
+  return, show the choices once as interactive answer buttons; use a
+  stimulus-only prompt there rather than repeating the static choices.
 - **Include only useful distinctions.** Keep a definition, warning, or
   explanation when it helps students perform the method, understand why it
   works, or handle a necessary variation. For the x-intercept method,
   differences between lines and curves add little. Reading the correct
   variable, matching exact choices, and counting a touch of the axis affect
   the answer.
+- **Keep concepts in service of the tool.** Every card should help students
+  use the method, handle the upcoming situation, or retain an essential
+  step. Briefly explain unfamiliar notation when needed, then show how the
+  same tool handles it. In Graph Match, students can define the functions
+  and graph \(f(g(x))\) as written. Have them compare graphs rather than
+  quiz them on composition order or teach hand substitution. Include
+  conceptual understanding when it is needed for the process or retention;
+  avoid adding a separate conceptual hurdle to a tool that already works.
 - **Use familiar, accurate language.** Say “Move every term to one side,
   changing the sign of each term you move. That leaves zero on the other
   side.” Explain the connection to the familiar form immediately.

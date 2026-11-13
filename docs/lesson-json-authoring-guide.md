@@ -101,6 +101,15 @@ concepts merely because they are mathematically connected. For example, a
 lesson about solving equations with x-intercepts does not need function
 notation or a general treatment of functions.
 
+Apply a relevance test to every explanation and check: what does the
+learner need this for when using the tool, handling a likely variation,
+or remembering the process? Include conceptual detail when it serves one
+of those purposes. Avoid teaching or testing the manual technique that
+the tool is intended to replace. For Graph Match, briefly introduce
+\(f(g(x))\), show that Desmos can graph it directly, and assess graph
+comparison. A separate quiz on composition order or hand substitution
+does not help the learner carry out that tool.
+
 Plan the lesson around:
 
 - the exact student action or decision being taught;
@@ -131,7 +140,13 @@ only when the content is genuinely simple.
 5. **Vary one feature at a time.** Examples include a different variable,
    exact versus decimal answers, one/two/no solutions, restrictions, or a
    requested intermediate quantity. Explain how the variation connects to
-   the familiar procedure and check it after teaching it.
+   the familiar procedure and check it after teaching it. An informational
+   transition must make sense before the next question is shown: introduce
+   the general idea, then put the example's definitions, values, and task
+   on its activity card. Show a specific problem alongside any worked
+   explanation of it. Check whether the learner can apply the tool to the
+   variation; avoid a separate concept quiz unless that knowledge is
+   needed to use or retain the tool.
 6. **Return to the opening question.** Invite the learner to use the method
    and choose the setup. Give targeted help after an attempt.
 7. **Require transfer.** Give fresh applications that require the learner
@@ -1119,9 +1134,16 @@ On each other selected slide, set `shared_prompt` to that prompt's id:
   narrow screens it appears above the slide. A template that expands into
   several slides attaches the prompt to each of them.
 - Keep the prompt limited to the information students should refer to.
-  Put answers, hints, and worked steps on the appropriate lesson blocks.
+  Put correct-answer feedback, hints, and worked steps on the appropriate
+  lesson blocks.
   Use HTML table headers and a caption where helpful. Use **Edit HTML**
   to edit a table's caption or header scope directly.
+- For an ungraded multiple-choice opening, keep the stem and its A–D
+  choices together in the question card; leave the attempt instructions
+  in the instructional card. When returning as a graded `check`, show
+  the choices once through `content.choices`. Use a separate stimulus-only
+  prompt definition for that presentation if the opening prompt includes
+  static choices. Keep the stem and choice order consistent across both.
 
 ## 4. Math formatting
 
