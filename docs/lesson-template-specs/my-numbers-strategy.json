@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(\\frac{a^2+3b^2}{2a}\\)</li><li>\\(\\frac{3a^2+b^2}{2a}\\)</li><li>\\(\\frac{3a^2-b^2}{2a}\\)</li><li>\\(\\frac{3a^2+b^2}{2b}\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_binomial_quotient",
         "title": "Equivalent expression",
-        "html": "<p>If \\(a>b>0\\), which expression is equivalent to</p><p>\\[\\frac{(a+b)^3-(a-b)^3}{(a+b)^2-(a-b)^2}\\text{?}\\]</p>"
+        "html": "<p>If \\(a>b>0\\), which expression is equivalent to</p><p>\\[\\frac{(a+b)^3-(a-b)^3}{(a+b)^2-(a-b)^2}\\text{?}\\]</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(\\frac{a^2+3b^2}{2a}\\)</li><li>\\(\\frac{3a^2+b^2}{2a}\\)</li><li>\\(\\frac{3a^2-b^2}{2a}\\)</li><li>\\(\\frac{3a^2+b^2}{2b}\\)</li></ol>"
       }
     },
     {
@@ -100,7 +100,11 @@
       }
     },
     {
-      "shared_prompt": "shared_first_exploration",
+      "shared_prompt": {
+        "id": "rectangle_perimeter_for_check",
+        "title": "Rectangle perimeter question",
+        "html": "<p>A rectangle has width \\(w\\) and length \\(w+6\\). Which expression gives its perimeter?</p>"
+      },
       "kind": "raw_block",
       "id": "rerun_check",
       "block_type": "check",
@@ -424,7 +428,11 @@
         "title": "Try the opening question again",
         "resettable": true
       },
-      "shared_prompt": "opening_binomial_quotient"
+      "shared_prompt": {
+        "id": "opening_binomial_quotient_return",
+        "title": "Equivalent expression",
+        "html": "<p>If \\(a>b>0\\), which expression is equivalent to</p><p>\\[\\frac{(a+b)^3-(a-b)^3}{(a+b)^2-(a-b)^2}\\text{?}\\]</p>"
+      }
     },
     {
       "kind": "raw_block",
@@ -494,5 +502,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: A quotient involving two cubed and two squared binomials gives numerical testing a substantial simplification advantage. All four choices separate at a=3,b=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
+  "authoring_notes": "Calculator opening revision 2026-11-12: A quotient involving two cubed and two squared binomials gives numerical testing a substantial simplification advantage. All four choices separate at a=3,b=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Show the worked rectangle’s graded choices once, keeping only the stimulus beside that check. Previous specification: archive/tool-focus-2026-11/my-numbers-strategy.json."
 }

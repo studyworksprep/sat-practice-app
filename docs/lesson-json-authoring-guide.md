@@ -968,7 +968,8 @@ Interface figures already drawn in the house style live under
 | `desmos-regression-readout-table.svg` | the readout for a **table** regression: PARAMETERS plus R² and r | custom-regression gates (§3g) |
 | `desmos-regression-readout-rmse.svg` | the readout for a **table-free** regression (`5q+7~42`): PARAMETERS plus RMSE | lessons that teach RMSE as the confirmation |
 | `desmos-standard-regression-button-guide.svg` | the Regression button on a table | the first slide that tells the learner to look for it |
-| `desmos-percent-of-control.svg` | the `%` → `of` auto-insert | percent lessons, the slide that first types a percent |
+| `desmos-percent-of-entry.svg` | one direct percent-of entry and the `%` → `of` auto-insert | percent lessons, the slide that first types a percent |
+| `desmos-percent-of-control.svg` | percent-of entry alongside decimal multiplication | only when comparing those forms is part of the lesson's tool |
 | `desmos-graph-visibility-toggle.svg` | the coloured circle that hides a graph | any slide that says "click the circle" |
 | `desmos-angle-mode-settings.svg` | the degrees / radians setting | trig lessons |
 

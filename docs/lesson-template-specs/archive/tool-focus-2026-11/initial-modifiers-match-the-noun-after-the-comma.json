@@ -1,0 +1,496 @@
+{
+  "title": "Initial Modifiers: Match the Noun After the Comma",
+  "description": "Identify an opening modifier, predict the noun phrase it describes or compares, and choose the answer that places that noun phrase immediately after the comma.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 7040ee67-9287-4aaa-9ef0-89de44f5a597 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nReading and Writing opening revision 2026-11-12: Use Modifier Match on a property comparison; all options reuse the same finding, but three attach the comparison to a different grammatical head. Previous specification: archive/rw-openings-2026-11/initial-modifiers-match-the-noun-after-the-comma.json. The replacement question has a new block ID; unrelated lesson items retain their identities.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Which choice completes the text so that it conforms to the conventions of Standard English?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>juveniles raised in bright tanks grew at an 18% higher rate in the researcher’s study.</li><li>the researcher measured an 18% higher growth rate for juveniles raised in bright tanks.</li><li>raising juveniles in bright tanks produced an 18% higher growth rate in the researcher’s study.</li><li>the growth rate of juveniles raised in bright tanks was 18% higher in the researcher’s study.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "opening_growth_comparison",
+        "title": "Comparing growth rates",
+        "html": "<p>A researcher compares the growth rate of juvenile fish raised in bright tanks with that of juveniles raised in shaded tanks. The bright-tank juveniles grew 18% faster. Compared with that of juveniles raised in shaded tanks, _____</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "opening_exploration",
+      "html": "<h2>Find what the comparison is comparing</h2><p>The opening choices reuse the same result, but they put different noun phrases after the comma. The first position can decide the answer.</p><p>We’ll use <strong>Modifier Match</strong> to predict that position. Start with a simpler description about a footbridge, then build up to comparisons.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Footbridge sentence",
+        "html": "<blockquote><p>Built to survive saltwater and strong winds, _____</p></blockquote>"
+      },
+      "kind": "raw_block",
+      "id": "check_1",
+      "block_type": "check",
+      "content": {
+        "hint": "Ask what was built: the engineers, the footbridge, the weather, or the durability?",
+        "prompt": "Which choice puts the noun described by the opening phrase immediately after the comma?",
+        "choices": [
+          "engineers tested the new footbridge before opening it to pedestrians.",
+          "the new footbridge was tested by engineers before it opened to pedestrians.",
+          "saltwater and strong winds led engineers to test the new footbridge.",
+          "the durability of the new footbridge was tested by engineers."
+        ],
+        "solution": "The opening words say that something was built to survive harsh conditions.\nThe passage's built object is the new footbridge.\nPlace that noun phrase directly after the comma: \"the new footbridge was tested...\"\nSo choice B has the logical placement.",
+        "allow_retry": true,
+        "explanation": "The new footbridge was built, so that noun phrase belongs directly after the comma.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_opening_exploration",
+      "kind": "text",
+      "id": "modifier_definition",
+      "html": "<h2>A description needs the right noun</h2><p>A <strong>modifier</strong> is a word or phrase that describes something. “Built to survive saltwater and strong winds” describes the footbridge. For this sentence pattern, put the described noun immediately after the opening phrase’s comma.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_2",
+      "block_type": "check",
+      "content": {
+        "hint": "Which item could be covered in barbs and then cling to a sock?",
+        "prompt": "Covered in tiny barbs, _____ clung to the hiker's sock. Which noun phrase can the opening modifier logically describe?",
+        "choices": [
+          "the trail",
+          "the hiker",
+          "the seed",
+          "the fabric"
+        ],
+        "solution": "The modifier says that something is covered in tiny barbs.\nA seed can have barbs that let it cling to fabric.\nPlace \"the seed\" immediately after the comma.\nSo choice C is the logical noun phrase.",
+        "allow_retry": true,
+        "explanation": "The seed is covered in barbs, so it must come immediately after the modifier.",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "recognize_the_format",
+      "html": "<h2>Recognize the placement question</h2><p>Look for an opening description followed by a comma and long choices that rearrange the same details. Compare their first noun phrases. That position often reveals the important difference.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_3",
+      "block_type": "check",
+      "content": {
+        "hint": "Look for the format in which word order, especially the first noun after a comma, can decide the answer.",
+        "prompt": "Which answer set most strongly signals an initial-modifier placement question?",
+        "choices": [
+          "Four long choices that reuse the same details in different orders",
+          "Four transition words that create different logical relationships",
+          "Four punctuation marks inserted into the same short sentence",
+          "Four verb forms that differ mainly in tense and number"
+        ],
+        "solution": "Initial-modifier questions often offer long choices built from the same sentence parts.\nThose repeated parts appear in different orders so that different nouns land after the opening comma.\nThat makes choice A the recognition cue.",
+        "allow_retry": true,
+        "explanation": "The long, overlapping choices signal that placement and word order are likely doing the real work.",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "find_the_first_verb",
+      "html": "<h2>Turn the opening words into a question</h2><p>“Working from satellite images” asks who was working. “Designed for cold climates” asks what was designed. Use the action or description to predict the noun you need.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_4",
+      "block_type": "check",
+      "content": {
+        "hint": "The first verb is \"Using.\" Ask who used the pollen evidence.",
+        "prompt": "Using pollen trapped in layers of lake sediment, _____. Which choice places the users of the pollen evidence after the comma?",
+        "choices": [
+          "the region's ancient climate was reconstructed from the evidence by researchers",
+          "lake sediment preserved a record that researchers used to reconstruct the climate",
+          "a reconstruction of the region's ancient climate became possible for researchers",
+          "researchers reconstructed the region's ancient climate"
+        ],
+        "solution": "The modifier begins with \"Using,\" so its subject must be the user of the pollen evidence.\nResearchers can use evidence; a climate, sediment, or reconstruction cannot do that action here.\nPlace \"researchers\" immediately after the comma.\nSo choice D has the correct placement.",
+        "allow_retry": true,
+        "explanation": "Researchers used the pollen evidence, so \"researchers\" must begin the main clause.",
+        "correct_index": 3
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "repeatable_process",
+      "html": "<h2>Modifier Match</h2><ol><li>Read the opening description.</li><li>Ask who or what it describes.</li><li>Predict the noun from the passage.</li><li>Choose the version that puts that noun immediately after the comma.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "worked_action_example",
+      "html": "<h2>Match an action to its doer</h2><p>For “Cataloging underwater recordings,” ask who cataloged them. The passage names marine biologist Lina Okafor. Put her noun phrase first; the recordings and reef did not perform the cataloging.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_5",
+      "block_type": "check",
+      "content": {
+        "hint": "Who performed the action \"Tracking\"? Put that person first after the comma.",
+        "prompt": "The passage explains that ecologist Mateo Ruiz tracked individual tortoises with lightweight radio tags. Tracking the tortoises across three dry seasons, _____. Which choice completes the text?",
+        "choices": [
+          "ecologist Mateo Ruiz documented several unexpected migrations",
+          "several unexpected migrations were documented by ecologist Mateo Ruiz",
+          "lightweight radio tags allowed several migrations to be documented by ecologist Mateo Ruiz",
+          "the tortoises' unexpected migrations appeared in data collected by ecologist Mateo Ruiz"
+        ],
+        "solution": "The modifier begins with the action \"Tracking the tortoises.\"\nThe passage says that ecologist Mateo Ruiz performed that action.\nPredict \"ecologist Mateo Ruiz\" and place it immediately after the comma.\nSo choice A is correctly ordered.",
+        "allow_retry": true,
+        "explanation": "Mateo Ruiz tracked the tortoises, so his name must come directly after the modifier.",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "past_and_state_modifiers",
+      "html": "<h2>The phrase may describe a state</h2><p>“Founded in 1921” describes an institution. “Known for its mirrored dome” describes a building. Ask what has that description, then use the same placement rule.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_6",
+      "block_type": "check",
+      "content": {
+        "hint": "Ask what is known for having the mirrored dome.",
+        "prompt": "Known for a mirrored dome that reflects the surrounding desert, _____. Which choice completes the text?",
+        "choices": [
+          "visitors photograph the Al Noor Observatory at sunset",
+          "the surrounding desert appears in photographs of the Al Noor Observatory",
+          "the Al Noor Observatory attracts photographers at sunset",
+          "sunset is when photographers visit the Al Noor Observatory"
+        ],
+        "solution": "The opening modifier describes something known for a mirrored dome.\nThat description belongs to the Al Noor Observatory.\nPlace \"the Al Noor Observatory\" immediately after the comma.\nSo choice C is correctly ordered.",
+        "allow_retry": true,
+        "explanation": "The observatory is known for the dome, so the observatory must begin the main clause.",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "modifier_without_verb",
+      "html": "<h2>A description may have no verb</h2><p>“A coming-of-age story and a critique of colonial rule” describes a novel. Ask what is both of those things. The answer still belongs in the first noun phrase after the comma.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_7",
+      "block_type": "check",
+      "content": {
+        "hint": "The opening phrase renames something. What is both the map and the flood record?",
+        "prompt": "The passage explains that a seventeenth-century manuscript served as both an early map of the river and a record of seasonal floods. An early map of the river and a record of seasonal floods, _____. Which choice completes the text?",
+        "choices": [
+          "a cartographer copied the seventeenth-century manuscript for the royal archive",
+          "the seventeenth-century manuscript helped researchers reconstruct the region's history",
+          "seasonal floods were recorded by the manuscript's unknown cartographer",
+          "the royal archive preserved the manuscript for later researchers"
+        ],
+        "solution": "The modifier contains no verb; it gives two descriptions of the same item.\nThe passage says the seventeenth-century manuscript served as both the map and the flood record.\nPlace \"the seventeenth-century manuscript\" immediately after the comma.\nSo choice B is correctly ordered.",
+        "allow_retry": true,
+        "explanation": "The manuscript is both things named by the opening modifier, so its noun phrase must come next.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "property_comparison",
+      "html": "<h2>Compare the same property</h2><p>In “Unlike that of a conventional violin,” <strong>that</strong> can stand for “body.” The next noun phrase must then name the electric violin’s body. Keep body with body, rather than comparing a body with a whole instrument.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_8",
+      "block_type": "check",
+      "content": {
+        "hint": "What does \"that\" replace? The sentence must compare a gasoline car's engine with an electric car's engine.",
+        "prompt": "Compared with that of a gasoline car, _____. Which choice correctly compares one engine with another engine?",
+        "choices": [
+          "an electric car is quiet because its engine produces little vibration",
+          "an electric car's engine operates with very little noise",
+          "drivers often notice the low noise produced by an electric car's engine",
+          "the quiet operation of an electric car surprises many drivers"
+        ],
+        "solution": "In \"that of a gasoline car,\" the word \"that\" stands for the engine.\nThe noun phrase after the comma must therefore name the matching engine.\n\"An electric car's engine\" compares engine with engine and uses the needed possessive form.\nSo choice B is correct.",
+        "allow_retry": true,
+        "explanation": "\"An electric car's engine\" creates a logical engine-to-engine comparison.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "property_prediction_tip",
+      "html": "<h2>Name the property in your prediction</h2><p>If “that” stands for heat tolerance, predict “the other moss’s heat tolerance.” Use the passage to identify what the comparison replaces, then put the matching property first.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_9",
+      "block_type": "check",
+      "content": {
+        "hint": "Replace \"that\" with the property named in the passage, then name whose version of that property is being compared.",
+        "prompt": "The passage compares the heat tolerance of a desert moss with the heat tolerance of a woodland moss. The sentence begins, \"Unlike that of the woodland moss, _____.\" Which phrase should you predict for the first position?",
+        "choices": [
+          "researchers studying the desert moss",
+          "the desert habitat",
+          "the desert moss's heat tolerance",
+          "high temperatures"
+        ],
+        "solution": "The word \"that\" replaces \"heat tolerance.\"\nThe comparison is between the woodland moss's heat tolerance and the desert moss's heat tolerance.\nPredict \"the desert moss's heat tolerance\" for the first position.\nSo choice C is correct.",
+        "allow_retry": true,
+        "explanation": "The modifier compares heat tolerance with heat tolerance, so the possessive noun phrase belongs after the comma.",
+        "correct_index": 2
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "one_position_tip",
+      "html": "<h2>Use the first position to narrow the choices</h2><p>Compare each first noun phrase with your prediction. When one matches, read that completed sentence once to confirm the description attaches sensibly.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_10",
+      "block_type": "check",
+      "content": {
+        "hint": "Placement is the primary test here, but a quick full-sentence confirmation protects against a genuine second problem.",
+        "prompt": "You predict that \"the research team\" must follow an opening modifier. Only one answer choice begins with that phrase. What is the best next step?",
+        "choices": [
+          "Read that completed sentence once for logic and grammar, then select it if it works.",
+          "Set aside the first position and compare the final word of each choice instead.",
+          "Reject the choice because the predicted phrase appears too early in the sentence.",
+          "Assume another choice may work and search for an unrelated punctuation difference."
+        ],
+        "solution": "Your prediction identifies the noun phrase that the modifier needs.\nOnly one choice places that phrase immediately after the comma, so it has passed the main test.\nRead the completed sentence once to make sure it remains grammatical and logical.\nThat is the efficient action described in choice A.",
+        "allow_retry": true,
+        "explanation": "Use the decisive placement clue, then confirm the whole sentence once rather than re-solving all four choices from scratch.",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "guided_mixed_example",
+      "html": "<h2>Keep the doer attached to the action</h2><p>In “Examining cargo lists,” the person examining them is historian Amara Bell. Predict her noun phrase. Records, voyages, and bowls belong to the topic, but they did not do the examining.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_11",
+      "block_type": "check",
+      "content": {
+        "hint": "The first verb is \"Comparing.\" Who compared the cracks across the images?",
+        "prompt": "The passage says that engineer Priya Nwosu trained a computer model on thousands of bridge photographs. Comparing hairline cracks across the collection, _____. Which choice completes the text?",
+        "choices": [
+          "hairline cracks were classified by the computer model that Priya Nwosu trained",
+          "thousands of bridge photographs allowed a computer model to classify hairline cracks",
+          "the computer model's classifications helped Priya Nwosu study hairline cracks",
+          "engineer Priya Nwosu identified patterns that inspectors had overlooked"
+        ],
+        "solution": "The opening modifier says that someone was comparing hairline cracks.\nThe passage identifies engineer Priya Nwosu as the person doing that work.\nPlace her name immediately after the comma.\nSo choice D is correctly ordered.",
+        "allow_retry": true,
+        "explanation": "Priya Nwosu performed the comparison, so her noun phrase must begin the main clause.",
+        "correct_index": 3
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the fish comparison</h2><p>Try the opening question again. Predict the noun phrase the comparison needs before reading the complete choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "opening_growth_comparison_result",
+      "block_type": "check",
+      "content": {
+        "id": "opening_growth_comparison_result",
+        "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+        "choices": [
+          "juveniles raised in bright tanks grew at an 18% higher rate in the researcher’s study.",
+          "the researcher measured an 18% higher growth rate for juveniles raised in bright tanks.",
+          "raising juveniles in bright tanks produced an 18% higher growth rate in the researcher’s study.",
+          "the growth rate of juveniles raised in bright tanks was 18% higher in the researcher’s study."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Replace “that” with the quantity it stands for. Compare each choice’s first noun phrase with that same kind of quantity.",
+        "solution": "In this comparison, that stands for the growth rate of juveniles in shaded tanks.\nThe noun phrase after the comma must name the corresponding growth rate in bright tanks.\nA choice can preserve the 18% finding and still compare the wrong kinds of things.\nChoose D.\nA: The finding is accurate, but the opening compares a growth rate with juveniles rather than another rate.\nB: The finding is preserved, but the first noun phrase names the researcher rather than the growth rate being compared.\nC: The first noun phrase is the activity of raising fish, not the growth rate that the comparison needs.",
+        "explanation": "Good match. The sentence compares one growth rate with another, keeping the right noun phrase immediately after the comma."
+      },
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": "opening_growth_comparison"
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_15",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which process most efficiently solves an initial-modifier word-order question?",
+        "choices": [
+          "Read the choices first, compare punctuation, and identify the modifier's subject last.",
+          "Choose the shortest option, then check agreement without finding the modifier's subject.",
+          "Find a repeated noun, move it to the end, and ignore what the modifier describes.",
+          "Find the modifier's first verb, predict its target, and put that target directly past the comma."
+        ],
+        "allow_retry": false,
+        "explanation": "That's the Modifier Match process: use the first verb to predict the target noun phrase, then let first-position word order separate the choices.",
+        "correct_index": 3
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_13",
+      "block_type": "check",
+      "content": {
+        "prompt": "Hidden beneath several meters of basalt, _____. Which choice completes the text?",
+        "choices": [
+          "geologists mapped a network of ancient lava tubes",
+          "a network of ancient lava tubes remained intact for thousands of years",
+          "several meters of basalt protected lava tubes that geologists later mapped",
+          "the mapping revealed lava tubes that basalt had protected"
+        ],
+        "allow_retry": false,
+        "explanation": "The lava-tube network is hidden beneath basalt, so that noun phrase belongs directly after the comma.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_14",
+      "block_type": "check",
+      "content": {
+        "prompt": "The passage compares the density of a polar bear's fur with the density of a brown bear's fur. Unlike that of the brown bear, _____. Which choice completes the text?",
+        "choices": [
+          "the density of the polar bear’s fur is greater, helping it retain heat",
+          "the polar bear remains warm because its fur has a dense underlayer",
+          "a dense underlayer helps the polar bear retain heat",
+          "researchers found an especially dense underlayer in the polar bear’s fur"
+        ],
+        "allow_retry": false,
+        "explanation": "Here, ‘that’ replaces density. The first noun phrase must name the polar bear’s fur density so the sentence compares density with density.",
+        "correct_index": 0
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Reports of a rare shorebird feeding on the estuary's northern mudflats had reached ornithologist Ana Okafor repeatedly across two migration seasons. Determined to verify the sightings herself, ______ Which choice completes the text so that it conforms to the conventions of Standard English?",
+        "choices": [
+          "Okafor spent a week photographing the mudflats at dawn.",
+          "the mudflats were photographed at dawn for a week by Okafor.",
+          "a week of dawn photography on the mudflats followed.",
+          "the rare shorebird was finally photographed by Okafor at dawn."
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "The opening modifier describes the person who was determined — Okafor — so her name must come immediately after the comma. The other choices put the mudflats, an event, or the bird in that position, attaching the determination to the wrong thing."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_complete_1",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Modifier Match</h2><p>Ask what the opening phrase describes, then put that noun after the comma.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

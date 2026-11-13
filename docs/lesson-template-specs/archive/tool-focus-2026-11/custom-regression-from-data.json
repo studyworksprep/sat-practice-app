@@ -1,0 +1,739 @@
+{
+  "title": "Find Missing Constants with Custom Regression",
+  "description": "Turn data into a custom Desmos regression using table variables, incorporate relationships as definitions, and substitute function rules to find missing constants in a required equation form.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "opening_shifted_quadratic",
+        "title": "Function in the required form",
+        "html": "<p>A function has the form \\(H(t)=u(t-v)^2+5\\), where \\(u\\) and \\(v\\) are constants.</p><p>\\[H(1)=37,\\qquad H(3)=13,\\qquad H(8)=23.\\]</p><p>What is the value of \\(v\\)?</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_prerequisite",
+      "html": "<h2>Find the constant inside the square</h2><p>The opening question hides a constant inside a square. Substituting the points gives several equations to untangle.</p><p><strong>Custom regression</strong> lets Desmos fit the exact form the question gives you. We’ll start with one missing constant, then return to this function.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_first_custom_exploration",
+        "title": "Quadratic form and points",
+        "html": "<p>A function has the required form</p><p>\\[q(t)=a(t-2)^2+5\\]</p><p>and its graph contains \\((2,5)\\) and \\((4,17)\\).</p>"
+      },
+      "kind": "raw_block",
+      "id": "first_custom_exploration",
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "first_custom_exploration",
+        "title": "Explore a missing constant",
+        "instructions_html": "<p>Enter the shared points in a table, then type \\(y_1\\sim a(x_1-2)^2+5\\). Read \\(a\\).</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "state",
+          "state_rules": {
+            "require_table": {
+              "columns": [
+                "x_1",
+                "y_1"
+              ],
+              "rows": [
+                [
+                  2,
+                  5
+                ],
+                [
+                  4,
+                  17
+                ]
+              ]
+            },
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "a",
+              "value": 3
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>Nice work! Desmos shows <strong>a = 3</strong>. That is the value the custom regression found.</p>",
+          "retry_message_html": "<p>Not yet. Check the table rows, the regression row, and the model against the problem, then submit again.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_table",
+              "message_html": "<p>Add the two given points first: <strong>Add Item (+) → Table</strong>.</p>"
+            },
+            {
+              "trigger": "table_rows_mismatch",
+              "message_html": "<p>The table does not hold the required rows yet. Re-check each value against the problem.</p>"
+            },
+            {
+              "trigger": "missing_regression",
+              "message_html": "<p>Add a row with <strong>~</strong> in place of <strong>=</strong>: \\(y_1\\sim a(x_1-2)^2+5\\).</p>"
+            },
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Desmos is not assigning \\(a\\) yet. The regression must use the table's own column names, \\(x_1\\) and \\(y_1\\).</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos shows a different value. Check that the model matches the required form \\(a(t-2)^2+5\\).</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Table: \\((2,5)\\) and \\((4,17)\\). Regression row: \\(y_1\\sim a(x_1-2)^2+5\\). Desmos shows <strong>a = 3</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      },
+      "figure": {
+        "src": "/images/desmos-regression-readout-table.svg",
+        "alt": "Desmos regression readout: a REGRESSION PARAMETERS section giving the constant, and a STATISTICS section giving R squared and r",
+        "caption": "Read the constant under REGRESSION PARAMETERS."
+      }
+    },
+    {
+      "shared_prompt": "shared_first_custom_exploration",
+      "kind": "raw_block",
+      "id": "first_custom_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What does a equal?",
+        "choices": [
+          "\\(a=12\\)",
+          "\\(a=5\\)",
+          "\\(a=3\\)",
+          "\\(a=2\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Read the value below the custom regression. You can check it with the point \\((4,17)\\): \\(17=a(4-2)^2+5\\).",
+        "explanation": "Desmos shows \\(a=3\\), so the required equation is \\(q(t)=3(t-2)^2+5\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Read the constant",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "shared_prompt": "shared_first_custom_exploration",
+      "kind": "text",
+      "id": "why_custom_regression",
+      "html": "<h2>Keep the known parts fixed</h2><p>The form \\(a(t-2)^2+5\\) already tells us the 2 and 5. Typing that form lets Desmos change only the missing \\(a\\). It preserves the structure the question asks about.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "table_variable_roles",
+      "html": "<h2>Use the table’s names</h2><p>The usual table headers are \\(x_1\\) for inputs and \\(y_1\\) for outputs. In the model, replace the original input letter with \\(x_1\\) and the function output with \\(y_1\\).</p><p>Keep the subscript 1: it connects the model to the actual table.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "table_variable_translation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A problem gives \\(P(n)=c(n-4)^2+7\\) and points from \\(P\\). Which custom regression correctly connects that form to a Desmos table?",
+        "choices": [
+          "\\(P(n)\\sim c(n-4)^2+7\\)",
+          "\\(y\\sim c(x-4)^2+7\\)",
+          "\\(x_1\\sim c(y_1-4)^2+7\\)",
+          "\\(y_1\\sim c(x_1-4)^2+7\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The table's left column is \\(x_1\\), and its right column is \\(y_1\\).",
+        "explanation": "Replace the original input \\(n\\) with \\(x_1\\), replace the output \\(P(n)\\) with \\(y_1\\), and connect the two sides with \\(\\sim\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "four_step_process",
+      "html": "<h2>Table, Form, Extra Facts</h2><ol><li>Enter the input-output points in a table.</li><li>Translate the given form to \\(x_1,y_1\\).</li><li>Use a tilde, <strong>~</strong>, in place of the equals sign.</li><li>Include extra relationships as definitions, then read the constants and answer.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "regression_symbol_rule",
+      "html": "<h2>The tilde asks Desmos to fit</h2><p>Use \\(y_1\\sim a(x_1-h)^2+k\\). The tilde tells Desmos to adjust the free constants to match the table. An equals sign on that model row does not ask for the fit.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "regression_symbol_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which entry tells Desmos to fit the model \\(c(x-3)^2+8\\) to the table?",
+        "choices": [
+          "\\(y_1\\sim c(x_1-3)^2+8\\)",
+          "\\(y_1=c(x_1-3)^2+8\\)",
+          "\\(y\\sim c(x-3)^2+8\\)",
+          "\\(x_1\\sim c(y_1-3)^2+8\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use \\(y_1\\) for the table output, \\(x_1\\) for the table input, and \\(\\sim\\) for regression.",
+        "explanation": "\\(y_1\\sim c(x_1-3)^2+8\\) connects every table row to the required model and lets Desmos adjust \\(c\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "definitions_intro",
+      "html": "<h2>Include a relationship as a definition</h2><p>A <strong>definition</strong> gives one constant in terms of the others. For \\(a+b=10\\), enter \\(a=10-b\\) or \\(b=10-a\\) on another row.</p><p>Keep the equals sign on this definition. Use just one regression symbol, on the model row; separate regressions do not connect their conditions.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "definition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A question states that \\(p+q=18\\). Which Desmos line correctly enters that information as a definition?",
+        "choices": [
+          "\\(p+q\\sim18\\)",
+          "\\(p+q=18\\)",
+          "\\(p=18-q\\)",
+          "\\(y_1=p+q+18\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Isolate one missing constant so Desmos can replace it with an expression involving the other.",
+        "explanation": "\\(p=18-q\\) defines \\(p\\) in terms of \\(q\\). The equivalent definition \\(q=18-p\\) would also work."
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_guided_definition_problem",
+        "title": "Quadratic with related constants",
+        "html": "<p>A function has the form</p><p>\\[r(t)=at^2+bt+4\\]</p><p>The question tells you that \\(a+b=10\\) and \\(r(2)=34\\).</p>"
+      },
+      "kind": "raw_block",
+      "id": "guided_definition_problem",
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "guided_definition_problem",
+        "title": "Guided practice: use a coefficient relationship",
+        "instructions_html": "<p>Enter \\((2,34)\\) in a table. Define \\(a=10-b\\), then fit \\(y_1\\sim ax_1^2+bx_1+4\\). Read \\(b\\), and type \\(a\\) on another row to read it too.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "state",
+          "state_rules": {
+            "require_table": {
+              "columns": [
+                "x_1",
+                "y_1"
+              ],
+              "rows": [
+                [
+                  2,
+                  34
+                ]
+              ]
+            },
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "b",
+              "value": 5
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>Nice work! Desmos shows <strong>b = 5</strong>, and the definition gives <strong>a = 5</strong>.</p>",
+          "retry_message_html": "<p>Not yet. Check the table rows, the regression row, and the model against the problem, then submit again.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_table",
+              "message_html": "<p>Enter the point \\((2,34)\\) in a table first.</p>"
+            },
+            {
+              "trigger": "table_rows_mismatch",
+              "message_html": "<p>The table does not hold the required rows yet. Re-check each value against the problem.</p>"
+            },
+            {
+              "trigger": "missing_regression",
+              "message_html": "<p>Enter the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\) with <strong>~</strong>.</p>"
+            },
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Add the definition \\(a=10-b\\) so only one constant is left for Desmos to fit.</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos shows a different value for \\(b\\). Check the definition row and the model.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Table: \\((2,34)\\). Definition: \\(a=10-b\\). Regression: \\(y_1\\sim ax_1^2+bx_1+4\\). Desmos shows <strong>b = 5</strong>, so <strong>a = 5</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      },
+      "figure": {
+        "src": "/images/desmos-regression-readout-table.svg",
+        "alt": "Desmos regression readout: a REGRESSION PARAMETERS section giving the constant, and a STATISTICS section giving R squared and r",
+        "caption": "Read the constant under REGRESSION PARAMETERS."
+      }
+    },
+    {
+      "shared_prompt": "shared_guided_definition_problem",
+      "kind": "raw_block",
+      "id": "guided_definition_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which values should Desmos produce for \\(a\\) and \\(b\\)?",
+        "choices": [
+          "\\(a=10,\\ b=0\\)",
+          "\\(a=5,\\ b=5\\)",
+          "\\(a=3,\\ b=7\\)",
+          "\\(a=15,\\ b=-5\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "solution": "Enter the point \\((2,34)\\) in a table, so \\(x_1=2\\) and \\(y_1=34\\).\nEnter the definition \\(a=10-b\\), then the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\).\nDesmos adjusts the one free constant and assigns \\(b=5\\); the definition line reports the matching \\(a=5\\) automatically.\nRead both values: \\(a=5\\) and \\(b=5\\).\nSo the answer is choice B, \\(a=5,\\ b=5\\).",
+        "hint": "Read the value of \\(b\\), then use \\(a=10-b\\). Check that \\(4a+2b+4=34\\).",
+        "explanation": "Regression gives \\(b=5\\), and the definition gives \\(a=10-5=5\\). The equation is \\(r(t)=5t^2+5t+4\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Read both constants",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "function_notation_mapping",
+      "html": "<h2>Use the function that produced the points</h2><p>If \\(g(2)=7\\), enter \\((2,7)\\). The table output represents \\(g\\). If the rule for \\(g\\) uses another function, substitute that other function’s rule before fitting.</p><p>For \\(f(x)=x^2+5\\) and \\(g(x)=f(x)-c\\), fit \\(y_1\\sim x_1^2+5-c\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "function_mapping_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The points in the table come from \\(g(t)\\). What do the table variables represent?",
+        "choices": [
+          "\\(x_1\\) represents \\(t\\), and \\(y_1\\) represents \\(g(t)\\).",
+          "\\(x_1\\) represents \\(g(t)\\), and \\(y_1\\) represents \\(t\\).",
+          "Both columns represent \\(g(t)\\).",
+          "The table variables must be renamed \\(g_1\\) and \\(t_1\\)."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The left table column is the input; the right table column is the function's output.",
+        "explanation": "Use \\(x_1\\) in place of the original input \\(t\\), and use \\(y_1\\) in place of the output \\(g(t)\\)."
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_guided_function_constant",
+        "title": "Two function rules",
+        "html": "<p>The table contains points from \\(g\\). The problem gives:</p><p>\\[f(x)=x^2+5\\qquad\\text{and}\\qquad g(x)=f(x)-c\\]</p><p>It also states \\(g(0)=-3\\), \\(g(2)=1\\), and \\(g(3)=6\\).</p>"
+      },
+      "kind": "raw_block",
+      "id": "guided_function_constant",
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "guided_function_constant",
+        "title": "Find a constant after substitution",
+        "instructions_html": "<p>Enter the three points from \\(g\\) in a table. Fit \\(y_1\\sim x_1^2+5-c\\) and read \\(c\\).</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "state",
+          "state_rules": {
+            "require_table": {
+              "columns": [
+                "x_1",
+                "y_1"
+              ],
+              "rows": [
+                [
+                  0,
+                  -3
+                ],
+                [
+                  2,
+                  1
+                ],
+                [
+                  3,
+                  6
+                ]
+              ]
+            },
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "c",
+              "value": 8
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>Nice work! Desmos shows <strong>c = 8</strong>.</p>",
+          "retry_message_html": "<p>Not yet. Check the table rows, the regression row, and the model against the problem, then submit again.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_table",
+              "message_html": "<p>Enter the three points from \\(g\\) in a table first.</p>"
+            },
+            {
+              "trigger": "table_rows_mismatch",
+              "message_html": "<p>The table does not hold the required rows yet. Re-check each value against the problem.</p>"
+            },
+            {
+              "trigger": "missing_regression",
+              "message_html": "<p>Substitute the rule for \\(f\\), then enter \\(y_1\\sim x_1^2+5-c\\) with <strong>~</strong>.</p>"
+            },
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Desmos is not assigning \\(c\\) yet. Check that the regression uses \\(x_1\\) and \\(y_1\\).</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos shows a different value. Check the substituted rule \\(x_1^2+5-c\\).</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Table: \\((0,-3)\\), \\((2,1)\\), \\((3,6)\\). Regression: \\(y_1\\sim x_1^2+5-c\\). Desmos shows <strong>c = 8</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      },
+      "figure": {
+        "src": "/images/desmos-regression-readout-table.svg",
+        "alt": "Desmos regression readout: a REGRESSION PARAMETERS section giving the constant, and a STATISTICS section giving R squared and r",
+        "caption": "Read the constant under REGRESSION PARAMETERS."
+      }
+    },
+    {
+      "shared_prompt": "shared_guided_function_constant",
+      "kind": "raw_block",
+      "id": "guided_function_constant_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What does c equal?",
+        "choices": [
+          "\\(c=3\\)",
+          "\\(c=8\\)",
+          "\\(c=5\\)",
+          "\\(c=12\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "solution": "Enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table.\nSubstitute the given rule for \\(f\\): since \\(g(x)=f(x)-c\\) and \\(f(x)=x^2+5\\), the model to fit is \\(y_1\\sim x_1^2+5-c\\).\nRun the regression and read the value: Desmos shows \\(c=8\\), fitting every row of the table at once.\nSo the answer is choice B, \\(c=8\\).",
+        "hint": "Use the first row: \\(-3=0^2+5-c\\).",
+        "explanation": "Desmos shows \\(c=8\\). Substitution gives \\(g(x)=x^2+5-8=x^2-3\\), which matches all three table rows."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Read and check c",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "special_exponential_form",
+      "html": "<h2>Keep a growth rate visible</h2><p>For \\(N(t)=A(1+r)^t\\), \\(r\\) is the decimal growth rate. If \\(A=200\\), define \\(A=200\\), then fit \\(y_1\\sim A(1+r)^{x_1}\\). This gives \\(r\\) directly in the form the question uses.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "special_exponential_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A table contains points from \\(N(t)=A(1+r)^t\\), and the question states \\(A=200\\). Which pair of Desmos entries preserves the requested form?",
+        "choices": [
+          "\\(A+200=0\\) and \\(y_1=A(1+r)^{x_1}\\)",
+          "\\(A\\sim200\\) and \\(N(t)\\sim A(1+r)^t\\)",
+          "\\(A=200\\) and \\(y_1\\sim A(1+r)^{x_1}\\)",
+          "\\(x_1=200\\) and \\(y_1\\sim r^A\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Enter known constant information as a definition, then connect the table output and input with the regression symbol.",
+        "explanation": "\\(A=200\\) fixes the known initial amount, and \\(y_1\\sim A(1+r)^{x_1}\\) lets Desmos fit the missing rate \\(r\\)."
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_special_exponential_task",
+        "title": "Exponential growth data",
+        "html": "<p>A sample follows \\(N(t)=A(1+r)^t\\), where \\(A=200\\). The data are:</p><p>\\[(0,200),\\ (1,220),\\ (2,242)\\]</p>"
+      },
+      "kind": "raw_block",
+      "id": "special_exponential_task",
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "special_exponential_task",
+        "title": "Fit a growth rate directly",
+        "instructions_html": "<p>Enter the shared points in a table, define \\(A=200\\), and fit \\(y_1\\sim A(1+r)^{x_1}\\). Read \\(r\\), then convert it to a percent growth rate.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "state",
+          "state_rules": {
+            "require_table": {
+              "columns": [
+                "x_1",
+                "y_1"
+              ],
+              "rows": [
+                [
+                  0,
+                  200
+                ],
+                [
+                  1,
+                  220
+                ],
+                [
+                  2,
+                  242
+                ]
+              ]
+            },
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "r",
+              "value": 0.1,
+              "tolerance": 0.005
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>Nice work! Desmos shows <strong>r = 0.1</strong> — a <strong>10%</strong> growth rate.</p>",
+          "retry_message_html": "<p>Not yet. Check the table rows, the regression row, and the model against the problem, then submit again.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_table",
+              "message_html": "<p>Enter \\((0,200)\\), \\((1,220)\\), and \\((2,242)\\) in a table first.</p>"
+            },
+            {
+              "trigger": "table_rows_mismatch",
+              "message_html": "<p>The table does not hold the required rows yet. Re-check each value against the problem.</p>"
+            },
+            {
+              "trigger": "missing_regression",
+              "message_html": "<p>Enter \\(y_1\\sim A(1+r)^{x_1}\\) with <strong>~</strong>.</p>"
+            },
+            {
+              "trigger": "missing_parameter",
+              "message_html": "<p>Define \\(A=200\\) so \\(r\\) is the only constant left to fit.</p>"
+            },
+            {
+              "trigger": "parameter_mismatch",
+              "message_html": "<p>Desmos shows a different growth rate. Check that \\(A=200\\) is defined and the exponent is \\(x_1\\).</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Table: \\((0,200)\\), \\((1,220)\\), \\((2,242)\\). Definition: \\(A=200\\). Regression: \\(y_1\\sim A(1+r)^{x_1}\\). Desmos shows <strong>r = 0.1</strong>, which is \\(10\\%\\).</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      },
+      "figure": {
+        "src": "/images/desmos-regression-readout-table.svg",
+        "alt": "Desmos regression readout: a REGRESSION PARAMETERS section giving the constant, and a STATISTICS section giving R squared and r",
+        "caption": "Read the constant under REGRESSION PARAMETERS."
+      }
+    },
+    {
+      "shared_prompt": "shared_special_exponential_task",
+      "kind": "raw_block",
+      "id": "special_exponential_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What does r equal, and what percent growth rate is that?",
+        "choices": [
+          "\\(r=0.10\\), which is \\(10\\%\\)",
+          "\\(r=1.10\\), which is \\(110\\%\\)",
+          "\\(r=20\\), which is \\(20\\%\\)",
+          "\\(r=200\\), which is \\(2\\%\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The output is multiplied by \\(1.10\\) each step, and the model writes that factor as \\(1+r\\).",
+        "explanation": "\\(1+r=1.10\\), so \\(r=0.10=10\\%\\). Custom regression reports the parameter in the form the question uses."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Interpret the fitted rate",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "troubleshooting",
+      "html": "<h2>If a constant is missing</h2><p>Check the table headers, the tilde on the model, and any extra relationships. The problem must supply enough independent information to determine its constants.</p><p>A constant you defined may not appear under Regression Parameters. Type it on another row to read its value. For exact data, check that the fitted equation matches every table point.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to H</h2><p>Try the opening question again. Use its required form to find the missing value inside the square.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "opening_shifted_quadratic",
+      "kind": "raw_block",
+      "id": "opening_shifted_quadratic_result",
+      "block_type": "check",
+      "content": {
+        "id": "opening_shifted_quadratic_result",
+        "prompt": "What is the value of \\(v\\)?",
+        "allow_retry": true,
+        "hint": "Enter the three input-output pairs in a table. Keep the given form, including the square around the whole difference, and use the table’s column names.",
+        "solution": "Enter \\((1,37),(3,13),(8,23)\\) in a Desmos table.\nEnter \\(y_1\\sim u(x_1-v)^2+5\\).\nDesmos shows \\(u=2,\\ v=5\\), matching all three points.\nReport \\(v=5\\).",
+        "explanation": "You found \\(v=5\\). Fitting the required form made that constant available directly, without rewriting a standard-form quadratic.",
+        "input": "numeric",
+        "answer": "5"
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A model has a required form and an extra relationship between constants. How do you include both in custom regression?",
+        "choices": [
+          "Enter input-output points, rewrite extra relationships as regressions, substitute \\(y_1\\) and \\(x_1\\) into every definition, and fit the required form using \\(=\\).",
+          "Fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\) before entering the points, then rewrite the fitted equation to match any extra relationships.",
+          "Enter input-output points and fit the required form with \\(y_1\\sim\\), leaving extra relationships and other function rules out of Desmos.",
+          "Enter input-output points, rewrite extra relationships as definitions, substitute other function rules, and fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\)."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "You have it. That workflow preserves the equation form the question requires while giving Desmos every data point and coefficient relationship it needs."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "For the function \\(g\\), \\(g(t)=a\\cdot3^t\\), where \\(a\\) is a constant. If \\(g(2)=45\\), what is the value of \\(g(1)\\)?",
+        "input": "numeric",
+        "answer": "15",
+        "allow_retry": false,
+        "explanation": "\\(g(2)=9a=45\\) gives \\(a=5\\), so \\(g(1)=5\\cdot3=15\\). Reporting \\(5\\) answers the wrong quantity — that is \\(a\\) — and \\(135\\) is \\(g(3)\\). In Desmos, \\(a\\cdot3^{x_1}\\sim\\) with the point \\((2,45)\\) finds the same constant."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "revision_growth_practice",
+      "block_type": "check",
+      "content": {
+        "id": "revision_growth_practice",
+        "input": "numeric",
+        "prompt": "A function has the form \\(N(t)=A(1+r)^t\\), with \\(A=80\\) and \\(N(2)=125\\). If \\(r>0\\), what is the percent growth rate?",
+        "answer": "25",
+        "allow_retry": false,
+        "explanation": "Fitting the given form gives \\(r=0.25\\), which is a 25% growth rate."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Fit the given form</h2><p>Connect it to the table and include the extra facts that determine its constants.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ],
+  "authoring_notes": "Calculator opening revision 2026-11-12: Three nonvertex points determine a shifted quadratic; custom regression returns its horizontal-shift parameter directly. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
+}

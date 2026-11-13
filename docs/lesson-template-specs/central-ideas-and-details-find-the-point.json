@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice best states the main idea of the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The museum’s labels continue to identify when its vessels were made and which potters produced them.</li><li>Trial pieces and firing notes document temperature adjustments that one potter made while developing a polished jar.</li><li>The gallery compares similar-looking bowls to show that different makers can arrive at related forms through different experiments.</li><li>The gallery presents finished vessels alongside evidence of their making, directing attention to how potters developed their results.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_museum_process",
         "title": "A redesigned pottery gallery",
-        "html": "<p>A museum once grouped ceramic vessels by date and region. In its redesigned gallery, a polished jar stands next to three misshapen trial versions, while firing notes document how the potter changed temperature between attempts. Labels still identify each finished piece’s date and maker, but they also connect its surface to choices recorded in the notes. Elsewhere, two similar-looking bowls appear beside records showing that their makers reached those forms through different experiments. The museum has kept its permanent collection while giving visitors more material to examine beside each finished object.</p>"
+        "html": "<p>A museum once grouped ceramic vessels by date and region. In its redesigned gallery, a polished jar stands next to three misshapen trial versions, while firing notes document how the potter changed temperature between attempts. Labels still identify each finished piece’s date and maker, but they also connect its surface to choices recorded in the notes. Elsewhere, two similar-looking bowls appear beside records showing that their makers reached those forms through different experiments. The museum has kept its permanent collection while giving visitors more material to examine beside each finished object.</p><p>Which choice best states the main idea of the text?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The museum’s labels continue to identify when its vessels were made and which potters produced them.</li><li>Trial pieces and firing notes document temperature adjustments that one potter made while developing a polished jar.</li><li>The gallery compares similar-looking bowls to show that different makers can arrive at related forms through different experiments.</li><li>The gallery presents finished vessels alongside evidence of their making, directing attention to how potters developed their results.</li></ol>"
       }
     },
     {
@@ -371,7 +371,11 @@
         "explanation": "That’s the whole point. The matching answer connects the displays; the other choices are accurate but narrower details."
       },
       "block_type": "check",
-      "shared_prompt": "opening_museum_process",
+      "shared_prompt": {
+        "id": "opening_museum_process_return",
+        "title": "A redesigned pottery gallery",
+        "html": "<p>A museum once grouped ceramic vessels by date and region. In its redesigned gallery, a polished jar stands next to three misshapen trial versions, while firing notes document how the potter changed temperature between attempts. Labels still identify each finished piece’s date and maker, but they also connect its surface to choices recorded in the notes. Elsewhere, two similar-looking bowls appear beside records showing that their makers reached those forms through different experiments. The museum has kept its permanent collection while giving visitors more material to examine beside each finished object.</p>"
+      },
       "calculator": {
         "display": "hidden"
       }
@@ -467,5 +471,5 @@
       "block_type": "lesson_complete"
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Find the Point to reject three genuinely supported details that are too narrow for a main-idea question. Previous specification: archive/rw-openings-2026-11/central-ideas-and-details-find-the-point.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Find the Point to reject three genuinely supported details that are too narrow for a main-idea question. Previous specification: archive/rw-openings-2026-11/central-ideas-and-details-find-the-point.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/central-ideas-and-details-find-the-point.json."
 }

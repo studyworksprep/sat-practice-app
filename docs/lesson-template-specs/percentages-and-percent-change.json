@@ -26,74 +26,69 @@
     {
       "kind": "text",
       "id": "percent_symbol_meaning",
-      "html": "<h2>Percent means per hundred</h2><p>\\(35\\%=35/100=0.35\\). Desmos can calculate that percent directly. When you type <strong>%</strong>, it adds the word <strong>of</strong>; type the base amount after it.</p>",
+      "html": "<h2>Type the percent as written</h2><p><strong>Percent</strong> means per hundred. Desmos can calculate with the percent directly.</p><p>When you type <strong>%</strong>, Desmos inserts <strong>of</strong>. Type the base amount after it.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
       "kind": "raw_block",
-      "id": "percent_of_input",
+      "id": "enter_percent_of_amount",
       "block_type": "desmos_interactive",
       "content": {
         "type": "desmos_interactive",
-        "title": "Enter a percent calculation two ways",
-        "instructions_html": "<p>Enter <strong>35%</strong>, then <strong>80</strong> after the inserted <strong>of</strong>. On a second row, enter <strong>0.35*80</strong>. Compare the results and check your entries.",
+        "title": "Enter a percent-of calculation",
+        "instructions_html": "<p>Type <strong>35%</strong>, then type <strong>80</strong> after the inserted <strong>of</strong>. Check your entry.</p>",
         "initial_expressions": [],
         "goal": {
-          "type": "multi_expression",
-          "required_count": 2,
+          "type": "enter_expression",
+          "required_count": 1,
           "roles": [
-            "percent_of",
-            "decimal_product"
+            "percent_of"
           ]
         },
         "validation": {
           "mode": "normalized",
           "expected": [
-            "35\\%\\operatorname{of}80",
-            "0.35\\cdot80"
+            "35\\%\\operatorname{of}80"
           ],
           "state_rules": {
-            "min_expressions": 2,
-            "max_expressions": 2,
+            "min_expressions": 1,
+            "max_expressions": 1,
             "require_visible_only": true
           }
         },
         "feedback": {
-          "success_message_html": "<p>Nice work! Both lines equal \\(28\\). Desmos <strong>% of</strong> notation and decimal multiplication represent the same calculation.</p>",
-          "retry_message_html": "<p>Use exactly two lines: <strong>35% of 80</strong>, then <strong>0.35*80</strong>.</p>",
+          "success_message_html": "<p>Nice work! Desmos calculates <strong>35% of 80</strong> and displays \\(28\\).</p>",
+          "retry_message_html": "<p>Use one row: <strong>35% of 80</strong>. Type the percent first, then the amount after the inserted word.</p>",
           "targeted_hints": [
             {
               "trigger": "too_many_expressions",
-              "message_html": "<p>Keep only the percent-of line and the decimal-multiplication line.</p>"
+              "message_html": "<p>Keep one calculation row: <strong>35% of 80</strong>.</p>"
             },
             {
               "trigger": "too_few_expressions",
-              "message_html": "<p>Add the second form so you can compare the two results.</p>"
-            },
-            {
-              "trigger": "missing_second_expression",
-              "message_html": "<p>On a second line, enter <strong>0.35*80</strong>.</p>"
+              "message_html": "<p>Type <strong>35%</strong>, then <strong>80</strong> after <strong>of</strong>.</p>"
             }
           ],
           "attempt_based_hints": [
             {
               "min_attempts": 2,
-              "message_html": "<p>Enter <strong>35% of 80</strong> on the first line and <strong>0.35*80</strong> on the second.</p>"
+              "message_html": "<p>Type <strong>35</strong>, then <strong>%</strong>, then <strong>80</strong>. Desmos inserts <strong>of</strong> for you.</p>"
             }
           ],
           "reveal_solution_after_attempts": 3,
-          "solution_html": "<p>The two required entries are <strong>35% of 80</strong> and <strong>0.35*80</strong>.</p>"
+          "solution_html": "<p>Enter <strong>35% of 80</strong> on one row. Desmos displays <strong>28</strong>.</p>"
         },
         "progression": {
           "require_success": true
-        }
+        },
+        "id": "enter_percent_of_amount"
       },
       "figure": {
-        "src": "/images/desmos-percent-of-control.svg",
-        "alt": "A Desmos row reading 35% of 80 = 28 with the word \"of\" highlighted as the part Desmos inserted automatically, above a second row reading 0.35 times 80 = 28",
-        "caption": "Typing % makes Desmos add \"of\" for you."
+        "src": "/images/desmos-percent-of-entry.svg",
+        "alt": "A Desmos row reads 35% of 80 equals 28. The automatically inserted word of is highlighted.",
+        "caption": "Typing % makes Desmos add “of” for you."
       }
     },
     {
@@ -111,36 +106,7 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Keep the percent first and place the comparison number after the word of.",
-        "explanation": "35% of 80 tells Desmos to calculate \\(\\frac{35}{100}\\cdot80=28\\)."
-      },
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "text",
-      "id": "decimal_conversion",
-      "html": "<h2>Connect a percent with its decimal</h2><p>Divide by \\(100\\) to turn a percent into a decimal: \\(6.5\\%=0.065\\). Multiply by \\(100\\) to go back. This is the same conversion the percent calculation performs.</p>",
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "decimal_conversion_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which decimal is equal to \\(6.5\\%\\)?",
-        "choices": [
-          "\\(6.5\\)",
-          "\\(0.65\\)",
-          "\\(0.0065\\)",
-          "\\(0.065\\)"
-        ],
-        "correct_index": 3,
-        "allow_retry": true,
-        "hint": "Divide 6.5 by 100, which moves its decimal point two places left.",
-        "explanation": "\\(6.5\\div100=0.065\\), so \\(6.5\\%=0.065\\)."
+        "explanation": "35% of 80 preserves the percent and its base. Desmos performs the calculation and displays \\(28\\)."
       },
       "calculator": {
         "display": "hidden"
@@ -287,9 +253,9 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "solution": "Identify the parts of the sentence: the result is 48 and the base after of is 60.\nEnter the complete translation \\(48\\sim p\\%\\text{ of }60\\), with \\(\\sim\\) in place of \\(=\\).\nDesmos adjusts \\(p\\) and assigns \\(p=80\\), with an RMSE of zero or extremely small — the translation fits exactly.\nSo the answer is choice B, \\(80\\%\\).",
+        "solution": "Identify the parts of the sentence: the result is 48 and the base after of is 60.\nEnter the complete translation \\(48\\sim p\\%\\text{ of }60\\), with \\(\\sim\\) in place of \\(=\\).\nDesmos shows \\(p=80\\), with an RMSE of zero or extremely small — the translation fits exactly.\nSo the answer is choice B, \\(80\\%\\).",
         "hint": "Read the value of p. Check that p% of 60 equals 48.",
-        "explanation": "Desmos shows \\(p=80\\), and \\(80\\%\\) of \\(60\\) is \\(0.8(60)=48\\)."
+        "explanation": "Desmos shows \\(p=80\\), so the requested percent is \\(80\\%\\)."
       },
       "calculator": {
         "display": "open",
@@ -405,7 +371,7 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Use New = 80 + 15% of 80. The percent is based on the old price.",
-        "explanation": "\\(15\\%\\) of \\(80\\) is \\(12\\), and \\(80+12=92\\)."
+        "explanation": "Desmos shows \\(n=92\\). The entry kept the original price and added the percent increase, so report \\(\\$92\\)."
       }
     },
     {
@@ -565,11 +531,6 @@
       }
     },
     {
-      "shared_prompt": {
-        "id": "shared_complex_section_overview",
-        "title": "Sale price and fee",
-        "html": "<p>A sale price \\(s\\) is \\(20\\%\\) less than an original price \\(a\\). After a \\(\\$12\\) fee, the total is \\(\\$92\\).</p>"
-      },
       "kind": "text",
       "id": "complex_section_overview",
       "html": "<h2>Now connect two statements</h2><p>A discount can produce an intermediate price that is used in a later statement. First tell Desmos how to calculate that price. Then let one regression match the final total.</p>",
@@ -578,7 +539,11 @@
       }
     },
     {
-      "shared_prompt": "shared_complex_section_overview",
+      "shared_prompt": {
+        "id": "shared_complex_section_overview",
+        "title": "Sale price and fee",
+        "html": "<p>A sale price \\(s\\) is \\(20\\%\\) less than an original price \\(a\\). After a \\(\\$12\\) fee, the total is \\(\\$92\\).</p>"
+      },
       "kind": "text",
       "id": "definition_rule",
       "html": "<h2>Define the intermediate price</h2><p>A <strong>definition</strong> puts one variable alone on the left of an equals sign. If \\(s\\) is a price after a \\(20\\%\\) discount from \\(a\\), enter \\(s=a-20\\%\\text{ of }a\\).</p>",
@@ -590,16 +555,7 @@
       "shared_prompt": "shared_complex_section_overview",
       "kind": "text",
       "id": "one_regression_rule",
-      "html": "<h2>Use one regression for the remaining statement</h2><p>If a \\(12\\)-dollar fee brings the total to \\(92\\), enter \\(s+12\\sim92\\). Desmos uses the definition to connect \\(s\\) with \\(a\\). Two separate regression rows would not connect the statements for this setup.</p>",
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "shared_prompt": "shared_complex_section_overview",
-      "kind": "text",
-      "id": "define_once_rule",
-      "html": "<h2>Give each variable one definition</h2><p>Keep \\(s=a-20\\%\\text{ of }a\\). Use the total as the regression instead of adding a second definition of \\(s\\). That gives each row a distinct job.</p>",
+      "html": "<h2>Give each row one job</h2><p>The fee and final total give \\(s+12\\sim92\\). Desmos uses the existing definition of \\(s\\) to connect this row to \\(a\\).</p><p>Use one regression and keep one definition per variable. Two separate regression rows do not connect the statements in this setup.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -883,7 +839,7 @@
         ],
         "correct_index": 3,
         "allow_retry": false,
-        "explanation": "Desmos shows \\(p=17.5\\), and \\(17.5\\%\\) of \\(240\\) is \\(42\\). Then \\(240-42=198\\)."
+        "explanation": "Desmos shows \\(p=17.5\\). The regression kept the original population as the percent base, so report \\(17.5\\%\\)."
       },
       "calculator": {
         "display": "open",
@@ -909,7 +865,7 @@
         "input": "numeric",
         "answer": "91",
         "allow_retry": false,
-        "explanation": "New \\(=\\) Old \\(+\\) \\(40\\%\\) of Old \\(=65+0.40(65)=91\\). The value \\(26\\) is only the change, \\(39\\) subtracts it, and \\(105\\) adds a raw \\(40\\) instead of \\(40\\%\\)."
+        "explanation": "Enter \\(p\\sim65+40\\%\\text{ of }65\\). Desmos shows \\(p=91\\). Report the whole new amount, not just the increase."
       },
       "calculator": {
         "display": "open",
@@ -930,5 +886,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Three percent operations use two different bases. The return requires an independent two-row setup and a numeric answer, without preloading the solution or rejecting valid alternative setups. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Three percent operations use two different bases. The return requires an independent two-row setup and a numeric answer, without preloading the solution or rejecting valid alternative setups. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Remove the decimal-conversion lesson because the taught percent-of workflow uses the written percent directly. Remove the decimal-conversion quiz because it is not needed to enter or read percent-of regression. Practise the direct percent-of entry and remove the unnecessary decimal-multiplication comparison. Introduce connected percent statements before showing the worked discount-and-fee example. Show the Desmos translation and readout in percent answer feedback. Merge the repeated one-definition reminder into the worked regression card. Describe the values Desmos shows instead of asking students to interpret assigned-value terminology. Previous specification: archive/tool-focus-2026-11/percentages-and-percent-change.json."
 }

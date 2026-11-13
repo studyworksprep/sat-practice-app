@@ -73,65 +73,9 @@
       }
     },
     {
-      "shared_prompt": "shared_define_a_list",
-      "kind": "raw_block",
-      "id": "definition_result_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "After entering \\(A=[2,3,4,5]\\), what does A represent?",
-        "choices": [
-          "The four-value list \\([2,3,4,5]\\)",
-          "The single number 14",
-          "A point with four coordinates",
-          "An equation that must be solved"
-        ],
-        "correct_index": 0,
-        "allow_retry": true,
-        "hint": "Square brackets tell Desmos to keep the values as a list.",
-        "explanation": "A stands for the complete four-value list, so the list can be reused by name."
-      },
-      "calculator": {
-        "display": "open",
-        "mode": "preset",
-        "title": "Read the named list",
-        "initial_expressions": [
-          {
-            "id": "defined_list_a",
-            "latex": "A=[2,3,4,5]"
-          }
-        ],
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
-      }
-    },
-    {
-      "shared_prompt": "shared_define_a_list",
       "kind": "text",
       "id": "add_to_list",
-      "html": "<h2>Change every value at once</h2><p>For \\(A=[2,3,4,5]\\), typing \\(B=A+2\\) adds 2 to each value. It gives \\([4,5,6,7]\\). The same idea works for subtraction, multiplication, division, and powers.</p>",
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "shared_prompt": "shared_define_a_list",
-      "kind": "raw_block",
-      "id": "add_scalar_prediction_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "What list does \\(A+2\\) produce?",
-        "choices": [
-          "\\([2,3,4,5,2]\\)",
-          "\\([2,3,4,7]\\)",
-          "\\([4,5,6,7]\\)",
-          "\\([16]\\)"
-        ],
-        "correct_index": 2,
-        "allow_retry": true,
-        "hint": "Add 2 separately to 2, 3, 4, and 5.",
-        "explanation": "Desmos adds 2 to each element, producing \\([4,5,6,7]\\)."
-      },
+      "html": "<h2>Change every value at once</h2><p>Arithmetic on a list acts on every value in it. For example, <strong>B=A+2</strong> creates a new list by adding 2 to every value of A.</p><p>The same idea works for subtraction, multiplication, division, and powers. Desmos applies the operation to the whole list.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -142,7 +86,7 @@
       "id": "add_scalar_desmos_check",
       "block_type": "check",
       "content": {
-        "prompt": "What does the calculator show for list B?",
+        "prompt": "For \\(A=[2,3,4,5]\\), enter \\(B=A+2\\). What does Desmos show for B?",
         "choices": [
           "\\(B=[2,3,4,5,2]\\)",
           "\\(B=[4,5,6,7]\\)",
@@ -179,7 +123,7 @@
       "id": "multiply_scalar_check",
       "block_type": "check",
       "content": {
-        "prompt": "What does \\(3A\\) produce?",
+        "prompt": "With \\(A=[2,3,4,5]\\), what list does Desmos display for \\(3A\\)?",
         "choices": [
           "\\([2,3,4,5,2,3,4,5,2,3,4,5]\\)",
           "\\([5,6,7,8]\\)",
@@ -188,8 +132,25 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Multiply each element in A by 3.",
-        "explanation": "Multiplying a list by 3 multiplies every element by 3."
+        "hint": "Read the three-times-A row in the calculator.",
+        "explanation": "Multiplying a list by 3 multiplies every element by 3.",
+        "calculator": {
+          "display": "open",
+          "mode": "preset",
+          "title": "Read the transformed list",
+          "initial_expressions": [
+            {
+              "id": "list_a",
+              "latex": "A=[2,3,4,5]"
+            },
+            {
+              "id": "transform",
+              "latex": "3A"
+            }
+          ],
+          "editable": true,
+          "resettable": true
+        }
       },
       "calculator": {
         "display": "hidden"
@@ -271,7 +232,7 @@
       "id": "two_list_arithmetic_check",
       "block_type": "check",
       "content": {
-        "prompt": "What is \\(A+B\\)?",
+        "prompt": "What output does Desmos display for A+B?",
         "choices": [
           "\\([1,2,3,10,20,30]\\)",
           "\\([11,22,33]\\)",
@@ -280,8 +241,29 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Pair the first values, then the second values, then the third values.",
-        "explanation": "List arithmetic pairs elements by position, so \\(A+B=[11,22,33]\\)."
+        "hint": "Read the list on the A+B row and compare it with the options.",
+        "explanation": "List arithmetic pairs elements by position, so \\(A+B=[11,22,33]\\).",
+        "calculator": {
+          "display": "open",
+          "mode": "preset",
+          "title": "Read the paired-list sum",
+          "initial_expressions": [
+            {
+              "id": "list_a",
+              "latex": "A=[1,2,3]"
+            },
+            {
+              "id": "list_b",
+              "latex": "B=[10,20,30]"
+            },
+            {
+              "id": "sum",
+              "latex": "A+B"
+            }
+          ],
+          "editable": true,
+          "resettable": true
+        }
       },
       "calculator": {
         "display": "hidden"
@@ -373,7 +355,7 @@
     {
       "kind": "text",
       "id": "statistics_functions",
-      "html": "<h2>Ask for one summary number</h2><ul><li><strong>mean</strong> gives the average: \\(\\operatorname{mean}(A)\\).</li><li><strong>median</strong> gives the middle value, averaging the middle two when needed: \\(\\operatorname{median}(A)\\).</li><li><strong>total</strong> gives the sum: \\(\\operatorname{total}(A)\\).</li></ul>",
+      "html": "<h2>Ask for one summary number</h2><ul><li><strong>mean</strong> gives the average: \\(\\operatorname{mean}(A)\\).</li><li><strong>median</strong> gives the middle of the sorted data: \\(\\operatorname{median}(A)\\).</li><li><strong>total</strong> gives the sum: \\(\\operatorname{total}(A)\\).</li></ul>",
       "calculator": {
         "display": "hidden"
       }
@@ -461,7 +443,7 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "The function name is the same as the statistic being requested.",
-        "explanation": "median(D) finds the middle value, or averages the two middle values when the list has even length."
+        "explanation": "median(D) asks Desmos for the middle of the data. The command handles sorting and any calculation needed."
       },
       "calculator": {
         "display": "hidden"
@@ -473,7 +455,7 @@
       "id": "total_check",
       "block_type": "check",
       "content": {
-        "prompt": "What does \\(\\operatorname{total}(A)\\) return?",
+        "prompt": "For \\(A=[2,3,4,5]\\), what does Desmos display for \\(\\operatorname{total}(A)\\)?",
         "choices": [
           "\\(3.5\\)",
           "\\(4\\)",
@@ -482,8 +464,25 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "total adds every value in the list.",
-        "explanation": "\\(2+3+4+5=14\\), so total(A) returns 14."
+        "hint": "Read the result on the total(A) row.",
+        "explanation": "Desmos displays \\(14\\). The total command adds the values in the stored list.",
+        "calculator": {
+          "display": "open",
+          "mode": "preset",
+          "title": "Read the total",
+          "initial_expressions": [
+            {
+              "id": "list_a",
+              "latex": "A=[2,3,4,5]"
+            },
+            {
+              "id": "total",
+              "latex": "\\operatorname{total}(A)"
+            }
+          ],
+          "editable": true,
+          "resettable": true
+        }
       },
       "calculator": {
         "display": "hidden"
@@ -577,7 +576,7 @@
         "input": "numeric",
         "answer": "38",
         "allow_retry": false,
-        "explanation": "\\(A+2=[7,9,10,12]\\), and those values total 38."
+        "explanation": "Enter \\(A=[5,7,8,10]\\), then \\(\\operatorname{total}(A+2)\\). Desmos displays \\(38\\)."
       },
       "calculator": {
         "display": "open",
@@ -638,7 +637,7 @@
         "input": "numeric",
         "answer": "24",
         "allow_retry": false,
-        "explanation": "Adding \\(6\\) to every element shifts the mean by exactly \\(6\\): \\(18+6=24\\). In Desmos, mean\\(([11,14,19,22,24]+6)\\) confirms it; \\(19.2\\) comes from adding \\(6\\) to only one value."
+        "explanation": "Enter \\(A=[11,14,19,22,24]\\), then \\(\\operatorname{mean}(A+6)\\). Desmos displays \\(24\\), the mean of the changed data set."
       },
       "calculator": {
         "display": "open",
@@ -659,5 +658,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Correcting a group before combining thirteen unsorted measurements demonstrates list arithmetic, join, and median without requiring unfamiliar commands in the opening prompt. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Correcting a group before combining thirteen unsorted measurements demonstrates list arithmetic, join, and median without requiring unfamiliar commands in the opening prompt. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Remove a duplicate list-definition quiz after the syntax check and actual entry. Remove the manual list-arithmetic prediction before the existing Desmos result check. Introduce whole-list arithmetic before the specific result check. Use Desmos readouts for list arithmetic and summaries instead of requiring manual calculations. Previous specification: archive/tool-focus-2026-11/desmos-list-tools.json."
 }

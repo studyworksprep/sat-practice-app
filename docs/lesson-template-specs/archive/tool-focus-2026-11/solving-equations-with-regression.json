@@ -1,0 +1,628 @@
+{
+  "title": "Solving Equations with Regression",
+  "description": "Use the tilde in Desmos to solve equations, reuse the results, select a required solution, and connect two equations.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "try_the_opening_equation",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this equation. Keep what you tried, even if you got stuck.</p>",
+      "shared_prompt": {
+        "id": "regression_opening_problem",
+        "title": "Opening problem",
+        "html": "<p>Solve \\(\\sqrt{3x+9}+\\sqrt{x+7}=10\\).</p>"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "why_learn_regression",
+      "html": "<h2>Let Desmos find the value</h2><p>Those square roots can turn solving for \\(x\\) into a lot of algebra. Instead, we can use a Desmos tool called <strong>regression</strong>. Regression searches for a value that makes the two sides match as closely as possible.</p><p>We’ll start with a short equation so you can see how to enter it and where to read the answer. Then we’ll come back to this one.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "introduce_tilde_swap",
+      "html": "<h2>Swap the equals sign</h2><p>Let’s say we need to solve this equation for \\(n\\):</p><p>\\(3n+4=19\\)</p><p>Replace the equals sign with \\(\\sim\\), called a <strong>tilde</strong>. Desmos will use regression to find a value of \\(n\\) that matches the two sides.</p><p>Type <strong>~</strong> on your keyboard, or find it on the ABC keypad.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "enter_first_tilde",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Try the tilde swap",
+        "instructions_html": "<p>Enter the equation with <strong>~</strong> in place of the equals sign.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "3n+4\\sim19",
+            "19\\sim3n+4"
+          ],
+          "state_rules": {
+            "min_expressions": 1,
+            "max_expressions": 1,
+            "require_visible_only": true,
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "n",
+              "value": 5,
+              "tolerance": 0.001
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>Nice work! You turned the equation into a regression.</p>",
+          "retry_message_html": "<p>Keep both sides and replace the equals sign with <strong>~</strong>.</p>",
+          "solution_html": "<p>Enter \\(3n+4\\sim19\\).</p>",
+          "reveal_solution_after_attempts": 3
+        },
+        "progression": {
+          "require_success": true
+        }
+      },
+      "shared_prompt": {
+        "id": "first_tilde_equation",
+        "title": "Equation to solve",
+        "html": "<p>\\(3n+4=19\\)</p>"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "read_first_assignment",
+      "block_type": "check",
+      "content": {
+        "allow_retry": true,
+        "prompt": "Under Regression Parameters, what does \\(n\\) equal?",
+        "input": "numeric",
+        "answer": "5",
+        "hint": "Read the number beside n below the regression.",
+        "solution": "Enter \\(3n+4\\sim19\\).\nRead \\(n=5\\) under Regression Parameters.",
+        "explanation": "Desmos shows \\(n=5\\), so that is the solution."
+      },
+      "shared_prompt": "first_tilde_equation",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Read n in Desmos",
+        "initial_expressions": [
+          {
+            "id": "row_1",
+            "latex": "3n+4\\sim19"
+          }
+        ],
+        "editable": true,
+        "resettable": true
+      }
+    },
+    {
+      "kind": "text",
+      "id": "read_the_fit_error",
+      "html": "<h2>Do the sides match?</h2><p>Desmos also shows <strong>RMSE</strong>, which measures how closely the two sides match. Look for zero or a tiny number close to zero, such as \\(10^{-13}\\).</p><p>A larger error means the sides still don’t match at the value Desmos found. Check the entry before using that value as a solution.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "notice_a_fit_with_error",
+      "block_type": "check",
+      "content": {
+        "allow_retry": true,
+        "prompt": "For \\(t^2+4=0\\), Desmos reports a value near \\(t=0\\) with RMSE \\(=4\\). What should you conclude?",
+        "choices": [
+          "Desmos shows RMSE \\(=4\\), so the solution is \\(t=4\\).",
+          "Desmos shows \\(t=0\\), so that must solve the equation.",
+          "Desmos shows \\(t=0\\), but the sides still don’t match.",
+          "Desmos shows RMSE \\(=4\\), so there are four solutions."
+        ],
+        "correct_index": 2,
+        "hint": "The number beside t and RMSE tell you different things. RMSE measures the gap between the two sides.",
+        "solution": "Enter \\(t^2+4\\sim0\\).\nDesmos shows \\(t=0\\), but RMSE is \\(4\\). The sides still don’t match at that value.",
+        "explanation": "You caught it! Desmos shows \\(t=0\\), but the sides still don’t match at that value. RMSE \\(=4\\) tells us there is still a gap."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Inspect the fit error",
+        "initial_expressions": [
+          {
+            "id": "row_1",
+            "latex": "t^2+4\\sim0"
+          }
+        ],
+        "editable": true,
+        "resettable": true
+      }
+    },
+    {
+      "kind": "text",
+      "id": "reuse_the_fitted_value",
+      "html": "<h2>The value stays available</h2><p>Once regression finds \\(n\\), Desmos remembers it. If a question asks for another expression involving \\(n\\), type that expression on a new row.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "evaluate_with_the_assignment",
+      "block_type": "check",
+      "content": {
+        "allow_retry": true,
+        "prompt": "On a new row, enter \\(2n+1\\). What value does Desmos display?",
+        "input": "numeric",
+        "answer": "11",
+        "hint": "Keep the regression row and type the new expression beneath it.",
+        "solution": "Keep \\(3n+4\\sim19\\), which gives \\(n=5\\).\nEnter \\(2n+1\\) on another row. Desmos displays \\(11\\).",
+        "explanation": "Desmos remembers \\(n=5\\), so the new row displays \\(11\\)."
+      },
+      "shared_prompt": "first_tilde_equation",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Use n on a new row",
+        "initial_expressions": [
+          {
+            "id": "row_1",
+            "latex": "3n+4\\sim19"
+          }
+        ],
+        "editable": true,
+        "resettable": true
+      }
+    },
+    {
+      "kind": "text",
+      "id": "use_a_regression_variable",
+      "html": "<h2>What if the unknown is x or y?</h2><p>Desmos uses lowercase \\(x\\) and \\(y\\) for graphing. For regression, replace them with uppercase \\(X\\) or \\(Y\\).</p><p>Read the value Desmos shows, then report your answer using the original letter.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "enter_with_uppercase_x",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Use X for x",
+        "instructions_html": "<p>Enter the equation as a regression, using uppercase \\(X\\).</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "4X-9\\sim23",
+            "23\\sim4X-9"
+          ],
+          "state_rules": {
+            "min_expressions": 1,
+            "max_expressions": 1,
+            "require_visible_only": true,
+            "require_regression": true,
+            "must_not_include_variables": [
+              "x",
+              "y"
+            ]
+          },
+          "expected_parameters": [
+            {
+              "name": "X",
+              "value": 8,
+              "tolerance": 0.001
+            }
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>You got it! You used uppercase \\(X\\) so Desmos can find its value.</p>",
+          "retry_message_html": "<p>Use uppercase \\(X\\) throughout and replace the equals sign with <strong>~</strong>.</p>",
+          "solution_html": "<p>Enter \\(4X-9\\sim23\\).</p>",
+          "reveal_solution_after_attempts": 3
+        },
+        "progression": {
+          "require_success": true
+        }
+      },
+      "shared_prompt": {
+        "id": "renamed_equation",
+        "title": "Equation to solve",
+        "html": "<p>\\(4x-9=23\\)</p>"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "report_the_original_variable",
+      "block_type": "check",
+      "content": {
+        "allow_retry": true,
+        "prompt": "Read the result. What should you report for the original equation?",
+        "choices": [
+          "\\(x=-8\\)",
+          "\\(X=8\\)",
+          "\\(x=23\\)",
+          "\\(x=8\\)"
+        ],
+        "correct_index": 3,
+        "hint": "Use the value from Desmos with the letter in the original equation.",
+        "solution": "Desmos shows \\(X=8\\).\nThe original equation uses \\(x\\), so report \\(x=8\\).",
+        "explanation": "Desmos gives \\(X=8\\). In the original equation, the solution is \\(x=8\\)."
+      },
+      "shared_prompt": "renamed_equation",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Read X and report x",
+        "initial_expressions": [
+          {
+            "id": "row_1",
+            "latex": "4X-9\\sim23"
+          }
+        ],
+        "editable": true,
+        "resettable": true
+      }
+    },
+    {
+      "kind": "text",
+      "id": "state_the_tilde_swap",
+      "html": "<h2>Tilde Swap</h2><ol><li><strong>Choose the letter.</strong> Keep letters such as \\(n\\). Change lowercase \\(x\\) or \\(y\\) to uppercase \\(X\\) or \\(Y\\).</li><li><strong>Swap the sign.</strong> Replace \\(=\\) with \\(\\sim\\).</li><li><strong>Read the result.</strong> Look for RMSE zero or tiny. Report the value Desmos shows using the original letter.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "solve_the_opening_equation",
+      "block_type": "check",
+      "content": {
+        "allow_retry": true,
+        "prompt": "Remember the equation from the start? Try it again with Tilde Swap. What is the value of \\(x\\)?",
+        "input": "numeric",
+        "answer": "9",
+        "hint": "Choose a letter for the unknown and make the tilde swap. Read its value and check RMSE.",
+        "solution": "Enter \\(\\sqrt{3X+9}+\\sqrt{X+7}\\sim10\\).\nDesmos shows \\(X=9\\) with zero or tiny RMSE.\nReport \\(x=9\\).",
+        "explanation": "You found \\(x=9\\). Compare that with your first attempt. Tilde Swap let Desmos handle the square roots."
+      },
+      "shared_prompt": "regression_opening_problem",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening problem again"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "what_one_result_tells_you",
+      "html": "<h2>What if there’s more than one solution?</h2><p>Regression gives you one value, but there may be other values that also work.</p><p>That means regression is not a good tool when a question asks for <strong>every solution</strong>, their sum, or how many solutions there are. Use graphing or another method that shows all of them.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "interpret_one_of_several_roots",
+      "block_type": "check",
+      "content": {
+        "allow_retry": true,
+        "prompt": "Look at the value Desmos reports. With zero or tiny RMSE, what does that result establish?",
+        "choices": [
+          "It found a solution, and other solutions may exist.",
+          "It found every solution to the equation.",
+          "The equation has exactly one solution.",
+          "The equation has as many solutions as the reported value."
+        ],
+        "correct_index": 0,
+        "hint": "A result with zero or tiny RMSE tells you one way for the sides to match.",
+        "solution": "Enter \\(z^2\\sim25\\).\nThe value Desmos shows is one solution. Regression does not list every solution.",
+        "explanation": "The reported value is one solution. For this equation, both \\(5\\) and \\(-5\\) work."
+      },
+      "shared_prompt": {
+        "id": "two_solution_equation",
+        "title": "Equation to solve",
+        "html": "<p>\\(z^2=25\\)</p>"
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Read one solution",
+        "initial_expressions": [
+          {
+            "id": "row_1",
+            "latex": "z^2\\sim25"
+          }
+        ],
+        "editable": true,
+        "resettable": true
+      }
+    },
+    {
+      "kind": "text",
+      "id": "target_a_known_range",
+      "html": "<h2>Ask for the value you need</h2><p>A <strong>restriction</strong> tells Desmos which values to look for. For the negative solution of \\(z^2=25\\), add \\(\\{z&lt;0\\}\\) at the <strong>end of the same regression row</strong>, immediately after \\(25\\):</p><p>\\(z^2\\sim25\\{z&lt;0\\}\\)</p><p>The braces direct the search to negative values.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "read_a_restricted_solution",
+      "block_type": "check",
+      "content": {
+        "allow_retry": true,
+        "prompt": "On the same regression row, add \\(\\{z<0\\}\\) immediately after \\(25\\). What does \\(z\\) equal now?",
+        "input": "numeric",
+        "answer": "-5",
+        "hint": "Keep the restriction in the existing row. Type the opening brace after 25, then z<0 and the closing brace.",
+        "solution": "Enter \\(z^2\\sim25\\{z<0\\}\\) all on one row.\nThe restriction directs the search to negative values, and Desmos shows \\(z=-5\\).",
+        "explanation": "The restricted regression gives \\(z=-5\\), the negative solution."
+      },
+      "shared_prompt": "two_solution_equation",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Restrict the search",
+        "initial_expressions": [
+          {
+            "id": "row_1",
+            "latex": "z^2\\sim25"
+          }
+        ],
+        "editable": true,
+        "resettable": true
+      }
+    },
+    {
+      "kind": "text",
+      "id": "connect_two_equations",
+      "html": "<h2>What if two equations share the unknowns?</h2><p>Desmos won’t connect two separate regression rows to solve a system. Use <strong>only one ~</strong>.</p><p>Keep <strong>=</strong> in the other equation and put one variable on its own. For \\(a+b=15\\), write \\(a=15-b\\). This is a <strong>definition</strong> of \\(a\\).</p><p>Use <strong>~</strong> in the remaining equation. Desmos can then find \\(b\\) and use the definition to calculate \\(a\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "complete_a_definition_and_regression",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Connect the two equations",
+        "instructions_html": "<p>The definition is entered. Add the other equation with <strong>~</strong>.</p>",
+        "initial_expressions": [
+          {
+            "id": "definition",
+            "latex": "a=15-b"
+          }
+        ],
+        "goal": {
+          "type": "multi_expression",
+          "required_count": 2
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "a=15-b",
+            "a^2+b^2\\sim117"
+          ],
+          "state_rules": {
+            "min_expressions": 2,
+            "max_expressions": 2,
+            "require_visible_only": true,
+            "require_regression": true
+          }
+        },
+        "feedback": {
+          "success_message_html": "<p>Nice work! You connected one definition to one regression.</p>",
+          "retry_message_html": "<p>Keep the definition of \\(a\\) and use the other equation as the regression.</p>",
+          "solution_html": "<p>Use two rows, \\(a=15-b\\) and \\(a^2+b^2\\sim117\\).</p>",
+          "reveal_solution_after_attempts": 3
+        },
+        "progression": {
+          "require_success": true
+        }
+      },
+      "shared_prompt": {
+        "id": "definition_and_regression_system",
+        "title": "Two equations together",
+        "html": "<p>\\(a+b=15\\)</p><p>\\(a^2+b^2=117\\)</p>"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "use_both_system_values",
+      "block_type": "check",
+      "content": {
+        "allow_retry": true,
+        "prompt": "Keep both rows. On a new row, enter \\(ab\\). What is the product?",
+        "input": "numeric",
+        "answer": "54",
+        "hint": "The regression and definition leave both a and b available. Type ab on another row.",
+        "solution": "Use \\(a=15-b\\) and \\(a^2+b^2\\sim117\\).\nEnter \\(ab\\) on another row. Desmos displays \\(54\\).",
+        "explanation": "Either pair of solutions gives \\(ab=54\\). Desmos can use both values on later rows."
+      },
+      "shared_prompt": "definition_and_regression_system",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Use a and b on a new row",
+        "initial_expressions": [
+          {
+            "id": "row_1",
+            "latex": "a=15-b"
+          },
+          {
+            "id": "row_2",
+            "latex": "a^2+b^2\\sim117"
+          }
+        ],
+        "editable": true,
+        "resettable": true
+      }
+    },
+    {
+      "kind": "text",
+      "id": "keep_one_regression",
+      "html": "<h2>Give each row one job</h2><p>For a system, make the easier equation a definition and the harder one the regression. Use one <strong>~</strong>, and define each variable once.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "solve_a_new_system",
+      "block_type": "check",
+      "content": {
+        "allow_retry": false,
+        "prompt": "The equations \\(p+q=8\\) and \\(p^3+q=32\\) are both true. Select Reset, then use Tilde Swap to find \\(q\\).",
+        "input": "numeric",
+        "answer": "5",
+        "explanation": "One setup is \\(q=8-p\\) and \\(p^3+q\\sim32\\). Desmos fits \\(p=3\\), so \\(q=5\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Choose the two-line setup"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "recall_tilde_swap",
+      "block_type": "check",
+      "content": {
+        "allow_retry": false,
+        "prompt": "An equation looks tedious to rearrange. Which plan describes Tilde Swap?",
+        "choices": [
+          "Use lowercase x, swap = for ~, and report the RMSE as the answer.",
+          "Choose a letter for the unknown, swap = for ~, and read its value with zero or tiny RMSE.",
+          "Choose a letter for the unknown, swap = for ~, and treat that value as every solution.",
+          "Use lowercase x, graph the left side, and report its y-intercept."
+        ],
+        "correct_index": 1,
+        "explanation": "Choose a letter for the unknown, make the tilde swap, and read its value and RMSE. Use the original letter in your answer."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "independent_practice_intro",
+      "html": "<h2>Try it on your own</h2><p>Choose the setup for each question. Try these now or save them for homework. Select <strong>Reset</strong> in Desmos before each question.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_single_equation",
+      "block_type": "check",
+      "content": {
+        "allow_retry": false,
+        "prompt": "What value of \\(x\\) satisfies \\(4x+7=31\\)?",
+        "input": "numeric",
+        "answer": "6",
+        "explanation": "Enter \\(4X+7\\sim31\\). Desmos shows \\(X=6\\), so report \\(x=6\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Independent practice 1"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_reuse_assignment",
+      "block_type": "check",
+      "content": {
+        "allow_retry": false,
+        "prompt": "If \\(5r-3=17\\), what is the value of \\(r^2+2\\)?",
+        "input": "numeric",
+        "answer": "18",
+        "explanation": "Enter \\(5r-3\\sim17\\), then \\(r^2+2\\) on a new row. Desmos displays \\(18\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Independent practice 2"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_restricted_solution",
+      "block_type": "check",
+      "content": {
+        "allow_retry": false,
+        "prompt": "If \\(w<0\\) and \\(w^2-3w=18\\), what is the value of \\(w\\)?",
+        "input": "numeric",
+        "answer": "-3",
+        "explanation": "Enter \\(w^2-3w\\sim18\\{w<0\\}\\). Desmos shows \\(w=-3\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Independent practice 3"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_system_product",
+      "block_type": "check",
+      "content": {
+        "allow_retry": false,
+        "prompt": "If \\(r+s=9\\) and \\(r^2+s^2=41\\), what is the value of \\(rs\\)?",
+        "input": "numeric",
+        "answer": "20",
+        "explanation": "Use \\(r=9-s\\) and \\(r^2+s^2\\sim41\\), then enter \\(rs\\) on a new row. Desmos displays \\(20\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Independent practice 4"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "allow_retry": false,
+        "prompt": "If \\(\\sqrt{2w+15}=w\\), what is the value of \\(w\\)?",
+        "input": "numeric",
+        "answer": "5",
+        "explanation": "Enter \\(\\sqrt{2w+15}\\sim w\\). Desmos shows \\(w=5\\), with zero or tiny RMSE."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Independent practice 5"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Tilde Swap</h2><p>Let Desmos find the value, then use it where the question needs it.</p>",
+        "button_label": "Complete lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

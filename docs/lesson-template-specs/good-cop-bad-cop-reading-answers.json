@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice best states the main idea of the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Otters can limit urchin grazing, but their absence allows urchins to deplete kelp even at the wave-exposed sites Herrera surveyed.</li><li>Strong waves can limit urchin grazing, and otters tend to concentrate at the exposed headlands where kelp remains particularly dense.</li><li>Protection from urchin grazing can depend on both otter activity and wave exposure, helping explain differences among kelp sites.</li><li>Otters and wave action can both protect kelp, and their effects appear equally strong at the coastal sites Herrera surveyed.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_kelp_conditions",
         "title": "Kelp along a coastline",
-        "html": "<p>Marine biologist Tomás Herrera compared kelp forests along the same coastline. Sites patrolled by sea otters had few sea urchins and dense kelp, fitting the explanation that otters protect kelp by eating urchins. Sites with few otters, however, were not uniform. At exposed headlands, strong waves limited urchin grazing and kelp remained dense. Sheltered bays with similarly few otters had heavily grazed kelp. Herrera proposed considering local wave conditions alongside otter counts when predicting whether a kelp forest would remain abundant.</p>"
+        "html": "<p>Marine biologist Tomás Herrera compared kelp forests along the same coastline. Sites patrolled by sea otters had few sea urchins and dense kelp, fitting the explanation that otters protect kelp by eating urchins. Sites with few otters, however, were not uniform. At exposed headlands, strong waves limited urchin grazing and kelp remained dense. Sheltered bays with similarly few otters had heavily grazed kelp. Herrera proposed considering local wave conditions alongside otter counts when predicting whether a kelp forest would remain abundant.</p><p>Which choice best states the main idea of the text?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Otters can limit urchin grazing, but their absence allows urchins to deplete kelp even at the wave-exposed sites Herrera surveyed.</li><li>Strong waves can limit urchin grazing, and otters tend to concentrate at the exposed headlands where kelp remains particularly dense.</li><li>Protection from urchin grazing can depend on both otter activity and wave exposure, helping explain differences among kelp sites.</li><li>Otters and wave action can both protect kelp, and their effects appear equally strong at the coastal sites Herrera surveyed.</li></ol>"
       }
     },
     {
@@ -368,7 +368,7 @@
       "id": "roof_coating_runner_up_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which claim in Choice B goes beyond the roof-coating study’s findings?",
+        "prompt": "Consider this answer: “Coated roofs were cooler at midday, so the coating lowered indoor temperature in every tested building.” Which part goes beyond the study’s findings?",
         "choices": [
           "It says the coating lowered indoor temperature in every tested building, but the indoor results varied.",
           "It says roofs when the passage measures the temperature of the buildings' roof surfaces.",
@@ -592,7 +592,11 @@
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "opening_kelp_conditions"
+      "shared_prompt": {
+        "id": "opening_kelp_conditions_return",
+        "title": "Kelp along a coastline",
+        "html": "<p>Marine biologist Tomás Herrera compared kelp forests along the same coastline. Sites patrolled by sea otters had few sea urchins and dense kelp, fitting the explanation that otters protect kelp by eating urchins. Sites with few otters, however, were not uniform. At exposed headlands, strong waves limited urchin grazing and kelp remained dense. Sheltered bays with similarly few otters had heavily grazed kelp. Herrera proposed considering local wave conditions alongside otter counts when predicting whether a kelp forest would remain abundant.</p>"
+      }
     },
     {
       "kind": "text",
@@ -669,5 +673,5 @@
       }
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Apply Good Cop / Bad Cop to three partly true answers whose added clauses contradict or exceed the evidence. Previous specification: archive/rw-openings-2026-11/good-cop-bad-cop-reading-answers.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Apply Good Cop / Bad Cop to three partly true answers whose added clauses contradict or exceed the evidence. Previous specification: archive/rw-openings-2026-11/good-cop-bad-cop-reading-answers.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Quote the answer being diagnosed so the student can evaluate it without remembering a choice from the previous card. Previous specification: archive/tool-focus-2026-11/good-cop-bad-cop-reading-answers.json."
 }

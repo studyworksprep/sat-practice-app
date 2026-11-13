@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice completes the text with the most logical and precise word or phrase?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>authoritative</li><li>provisional</li><li>comprehensive</li><li>controversial</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_bird_map_scope",
         "title": "An ecologist’s maps",
-        "html": "<p>Liu’s spring census of birds on a forest’s northern slopes recorded each nest precisely, but her teams had not yet surveyed the southern slopes or returned in other seasons. The initial maps proved useful to land managers, who praised their detail. Although she welcomed that response, Liu continued to describe her account of the forest’s year-round bird distribution as _____.</p>"
+        "html": "<p>Liu’s spring census of birds on a forest’s northern slopes recorded each nest precisely, but her teams had not yet surveyed the southern slopes or returned in other seasons. The initial maps proved useful to land managers, who praised their detail. Although she welcomed that response, Liu continued to describe her account of the forest’s year-round bird distribution as _____.</p><p>Which choice completes the text with the most logical and precise word or phrase?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>authoritative</li><li>provisional</li><li>comprehensive</li><li>controversial</li></ol>"
       }
     },
     {
@@ -449,7 +449,11 @@
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "opening_bird_map_scope"
+      "shared_prompt": {
+        "id": "opening_bird_map_scope_return",
+        "title": "An ecologist’s maps",
+        "html": "<p>Liu’s spring census of birds on a forest’s northern slopes recorded each nest precisely, but her teams had not yet surveyed the southern slopes or returned in other seasons. The initial maps proved useful to land managers, who praised their detail. Although she welcomed that response, Liu continued to describe her account of the forest’s year-round bird distribution as _____.</p>"
+      }
     },
     {
       "kind": "raw_block",
@@ -552,5 +556,5 @@
       }
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use whole-text prediction to resist positive-tone choices and distinguish incomplete knowledge from controversy; the deciding coverage clues precede the blank sentence. Previous specification: archive/rw-openings-2026-11/words-in-context-read-predict-match.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use whole-text prediction to resist positive-tone choices and distinguish incomplete knowledge from controversy; the deciding coverage clues precede the blank sentence. Previous specification: archive/rw-openings-2026-11/words-in-context-read-predict-match.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/words-in-context-read-predict-match.json."
 }

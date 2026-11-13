@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>What is c?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(c=1\\)</li><li>\\(c=2\\)</li><li>\\(c=3\\)</li><li>\\(c=9\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "shared_transfer_transition",
         "title": "Function transfer problem",
-        "html": "<p>A function is defined by</p><p>\\[r(x)=cx^2+4\\]</p><p>and \\(r(c)=31\\).</p>"
+        "html": "<p>A function is defined by</p><p>\\[r(x)=cx^2+4\\]</p><p>and \\(r(c)=31\\).</p><p>What is c?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(c=1\\)</li><li>\\(c=2\\)</li><li>\\(c=3\\)</li><li>\\(c=9\\)</li></ol>"
       }
     },
     {
@@ -362,27 +362,9 @@
     {
       "kind": "text",
       "id": "missing_constant_transition",
-      "html": "<h2>A condition can determine a constant</h2><p>Suppose \\(f(x)=ax^2+5\\) and \\(f(a)=13\\). The constant a also takes the input’s place, so \\(f(a)=a(a)^2+5\\).</p><p>Instead of substituting by hand, we can use <strong>regression</strong>, a Desmos tool that finds a value making two sides match.</p>",
+      "html": "<h2>A condition can determine a constant</h2><p>A function rule may contain an unknown constant. A condition tells you an input and its required output.</p><p><strong>Regression</strong> lets Desmos find a constant that makes the condition match. Keep the function notation: define the rule with <strong>=</strong>, then use <strong>~</strong> on the condition.</p>",
       "calculator": {
         "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "missing_constant_substitution_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "If \\(g(x)=bx+4\\), which expression is equal to \\(g(b)\\)?",
-        "choices": [
-          "\\(b+4\\)",
-          "\\(bx+4\\)",
-          "\\(b^2+4\\)",
-          "\\(2b+4\\)"
-        ],
-        "correct_index": 2,
-        "allow_retry": true,
-        "hint": "Replace the input x in bx + 4 with b. The coefficient b remains in place.",
-        "explanation": "\\(g(b)=b(b)+4=b^2+4\\)."
       }
     },
     {
@@ -432,8 +414,8 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Read the value below f(a) ~ 13, or check which value makes a³ + 5 = 13.",
-        "explanation": "\\(a=2\\) makes \\(f(a)=a^3+5=8+5=13\\)."
+        "hint": "Read a under Regression Parameters below the condition row.",
+        "explanation": "Desmos shows \\(a=2\\). The function definition and condition let regression find the constant directly."
       },
       "calculator": {
         "display": "open",
@@ -457,7 +439,7 @@
     {
       "kind": "text",
       "id": "fixed_input_variation",
-      "html": "<h2>The condition can use an ordinary input</h2><p>For \\(g(x)=bx+4\\) and \\(g(5)=19\\), define g(x), then enter \\(g(5)\\sim19\\). The input stays 5 while Desmos finds b. The same two-row setup still works.</p>",
+      "html": "<h2>The condition can use an ordinary input</h2><p>The given input may be a number rather than the unknown constant. Keep that number inside the function’s parentheses when you enter the condition.</p><p>The same two-row setup works: define the rule, then let regression match the required output.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -476,8 +458,8 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "Enter g(x) = bx + 4, then g(5) ~ 19. You can check with 5b + 4 = 19.",
-        "explanation": "Desmos shows \\(b=3\\), and \\(g(5)=3(5)+4=19\\)."
+        "hint": "Define \\(g(x)=bx+4\\), then enter \\(g(5)\\sim19\\). Read b below the regression.",
+        "explanation": "Desmos shows \\(b=3\\). The given input stayed 5 while regression found the constant."
       },
       "calculator": {
         "display": "open",
@@ -498,7 +480,11 @@
       }
     },
     {
-      "shared_prompt": "shared_transfer_transition",
+      "shared_prompt": {
+        "id": "shared_transfer_transition_return",
+        "title": "Function transfer problem",
+        "html": "<p>A function is defined by</p><p>\\[r(x)=cx^2+4\\]</p><p>and \\(r(c)=31\\).</p>"
+      },
       "kind": "raw_block",
       "id": "transfer_result_check",
       "block_type": "check",
@@ -512,13 +498,13 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "In r(c), replace the input x with c. You can define r(x) in Desmos and use r(c)~31 to find c.",
-        "explanation": "\\(r(c)=c(c)^2+4=c^3+4\\), and \\(3^3+4=31\\), so \\(c=3\\).",
+        "hint": "Define \\(r(x)=cx^2+4\\), then enter \\(r(c)\\sim31\\). Read c under Regression Parameters.",
+        "explanation": "You found \\(c=3\\). Desmos used the function rule inside the condition, so you could read the constant directly.",
         "calculator": {
           "display": "open",
           "mode": "scratch"
         },
-        "solution": "\\(r(c)=c(c)^2+4=c^3+4\\), and \\(3^3+4=31\\), so \\(c=3\\)."
+        "solution": "Enter \\(r(x)=cx^2+4\\) with an equals sign.\nOn another row, enter \\(r(c)\\sim31\\). Desmos shows \\(c=3\\). Choose C."
       }
     },
     {
@@ -550,7 +536,7 @@
       }
     },
     {
-      "shared_prompt": "shared_transfer_transition",
+      "shared_prompt": "shared_transfer_transition_return",
       "kind": "raw_block",
       "id": "requested_expression_check",
       "block_type": "check",
@@ -559,7 +545,7 @@
         "input": "numeric",
         "answer": "7",
         "allow_retry": false,
-        "explanation": "Substitute \\(c=3\\): \\(2c+1=2(3)+1=7\\)."
+        "explanation": "Keep the definition and regression that found \\(c=3\\). Enter \\(2c+1\\) on a new row; Desmos displays \\(7\\)."
       },
       "calculator": {
         "display": "open",
@@ -596,5 +582,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Introduce the missing-constant variation generally and let Desmos use the function notation directly. Remove the hand-substitution quiz before the regression workflow; assess finding the constant with the tool instead. Introduce fixed numerical inputs without solving the upcoming example in advance. Keep missing-constant feedback in the Desmos workflow. Use the taught function-definition and regression path in the return solution. Reuse the fitted constant in Desmos when reporting a requested expression. Previous specification: archive/tool-focus-2026-11/functions-and-function-notation.json."
 }

@@ -1,19 +1,19 @@
 {
   "title": "Initial Modifiers: Match the Noun After the Comma",
   "description": "Identify an opening modifier, predict the noun phrase it describes or compares, and choose the answer that places that noun phrase immediately after the comma.",
-  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 7040ee67-9287-4aaa-9ef0-89de44f5a597 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nReading and Writing opening revision 2026-11-12: Use Modifier Match on a property comparison; all options reuse the same finding, but three attach the comparison to a different grammatical head. Previous specification: archive/rw-openings-2026-11/initial-modifiers-match-the-noun-after-the-comma.json. The replacement question has a new block ID; unrelated lesson items retain their identities.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 7040ee67-9287-4aaa-9ef0-89de44f5a597 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nReading and Writing opening revision 2026-11-12: Use Modifier Match on a property comparison; all options reuse the same finding, but three attach the comparison to a different grammatical head. Previous specification: archive/rw-openings-2026-11/initial-modifiers-match-the-noun-after-the-comma.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/initial-modifiers-match-the-noun-after-the-comma.json.",
   "blocks": [
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice completes the text so that it conforms to the conventions of Standard English?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>juveniles raised in bright tanks grew at an 18% higher rate in the researcher’s study.</li><li>the researcher measured an 18% higher growth rate for juveniles raised in bright tanks.</li><li>raising juveniles in bright tanks produced an 18% higher growth rate in the researcher’s study.</li><li>the growth rate of juveniles raised in bright tanks was 18% higher in the researcher’s study.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_growth_comparison",
         "title": "Comparing growth rates",
-        "html": "<p>A researcher compares the growth rate of juvenile fish raised in bright tanks with that of juveniles raised in shaded tanks. The bright-tank juveniles grew 18% faster. Compared with that of juveniles raised in shaded tanks, _____</p>"
+        "html": "<p>A researcher compares the growth rate of juvenile fish raised in bright tanks with that of juveniles raised in shaded tanks. The bright-tank juveniles grew 18% faster. Compared with that of juveniles raised in shaded tanks, _____</p><p>Which choice completes the text so that it conforms to the conventions of Standard English?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>juveniles raised in bright tanks grew at an 18% higher rate in the researcher’s study.</li><li>the researcher measured an 18% higher growth rate for juveniles raised in bright tanks.</li><li>raising juveniles in bright tanks produced an 18% higher growth rate in the researcher’s study.</li><li>the growth rate of juveniles raised in bright tanks was 18% higher in the researcher’s study.</li></ol>"
       }
     },
     {
@@ -390,7 +390,11 @@
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "opening_growth_comparison"
+      "shared_prompt": {
+        "id": "opening_growth_comparison_return",
+        "title": "Comparing growth rates",
+        "html": "<p>A researcher compares the growth rate of juvenile fish raised in bright tanks with that of juveniles raised in shaded tanks. The bright-tank juveniles grew 18% faster. Compared with that of juveniles raised in shaded tanks, _____</p>"
+      }
     },
     {
       "kind": "raw_block",

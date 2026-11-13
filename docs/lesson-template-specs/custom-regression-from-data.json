@@ -1,6 +1,6 @@
 {
   "title": "Find Missing Constants with Custom Regression",
-  "description": "Turn data into a custom Desmos regression using table variables, incorporate relationships as definitions, and substitute function rules to find missing constants in a required equation form.",
+  "description": "Turn data into a custom Desmos regression using table variables, incorporate relationships and supplied functions as definitions, and read missing constants in the required equation form.",
   "blocks": [
     {
       "kind": "text",
@@ -87,7 +87,7 @@
             },
             {
               "trigger": "missing_parameter",
-              "message_html": "<p>Desmos is not assigning \\(a\\) yet. The regression must use the table's own column names, \\(x_1\\) and \\(y_1\\).</p>"
+              "message_html": "<p>If a is not shown under Regression Parameters, check the setup. The regression must use the table's own column names, \\(x_1\\) and \\(y_1\\).</p>"
             },
             {
               "trigger": "parameter_mismatch",
@@ -324,7 +324,7 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "solution": "Enter the point \\((2,34)\\) in a table, so \\(x_1=2\\) and \\(y_1=34\\).\nEnter the definition \\(a=10-b\\), then the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\).\nDesmos adjusts the one free constant and assigns \\(b=5\\); the definition line reports the matching \\(a=5\\) automatically.\nRead both values: \\(a=5\\) and \\(b=5\\).\nSo the answer is choice B, \\(a=5,\\ b=5\\).",
+        "solution": "Enter the point \\((2,34)\\) in a table, so \\(x_1=2\\) and \\(y_1=34\\).\nEnter the definition \\(a=10-b\\), then the custom regression \\(y_1\\sim ax_1^2+bx_1+4\\).\nDesmos shows \\(b=5\\) under Regression Parameters; the definition line reports the matching \\(a=5\\) automatically.\nRead both values: \\(a=5\\) and \\(b=5\\).\nSo the answer is choice B, \\(a=5,\\ b=5\\).",
         "hint": "Read the value of \\(b\\), then use \\(a=10-b\\). Check that \\(4a+2b+4=34\\).",
         "explanation": "Regression gives \\(b=5\\), and the definition gives \\(a=10-5=5\\). The equation is \\(r(t)=5t^2+5t+4\\)."
       },
@@ -340,7 +340,7 @@
     {
       "kind": "text",
       "id": "function_notation_mapping",
-      "html": "<h2>Use the function that produced the points</h2><p>If \\(g(2)=7\\), enter \\((2,7)\\). The table output represents \\(g\\). If the rule for \\(g\\) uses another function, substitute that other function’s rule before fitting.</p><p>For \\(f(x)=x^2+5\\) and \\(g(x)=f(x)-c\\), fit \\(y_1\\sim x_1^2+5-c\\).</p>",
+      "html": "<h2>Keep a supplied function as a definition</h2><p>If \\(g(2)=7\\), enter \\((2,7)\\): the table’s outputs belong to \\(g\\).</p><p>If the rule for \\(g\\) uses another supplied function, define that function with <strong>=</strong> first. Use its name in the regression and let Desmos calculate the nested rule.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -374,8 +374,8 @@
       "block_type": "desmos_interactive",
       "content": {
         "id": "guided_function_constant",
-        "title": "Find a constant after substitution",
-        "instructions_html": "<p>Enter the three points from \\(g\\) in a table. Fit \\(y_1\\sim x_1^2+5-c\\) and read \\(c\\).</p>",
+        "title": "Fit a rule that uses another function",
+        "instructions_html": "<p>Enter the three points from \\(g\\) in a table. Define \\(f(x)=x^2+5\\), then fit \\(y_1\\sim f(x_1)-c\\). Read \\(c\\).</p>",
         "initial_expressions": [],
         "goal": {
           "type": "enter_expression",
@@ -427,19 +427,19 @@
             },
             {
               "trigger": "missing_regression",
-              "message_html": "<p>Substitute the rule for \\(f\\), then enter \\(y_1\\sim x_1^2+5-c\\) with <strong>~</strong>.</p>"
+              "message_html": "<p>Keep the definition of \\(f\\), then enter \\(y_1\\sim f(x_1)-c\\) using the table’s input column.</p>"
             },
             {
               "trigger": "missing_parameter",
-              "message_html": "<p>Desmos is not assigning \\(c\\) yet. Check that the regression uses \\(x_1\\) and \\(y_1\\).</p>"
+              "message_html": "<p>Check the definition of \\(f\\), the table column names, and the regression row. Look for \\(c\\) under Regression Parameters.</p>"
             },
             {
               "trigger": "parameter_mismatch",
-              "message_html": "<p>Desmos shows a different value. Check the substituted rule \\(x_1^2+5-c\\).</p>"
+              "message_html": "<p>Check that \\(f(x)=x^2+5\\) and that the model subtracts \\(c\\) from \\(f(x_1)\\).</p>"
             }
           ],
           "reveal_solution_after_attempts": 3,
-          "solution_html": "<p>Table: \\((0,-3)\\), \\((2,1)\\), \\((3,6)\\). Regression: \\(y_1\\sim x_1^2+5-c\\). Desmos shows <strong>c = 8</strong>.</p>"
+          "solution_html": "<p>Enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table. Define \\(f(x)=x^2+5\\). Enter \\(y_1\\sim f(x_1)-c\\). Desmos shows <strong>c = 8</strong>.</p>"
         },
         "progression": {
           "require_success": true
@@ -466,9 +466,9 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "solution": "Enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table.\nSubstitute the given rule for \\(f\\): since \\(g(x)=f(x)-c\\) and \\(f(x)=x^2+5\\), the model to fit is \\(y_1\\sim x_1^2+5-c\\).\nRun the regression and read the value: Desmos shows \\(c=8\\), fitting every row of the table at once.\nSo the answer is choice B, \\(c=8\\).",
-        "hint": "Use the first row: \\(-3=0^2+5-c\\).",
-        "explanation": "Desmos shows \\(c=8\\). Substitution gives \\(g(x)=x^2+5-8=x^2-3\\), which matches all three table rows."
+        "solution": "Enter \\((0,-3)\\), \\((2,1)\\), and \\((3,6)\\) in a table.\nDefine \\(f(x)=x^2+5\\), then enter \\(y_1\\sim f(x_1)-c\\).\nDesmos shows \\(c=8\\). Choose B.",
+        "hint": "Read c under Regression Parameters below the row that uses the table and f.",
+        "explanation": "You found \\(c=8\\). Desmos used the supplied function definition while fitting the points from \\(g\\)."
       },
       "calculator": {
         "display": "open",
@@ -482,7 +482,7 @@
     {
       "kind": "text",
       "id": "special_exponential_form",
-      "html": "<h2>Keep a growth rate visible</h2><p>For \\(N(t)=A(1+r)^t\\), \\(r\\) is the decimal growth rate. If \\(A=200\\), define \\(A=200\\), then fit \\(y_1\\sim A(1+r)^{x_1}\\). This gives \\(r\\) directly in the form the question uses.</p>",
+      "html": "<h2>Keep the growth rate in the given form</h2><p>For \\(N(t)=A(1+r)^t\\), \\(r\\) is the decimal growth rate. Define any known constant, then fit the remaining constants in that same form.</p><p>If the question restricts a constant, put the condition in braces at the end of the regression row. For a positive rate, use \\(\\{r>0\\}\\).</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -609,8 +609,8 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "The output is multiplied by \\(1.10\\) each step, and the model writes that factor as \\(1+r\\).",
-        "explanation": "\\(1+r=1.10\\), so \\(r=0.10=10\\%\\). Custom regression reports the parameter in the form the question uses."
+        "hint": "Read r under Regression Parameters, then convert that decimal to a percent.",
+        "explanation": "Desmos shows \\(r=0.10\\), so the growth rate is \\(10\\%\\). The given form makes the rate itself available directly."
       },
       "calculator": {
         "display": "open",
@@ -669,11 +669,11 @@
           "Enter input-output points, rewrite extra relationships as regressions, substitute \\(y_1\\) and \\(x_1\\) into every definition, and fit the required form using \\(=\\).",
           "Fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\) before entering the points, then rewrite the fitted equation to match any extra relationships.",
           "Enter input-output points and fit the required form with \\(y_1\\sim\\), leaving extra relationships and other function rules out of Desmos.",
-          "Enter input-output points, rewrite extra relationships as definitions, substitute other function rules, and fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\)."
+          "Enter input-output points, rewrite extra relationships as definitions, define other supplied functions, and fit the required form using \\(y_1\\), \\(x_1\\), and \\(\\sim\\)."
         ],
         "correct_index": 3,
         "allow_retry": false,
-        "explanation": "You have it. That workflow preserves the equation form the question requires while giving Desmos every data point and coefficient relationship it needs."
+        "explanation": "You have it. The table supplies the points, the definitions preserve the extra facts, and the regression fits the exact form the question needs."
       },
       "calculator": {
         "display": "hidden"
@@ -696,7 +696,7 @@
         "input": "numeric",
         "answer": "15",
         "allow_retry": false,
-        "explanation": "\\(g(2)=9a=45\\) gives \\(a=5\\), so \\(g(1)=5\\cdot3=15\\). Reporting \\(5\\) answers the wrong quantity — that is \\(a\\) — and \\(135\\) is \\(g(3)\\). In Desmos, \\(a\\cdot3^{x_1}\\sim\\) with the point \\((2,45)\\) finds the same constant."
+        "explanation": "Enter the point \\((2,45)\\) in a table and fit \\(y_1\\sim a\\cdot3^{x_1}\\). Desmos shows \\(a=5\\). On a new row, enter \\(a\\cdot3^1\\); the result is \\(15\\), the requested value of \\(g(1)\\)."
       },
       "calculator": {
         "display": "open",
@@ -714,7 +714,7 @@
         "prompt": "A function has the form \\(N(t)=A(1+r)^t\\), with \\(A=80\\) and \\(N(2)=125\\). If \\(r>0\\), what is the percent growth rate?",
         "answer": "25",
         "allow_retry": false,
-        "explanation": "Fitting the given form gives \\(r=0.25\\), which is a 25% growth rate."
+        "explanation": "Enter \\((2,125)\\) in a table and define \\(A=80\\). Fit \\(y_1\\sim A(1+r)^{x_1}\\{r>0\\}\\). Desmos shows \\(r=0.25\\), which is a \\(25\\%\\) growth rate."
       },
       "calculator": {
         "display": "open",
@@ -735,5 +735,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Three nonvertex points determine a shifted quadratic; custom regression returns its horizontal-shift parameter directly. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Three nonvertex points determine a shifted quadratic; custom regression returns its horizontal-shift parameter directly. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Use supplied function definitions directly in custom regression instead of requiring hand substitution. Introduce the given growth-rate form and necessary restrictions before applying the numerical example. Make worked feedback show the calculator workflow and the requested output. Describe the values Desmos shows instead of asking students to interpret assigned-value terminology. Previous specification: archive/tool-focus-2026-11/custom-regression-from-data.json."
 }

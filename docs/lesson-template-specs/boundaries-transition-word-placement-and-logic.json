@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>; consequently,</li><li>, consequently;</li><li>, consequently,</li><li>; consequently;</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "revision_opening_question",
         "title": "Opening question",
-        "html": "<p>The river flooded the lower trail. Park officials closed that route ___ the upper trail remained open throughout the week. Which choice best fits the logic?</p>"
+        "html": "<p>The river flooded the lower trail. Park officials closed that route ___ the upper trail remained open throughout the week. Which choice best fits the logic?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>; consequently,</li><li>, consequently;</li><li>, consequently,</li><li>; consequently;</li></ol>"
       }
     },
     {
@@ -495,7 +495,11 @@
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": {
+        "id": "revision_opening_question_return",
+        "title": "Opening question",
+        "html": "<p>The river flooded the lower trail. Park officials closed that route ___ the upper trail remained open throughout the week. Which choice best fits the logic?</p>"
+      }
     },
     {
       "kind": "raw_block",
@@ -577,5 +581,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/boundaries-transition-word-placement-and-logic.json."
 }

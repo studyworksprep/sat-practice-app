@@ -1,0 +1,372 @@
+{
+  "title": "Rhetorical Synthesis: Let the Goal Lead",
+  "description": "Use the student's stated goal to identify the required answer, handle multi-part goals, and consult the notes only when goal-fit alone does not settle the choice.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Which choice most effectively uses relevant information from the notes to accomplish this goal?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The drone estimate was closer to the audit and required less time in the field than the ground count did.</li><li>The drone survey required less time in the field but more processing time than the ground count required.</li><li>The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s two hours.</li><li>The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s three hours.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "opening_seal_tradeoff",
+        "title": "Notes and writing goal",
+        "html": "<p>While researching estimates of a seal colony’s size, a student has taken these notes:</p><ul><li>A drone survey estimated 1,240 seals; a ground count estimated 980.</li><li>A later comprehensive audit established a benchmark of 1,210 seals.</li><li>Collecting drone images took one hour in the field; the ground count took three.</li><li>Processing the drone images took six hours; processing the ground records took two.</li></ul><p>The student wants to contrast the drone method’s accuracy advantage with its processing-time disadvantage.</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Make every part of the goal count</h2><p>The seal choices compare real methods and repeat useful numbers. Some describe a different trade-off; two look close enough that a fact check matters.</p><p>We’ll use <strong>Let the Goal Lead</strong> to turn the goal into requirements, then check the notes where needed. Start with a shorter goal about an archivist.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_first_exploration",
+        "title": "Community archivist goal",
+        "html": "<p>In a practice item, the student wants to <strong>introduce community archivist Elena Ruiz and emphasize her leadership during an archive's expansion</strong>.</p>"
+      },
+      "kind": "text",
+      "id": "first_exploration",
+      "html": "<h2>Find the sentence that does the job</h2><p>The goal is to introduce Elena Ruiz and emphasize her leadership during the expansion. Look for a choice that does both. You can identify that shape before learning every archive detail.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_first_exploration",
+      "kind": "raw_block",
+      "id": "first_exploration_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice best introduces Elena Ruiz and emphasizes her leadership during the expansion?",
+        "choices": [
+          "Elena Ruiz, a community archivist, directed the archive's expansion into three neighborhood branches.",
+          "The archive's first neighborhood branch opened its doors to the public in 1998.",
+          "Community archivist Elena Ruiz cataloged the oral histories donated by local residents.",
+          "The archive's three neighborhood branches preserve photographs and recorded interviews."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The answer needs both Elena Ruiz and evidence that she led the expansion.",
+        "explanation": "The first choice names Ruiz and shows her directing the expansion. The goal alone identifies the needed content."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "name_the_principle",
+      "html": "<h2>Use the goal as a filter</h2><p>A choice can be true and still do the wrong job. Read the goal first so you know which facts the answer needs and which details can stay in the notes.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "stem_anatomy",
+      "html": "<h2>Find “The student wants to…”</h2><p>The words after that phrase give the goal. Read them carefully: introduce whom, explain what, or compare which things? Those details control the answer.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "stem_anatomy_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which part of the question should control your first pass through the answer choices?",
+        "choices": [
+          "The number of bullet points in the notes",
+          "The repeated direction to use relevant information",
+          "The student's specific goal after 'wants to'",
+          "The topic named in the first note"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Look for the part that changes from one Rhetorical Synthesis question to the next.",
+        "explanation": "The student's specific goal changes each time and defines what the correct answer must accomplish."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "four_step_process",
+      "html": "<h2>Let the Goal Lead</h2><ol><li>Read the student’s goal.</li><li>List its requirements.</li><li>Test the choices against every requirement.</li><li>Use the notes to check facts when more than one choice seems to fit.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "action_words",
+      "html": "<h2>The verb gives you the job</h2><p>To <strong>introduce</strong>, identify the subject in the requested context. To <strong>illustrate</strong>, give an example. To compare, state a similarity or difference between the subjects. Keep the required relationship in your checklist.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "action_word_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A student wants to illustrate the claim that some desert plants conserve water. What should the answer contain?",
+        "choices": [
+          "A broad definition of what makes a region count as a desert",
+          "A list of the researchers who have studied desert plant species",
+          "An open question inviting readers to consider why rainfall varies among deserts",
+          "A specific example of a desert plant feature that reduces water loss"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "To illustrate a claim, look for an example that shows the claim in action.",
+        "explanation": "A concrete water-saving feature illustrates the claim; merely discussing deserts or researchers does not."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "requirement_checklist",
+      "html": "<h2>Make a short checklist</h2><p>Name the action, the subject, and the feature the answer should emphasize. Keep every part joined by “and.” Use that list while scanning the choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "and_rule",
+      "html": "<h2>“And” can add another requirement</h2><p>If the goal is to describe a map and explain its accessibility benefit, the answer must do both. A choice that describes the map alone leaves the goal unfinished.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "and_rule_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The student wants to introduce a new museum exhibit and explain how visitors can interact with it. Which choice best fulfills the goal?",
+        "choices": [
+          "The museum opened in a renovated train station in 2016.",
+          "Visitors can turn a wheel to change the colors projected on a wall.",
+          "The exhibit, called Light in Motion, contains twelve suspended panels of colored hand-blown glass.",
+          "Light in Motion is a new exhibit whose projected colors change when visitors turn a wheel."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Look for one choice that both names the new exhibit and explains the visitor's interaction.",
+        "explanation": "The final choice introduces the exhibit and explains the interactive action. The other choices do only one job or neither."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_worked_example_prompt",
+        "title": "Packaging goal",
+        "html": "<p>The student wants to <strong>explain how a packaging material is made and emphasize one environmental advantage</strong>.</p>"
+      },
+      "kind": "text",
+      "id": "worked_example_prompt",
+      "html": "<h2>Apply a two-part checklist</h2><p>The packaging goal asks how it is made and what environmental advantage it has. Look for one sentence that covers both requirements. A date or a manufacturing detail alone will not finish the job.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_worked_example_prompt",
+      "kind": "raw_block",
+      "id": "worked_example_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which checklist matches the student’s goal for the packaging?",
+        "choices": [
+          "Name the material and report when its design was first tested.",
+          "Explain how the material is made and give an environmental advantage.",
+          "Describe the material’s appearance and compare its production costs.",
+          "List the research notes in order and identify the design team."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Match the two clauses in the answer to the two requirements in the goal.",
+        "explanation": "The first clause explains production; the second gives the composting advantage. Goal-fit, not length, makes it correct."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "distractor_patterns",
+      "html": "<h2>Give an incomplete choice a reason to go</h2><p>Does it miss the requested feature, cover only half the goal, or name two subjects without comparing them? Use the checklist to identify the missing part.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "notes_fallback",
+      "html": "<h2>When two choices seem to fit</h2><p>Use the notes to check the claims that separate them. Look for a changed number, a reversed comparison, or a cause that the notes never establish.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_fact_check_example",
+        "title": "Native bee study notes and goal",
+        "html": "<p><strong>Notes:</strong></p><ul><li>Researchers observed native bee visits in twelve community gardens.</li><li>Gardens with at least five flowering plant species averaged 18 bee visits per hour.</li><li>Gardens with one or two flowering plant species averaged 7 bee visits per hour.</li><li>The researchers did not change the gardens' plant diversity.</li></ul><p><strong>Goal:</strong> Support the claim that gardens with greater flowering-plant diversity attracted more native bee visits.</p>"
+      },
+      "kind": "text",
+      "id": "fact_check_example",
+      "html": "<h2>Check what the bee survey supports</h2><p>The goal is to support a claim about plant variety and bee visits. Compare the two possible sentences with the notes. Does the survey establish a difference, or does it show that one change caused the other?</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_fact_check_example",
+      "kind": "raw_block",
+      "id": "fact_check_example_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice accurately supports the claim without going beyond the notes?",
+        "choices": [
+          "Gardens with at least five flowering species averaged 18 native bee visits per hour, compared with 7 for gardens with one or two species.",
+          "Adding more flowering plant species to a garden caused native bee visits to rise from 7 to 18 per hour.",
+          "All twelve of the surveyed community gardens received about the same number of native bee visits per hour.",
+          "The gardens with one or two flowering species attracted almost no native bee visits during the observation period."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The researchers observed existing gardens; they did not add plant species themselves.",
+        "explanation": "The first choice reports the observed difference. The second invents a causal experiment that the notes do not describe."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the seal estimates</h2><p>Try the opening question again. Use the student’s goal to test the choices, then check any facts that separate the remaining possibilities.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "opening_seal_tradeoff",
+      "kind": "raw_block",
+      "id": "opening_seal_tradeoff_result",
+      "block_type": "check",
+      "content": {
+        "id": "opening_seal_tradeoff_result",
+        "prompt": "Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+        "choices": [
+          "The drone estimate was closer to the audit and required less time in the field than the ground count did.",
+          "The drone survey required less time in the field but more processing time than the ground count required.",
+          "The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s two hours.",
+          "The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s three hours."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep accuracy and processing time on your requirement list. If two choices seem to do that job, check which kind of time each number measures.",
+        "solution": "The goal has two requirements: the drone’s accuracy advantage and its processing-time disadvantage.\nKeep a sentence that contrasts those two features, rather than comparing fieldwork time or two kinds of time.\nCheck the notes: the drone estimate is closer to 1,210; processing takes six hours for the drone and two for the ground count. Three hours describes fieldwork.\nChoose C.\nA: Both facts are accurate, but fieldwork time is not the requested processing-time disadvantage.\nB: This compares two kinds of time and gives a trade-off, but omits the requested accuracy advantage.\nD: This has the right rhetorical shape but substitutes the ground count’s fieldwork time for its processing time.",
+        "explanation": "You completed both parts of the goal. The final notes check also caught a fieldwork number being used as processing time."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Notes, a goal, four choices. From memory, what's the order of operations — and when, if ever, do you read the notes?",
+        "choices": [
+          "Read the notes first, list every fact they contain, test the choices for note-fit, and check the student's goal only if more than one choice still fits.",
+          "Read the student's goal, test the choices for goal-fit before listing requirements, and pick the shortest choice that mentions the notes.",
+          "Read the student's goal, list every requirement, check the notes for repeated words, and test the choices against those words instead of the goal.",
+          "Read the student's goal, list every requirement, test the choices for goal-fit, and check the notes only if more than one choice still fits."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "You have it. Let the goal define the answer first; use the notes as a tiebreaker only when goal-fit does not decide the question."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "comparison_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The student wants to compare the migration routes of two whale populations. Which choice has the right structure?",
+        "choices": [
+          "Researchers attached satellite tracking tags to several whales from each population.",
+          "The eastern population traveled mostly in shallow waters near the coastline.",
+          "The eastern population followed the coast, whereas the western population crossed deeper offshore waters.",
+          "Both whale populations began their spring migrations during exactly the same month of the year."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "explanation": "The third choice names both routes and directly contrasts them. The second mentions only one population, and the fourth compares timing rather than routes."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "While researching a topic, a student has taken the following notes: The Whitcomb Observatory opened in 1927 on Mount Adler. Its original 24-inch telescope was used to catalog variable stars for six decades. In 2019, the observatory added a fully robotic 1-meter telescope. The robotic telescope photographs the entire visible sky every three nights. Astronomers worldwide can request its images through a public archive. The student wants to emphasize how the observatory's newest instrument serves researchers beyond its own staff. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+        "choices": [
+          "The Whitcomb Observatory opened on Mount Adler in 1927 and cataloged variable stars with its original 24-inch telescope for six decades.",
+          "In 2019, the Whitcomb Observatory added a fully robotic 1-meter telescope to its facilities on Mount Adler.",
+          "The observatory's robotic telescope photographs the whole visible sky every three nights, and astronomers worldwide can request its images through a public archive.",
+          "Because its 24-inch telescope served the observatory's staff for six decades, the robotic telescope will likely serve researchers for even longer."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "explanation": "The goal needs the newest instrument and its reach beyond the staff — the sky survey plus the worldwide public archive does both jobs. The first choice is history, the second introduces the telescope without the outside-service half, and the fourth invents a prediction."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Let the Goal Lead</h2><p>Keep every part of the student’s goal in view as you choose.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use a two-part goal checklist and the notes fallback. Distractors give the wrong attribute, omit accuracy, or substitute a nearby but incorrect time value. Previous specification: archive/rw-openings-2026-11/rhetorical-synthesis-goal-first.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+}

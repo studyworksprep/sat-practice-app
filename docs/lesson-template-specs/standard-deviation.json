@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The standard deviation of data set A is less than the standard deviation of data set B.</li><li>The standard deviation of data set A is greater than the standard deviation of data set B.</li><li>The standard deviations are equal because both data sets contain four values.</li><li>The standard deviations cannot be compared without knowing each data set&#x27;s median.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "revision_opening_question",
         "title": "Opening question",
-        "html": "<p>Data set A consists of the values \\(42, 44, 45, 47\\), and data set B consists of the values \\(30, 40, 50, 60\\). Which statement correctly compares the standard deviations of the two data sets?</p>"
+        "html": "<p>Data set A consists of the values \\(42, 44, 45, 47\\), and data set B consists of the values \\(30, 40, 50, 60\\). Which statement correctly compares the standard deviations of the two data sets?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The standard deviation of data set A is less than the standard deviation of data set B.</li><li>The standard deviation of data set A is greater than the standard deviation of data set B.</li><li>The standard deviations are equal because both data sets contain four values.</li><li>The standard deviations cannot be compared without knowing each data set&#x27;s median.</li></ol>"
       }
     },
     {
@@ -430,7 +430,11 @@
       "calculator": {
         "display": "open"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": {
+        "id": "revision_opening_question_return",
+        "title": "Opening question",
+        "html": "<p>Data set A consists of the values \\(42, 44, 45, 47\\), and data set B consists of the values \\(30, 40, 50, 60\\). Which statement correctly compares the standard deviations of the two data sets?</p>"
+      }
     },
     {
       "kind": "raw_block",
@@ -557,5 +561,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/standard-deviation.json."
 }

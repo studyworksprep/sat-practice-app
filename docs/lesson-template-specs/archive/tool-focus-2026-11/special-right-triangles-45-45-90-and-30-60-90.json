@@ -1,0 +1,550 @@
+{
+  "title": "Special Right Triangles: Recognize, Scale, Solve",
+  "description": "Recognize 45-45-90 and 30-60-90 triangles from ratios, keywords, and common geometry setups, then find every side from any numeric or variable side.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(3x\\)</li><li>\\(3x\\sqrt{3}\\)</li><li>\\(6x\\sqrt{3}\\)</li><li>\\(6x\\)</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "revision_opening_question",
+        "title": "Opening question",
+        "html": "<p>An equilateral triangle has altitude \\(x\\sqrt{3}\\). What is its perimeter?</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Recognize the triangle hidden in the shape</h2><p>The opening question does not print a 30° angle, but its equilateral triangle contains a useful right triangle. Recognizing it turns the problem into one fixed side ratio.</p><p>We’ll learn the two <strong>special right triangles</strong>, starting with a square’s diagonal.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_square_exploration",
+        "title": "Square with a diagonal",
+        "html": "<p>A square has side length \\(6\\). A diagonal divides it into two triangles.</p>"
+      },
+      "kind": "text",
+      "id": "square_exploration",
+      "html": "<h2>Split a square</h2><p>Sketch the shared square and its diagonal. Each half has a right angle and two equal legs of length 6. What does that tell you about its acute angles?</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_square_exploration",
+      "kind": "raw_block",
+      "id": "square_exploration_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A diagonal divides a square into a right triangle with two equal legs. Which special triangle must it be?",
+        "choices": [
+          "A \\(30\\)-\\(60\\)-\\(90\\) triangle",
+          "A right triangle, but not enough information is available to be more specific",
+          "A \\(45\\)-\\(45\\)-\\(90\\) triangle",
+          "An equilateral triangle"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Equal sides have equal opposite angles. The two acute angles of a right triangle add to \\(90^\\circ\\).",
+        "explanation": "The equal legs make the two acute angles equal, so each is \\(45^\\circ\\). A square diagonal creates a \\(45\\)-\\(45\\)-\\(90\\) triangle."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "forty_five_ratio",
+      "html": "<h2>Equal legs give 45–45–90</h2><p>An <strong>isosceles right triangle</strong> has two equal legs and angles 45°,45°,90°. Its sides are \\(k,k,k\\sqrt2\\): leg, leg, hypotenuse.</p><p>The size can change, but this ratio stays fixed.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "shared_process",
+      "html": "<h2>Recognize, Match, Scale</h2><ol><li>Recognize the special family from the angles or setup.</li><li>Match the known side to its role in the ratio.</li><li>Find k, then build the requested side or measurement.</li></ol><p>The hypotenuse must be longest. The reference sheet supplies both ratios if you need a reminder.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "forty_five_from_leg_model",
+      "html": "<h2>Start from a leg</h2><p>For an isosceles right triangle with leg 8, k=8. The other leg is 8 and the hypotenuse is \\(8\\sqrt2\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "forty_five_from_hypotenuse_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The hypotenuse of a \\(45\\)-\\(45\\)-\\(90\\) triangle is \\(10\\sqrt{2}\\). What is the length of each leg?",
+        "choices": [
+          "\\(5\\sqrt{2}\\)",
+          "\\(10\\)",
+          "\\(10\\sqrt{2}\\)",
+          "\\(20\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "solution": "Clue: a \\(45\\)-\\(45\\)-\\(90\\) triangle has sides \\(k\\), \\(k\\), and \\(k\\sqrt{2}\\).\nRole: the given side \\(10\\sqrt{2}\\) is the hypotenuse, so match it to the \\(k\\sqrt{2}\\) position.\nSolve for \\(k\\): \\(k\\sqrt{2}=10\\sqrt{2}\\), so dividing both sides by \\(\\sqrt{2}\\) gives \\(k=10\\).\nBuild: each leg equals \\(k\\), so both legs are \\(10\\).\nCheck: the hypotenuse \\(10\\sqrt{2}\\) is longer than each leg, as it must be.\nSo the answer is choice B, \\(10\\).",
+        "hint": "Match \\(10\\sqrt{2}\\) to the hypotenuse position \\(k\\sqrt{2}\\), then solve for \\(k\\).",
+        "explanation": "\\(k\\sqrt{2}=10\\sqrt{2}\\), so \\(k=10\\). Both legs have length \\(10\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "forty_five_variables",
+      "html": "<h2>Start from the hypotenuse</h2><p>If the hypotenuse is h, match \\(k\\sqrt2=h\\). Each leg is \\(h/\\sqrt2=h\\sqrt2/2\\). A variable changes the arithmetic, not the ratio.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "forty_five_variable_hypotenuse_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A \\(45\\)-\\(45\\)-\\(90\\) triangle has hypotenuse \\(p\\). Which expression gives either leg?",
+        "choices": [
+          "\\(p/2\\)",
+          "\\(p\\sqrt{2}\\)",
+          "\\(2p\\)",
+          "\\(p\\sqrt{2}/2\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The hypotenuse equals a leg times \\(\\sqrt{2}\\), so undo that multiplication.",
+        "explanation": "A leg is \\(p/\\sqrt{2}\\), which is equivalent to \\(p\\sqrt{2}/2\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "isosceles_right_keyword_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "An isosceles right triangle has hypotenuse \\(14\\). What is the length of either leg?",
+        "choices": [
+          "\\(7\\)",
+          "\\(14\\sqrt{2}\\)",
+          "\\(7\\sqrt{2}\\)",
+          "\\(28\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Translate the keyword first: isosceles right means \\(45\\)-\\(45\\)-\\(90\\). Then divide the hypotenuse by \\(\\sqrt{2}\\).",
+        "explanation": "Each leg is \\(14/\\sqrt{2}=7\\sqrt{2}\\). The angles never needed to be printed."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_equilateral_exploration",
+        "title": "Equilateral triangle with an altitude",
+        "html": "<p>An equilateral triangle has side length \\(12\\). Draw an altitude from the top vertex to the opposite side.</p>"
+      },
+      "kind": "text",
+      "id": "equilateral_exploration",
+      "html": "<h2>Split an equilateral triangle</h2><p>Sketch its altitude. Each half is a right triangle with a 30° angle at the top and 60° at the base. For an original side of 12, its hypotenuse is 12 and short leg is half the base, 6.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_equilateral_exploration",
+      "kind": "raw_block",
+      "id": "equilateral_exploration_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A right triangle has hypotenuse \\(12\\) and a leg \\(6\\). Which special family does the half-equilateral setup create?",
+        "choices": [
+          "A \\(45\\)-\\(45\\)-\\(90\\) triangle because every equilateral side is equal",
+          "A \\(30\\)-\\(60\\)-\\(90\\) triangle because the hypotenuse is twice the shorter leg",
+          "A right triangle with no recognizable special ratio",
+          "A triangle whose angles depend on the altitude's length"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Compare \\(6\\) with \\(12\\). Which special-triangle ratio has hypotenuse \\(2k\\)?",
+        "explanation": "The sides begin with \\(k=6\\) and hypotenuse \\(2k=12\\), so each half is a \\(30\\)-\\(60\\)-\\(90\\) triangle."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "thirty_sixty_ratio",
+      "html": "<h2>Match the three roles in 30–60–90</h2><ul><li>Short leg, opposite 30°: k.</li><li>Long leg, opposite 60°: \\(k\\sqrt3\\).</li><li>Hypotenuse, opposite 90°: 2k.</li></ul><p>Use \\(1:\\sqrt3:2\\) in that order.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "thirty_sixty_from_short_model",
+      "html": "<h2>Start from the short leg</h2><p>Short leg 5 means k=5. The long leg is \\(5\\sqrt3\\) and the hypotenuse is 10.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "thirty_sixty_from_hypotenuse_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A \\(30\\)-\\(60\\)-\\(90\\) triangle has hypotenuse \\(18\\). What are its short and long legs, respectively?",
+        "choices": [
+          "\\(9\\) and \\(9\\sqrt{3}\\)",
+          "\\(18\\) and \\(18\\sqrt{3}\\)",
+          "\\(6\\) and \\(12\\)",
+          "\\(9\\sqrt{3}\\) and \\(9\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "solution": "Clue: a \\(30\\)-\\(60\\)-\\(90\\) triangle has short leg \\(k\\), long leg \\(k\\sqrt{3}\\), and hypotenuse \\(2k\\).\nRole: the given \\(18\\) is the hypotenuse, so \\(2k=18\\) and \\(k=9\\).\nBuild: the short leg is \\(k=9\\) and the long leg is \\(k\\sqrt{3}=9\\sqrt{3}\\).\nCheck: \\(9<9\\sqrt{3}<18\\), so short leg < long leg < hypotenuse holds.\nSo the answer is choice A, \\(9\\) and \\(9\\sqrt{3}\\).",
+        "hint": "Match \\(18\\) to \\(2k\\). After finding \\(k\\), keep the short and long roles in order.",
+        "explanation": "\\(2k=18\\), so \\(k=9\\). The short leg is \\(9\\), and the long leg is \\(9\\sqrt{3}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "thirty_sixty_from_long_model",
+      "html": "<h2>Recover k from the long leg</h2><p>If the long leg is \\(12\\sqrt3\\), match \\(k\\sqrt3=12\\sqrt3\\), giving k=12. The short leg is 12 and the hypotenuse is 24.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "thirty_sixty_long_numeric_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The long leg of a \\(30\\)-\\(60\\)-\\(90\\) triangle is \\(15\\sqrt{3}\\). What are the short leg and hypotenuse, respectively?",
+        "choices": [
+          "\\(15\\sqrt{3}\\) and \\(30\\sqrt{3}\\)",
+          "\\(5\\sqrt{3}\\) and \\(10\\sqrt{3}\\)",
+          "\\(15\\) and \\(30\\)",
+          "\\(30\\) and \\(15\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "solution": "Role: the given side \\(15\\sqrt{3}\\) is the long leg, so match it to the \\(k\\sqrt{3}\\) position.\nSolve for \\(k\\): \\(k\\sqrt{3}=15\\sqrt{3}\\) gives \\(k=15\\).\nBuild: the short leg is \\(k=15\\) and the hypotenuse is \\(2k=30\\).\nCheck: \\(15<15\\sqrt{3}<30\\), so the size order fits.\nSo the answer is choice C, \\(15\\) and \\(30\\).",
+        "hint": "Match the long leg \\(15\\sqrt{3}\\) to \\(k\\sqrt{3}\\).",
+        "explanation": "\\(k=15\\), so the short leg is \\(15\\) and the hypotenuse is \\(2k=30\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "thirty_sixty_variables",
+      "html": "<h2>Use the same ratio with a symbol</h2><p>If the hypotenuse is H, k=H/2, so the long leg is \\(H\\sqrt3/2\\). If the long leg is L, \\(k=L/\\sqrt3\\). Solve for k from the known role instead of memorizing a new formula for each side.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "thirty_sixty_variable_hypotenuse_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A \\(30\\)-\\(60\\)-\\(90\\) triangle has hypotenuse \\(m\\). Which expression gives the long leg?",
+        "choices": [
+          "\\(m/2\\)",
+          "\\(m\\sqrt{3}/2\\)",
+          "\\(m\\sqrt{3}\\)",
+          "\\(2m\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "First find the short leg \\(k=m/2\\), then multiply \\(k\\) by \\(\\sqrt{3}\\).",
+        "explanation": "The short leg is \\(m/2\\), so the long leg is \\((m/2)\\sqrt{3}=m\\sqrt{3}/2\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "thirty_sixty_variable_long_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The long leg of a \\(30\\)-\\(60\\)-\\(90\\) triangle is \\(q\\sqrt{3}\\). What is the hypotenuse?",
+        "choices": [
+          "\\(q\\)",
+          "\\(q\\sqrt{3}\\)",
+          "\\(2q\\sqrt{3}\\)",
+          "\\(2q\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Match \\(q\\sqrt{3}\\) with \\(k\\sqrt{3}\\), then build \\(2k\\).",
+        "explanation": "The matching scale factor is \\(k=q\\), so the hypotenuse is \\(2q\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "unsorted_ratio_recognition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A right triangle's side lengths are listed out of order as \\(18\\), \\(9\\sqrt{3}\\), and \\(9\\). Which assignment is correct?",
+        "choices": [
+          "Short leg \\(9\\), long leg \\(9\\sqrt{3}\\), hypotenuse \\(18\\)",
+          "Short leg \\(9\\sqrt{3}\\), long leg \\(18\\), hypotenuse \\(9\\)",
+          "Both legs \\(9\\), hypotenuse \\(9\\sqrt{3}\\)",
+          "Short leg \\(9\\), long leg \\(18\\), hypotenuse \\(9\\sqrt{3}\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Put the sides in increasing order, then compare them with \\(k:k\\sqrt{3}:2k\\).",
+        "explanation": "In increasing order the sides are \\(9,9\\sqrt{3},18\\), which match \\(k,k\\sqrt{3},2k\\) with \\(k=9\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "square_area_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A square has area \\(72\\) square units. What is the length of its diagonal?",
+        "choices": [
+          "\\(6\\sqrt{2}\\)",
+          "\\(12\\sqrt{2}\\)",
+          "\\(12\\)",
+          "\\(72\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "solution": "The area gives the side: \\(s^2=72\\), so \\(s=\\sqrt{72}=6\\sqrt{2}\\).\nClue: the diagonal splits the square into two \\(45\\)-\\(45\\)-\\(90\\) triangles with the square's sides as equal legs.\nBuild: the diagonal is \\(s\\sqrt{2}=(6\\sqrt{2})(\\sqrt{2})=6\\cdot2=12\\).\nCheck: the diagonal \\(12\\) is longer than the side \\(6\\sqrt{2}\\), as a hypotenuse must be.\nSo the answer is choice C, \\(12\\).",
+        "hint": "The area is \\(s^2\\). Find the side \\(s\\) first, then use \\(d=s\\sqrt{2}\\).",
+        "explanation": "The side is \\(6\\sqrt{2}\\), so the diagonal is \\((6\\sqrt{2})(\\sqrt{2})=12\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "perpendicular_radii_scenario",
+      "html": "<h2>A circle can contain equal legs</h2><p>Two perpendicular radii form a right angle and have equal lengths. Connecting their endpoints makes a 45–45–90 triangle. The chord is its hypotenuse, so radius r gives chord \\(r\\sqrt2\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "perpendicular_radii_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A circle has radius \\(11\\). Two perpendicular radii are drawn, and their endpoints are connected by a chord. What is the chord's length?",
+        "choices": [
+          "\\(22\\sqrt{2}\\)",
+          "\\(11\\sqrt{2}\\)",
+          "\\(11\\sqrt{3}\\)",
+          "\\(22\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "solution": "Clue: the two radii are equal and meet at \\(90^\\circ\\), so the triangle they form with the chord is an isosceles right triangle, a \\(45\\)-\\(45\\)-\\(90\\).\nRole: each radius is a leg, so \\(k=11\\).\nBuild: the chord is the hypotenuse, \\(k\\sqrt{2}=11\\sqrt{2}\\).\nCheck: the chord \\(11\\sqrt{2}\\) is longer than each radius, as a hypotenuse must be.\nSo the answer is choice B, \\(11\\sqrt{2}\\).",
+        "hint": "The two radii are equal legs of an isosceles right triangle. The chord is the hypotenuse.",
+        "explanation": "The equal legs are \\(11\\), so the chord-hypotenuse is \\(11\\sqrt{2}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "equilateral_altitude_scenario",
+      "html": "<h2>Return to the equilateral setup</h2><p>Its altitude halves the base and forms a 30–60–90 triangle. For equilateral side s, the short leg is s/2, the altitude is \\(s\\sqrt3/2\\), and the hypotenuse is s.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "equilateral_perimeter_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "An equilateral triangle has perimeter \\(42\\). What is the length of an altitude?",
+        "choices": [
+          "\\(14\\sqrt{3}\\)",
+          "\\(7\\)",
+          "\\(14\\)",
+          "\\(7\\sqrt{3}\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "solution": "Each side of the equilateral triangle is \\(42\\div3=14\\).\nClue: the altitude splits the triangle into two \\(30\\)-\\(60\\)-\\(90\\) triangles; in each half, the equilateral side \\(14\\) is the hypotenuse.\nRole: \\(2k=14\\), so \\(k=7\\), and the short leg (half the base) is \\(7\\).\nBuild: the altitude is the long leg, \\(k\\sqrt{3}=7\\sqrt{3}\\).\nCheck: \\(7<7\\sqrt{3}<14\\), so the size order fits.\nSo the answer is choice D, \\(7\\sqrt{3}\\).",
+        "hint": "Find one side from the perimeter. In a half-triangle, that side is the hypotenuse and half of it is the short leg.",
+        "explanation": "Each side is \\(14\\), so the short leg is \\(7\\) and the altitude-long leg is \\(7\\sqrt{3}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "hidden_angle_recognition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A right triangle has hypotenuse \\(20\\) and one leg \\(10\\). No acute angles are given. Which statement must be true?",
+        "choices": [
+          "It is \\(45\\)-\\(45\\)-\\(90\\), and the other leg is \\(10\\).",
+          "Its type cannot be determined without an angle measure.",
+          "It is \\(30\\)-\\(60\\)-\\(90\\), and the other leg is \\(10\\sqrt{3}\\).",
+          "It is \\(30\\)-\\(60\\)-\\(90\\), and the other leg is \\(20\\sqrt{3}\\)."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The given leg is exactly half the hypotenuse. Match \\(10\\) and \\(20\\) to \\(k\\) and \\(2k\\).",
+        "explanation": "A hypotenuse twice one leg reveals the \\(30\\)-\\(60\\)-\\(90\\) ratio. The given leg is the short leg, so the long leg is \\(10\\sqrt{3}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the equilateral triangle</h2><p>Try the opening question again. Recognize the right triangle inside it, then use its side roles to find the perimeter.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_equilateral_variable_transfer",
+      "block_type": "check",
+      "content": {
+        "prompt": "Return to the opening question. What answer do you get now?",
+        "choices": [
+          "\\(3x\\)",
+          "\\(3x\\sqrt{3}\\)",
+          "\\(6x\\sqrt{3}\\)",
+          "\\(6x\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "An altitude splits an equilateral triangle into two 30–60–90 triangles. Match the altitude to the long leg, find the original side, then its perimeter.",
+        "explanation": "\\(k\\sqrt{3}=x\\sqrt{3}\\), so \\(k=x\\). Each equilateral side is \\(2x\\), giving perimeter \\(6x\\).",
+        "solution": "\\(k\\sqrt{3}=x\\sqrt{3}\\), so \\(k=x\\). Each equilateral side is \\(2x\\), giving perimeter \\(6x\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": "revision_opening_question"
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which approach works when a special right triangle is hidden inside an SAT geometry question?",
+        "choices": [
+          "Use a keyword, setup, or ratio to name the family; copy the known side into \\(k\\); build the requested sides; and check that each answer keeps a radical.",
+          "Label each side's role before naming the family; solve for \\(k\\) with the Pythagorean theorem; build the requested sides; and round each result to a decimal.",
+          "Use a keyword, setup, or ratio to name the family; label each side's role; solve for \\(k\\); build the requested sides; and check their size order.",
+          "Use a keyword, setup, or ratio to name the family; label the shortest side as the hypotenuse; solve for \\(k\\); build the requested sides in any ratio order."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "explanation": "You have it. Recognition chooses the ratio, the side role tells you how to recover \\(k\\), and one size check catches most reversals."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_square_transfer",
+      "block_type": "check",
+      "content": {
+        "prompt": "The diagonal of a square is \\(14\\sqrt{2}\\). What is the area of the square?",
+        "choices": [
+          "\\(98\\)",
+          "\\(196\\)",
+          "\\(196\\sqrt{2}\\)",
+          "\\(28\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "\\(k\\sqrt{2}=14\\sqrt{2}\\), so the square's side is \\(14\\) and its area is \\(14^2=196\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "The hypotenuse of a \\(45\\)-\\(45\\)-\\(90\\) triangle has a length of \\(14\\) centimeters. What is the length, in centimeters, of one leg of the triangle?",
+        "choices": [
+          "\\(7\\)",
+          "\\(7\\sqrt{2}\\)",
+          "\\(7\\sqrt{3}\\)",
+          "\\(14\\sqrt{2}\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "In the \\(k:k:k\\sqrt{2}\\) family, the hypotenuse is \\(k\\sqrt{2}=14\\), so \\(k=\\frac{14}{\\sqrt{2}}=7\\sqrt{2}\\). Multiplying instead gives \\(14\\sqrt{2}\\), and \\(\\sqrt{3}\\) belongs to the \\(30\\)-\\(60\\)-\\(90\\) family."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Recognize, Match, Scale</h2><p>Find the known side’s place in the ratio before building the others.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

@@ -252,25 +252,6 @@
     },
     {
       "shared_prompt": "shared_choose_a_base",
-      "kind": "raw_block",
-      "id": "base_choice",
-      "block_type": "check",
-      "content": {
-        "prompt": "In that relative-weight problem, why can you define \\(B=1\\)?",
-        "allow_retry": true,
-        "explanation": "Changing the common weight scale preserves the percent comparisons. Choose B; the equations determine the corresponding A and C.",
-        "choices": [
-          "The requested percent fixes B at one gram.",
-          "Scaling the weights together preserves their ratios.",
-          "Regression requires the letter B to equal one.",
-          "One equation lets you choose every weight separately."
-        ],
-        "correct_index": 1,
-        "hint": "Ask whether multiplying all three weights by the same positive factor changes any comparison."
-      }
-    },
-    {
-      "shared_prompt": "shared_choose_a_base",
       "kind": "text",
       "id": "zero_trap",
       "html": "<h2>Keep zero from erasing the comparison</h2><p>If all three weights are free, \\(A=B=C=0\\) satisfies the entered equations for any \\(p\\). That result cannot tell you the requested percent. Setting the free base \\(B=1\\) removes this zero-weight case.</p>",
@@ -297,7 +278,7 @@
       "shared_prompt": "shared_choose_a_base",
       "kind": "text",
       "id": "base_boundary",
-      "html": "<h2>Keep any supplied measurement</h2><p>If the question gives \\(B=75\\) grams, use \\(B=75\\). Choosing a base works when only relative amounts matter. It cannot determine an actual weight from ratios alone.</p>",
+      "html": "<h2>Keep any supplied measurement</h2><p>Use a mass the question gives as the base. It is no longer free to choose.</p><p>A convenient base works when only relative amounts matter. Ratios alone cannot determine an actual weight.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -321,39 +302,19 @@
       }
     },
     {
-      "shared_prompt": {
-        "id": "shared_exponent_extension",
-        "title": "Power equations and restrictions",
-        "html": "<p>Suppose \\(p>1\\), \\(t>1\\), and</p><p>\\[p^{3/4}=t^{5/2}\\qquad t=p^{2n-1}.\\]</p>"
-      },
       "kind": "text",
       "id": "exponent_extension",
-      "html": "<h2>The same pairing works with powers</h2><p>For the power equations in the prompt, pair complete sides: \\([p^{3/4},t]\\sim[t^{5/2},p^{2n-1}]\\{p>1\\}\\{t>1\\}\\).</p><p>Put each restriction after the right list. They exclude \\(p=t=1\\), which would make both equations true without determining \\(n\\).</p>",
+      "html": "<h2>Power equations use the same pairing</h2><p>Desmos can handle powers inside the paired lists. Copy each complete side, including its exponent, into the matching position.</p><p>Keep the question’s restrictions in braces after the right list. Then use the same fit check and read the requested value.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "shared_prompt": "shared_exponent_extension",
-      "kind": "raw_block",
-      "id": "exponent_restriction_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Why would allowing \\(p=t=1\\) fail to determine \\(n\\) in the power equations?",
-        "allow_retry": true,
-        "explanation": "Both sides become 1 regardless of \\(n\\). The problem excludes that case with \\(p>1,t>1\\).",
-        "choices": [
-          "Every exponent on base 1 produces 1.",
-          "The first equation would have a negative side.",
-          "The second equation would force n to be 1.",
-          "The two lists would have different lengths."
-        ],
-        "correct_index": 0,
-        "hint": "Evaluate a few different powers with base 1."
-      }
-    },
-    {
-      "shared_prompt": "shared_exponent_extension",
+      "shared_prompt": {
+        "id": "shared_exponent_extension",
+        "title": "Power equations and restrictions",
+        "html": "<p>Suppose \\(p>1\\), \\(t>1\\), and</p><p>\\[p^{3/4}=t^{5/2}\\qquad t=p^{2n-1}.\\]</p>"
+      },
       "kind": "text",
       "id": "exponent_friendly_value",
       "html": "<h2>Choose a free base that preserves the target</h2><p>These power relationships give the same \\(n\\) for each allowed \\(p>1\\). Define \\(p=2\\), then enter \\([p^{3/4},t]\\sim[t^{5/2},p^{2n-1}]\\{t>1\\}\\).</p><p>Read \\(n\\). The chosen base simplifies the fit while keeping the requested exponent fixed.</p>",
@@ -506,5 +467,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Coupled radical equations make algebraic elimination costly while the same paired-list procedure applies unchanged. The positive solution is unique. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Coupled radical equations make algebraic elimination costly while the same paired-list procedure applies unchanged. The positive solution is unique. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Remove the scale-invariance quiz; retain the free-base setup, zero-fit warning, fixed-measurement check, and actual percent calculation. Remove the powers-of-one concept quiz; use the given restrictions in the regression application. Introduce powers as a list-regression variation before the concrete equations. Introduce fixed measurements generally before asking which definition to enter. Previous specification: archive/tool-focus-2026-11/solve-multiple-equations-with-list-regression.json."
 }

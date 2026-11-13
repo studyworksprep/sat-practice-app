@@ -1,0 +1,601 @@
+{
+  "title": "Find Missing Constants in Equivalent Expressions with Regression",
+  "description": "Use Desmos regression with a list of allowed input values to find missing constants in expressions that are equivalent for every permitted value of the variable.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 4c22e546-2a07-4ffc-8f99-a2f3e3b21f59 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nCalculator opening revision 2026-11-12: Two products with squared binomials require substantial expansion and collection; four constants are fitted using five distinct inputs. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "opening_cubic_identity",
+        "title": "Equivalent expressions",
+        "html": "<p>For every real number \\(z\\),</p><p>\\[az^3+bz^2+cz+d=(2z-3)(z+4)^2+(z-2)(z+1)^2.\\]</p><p>What is the value of \\(b+c\\)?</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "explore_regression_identity",
+      "html": "<h2>Let Desmos collect the constants</h2><p>Expanding both products means keeping track of several powers and signs. <strong>Regression</strong> can find the constants by matching the two expressions at several inputs.</p><p>We’ll start with a shorter identity so you can see which letter gets a list and which letters Desmos finds.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_explore_regression_identity",
+        "title": "Polynomial identity",
+        "html": "<p>\\(ax^2+bx+6\\) is equivalent to \\(3(x+1)(x+2)\\) for all \\(x\\).</p>"
+      },
+      "kind": "raw_block",
+      "id": "check_1",
+      "block_type": "check",
+      "content": {
+        "hint": "Read the assignments shown directly below the regression line.",
+        "prompt": "What do a and b equal in \\(ax^2+bx+6\\)?",
+        "choices": [
+          "\\(a=9\\) and \\(b=3\\)",
+          "\\(a=6\\) and \\(b=9\\)",
+          "\\(a=3\\) and \\(b=9\\)",
+          "\\(a=3\\) and \\(b=6\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Desmos finds \\(a=3\\) and \\(b=9\\). Those values make \\(ax^2+bx+6\\) equivalent to \\(3(x+1)(x+2)\\).",
+        "correct_index": 2,
+        "calculator": {
+          "display": "open",
+          "mode": "preset",
+          "editable": true,
+          "initial_expressions": [
+            {
+              "latex": "ax_1^2+bx_1+6\\sim3(x_1+1)(x_1+2)"
+            },
+            {
+              "latex": "x_1=[2,3,4]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "text",
+      "id": "recognize_question_type",
+      "html": "<h2>One set of constants, many inputs</h2><p><strong>Equivalent expressions</strong> have the same value at every allowed input. The constants stay fixed while the input changes. A match at just one input may not determine those constants.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "separate_roles",
+      "html": "<h2>Separate the two jobs</h2><p>In \\(a(x+2)+b\\), \\(x\\) is the input; \\(a,b\\) are the missing constants. Give the input a list so Desmos compares several values.</p><p>Use \\(x_1\\) for input x or \\(y_1\\) for input y; lowercase x and y have graphing jobs. Another input such as t can keep its name.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_check_3",
+        "title": "Linear identity in t",
+        "html": "<p>\\(p(t+4)+q(t-1)\\) is equivalent to \\(5t+10\\) for all \\(t\\).</p>"
+      },
+      "kind": "raw_block",
+      "id": "check_3",
+      "block_type": "check",
+      "content": {
+        "hint": "Which letter is allowed to vary while the missing constants stay fixed?",
+        "prompt": "In the identity \\(p(t+4)+q(t-1)=5t+10\\), which letter should become a list in Desmos?",
+        "choices": [
+          "\\(p\\), because it appears first in the identity",
+          "\\(q\\), because it is the subtracted constant",
+          "Both \\(p\\) and \\(q\\) at the same time",
+          "\\(t\\), because it is the input variable"
+        ],
+        "allow_retry": true,
+        "explanation": "The identity must work for many values of \\(t\\), so define \\(t\\) as a list. Only inputs named \\(x\\) or \\(y\\) need a subscript because those letters are reserved for graphing. Desmos will solve for the fixed constants \\(p\\) and \\(q\\).",
+        "correct_index": 3
+      }
+    },
+    {
+      "shared_prompt": "shared_explore_regression_identity",
+      "kind": "text",
+      "id": "why_multiple_values",
+      "html": "<h2>A list supplies several comparisons</h2><p>At just one input, many pairs of constants might work. A list such as \\(x_1=[2,3,4]\\) lets Desmos compare the expressions at three distinct inputs at once.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_4",
+      "block_type": "check",
+      "content": {
+        "hint": "Think about what “equivalent for all values” means.",
+        "prompt": "Why do you enter \\(x_1=[2,3,4]\\) instead of letting Desmos choose one value of \\(x_1\\)?",
+        "choices": [
+          "Equivalent expressions must match at many input values, and one value may not determine every constant.",
+          "A list changes the two equivalent expressions into one equation with a missing constant.",
+          "Regression cannot use positive input values unless they are supplied in a list.",
+          "The SAT requires the specific input values 2, 3, and 4 for this question type."
+        ],
+        "allow_retry": true,
+        "explanation": "Several input values force one set of constants to make the expressions agree repeatedly. The particular values are flexible as long as they are allowed.",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "text",
+      "id": "process_setup",
+      "html": "<h2>List, Match, Read</h2><ol><li>Rename an input x or y to \\(x_1\\) or \\(y_1\\) throughout.</li><li>Define several distinct allowed inputs in a list.</li><li>Put a tilde, <strong>~</strong>, between the expressions.</li><li>Read the constants, then type the requested combination.</li></ol><p>For exact identities, inspect RMSE for zero or a tiny mismatch. If the constants remain undetermined, add more distinct allowed inputs.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_explore_regression_identity",
+      "kind": "text",
+      "id": "model_full_setup",
+      "html": "<h2>Try the complete setup</h2><p>Enter \\(x_1=[2,3,4]\\) and \\(ax_1^2+bx_1+6\\sim3(x_1+1)(x_1+2)\\). Read \\(a,b\\), then type \\(a/b\\) on another row.</p>",
+      "calculator": {
+        "mode": "preset",
+        "title": "Type a/b on the next line",
+        "display": "open",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false,
+        "initial_expressions": [
+          {
+            "id": "model_regression",
+            "latex": "ax_{1}^{2}+bx_{1}+6\\sim3(x_{1}+1)(x_{1}+2)"
+          },
+          {
+            "id": "model_list",
+            "latex": "x_{1}=[2,3,4]"
+          }
+        ]
+      }
+    },
+    {
+      "shared_prompt": "shared_check_3",
+      "kind": "raw_block",
+      "id": "check_5",
+      "block_type": "check",
+      "content": {
+        "hint": "Use ~ between the expressions and make t—not a missing constant—the list. Since t is not reserved for graphing, it does not need a subscript.",
+        "prompt": "Which two-line setup correctly finds \\(p\\) and \\(q\\) if \\(p(t+4)+q(t-1)\\) is equivalent to \\(5t+10\\)?",
+        "choices": [
+          "\\(p(t+4)+q(t-1)=5t+10\\); then \\(t=[0,1,2]\\)",
+          "\\(p(t+4)+q(t-1)\\sim5t+10\\); then \\(p=[0,1,2]\\)",
+          "\\(p(t+4)+q(t-1)\\sim5t+10\\); then \\(t=[0,1,2]\\)",
+          "\\(p(t_1+4)+q(t_1-1)\\sim5t_1+10\\); then \\(t=[0,1,2]\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "The regression adjusts \\(p\\) and \\(q\\) while testing the identity at \\(t=0,1,2\\). Only x and y need to be changed to subscripted inputs.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "text",
+      "id": "three_list_methods",
+      "html": "<h2>Choose the input list</h2><p>Use an explicit list when the allowed values are known, or \\(x_1=[1...10]\\) for consecutive allowed integers.</p><p>If a forbidden input depends on a missing constant, \\(x_1=\\operatorname{random}(5)\\) supplies five values between 0 and 1 and makes an exact collision unlikely. Keep any other domain restrictions satisfied.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_6",
+      "block_type": "check",
+      "content": {
+        "hint": "Choose the method whose values lie between 0 and 1 and are very unlikely to equal the still-unknown value of b.",
+        "prompt": "A denominator contains \\(x-b\\), so the forbidden input depends on the missing constant \\(b\\). Which list method is most useful before \\(b\\) is known?",
+        "choices": [
+          "\\(x_1=random(5)\\)",
+          "\\(b=[1,2,3,4,5]\\)",
+          "\\(x_1=[1...10]\\)",
+          "\\(x_1=5\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "\\(random(5)\\) creates five values between 0 and 1. When the forbidden input depends on the unknown \\(b\\), an exact random collision is highly unlikely.",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "text",
+      "id": "respect_domain",
+      "html": "<h2>Every input must be allowed</h2><p>Exclude zero denominators and respect stated intervals or square-root domains. If the expression contains \\(1/(x-2)\\) and x>2, use values such as \\(x_1=[3,4,5]\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_7",
+      "block_type": "check",
+      "content": {
+        "hint": "Every value must be greater than 2, and 2 itself makes the denominator zero.",
+        "prompt": "The expressions contain \\(1/(x-2)\\), and the question states \\(x>2\\). Which list is safest?",
+        "choices": [
+          "\\(x_1=[0,1,2]\\)",
+          "\\(x_1=[2,3,4]\\)",
+          "\\(x_1=[-3,-2,-1]\\)",
+          "\\(x_1=[3,4,5]\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "The values 3, 4, and 5 satisfy \\(x>2\\) and keep \\(x-2\\) nonzero.",
+        "correct_index": 3
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_model_restricted_identity",
+        "title": "Restricted rational identity",
+        "html": "<p>For \\(x>2\\), suppose</p><p>\\[\\frac{ax+b}{x-2}\\]</p><p>is equivalent to</p><p>\\[3+\\frac{5}{x-2}.\\]</p>"
+      },
+      "kind": "text",
+      "id": "model_restricted_identity",
+      "html": "<h2>Use the same setup with a denominator</h2><p>Enter \\((ax_1+b)/(x_1-2)\\sim3+5/(x_1-2)\\) and \\(x_1=[3,4,5]\\). Read \\(a,b\\), then type \\(a-b\\).</p>",
+      "calculator": {
+        "mode": "preset",
+        "title": "Inspect the restricted setup",
+        "display": "open",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false,
+        "initial_expressions": [
+          {
+            "id": "restricted_regression",
+            "latex": "\\frac{ax_{1}+b}{x_{1}-2}\\sim3+\\frac{5}{x_{1}-2}"
+          },
+          {
+            "id": "restricted_list",
+            "latex": "x_{1}=[3,4,5]"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "text",
+      "id": "error_variable_assignment",
+      "html": "<h2>If Desmos finds the input too</h2><p>If the panel shows a value for t along with the constants, it treated t as another unknown. Add the missing input list, such as \\(t=[2,3,4]\\). The panel should then find only the constants.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_10",
+      "block_type": "check",
+      "content": {
+        "hint": "The input variable should contain several values supplied by the student, not one value chosen by regression.",
+        "prompt": "The regression panel displays \\(a=2\\), \\(b=7\\), and \\(t=4.6\\). What is the most likely setup mistake?",
+        "choices": [
+          "The student used too many allowed values.",
+          "The student already calculated the requested expression.",
+          "The student forgot to define \\(t\\) as a list.",
+          "The student should replace \\(a\\) and \\(b\\) with \\(x\\) and \\(y\\)."
+        ],
+        "allow_retry": true,
+        "explanation": "Add a line such as \\(t=[0,1,2]\\). Then regression tests several inputs while solving only for the missing constants. Since t is not reserved for graphing, no subscript is needed.",
+        "correct_index": 2
+      }
+    },
+    {
+      "shared_prompt": "shared_check_3",
+      "kind": "raw_block",
+      "id": "desmos_interactive_1",
+      "block_type": "desmos_interactive",
+      "content": {
+        "goal": {
+          "type": "multi_expression",
+          "roles": [
+            "regression",
+            "input list",
+            "requested calculation"
+          ],
+          "required_count": 3
+        },
+        "type": "desmos_interactive",
+        "title": "Enter the identity and its input list",
+        "feedback": {
+          "solution_html": "<p>Enter <strong>p(t+4)+q(t-1)~5t+10</strong>, <strong>t=[0,1,2]</strong>, and <strong>2p+q</strong>.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "too_few_expressions",
+              "message_html": "<p>You need three lines: the regression, the input list, and \\(2p+q\\).</p>"
+            },
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>Use only the regression, the input list, and \\(2p+q\\).</p>"
+            },
+            {
+              "trigger": "missing_second_expression",
+              "message_html": "<p>Enter all three required lines before checking your work.</p>"
+            }
+          ],
+          "retry_message_html": "<p>Use exactly three lines: the regression, \\(t=[0,1,2]\\), and the requested calculation \\(2p+q\\).</p>",
+          "success_message_html": "<p>Good work. Desmos uses the list to find \\(p=3\\) and \\(q=2\\), then evaluates \\(2p+q=8\\) on the third line.</p>",
+          "reveal_solution_after_attempts": 3
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "p(t+4)+q(t-1)\\sim5t+10",
+            "t=[0,1,2]",
+            "2p+q"
+          ],
+          "state_rules": {
+            "max_expressions": 3,
+            "min_expressions": 3,
+            "require_visible_only": true
+          }
+        },
+        "progression": {
+          "require_success": true
+        },
+        "instructions_html": "<p>For \\(p(t+4)+q(t-1)\\equiv5t+10\\), enter the regression and \\(t=[0,1,2]\\). Read \\(p,q\\), then calculate \\(2p+q\\).</p>",
+        "initial_expressions": []
+      }
+    },
+    {
+      "shared_prompt": "shared_check_3",
+      "kind": "raw_block",
+      "id": "check_11",
+      "block_type": "check",
+      "content": {
+        "hint": "Type \\(2p+q\\) using the values Desmos stored.",
+        "prompt": "What result did Desmos display for \\(2p+q\\) on the third line?",
+        "choices": [
+          "\\(5\\)",
+          "\\(7\\)",
+          "\\(8\\)",
+          "\\(12\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Desmos evaluates \\(2p+q=2(3)+2=8\\).",
+        "correct_index": 2
+      }
+    },
+    {
+      "shared_prompt": "shared_model_restricted_identity",
+      "kind": "raw_block",
+      "id": "desmos_interactive_2",
+      "block_type": "desmos_interactive",
+      "content": {
+        "goal": {
+          "type": "multi_expression",
+          "roles": [
+            "regression",
+            "safe input list",
+            "requested calculation"
+          ],
+          "required_count": 3
+        },
+        "type": "desmos_interactive",
+        "title": "Build the restricted identity",
+        "feedback": {
+          "solution_html": "<p>Enter <strong>(ax₁+b)/(x₁-2)~3+5/(x₁-2)</strong>, <strong>x₁=[3,4,5]</strong>, and <strong>a-b</strong>.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "too_few_expressions",
+              "message_html": "<p>You need three lines: the regression, the safe list, and \\(a-b\\).</p>"
+            },
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>Use only the regression, the safe list, and \\(a-b\\).</p>"
+            }
+          ],
+          "retry_message_html": "<p>Use exactly three lines: the regression with \\(x_1\\), the safe list \\(x_1=[3,4,5]\\), and the requested calculation \\(a-b\\).</p>",
+          "success_message_html": "<p>Nice work! Strong work. The inputs are safe, regression finds \\(a=3\\) and \\(b=-1\\), and the third line evaluates \\(a-b=4\\).</p>",
+          "reveal_solution_after_attempts": 3
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "\\frac{ax_{1}+b}{x_{1}-2}\\sim3+\\frac{5}{x_{1}-2}",
+            "x_{1}=[3,4,5]",
+            "a-b"
+          ],
+          "state_rules": {
+            "max_expressions": 3,
+            "min_expressions": 3,
+            "require_visible_only": true
+          }
+        },
+        "progression": {
+          "require_success": true
+        },
+        "instructions_html": "<p>For the restricted identity in the prompt, enter a regression using \\(x_1\\) and the allowed list \\(x_1=[3,4,5]\\). Calculate \\(a-b\\).</p>",
+        "initial_expressions": []
+      }
+    },
+    {
+      "shared_prompt": "shared_model_restricted_identity",
+      "kind": "raw_block",
+      "id": "check_12",
+      "block_type": "check",
+      "content": {
+        "hint": "Subtracting a negative adds its opposite: \\(3-(-1)\\).",
+        "prompt": "What result did Desmos display for \\(a-b\\) on the third line?",
+        "choices": [
+          "\\(-4\\)",
+          "\\(-3\\)",
+          "\\(2\\)",
+          "\\(4\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "\\(a-b=3-(-1)=4\\). You built the regression, protected the domain, and answered the requested combination.",
+        "correct_index": 3
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the longer identity</h2><p>Try the opening question again. Choose the inputs and find the requested combination of constants.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "opening_cubic_identity_result",
+      "block_type": "check",
+      "content": {
+        "id": "opening_cubic_identity_result",
+        "prompt": "What is the value of \\(b+c\\)?",
+        "allow_retry": true,
+        "hint": "Give z a list of distinct inputs. There are four unknown constants, so use at least four distinct values. Fit the expressions, then enter the requested sum.",
+        "solution": "Enter \\(z=[-3,-1,0,2,4]\\).\nEnter \\(az^3+bz^2+cz+d\\sim(2z-3)(z+4)^2+(z-2)(z+1)^2\\).\nDesmos shows \\(a=3,\\ b=13,\\ c=5,\\ d=-50\\), with zero or tiny RMSE.\nOn a new row, enter \\(b+c\\). The result is \\(18\\).",
+        "explanation": "You found \\(18\\). The input list let Desmos find all four constants without expanding the two products.",
+        "input": "numeric",
+        "answer": "18"
+      },
+      "shared_prompt": "opening_cubic_identity",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_13",
+      "block_type": "check",
+      "content": {
+        "hint": "Recall the five actions: regression symbol, rename x or y if needed, safe list, constant assignments, requested calculation.",
+        "prompt": "You need constants that work for every allowed input. What setup keeps the input separate from the constants?",
+        "choices": [
+          "Use =, let Desmos choose one input value on its own, and report the first constant assignment shown for the expression.",
+          "Use ~, change x or y to a subscripted input, define a list of allowed inputs, read the constant assignments, and evaluate the requested expression.",
+          "Replace each letter, constants included, with its own list, graph both sides, and read the intersection.",
+          "Use ~ with the ordinary letter x, include the forbidden input values in the list, and round the constants to integers."
+        ],
+        "allow_retry": true,
+        "explanation": "You have it. That sequence makes the expressions match at several valid inputs and then uses the stored constants to answer exactly what the SAT asks. Inputs other than x or y keep their original names.",
+        "correct_index": 1
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_14",
+      "block_type": "check",
+      "content": {
+        "prompt": "Independent practice 1 of 5: The expression \\(p(t+2)+q(t-1)\\) is equivalent to \\(5t+7\\) for all \\(t\\). What is \\(p-q\\)?",
+        "input": "numeric",
+        "answer": "3",
+        "explanation": "Matching the expressions gives p=4 and q=1, so p-q=3.",
+        "allow_retry": false
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_15",
+      "block_type": "check",
+      "content": {
+        "prompt": "Independent practice 2 of 5: The expression \\(a(y-3)+b\\) is equivalent to \\(4y+2\\) for all \\(y\\). What is \\(a+b\\)?",
+        "input": "numeric",
+        "answer": "18",
+        "explanation": "The identity gives a=4 and b=14, so a+b=18.",
+        "allow_retry": false
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_16",
+      "block_type": "check",
+      "content": {
+        "prompt": "Independent practice 3 of 5: An identity contains \\(1/(x-b)\\), where \\(b\\) is a missing constant, and no other restriction is given. Which definition is the best starting list while \\(b\\) is unknown?",
+        "choices": [
+          "\\(b=[1,2,3,4,5]\\)",
+          "\\(x_1=[1...10]\\)",
+          "\\(x_1=5\\)",
+          "\\(x_1=random(5)\\)"
+        ],
+        "correct_index": 3,
+        "explanation": "random(5) supplies several inputs while making an exact collision with an unknown forbidden input unlikely. Keep other domain restrictions satisfied.",
+        "allow_retry": false
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "check_17",
+      "block_type": "check",
+      "content": {
+        "prompt": "Independent practice 4 of 5: An identity contains \\(1/(x+4)\\), and the question specifies \\(x<0\\). Which input list is valid?",
+        "choices": [
+          "\\(x_1=[-5,-4,-3]\\)",
+          "\\(x_1=[-3,-2,-1]\\)",
+          "\\(x_1=[0,1,2]\\)",
+          "\\(x_1=[-4,0,4]\\)"
+        ],
+        "correct_index": 1,
+        "explanation": "The list [-3,-2,-1] contains negative values and excludes -4, which makes the denominator zero.",
+        "allow_retry": false
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "The expression \\(a(x-2)+b(x+1)\\) is equivalent to \\(5x-7\\) for all values of \\(x\\). What is the value of \\(a\\)?",
+        "input": "numeric",
+        "answer": "4",
+        "allow_retry": false,
+        "explanation": "Matching the identity gives \\(a+b=5\\) and \\(-2a+b=-7\\), so \\(a=4\\) (and \\(b=1\\)). In Desmos, \\(a(x_1-2)+b(x_1+1)\\sim5x_1-7\\) with \\(x_1=[1,2,3]\\) finds the same values; \\(1\\) is \\(b\\), the wrong quantity."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the question"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_complete_1",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>List the inputs, find the constants</h2><p>Use allowed inputs and calculate the quantity the question requests.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

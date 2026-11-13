@@ -1,0 +1,538 @@
+{
+  "title": "Right Triangle Trigonometry with SOHCAHTOA",
+  "description": "Sketch and label SAT right triangles, choose and solve exact sine, cosine, and tangent equations, manage degree and radian mode, and transfer trig ratios across similar triangles.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Which is the exact length of \\(NP\\)?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(7\\tan(52^\\circ)\\)</li><li>\\(\\dfrac{20}{\\tan(52^\\circ)}\\)</li><li>\\(20\\cos(52^\\circ)\\)</li><li>\\(20\\tan(52^\\circ)\\)</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "shared_independent_transfer_prompt",
+        "title": "Similar triangles JKL and MNP",
+        "html": "<p>Right triangles \\(JKL\\) and \\(MNP\\) are similar, with \\(J\\leftrightarrow M\\), \\(K\\leftrightarrow N\\), and \\(L\\leftrightarrow P\\). Angles \\(L\\) and \\(P\\) are right angles. Also, \\(\\angle J=52^\\circ\\), \\(JL=7\\), and \\(MP=20\\).</p><p>Find the exact length of \\(NP\\).</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Turn the triangle into a side ratio</h2><p>The opening question has point labels and an angle, but the needed length is not obvious. <strong>Trigonometry</strong> connects an acute angle in a right triangle to ratios of its sides.</p><p>We’ll start by naming the sides from one marked angle, then choose a ratio and use it to find a length.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "side_exploration",
+      "html": "<h2>Find the right angle and chosen angle</h2><p><img src=\"/images/right-triangle-sohcahtoa.svg\" alt=\"Triangle ABC right at C, with theta at B: AC opposite, BC adjacent, AB hypotenuse\" width=\"1000\"></p><p>Find the side across from the right angle first. Then look from angle B to name the other two sides.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "hypotenuse_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which description always identifies the hypotenuse of a right triangle?",
+        "choices": [
+          "The side directly below the marked acute angle",
+          "The shortest side in the drawing",
+          "The side opposite the \\(90^\\circ\\) angle",
+          "The side opposite whichever angle is labeled \\(\\theta\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The hypotenuse is defined using the right angle, not the location or rotation of the drawing.",
+        "explanation": "The hypotenuse is always across from the \\(90^\\circ\\) angle, and it is the triangle's longest side."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "relative_side_names",
+      "html": "<h2>Name the sides from the angle you use</h2><ul><li><strong>Hypotenuse</strong>: across from 90°.</li><li><strong>Opposite</strong>: across from the chosen acute angle.</li><li><strong>Adjacent</strong>: the other leg touching that angle.</li></ul><p>Changing the acute angle swaps opposite and adjacent. The hypotenuse stays the same.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "relative_side_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A right triangle's two legs are \\(AB\\) and \\(BC\\), and its hypotenuse is \\(AC\\). Relative to acute angle \\(A\\), which side is opposite?",
+        "choices": [
+          "\\(AC\\)",
+          "\\(BC\\)",
+          "\\(AB\\)",
+          "Both \\(AB\\) and \\(AC\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The opposite side does not touch angle A.",
+        "explanation": "Side \\(BC\\) sits across from angle \\(A\\). Side \\(AB\\) is adjacent, and \\(AC\\) is the hypotenuse."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "sohcahtoa_definition",
+      "html": "<h2>Choose among three ratios</h2><p><strong>SOHCAHTOA</strong> is a reminder for:</p><ul><li>SOH: sine = opposite/hypotenuse.</li><li>CAH: cosine = adjacent/hypotenuse.</li><li>TOA: tangent = opposite/adjacent.</li></ul><p>Use the ratio containing the known side and requested side.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ratio_selection_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In right triangle \\(PQR\\), \\(\\angle Q=90^\\circ\\), and the angle being used is \\(\\angle R\\). The question gives \\(QR\\) and asks for \\(PQ\\). Which trig function should you use?",
+        "choices": [
+          "Sine",
+          "Cosine",
+          "Either sine or cosine",
+          "Tangent"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "On your sketch, \\(PQ\\) is opposite angle R and \\(QR\\) is adjacent.",
+        "explanation": "The point labels translate to opposite and adjacent, so TOA gives \\(\\tan(R)=PQ/QR\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "sohcahtoa_process",
+      "html": "<h2>Sketch, Label, Ratio</h2><ol><li>Sketch and place the named vertices and angles.</li><li>Label opposite, adjacent, and hypotenuse from the chosen acute angle.</li><li>Choose the ratio using the known and requested sides.</li><li>Solve for the requested side.</li></ol><p>Keep an exact trig expression when the choices use one.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "desmos_angle_mode",
+      "html": "<h2>Match the angle unit before calculating</h2><p>For a degree angle such as 35°, select Degrees under Graph Settings → Angle Measure before typing tan(35). For radians, select Radians.</p><p>The setting tells Desmos how to interpret the angle you type.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "angle_mode_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A triangle labels an acute angle as \\(35^\\circ\\). What should you do before typing \\(\\tan(35)\\) in Desmos?",
+        "choices": [
+          "Open Graph Settings and select Degrees",
+          "Leave Desmos in its default Radians mode",
+          "Convert \\(35\\) into a side length",
+          "Replace tangent with cosine"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The degree symbol tells you how Desmos must interpret 35.",
+        "explanation": "Select Degrees so Desmos treats 35 as \\(35^\\circ\\), not 35 radians."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_tangent_model",
+        "title": "Triangle ABC",
+        "html": "<p>In right triangle \\(ABC\\), \\(\\angle C=90^\\circ\\), \\(\\angle A=35^\\circ\\), \\(AC=12\\), and \\(BC=x\\).</p>"
+      },
+      "kind": "text",
+      "id": "tangent_model",
+      "html": "<h2>Use opposite and adjacent</h2><p>From angle A, BC=x is opposite and AC=12 is adjacent. So \\(\\tan35^\\circ=x/12\\), giving \\(x=12\\tan35^\\circ\\). That expression is the exact length.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_tangent_model",
+      "kind": "raw_block",
+      "id": "tangent_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which equation is correct for triangle ABC?",
+        "choices": [
+          "\\(\\sin(35^\\circ)=12/x\\)",
+          "\\(\\cos(35^\\circ)=x/12\\)",
+          "\\(\\tan(35^\\circ)=x/12\\)",
+          "\\(\\tan(35^\\circ)=12/x\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Sketch the triangle. From angle A, BC is opposite and AC is adjacent.",
+        "explanation": "The point labels become opposite \\(BC=x\\) over adjacent \\(AC=12\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Check the tangent setup",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_sine_hypotenuse_model",
+        "title": "Triangle XYZ",
+        "html": "<p>In right triangle \\(XYZ\\), \\(\\angle Y=90^\\circ\\), \\(\\angle X=28^\\circ\\), \\(YZ=9\\), and \\(XZ=h\\).</p>"
+      },
+      "kind": "text",
+      "id": "sine_hypotenuse_model",
+      "html": "<h2>The unknown can be in the denominator</h2><p>From angle X, YZ=9 is opposite and XZ=h is the hypotenuse. Thus \\(\\sin28^\\circ=9/h\\). Solve to get \\(h=9/\\sin28^\\circ\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_sine_hypotenuse_model",
+      "kind": "raw_block",
+      "id": "sine_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which is the exact value of \\(XZ\\)?",
+        "choices": [
+          "\\(\\dfrac9{\\sin(28^\\circ)}\\)",
+          "\\(9\\sin(28^\\circ)\\)",
+          "\\(\\dfrac{\\sin(28^\\circ)}9\\)",
+          "\\(\\dfrac9{\\cos(28^\\circ)}\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "solution": "Start from the equation for this triangle: \\(XZ=h\\) is the hypotenuse and \\(YZ=9\\) is opposite \\(\\angle X\\), so \\(\\sin(28^\\circ)=\\frac{9}{h}\\).\nThe unknown begins in the denominator, so multiply both sides by \\(h\\): \\(h\\sin(28^\\circ)=9\\).\nDivide both sides by \\(\\sin(28^\\circ)\\): \\(h=\\frac{9}{\\sin(28^\\circ)}\\).\nKeep it exact rather than converting to a decimal.\nSo the answer is choice A, \\(\\frac{9}{\\sin(28^\\circ)}\\).",
+        "hint": "Label the sides from the \\(28^\\circ\\) angle: which role does the given \\(9\\) play, and which does the unknown play? Set up that ratio and watch where the unknown starts.",
+        "explanation": "Multiplying by h and dividing by \\(\\sin(28^\\circ)\\) gives \\(XZ=9/\\sin(28^\\circ)\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Compare exact sine forms",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_cosine_guided_model",
+        "title": "Triangle PQR",
+        "html": "<p>In right triangle \\(PQR\\), \\(\\angle Q=90^\\circ\\), \\(\\angle P=41^\\circ\\), \\(PR=18\\), and \\(PQ=a\\).</p>"
+      },
+      "kind": "text",
+      "id": "cosine_guided_model",
+      "html": "<h2>Adjacent and hypotenuse use cosine</h2><p>From angle P, PQ=a is adjacent and PR=18 is the hypotenuse. Use \\(\\cos41^\\circ=a/18\\), giving \\(a=18\\cos41^\\circ\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_cosine_guided_model",
+      "kind": "raw_block",
+      "id": "cosine_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which is the exact value of \\(PQ\\)?",
+        "choices": [
+          "\\(\\dfrac{18}{\\cos(41^\\circ)}\\)",
+          "\\(18\\sin(41^\\circ)\\)",
+          "\\(18\\cos(41^\\circ)\\)",
+          "\\(\\dfrac{\\cos(41^\\circ)}{18}\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "From angle P, PQ is adjacent and PR is the hypotenuse. Solve \\(\\cos(41^\\circ)=a/18\\).",
+        "explanation": "CAH gives \\(\\cos(41^\\circ)=PQ/18\\), so \\(PQ=18\\cos(41^\\circ)\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Compare exact cosine forms",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "angle_units_transition",
+      "html": "<h2>Another unit can describe the same angle</h2><p><strong>Radians</strong> measure angles with a half-turn equal to π. Since 180°=π radians, you can convert when the problem uses a different unit.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "degrees_to_radians",
+      "html": "<h2>Degrees to radians</h2><p>Multiply by π/180. For example, \\(150\\cdot\\pi/180=5\\pi/6\\). Keep π for an exact answer.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "radians_to_degrees",
+      "html": "<h2>Radians to degrees</h2><p>Multiply by 180/π. For example, \\((7\\pi/12)(180/\\pi)=105^\\circ\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "mode_is_not_conversion",
+      "html": "<h2>Match the typed number to its unit</h2><p>sin(30) in Degrees and sin(π/6) in Radians both give 1/2. Switching modes without changing the typed number does not convert that number to the other unit.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "mode_interpretation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which setup correctly evaluates the sine of a \\(30^\\circ\\) angle?",
+        "choices": [
+          "Type \\(\\sin(30)\\) while Desmos remains in its default Radians mode.",
+          "Use Degrees mode and type \\(\\sin(30)\\), or use Radians mode and type \\(\\sin(\\pi/6)\\).",
+          "Use Degrees mode and type \\(\\sin(\\pi/6)\\) for the same angle.",
+          "Angle mode does not affect the values that trig functions return."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Either keep 30 as degrees or convert it to the equivalent radian measure \\(\\pi/6\\).",
+        "explanation": "Both matching setups produce the exact value \\(1/2\\). The entry and selected angle mode must describe the same angle."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Verify equivalent angle entries",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "similar_triangles_transition",
+      "html": "<h2>Matching angles keep the same trig ratios</h2><p>Similar right triangles have equal corresponding angles. Their side lengths scale together, so each ratio stays the same. You can use a corresponding angle in the triangle containing the side you need.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "similar_length_contrast_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Every side of a right triangle is doubled to create a similar triangle. What happens to the tangent of a corresponding acute angle?",
+        "choices": [
+          "It is doubled, growing along with the two doubled side lengths.",
+          "It is cut in half, since the ratio now involves larger sides.",
+          "It stays the same because both opposite and adjacent are doubled.",
+          "It becomes \\(90^\\circ\\), matching the enlarged right angle."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Write \\(2\\cdot\\text{opposite}/(2\\cdot\\text{adjacent})\\) and simplify.",
+        "explanation": "The scale factor cancels from the ratio, so tangent stays the same."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_combined_problem_model",
+        "title": "Similar triangles ABC and DEF",
+        "html": "<p>Right triangles \\(ABC\\) and \\(DEF\\) are similar, with \\(A\\leftrightarrow D\\), \\(B\\leftrightarrow E\\), and \\(C\\leftrightarrow F\\). Also, \\(\\angle C=\\angle F=90^\\circ\\), \\(\\angle A=38^\\circ\\), \\(AC=10\\), and \\(DF=25\\). Find \\(EF\\).</p>"
+      },
+      "kind": "text",
+      "id": "combined_problem_shortcut",
+      "html": "<h2>Use the corresponding angle directly</h2><p>Here A↔D, so angle D is 38°. In the larger triangle, EF is opposite and DF=25 is adjacent. Use \\(\\tan38^\\circ=EF/25\\), giving \\(EF=25\\tan38^\\circ\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_combined_problem_model",
+      "kind": "raw_block",
+      "id": "combined_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which is the simplified exact value of \\(EF\\)?",
+        "choices": [
+          "\\(10\\tan(38^\\circ)\\)",
+          "\\(25\\tan(38^\\circ)\\)",
+          "\\(\\dfrac{25}{\\tan(38^\\circ)}\\)",
+          "\\(25\\sin(38^\\circ)\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "solution": "One route solves the small triangle and scales: \\(BC=10\\tan(38^\\circ)\\), and the scale factor to \\(\\triangle DEF\\) is \\(25/10\\), so \\(EF=(10\\tan(38^\\circ))(25/10)=25\\tan(38^\\circ)\\).\nThe other route transfers the corresponding angle: \\(A\\leftrightarrow D\\) gives \\(\\angle D=38^\\circ\\), and in \\(\\triangle DEF\\), \\(EF\\) is opposite with \\(DF=25\\) adjacent, so \\(\\tan(38^\\circ)=EF/25\\) and \\(EF=25\\tan(38^\\circ)\\).\nBoth routes simplify to the same exact expression.\nSo the answer is choice B, \\(25\\tan(38^\\circ)\\).",
+        "hint": "Simplify \\((10\\tan(38^\\circ))(25/10)\\), or use tangent directly in triangle DEF.",
+        "explanation": "Both methods give the exact result \\(EF=25\\tan(38^\\circ)\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Finish the combined example",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the two triangles</h2><p>Try the opening question again. Choose the angle and side roles yourself, then find the requested exact length.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_independent_transfer_prompt",
+      "kind": "raw_block",
+      "id": "independent_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which is the exact length of \\(NP\\)?",
+        "choices": [
+          "\\(7\\tan(52^\\circ)\\)",
+          "\\(\\dfrac{20}{\\tan(52^\\circ)}\\)",
+          "\\(20\\cos(52^\\circ)\\)",
+          "\\(20\\tan(52^\\circ)\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Use corresponding angles to find the acute angle in the triangle containing NP. Label opposite and adjacent from that angle, then choose the matching trig ratio.",
+        "explanation": "\\(\\tan(52^\\circ)=NP/20\\), so the exact length is \\(NP=20\\tan(52^\\circ)\\). The trig-and-scale route simplifies to the same expression.",
+        "solution": "\\(\\tan(52^\\circ)=NP/20\\), so the exact length is \\(NP=20\\tan(52^\\circ)\\). The trig-and-scale route simplifies to the same expression."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Check the transfer result",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What makes a right-triangle trig setup reliable?",
+        "choices": [
+          "Place the vertices, label sides from the right angle, choose a ratio, and match calculator mode to angle units.",
+          "Place the vertices, label sides from the chosen angle, choose a ratio, and keep calculator mode in Radians.",
+          "Place the vertices, label sides from the chosen angle, choose a ratio, and match calculator mode to angle units.",
+          "Place the vertices, label sides from the chosen angle, reverse the ratio, and match calculator mode to angle units."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "explanation": "The right angle fixes the hypotenuse; the chosen acute angle fixes the other side roles. Then the relevant pair selects the ratio."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "degrees_to_radians_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is \\(225^\\circ\\) in radians?",
+        "choices": [
+          "\\(\\frac{4\\pi}{5}\\)",
+          "\\(\\frac{5\\pi}{2}\\)",
+          "\\(\\frac{5\\pi}{4}\\)",
+          "\\(\\frac{4\\pi}{3}\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "explanation": "\\(225(\\pi/180)=5\\pi/4\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "radians_to_degrees_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is \\(11\\pi/6\\) radians in degrees?",
+        "choices": [
+          "\\(330^\\circ\\)",
+          "\\(300^\\circ\\)",
+          "\\(210^\\circ\\)",
+          "\\(165^\\circ\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "The \\(\\pi\\) cancels, and \\(11\\cdot180/6=330^\\circ\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "In right triangle \\(DEF\\), the measure of angle \\(F\\) is \\(90^\\circ\\), \\(DF=9\\), and \\(EF=12\\). What is the value of \\(\\tan D\\)?",
+        "input": "numeric",
+        "answer": "4/3",
+        "tolerance": 0.001,
+        "allow_retry": false,
+        "explanation": "From \\(\\angle D\\), the opposite side is \\(EF=12\\) and the adjacent side is \\(DF=9\\), so \\(\\tan D=\\frac{12}{9}=\\frac{4}{3}\\). \\(\\frac{3}{4}\\) labels the sides from the wrong angle, and the ratios with \\(5\\) use the hypotenuse \\(15\\), which tangent never does."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Sketch, Label, Ratio</h2><p>Read side roles from the chosen angle and keep the requested answer form.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

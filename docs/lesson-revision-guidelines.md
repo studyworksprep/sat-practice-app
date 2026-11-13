@@ -109,6 +109,9 @@ students make, not obscure vocabulary or an unnecessarily long passage.
   question, passage, or table that several steps refer to. Show it on the
   blocks that need it. With Desmos open, keep the prompt above the
   instructions on the left and give the calculator the right column.
+  Include a diagram when later geometry steps need its vertex labels.
+  When a follow-up diagnoses an answer choice, quote that choice so the
+  learner does not have to remember its letter from an earlier card.
 - **Keep a complete question together.** On an ungraded multiple-choice
   attempt, put the stem and all answer choices in the question card. Keep
   the brief attempt instructions in the instructional card. On a graded
@@ -173,6 +176,9 @@ to either side when both produce a suitable expression.
 - Confirm that independent tasks require the student to choose the setup.
   Graphs supplied on an answer-reading card should match the preceding
   activity.
+  On a discovery or setup activity, preload the given information only;
+  do not preload the reflected point, fitted equation, or other result
+  that the learner is supposed to find.
 - Run the lesson validators and review each lint warning in context.
   A consecutive set of homework checks can be intentional.
 - Give the lesson a title that describes the skill being taught. Keep

@@ -1,0 +1,538 @@
+{
+  "title": "Find Probability from Tables: Favorable over Total",
+  "description": "Use Total first, read SAT-style given conditions as restrictions, and find Favorable outcomes within the correct table group.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "revision_opening_question",
+        "title": "Opening question",
+        "html": "<p>A summer program enrolled \\(80\\) students: \\(35\\) in photography, of whom \\(21\\) are high school students, and \\(45\\) in ceramics, of whom \\(27\\) are high school students. If one of the \\(48\\) high school students in the program is selected at random, what is the probability that the student is enrolled in ceramics?</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>The selection group decides the fraction</h2><p>The program question has several totals, but the wording tells you which students can be chosen. We’ll use <strong>Favorable over Total</strong>, starting with the Total.</p><p>First, use a small shirt table so you can see each count.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "first_exploration",
+      "shared_prompt": {
+        "id": "shirt_table",
+        "title": "Shirt table",
+        "html": "<table><caption>Shirts by size and color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Red</th><th scope=\"col\">Blue</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Total</th><td>30</td><td>20</td><td>50</td></tr></tbody></table>"
+      },
+      "html": "<h2>Find all the possible selections</h2><p>One shirt is selected from all the shirts in this table. Before counting blue shirts, point to the count that includes every shirt that could be chosen.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "exploration_check",
+      "shared_prompt": "shirt_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "One shirt is selected at random from all the shirts in the table. Which number is the Total for the probability?",
+        "choices": [
+          "20, the number of blue shirts",
+          "30, the number of large shirts",
+          "50, the number of all shirts",
+          "12, the number of large blue shirts"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The Total contains every outcome that could be selected. The selection is from all shirts.",
+        "explanation": "Any of the 50 shirts could be selected, so 50 is the Total. The blue count will become the Favorable number."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "probability_formula",
+      "html": "<h2>Build the probability</h2><p><strong>Favorable</strong> means outcomes matching the question. <strong>Total</strong> means all outcomes allowed in the selection group.</p><p>\\[P(\\text{event})=\\frac{\\text{Favorable}}{\\text{Total}}\\]</p><p>For an equally likely random selection, this fraction gives the chance of a match.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "formula_terms_check",
+      "shared_prompt": "shirt_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the shirt table, 20 of the 50 shirts are blue. For the probability of selecting a blue shirt from all shirts, what are Favorable and Total?",
+        "choices": [
+          "Favorable = 20 and Total = 50",
+          "Favorable = 50 and Total = 20",
+          "Favorable = 12 and Total = 30",
+          "Favorable = 30 and Total = 50"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Favorable counts the shirts that match blue. Total counts every shirt that could be selected.",
+        "explanation": "There are 20 blue shirts among 50 possible shirts, so the probability is \\(\\frac{20}{50}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "total_first_process",
+      "html": "<h2>Total first</h2><ol><li>Find the group the selection comes from.</li><li>Count the favorable outcomes inside that group.</li><li>Write Favorable over Total.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "total_first_check",
+      "shared_prompt": "shirt_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "A question asks for the probability that a randomly selected large shirt is blue. What should you do first?",
+        "choices": [
+          "Count every blue shirt in the table.",
+          "Divide the grand total by the number of large shirts.",
+          "Find the number of red large shirts.",
+          "Identify the total number of large shirts."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Follow the order Total, Favorable, Fraction. Which group can this selection come from?",
+        "explanation": "The selection is restricted to large shirts, so first identify the large-shirt Total of 30. Then find blue shirts within that group."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "read_table_totals",
+      "shared_prompt": "shirt_table",
+      "html": "<h2>Use the total the wording names</h2><p>A row total counts one row’s group; a column total counts one column’s group. The <strong>grand total</strong> counts the whole table. Choose the group allowed by the question.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "table_totals_check",
+      "shared_prompt": "shirt_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "Using the shirt table, which choice correctly identifies a row total, a column total, and the grand total?",
+        "choices": [
+          "Small row = 20; red column = 20; grand total = 50",
+          "Large row = 30; blue column = 20; grand total = 50",
+          "Large row = 12; blue column = 30; grand total = 20",
+          "Small row = 50; red column = 12; grand total = 30"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Read across the Large row, down the Blue column, and then check the bottom-right corner.",
+        "explanation": "The Large row totals 30, the Blue column totals 20, and the bottom-right grand total is 50."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "given_restricts_total",
+      "shared_prompt": {
+        "id": "library_table",
+        "title": "Library table",
+        "html": "<table><caption>Library books by format and genre</caption><thead><tr><th scope=\"col\">Format</th><th scope=\"col\">Nonfiction</th><th scope=\"col\">Fiction</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Hardcover</th><td>16</td><td>24</td><td>40</td></tr><tr><th scope=\"row\">Paperback</th><td>20</td><td>30</td><td>50</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>54</td><td>90</td></tr></tbody></table>"
+      },
+      "html": "<h2>“Given that” restricts the group</h2><p>For “fiction, given that the book is hardcover,” only hardcover books can be selected. Hardcover sets the Total. Fiction is what you count inside that group.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "given_total_check",
+      "shared_prompt": "library_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "A book represented in the library table is selected at random. What is the probability of selecting a fiction book, given that the book selected is hardcover? Which number is the Total?",
+        "choices": [
+          "16, because nonfiction is listed first",
+          "24, because fiction is favorable",
+          "40, because all hardcover books remain possible",
+          "The grand total of every book in the library"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Treat 'given that it is hardcover' as a description of every outcome still allowed in the Total.",
+        "explanation": "The given condition restricts the Total to 16 + 24 = 40 hardcover books."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "favorable_within_total",
+      "shared_prompt": "library_table",
+      "html": "<h2>Stay inside that group</h2><p>The hardcover row contains \\(40\\) books. Of those, \\(24\\) are fiction. The probability is \\(24/40\\). Both counts come from the group the question allows.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "favorable_within_check",
+      "shared_prompt": "library_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "A book represented in the library table is selected at random. What is the probability of selecting a fiction book, given that the book selected is hardcover?",
+        "choices": [
+          "\\(\\frac{24}{40}\\)",
+          "24 divided by the grand total of all books",
+          "\\(\\frac{16}{40}\\)",
+          "\\(\\frac{40}{24}\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "solution": "Find Total first: the condition given that the book selected is hardcover restricts the selection to the hardcover row, whose total is \\(40\\) books.\nFind Favorable inside that Total: within the hardcover row, \\(24\\) books are fiction.\nWrite Favorable over Total: \\(\\frac{24}{40}\\), which simplifies to \\(\\frac{3}{5}\\).\nThe grand total \\(90\\) cannot be the denominator, because paperback books are no longer possible outcomes.\nSo the answer is choice A, \\(\\frac{24}{40}\\).",
+        "hint": "The Total is all 40 hardcover books. Favorable is the fiction count within hardcover.",
+        "explanation": "Within the 40 hardcover books, 24 are fiction, so the probability is \\(\\frac{24}{40}=\\frac{3}{5}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "grand_total_trap",
+      "shared_prompt": {
+        "id": "arts_choice_table",
+        "title": "Arts choice table",
+        "html": "<table><caption>Students by grade and arts choice</caption><thead><tr><th scope=\"col\">Grade</th><th scope=\"col\">Art</th><th scope=\"col\">Music</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Grade 10</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Grade 11</th><td>14</td><td>26</td><td>40</td></tr><tr><th scope=\"row\">Total</th><td>32</td><td>38</td><td>70</td></tr></tbody></table>"
+      },
+      "html": "<h2>Check before using the grand total</h2><p>If the selected student is already restricted to grade 10, grade 11 students cannot be selected. Use the grade 10 total, then find the art students inside it.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "denominator_trap_check",
+      "shared_prompt": "arts_choice_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "One student represented in the arts-choice table is selected at random. What is the probability of selecting a student who chose art, given that the student selected is in grade 10?",
+        "choices": [
+          "\\(\\frac{18}{70}\\)",
+          "\\(\\frac{32}{70}\\)",
+          "\\(\\frac{18}{32}\\)",
+          "\\(\\frac{18}{30}\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The condition after 'given that' makes the grade 10 row the Total — add up that whole row first. Then find the art count inside the same row.",
+        "explanation": "The grade 10 row contains 30 students, and 18 of those students chose art, so the probability is \\(\\frac{18}{30}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "without_given",
+      "shared_prompt": "arts_choice_table",
+      "html": "<h2>A restriction can use different words</h2><p>“One grade 10 student” and “one student who chose music” also restrict the selection. Follow the wording even when it does not say “given that.”</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "without_given_check",
+      "shared_prompt": "arts_choice_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "One student is selected at random from all 70 students in the arts-choice table. What is the probability the student chose art?",
+        "choices": [
+          "\\(\\frac{18}{30}\\)",
+          "\\(\\frac{32}{70}\\)",
+          "\\(\\frac{14}{40}\\)",
+          "\\(\\frac{38}{70}\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "solution": "Read the selection: the student is chosen from all \\(70\\) students, and no wording restricts the group, so the Total is the grand total, \\(70\\).\nFind Favorable inside that Total: art students come from both grades, so \\(18+14=32\\).\nWrite Favorable over Total: \\(\\frac{32}{70}\\). Using one grade's row, such as \\(\\frac{18}{30}\\), would leave out part of the allowed group.\nSo the answer is choice B, \\(\\frac{32}{70}\\).",
+        "hint": "There is no restriction by grade. Add the art counts for Favorable and use all students for Total.",
+        "explanation": "There are 18 + 14 = 32 art students among all 70 students, so the probability is \\(\\frac{32}{70}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "complete_model",
+      "shared_prompt": {
+        "id": "plant_table",
+        "title": "Plant table",
+        "html": "<table><caption>Plants by size and flower color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Green</th><th scope=\"col\">Yellow</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>9</td><td>6</td><td>15</td></tr><tr><th scope=\"row\">Medium</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>15</td><td>10</td><td>25</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>24</td><td>60</td></tr></tbody></table>"
+      },
+      "html": "<h2>Use all three moves</h2><p>The plant is selected from the medium row, so Total is \\(20\\). The matching green plants number \\(12\\). Write \\(12/20\\), or \\(3/5\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "model_check",
+      "shared_prompt": "plant_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "The probability of selecting a green plant, given that the plant selected is medium, is set up as \\(\\frac{12}{20}\\). Which statement correctly identifies what the \\(20\\) and the \\(12\\) count?",
+        "choices": [
+          "There are 12 green plants in the whole table and 20 yellow plants.",
+          "There are 20 plants in the whole table and 12 are medium.",
+          "There are 20 medium plants in the restricted Total and 12 of them are green.",
+          "There are 12 medium plants and 20 of them are green."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "State the restricted Total first, then the matching count inside that same group.",
+        "explanation": "The condition after 'given that' restricts Total to 20 medium plants, and 12 plants within that group are green."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "reverse_table_direction",
+      "shared_prompt": {
+        "id": "commuter_table",
+        "title": "Commuter table",
+        "html": "<table><caption>Commuters by role and transportation</caption><thead><tr><th scope=\"col\">Role</th><th scope=\"col\">Bus</th><th scope=\"col\">Bike</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Student</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Teacher</th><td>6</td><td>4</td><td>10</td></tr><tr><th scope=\"row\">Total</th><td>24</td><td>16</td><td>40</td></tr></tbody></table>"
+      },
+      "html": "<h2>The selected group can be a column</h2><p>For “teacher, given that the person rides the bus,” use all bus riders as Total. Then count the teachers in that column. Keep the same routine when the table’s direction changes.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "reverse_direction_check",
+      "shared_prompt": "commuter_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "One person represented in the commuter table is selected at random. What is the probability of selecting a teacher, given that the person selected rides the bus?",
+        "choices": [
+          "\\(\\frac{6}{24}\\)",
+          "\\(\\frac{6}{10}\\)",
+          "\\(\\frac{6}{40}\\)",
+          "\\(\\frac{18}{24}\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The condition after 'given that' makes all 24 bus riders the Total. Find teachers within the bus column.",
+        "explanation": "Of the 24 bus riders, 6 are teachers, so the probability is \\(\\frac{6}{24}=\\frac{1}{4}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "missing_totals",
+      "shared_prompt": {
+        "id": "class_table",
+        "title": "Class table",
+        "html": "<table><caption>Students by session and class</caption><thead><tr><th scope=\"col\">Session</th><th scope=\"col\">Algebra</th><th scope=\"col\">Geometry</th></tr></thead><tbody><tr><th scope=\"row\">Afternoon</th><td>16</td><td>9</td></tr><tr><th scope=\"row\">Evening</th><td>14</td><td>11</td></tr></tbody></table>"
+      },
+      "html": "<h2>Add a missing total when you need it</h2><p>If the afternoon row has no total, add its algebra and geometry counts. Then use the geometry count over that afternoon total. You do not need to fill in every total first.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "missing_total_check",
+      "shared_prompt": "class_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "One student represented in the class table is selected at random. What is the probability of selecting a geometry student, given that the student selected attends the afternoon session?",
+        "choices": [
+          "\\(\\frac{9}{16}\\)",
+          "\\(\\frac{16}{25}\\)",
+          "\\(\\frac{25}{9}\\)",
+          "\\(\\frac{9}{25}\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "solution": "Find Total first: the condition given that the student attends the afternoon session restricts the selection to the afternoon row.\nThe table omits the totals, so add only the needed group: \\(16+9=25\\) afternoon students.\nFind Favorable inside that Total: \\(9\\) geometry students in the afternoon row.\nWrite Favorable over Total: \\(\\frac{9}{25}\\). Check: Favorable is smaller than Total, so the probability lies from 0 to 1.\nSo the answer is choice D, \\(\\frac{9}{25}\\).",
+        "hint": "First add 16 + 9 for the afternoon Total. Then place the 9 geometry students over that Total.",
+        "explanation": "The afternoon Total is 25, and 9 of those students are in geometry, so the probability is \\(\\frac{9}{25}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "match_answer_form",
+      "shared_prompt": "plant_table",
+      "html": "<h2>Choose the requested form</h2><p>Set up Favorable over Total before simplifying. For example, \\(12/20=3/5\\). A fraction, decimal, or percent can describe the same chance; report the form the question requests.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "answer_form_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A table gives 15 Favorable outcomes out of 60 Total outcomes. Which simplified probability is equivalent to \\(\\frac{15}{60}\\)?",
+        "choices": [
+          "4",
+          "\\(\\frac{1}{4}\\)",
+          "\\(\\frac{15}{45}\\)",
+          "\\(\\frac{3}{4}\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Divide the numerator and denominator of \\(\\frac{15}{60}\\) by 15.",
+        "explanation": "\\(\\frac{15}{60}\\) simplifies to \\(\\frac{1}{4}\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the summer program</h2><p>Try the opening question again. Decide which students remain possible selections before counting the favorable students.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Return to the opening question. What answer do you get now?",
+        "input": "numeric",
+        "answer": "27/48",
+        "accept": [
+          "9/16"
+        ],
+        "allow_retry": true,
+        "hint": "Identify the group the student is selected from, then count the ceramics students within that group.",
+        "explanation": "The condition restricts Total to the \\(48\\) high school students, and \\(27\\) of them are in ceramics, so \\(\\frac{27}{48}\\). The grand total \\(80\\) is no longer available, and \\(\\frac{27}{45}\\) reverses the condition.",
+        "solution": "The condition restricts Total to the \\(48\\) high school students, and \\(27\\) of them are in ceramics, so \\(\\frac{27}{48}\\). The grand total \\(80\\) is no longer available, and \\(\\frac{27}{45}\\) reverses the condition."
+      },
+      "calculator": {
+        "display": "open"
+      },
+      "shared_prompt": "revision_opening_question"
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "A two-way table and the words \"given that.\" No scrolling back — what do you do first, and then what?",
+        "choices": [
+          "Identify Favorable first, use the condition after 'given that' to restrict it, find Total inside it, and write Favorable over Total.",
+          "Identify Total first, use the condition after 'given that' to restrict it, find Favorable inside it, and write Favorable over Total.",
+          "Identify Total first, keep it at the grand total when the question says 'given that,' find Favorable anywhere in the table, and write Favorable over Total.",
+          "Identify Total first, use the condition after 'given that' to restrict Favorable instead, and write Total over Favorable."
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "You have it. Starting with Total prevents denominator traps, and treating the condition after 'given that' as a restriction keeps both numbers inside the same subset."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_given_probability_check",
+      "shared_prompt": {
+        "id": "museum_table",
+        "title": "Museum table",
+        "html": "<table><caption>Museum visitors by age group and tour</caption><thead><tr><th scope=\"col\">Age group</th><th scope=\"col\">History</th><th scope=\"col\">Science</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Youth</th><td>14</td><td>21</td><td>35</td></tr><tr><th scope=\"row\">Adult</th><td>26</td><td>39</td><td>65</td></tr><tr><th scope=\"row\">Total</th><td>40</td><td>60</td><td>100</td></tr></tbody></table>"
+      },
+      "block_type": "check",
+      "content": {
+        "prompt": "One visitor represented in the museum table is selected at random. What is the probability of selecting a visitor who chose the science tour, given that the visitor selected is an adult?",
+        "input": "numeric",
+        "answer": "39/65",
+        "accept": [
+          "3/5"
+        ],
+        "allow_retry": false,
+        "explanation": "Of the 65 adult visitors, 39 chose the science tour, so the probability is \\(\\frac{39}{65}\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_no_given_check",
+      "shared_prompt": "museum_table",
+      "block_type": "check",
+      "content": {
+        "prompt": "Using the museum table, one visitor is selected from all 100 visitors. What is the probability the visitor chose history?",
+        "input": "numeric",
+        "answer": "40/100",
+        "accept": [
+          "2/5"
+        ],
+        "allow_retry": false,
+        "explanation": "All 100 visitors are possible, and 14 + 26 = 40 chose history, so the probability is \\(\\frac{40}{100}\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Favorable over Total</h2><p>Find the selection group first. Count the matching outcomes inside it.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}
