@@ -13,6 +13,10 @@
         "id": "revision_opening_question",
         "title": "Opening question",
         "html": "<p>An equilateral triangle has altitude \\(x\\sqrt{3}\\). What is its perimeter?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(3x\\)</li><li>\\(3x\\sqrt{3}\\)</li><li>\\(6x\\sqrt{3}\\)</li><li>\\(6x\\)</li></ol>"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/equilateral-opening.svg",
+        "alt": "An equilateral triangle with each side labeled s, altitude x square root of 3, equal half-base marks, and a right-angle mark."
       }
     },
     {
@@ -34,6 +38,11 @@
       "html": "<h2>Split a square</h2><p>Sketch the shared square and its diagonal. Each half has a right angle and two equal legs of length 6. What does that tell you about its acute angles?</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/square-six.svg",
+        "alt": "A square with two adjacent sides labeled 6, a diagonal labeled d, and right-angle marks.",
+        "caption": "The diagonal divides the square into two right triangles."
       }
     },
     {
@@ -56,6 +65,11 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/square-six.svg",
+        "alt": "A square with two adjacent sides labeled 6, a diagonal labeled d, and right-angle marks.",
+        "caption": "The diagonal divides the square into two right triangles."
       }
     },
     {
@@ -64,6 +78,11 @@
       "html": "<h2>Equal legs give 45–45–90</h2><p>An <strong>isosceles right triangle</strong> has two equal legs and angles 45°,45°,90°. Its sides are \\(k,k,k\\sqrt2\\): leg, leg, hypotenuse.</p><p>The size can change, but this ratio stays fixed.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/family-45.svg",
+        "alt": "An isosceles right triangle with 45-degree acute angles, legs k and k, and hypotenuse k square root of 2.",
+        "caption": "Match the given side to a position in the ratio."
       }
     },
     {
@@ -80,6 +99,10 @@
       "html": "<h2>Start from a leg</h2><p>For an isosceles right triangle with leg 8, k=8. The other leg is 8 and the hypotenuse is \\(8\\sqrt2\\).</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/leg-eight.svg",
+        "alt": "A 45–45–90 triangle with legs 8 and 8 and hypotenuse 8 square root of 2."
       }
     },
     {
@@ -102,6 +125,10 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/hypotenuse-ten-root-two.svg",
+        "alt": "An isosceles right triangle with hypotenuse 10 square root of 2 and both legs labeled x; a right-angle mark and equal-leg marks are shown."
       }
     },
     {
@@ -110,6 +137,11 @@
       "html": "<h2>Start from the hypotenuse</h2><p>If the hypotenuse is h, match \\(k\\sqrt2=h\\). Each leg is \\(h/\\sqrt2=h\\sqrt2/2\\). A variable changes the arithmetic, not the ratio.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/family-45.svg",
+        "alt": "An isosceles right triangle with 45-degree acute angles, legs k and k, and hypotenuse k square root of 2.",
+        "caption": "Match the given side to a position in the ratio."
       }
     },
     {
@@ -131,6 +163,11 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/family-45.svg",
+        "alt": "An isosceles right triangle with 45-degree acute angles, legs k and k, and hypotenuse k square root of 2.",
+        "caption": "Match the given side to a position in the ratio."
       }
     },
     {
@@ -152,6 +189,11 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/family-45.svg",
+        "alt": "An isosceles right triangle with 45-degree acute angles, legs k and k, and hypotenuse k square root of 2.",
+        "caption": "Match the given side to a position in the ratio."
       }
     },
     {
@@ -165,6 +207,11 @@
       "html": "<h2>Split an equilateral triangle</h2><p>Sketch its altitude. Each half is a right triangle with a 30° angle at the top and 60° at the base. For an original side of 12, its hypotenuse is 12 and short leg is half the base, 6.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/equilateral-twelve.svg",
+        "alt": "An equilateral triangle with side lengths 12, an altitude labeled h, and half-base segments labeled 6.",
+        "caption": "The altitude meets the base at a right angle."
       }
     },
     {
@@ -187,6 +234,11 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/equilateral-twelve.svg",
+        "alt": "An equilateral triangle with side lengths 12, an altitude labeled h, and half-base segments labeled 6.",
+        "caption": "The altitude meets the base at a right angle."
       }
     },
     {
@@ -195,6 +247,11 @@
       "html": "<h2>Match the three roles in 30–60–90</h2><ul><li>Short leg, opposite 30°: k.</li><li>Long leg, opposite 60°: \\(k\\sqrt3\\).</li><li>Hypotenuse, opposite 90°: 2k.</li></ul><p>Use \\(1:\\sqrt3:2\\) in that order.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/family-30.svg",
+        "alt": "A right triangle with angles 30 and 60 degrees; the short leg is k, the long leg is k square root of 3, and the hypotenuse is 2k.",
+        "caption": "Keep the short leg, long leg, and hypotenuse in order."
       }
     },
     {
@@ -203,6 +260,10 @@
       "html": "<h2>Start from the short leg</h2><p>Short leg 5 means k=5. The long leg is \\(5\\sqrt3\\) and the hypotenuse is 10.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/short-leg-five.svg",
+        "alt": "A 30–60–90 triangle with short leg 5, long leg 5 square root of 3, and hypotenuse 10."
       }
     },
     {
@@ -225,6 +286,10 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/hypotenuse-eighteen.svg",
+        "alt": "A 30–60–90 triangle with hypotenuse 18 and its short and long legs labeled s and l."
       }
     },
     {
@@ -233,6 +298,10 @@
       "html": "<h2>Recover k from the long leg</h2><p>If the long leg is \\(12\\sqrt3\\), match \\(k\\sqrt3=12\\sqrt3\\), giving k=12. The short leg is 12 and the hypotenuse is 24.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/long-leg-twelve-root-three.svg",
+        "alt": "A 30–60–90 triangle with long leg 12 square root of 3, short leg 12, and hypotenuse 24."
       }
     },
     {
@@ -255,6 +324,10 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/long-leg-fifteen-root-three.svg",
+        "alt": "A 30–60–90 triangle with long leg 15 square root of 3, short leg labeled s, and hypotenuse labeled h."
       }
     },
     {
@@ -263,6 +336,11 @@
       "html": "<h2>Use the same ratio with a symbol</h2><p>If the hypotenuse is H, k=H/2, so the long leg is \\(H\\sqrt3/2\\). If the long leg is L, \\(k=L/\\sqrt3\\). Solve for k from the known role instead of memorizing a new formula for each side.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/family-30.svg",
+        "alt": "A right triangle with angles 30 and 60 degrees; the short leg is k, the long leg is k square root of 3, and the hypotenuse is 2k.",
+        "caption": "Keep the short leg, long leg, and hypotenuse in order."
       }
     },
     {
@@ -284,6 +362,11 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/family-30.svg",
+        "alt": "A right triangle with angles 30 and 60 degrees; the short leg is k, the long leg is k square root of 3, and the hypotenuse is 2k.",
+        "caption": "Keep the short leg, long leg, and hypotenuse in order."
       }
     },
     {
@@ -305,6 +388,11 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/family-30.svg",
+        "alt": "A right triangle with angles 30 and 60 degrees; the short leg is k, the long leg is k square root of 3, and the hypotenuse is 2k.",
+        "caption": "Keep the short leg, long leg, and hypotenuse in order."
       }
     },
     {
@@ -348,6 +436,10 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/square-area-seventy-two.svg",
+        "alt": "A square labeled area 72, with each side labeled s and its diagonal labeled d."
       }
     },
     {
@@ -356,6 +448,10 @@
       "html": "<h2>A circle can contain equal legs</h2><p>Two perpendicular radii form a right angle and have equal lengths. Connecting their endpoints makes a 45–45–90 triangle. The chord is its hypotenuse, so radius r gives chord \\(r\\sqrt2\\).</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/perpendicular-radii.svg",
+        "alt": "A circle centered at O with perpendicular radii OA and OB labeled r; the chord AB is labeled c."
       }
     },
     {
@@ -378,6 +474,10 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/radius-eleven.svg",
+        "alt": "A circle centered at O with two perpendicular radii of length 11 and the chord between their endpoints labeled x."
       }
     },
     {
@@ -386,6 +486,10 @@
       "html": "<h2>Return to the equilateral setup</h2><p>Its altitude halves the base and forms a 30–60–90 triangle. For equilateral side s, the short leg is s/2, the altitude is \\(s\\sqrt3/2\\), and the hypotenuse is s.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/equilateral-symbolic.svg",
+        "alt": "An equilateral triangle with side s, altitude h, equal half-base segments labeled s/2, and a right-angle mark at the foot of the altitude."
       }
     },
     {
@@ -408,6 +512,10 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/equilateral-perimeter-forty-two.svg",
+        "alt": "An equilateral triangle with all sides labeled s, altitude h, equal half-base marks, and a note that its perimeter is 42."
       }
     },
     {
@@ -429,6 +537,10 @@
       },
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/hidden-half-hypotenuse.svg",
+        "alt": "A right triangle with hypotenuse 20, a leg of length 10, and the other leg labeled x. No acute angle measures are printed."
       }
     },
     {
@@ -464,6 +576,10 @@
         "id": "revision_opening_question_return",
         "title": "Opening question",
         "html": "<p>An equilateral triangle has altitude \\(x\\sqrt{3}\\). What is its perimeter?</p>"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/equilateral-opening.svg",
+        "alt": "An equilateral triangle with each side labeled s, altitude x square root of 3, equal half-base marks, and a right-angle mark."
       }
     },
     {
@@ -514,6 +630,10 @@
         "display": "available",
         "mode": "scratch",
         "title": "Scratch calculator"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/square-diagonal-fourteen-root-two.svg",
+        "alt": "A square with unknown side s and diagonal 14 square root of 2."
       }
     },
     {
@@ -536,6 +656,10 @@
         "display": "available",
         "mode": "scratch",
         "title": "Scratch calculator"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/4601e571c6664080b36e5df9d5912e0d229dcf20/public/images/lesson-quality-first-batch/hypotenuse-fourteen.svg",
+        "alt": "A right triangle with 45-degree acute angles, hypotenuse 14 centimeters, and both legs labeled x."
       }
     },
     {
@@ -551,5 +675,5 @@
       }
     }
   ],
-  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/special-right-triangles-45-45-90-and-30-60-90.json."
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/special-right-triangles-45-45-90-and-30-60-90.json.\nOptional quality batch 2026-11-13: Add labeled figures for side roles and hidden triangles, without placing keyed numeric results on check diagrams."
 }

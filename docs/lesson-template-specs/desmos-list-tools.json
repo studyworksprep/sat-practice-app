@@ -214,6 +214,94 @@
       }
     },
     {
+      "kind": "raw_block",
+      "id": "reverse_list_transformation",
+      "block_type": "text",
+      "content": {
+        "id": "reverse_list_transformation",
+        "html": "<h2>Undo a change to a whole list</h2><p>A sensor reports <strong>twice the actual value, plus 3</strong>. To recover the actual values, undo the operations in reverse order:</p><ol><li>Subtract 3 from each reported value.</li><li>Divide each result by 2.</li></ol><p>\\[\\text{actual list}=\\frac{\\text{reported list}-3}{2}\\]</p><p>Desmos applies this calculation to every entry in the list.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "reverse_list_model",
+      "block_type": "text",
+      "content": {
+        "id": "reverse_list_model",
+        "html": "<h2>Read the recovered values</h2><p>The reported list is \\(R=[11,17,23]\\). Define \\(C=(R-3)/2\\).</p><p>The calculator shows \\(C=[4,7,10]\\). For example, the first reading 11 becomes \\((11-3)/2=4\\). The same steps recover every entry.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Undo the sensor change",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "initial_expressions": [
+            {
+              "id": "reported",
+              "latex": "R=[11,17,23]"
+            },
+            {
+              "id": "corrected",
+              "latex": "C=\\frac{R-3}{2}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "reverse_list_try",
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "reverse_list_try",
+        "title": "Recover a changed list",
+        "instructions_html": "<p>The same sensor reports twice the actual value, plus 3. This time its readings are \\([15,23,31]\\).</p><p>Use two rows: store the readings as Q, then define the actual-values list C. Use the subtract-then-divide form \\(C=(Q-\\square)/\\square\\), filling in the two numbers yourself. Read the resulting list.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "multi_expression",
+          "required_count": 2,
+          "roles": [
+            "reported_list",
+            "actual_list"
+          ]
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "Q=[15,23,31]",
+            "C=(Q-3)/2",
+            "C=\\frac{Q-3}{2}"
+          ],
+          "state_rules": {
+            "min_expressions": 2,
+            "max_expressions": 2
+          }
+        },
+        "feedback": {
+          "success_message_html": "<p>You recovered \\(C=[6,10,14]\\). Subtracting 3 first undoes the added 3; dividing by 2 then undoes the doubling.</p>",
+          "retry_message_html": "<p>Use exactly two rows. Store the reported readings as Q, then subtract the added amount from the whole list before dividing.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "too_few_expressions",
+              "message_html": "<p>Use one row for Q and a second row for C.</p>"
+            },
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>Keep only the reported list Q and the recovered list C.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Enter \\(Q=[15,23,31]\\), then \\(C=(Q-3)/2\\). The actual values are \\([6,10,14]\\).</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      }
+    },
+    {
       "shared_prompt": {
         "id": "shared_two_list_arithmetic",
         "title": "Lists A and B",
@@ -647,6 +735,30 @@
     },
     {
       "kind": "raw_block",
+      "id": "independent_correct_join_median",
+      "block_type": "check",
+      "content": {
+        "id": "independent_correct_join_median",
+        "prompt": "What is the median of all nine actual measurements?",
+        "input": "numeric",
+        "answer": "16",
+        "tolerance": 0,
+        "allow_retry": false,
+        "shared_prompt": {
+          "id": "fresh_two_sensor_data",
+          "title": "Combine two sets of measurements",
+          "html": "<p>Sensor P reports twice each actual measurement, plus 3. Its reported readings are:</p><p>\\[19,\\ 35,\\ 27,\\ 51,\\ 43\\]</p><p>Sensor Q records actual measurements correctly. Its readings are:</p><p>\\[10,\\ 18,\\ 14,\\ 22\\]</p><p>What is the median of all nine actual measurements?</p>"
+        },
+        "calculator": {
+          "mode": "scratch",
+          "title": "Your calculator",
+          "display": "open"
+        },
+        "explanation": "Store the reported readings as \\(P=[19,35,27,51,43]\\) and the correct readings as \\(Q=[10,18,14,22]\\). Define \\(C=(P-3)/2\\), giving \\([8,16,12,24,20]\\). Then \\(\\operatorname{median}(\\operatorname{join}(C,Q))=16\\). The nine actual values in order are 8, 10, 12, 14, 16, 18, 20, 22, 24; the fifth is 16. Only P needs correction."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
@@ -658,5 +770,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Correcting a group before combining thirteen unsorted measurements demonstrates list arithmetic, join, and median without requiring unfamiliar commands in the opening prompt. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Remove a duplicate list-definition quiz after the syntax check and actual entry. Remove the manual list-arithmetic prediction before the existing Desmos result check. Introduce whole-list arithmetic before the specific result check. Use Desmos readouts for list arithmetic and summaries instead of requiring manual calculations. Previous specification: archive/tool-focus-2026-11/desmos-list-tools.json."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Correcting a group before combining thirteen unsorted measurements demonstrates list arithmetic, join, and median without requiring unfamiliar commands in the opening prompt. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Remove a duplicate list-definition quiz after the syntax check and actual entry. Remove the manual list-arithmetic prediction before the existing Desmos result check. Introduce whole-list arithmetic before the specific result check. Use Desmos readouts for list arithmetic and summaries instead of requiring manual calculations. Previous specification: archive/tool-focus-2026-11/desmos-list-tools.json.\nOptional quality batch 2026-11-13: Model reversing a list transformation before its opening return; add changed-example calculator practice and a fresh independent correction/join/median task."
 }

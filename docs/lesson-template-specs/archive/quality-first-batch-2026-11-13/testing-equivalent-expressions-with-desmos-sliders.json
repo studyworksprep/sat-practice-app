@@ -1,0 +1,402 @@
+{
+  "title": "Testing Equivalent Expressions with Desmos Sliders",
+  "description": "Learn a fast, reliable way to answer \"which expression is equivalent?\" questions in two or more variables: give each variable a Desmos slider, pick random values, and let the numbers pick the matching answer choice.",
+  "authoring_notes": "Exact live content before the optional quality batch of 2026-11-13. Retains prior confirmed audit fixes. Original database IDs are retained for history.",
+  "blocks": [
+    {
+      "kind": "raw_block",
+      "id": "6894cdcd-bff5-4c8c-8125-78587f745a58",
+      "block_type": "text",
+      "content": {
+        "id": "revision_opening_attempt",
+        "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "opening_slider_products",
+          "html": "<p>Which expression is equivalent to</p><p>\\[(2x-y)(x+3y)^2-(x+y)(x-2y)^2\\text{?}\\]</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(x^3+14x^2y+12xy^2-13y^3\\)</li><li>\\(x^3+8x^2y+12xy^2-13y^3\\)</li><li>\\(x^3+14x^2y+12xy^2-5y^3\\)</li><li>\\(3x^3+8x^2y+12xy^2-5y^3\\)</li></ol>",
+          "title": "Equivalent expression"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "e30333b9-bf01-486a-ad4e-95b0eeb33c9b",
+      "block_type": "text",
+      "content": {
+        "id": "text_1",
+        "html": "<h2>Let the values compare the long products</h2><p>The opening expression needs several expansions, followed by a subtraction of an entire product. A <strong>slider</strong> gives a variable a value you can change, so Desmos can compare numerical results instead.</p><p>We’ll start with two simple letters to learn the controls, then return to the longer expression.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "a5c87221-4db4-4549-b49a-6c44f8770135",
+      "block_type": "text",
+      "content": {
+        "id": "text_2",
+        "html": "<h2>Read the numerical values</h2><p>The calculator starts at \\(a=2,b=3\\). Read the value of the original and compare the choices. Then move the sliders and see which choice keeps matching.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare the values",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "initial_expressions": [
+            {
+              "id": "a",
+              "latex": "a=2"
+            },
+            {
+              "id": "b",
+              "latex": "b=3"
+            },
+            {
+              "id": "e1",
+              "latex": "a(2b+3)"
+            },
+            {
+              "id": "c1",
+              "latex": "2ab+3a"
+            },
+            {
+              "id": "c2",
+              "latex": "2ab+3"
+            }
+          ]
+        },
+        "shared_prompt": {
+          "id": "shared_text_2",
+          "html": "<p>Original: \\(a(2b+3)\\)</p><ul><li>\\(2ab+3a\\)</li><li>\\(2ab+3\\)</li></ul>",
+          "title": "Original expression and candidates"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "c86b3d13-347f-43b3-9169-ea434bccc039",
+      "block_type": "check",
+      "content": {
+        "id": "check_1",
+        "hint": "Keep the sliders at the same values for the original and every choice. Compare the displayed results.",
+        "prompt": "At \\(a=2,b=3\\), the original \\(a(2b+3)\\) displays \\(18\\). Enter each choice with the same slider values. Which one matches?",
+        "choices": [
+          "\\(2ab+3\\)",
+          "\\(2ab+3a\\)",
+          "\\(2ab\\)",
+          "\\(2ab+a+3\\)"
+        ],
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare at the same values",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "initial_expressions": [
+            {
+              "id": "a",
+              "latex": "a=2"
+            },
+            {
+              "id": "b",
+              "latex": "b=3"
+            },
+            {
+              "id": "original",
+              "latex": "a(2b+3)"
+            }
+          ]
+        },
+        "explanation": "B matches the original’s displayed value of \\(18\\). The sliders did the calculation; the other choices give different values at the same inputs.",
+        "correct_index": 1
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "bfcd6ec2-bdd9-419e-a9ba-3a9ffc7881db",
+      "block_type": "text",
+      "content": {
+        "id": "text_4",
+        "html": "<h2>A mismatch rules out a choice</h2><p><strong>Equivalent</strong> expressions match at every allowed set of inputs. If a choice gives a different value once, eliminate it.</p><p>A single matching test can be a coincidence, so test another set when choices tie. Numerical tests help select among choices; they do not prove an identity.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "cdadd041-e16f-4f04-b7d5-08f7236e0cb9",
+      "block_type": "check",
+      "content": {
+        "id": "slider_mismatch_action",
+        "hint": "A matching choice must agree with the original at the same allowed inputs.",
+        "prompt": "At the same allowed slider values, the original displays 17 and one choice displays 18. What should you do?",
+        "choices": [
+          "Keep that choice because it might match at another set of allowed values.",
+          "Change only that choice’s slider values until its display becomes 17.",
+          "Eliminate that choice; one mismatch rules it out.",
+          "Accept that choice because a difference of one is close enough for equivalence."
+        ],
+        "solution": "The original and this choice disagree at one legal input set. That rules the choice out. Continue comparing the other choices using the same values: C.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Good catch. One mismatch rules out a choice. Keep the same values for the remaining comparisons and retest any ties.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "87778609-667a-445f-b844-948c4321c363",
+      "block_type": "text",
+      "content": {
+        "id": "text_6",
+        "html": "<h2>Set, Compare, Retest</h2><ol><li>Type the original and give each variable a slider.</li><li>Use distinct ordinary values, such as 2 and 3.</li><li>Test every choice with those same values.</li><li>If choices tie, change the values and retest the survivors.</li></ol>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ba7fa8d2-af0f-4c39-94a2-0788d3b2f525",
+      "block_type": "text",
+      "content": {
+        "id": "text_7",
+        "html": "<h2>Choose values that separate the choices</h2><p>At \\(a=b=1\\), \\(2ab\\) and \\(a+b\\) both equal 2. At \\(a=2,b=3\\), they differ. Zero, one, and repeated values can hide differences; use other allowed values when they do.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "5ee077ff-a874-48e8-804b-d7ce76e0c77d",
+      "block_type": "check",
+      "content": {
+        "id": "check_3",
+        "prompt": "You test the choices using \\(a=1\\) and \\(b=1\\). Two different choices both equal the original. What should you do?",
+        "choices": [
+          "Pick whichever of the two matched expressions looks simpler — both must be equivalent",
+          "Conclude that none of the four expressions is actually equivalent to the original",
+          "Re-test with other values like \\(a=2, b=3\\), since \\(0\\) and \\(1\\) often make different expressions match",
+          "Set both variables to \\(0\\) instead and see whether the same two choices still match"
+        ],
+        "explanation": "A tie at \\(1\\) (or \\(0\\)) usually means the test values were too friendly. Switch to different, non-trivial numbers and the imposter will break away from the original.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "185f6989-d770-427d-a1fa-b9feb1e78e24",
+      "block_type": "text",
+      "content": {
+        "id": "text_9",
+        "html": "<h2>Compare another original</h2><p>At \\(a=2,b=3\\), read \\(a(3a+2b)-2b(a-b)\\). Compare its output with each candidate row, then change the sliders to test the surviving match again.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Find the matching value",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "initial_expressions": [
+            {
+              "id": "a",
+              "latex": "a=2"
+            },
+            {
+              "id": "b",
+              "latex": "b=3"
+            },
+            {
+              "id": "orig",
+              "latex": "a(3a+2b)-2b(a-b)"
+            },
+            {
+              "id": "ch1",
+              "latex": "3a^2+2b^2"
+            },
+            {
+              "id": "ch2",
+              "latex": "3a^2-4ab+2b^2"
+            },
+            {
+              "id": "ch3",
+              "latex": "3a^2+2ab+2b^2"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "88d7ca60-2f11-4153-b4c4-fe7f549b98a8",
+      "block_type": "check",
+      "content": {
+        "id": "check_4",
+        "hint": "Use the two slider values shown. Compare each candidate’s number with the original, then retest any tie.",
+        "prompt": "Try one yourself. The original is \\(2p(3p-q)+q(4p+q)\\). Use the calculator with \\(p=2, q=3\\) (original value \\(=45\\)). Which choice is equivalent?",
+        "choices": [
+          "\\(6p^2+2pq+q^2\\)",
+          "\\(6p^2-2pq+q^2\\)",
+          "\\(6p^2+6pq+q^2\\)",
+          "\\(6p^2+q^2\\)"
+        ],
+        "calculator": {
+          "mode": "preset",
+          "title": "Test each choice at p = 2, q = 3",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "initial_expressions": [
+            {
+              "id": "p",
+              "latex": "p=2"
+            },
+            {
+              "id": "q",
+              "latex": "q=3"
+            },
+            {
+              "id": "orig",
+              "latex": "2p(3p-q)+q(4p+q)"
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "A displays \\(45\\), matching the original at \\(p=2,q=3\\). The other choices display different numbers. Compare another allowed value set if any choices tie.",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "bc40be42-abf4-49e7-b0a0-8b3b902b083c",
+      "block_type": "text",
+      "content": {
+        "id": "text_11",
+        "html": "<h2>For x and y, use uppercase</h2><p>Lowercase x and y have graphing jobs in Desmos. Replace every x with X and every y with Y, in the original and all choices. Uppercase X and Y can have sliders, so the comparison works the same way.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "e391e4b3-54ec-4601-bdfa-3647363f3949",
+      "block_type": "check",
+      "content": {
+        "id": "check_5",
+        "prompt": "The question uses variables \\(x\\) and \\(y\\), but Desmos won't create sliders for them. What's the fix?",
+        "choices": [
+          "Replace \\(x\\) and \\(y\\) with capital \\(X\\) and \\(Y\\) everywhere, then add sliders",
+          "Give up on using sliders, since the method cannot handle questions written with \\(x\\) and \\(y\\)",
+          "Set \\(x=0\\) and \\(y=0\\), compare the values once, and keep whichever choice matches",
+          "Create one shared slider and use its value for both \\(x\\) and \\(y\\) in every choice"
+        ],
+        "explanation": "Capital \\(X\\) and \\(Y\\) act like normal variables in Desmos, so they get sliders. Swap them in the original and in every choice, then test as usual.",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "026e61ac-da2d-48dc-b994-f2330ac5e2f1",
+      "block_type": "text",
+      "content": {
+        "id": "revision_return_to_opening",
+        "html": "<h2>Return to the longer products</h2><p>Try the opening question again. Choose your test values and compare every choice with the original.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "8c0d6596-8406-483d-9920-30eca2f4a70d",
+      "block_type": "check",
+      "content": {
+        "id": "opening_slider_products_result",
+        "hint": "Use X and Y in place of x and y throughout. Give them distinct values, keep the full subtracted product grouped, and compare all four choices. Retest any tie.",
+        "prompt": "Which expression matches the original?",
+        "choices": [
+          "\\(x^3+14x^2y+12xy^2-13y^3\\)",
+          "\\(x^3+8x^2y+12xy^2-13y^3\\)",
+          "\\(x^3+14x^2y+12xy^2-5y^3\\)",
+          "\\(3x^3+8x^2y+12xy^2-5y^3\\)"
+        ],
+        "solution": "Enter sliders \\(X=2,\\ Y=3\\).\nEnter \\((2X-Y)(X+3Y)^2-(X+Y)(X-2Y)^2\\). Desmos displays \\(41\\).\nEnter all four choices using those same capital letters. They display \\(41,-31,257,201\\).\nOnly A matches. At \\(X=3,Y=2\\), the original and A both display \\(319\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Try the opening question again",
+          "display": "open",
+          "resettable": true
+        },
+        "allow_retry": true,
+        "explanation": "A matches. The sliders separated the choices without expanding and collecting the cubic terms.",
+        "correct_index": 0,
+        "shared_prompt": {
+          "id": "opening_slider_products_return",
+          "html": "<p>Which expression is equivalent to</p><p>\\[(2x-y)(x+3y)^2-(x+y)(x-2y)^2\\text{?}\\]</p>",
+          "title": "Equivalent expression"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "64e493dd-9efa-41fe-aa4e-2e612e755ddd",
+      "block_type": "check",
+      "content": {
+        "id": "check_7",
+        "prompt": "How do you compare expressions fairly with sliders, and what do you do if choices tie?",
+        "choices": [
+          "Give each expression sliders set to zeros, and keep the first choice that matches.",
+          "Give each expression its own values, then compare its result with the original.",
+          "Give every variable a slider, compare expressions at the same allowed values, and retest ties.",
+          "Give one variable a slider, leave the others undefined, and compare the expressions."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "explanation": "Each comparison uses one complete value set. If choices tie, change to another allowed set and retest them.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "00e9e1cc-5a0f-4da2-bd7c-5f3fe14de818",
+      "block_type": "text",
+      "content": {
+        "id": "revision_independent_practice",
+        "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "d4369827-584f-46dc-ae31-aabae96239b6",
+      "block_type": "question_link",
+      "content": {
+        "id": "gen_qlink_15",
+        "question_id": "253fe436-ea35-483b-bc95-584dd365c220"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "fc990fb4-3a49-49a1-a4b8-99a8ff21fc40",
+      "block_type": "lesson_complete",
+      "content": {
+        "id": "lesson_complete_1",
+        "html": "<h2>Compare at the same values</h2><p>Eliminate mismatches and retest any tied choices.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "button_label": "Finish lesson"
+      }
+    }
+  ]
+}

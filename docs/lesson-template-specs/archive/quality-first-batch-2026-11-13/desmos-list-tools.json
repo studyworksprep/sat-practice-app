@@ -1,0 +1,683 @@
+{
+  "title": "Use Desmos Lists and List Tools",
+  "description": "Create named lists, transform every value with list arithmetic, combine lists with join, and calculate mean, median, and total efficiently in Desmos.",
+  "authoring_notes": "Exact live content before the optional quality batch of 2026-11-13. Retains prior confirmed audit fixes. Original database IDs are retained for history.",
+  "blocks": [
+    {
+      "kind": "raw_block",
+      "id": "c8ea6ec1-8a09-439e-ab61-f697f5f41369",
+      "block_type": "text",
+      "content": {
+        "id": "revision_opening_attempt",
+        "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "opening_corrected_measurements",
+          "html": "<p>Sensor A reported each measurement as twice its actual value plus 3. Sensor B reported actual values correctly.</p><table><caption>Reported measurements</caption><thead><tr><th scope=\"col\">Sensor</th><th scope=\"col\">Values</th></tr></thead><tbody><tr><th scope=\"row\">A</th><td>47, 29, 63, 35, 51, 39, 55</td></tr><tr><th scope=\"row\">B</th><td>15, 27, 21, 19, 25, 17</td></tr></tbody></table><p>What is the median of all 13 actual measurements?</p>",
+          "title": "Two sensors’ measurements"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "598817f3-f70c-4713-8f45-74fd90d3755c",
+      "block_type": "text",
+      "content": {
+        "id": "lesson_objective",
+        "html": "<h2>Correct a whole group at once</h2><p>The opening question asks you to correct seven measurements, combine them with six others, and find the middle value. Repeating those calculations and sorting by hand is tedious.</p><p>A <strong>list</strong> lets one operation work on a whole group. We’ll start with four values, then return to the sensors.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "1e967843-6d2a-45ad-b097-91aeb63e9862",
+      "block_type": "text",
+      "content": {
+        "id": "define_a_list",
+        "html": "<h2>Store the values</h2><p>Type \\(A=[2,3,4,5]\\). Square brackets hold the list; commas separate its values. The equals sign defines \\(A\\) as that whole list.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "shared_define_a_list",
+          "html": "<p>List \\(A\\) holds the values \\(2,3,4,5\\) in that order.</p>",
+          "title": "List A data"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "c4c6ef8b-74a9-47c1-9678-1476fcde7e29",
+      "block_type": "check",
+      "content": {
+        "id": "list_syntax_check",
+        "hint": "Put the list name before the equals sign and place comma-separated values inside square brackets.",
+        "prompt": "Which entry correctly defines \\(A\\)?",
+        "choices": [
+          "\\(A=(2,3,4,5)\\)",
+          "\\(A=2+3+4+5\\)",
+          "\\(A=[2,3,4,5]\\)",
+          "\\([A]=2,3,4,5\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "\\(A=[2,3,4,5]\\) defines A as a four-value list.",
+        "correct_index": 2,
+        "shared_prompt": "shared_define_a_list"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "4a8c87c4-1887-4e53-9e78-1d778dc64285",
+      "block_type": "text",
+      "content": {
+        "id": "try_defining_list",
+        "html": "<h2>Your turn</h2><p>Enter \\(A=[2,3,4,5]\\). Read the four values in the output.</p>",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Define list A",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        },
+        "shared_prompt": "shared_define_a_list"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "6416a4f1-9289-4d13-9dad-3e68ed5df113",
+      "block_type": "text",
+      "content": {
+        "id": "add_to_list",
+        "html": "<h2>Change every value at once</h2><p>Arithmetic on a list acts on every value in it. For example, <strong>B=A+2</strong> creates a new list by adding 2 to every value of A.</p><p>The same idea works for subtraction, multiplication, division, and powers. Desmos applies the operation to the whole list.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "8cafd0a6-d3ef-4da3-9958-f4b0ceba28de",
+      "block_type": "check",
+      "content": {
+        "id": "add_scalar_desmos_check",
+        "hint": "Read the result displayed for B on the second expression line.",
+        "prompt": "For \\(A=[2,3,4,5]\\), enter \\(B=A+2\\). What does Desmos show for B?",
+        "choices": [
+          "\\(B=[2,3,4,5,2]\\)",
+          "\\(B=[4,5,6,7]\\)",
+          "\\(B=16\\)",
+          "\\(B=[2,6,12,20]\\)"
+        ],
+        "calculator": {
+          "mode": "preset",
+          "title": "Transform every value",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "add_list_a",
+              "latex": "A=[2,3,4,5]"
+            },
+            {
+              "id": "add_list_b",
+              "latex": "B=A+2"
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "Every element of A increased by 2, so \\(B=[4,5,6,7]\\).",
+        "correct_index": 1,
+        "shared_prompt": "shared_define_a_list"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "5daa2254-e651-4640-bc12-df0fd432894d",
+      "block_type": "check",
+      "content": {
+        "id": "multiply_scalar_check",
+        "hint": "Read the three-times-A row in the calculator.",
+        "prompt": "With \\(A=[2,3,4,5]\\), what list does Desmos display for \\(3A\\)?",
+        "choices": [
+          "\\([2,3,4,5,2,3,4,5,2,3,4,5]\\)",
+          "\\([5,6,7,8]\\)",
+          "\\([6,9,12,15]\\)",
+          "\\([14,14,14]\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Multiplying a list by 3 multiplies every element by 3.",
+        "correct_index": 2,
+        "shared_prompt": "shared_define_a_list"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "684e93a5-28e1-4521-8fd9-d6caf3615bfd",
+      "block_type": "text",
+      "content": {
+        "id": "practice_scalar_operations",
+        "html": "<h2>Try another operation</h2><p>With \\(A=[2,3,4,5]\\), enter \\(3A\\) and \\(A^2\\). Notice that each result still has four values.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Test list arithmetic",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "arithmetic_list_a",
+              "latex": "A=[2,3,4,5]"
+            }
+          ]
+        },
+        "shared_prompt": "shared_define_a_list"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "f010fd34-fdb3-4b69-896c-e999f8b4512b",
+      "block_type": "check",
+      "content": {
+        "id": "square_list_check",
+        "hint": "Square each value separately: 2 squared, 3 squared, 4 squared, and 5 squared.",
+        "prompt": "What does Desmos return for \\(A^2\\)?",
+        "choices": [
+          "\\([4,9,16,25]\\)",
+          "\\([4,6,8,10]\\)",
+          "\\([2,3,4,5,2,3,4,5]\\)",
+          "\\(196\\)"
+        ],
+        "calculator": {
+          "mode": "preset",
+          "title": "Square every element",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "square_list_a",
+              "latex": "A=[2,3,4,5]"
+            },
+            {
+              "id": "square_list_result",
+              "latex": "A^2"
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "Exponentiation applies to each element, giving \\([4,9,16,25]\\).",
+        "correct_index": 0,
+        "shared_prompt": "shared_define_a_list"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "8f77d6a3-2a02-491c-ae0c-77bef4c3f627",
+      "block_type": "text",
+      "content": {
+        "id": "two_list_arithmetic",
+        "html": "<h2>Add matching positions</h2><p>For \\(A=[1,2,3]\\) and \\(B=[10,20,30]\\), \\(A+B\\) gives \\([11,22,33]\\). It adds first to first, second to second, and third to third.</p><p>To keep all six original values, you need a different command.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "shared_two_list_arithmetic",
+          "html": "<p>\\(A=[1,2,3]\\)</p><p>\\(B=[10,20,30]\\)</p>",
+          "title": "Lists A and B"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "04968187-c846-4290-8df4-425ea983685c",
+      "block_type": "check",
+      "content": {
+        "id": "two_list_arithmetic_check",
+        "hint": "Read the list on the A+B row and compare it with the options.",
+        "prompt": "What output does Desmos display for A+B?",
+        "choices": [
+          "\\([1,2,3,10,20,30]\\)",
+          "\\([11,22,33]\\)",
+          "\\([10,40,90]\\)",
+          "\\(66\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "List arithmetic pairs elements by position, so \\(A+B=[11,22,33]\\).",
+        "correct_index": 1,
+        "shared_prompt": "shared_two_list_arithmetic"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "29e8f43f-defc-4679-98bc-3abb3fe9b54e",
+      "block_type": "text",
+      "content": {
+        "id": "join_lists",
+        "html": "<h2>Keep both groups with join</h2><p><strong>join</strong> combines complete lists. Type \\(C=\\operatorname{join}(A,B)\\) to get \\([1,2,3,10,20,30]\\). Each original value stays in the combined list.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": "shared_two_list_arithmetic"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "521aaca0-75ca-4ac9-9361-70694c8575d5",
+      "block_type": "text",
+      "content": {
+        "id": "try_join",
+        "html": "<h2>Compare the outputs</h2><p>Read \\(A+B\\) and \\(\\operatorname{join}(A,B)\\) in the calculator. Which output keeps all six original values?</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Addition versus join",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "join_list_a",
+              "latex": "A=[1,2,3]"
+            },
+            {
+              "id": "join_list_b",
+              "latex": "B=[10,20,30]"
+            },
+            {
+              "id": "pairwise_sum",
+              "latex": "A+B"
+            },
+            {
+              "id": "joined_list",
+              "latex": "C=\\operatorname{join}(A,B)"
+            }
+          ]
+        },
+        "shared_prompt": "shared_two_list_arithmetic"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "b6193d10-795f-4452-bd25-968a06e754f9",
+      "block_type": "check",
+      "content": {
+        "id": "join_result_check",
+        "hint": "Keep the first list in order, then place the second list after it.",
+        "prompt": "What is \\(\\operatorname{join}([2,4],[6,8])\\)?",
+        "choices": [
+          "\\([2,4,6,8]\\)",
+          "\\([8,12]\\)",
+          "\\([2,10,8]\\)",
+          "\\(20\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "join connects the lists end to end, producing \\([2,4,6,8]\\).",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "b4eb38f5-0bab-4a5f-ae7f-c4fd25381176",
+      "block_type": "check",
+      "content": {
+        "id": "join_vs_add_check",
+        "hint": "Arithmetic combines corresponding values. One list placed after another requires the list-combining function.",
+        "prompt": "You need one list containing every value from lists P and Q. Which command should you use?",
+        "choices": [
+          "\\(P+Q\\)",
+          "\\(P\\times Q\\)",
+          "\\(\\operatorname{join}(P,Q)\\)",
+          "\\(P=Q\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "\\(\\operatorname{join}(P,Q)\\) preserves every value and combines the lists end to end.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "00d38170-c89d-47a3-86fe-e62e9ffab46a",
+      "block_type": "text",
+      "content": {
+        "id": "statistics_functions",
+        "html": "<h2>Ask for one summary number</h2><ul><li><strong>mean</strong> gives the average: \\(\\operatorname{mean}(A)\\).</li><li><strong>median</strong> gives the middle of the sorted data: \\(\\operatorname{median}(A)\\).</li><li><strong>total</strong> gives the sum: \\(\\operatorname{total}(A)\\).</li></ul>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "eb2509e9-b406-4ca9-b8de-1ad740dbb53b",
+      "block_type": "text",
+      "content": {
+        "id": "explore_statistics",
+        "html": "<h2>Try the summary commands</h2><p>Read the three results for \\(A=[2,3,4,5]\\). Change one value in \\(A\\) and see how the results update.</p>",
+        "calculator": {
+          "mode": "preset",
+          "title": "Summarize list A",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false,
+          "initial_expressions": [
+            {
+              "id": "stats_list_a",
+              "latex": "A=[2,3,4,5]"
+            },
+            {
+              "id": "stats_mean_a",
+              "latex": "\\operatorname{mean}(A)"
+            },
+            {
+              "id": "stats_median_a",
+              "latex": "\\operatorname{median}(A)"
+            },
+            {
+              "id": "stats_total_a",
+              "latex": "\\operatorname{total}(A)"
+            }
+          ]
+        },
+        "shared_prompt": {
+          "id": "shared_explore_statistics",
+          "html": "<p>\\(A=[2,3,4,5]\\)</p>",
+          "title": "Data for list statistics"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "1ea4ee4c-ac51-4244-8bd1-b595af090e59",
+      "block_type": "check",
+      "content": {
+        "id": "mean_check",
+        "hint": "Read the result displayed by mean(A) in the calculator.",
+        "prompt": "What does \\(\\operatorname{mean}(A)\\) return?",
+        "choices": [
+          "\\(3\\)",
+          "\\(3.5\\)",
+          "\\(4\\)",
+          "\\(14\\)"
+        ],
+        "calculator": {
+          "mode": "preset",
+          "display": "open",
+          "editable": true,
+          "initial_expressions": [
+            {
+              "latex": "A=[2,3,4,5]"
+            },
+            {
+              "latex": "\\operatorname{mean}(A)"
+            }
+          ]
+        },
+        "allow_retry": true,
+        "explanation": "The mean of 2, 3, 4, and 5 is 3.5.",
+        "correct_index": 1,
+        "shared_prompt": "shared_explore_statistics"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "f327ef89-357b-47c2-898c-7cde99118058",
+      "block_type": "check",
+      "content": {
+        "id": "median_check",
+        "hint": "The function name is the same as the statistic being requested.",
+        "prompt": "Which command finds the middle value of list D?",
+        "choices": [
+          "\\(\\operatorname{total}(D)\\)",
+          "\\(\\operatorname{join}(D)\\)",
+          "\\(\\operatorname{mean}(D)\\)",
+          "\\(\\operatorname{median}(D)\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "median(D) asks Desmos for the middle of the data. The command handles sorting and any calculation needed.",
+        "correct_index": 3
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "18501342-9b58-496a-b5f3-05c7dd2c1a00",
+      "block_type": "check",
+      "content": {
+        "id": "total_check",
+        "hint": "Read the result on the total(A) row.",
+        "prompt": "For \\(A=[2,3,4,5]\\), what does Desmos display for \\(\\operatorname{total}(A)\\)?",
+        "choices": [
+          "\\(3.5\\)",
+          "\\(4\\)",
+          "\\(10\\)",
+          "\\(14\\)"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Desmos displays \\(14\\). The total command adds the values in the stored list.",
+        "correct_index": 3,
+        "shared_prompt": "shared_explore_statistics"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "176bc10b-074c-45de-80b3-2d1c98147407",
+      "block_type": "text",
+      "content": {
+        "id": "functions_menu",
+        "html": "<h2>Find a command when you need it</h2><p>Open the Functions menu. Look under Statistics for mean, median, and total, and under List Operations for join. Use a familiar command directly when you remember it.</p>",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Explore the Functions menu",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "lock_viewport": false
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "80fd39ef-42d3-4999-b326-a37f27791cc2",
+      "block_type": "text",
+      "content": {
+        "id": "list_tools_process",
+        "html": "<h2>Store, Choose, Read</h2><ol><li>Store each group in square brackets.</li><li>Choose arithmetic to change values, join to combine groups, or a summary command.</li><li>Read the resulting list or number.</li></ol><p>You can combine commands, such as \\(\\operatorname{mean}(\\operatorname{join}(A,B))\\).</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ec8ac5b9-33b5-45ad-a2a2-67ebd49d534a",
+      "block_type": "text",
+      "content": {
+        "id": "revision_return_to_opening",
+        "html": "<h2>Return to the sensor measurements</h2><p>Try the opening question again. Find the median of the actual measurements from both sensors.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "6f1e8098-5c69-477e-b117-32da4b2ccaf5",
+      "block_type": "check",
+      "content": {
+        "id": "opening_corrected_measurements_result",
+        "hint": "Store the two groups separately. Undo Sensor A’s added 3 and doubling before combining the actual values and finding the median.",
+        "input": "numeric",
+        "answer": "21",
+        "prompt": "What is the median of all 13 actual measurements?",
+        "solution": "Enter \\(A=[47,29,63,35,51,39,55]\\) and \\(B=[15,27,21,19,25,17]\\).\nEnter \\(C=(A-3)/2\\) to correct every Sensor A measurement.\nEnter \\(\\operatorname{median}(\\operatorname{join}(C,B))\\).\nDesmos displays \\(21\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Try the opening question again",
+          "display": "open",
+          "resettable": true
+        },
+        "allow_retry": true,
+        "explanation": "You found \\(21\\). List arithmetic corrected the seven values together; join and median handled the combined group.",
+        "shared_prompt": "opening_corrected_measurements"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "e5b5f885-6ce4-4398-a157-f23c28bd5763",
+      "block_type": "check",
+      "content": {
+        "id": "final_retrieval_check",
+        "prompt": "No notes: what do square brackets, list arithmetic, join, and mean / median / total each do in Desmos?",
+        "choices": [
+          "Square brackets create lists; join transforms elements; arithmetic combines lists; mean, median, and total summarize data",
+          "Parentheses create lists; arithmetic transforms elements; join summarizes data; mean, median, and total combine lists",
+          "Square brackets create lists; arithmetic transforms only the first element; join combines lists; total is the only summary function",
+          "Square brackets create lists; arithmetic transforms elements; join combines lists; mean, median, and total summarize data"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "You have it. Define lists with square brackets, reuse their names, transform elements with arithmetic, combine groups with join, and summarize with mean, median, or total.",
+        "correct_index": 3
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "6f178485-155f-431c-aee0-e40401b04ce7",
+      "block_type": "text",
+      "content": {
+        "id": "revision_independent_practice",
+        "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "3160b831-abc5-45c6-8834-d1d896fd83a4",
+      "block_type": "check",
+      "content": {
+        "id": "practice_transformed_total",
+        "input": "numeric",
+        "answer": "38",
+        "prompt": "Let \\(A=[5,7,8,10]\\). Use Desmos to find \\(\\operatorname{total}(A+2)\\).",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Try the question",
+          "display": "open"
+        },
+        "allow_retry": false,
+        "explanation": "Enter \\(A=[5,7,8,10]\\), then \\(\\operatorname{total}(A+2)\\). Desmos displays \\(38\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "7a4c1945-8ce6-4453-8b12-0c4a9abeeff9",
+      "block_type": "check",
+      "content": {
+        "id": "practice_two_groups_mean",
+        "prompt": "Group P recorded \\([6,8,10]\\), and Group Q recorded \\([12,14]\\). Which Desmos expression finds the mean of all five values?",
+        "choices": [
+          "\\(\\operatorname{mean}(P+Q)\\)",
+          "\\(\\operatorname{join}(\\operatorname{mean}(P),\\operatorname{mean}(Q))\\)",
+          "\\(\\operatorname{mean}(\\operatorname{join}(P,Q))\\)",
+          "\\(\\operatorname{total}(P)+\\operatorname{total}(Q)\\)"
+        ],
+        "calculator": {
+          "mode": "scratch",
+          "title": "Try the question",
+          "display": "open"
+        },
+        "allow_retry": false,
+        "explanation": "join(P,Q) creates the five-value combined list, and mean finds its average.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "48ae5b7b-5e3a-446e-adf4-aa7244574f93",
+      "block_type": "check",
+      "content": {
+        "id": "practice_join_then_transform",
+        "prompt": "Let \\(A=[1,3]\\) and \\(B=[5,7]\\). What list does \\(\\operatorname{join}(A,B)+1\\) produce?",
+        "choices": [
+          "\\([2,4,6,8]\\)",
+          "\\([1,3,5,7,1]\\)",
+          "\\([6,10]\\)",
+          "\\([1,3,6,8]\\)"
+        ],
+        "calculator": {
+          "mode": "scratch",
+          "title": "Try the question",
+          "display": "open"
+        },
+        "allow_retry": false,
+        "explanation": "join makes \\([1,3,5,7]\\), and adding 1 transforms every element into \\([2,4,6,8]\\).",
+        "correct_index": 0
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "4a86558c-6676-46b1-9dd6-ddc4ad0113e8",
+      "block_type": "check",
+      "content": {
+        "id": "authentic_item",
+        "input": "numeric",
+        "answer": "24",
+        "prompt": "The mean of the data set \\(11, 14, 19, 22, 24\\) is \\(18\\). A new data set is created by increasing each value by \\(6\\). What is the mean of the new data set?",
+        "calculator": {
+          "mode": "scratch",
+          "title": "Try the question",
+          "display": "open"
+        },
+        "allow_retry": false,
+        "explanation": "Enter \\(A=[11,14,19,22,24]\\), then \\(\\operatorname{mean}(A+6)\\). Desmos displays \\(24\\), the mean of the changed data set."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "4b6be0d0-af6c-41d9-91b7-1eca8d5e4b37",
+      "block_type": "lesson_complete",
+      "content": {
+        "id": "finish",
+        "html": "<h2>Store once, reuse the list</h2><p>Choose the operation that matches what the question asks.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}

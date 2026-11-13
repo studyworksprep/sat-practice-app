@@ -1,7 +1,7 @@
 {
   "title": "Testing Equivalent Expressions with Desmos Sliders",
   "description": "Learn a fast, reliable way to answer \"which expression is equivalent?\" questions in two or more variables: give each variable a Desmos slider, pick random values, and let the numbers pick the matching answer choice.",
-  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 32188826-a78c-448d-86c9-808113b23e58 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nCalculator opening revision 2026-11-12: Products of binomials and squared binomials produce cubic terms and a whole-product subtraction. All choices separate at X=2,Y=3 and the match persists at X=3,Y=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Use the slider readout rather than a manual expansion to evaluate the choices. Replace the equivalence-definition quiz with the actual decision to eliminate a mismatching choice. Keep the applied mismatch decision free of a unique keyed lesson term. Previous specification: archive/tool-focus-2026-11/testing-equivalent-expressions-with-desmos-sliders.json.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 32188826-a78c-448d-86c9-808113b23e58 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nCalculator opening revision 2026-11-12: Products of binomials and squared binomials produce cubic terms and a whole-product subtraction. All choices separate at X=2,Y=3 and the match persists at X=3,Y=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Use the slider readout rather than a manual expansion to evaluate the choices. Replace the equivalence-definition quiz with the actual decision to eliminate a mismatching choice. Keep the applied mismatch decision free of a unique keyed lesson term. Previous specification: archive/tool-focus-2026-11/testing-equivalent-expressions-with-desmos-sliders.json.\nOptional quality batch 2026-11-13: Add an empty-calculator, required-entry comparison and fresh one-shot result check; retain M-00066 as a warm-up. Preserve the confirmed removal of premature one-shot solution fields.",
   "blocks": [
     {
       "kind": "text",
@@ -78,7 +78,6 @@
         "explanation": "B matches the original’s displayed value of \\(18\\). The sliders did the calculation; the other choices give different values at the same inputs.",
         "correct_index": 1,
         "hint": "Keep the sliders at the same values for the original and every choice. Compare the displayed results.",
-        "solution": "Keep \\(a=2\\) and \\(b=3\\). Enter each choice on a new row. Choice B, \\(2ab+3a\\), displays \\(18\\), matching the original.",
         "calculator": {
           "mode": "preset",
           "title": "Compare at the same values",
@@ -339,6 +338,117 @@
       "content": {
         "id": "gen_qlink_15",
         "question_id": "253fe436-ea35-483b-bc95-584dd365c220"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_slider_comparison",
+      "block_type": "desmos_interactive",
+      "content": {
+        "id": "independent_slider_comparison",
+        "title": "Build your own slider comparison",
+        "instructions_html": "<p>Start with an empty calculator. Replace every x and y in the original and choices with uppercase X and Y.</p><ol><li>Create sliders X and Y and choose distinct values other than 0 or 1.</li><li>Enter the original and all four choices on five separate rows.</li><li>Compare their displayed values. If choices tie, change the sliders and retest.</li></ol><p>Decide which choice keeps matching before continuing. Record your answer on the next card; use Previous to return to this comparison if needed.</p>",
+        "shared_prompt": {
+          "id": "fresh_slider_products",
+          "title": "Compare a new expression",
+          "html": "<p>Which expression is equivalent to</p><p>\\[\\begin{aligned}&(x+2y)^2(x-y)\\\\&{}-(x-2y)^2(x+y)\\end{aligned}\\text{?}\\]</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(6xy^2-8x^3\\)</li><li>\\(6x^2y-8y^3\\)</li><li>\\(6x^2y-4y^3\\)</li><li>\\(2x^3\\)</li></ol>"
+        },
+        "initial_expressions": [],
+        "goal": {
+          "type": "multi_expression",
+          "required_count": 5,
+          "roles": [
+            "original",
+            "choice_a",
+            "choice_b",
+            "choice_c",
+            "choice_d"
+          ]
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "(X+2Y)^2(X-Y)-(X-2Y)^2(X+Y)",
+            "6XY^2-8X^3",
+            "6X^2Y-8Y^3",
+            "6X^2Y-4Y^3",
+            "2X^3"
+          ],
+          "state_rules": {
+            "min_expressions": 7,
+            "must_include_variables": [
+              "X",
+              "Y"
+            ],
+            "must_not_include_variables": [
+              "x",
+              "y"
+            ],
+            "required_sliders": [
+              "X",
+              "Y"
+            ],
+            "require_slider_creation": true,
+            "require_slider_movement": true,
+            "slider_initial_values": {
+              "X": 1,
+              "Y": 1
+            }
+          }
+        },
+        "feedback": {
+          "success_message_html": "<p>Your comparison entries are ready. Compare the values, retest any ties, and choose the match on the next card.</p>",
+          "retry_message_html": "<p>Keep the same two uppercase variables in all five expressions. Include both slider definitions and compare every choice.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_required_slider",
+              "message_html": "<p>Define X and Y on their own rows so both can act as sliders.</p>"
+            },
+            {
+              "trigger": "slider_not_moved",
+              "message_html": "<p>Choose distinct values other than 0 or 1, then compare all five results.</p>"
+            },
+            {
+              "trigger": "uses_forbidden_variables",
+              "message_html": "<p>Use uppercase X and Y everywhere; lowercase x and y have graphing roles.</p>"
+            },
+            {
+              "trigger": "too_few_expressions",
+              "message_html": "<p>You need two slider definitions, the original, and four choices: seven math rows.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>One setup is \\(X=2\\), \\(Y=3\\), then these five rows:</p><p>\\[\\begin{aligned}&(X+2Y)^2(X-Y)\\\\&{}-(X-2Y)^2(X+Y)\\end{aligned}\\]</p><ul><li>\\(6XY^2-8X^3\\)</li><li>\\(6X^2Y-8Y^3\\)</li><li>\\(6X^2Y-4Y^3\\)</li><li>\\(2X^3\\)</li></ul><p>Read and compare their values. Change the sliders to test again.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_slider_result",
+      "block_type": "check",
+      "content": {
+        "id": "independent_slider_result",
+        "prompt": "Which expression matches the original?",
+        "shared_prompt": {
+          "id": "fresh_slider_result_prompt",
+          "title": "Record your comparison",
+          "html": "<p>Which expression is equivalent to</p><p>\\[\\begin{aligned}&(x+2y)^2(x-y)\\\\&{}-(x-2y)^2(x+y)\\end{aligned}\\text{?}\\]</p><p>Use Previous if you need to revisit your calculator comparison.</p>"
+        },
+        "choices": [
+          "\\(6xy^2-8x^3\\)",
+          "\\(6x^2y-8y^3\\)",
+          "\\(6x^2y-4y^3\\)",
+          "\\(2x^3\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "calculator": {
+          "display": "hidden"
+        },
+        "explanation": "At \\(X=2,Y=3\\), the original displays −144. A, B, C, and D display 44, −144, −36, and 16, so B is the only survivor. At \\(X=3,Y=2\\), B still matches the original at 44. At \\(X=Y=1\\), A and B tie at −2, so that test alone would not separate them."
       }
     },
     {
