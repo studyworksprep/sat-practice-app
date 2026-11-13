@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(\\frac{2x^2-x+10}{x^2+3x-4}\\)</li><li>\\(\\frac{2x^2+x-10}{x^2+3x-4}\\)</li><li>\\(\\frac{2x^2-x-10}{x^2+3x-4}\\)</li><li>\\(\\frac{2x^2+x+10}{x^2+3x-4}\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_three_fractions",
         "title": "Equivalent expression",
-        "html": "<p>For \\(x&gt;1\\), which expression is equivalent to</p><p>\\[\\frac{x+2}{x-1}+\\frac{2x-3}{x+4}-\\frac{x^2+1}{(x-1)(x+4)}\\text{?}\\]</p>"
+        "html": "<p>For \\(x&gt;1\\), which expression is equivalent to</p><p>\\[\\frac{x+2}{x-1}+\\frac{2x-3}{x+4}-\\frac{x^2+1}{(x-1)(x+4)}\\text{?}\\]</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(\\frac{2x^2-x+10}{x^2+3x-4}\\)</li><li>\\(\\frac{2x^2+x-10}{x^2+3x-4}\\)</li><li>\\(\\frac{2x^2-x-10}{x^2+3x-4}\\)</li><li>\\(\\frac{2x^2+x+10}{x^2+3x-4}\\)</li></ol>"
       }
     },
     {
@@ -219,7 +219,7 @@
       "kind": "raw_block",
       "content": {
         "id": "rational_entry_and_restriction",
-        "html": "<h2>Keep fractions grouped</h2><p>For \\((3x+5)/(x-2)\\), put the complete numerator and denominator in parentheses. If the question says x>2, compare the graphs to the right of 2.</p>",
+        "html": "<h2>Fractions still use Graph Match</h2><p>Graphing fractions uses the same comparison. When entering a fraction, put its whole numerator and whole denominator in parentheses so Desmos groups them correctly.</p><p>Some questions also restrict the allowed inputs. Compare graphs only in that region.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -265,7 +265,7 @@
       "kind": "raw_block",
       "content": {
         "id": "rename_the_variable",
-        "html": "<h2>Change only the input letter</h2><p>For \\((2p+1)/(p-3)\\), type \\((2x+1)/(x-3)\\). Replace p with x in every candidate too, keeping all signs, numbers, and parentheses.</p><p>Use lowercase x for Graph Match. A leftover p can become a slider instead.</p>",
+        "html": "<h2>Change only the input letter</h2><p>A question may use an input letter other than \\(x\\). For Graph Match, replace that letter with lowercase \\(x\\) throughout the original and every choice.</p><p>Keep all signs, numbers, and parentheses the same. A leftover letter can become a Desmos slider.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -486,7 +486,7 @@
       "kind": "raw_block",
       "content": {
         "id": "function_quotient_workflow",
-        "html": "<h2>Use the operation the question names</h2><p>After defining \\(f,g\\), type f(x)/g(x) for a quotient. Keep the definitions and compare candidates with that one quotient graph. For x>2, inspect the part to the right of 2.</p>",
+        "html": "<h2>Compare a quotient of functions</h2><p>You’ve used function definitions to graph a product. The same idea works for a <strong>quotient</strong>, the result of dividing one function’s output by another’s.</p><p>Keep the definitions and graph \\(f(x)/g(x)\\) on a new row. Compare the choices with that quotient graph over the inputs the question allows.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -538,10 +538,33 @@
       "kind": "raw_block",
       "content": {
         "id": "composition_worked_model",
-        "html": "<h2>Put one function inside another</h2><p><strong>Composition</strong>, written \\(f(g(x))\\), means use g first and feed its result into f.</p><p>Define \\(f(x)=\\sqrt{x+4}\\) and \\(g(x)=2x+1\\), then graph f(g(x)). Compare it with \\(\\sqrt{2x+5}\\). Keep the order: g(f(x)) describes a different operation.</p>",
+        "html": "<h2>Nested functions still use Graph Match</h2><p>A <strong>composite function</strong> puts one function inside another, as in \\(f(g(x))\\). Desmos can graph that notation directly once the functions are defined.</p><p>Enter the expression exactly as the question writes it, then compare its graph with the choices. The Graph Match process stays the same.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "composition_graph_match_check",
+      "kind": "raw_block",
+      "content": {
+        "id": "composition_graph_match_check",
+        "prompt": "Let \\(f(x)=\\sqrt{x+4}\\) and \\(g(x)=2x+1\\). For \\(x\\ge0\\), which expression is equivalent to \\(f(g(x))\\)? The definitions are already entered in Desmos. Graph \\(f(g(x))\\), then compare the choices.",
+        "choices": [
+          "\\(\\sqrt{2x+4}\\)",
+          "\\(2\\sqrt{x+4}+1\\)",
+          "\\((2x+1)\\sqrt{x+4}\\)",
+          "\\(\\sqrt{2x+5}\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Keep the definitions and enter \\(f(g(x))\\) on a new row exactly as written. Keep that graph visible while you test each choice to the right of zero.",
+        "solution": "The definitions of f and g are already entered and hidden.\nGraph \\(f(g(x))\\) on a new row.\nGraph each choice separately. Hide a candidate before trying the next, and compare several places where \\(x\\ge0\\).\nOnly \\(\\sqrt{2x+5}\\) follows the original path throughout that region. Choose D.",
+        "explanation": "Nice match. D follows the requested graph across the allowed inputs. Desmos handled the nested calculation, and you used the same Graph Match process.",
         "calculator": {
           "mode": "preset",
-          "title": "Type f(g(x)) and compare",
+          "title": "Graph f(g(x)) and compare",
           "display": "open",
           "editable": true,
           "resettable": true,
@@ -559,29 +582,6 @@
             }
           ]
         }
-      },
-      "block_type": "text"
-    },
-    {
-      "id": "720e0e8a-632f-4088-b4d6-55fa8195a68b",
-      "kind": "raw_block",
-      "content": {
-        "id": "composition_order_check",
-        "hint": "The function acting on the original input sits inside the parentheses of the function that acts second.",
-        "prompt": "The question asks for the result of applying \\(g\\) first and then applying \\(f\\) to that output. After defining both functions, which row graphs the requested rule?",
-        "choices": [
-          "\\(g(f(x))\\)",
-          "\\(f(x)\\cdot g(x)\\)",
-          "\\(f(x)+g(x)\\)",
-          "\\(f(g(x))\\)"
-        ],
-        "solution": "Start with the input x.\nApplying g first gives g(x).\nApplying f to that result places the whole g(x) inside f: f(g(x)).\nEnter that row: choice D.",
-        "calculator": {
-          "display": "hidden"
-        },
-        "allow_retry": true,
-        "explanation": "The inside function acts first. A reverses the order; B multiplies two outputs; C adds them. Those are three different rules, even though all use the same two definitions.",
-        "correct_index": 3
       },
       "block_type": "check"
     },
@@ -620,7 +620,7 @@
           ]
         },
         "allow_retry": true,
-        "explanation": "B matches the composition. A reverses the function order, C moves the added 6 outside the root, and D multiplies outputs.",
+        "explanation": "B matches. Graphing the requested expression directly gave you the target path; the second choice covers it across the allowed inputs.",
         "correct_index": 1
       },
       "block_type": "check"
@@ -652,7 +652,11 @@
         "correct_index": 3
       },
       "block_type": "check",
-      "shared_prompt": "opening_three_fractions",
+      "shared_prompt": {
+        "id": "opening_three_fractions_return",
+        "title": "Equivalent expression",
+        "html": "<p>For \\(x&gt;1\\), which expression is equivalent to</p><p>\\[\\frac{x+2}{x-1}+\\frac{2x-3}{x+4}-\\frac{x^2+1}{(x-1)(x+4)}\\text{?}\\]</p>"
+      },
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -661,23 +665,23 @@
       }
     },
     {
-      "id": "ab6236a7-444a-4ddd-8a56-d1fec4fec252",
+      "id": "graph_match_process_retrieval",
       "kind": "raw_block",
       "content": {
-        "id": "final_retrieval",
-        "prompt": "A question uses \\(f(t)\\) and \\(g(t)\\), asks for \\(f(g(t))\\), and says \\(t>1\\). Recall Graph Match: how do you compare the choices?",
+        "id": "graph_match_process_retrieval",
+        "prompt": "Recall Graph Match: which sequence identifies an equivalent expression?",
         "choices": [
-          "Use x throughout; define f and g; graph f(g(x)); compare each choice to the right of 1 and select the matching curve.",
-          "Use x throughout; define f and g; graph g(f(x)); compare each choice to the right of 1 and select the matching curve.",
-          "Use x throughout; define f and g; graph f(x) times g(x); compare each choice to the right of 1 and select a matching curve.",
-          "Use x throughout; define f and g; graph f(g(x)); compare each choice at x = 2 and select the first matching point."
+          "Use x if needed; graph the exact requested expression; compare each choice over the allowed inputs; select the overlapping path.",
+          "Use x if needed; graph the exact requested expression; compare each choice’s x-intercepts; select a path with the same intercepts.",
+          "Use x if needed; graph each given function separately; compare each choice with any one of those graphs; select an overlapping path.",
+          "Use x if needed; graph the exact requested expression; compare each choice at one allowed input; select the first matching value."
         ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "That’s Graph Match. Graph the exact requested expression and compare whole paths in the allowed region. Shared intercepts or one matching value are not enough; the graph of just one part is not the requested combination.",
         "calculator": {
           "display": "hidden"
-        },
-        "allow_retry": false,
-        "explanation": "Use x consistently, graph the exact requested rule, and compare curves in the region the question specifies. B reverses the composition, C replaces it with multiplication, and D stops at one shared point.",
-        "correct_index": 0
+        }
       },
       "block_type": "check"
     },
@@ -753,7 +757,7 @@
           "title": "Try the question"
         },
         "allow_retry": false,
-        "explanation": "Use x throughout: define \\(f(x)=1/(x-2)\\) and \\(g(x)=3x+1\\). Graph \\(f(g(x))\\), then each candidate, and compare to the right of 1. A, \\(1/(3x-1)\\), covers the composition there. B uses 1/g(x-2), C graphs g(f(x)), and D multiplies outputs. Select A in the original letter t.",
+        "explanation": "Use x throughout: define \\(f(x)=1/(x-2)\\) and \\(g(x)=3x+1\\). Graph \\(f(g(x))\\) as written, then each candidate, and compare to the right of 1. A, \\(1/(3x-1)\\), covers the requested graph there; the other paths separate from it. Select A in the original letter t.",
         "correct_index": 0
       },
       "block_type": "check"
@@ -772,5 +776,5 @@
       "block_type": "lesson_complete"
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Three rational terms require common-denominator work, product expansion, and sign tracking; graph comparison avoids that algebra. Choices have the same denominator and separate visibly near x=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Three rational terms require common-denominator work, product expansion, and sign tracking; graph comparison avoids that algebra. Choices have the same denominator and separate visibly near x=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nLesson clarity revision 2026-11-12: Keep the complete opening question and A–D choices together, with a separate stimulus-only prompt for the graded return. Introduce fraction entry, input renaming, and function quotients before their examples. Present composition as notation Desmos can graph directly; replace the composition-order quiz with a Graph Match application and refocus recall and feedback on the tool. The two replacement assessments have new IDs; the remaining block identities are retained. Previous specification: archive/graph-match-clarity-2026-11/."
 }
