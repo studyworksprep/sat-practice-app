@@ -724,6 +724,31 @@
     },
     {
       "kind": "raw_block",
+      "id": "independent_multi_constant_fit",
+      "block_type": "check",
+      "content": {
+        "id": "independent_multi_constant_fit",
+        "allow_retry": false,
+        "input": "numeric",
+        "answer": "13",
+        "tolerance": 0,
+        "prompt": "What is the value of \\(p+2q\\)?",
+        "shared_prompt": {
+          "id": "fresh_multi_constant_fit",
+          "title": "A new function in a required form",
+          "html": "<p>The function \\(J\\) is defined by</p><p>\\[J(t)=p(t-q)^2+4,\\]</p><p>where \\(p\\) and \\(q\\) are constants. The function satisfies:</p><p>\\(J(1)=52\\), \\(J(2)=31\\), and \\(J(6)=7\\).</p><p>What is the value of \\(p+2q\\)?</p>"
+        },
+        "calculator": {
+          "mode": "scratch",
+          "display": "open",
+          "title": "Reset before this new question",
+          "resettable": true
+        },
+        "explanation": "With a cleared calculator, enter \\((1,52),(2,31),(6,7)\\) in a table. Fit the given form with \\(y_1\\sim p(x_1-q)^2+4\\). Desmos shows \\(p=3\\) and \\(q=5\\), matching all three points. Enter \\(p+2q\\) to get \\(13\\). Reporting just 3 or 5 would stop at one fitted constant; 8 would add them without doubling q."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "finish",
       "block_type": "lesson_complete",
       "content": {
@@ -735,5 +760,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Three nonvertex points determine a shifted quadratic; custom regression returns its horizontal-shift parameter directly. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Use supplied function definitions directly in custom regression instead of requiring hand substitution. Introduce the given growth-rate form and necessary restrictions before applying the numerical example. Make worked feedback show the calculator workflow and the requested output. Describe the values Desmos shows instead of asking students to interpret assigned-value terminology. Previous specification: archive/tool-focus-2026-11/custom-regression-from-data.json."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Three nonvertex points determine a shifted quadratic; custom regression returns its horizontal-shift parameter directly. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Use supplied function definitions directly in custom regression instead of requiring hand substitution. Introduce the given growth-rate form and necessary restrictions before applying the numerical example. Make worked feedback show the calculator workflow and the requested output. Describe the values Desmos shows instead of asking students to interpret assigned-value terminology. Previous specification: archive/tool-focus-2026-11/custom-regression-from-data.json.\nThird optional quality batch 2026-11-13: Add a fresh one-shot fit with two unknown constants and a requested combination. The student chooses the table and model setup; no fitted values are supplied."
 }

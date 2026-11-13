@@ -475,6 +475,32 @@
       }
     },
     {
+      "kind": "raw_block",
+      "id": "independent_overall_structure",
+      "block_type": "check",
+      "content": {
+        "id": "independent_overall_structure",
+        "allow_retry": false,
+        "prompt": "Which choice best describes the overall structure of the text?",
+        "shared_prompt": {
+          "id": "fresh_transit_structure",
+          "title": "Transit comparison — original practice passage",
+          "html": "<p>An average travel time can conceal how unpredictable a trip is. To examine this limitation, a transit team recorded the duration of 120 trips on each of two bus routes. The routes had nearly identical averages. On one route, most trips finished within a few minutes of the average; on the other, trips frequently finished much earlier or later. The team therefore recommended publishing a measure of travel-time variation alongside the average. Passengers, the team argued, need information about uncertainty as well as typical duration.</p>"
+        },
+        "choices": [
+          "It identifies a limitation of a common measure, illustrates that limitation with a comparison, and proposes supplementing the measure.",
+          "It proposes a new way to compare transit services, describes a test of that proposal, and reports results that favor one service.",
+          "It identifies a limitation of a common measure, compares it with a replacement, and recommends using the replacement by itself.",
+          "It reports a difference between two transit services, explains why that difference arose, and recommends changing the services' operating practices."
+        ],
+        "correct_index": 0,
+        "calculator": {
+          "display": "hidden"
+        },
+        "explanation": "The opening identifies what an average can hide. The comparison of two routes illustrates that limitation. The ending recommends reporting variation alongside the average, so A preserves the actions and their order. B puts the proposal before its evidence and turns the results into a choice between services. C replaces the average even though the team keeps it. D adds a causal explanation and an operational change that the text does not provide."
+      }
+    },
+    {
       "id": "13b2dfb6-c3e0-4eef-a843-d182ecf725e8",
       "kind": "raw_block",
       "content": {
@@ -487,5 +513,5 @@
       "block_type": "lesson_complete"
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Name the Job to distinguish broadening from confirmation or replacement; the closest distractor preserves the same ending but misstates the job of the test. Previous specification: archive/rw-openings-2026-11/text-structure-and-purpose-name-the-job.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/text-structure-and-purpose-name-the-job.json."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Name the Job to distinguish broadening from confirmation or replacement; the closest distractor preserves the same ending but misstates the job of the test. Previous specification: archive/rw-openings-2026-11/text-structure-and-purpose-name-the-job.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/text-structure-and-purpose-name-the-job.json.\nThird optional quality batch 2026-11-13: Add a fresh one-shot overall-structure question with an original passage, parallel action sequences, and distractors that change order, replacement versus supplementation, or explanation versus comparison."
 }

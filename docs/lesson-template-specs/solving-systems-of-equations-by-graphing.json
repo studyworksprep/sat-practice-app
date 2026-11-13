@@ -573,6 +573,31 @@
     },
     {
       "kind": "raw_block",
+      "id": "independent_multiple_intersection_selection",
+      "block_type": "check",
+      "content": {
+        "id": "independent_multiple_intersection_selection",
+        "allow_retry": false,
+        "input": "numeric",
+        "answer": "8",
+        "tolerance": 0,
+        "prompt": "What is the greatest value of \\(y\\) among the solutions?",
+        "shared_prompt": {
+          "id": "fresh_multiple_intersection_system",
+          "title": "A new system",
+          "html": "<p>Consider the system of equations:</p><p>\\[y=(x-2)^2-1\\]</p><p>\\[x+y=7\\]</p><p>Of all solutions \\((x,y)\\) to the system, what is the greatest value of \\(y\\)?</p>"
+        },
+        "calculator": {
+          "mode": "scratch",
+          "display": "open",
+          "title": "Reset before this new question",
+          "resettable": true
+        },
+        "explanation": "Clear earlier graphs and enter both complete equations. Click both intersections: \\((-1,8)\\) and \\((4,3)\\). Compare their y-coordinates to get \\(8\\). The rightmost intersection has the larger x-coordinate but the smaller y-coordinate; reporting 4 or 3 would answer a different question."
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
@@ -584,5 +609,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: A line and a sum of square roots meet twice; algebra requires repeated squaring. Graphing exposes both solutions and the largest requested y-coordinate directly. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Keep one concise explanation of why an intersection solves the system. Introduce requested combinations generally before the numerical application. Merge the repeated intersection definition into the single explanation after the first graph exploration. Remove the redundant intersection-definition quiz; retain the actual graph-reading applications. Previous specification: archive/tool-focus-2026-11/solving-systems-of-equations-by-graphing.json."
+  "authoring_notes": "Calculator opening revision 2026-11-12: A line and a sum of square roots meet twice; algebra requires repeated squaring. Graphing exposes both solutions and the largest requested y-coordinate directly. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Keep one concise explanation of why an intersection solves the system. Introduce requested combinations generally before the numerical application. Merge the repeated intersection definition into the single explanation after the first graph exploration. Remove the redundant intersection-definition quiz; retain the actual graph-reading applications. Previous specification: archive/tool-focus-2026-11/solving-systems-of-equations-by-graphing.json.\nThird optional quality batch 2026-11-13: Add a fresh one-shot nonlinear system whose greatest y-coordinate occurs at the left intersection. Keep all existing graphing models and checks."
 }

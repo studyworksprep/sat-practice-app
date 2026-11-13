@@ -1,0 +1,515 @@
+{
+  "title": "Name the Job: Text Structure and Purpose",
+  "description": "Use Name the Job to identify a text’s purpose, map its structure, and explain how a sentence or detail contributes to the whole.",
+  "authoring_notes": "Exact live specification before the third optional quality batch, November 13, 2026. All earlier confirmed and optional changes retained.",
+  "blocks": [
+    {
+      "kind": "raw_block",
+      "id": "37f8f191-abc2-4b60-9d2a-2315c7bfe097",
+      "block_type": "text",
+      "content": {
+        "id": "revision_opening_attempt",
+        "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": {
+          "id": "opening_channels_structure",
+          "html": "<p>Early accounts describe a valley’s stone channels as boundaries between farms. A recent survey mapped the channels’ slopes and their connections to several storage pools. Water released experimentally at the higher end flowed toward low fields, including fields separated by different property lines. The survey team proposes that the channels distributed water as well as marking land. Some stretches still follow old property edges, so the team does not discard the boundary interpretation. Instead, the team argues that the surviving layout makes more sense if the structures served both purposes.</p><p>Which choice best describes the overall structure of the text?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>It introduces an interpretation, presents a test designed to confirm it, and explains why part of the original account remains plausible.</li><li>It introduces two interpretations, presents evidence favoring the earlier one, and keeps the later explanation as a possibility.</li><li>It introduces an interpretation, presents evidence that overturns it, and replaces the original account with a competing explanation.</li><li>It introduces an interpretation, presents evidence that broadens it, and explains why part of the original account remains plausible.</li></ol>",
+          "title": "Interpreting stone channels"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "06b2891d-a1b6-4f02-a13e-3730f4f8709d",
+      "block_type": "text",
+      "content": {
+        "id": "intro",
+        "html": "<h2>Track what the evidence does to an idea</h2><p>The opening choices use similar descriptions of an interpretation and new evidence. The important difference is how they say that evidence changes the account.</p><p>We’ll use <strong>Name the Job</strong> to track those roles in order. Start with a shorter problem-and-response passage.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "5b267082-8cd2-4f29-81d6-36358622ec2a",
+      "block_type": "text",
+      "content": {
+        "id": "explore",
+        "html": "<h2>Follow the garden club’s problem</h2><p>Read the passage and give each sentence a short role. What goes wrong, what do the members do, and what happens afterward?</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": "passage_e9309470-1a5f-490e-8013-c2be4c55b71e"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "e9309470-1a5f-490e-8013-c2be4c55b71e",
+      "block_type": "check",
+      "content": {
+        "id": "e9309470-1a5f-490e-8013-c2be4c55b71e",
+        "hint": "Ask what changes from the first sentence to the second and third.",
+        "prompt": "Which choice best describes the overall structure of the text?",
+        "choices": [
+          "It describes a successful harvest and then explains why the club abandoned gardening.",
+          "It states a theory, rejects its evidence, and proposes an unrelated theory.",
+          "It compares two gardening methods and recommends the less expensive one.",
+          "It states a problem, describes a response, and reports the outcome."
+        ],
+        "solution": "Sentence 1: difficulty growing seedlings. Sentence 2: enclosure as a response. Sentence 3: enough seedlings by spring. That sequence is D.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The first sentence gives a difficulty, the second a response, and the third an outcome. There is no comparison of methods or abandonment.",
+        "correct_index": 3,
+        "shared_prompt": {
+          "id": "passage_e9309470-1a5f-490e-8013-c2be4c55b71e",
+          "html": "<p>The school garden club struggled to grow seedlings during winter. Members built a small enclosure from reused windowpanes to hold warmth around the planting trays. By spring, the club had enough seedlings to supply several classrooms.</p>",
+          "title": "Passage to use"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "c75f1c1d-3614-4ea6-9bd1-3f937e49c546",
+      "block_type": "text",
+      "content": {
+        "id": "meaning",
+        "html": "<h2>Match the size of the question</h2><p><strong>Purpose</strong> asks what the whole text tries to do. <strong>Structure</strong> asks how its parts are organized. <strong>Function</strong> asks what a particular part contributes. Answer with an action, such as explaining a change or illustrating a claim.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "d7401b1f-f3eb-4792-b4e5-9e91567b67a2",
+      "block_type": "check",
+      "content": {
+        "id": "d7401b1f-f3eb-4792-b4e5-9e91567b67a2",
+        "hint": "A purpose answer says what the author accomplishes with the information.",
+        "prompt": "A text lists several adaptations that help a plant survive dry conditions. Which answer describes the text’s purpose rather than merely naming its topic?",
+        "choices": [
+          "A desert plant’s leaves, roots, and surrounding habitat",
+          "To explain a plant’s drought adaptations",
+          "Several plant species found in dry environments",
+          "The amount of available water in a plant’s habitat"
+        ],
+        "solution": "“To explain how…” names the job. The other options name subjects without saying what the writer does with them.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "“To explain how…” names the job. The other options name subjects without saying what the writer does with them.",
+        "correct_index": 1
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "49d3ea03-89b0-4795-a5d8-fd869f6c8740",
+      "block_type": "text",
+      "content": {
+        "id": "process",
+        "html": "<h2>Name the Job</h2><ol><li>Identify the part the question targets.</li><li>Read the passage’s point.</li><li>Describe what the relevant parts do.</li><li>Match their actions and order to a choice.</li></ol>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "92631d8a-c58d-4218-8bcf-9bc02c712286",
+      "block_type": "text",
+      "content": {
+        "id": "model",
+        "html": "<h2>Connect the parts to the purpose</h2><p>The old catalog calls the journals travel accounts. The new reading finds daily routines, then explains why those routines matter. The text shows that the journals have value beyond the old description.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "shared_prompt": "passage_759f759c-aba7-409e-a289-932c09941a42"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "759f759c-aba7-409e-a289-932c09941a42",
+      "block_type": "check",
+      "content": {
+        "id": "759f759c-aba7-409e-a289-932c09941a42",
+        "hint": "What does the discovery of routine entries change about the collection’s value?",
+        "prompt": "Which choice best states the main purpose of the text?",
+        "choices": [
+          "To recommend replacing travel journals with official shipping records",
+          "To show that shipboard routines differed little across historical voyages",
+          "To explain the journals’ overlooked value",
+          "To describe how librarians repair and preserve damaged travel journals"
+        ],
+        "solution": "Identify the old focus: distant places. Identify the new contents: daily routines. Read the final sentence’s conclusion: a record of life at sea. C captures that purpose.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The text broadens the collection’s significance. It makes no recommendation to replace sources and gives no repair procedure.",
+        "correct_index": 2,
+        "shared_prompt": {
+          "id": "passage_759f759c-aba7-409e-a289-932c09941a42",
+          "html": "<p>The library’s oldest catalog describes a collection of travel journals as accounts of distant places. A recent examination reveals that many entries instead record ordinary tasks aboard ships: repairing clothes, dividing food, and keeping watch. These details make the journals valuable records of daily life at sea, even when they say little about the places visited.</p>",
+          "title": "Passage to use"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ed0e15a6-f8a7-48e4-a487-73dd00f514b4",
+      "block_type": "text",
+      "content": {
+        "id": "function",
+        "html": "<h2>Read around a target sentence</h2><p>A sentence’s job depends on its neighbors. Ask what the passage would lose without it: an example, a reason, a challenge, or a connection. Use that role as your answer target.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "a1e1e33c-137a-4b9e-8ba9-a769265c015d",
+      "block_type": "check",
+      "content": {
+        "id": "a1e1e33c-137a-4b9e-8ba9-a769265c015d",
+        "hint": "Connect the list of repairs to the first sentence’s general claim.",
+        "prompt": "Which choice best describes the function of the second sentence in the text as a whole?",
+        "choices": [
+          "It illustrates the opening claim with examples.",
+          "It explains why volunteers need professional repair training.",
+          "It introduces a competing goal the groups have failed to achieve.",
+          "It questions whether repair is more useful than disposal."
+        ],
+        "solution": "The opening sentence makes a general claim. The target lists specific repaired objects. Without it, the claim would lack those concrete examples. A names that job.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The list illustrates keeping objects useful. It does not challenge the claim or describe a training requirement.",
+        "correct_index": 0,
+        "shared_prompt": {
+          "id": "passage_a1e1e33c-137a-4b9e-8ba9-a769265c015d",
+          "html": "<p>Volunteer repair groups can keep useful objects out of the waste stream. At one neighborhood event, volunteers repaired lamps, patched coats, and restored a broken chair. Such events also give owners a chance to learn basic repair skills.</p>",
+          "title": "Passage to use"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "2a1cacff-6a26-4c56-ae4d-10c6df387ee0",
+      "block_type": "text",
+      "content": {
+        "id": "action_words",
+        "html": "<h2>Use an action the passage supports</h2><p>To <strong>illustrate</strong> is to give an example. To <strong>explain</strong> is to make a reason or process clear. To <strong>challenge</strong> is to question a claim. To <strong>qualify</strong> is to add a limit.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "71c45e3e-0414-463f-8ea0-30aa931ab896",
+      "block_type": "check",
+      "content": {
+        "id": "71c45e3e-0414-463f-8ea0-30aa931ab896",
+        "hint": "Does the sentence cancel the benefit or describe where the benefit stops?",
+        "prompt": "What is the function of the second sentence?",
+        "choices": [
+          "It qualifies the index’s usefulness.",
+          "It rejects the claim that the index helps locate personal names.",
+          "It explains a method for making old handwriting more legible.",
+          "It lists examples of names found frequently in the letters."
+        ],
+        "solution": "Sentence 1 states the benefit. Sentence 2 names a limit: partly indexed letters. Sentence 3 follows with advice that responds to the limit. A fits that connection.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "It qualifies the benefit by identifying an exception. The index still helps, and no handwriting method is described.",
+        "correct_index": 0,
+        "shared_prompt": {
+          "id": "passage_71c45e3e-0414-463f-8ea0-30aa931ab896",
+          "html": "<p>A new index helps readers locate names in a collection of letters. However, letters with illegible handwriting remain only partly indexed. Researchers should therefore consult the original documents as well as the index.</p>",
+          "title": "Passage to use"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "8434f010-eeb3-47fc-9e37-08a98aaff343",
+      "block_type": "text",
+      "content": {
+        "id": "sequence",
+        "html": "<h2>Keep the order</h2><p>A structure answer must follow the passage’s sequence. Check that each named job actually occurs. “Finding, then explanation” describes a different sequence from “prediction, then test.”</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "db236210-46e8-4e2e-b4bc-8a701f77ac77",
+      "block_type": "check",
+      "content": {
+        "id": "db236210-46e8-4e2e-b4bc-8a701f77ac77",
+        "hint": "Track observation, proposed reason, and later evidence in that order.",
+        "prompt": "Which choice best describes the overall structure?",
+        "choices": [
+          "It states a hypothesis, describes a test, and reports a result that disproves it.",
+          "It compares two explanations, rejects both, and introduces a third explanation.",
+          "It describes a procedure, reports its use, and warns against repeating it.",
+          "It reports a finding, suggests a cause, and adds supporting evidence."
+        ],
+        "solution": "Label each sentence: initial pattern; possible explanation; another observation consistent with it. D preserves both the order and the relationship.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The later comparison repeats the pattern, so it supports rather than refutes the proposed explanation. The text never compares rival explanations.",
+        "correct_index": 3,
+        "shared_prompt": {
+          "id": "passage_db236210-46e8-4e2e-b4bc-8a701f77ac77",
+          "html": "<p>An observer noticed that a row of shaded pavement tiles stayed damp after nearby tiles had dried. The observer proposed that lower temperatures slowed evaporation in the shaded area. A later comparison of shaded and unshaded tiles found the same pattern.</p>",
+          "title": "Passage to use"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "00e17386-b207-4d12-bc64-eae9e99b0a9b",
+      "block_type": "text",
+      "content": {
+        "id": "voices",
+        "html": "<h2>A reported view may be there to be challenged</h2><p>When a passage introduces a common belief, ask what the later sentences do with it. The writer may support it, limit it, or challenge it.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "b537f35c-99b5-4256-9367-120d9379bb8e",
+      "block_type": "check",
+      "content": {
+        "id": "b537f35c-99b5-4256-9367-120d9379bb8e",
+        "hint": "Follow the turn at “Yet” and the final judgment about value.",
+        "prompt": "What is the function of the first sentence?",
+        "choices": [
+          "It states the conclusion that the later sentences support.",
+          "It presents a view that the rest of the text challenges.",
+          "It summarizes the method historians use to date old books.",
+          "It gives an example of a handwritten note from a particular reader."
+        ],
+        "solution": "First identify whose view appears: some collectors’. Then track “Yet” and the historian’s use of the notes. Those sentences challenge the dismissal, so B fits.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "The opening dismissal becomes the position the writer challenges. The later sentences explain why the marks can be valuable.",
+        "correct_index": 1,
+        "shared_prompt": {
+          "id": "passage_b537f35c-99b5-4256-9367-120d9379bb8e",
+          "html": "<p>Some collectors dismiss handwritten corrections in old books as damage. Yet those notes can show how earlier readers understood a difficult passage or questioned an author’s claims. For historians of reading, the marks can therefore be valuable evidence.</p>",
+          "title": "Passage to use"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "099ee5a9-1c62-4492-9572-f2c211734560",
+      "block_type": "text",
+      "content": {
+        "id": "literary",
+        "html": "<h2>A literary passage can sustain one image</h2><p>A poem or scene may develop a comparison instead of an argument. Describe what the details build together. You do not need to force every sentence into a separate stage.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ef6ac826-d031-446b-8d73-4a078a0b9fda",
+      "block_type": "check",
+      "content": {
+        "id": "ef6ac826-d031-446b-8d73-4a078a0b9fda",
+        "hint": "Track the repeated human actions applied to the harbor.",
+        "prompt": "Which choice best describes the overall structure of the text?",
+        "choices": [
+          "It compares the activity in a quiet harbor with that of a busier harbor.",
+          "It follows a sailor leaving a bedroom and traveling toward a ferry.",
+          "It develops an image of the harbor waking.",
+          "It describes storm damage and follows the work of the people repairing it."
+        ],
+        "solution": "Keep the grammatical subject: the harbor. Its actions are described in human terms throughout. C names the sustained comparison without inventing a new setting or person.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "Waking, stretching, and clearing a throat extend one comparison. The text does not move between harbors or describe a literal waking sailor.",
+        "correct_index": 2,
+        "shared_prompt": {
+          "id": "passage_ef6ac826-d031-446b-8d73-4a078a0b9fda",
+          "html": "<p>The following is an original practice passage.</p><p>The harbor woke reluctantly. It stretched its ropes, shook sleep from the gulls along its roofs, and cleared its throat in the low call of the first ferry.</p>",
+          "title": "Passage to use"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "86596744-3bdf-40b3-a886-cf84a4be1fec",
+      "block_type": "text",
+      "content": {
+        "id": "literary_function",
+        "html": "<h2>An action can reveal an attitude</h2><p>In a story, a small action may show hesitation or attachment. Connect what happens with what it reveals in the scene. Then test whether the choice describes that role.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "a5f90196-08fd-4df7-8eb5-6dbf3ca5696a",
+      "block_type": "text",
+      "content": {
+        "id": "revision_return_to_opening",
+        "html": "<h2>Return to the stone channels</h2><p>Try the opening question again. Give the parts their jobs, then check their order and relationship in each choice.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "1f80d7ab-8327-4d09-ad7c-e8f2e0945d2e",
+      "block_type": "check",
+      "content": {
+        "id": "opening_channels_structure_result",
+        "hint": "Ask what the flow evidence adds to the old interpretation and what the property-edge observation keeps. Check the role of the evidence, not just the final sentence.",
+        "prompt": "Which choice best describes the overall structure of the text?",
+        "choices": [
+          "It introduces an interpretation, presents a test designed to confirm it, and explains why part of the original account remains plausible.",
+          "It introduces two interpretations, presents evidence favoring the earlier one, and keeps the later explanation as a possibility.",
+          "It introduces an interpretation, presents evidence that overturns it, and replaces the original account with a competing explanation.",
+          "It introduces an interpretation, presents evidence that broadens it, and explains why part of the original account remains plausible."
+        ],
+        "solution": "The opening gives the old boundary interpretation.\nThe survey and flow test supply evidence for an additional water-distribution role.\nThe property edges preserve part of the earlier account, so the ending broadens rather than simply confirms or replaces it.\nChoose D.\nA: The flow test supports an additional water-distribution role rather than confirming the boundary account as the test’s purpose.\nB: This changes both the order and the evidence’s role: the water explanation emerges from the survey rather than being introduced alongside the older one.\nC: This correctly notices new evidence but turns a broader account into total replacement, contrary to the retained boundary role.",
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": true,
+        "explanation": "You tracked the structure. The new evidence broadens the account while the ending preserves a role for the original interpretation.",
+        "correct_index": 3,
+        "shared_prompt": {
+          "id": "opening_channels_structure_return",
+          "html": "<p>Early accounts describe a valley’s stone channels as boundaries between farms. A recent survey mapped the channels’ slopes and their connections to several storage pools. Water released experimentally at the higher end flowed toward low fields, including fields separated by different property lines. The survey team proposes that the channels distributed water as well as marking land. Some stretches still follow old property edges, so the team does not discard the boundary interpretation. Instead, the team argues that the surviving layout makes more sense if the structures served both purposes.</p>",
+          "title": "Interpreting stone channels"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "6e41ba09-2af1-4e5d-977c-1e4e45d7565d",
+      "block_type": "check",
+      "content": {
+        "id": "6e41ba09-2af1-4e5d-977c-1e4e45d7565d",
+        "prompt": "The answer choice names the passage’s topic correctly. What must Name the Job still check?",
+        "choices": [
+          "Whether the choice repeats more words from the text than the other choices do",
+          "Whether it turns every sentence into a different stage of a chronological story",
+          "Whether it describes the target’s action and its relationship to the whole text",
+          "Whether it attributes the first view mentioned to the writer of the passage"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "Topic accuracy is not enough. Check the action, what that action applies to, and—when structure is asked—the order of the parts.",
+        "correct_index": 2
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "96b68f54-f1cd-4e71-a8fe-8c45ee3360f6",
+      "block_type": "text",
+      "content": {
+        "id": "revision_independent_practice",
+        "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "18b7a5fd-53ca-4b0d-8341-bd643fcdf173",
+      "block_type": "check",
+      "content": {
+        "id": "18b7a5fd-53ca-4b0d-8341-bd643fcdf173",
+        "prompt": "Which choice best describes the function of the second sentence?",
+        "choices": [
+          "It shows that Luis has forgotten where he left his travel bag.",
+          "It establishes that Luis has decided to cancel his planned move.",
+          "It explains why the movers refused to transport his belongings.",
+          "It suggests Luis’s care for the home he is leaving."
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "The action suggests attachment or care while leaving. It does not reverse the move or explain the movers’ decisions.",
+        "correct_index": 3,
+        "shared_prompt": {
+          "id": "passage_18b7a5fd-53ca-4b0d-8341-bd643fcdf173",
+          "html": "<p>Before leaving the apartment for the last time, Luis checked that the windows were shut. At the door, he paused to straighten a picture that the movers had left behind. Then he picked up his bag and stepped into the hall.</p>",
+          "title": "Passage to use"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "b9b0141f-514c-49c5-ac94-a42715c1779e",
+      "block_type": "check",
+      "content": {
+        "id": "b9b0141f-514c-49c5-ac94-a42715c1779e",
+        "prompt": "Which choice best states the main purpose of the text?",
+        "choices": [
+          "To challenge historians’ reliance on official commercial records",
+          "To reveal a familiar collection’s additional historical value",
+          "To compare regional collections of handwritten cooking instructions",
+          "To explain a decline in households’ recording of domestic activities"
+        ],
+        "calculator": {
+          "display": "hidden"
+        },
+        "allow_retry": false,
+        "explanation": "The text broadens the notebooks’ historical use from cooking to informal economic activity. It does not dismiss official records, explain the end of notebook keeping, or compare recipes.",
+        "correct_index": 1,
+        "shared_prompt": {
+          "id": "passage_b9b0141f-514c-49c5-ac94-a42715c1779e",
+          "html": "<p>A regional archive once described its collection of household notebooks as a source of cooking instructions. A historian examining the books found that their owners also recorded payments to neighbors, seasonal wages, and the cost of shared tools. These entries rarely appear in official business records from the same period. By tracing them across several notebooks, the historian reconstructed exchanges that helped families manage irregular incomes. The notebooks thus offer evidence of informal economic activity as well as domestic routines.</p>",
+          "title": "Passage to use"
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "13b2dfb6-c3e0-4eef-a843-d182ecf725e8",
+      "block_type": "lesson_complete",
+      "content": {
+        "id": "13b2dfb6-c3e0-4eef-a843-d182ecf725e8",
+        "html": "<h2>Name the Job</h2><p>Describe what the words do for the passage.</p>",
+        "calculator": {
+          "display": "hidden"
+        },
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}
