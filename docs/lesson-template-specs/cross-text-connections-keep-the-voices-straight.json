@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Based on the texts, how would the author of Text 2 most likely respond to the underlined claim in Text 1?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>By accepting the railway’s role in growth while adding that incoming visitors also helped shape the goods being made</li><li>By accepting the railway’s role in growth while arguing that visiting buyers replaced distant markets as the industry’s main source of demand</li><li>By accepting that visitors requested new designs while arguing that those requests reflected the preferences of buyers in distant markets</li><li>By accepting the evidence of increased sales while arguing that the timing leaves the connection between growth and railway traffic uncertain</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_railway_views",
         "title": "Two accounts of a railway",
-        "html": "<p><strong>Text 1</strong><br>Basket sales in a mountain town rose sharply during the decade after its railway station opened. One historian explains the increase using shipping records: local makers could now send more goods to markets outside the valley. The records document baskets moving outward in growing quantities. <u>The railway’s main contribution, the historian argues, was making distant buyers accessible to the town’s craftworkers.</u></p><p><strong>Text 2</strong><br>A second historian accepts that the railway helped the industry grow, but examines workshop diaries rather than shipping totals. The diaries record visitors arriving by train, buying baskets directly, and requesting shapes and patterns absent from earlier catalogs. Makers adopted some of those requests. The diaries do not establish whether local or distant purchases accounted for more sales, but they reveal customer contact that shipping figures do not capture.</p>"
+        "html": "<p><strong>Text 1</strong><br>Basket sales in a mountain town rose sharply during the decade after its railway station opened. One historian explains the increase using shipping records: local makers could now send more goods to markets outside the valley. The records document baskets moving outward in growing quantities. <u>The railway’s main contribution, the historian argues, was making distant buyers accessible to the town’s craftworkers.</u></p><p><strong>Text 2</strong><br>A second historian accepts that the railway helped the industry grow, but examines workshop diaries rather than shipping totals. The diaries record visitors arriving by train, buying baskets directly, and requesting shapes and patterns absent from earlier catalogs. Makers adopted some of those requests. The diaries do not establish whether local or distant purchases accounted for more sales, but they reveal customer contact that shipping figures do not capture.</p><p>Based on the texts, how would the author of Text 2 most likely respond to the underlined claim in Text 1?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>By accepting the railway’s role in growth while adding that incoming visitors also helped shape the goods being made</li><li>By accepting the railway’s role in growth while arguing that visiting buyers replaced distant markets as the industry’s main source of demand</li><li>By accepting that visitors requested new designs while arguing that those requests reflected the preferences of buyers in distant markets</li><li>By accepting the evidence of increased sales while arguing that the timing leaves the connection between growth and railway traffic uncertain</li></ol>"
       }
     },
     {
@@ -360,7 +360,11 @@
         "explanation": "You kept the voices straight. The response adds an effect on what makers produced without inventing a winner between local and distant markets."
       },
       "block_type": "check",
-      "shared_prompt": "opening_railway_views",
+      "shared_prompt": {
+        "id": "opening_railway_views_return",
+        "title": "Two accounts of a railway",
+        "html": "<p><strong>Text 1</strong><br>Basket sales in a mountain town rose sharply during the decade after its railway station opened. One historian explains the increase using shipping records: local makers could now send more goods to markets outside the valley. The records document baskets moving outward in growing quantities. <u>The railway’s main contribution, the historian argues, was making distant buyers accessible to the town’s craftworkers.</u></p><p><strong>Text 2</strong><br>A second historian accepts that the railway helped the industry grow, but examines workshop diaries rather than shipping totals. The diaries record visitors arriving by train, buying baskets directly, and requesting shapes and patterns absent from earlier catalogs. Makers adopted some of those requests. The diaries do not establish whether local or distant purchases accounted for more sales, but they reveal customer contact that shipping figures do not capture.</p>"
+      },
       "calculator": {
         "display": "hidden"
       }
@@ -456,5 +460,5 @@
       "block_type": "lesson_complete"
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Keep the Voices Straight to distinguish an additive qualification from replacement, blended attribution, and invented doubt about accepted evidence. Previous specification: archive/rw-openings-2026-11/cross-text-connections-keep-the-voices-straight.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Keep the Voices Straight to distinguish an additive qualification from replacement, blended attribution, and invented doubt about accepted evidence. Previous specification: archive/rw-openings-2026-11/cross-text-connections-keep-the-voices-straight.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/cross-text-connections-keep-the-voices-straight.json."
 }

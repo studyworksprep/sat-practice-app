@@ -94,7 +94,7 @@
       "kind": "raw_block",
       "content": {
         "id": "worked_statements",
-        "html": "<h2>Make the question an equation too</h2><p>For the sample problem, keep the given \\(B=50\\). Translate the comparisons as \\(A=240\\%\\text{ of }B\\) and \\(A=0.8\\%\\text{ of }C\\).</p><p>“C is p% of B” adds \\(C=p\\%\\text{ of }B\\). Now the requested percent is one of the unknowns.</p>"
+        "html": "<h2>Make the question an equation too</h2><p>The requested percent is another unknown. For “C is p% of B,” write \\(C=p\\%\\text{ of }B\\).</p><p>Include that equation alongside the given comparisons so regression can find the requested percent directly.</p>"
       },
       "block_type": "text",
       "calculator": {
@@ -106,12 +106,17 @@
       "kind": "raw_block",
       "content": {
         "id": "worked_regression",
-        "html": "<h2>Put the statements in one regression</h2><p>Define \\(B=50\\). Then enter \\([A,A,C]\\sim[240\\%\\text{ of }B,0.8\\%\\text{ of }C,p\\%\\text{ of }B]\\).</p><p>Read \\(p\\). <strong>RMSE</strong> measures the mismatch between paired sides; for exact equations, look for zero or a tiny value and amounts that fit the problem.</p>",
+        "html": "<h2>Put the statements in one regression</h2><p>Define \\(B=50\\). Enter \\([A,A,C]\\sim[240\\%\\text{ of }B,0.8\\%\\text{ of }C,p\\%\\text{ of }B]\\). Desmos finds \\(p=30000\\).</p><p><strong>RMSE</strong> measures the mismatch between paired sides. For exact equations, look for zero or a tiny value and amounts that fit the problem.</p>",
         "calculator": {
           "display": "hidden"
         }
       },
-      "block_type": "text"
+      "block_type": "text",
+      "shared_prompt": {
+        "id": "percent_list_worked_example",
+        "title": "Connected percent statements",
+        "html": "<p>Sample A is 240% of sample B and 0.8% of sample C. Sample B has mass 50 grams. If C is p% of B, find p.</p>"
+      }
     },
     {
       "id": "2a519c76-6082-4506-a21e-f3749e068e85",
@@ -137,7 +142,7 @@
       "kind": "raw_block",
       "content": {
         "id": "guided_setup",
-        "html": "<h2>Translate, then Pair</h2><ol><li>Translate each comparison, including the question.</li><li>Keep any given measurement.</li><li>Pair matching sides with one tilde.</li><li>Inspect the amounts and RMSE, then read the requested value.</li></ol><p>Try the same routine with B=40, A at 150% of B, and A at 25% of C.</p>"
+        "html": "<h2>Translate, then Pair</h2><ol><li>Translate each comparison, including the question.</li><li>Keep any given measurement.</li><li>Pair matching sides with one tilde.</li><li>Inspect the amounts and RMSE, then read the requested value.</li></ol>"
       },
       "block_type": "text",
       "calculator": {
@@ -200,7 +205,12 @@
           }
         ]
       },
-      "block_type": "desmos_interactive"
+      "block_type": "desmos_interactive",
+      "shared_prompt": {
+        "id": "percent_list_guided_problem",
+        "title": "Find the requested percent",
+        "html": "<p>Sample A is 150% of sample B and 25% of sample C. Sample B has mass 40 grams. If C is p% of B, find p.</p>"
+      }
     },
     {
       "id": "2d613b7b-c103-4eb6-a6b5-dd19557709d2",
@@ -215,7 +225,8 @@
         "allow_retry": true,
         "explanation": "The fitted p is 600. C is six times B, which is 600% of B."
       },
-      "block_type": "check"
+      "block_type": "check",
+      "shared_prompt": "percent_list_guided_problem"
     },
     {
       "id": "11576aef-0779-4c33-bb47-354f5ddc1906",
@@ -284,7 +295,7 @@
       "kind": "raw_block",
       "content": {
         "id": "given_value_boundary",
-        "html": "<h2>Keep a supplied mass</h2><p>If B is given as 75 grams, use \\(B=75\\). It is no longer a free base. Choosing a reference amount helps with ratios; it cannot determine an actual mass when no scale is given.</p>"
+        "html": "<h2>Keep a supplied mass</h2><p>If the question gives a mass, use that measurement in its definition. It is no longer a free base.</p><p>Choosing a reference amount helps with relative comparisons; it cannot replace a stated measurement.</p>"
       },
       "block_type": "text",
       "calculator": {
@@ -351,6 +362,11 @@
       "block_type": "text",
       "calculator": {
         "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "percent_change_list_example",
+        "title": "Connected percent changes",
+        "html": "<p>A is 20% greater than B and 25% less than C. All three amounts are positive. If C is p% of B, find p.</p>"
       }
     },
     {
@@ -475,5 +491,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Coupled percentages of combined amounts require simultaneous equations rather than one direct ratio. A short grouping explanation and check prepare this genuine variation before the return. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Coupled percentages of combined amounts require simultaneous equations rather than one direct ratio. A short grouping explanation and check prepare this genuine variation before the return. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Introduce the target-percent equation generally, then show each complete worked or guided problem alongside its setup. Introduce supplied measurements without previewing the next question’s number. Show only the percent-of interface control, without an unrelated decimal-multiplication row. Previous specification: archive/tool-focus-2026-11/solve-multiple-percent-equations-with-list-regression.json."
 }

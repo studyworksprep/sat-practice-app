@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice most effectively uses relevant information from the notes to accomplish this goal?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The drone estimate was closer to the audit and required less time in the field than the ground count did.</li><li>The drone survey required less time in the field but more processing time than the ground count required.</li><li>The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s two hours.</li><li>The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s three hours.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_seal_tradeoff",
         "title": "Notes and writing goal",
-        "html": "<p>While researching estimates of a seal colony’s size, a student has taken these notes:</p><ul><li>A drone survey estimated 1,240 seals; a ground count estimated 980.</li><li>A later comprehensive audit established a benchmark of 1,210 seals.</li><li>Collecting drone images took one hour in the field; the ground count took three.</li><li>Processing the drone images took six hours; processing the ground records took two.</li></ul><p>The student wants to contrast the drone method’s accuracy advantage with its processing-time disadvantage.</p>"
+        "html": "<p>While researching estimates of a seal colony’s size, a student has taken these notes:</p><ul><li>A drone survey estimated 1,240 seals; a ground count estimated 980.</li><li>A later comprehensive audit established a benchmark of 1,210 seals.</li><li>Collecting drone images took one hour in the field; the ground count took three.</li><li>Processing the drone images took six hours; processing the ground records took two.</li></ul><p>The student wants to contrast the drone method’s accuracy advantage with its processing-time disadvantage.</p><p>Which choice most effectively uses relevant information from the notes to accomplish this goal?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The drone estimate was closer to the audit and required less time in the field than the ground count did.</li><li>The drone survey required less time in the field but more processing time than the ground count required.</li><li>The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s two hours.</li><li>The drone estimate was closer to the audit, but processing it took six hours rather than the ground count’s three hours.</li></ol>"
       }
     },
     {
@@ -264,7 +264,11 @@
       }
     },
     {
-      "shared_prompt": "opening_seal_tradeoff",
+      "shared_prompt": {
+        "id": "opening_seal_tradeoff_return",
+        "title": "Notes and writing goal",
+        "html": "<p>While researching estimates of a seal colony’s size, a student has taken these notes:</p><ul><li>A drone survey estimated 1,240 seals; a ground count estimated 980.</li><li>A later comprehensive audit established a benchmark of 1,210 seals.</li><li>Collecting drone images took one hour in the field; the ground count took three.</li><li>Processing the drone images took six hours; processing the ground records took two.</li></ul><p>The student wants to contrast the drone method’s accuracy advantage with its processing-time disadvantage.</p>"
+      },
       "kind": "raw_block",
       "id": "opening_seal_tradeoff_result",
       "block_type": "check",
@@ -368,5 +372,5 @@
       }
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use a two-part goal checklist and the notes fallback. Distractors give the wrong attribute, omit accuracy, or substitute a nearby but incorrect time value. Previous specification: archive/rw-openings-2026-11/rhetorical-synthesis-goal-first.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use a two-part goal checklist and the notes fallback. Distractors give the wrong attribute, omit accuracy, or substitute a nearby but incorrect time value. Previous specification: archive/rw-openings-2026-11/rhetorical-synthesis-goal-first.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/rhetorical-synthesis-goal-first.json."
 }

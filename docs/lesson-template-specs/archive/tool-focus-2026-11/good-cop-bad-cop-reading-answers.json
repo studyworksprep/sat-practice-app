@@ -1,0 +1,673 @@
+{
+  "title": "Good Cop / Bad Cop: Prove Every Reading Answer",
+  "description": "Use your answer target to test one choice at a time: notice what matches, cross out anything wrong or unsupported, and keep only a choice whose whole meaning answers the question and fits the text.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Which choice best states the main idea of the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Otters can limit urchin grazing, but their absence allows urchins to deplete kelp even at the wave-exposed sites Herrera surveyed.</li><li>Strong waves can limit urchin grazing, and otters tend to concentrate at the exposed headlands where kelp remains particularly dense.</li><li>Protection from urchin grazing can depend on both otter activity and wave exposure, helping explain differences among kelp sites.</li><li>Otters and wave action can both protect kelp, and their effects appear equally strong at the coastal sites Herrera surveyed.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "opening_kelp_conditions",
+        "title": "Kelp along a coastline",
+        "html": "<p>Marine biologist Tomás Herrera compared kelp forests along the same coastline. Sites patrolled by sea otters had few sea urchins and dense kelp, fitting the explanation that otters protect kelp by eating urchins. Sites with few otters, however, were not uniform. At exposed headlands, strong waves limited urchin grazing and kelp remained dense. Sheltered bays with similarly few otters had heavily grazed kelp. Herrera proposed considering local wave conditions alongside otter counts when predicting whether a kelp forest would remain abundant.</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "before_you_start",
+      "html": "<h2>Check the part that follows the true fact</h2><p>Each opening choice includes a real idea about otters or waves. An added claim can still make the whole answer fail.</p><p>We’ll use <strong>Good Cop / Bad Cop</strong>: notice what fits, then look for what does not. Practise first on a shorter passage.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "answer_target_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What should you have in mind before using Good Cop / Bad Cop on the answer choices?",
+        "choices": [
+          "A first guess formed by reading the answer choices before the passage",
+          "A list of outside facts you know about the passage's topic",
+          "A text-based answer target formed after reading the question and passage",
+          "A decision to choose whichever answer choice gives the most specific detail"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The choices should not create your first understanding of the passage.",
+        "explanation": "Your answer target comes from the question and passage. Good Cop / Bad Cop helps you test the choices against it."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_opening_question",
+        "title": "Forest clearing passage",
+        "html": "<blockquote><p>After workers cleared fallen branches from a forest plot, dormant seeds beneath the leaf litter began to sprout. Ecologist Ren Ito suggests that the clearing exposed some seeds to the light and warmer soil they needed to germinate.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "opening_question",
+      "html": "<h2>Start with an answer target</h2><p>Read the seed passage and say its main idea in your own words. Then read the choices. Which one keeps that meaning without adding a new claim?</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_opening_question",
+      "kind": "raw_block",
+      "id": "opening_question_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice is completely supported and answers the question?",
+        "choices": [
+          "Clearing fallen branches may have exposed some dormant seeds to conditions that helped them sprout.",
+          "Light and warmer soil caused every buried seed in the forest plot to germinate.",
+          "The sprouts showed that fallen branches had been blocking plant growth across the entire plot.",
+          "Ito found that the workers cleared the branches deliberately so that the dormant seeds would sprout."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Keep the clearing, the possible explanation, and the limit to some seeds. Cross out any added certainty or purpose.",
+        "explanation": "Choice A keeps the passage's cautious language and limited result. B changes some seeds into every seed. C turns one observation into a much broader claim about the whole plot's plant growth. D invents the workers' purpose."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "one_choice_two_questions",
+      "html": "<h2>One choice, two questions</h2><ol><li><strong>Good Cop:</strong> What fits my answer target and the text?</li><li><strong>Bad Cop:</strong> What is wrong, unsupported, or off the question’s job?</li><li>Keep the choice only if its whole meaning works.</li></ol><p>Use both questions on each choice in one trip through the list.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "roles_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "How should you use Good Cop and Bad Cop?",
+        "choices": [
+          "Use Good Cop on the whole list of choices first, then make a second trip through the list with Bad Cop.",
+          "Use Good Cop to find familiar words and Bad Cop to choose the longest answer.",
+          "Save Bad Cop until after you have already selected your final answer.",
+          "For each choice, notice what fits, notice what fails, and then keep it or cross it out."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The two roles belong together on each individual choice.",
+        "explanation": "Take one choice at a time and use both questions before moving to the next choice."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "four_questions",
+      "html": "<h2>Know what to inspect</h2><p>Check the question’s job, who did what, how strong the claim is, and whether it adds an unsupported idea. A correct paraphrase can use different words while keeping all four relationships right.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "right_fact_wrong_job_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A choice states a true detail from the passage, but the question asks for the passage's main purpose and the choice does not describe that purpose. What should you do?",
+        "choices": [
+          "Keep it because any true statement from the passage can answer any reading question.",
+          "Cross it out because a choice must be supported and answer the question's exact job.",
+          "Keep it only if it repeats several words from the passage.",
+          "Ignore the question and decide whether the detail is interesting."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "A choice has two requirements: it must fit the text and do the job named in the question.",
+        "explanation": "A statement can be true but still be the wrong answer because it does not answer the question that was asked."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_city_maps_example",
+        "title": "City maps passage and choices",
+        "html": "<blockquote><p>Early city maps often omit temporary street markets. Historian Lila Deren compared such maps with tax lists and diaries showing that some markets returned every week. Deren argues that the maps recorded permanent structures better than they recorded the full range of daily activity.</p></blockquote><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Early maps omitted markets because cartographers wanted to hide all commercial activity.</li><li>Tax lists and diaries suggest that recurring temporary markets may be missing from some early city maps.</li><li>Diary writers produced more accurate maps than professional cartographers did.</li><li>Weekly markets caused cities to replace temporary stalls with permanent structures.</li></ol>"
+      },
+      "kind": "text",
+      "id": "city_maps_example",
+      "html": "<h2>Watch the two questions work together</h2><p>The maps passage suggests that other records can reveal temporary activity missing from early maps. Use that target to inspect the choices, one at a time.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_city_maps_example",
+      "kind": "text",
+      "id": "city_maps_choice_a",
+      "html": "<h2>One correct detail is not enough</h2><p>Choice A notices the missing markets, which fits. But it invents a motive: cartographers wanted to hide all commerce. The passage never supports that claim, so cross A out.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_city_maps_example",
+      "kind": "text",
+      "id": "city_maps_remaining_choices",
+      "html": "<h2>Keep the choice that survives</h2><p>B preserves the limited claim about some activity. C invents a comparison between diary writers and mapmakers. D adds a cause the passage never gives. B is the choice that fits without an unsupported addition.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_city_maps_example",
+      "kind": "raw_block",
+      "id": "city_maps_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which part of Choice A forces you to cross it out?",
+        "choices": [
+          "The phrase early maps, which the passage itself uses in its first sentence",
+          "The statement that markets were omitted from the early maps",
+          "The claim that cartographers wanted to hide all commercial activity",
+          "The fact that the choice discusses maps rather than diaries or tax lists"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Find the motive and broad claim that the passage never gives.",
+        "explanation": "The omission is supported, but the deliberate motive and the claim about all commercial activity are not."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "strong_words",
+      "html": "<h2>Check strong words against the evidence</h2><p>Words such as “all,” “only,” and “caused” need strong support. They can be correct when the passage gives that support. Compare the claim with the evidence instead of rejecting a word automatically.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "strong_words_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A study reports: 'Researchers tested 30 sealed containers. Every container prevented measurable moisture loss during the trial.' Which choice stays within that evidence?",
+        "choices": [
+          "Sealing probably prevents moisture loss in every container under all possible conditions.",
+          "Only unsealed containers prevented moisture loss in the trials.",
+          "The study proved that sealing must work forever, regardless of the container or conditions.",
+          "All 30 sealed containers prevented measurable moisture loss in the reported trials."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The passage supports a strong statement about these 30 trials, but not about every possible container or condition.",
+        "explanation": "Choice D keeps the strong result and its limit to the reported trials. The word all is supported here."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_function_question",
+        "title": "City murals passage",
+        "html": "<blockquote><p>Researcher Omar Velez argues that city murals can preserve neighborhood memories that official records overlook. For example, one mural lists businesses that were demolished to build a highway.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "function_question",
+      "html": "<h2>Keep the question’s job in view</h2><p>This question asks what the second sentence does. Form a target for its role in the passage. A choice can state a true fact and still miss that job.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_function_question",
+      "kind": "raw_block",
+      "id": "function_question_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What function does the second sentence serve?",
+        "choices": [
+          "It gives a specific example of the kind of neighborhood memory that a mural can preserve.",
+          "It states, accurately, that highway construction demolished some neighborhood businesses.",
+          "It proves that city murals were created mainly to oppose highway construction projects.",
+          "It introduces a second researcher whose findings disagree with Velez's argument."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Choice B states a true detail, but the question asks why the author included that detail.",
+        "explanation": "Choice A explains the sentence's job. Choice B is true, but it only repeats the detail instead of explaining its function. C and D add ideas that are not in the text."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "inference_support",
+      "html": "<h2>Support can come from connecting facts</h2><p>An inference may combine details from different sentences. Check whether the text supports the connection. An added cause or motive still needs evidence, even when it sounds plausible.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_island_lizards_question",
+        "title": "Island lizards passage",
+        "html": "<blockquote><p>Researchers observed the same lizard species on two islands. On Island A, fruit remained available through winter, and the lizards stayed active throughout the year. On Island B, fruit became scarce in winter, and the lizards were inactive for three winter months. The researchers did not test what caused the difference in activity.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "island_lizards_question",
+      "html": "<h2>Try a careful connection</h2><p>Read the lizard passage. What difference did the researchers observe between the islands? Form the smallest supported conclusion, then test the choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_island_lizards_question",
+      "kind": "raw_block",
+      "id": "island_lizards_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which conclusion is best supported?",
+        "choices": [
+          "The loss of winter fruit caused every lizard on Island B to become inactive.",
+          "The islands differed in both winter fruit availability and the lizards' winter activity.",
+          "Lizards of this species stay active in winter wherever fruit remains available through the season.",
+          "Island A probably had warmer weather than Island B throughout the study period."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Keep both observed differences, but do not claim that one caused the other.",
+        "explanation": "Choice B connects the two reported differences without inventing a cause. A and C go beyond the evidence, and D adds a temperature difference never mentioned."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_island_lizards_question",
+      "kind": "raw_block",
+      "id": "island_lizards_wrong_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is the main problem with the claim that the loss of fruit caused every Island B lizard to become inactive?",
+        "choices": [
+          "It describes winter conditions on Island B, which the passage mentions just briefly.",
+          "It draws a conclusion about the lizards' activity levels, which the researchers did not observe directly.",
+          "It turns two observed differences into a proven cause and changes the group result into every lizard.",
+          "It focuses on Island B alone, so it fails to compare the two islands that the study describes."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The researchers specifically say they did not test the cause.",
+        "explanation": "The choice adds both a cause and an every-lizard claim that the passage does not earn."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "two_possible_choices",
+      "html": "<h2>When two choices look close</h2><p>Compare each with the whole answer target. Does one preserve an important limit that the other drops? Use the exact passage detail that separates them.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_roof_coating_question",
+        "title": "Reflective roofs passage",
+        "html": "<blockquote><p>Engineers applied a reflective coating to the roofs of several buildings. The coated roofs were cooler at midday, but changes in indoor temperature varied depending on features such as insulation. The team concluded that the coating's effect inside a building depends partly on that building's design.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "roof_coating_question",
+      "html": "<h2>Keep both halves of the result</h2><p>The roof coating cooled the surfaces, but the indoor results varied. Use that complete idea as your target. Watch for a choice that keeps the first half and changes the second.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_roof_coating_question",
+      "kind": "raw_block",
+      "id": "roof_coating_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice survives both Good Cop and Bad Cop?",
+        "choices": [
+          "The tests showed that insulation alone determines how warm each building becomes inside.",
+          "Coated roofs were cooler at midday, so the coating lowered indoor temperature in every tested building.",
+          "The team found that the buildings' design features had no effect on the indoor results.",
+          "Reflective coating can cool roof surfaces, but its effect indoors may vary with building features."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The best choice must keep both results: cooler roofs and varied indoor effects.",
+        "explanation": "D keeps both halves of the answer target. B begins with the supported roof result but changes varied indoor effects into a result for every building. A and C contradict the passage."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_roof_coating_question",
+      "kind": "raw_block",
+      "id": "roof_coating_runner_up_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which claim in Choice B goes beyond the roof-coating study’s findings?",
+        "choices": [
+          "It says the coating lowered indoor temperature in every tested building, but the indoor results varied.",
+          "It says roofs when the passage measures the temperature of the buildings' roof surfaces.",
+          "It mentions indoor temperature, a result that the passage itself never actually reports.",
+          "It says the coated roofs were cooler at midday, a comparison that reverses the study's actual reported result."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Read past the comma and compare every tested building with varied.",
+        "explanation": "The supported beginning cannot rescue the unsupported ending. Every important part has to work."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "no_choice_fits",
+      "html": "<h2>When none seems to fit</h2><p>Return to the question and the key passage sentence. Did your target miss a limit, a contrast, or the question’s job? Repair the target, then try the choices again.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "no_choice_fits_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Your answer target does not fit any choice exactly, and every choice seems to have a problem. What should you do?",
+        "choices": [
+          "Choose the answer written in the most academic and technical-sounding language.",
+          "Return to the question and passage, repair the answer target, and then test the choices again.",
+          "Choose the shortest answer, since concise choices are less likely to contain errors.",
+          "Set the answer target aside and use your outside knowledge to pick the most reasonable statement."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "A complete mismatch is a signal to repair your understanding, not to force an answer.",
+        "explanation": "Recheck the job, the important text, and any limits before testing the choices again."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_bee_navigation_question",
+        "title": "Bee navigation passage",
+        "html": "<blockquote><p>Some bees use patterns of polarized light to navigate. In a laboratory test, bees took longer to reach a feeder when a coating blocked those light patterns. The researchers did not measure whether the extra travel time changed how much energy the bees used.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "bee_navigation_question",
+      "html": "<h2>Try another passage</h2><p>Form a main-idea target for the bee study. Then ask what fits and what fails in each choice. Pay attention to what the researchers actually measured.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_bee_navigation_question",
+      "kind": "raw_block",
+      "id": "bee_navigation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice is completely supported and answers the question?",
+        "choices": [
+          "The coating permanently destroyed the bees' ability to navigate to any feeder.",
+          "Bees rely on polarized light more than on any other information when they navigate.",
+          "Blocking polarized-light patterns was connected with slower navigation in the laboratory test.",
+          "The bees' longer travel time proved that they used considerably more energy to reach the feeder."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep the laboratory result and do not add permanence, only, or an unmeasured energy result.",
+        "explanation": "C reports the tested change without going beyond it. A and B make unsupported broad claims. D adds an energy conclusion the researchers did not measure."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_bee_navigation_question",
+      "kind": "raw_block",
+      "id": "bee_navigation_wrong_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What exact part makes the energy answer wrong?",
+        "choices": [
+          "It refers to the bees reaching the feeder, which the laboratory test did not track.",
+          "It mentions the feeder and the laboratory's special coating, which the passage says nothing about.",
+          "It says the bees' travel time was longer, a detail that reverses the reported result.",
+          "It says the longer time proved greater energy use, which the researchers did not measure."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Separate the measured travel time from the unmeasured energy claim.",
+        "explanation": "The answer begins with a real result and then adds an unsupported conclusion."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_devon_poem_question",
+        "title": "Devon’s poem",
+        "html": "<p><strong>Introduction:</strong> The following text is adapted from a story in which Devon has submitted a poem anonymously to a school publication.</p><blockquote><p>Devon listened from the next table as the editors praised the poem's imagery. He opened his mouth to tell them who had written it, then stopped and folded the acceptance email into a smaller square beneath the table.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "devon_poem_question",
+      "html": "<h2>Use the same checks for a character</h2><p>What does Devon’s behavior suggest about his reaction? Form a target, then look for choices that add an emotion or decision the scene does not support.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_devon_poem_question",
+      "kind": "raw_block",
+      "id": "devon_poem_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice is best supported?",
+        "choices": [
+          "Devon seems pleased by the praise but remains hesitant to identify himself as the poet.",
+          "Devon is embarrassed because he believes the editors think the poem is poorly written.",
+          "Devon is angry that the editors do not already know he wrote the poem.",
+          "Devon decides never to submit another piece of writing."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use both actions: he nearly speaks, but then stops and folds the email out of sight.",
+        "explanation": "A connects his interest in the praise with his hesitation to reveal himself. B contradicts the praise, while C and D invent reactions and decisions."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_devon_poem_question",
+      "kind": "raw_block",
+      "id": "devon_poem_wrong_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why is the claim that Devon is angry at the editors unsupported?",
+        "choices": [
+          "The claim is about the wrong people, describing the editors' feelings instead of Devon's own reaction.",
+          "The text shows hesitation about speaking, but it gives no sign that Devon blames or resents the editors.",
+          "The editors never actually discuss the poem or its imagery within Devon's hearing at the next table.",
+          "The text directly states that Devon is pleased with the editors' praise, which rules out anger completely."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Do not turn silence or hesitation into a specific emotion without evidence.",
+        "explanation": "Anger is possible in some imagined story, but this text supports hesitation rather than blame or resentment."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_transportation_question",
+        "title": "Public transportation passage",
+        "html": "<blockquote><p>Economist Priya Sen argues that average travel time alone can hide unequal access to public transportation. Two neighborhoods may have the same average commute, for instance, even if residents of one have frequent trains while residents of the other must rely on a single unpredictable bus route.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "transportation_question",
+      "html": "<h2>Now focus on an example’s role</h2><p>Read the transportation passage and say what the second sentence does for Sen’s argument. Use that job to test the choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_transportation_question",
+      "kind": "raw_block",
+      "id": "transportation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What function does the second sentence serve?",
+        "choices": [
+          "It rejects Sen's argument by demonstrating that average commute times measure transportation access reliably.",
+          "It argues that trains are less predictable than buses in every neighborhood.",
+          "It illustrates how equal average commute times can hide meaningful differences in transportation access.",
+          "It introduces a second economist whose research findings are unrelated to Sen's claim."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Connect the two-neighborhood example to Sen's claim about what an average can hide.",
+        "explanation": "C explains what the example does. A reverses the author's purpose, B changes the comparison and broadens it, and D invents a new person."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the kelp passage</h2><p>Try the first question again. Test the whole meaning of each choice, including the part that initially seems plausible.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "opening_kelp_conditions_result",
+      "block_type": "check",
+      "content": {
+        "id": "opening_kelp_conditions_result",
+        "prompt": "Which choice best states the main idea of the text?",
+        "choices": [
+          "Otters can limit urchin grazing, but their absence allows urchins to deplete kelp even at the wave-exposed sites Herrera surveyed.",
+          "Strong waves can limit urchin grazing, and otters tend to concentrate at the exposed headlands where kelp remains particularly dense.",
+          "Protection from urchin grazing can depend on both otter activity and wave exposure, helping explain differences among kelp sites.",
+          "Otters and wave action can both protect kelp, and their effects appear equally strong at the coastal sites Herrera surveyed."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep a reason to consider a choice separate from a reason to accept it. Check its ending against the exposed and sheltered sites, and watch for an unstated comparison.",
+        "solution": "Use the passage to form a target: otters and waves can each limit grazing, and wave exposure helps explain sites with few otters.\nGood Cop: identify the real observation in each choice.\nBad Cop: check the rest for a contradiction, an added relationship, or a comparison the study never established.\nChoose C.\nA: The otter effect is supported, but the ending contradicts the dense kelp at exposed sites with few otters.\nB: The wave effect is supported, but the claimed concentration of otters is not; those headlands had few otters.\nD: Both mechanisms are supported, but the passage does not measure their comparative strength.",
+        "explanation": "You caught the added claims. The matching answer explains the different sites without inventing otter concentrations or equal effectiveness."
+      },
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": "opening_kelp_conditions"
+    },
+    {
+      "kind": "text",
+      "id": "remember_the_process",
+      "html": "<h2>Recall the two checks</h2><p>Before practice, say what Good Cop and Bad Cop ask about each choice. Then name what you inspect when a choice seems possible. Try recalling it before looking back.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_final_question",
+        "title": "Dolphin visits passage",
+        "html": "<blockquote><p>Oceanographers placed sound sensors near two reefs. Before nearby construction began, sound levels and dolphin visits were similar at both reefs. During construction, the reef near the site became louder and received fewer dolphin visits, while the distant reef showed little change. The researchers did not determine what caused the decline in visits.</p></blockquote>"
+      },
+      "kind": "raw_block",
+      "id": "final_question_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which conclusion is best supported?",
+        "choices": [
+          "Construction noise permanently drove the dolphins away from the reef near the building site.",
+          "The reef distant from the construction site became louder and received fewer dolphin visits.",
+          "The researchers proved that construction noise was the only cause of the decline in dolphin visits.",
+          "During construction, the nearby reef became louder and received fewer dolphin visits, while the distant reef changed little."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "D reports the paired changes and nothing more. A and C invent a proven cause and stronger claims. B reverses which reef changed."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_final_question",
+      "kind": "raw_block",
+      "id": "final_wrong_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What forces you to cross out the claim that noise was the only cause of the decline in visits?",
+        "choices": [
+          "The researchers did not determine the cause, so the choice adds both certainty and the word only.",
+          "The passage proves construction, not noise, caused the decline, so the choice names the wrong cause.",
+          "The researchers ruled out noise as a cause, so the choice contradicts what they determined.",
+          "The claim describes only the nearby reef, so it does not answer a question about both reefs."
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "The timing and observations may make noise a possibility, but the passage does not prove it or rule out other causes."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Good Cop / Bad Cop</h2><p>Keep a choice for what the text supports. Reject it for the part the text does not support.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Apply Good Cop / Bad Cop to three partly true answers whose added clauses contradict or exceed the evidence. Previous specification: archive/rw-openings-2026-11/good-cop-bad-cop-reading-answers.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+}

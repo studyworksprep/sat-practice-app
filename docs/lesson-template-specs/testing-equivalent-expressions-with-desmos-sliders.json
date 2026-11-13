@@ -1,19 +1,19 @@
 {
   "title": "Testing Equivalent Expressions with Desmos Sliders",
   "description": "Learn a fast, reliable way to answer \"which expression is equivalent?\" questions in two or more variables: give each variable a Desmos slider, pick random values, and let the numbers pick the matching answer choice.",
-  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 32188826-a78c-448d-86c9-808113b23e58 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nCalculator opening revision 2026-11-12: Products of binomials and squared binomials produce cubic terms and a whole-product subtraction. All choices separate at X=2,Y=3 and the match persists at X=3,Y=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 32188826-a78c-448d-86c9-808113b23e58 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nCalculator opening revision 2026-11-12: Products of binomials and squared binomials produce cubic terms and a whole-product subtraction. All choices separate at X=2,Y=3 and the match persists at X=3,Y=2. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Use the slider readout rather than a manual expansion to evaluate the choices. Replace the equivalence-definition quiz with the actual decision to eliminate a mismatching choice. Keep the applied mismatch decision free of a unique keyed lesson term. Previous specification: archive/tool-focus-2026-11/testing-equivalent-expressions-with-desmos-sliders.json.",
   "blocks": [
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(x^3+14x^2y+12xy^2-13y^3\\)</li><li>\\(x^3+8x^2y+12xy^2-13y^3\\)</li><li>\\(x^3+14x^2y+12xy^2-5y^3\\)</li><li>\\(3x^3+8x^2y+12xy^2-5y^3\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_slider_products",
         "title": "Equivalent expression",
-        "html": "<p>Which expression is equivalent to</p><p>\\[(2x-y)(x+3y)^2-(x+y)(x-2y)^2\\text{?}\\]</p>"
+        "html": "<p>Which expression is equivalent to</p><p>\\[(2x-y)(x+3y)^2-(x+y)(x-2y)^2\\text{?}\\]</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(x^3+14x^2y+12xy^2-13y^3\\)</li><li>\\(x^3+8x^2y+12xy^2-13y^3\\)</li><li>\\(x^3+14x^2y+12xy^2-5y^3\\)</li><li>\\(3x^3+8x^2y+12xy^2-5y^3\\)</li></ol>"
       }
     },
     {
@@ -64,20 +64,42 @@
       }
     },
     {
-      "shared_prompt": "shared_text_2",
       "kind": "raw_block",
       "id": "check_1",
       "block_type": "check",
       "content": {
-        "prompt": "With \\(a=2\\) and \\(b=3\\), the original shows \\(18\\). Which choice also showed \\(18\\)?",
+        "prompt": "At \\(a=2,b=3\\), the original \\(a(2b+3)\\) displays \\(18\\). Enter each choice with the same slider values. Which one matches?",
         "choices": [
           "\\(2ab+3\\)",
           "\\(2ab+3a\\)",
           "\\(2ab\\)",
           "\\(2ab+a+3\\)"
         ],
-        "explanation": "\\(2ab+3a = 2(2)(3)+3(2) = 12+6 = 18\\), matching the original. The choice \\(2ab+3\\) forgot to distribute the \\(a\\) to the \\(3\\), so it only reached \\(15\\).",
-        "correct_index": 1
+        "explanation": "B matches the original’s displayed value of \\(18\\). The sliders did the calculation; the other choices give different values at the same inputs.",
+        "correct_index": 1,
+        "hint": "Keep the sliders at the same values for the original and every choice. Compare the displayed results.",
+        "solution": "Keep \\(a=2\\) and \\(b=3\\). Enter each choice on a new row. Choice B, \\(2ab+3a\\), displays \\(18\\), matching the original.",
+        "calculator": {
+          "mode": "preset",
+          "title": "Compare at the same values",
+          "display": "open",
+          "editable": true,
+          "resettable": true,
+          "initial_expressions": [
+            {
+              "id": "a",
+              "latex": "a=2"
+            },
+            {
+              "id": "b",
+              "latex": "b=3"
+            },
+            {
+              "id": "original",
+              "latex": "a(2b+3)"
+            }
+          ]
+        }
       }
     },
     {
@@ -90,20 +112,25 @@
     },
     {
       "kind": "raw_block",
-      "id": "check_2",
+      "id": "slider_mismatch_action",
       "block_type": "check",
       "content": {
-        "hint": "Think about what the word 'equivalent' promises. Does it hold for just one lucky value, or always?",
-        "prompt": "For two expressions to be truly equivalent, their values must match…",
+        "id": "slider_mismatch_action",
+        "prompt": "At the same allowed slider values, the original displays 17 and one choice displays 18. What should you do?",
         "choices": [
-          "only when the variables equal \\(1\\)",
-          "for at least one input you pick",
-          "for every possible input",
-          "only when the variables equal \\(0\\)"
+          "Keep that choice because it might match at another set of allowed values.",
+          "Change only that choice’s slider values until its display becomes 17.",
+          "Eliminate that choice; one mismatch rules it out.",
+          "Accept that choice because a difference of one is close enough for equivalence."
         ],
+        "correct_index": 2,
         "allow_retry": true,
-        "explanation": "Equivalent means same output for every input. That's exactly why plugging in numbers works: if a choice disagrees on your test values, it's out.",
-        "correct_index": 2
+        "hint": "A matching choice must agree with the original at the same allowed inputs.",
+        "solution": "The original and this choice disagree at one legal input set. That rules the choice out. Continue comparing the other choices using the same values: C.",
+        "explanation": "Good catch. One mismatch rules out a choice. Keep the same values for the remaining comparisons and retest any ties.",
+        "calculator": {
+          "display": "hidden"
+        }
       }
     },
     {
@@ -190,7 +217,7 @@
           "\\(6p^2+q^2\\)"
         ],
         "allow_retry": true,
-        "explanation": "\\(6p^2+2pq+q^2 = 24+12+9 = 45\\), the only match. The \\(-2pq\\) version drops to \\(21\\), and the others miss too — the numbers decide it for you.",
+        "explanation": "A displays \\(45\\), matching the original at \\(p=2,q=3\\). The other choices display different numbers. Compare another allowed value set if any choices tie.",
         "correct_index": 0
       },
       "calculator": {
@@ -248,7 +275,11 @@
       }
     },
     {
-      "shared_prompt": "opening_slider_products",
+      "shared_prompt": {
+        "id": "opening_slider_products_return",
+        "title": "Equivalent expression",
+        "html": "<p>Which expression is equivalent to</p><p>\\[(2x-y)(x+3y)^2-(x+y)(x-2y)^2\\text{?}\\]</p>"
+      },
       "kind": "raw_block",
       "id": "opening_slider_products_result",
       "block_type": "check",

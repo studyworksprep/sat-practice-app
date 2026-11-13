@@ -1,0 +1,474 @@
+{
+  "title": "Advanced Factoring: Non-Monic Trinomials and Cubes",
+  "description": "Factor non-monic trinomials with organized factor-pair trials, then apply sum- and difference-of-cubes patterns, including GCF and sign variations.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\((15x-2)(x+4)\\)</li><li>\\((5x+2)(3x-4)\\)</li><li>\\((5x-2)(3x+4)\\)</li><li>\\((3x-2)(5x+4)\\)</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "revision_opening_question",
+        "title": "Opening question",
+        "html": "<p>Factor \\(15x^2+14x-8\\).</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Keep the trials organized</h2><p>The opening trinomial has a coefficient other than 1 on its squared term. The usual sum-product pair is not enough by itself. We’ll use <strong>organized trial</strong>, choosing factors from the first and last terms and checking the middle.</p><p>Start with a smaller example so there are only two arrangements to compare.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_reverse_multiplication_retrieval",
+        "title": "Binomial product",
+        "html": "<p>\\((2x+1)(x+3)\\)</p>"
+      },
+      "kind": "text",
+      "id": "reverse_multiplication_retrieval",
+      "html": "<h2>Read the middle products</h2><p>For \\((2x+1)(x+3)\\), the first product is \\(2x^2\\), the last is 3, and the <strong>cross-products</strong> are 6x and x. They add to 7x.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_reverse_multiplication_retrieval",
+      "kind": "raw_block",
+      "id": "reverse_multiplication_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which trinomial equals the product?",
+        "choices": [
+          "\\(2x^2+6x+3\\)",
+          "\\(2x^2+4x+3\\)",
+          "\\(2x^2+7x+3\\)",
+          "\\(2x^2+7x+4\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Add the two middle products: \\(6x+x\\).",
+        "explanation": "\\(6x+x=7x\\), so \\((2x+1)(x+3)=2x^2+7x+3\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "structured_trial_process",
+      "html": "<h2>Choose, Arrange, Match</h2><ol><li>Remove any GCF.</li><li>Choose leading factors that multiply to the squared term.</li><li>Choose constants that multiply to the last term.</li><li>Arrange them so the cross-products add to the middle term.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_first_non_monic_model",
+        "title": "Non-monic trinomial",
+        "html": "<p>Factor \\(2x^2+7x+3\\).</p>"
+      },
+      "kind": "text",
+      "id": "first_non_monic_model",
+      "html": "<h2>Compare two arrangements</h2><p>For \\(2x^2+7x+3\\), try leading terms 2x and x, with constants 1 and 3.</p><p>\\((2x+1)(x+3)\\) has middle sum 6x+x=7x. Swapping the constants gives 2x+3x=5x. The first arrangement works.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "multiple_factor_pairs",
+      "html": "<h2>Try another leading pair when needed</h2><p>For \\(6x^2+11x+3\\), the leading pairs are 6x with x, or 3x with 2x. Try the constant pair 1 and 3.</p><p>\\((3x+1)(2x+3)\\) gives cross-products 9x+2x=11x, so it works.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "multiple_pairs_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(6x^2+11x+3\\).",
+        "choices": [
+          "\\((3x+1)(2x+3)\\)",
+          "\\((6x+1)(x+3)\\)",
+          "\\((3x+3)(2x+1)\\)",
+          "\\((6x+3)(x+1)\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "solution": "Factor \\(6x^2+11x+3\\): the leading coefficient \\(6\\) factors as \\(1\\cdot6\\) or \\(2\\cdot3\\), and the constant \\(3\\) factors as \\(1\\cdot3\\).\nTest arrangements by their cross-product sums: \\((6x+1)(x+3)\\) gives \\(18x+x=19x\\), and \\((6x+3)(x+1)\\) gives \\(6x+3x=9x\\). Neither matches \\(11x\\).\nTry \\((3x+1)(2x+3)\\): the cross-products are \\(9x\\) and \\(2x\\), which add to \\(11x\\).\nAll three terms now match, so \\(6x^2+11x+3=(3x+1)(2x+3)\\).\nSo the answer is choice A, \\((3x+1)(2x+3)\\).",
+        "hint": "Find the trial whose cross-products add to \\(11x\\).",
+        "explanation": "The four products are \\(6x^2\\), \\(9x\\), \\(2x\\), and \\(3\\), giving \\(6x^2+11x+3\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "non_monic_signs",
+      "html": "<h2>Let the constant guide the signs</h2><p>A positive constant needs matching signs; a negative constant needs opposite signs. For \\(3x^2-14x-5\\), \\((3x+1)(x-5)\\) gives -15x+x=-14x.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "negative_constant_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(3x^2-14x-5\\).",
+        "choices": [
+          "\\((3x-1)(x+5)\\)",
+          "\\((3x-5)(x+1)\\)",
+          "\\((3x+1)(x-5)\\)",
+          "\\((3x+5)(x-1)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "solution": "Factor \\(3x^2-14x-5\\): the leading terms must be \\(3x\\) and \\(x\\), and the constants come from the pair \\(1\\cdot5\\).\nThe constant \\(-5\\) is negative, so the constants need opposite signs.\nTest \\((3x+1)(x-5)\\): the cross-products are \\(-15x\\) and \\(x\\), which add to \\(-14x\\).\nThat matches the middle term, so \\(3x^2-14x-5=(3x+1)(x-5)\\).\nSo the answer is choice C, \\((3x+1)(x-5)\\).",
+        "hint": "The constants need opposite signs. Compare each pair of cross-products with \\(-14x\\).",
+        "explanation": "\\((3x+1)(x-5)=3x^2-15x+x-5=3x^2-14x-5\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "gcf_before_non_monic",
+      "html": "<h2>Take the GCF before the trial</h2><p>\\(12x^2+26x+10=2(6x^2+13x+5)\\). Inside, \\((3x+5)(2x+1)\\) gives 3x+10x=13x. Keep the 2 outside in the final product.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "gcf_non_monic_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression factors \\(12x^2+26x+10\\) completely?",
+        "choices": [
+          "\\(2(6x^2+13x+5)\\)",
+          "\\(2(3x+5)(2x+1)\\)",
+          "\\((6x+5)(2x+2)\\)",
+          "\\(2(3x+1)(2x+5)\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "solution": "Remove the GCF first: \\(12x^2+26x+10=2(6x^2+13x+5)\\).\nNow factor \\(6x^2+13x+5\\): try leading factors \\(3x\\) and \\(2x\\) with constants \\(5\\) and \\(1\\).\nThe trial \\((3x+5)(2x+1)\\) has cross-products \\(3x\\) and \\(10x\\), which add to \\(13x\\).\nKeep the GCF in the final answer: \\(12x^2+26x+10=2(3x+5)(2x+1)\\).\nSo the answer is choice B, \\(2(3x+5)(2x+1)\\).",
+        "hint": "Removing the GCF is only the first stage. Check whether \\(6x^2+13x+5\\) factors further.",
+        "explanation": "The GCF is \\(2\\), and \\(6x^2+13x+5=(3x+5)(2x+1)\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "prime_non_monic",
+      "html": "<h2>A complete search can have no match</h2><p>For \\(2x^2+x+2\\), the integer trials give middle coefficients 5, 4, -5, or -4. None gives 1. The expression is <strong>prime over the integers</strong>, so stop instead of inventing a pair.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "prime_non_monic_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which trinomial is prime over the integers?",
+        "choices": [
+          "\\(2x^2+7x+3\\)",
+          "\\(3x^2-14x-5\\)",
+          "\\(6x^2+11x+3\\)",
+          "\\(2x^2+x+2\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The first three were factored earlier. For the last, exhaust the arrangements allowed by the leading and constant factor pairs.",
+        "explanation": "No integer-factor arrangement for \\(2x^2+x+2\\) produces the required middle coefficient."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "cube_transition",
+      "html": "<h2>Two cubes use a fixed pattern</h2><p>A two-term expression may need a cube identity rather than a trinomial trial. Find the cube-root expressions first, then place them into the matching formula.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "perfect_cubes",
+      "html": "<h2>Recognize the cube roots</h2><p><strong>Perfect cubes</strong> include 1, 8, 27, 64, and 125. Their cube roots are 1, 2, 3, 4, and 5. For a variable cube, divide its exponent by 3: the cube root of \\(x^6\\) is \\(x^2\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "cube_roots_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What are the cube roots of \\(64x^6\\) and \\(125y^3\\)?",
+        "choices": [
+          "\\(4x^2\\) and \\(5y\\)",
+          "\\(8x^3\\) and \\(25y\\)",
+          "\\(4x^3\\) and \\(5y^3\\)",
+          "\\(8x^2\\) and \\(25y\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Cube-root the coefficient and divide each variable exponent by \\(3\\).",
+        "explanation": "\\((4x^2)^3=64x^6\\), and \\((5y)^3=125y^3\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "derive_sum_of_cubes",
+      "html": "<h2>Keep, Opposite, Plus</h2><p>\\[A^3+B^3=(A+B)(A^2-AB+B^2)\\]</p><p>\\[A^3-B^3=(A-B)(A^2+AB+B^2)\\]</p><p>Keep the original sign in the first factor, use its opposite on the middle product in the second, and always finish with plus. The middle products cancel when multiplied.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "cube_identity_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which identity is correct?",
+        "choices": [
+          "\\(A^3-B^3=(A-B)(A^2-AB+B^2)\\)",
+          "\\(A^3-B^3=(A-B)(A^2+AB+B^2)\\)",
+          "\\(A^3-B^3=(A+B)(A^2+AB-B^2)\\)",
+          "\\(A^3-B^3=(A-B)(A^2-B^2)\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Multiply the proposed factors. The non-cube middle products must cancel.",
+        "explanation": "\\((A-B)(A^2+AB+B^2)\\) expands to \\(A^3-B^3\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "difference_of_cubes_model",
+      "html": "<h2>Use the difference pattern</h2><p>For \\(x^3-27\\), the cube roots are x and 3. Keep minus, then use plus in the quadratic’s middle: \\((x-3)(x^2+3x+9)\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "sum_of_cubes_model",
+      "html": "<h2>Use the sum pattern</h2><p>For \\(8x^3+125\\), use 2x and 5. Keep plus, then use minus: \\((2x+5)(4x^2-10x+25)\\). Square the whole 2x and multiply the whole pair for the middle term.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "multivariable_cubes",
+      "html": "<h2>The cube roots can contain variables</h2><p>For \\(27a^3+64b^6\\), use 3a and \\(4b^2\\). The same formula gives \\((3a+4b^2)(9a^2-12ab^2+16b^4)\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "gcf_before_cubes",
+      "html": "<h2>Check for a GCF before cubes too</h2><p>\\(4x^3+32=4(x^3+8)\\). Now use x and 2 in the sum formula: \\(4(x+2)(x^2-2x+4)\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "gcf_cubes_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(4x^3+32\\) completely.",
+        "choices": [
+          "\\(4(x+2)(x^2+2x+4)\\)",
+          "\\((4x+8)(x^2-2x+8)\\)",
+          "\\(4(x+2)(x^2-2x+4)\\)",
+          "\\(4(x^3+8)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "solution": "Remove the GCF first: \\(4x^3+32=4(x^3+8)\\).\nRecognize the sum of cubes: \\(x^3+8=x^3+2^3\\), so \\(A=x\\) and \\(B=2\\).\nApply \\(A^3+B^3=(A+B)(A^2-AB+B^2)\\): \\(x^3+8=(x+2)(x^2-2x+4)\\).\nKeep the GCF: \\(4x^3+32=4(x+2)(x^2-2x+4)\\), and the quadratic does not factor further.\nSo the answer is choice C, \\(4(x+2)(x^2-2x+4)\\).",
+        "hint": "Take out \\(4\\), then factor the sum \\(x^3+2^3\\).",
+        "explanation": "\\(4(x^3+8)=4(x+2)(x^2-2x+4)\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "method_selection_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "After removing the GCF from \\(12x^2-75\\), which pattern remains?",
+        "choices": [
+          "A non-monic trinomial",
+          "A sum of cubes",
+          "A difference of cubes",
+          "A difference of squares"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "First write \\(12x^2-75=3(4x^2-25)\\).",
+        "explanation": "\\(4x^2-25=(2x)^2-5^2\\), so the complete factorization is \\(3(2x-5)(2x+5)\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the opening trinomial</h2><p>Try it again. Use the first and last terms to limit the trials, then let the middle term choose the arrangement.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "mixed_transfer_non_monic_two",
+      "block_type": "check",
+      "content": {
+        "prompt": "Return to the opening question. What answer do you get now?",
+        "choices": [
+          "\\((15x-2)(x+4)\\)",
+          "\\((5x+2)(3x-4)\\)",
+          "\\((5x-2)(3x+4)\\)",
+          "\\((3x-2)(5x+4)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Try leading factors 5x and 3x. Choose constants with product -8 and arrange their signs so the cross-products add to 14x.",
+        "explanation": "The cross-products are \\(20x\\) and \\(-6x\\), whose sum is \\(14x\\).",
+        "solution": "The cross-products are \\(20x\\) and \\(-6x\\), whose sum is \\(14x\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": "revision_opening_question"
+    },
+    {
+      "kind": "raw_block",
+      "id": "retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "How do you choose factors for a non-monic trinomial, and how do you keep the cube signs straight?",
+        "choices": [
+          "Match the leading and constant products, then ignore the middle sum; for cubes use Keep, Opposite, Plus.",
+          "Match the leading product and constant sum, then the middle sum; for cubes use Keep, Opposite, Plus.",
+          "Match the leading and constant products, then the middle sum; for cubes use Keep, Same, Minus.",
+          "Match the leading and constant products, then the middle sum; for cubes use Keep, Opposite, Plus."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "The outer products constrain a trinomial trial and the cross-product sum selects it. The cube formulas keep the first sign, reverse the middle sign, and end with plus."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "mixed_transfer_non_monic_one",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(6x^2-x-2\\).",
+        "choices": [
+          "\\((3x-2)(2x+1)\\)",
+          "\\((6x-2)(x+1)\\)",
+          "\\((3x+2)(2x-1)\\)",
+          "\\((2x-2)(3x+1)\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "The cross-products are \\(3x\\) and \\(-4x\\), which add to \\(-x\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "mixed_transfer_cubes",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(54a^3-2\\) completely.",
+        "choices": [
+          "\\(2(3a-1)(9a^2-3a+1)\\)",
+          "\\(2(3a-1)(9a^2+3a+1)\\)",
+          "\\((3a-1)(18a^2+6a+2)\\)",
+          "\\(2(27a^3-1)\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "\\(54a^3-2=2(27a^3-1)=2(3a-1)(9a^2+3a+1)\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression is equivalent to \\(6x^2+7x-20\\)?",
+        "choices": [
+          "\\((2x-5)(3x+4)\\)",
+          "\\((2x+5)(3x-4)\\)",
+          "\\((2x+4)(3x-5)\\)",
+          "\\((6x+5)(x-4)\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "\\((2x+5)(3x-4)=6x^2-8x+15x-20=6x^2+7x-20\\). The other pairings produce middle terms of \\(-7x\\), \\(+2x\\), and \\(-19x\\) — multiplying back exposes each one."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Constrain the Trial</h2><p>Use the outer terms, match the middle, and keep the cube signs in order.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

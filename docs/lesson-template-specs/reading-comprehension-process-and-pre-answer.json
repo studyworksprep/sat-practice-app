@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice best states the main idea of the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Exposure to a low pollutant level may weaken young reef fish’s response to one kind of predator warning.</li><li>Young reef fish exposed to pollution may rely more heavily on shadows to compensate for less reliable chemical warnings.</li><li>Pollutant levels found near harbors may reduce young reef fish’s ability to respond to visual and chemical predator warnings.</li><li>Pollution may reduce how much of a predator’s chemical cue reaches young reef fish, changing their patterns of swimming.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_reef_warning",
         "title": "A reef-fish experiment",
-        "html": "<p>In a laboratory study, juvenile reef fish were raised either in clean water or in water containing a low concentration of a common pollutant. After a predator’s chemical cue was introduced, fish from the clean-water group reduced their swimming, a response that can make them less noticeable to predators. Fish from the polluted-water group continued swimming at nearly their previous rate. Both groups reacted normally to a sudden shadow over their tanks. The researchers noted that the pollutant level was similar to levels measured near some harbors.</p>"
+        "html": "<p>In a laboratory study, juvenile reef fish were raised either in clean water or in water containing a low concentration of a common pollutant. After a predator’s chemical cue was introduced, fish from the clean-water group reduced their swimming, a response that can make them less noticeable to predators. Fish from the polluted-water group continued swimming at nearly their previous rate. Both groups reacted normally to a sudden shadow over their tanks. The researchers noted that the pollutant level was similar to levels measured near some harbors.</p><p>Which choice best states the main idea of the text?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Exposure to a low pollutant level may weaken young reef fish’s response to one kind of predator warning.</li><li>Young reef fish exposed to pollution may rely more heavily on shadows to compensate for less reliable chemical warnings.</li><li>Pollutant levels found near harbors may reduce young reef fish’s ability to respond to visual and chemical predator warnings.</li><li>Pollution may reduce how much of a predator’s chemical cue reaches young reef fish, changing their patterns of swimming.</li></ol>"
       }
     },
     {
@@ -371,20 +371,19 @@
       }
     },
     {
-      "shared_prompt": {
-        "id": "shared_fiction_intro_variation",
-        "title": "Lena’s return",
-        "html": "<p><strong>Introduction:</strong> The following text is adapted from a story in which Lena has returned to her childhood neighborhood after living abroad for ten years.</p><blockquote><p>At the corner, Lena slowed before the bakery's bright new sign. The lettering was unfamiliar, but the warm scent drifting through the doorway was exactly as she remembered it.</p></blockquote>"
-      },
       "kind": "text",
       "id": "fiction_intro_variation",
-      "html": "<h2>The same routine works for fiction</h2><p>Use the introduction to place Lena in the bakery. What does her reaction show? Say it in your own words before choosing.</p>",
+      "html": "<h2>The same routine works for fiction</h2><p>An introduction may tell you who a character is or what has just happened. Use that context, then connect the character’s actions and reactions. Form an answer target before comparing choices.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "shared_prompt": "shared_fiction_intro_variation",
+      "shared_prompt": {
+        "id": "shared_fiction_intro_variation",
+        "title": "Lena’s return",
+        "html": "<p><strong>Introduction:</strong> The following text is adapted from a story in which Lena has returned to her childhood neighborhood after living abroad for ten years.</p><blockquote><p>At the corner, Lena slowed before the bakery's bright new sign. The lettering was unfamiliar, but the warm scent drifting through the doorway was exactly as she remembered it.</p></blockquote>"
+      },
       "kind": "raw_block",
       "id": "fiction_intro_check",
       "block_type": "check",
@@ -406,25 +405,24 @@
       }
     },
     {
-      "shared_prompt": {
-        "id": "shared_detail_variation",
-        "title": "Playground coating passage",
-        "html": "<blockquote><p>To reduce summer heat, a city painted several asphalt playgrounds with a pale coating. Measurements taken at midday showed that the coated surfaces were cooler than nearby uncoated asphalt, though air temperatures above the two surfaces were nearly identical.</p></blockquote>"
-      },
       "kind": "text",
       "id": "detail_variation",
-      "html": "<h2>A detail question needs a narrower target</h2><p>This question asks what the midday measurements showed. Find that result in the passage and state it directly. Keep the project’s hopes and broader predictions out of your answer.</p>",
+      "html": "<h2>A detail question needs a narrower target</h2><p>Find the specific result or fact the question names. State it directly in your own words. You do not need to summarize the whole passage or add what the project hoped to achieve.</p>",
       "calculator": {
         "display": "hidden"
       }
     },
     {
-      "shared_prompt": "shared_detail_variation",
+      "shared_prompt": {
+        "id": "shared_detail_variation",
+        "title": "Playground coating passage",
+        "html": "<blockquote><p>To reduce summer heat, a city painted several asphalt playgrounds with a pale coating. Measurements taken at midday showed that the coated surfaces were cooler than nearby uncoated asphalt, though air temperatures above the two surfaces were nearly identical.</p></blockquote>"
+      },
       "kind": "raw_block",
       "id": "detail_variation_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which pre-answer precisely answers the detail question?",
+        "prompt": "What did the midday measurements show? Which pre-answer precisely answers that detail question?",
         "choices": [
           "The pale coating will permanently lower air temperatures in cities that adopt it.",
           "The coated playground surfaces were cooler, but the measured air temperatures were about the same.",
@@ -478,7 +476,11 @@
       }
     },
     {
-      "shared_prompt": "opening_reef_warning",
+      "shared_prompt": {
+        "id": "opening_reef_warning_return",
+        "title": "A reef-fish experiment",
+        "html": "<p>In a laboratory study, juvenile reef fish were raised either in clean water or in water containing a low concentration of a common pollutant. After a predator’s chemical cue was introduced, fish from the clean-water group reduced their swimming, a response that can make them less noticeable to predators. Fish from the polluted-water group continued swimming at nearly their previous rate. Both groups reacted normally to a sudden shadow over their tanks. The researchers noted that the pollutant level was similar to levels measured near some harbors.</p>"
+      },
       "kind": "raw_block",
       "id": "opening_reef_warning_result",
       "block_type": "check",
@@ -587,5 +589,5 @@
       }
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Process and Pre-Answer to form a bounded main-idea target before partly overlapping choices suggest compensation, a broader impairment, or an untested mechanism. Previous specification: archive/rw-openings-2026-11/reading-comprehension-process-and-pre-answer.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Process and Pre-Answer to form a bounded main-idea target before partly overlapping choices suggest compensation, a broader impairment, or an untested mechanism. Previous specification: archive/rw-openings-2026-11/reading-comprehension-process-and-pre-answer.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Introduce fiction and detail-question variations before their passages; put the full detail question on the answer card. Previous specification: archive/tool-focus-2026-11/reading-comprehension-process-and-pre-answer.json."
 }

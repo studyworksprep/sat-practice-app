@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice completes the text with the most logical transition?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Consequently,</li><li>Nevertheless,</li><li>Similarly,</li><li>For example,</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_brake_adoption",
         "title": "A new railway brake",
-        "html": "<p>Early prototypes of a new railway brake were costly, but the version offered to small operators now costs about the same as conventional brakes. Independent trials show that the new system shortens stopping distances and reduces wheel wear. _____ several operators have placed orders, saying that the safety and maintenance benefits justify replacing their old brakes.</p>"
+        "html": "<p>Early prototypes of a new railway brake were costly, but the version offered to small operators now costs about the same as conventional brakes. Independent trials show that the new system shortens stopping distances and reduces wheel wear. _____ several operators have placed orders, saying that the safety and maintenance benefits justify replacing their old brakes.</p><p>Which choice completes the text with the most logical transition?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Consequently,</li><li>Nevertheless,</li><li>Similarly,</li><li>For example,</li></ol>"
       }
     },
     {
@@ -286,7 +286,11 @@
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "opening_brake_adoption"
+      "shared_prompt": {
+        "id": "opening_brake_adoption_return",
+        "title": "A new railway brake",
+        "html": "<p>Early prototypes of a new railway brake were costly, but the version offered to small operators now costs about the same as conventional brakes. Independent trials show that the new system shortens stopping distances and reduces wheel wear. _____ several operators have placed orders, saying that the safety and maintenance benefits justify replacing their old brakes.</p>"
+      }
     },
     {
       "kind": "raw_block",
@@ -369,5 +373,5 @@
       }
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use local bracketing to resist a contrast reflex triggered by resolved background information. Result is distinct from comparison or example. Previous specification: archive/rw-openings-2026-11/transitions-bracket-the-pivot.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use local bracketing to resist a contrast reflex triggered by resolved background information. Result is distinct from comparison or example. Previous specification: archive/rw-openings-2026-11/transitions-bracket-the-pivot.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/transitions-bracket-the-pivot.json."
 }

@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(3x\\)</li><li>\\(3x\\sqrt{3}\\)</li><li>\\(6x\\sqrt{3}\\)</li><li>\\(6x\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "revision_opening_question",
         "title": "Opening question",
-        "html": "<p>An equilateral triangle has altitude \\(x\\sqrt{3}\\). What is its perimeter?</p>"
+        "html": "<p>An equilateral triangle has altitude \\(x\\sqrt{3}\\). What is its perimeter?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(3x\\)</li><li>\\(3x\\sqrt{3}\\)</li><li>\\(6x\\sqrt{3}\\)</li><li>\\(6x\\)</li></ol>"
       }
     },
     {
@@ -460,7 +460,11 @@
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": {
+        "id": "revision_opening_question_return",
+        "title": "Opening question",
+        "html": "<p>An equilateral triangle has altitude \\(x\\sqrt{3}\\). What is its perimeter?</p>"
+      }
     },
     {
       "kind": "raw_block",
@@ -546,5 +550,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/special-right-triangles-45-45-90-and-30-60-90.json."
 }

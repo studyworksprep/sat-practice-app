@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>How many liters does each research tank hold?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(30\\) liters</li><li>\\(45\\) liters</li><li>\\(50\\) liters</li><li>\\(75\\) liters</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "shared_independent_transfer",
         "title": "Aquarium tank capacity",
-        "html": "<p>An aquarium has \\(4\\) identical display tanks and \\(9\\) identical research tanks. Each display tank holds \\(d\\) liters, and each research tank holds \\(r\\) liters. Altogether, the tanks hold \\(690\\) liters.</p><p>The equation is</p><p>\\[4d+9r=690\\]</p><p>Each display tank holds \\(60\\) liters. Find \\(r\\).</p>"
+        "html": "<p>An aquarium has \\(4\\) identical display tanks and \\(9\\) identical research tanks. Each display tank holds \\(d\\) liters, and each research tank holds \\(r\\) liters. Altogether, the tanks hold \\(690\\) liters.</p><p>The equation is</p><p>\\[4d+9r=690\\]</p><p>Each display tank holds \\(60\\) liters.</p><p>How many liters does each research tank hold?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(30\\) liters</li><li>\\(45\\) liters</li><li>\\(50\\) liters</li><li>\\(75\\) liters</li></ol>"
       }
     },
     {
@@ -277,7 +277,7 @@
     {
       "kind": "text",
       "id": "build_equation_model",
-      "html": "<h2>Build an equation from the units</h2><p>At \\(28\\) kits per hour for \\(x\\) hours, the first machine packs \\(28x\\) kits. The second packs \\(35y\\). Together they pack \\(910\\), so \\(28x+35y=910\\).</p>",
+      "html": "<h2>Build an equation from the units</h2><p>Suppose one machine packs \\(28\\) kits per hour for \\(x\\) hours, and another packs \\(35\\) kits per hour for \\(y\\) hours. Together they pack \\(910\\) kits.</p><p>The subtotals are \\(28x\\) and \\(35y\\), both measured in kits, so \\(28x+35y=910\\).</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -321,7 +321,11 @@
       }
     },
     {
-      "shared_prompt": "shared_independent_transfer",
+      "shared_prompt": {
+        "id": "shared_independent_transfer_return",
+        "title": "Aquarium tank capacity",
+        "html": "<p>An aquarium has \\(4\\) identical display tanks and \\(9\\) identical research tanks. Each display tank holds \\(d\\) liters, and each research tank holds \\(r\\) liters. Altogether, the tanks hold \\(690\\) liters.</p><p>The equation is</p><p>\\[4d+9r=690\\]</p><p>Each display tank holds \\(60\\) liters. Find \\(r\\).</p>"
+      },
       "kind": "raw_block",
       "id": "independent_transfer_check",
       "block_type": "check",
@@ -423,5 +427,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Keep one complete question stem with the opening choices. Show the complete worked situation before interpreting its two terms. Previous specification: archive/tool-focus-2026-11/rates-and-units-in-two-variable-equations.json."
 }

@@ -1,0 +1,643 @@
+{
+  "title": "Use Scale Factors with Similar Shapes",
+  "description": "Connect linear scale factors with perimeter, area, surface-area, and volume ratios, then move flexibly between those measurements for similar two- and three-dimensional shapes.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(25:4\\)</li><li>\\(5:2\\)</li><li>\\(125:8\\)</li><li>\\(625:16\\)</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "revision_opening_question",
+        "title": "Opening question",
+        "html": "<p>The surface areas of two similar solids are in the large-to-small ratio \\(25:4\\). What is their large-to-small volume ratio?</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_objective",
+      "html": "<h2>One multiplier does different jobs</h2><p>The opening question gives surface areas but asks for volumes. Those measurements do not use the same multiplier.</p><p>We’ll find a <strong>linear scale factor</strong>, the multiplier for corresponding lengths, then use it to connect the measurements. Start with two squares you can count.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "area_visual_exploration",
+      "html": "<h2>Compare sides and area</h2><p><img src=\"/images/scale-factor-area-squares.svg\" alt=\"Squares with sides 2 and 6, and areas 4 and 36\" width=\"900\"></p><p>The side changes from 2 to 6. Compare its multiplier with the area multiplier.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "area_observation_check",
+      "figure": {
+        "src": "/images/scale-factor-area-squares.svg",
+        "alt": "A square with side 2 and a similar square with side 6, drawn on the same unit grid",
+        "caption": "Compare the two squares."
+      },
+      "block_type": "check",
+      "content": {
+        "prompt": "In the diagram, how do the corresponding side lengths and areas compare?",
+        "choices": [
+          "The sides are multiplied by \\(9\\), and the areas by \\(3\\).",
+          "Both the sides and areas are multiplied by \\(3\\).",
+          "The sides are multiplied by \\(3\\), and the areas by \\(9\\).",
+          "The sides are multiplied by \\(3\\), and the areas by \\(6\\)."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Compare \\(6\\) with \\(2\\), then compare \\(36\\) with \\(4\\).",
+        "explanation": "Each side is \\(3\\) times as long, but the area is \\(9\\) times as large."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "why_area_squares",
+      "html": "<h2>Area uses the factor twice</h2><p>Area multiplies two lengths. If each is multiplied by s, area multiplies by \\(s^2\\). For the squares, the side factor is 3 and the area factor is 3×3=9.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "ratio_direction",
+      "html": "<h2>Write the direction first</h2><p>From length 4 to length 10, the factor is 10/4=5/2. Going back, it is 4/10=2/5. Keep every comparison in the direction the question requests.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ratio_direction_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A corresponding side is \\(6\\) in shape A and \\(15\\) in shape B. What is the linear scale factor from A to B?",
+        "choices": [
+          "\\(\\frac{2}{5}\\)",
+          "\\(9\\)",
+          "\\(\\frac{3}{2}\\)",
+          "\\(\\frac{5}{2}\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "For A to B, divide the B length by the corresponding A length.",
+        "explanation": "The A-to-B scale factor is \\(15/6=5/2\\). All A-to-B measurement ratios should follow that direction."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "dimension_rule",
+      "html": "<h2>Match the measurement to its power</h2><p><strong>Similar</strong> shapes have matching angles and one scale factor for corresponding lengths.</p><ul><li>Lengths and perimeters: s.</li><li>Areas and surface areas: \\(s^2\\).</li><li>Volumes: \\(s^3\\).</li></ul><p>Surface area measures faces, so it uses the area rule even on a solid.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "measurement_classification_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "If similar solids have linear scale factor \\(s\\), which statement is correct?",
+        "choices": [
+          "Perimeters and surface areas both scale by \\(s\\).",
+          "Perimeters scale by \\(s\\), and surface areas scale by \\(s^2\\).",
+          "Perimeters scale by \\(s^2\\), and surface areas scale by \\(s^3\\).",
+          "Both perimeters and surface areas scale by \\(s^2\\)."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "A perimeter is a sum of lengths. A surface area is a sum of face areas.",
+        "explanation": "Perimeter is linear, while surface area is two-dimensional and therefore uses \\(s^2\\). For example, if every edge doubles, perimeter doubles but surface area is multiplied by \\(2^2=4\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "forward_area_model",
+      "html": "<h2>Use the area multiplier</h2><p>If the linear factor is 3/2 and the original area is 40, multiply by \\((3/2)^2=9/4\\). The new area is 40×9/4=90.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "forward_area_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Similar triangles have a small-to-large linear scale factor of \\(\\frac52\\). If the smaller triangle has area \\(28\\), what is the larger area?",
+        "choices": [
+          "\\(70\\)",
+          "\\(112\\)",
+          "\\(175\\)",
+          "\\(350\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "solution": "The direction is small to large, and the path is linear to area, so square the linear factor.\nThe area multiplier is \\(\\left(\\frac{5}{2}\\right)^2=\\frac{25}{4}\\).\nUse \\(A_{\\text{new}}=A_{\\text{original}}s^2\\): \\(28\\cdot\\frac{25}{4}=\\frac{700}{4}=175\\).\nSo the answer is choice C, \\(175\\).",
+        "hint": "Square \\(5/2\\), then multiply the smaller area by that area factor.",
+        "explanation": "The area factor is \\(25/4\\), so the larger area is \\(28(25/4)=175\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "surface_area_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two similar prisms have a small-to-large linear scale factor of \\(4\\). The smaller prism's surface area is \\(15\\). What is the larger surface area?",
+        "choices": [
+          "\\(240\\)",
+          "\\(60\\)",
+          "\\(960\\)",
+          "\\(19\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Surface area is two-dimensional. Multiply by \\(4^2\\), not \\(4^3\\).",
+        "explanation": "The surface-area factor is \\(16\\), so the larger surface area is \\(15(16)=240\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "volume_visual_exploration",
+      "html": "<h2>Compare edges and volume</h2><p><img src=\"/images/scale-factor-volume-cubes.svg\" alt=\"Cubes with edges 1 and 2 and volumes 1 and 8\" width=\"900\"></p><p>Each edge doubles. Count how many unit cubes fit in the larger cube.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "why_volume_cubes",
+      "html": "<h2>Volume uses the factor three times</h2><p>Volume multiplies three lengths. When each doubles, volume multiplies by 2×2×2=8. In general, use \\(s^3\\).</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "forward_volume_model",
+      "html": "<h2>Use the volume multiplier</h2><p>With linear factor 3/2 and original volume 64, multiply by \\((3/2)^3=27/8\\). The new volume is 64×27/8=216.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "forward_volume_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Similar solids have a small-to-large linear scale factor of \\(\\frac52\\). If the smaller volume is \\(16\\), what is the larger volume?",
+        "choices": [
+          "\\(100\\)",
+          "\\(250\\)",
+          "\\(40\\)",
+          "\\(625\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "solution": "The direction is small to large, and the path is linear to volume, so cube the linear factor.\nThe volume multiplier is \\(\\left(\\frac{5}{2}\\right)^3=\\frac{125}{8}\\).\nUse \\(V_{\\text{new}}=V_{\\text{original}}s^3\\): \\(16\\cdot\\frac{125}{8}=\\frac{2000}{8}=250\\).\nSo the answer is choice B, \\(250\\).",
+        "hint": "Cube \\(5/2\\), then multiply \\(16\\) by the result.",
+        "explanation": "The volume factor is \\(125/8\\), so the larger volume is \\(16(125/8)=250\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "reverse_area_process",
+      "html": "<h2>From area back to length</h2><p>An area ratio is the square of the linear ratio. Take positive square roots to recover the lengths’ ratio. Area ratio 49:81 gives linear ratio 7:9.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "reverse_area_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The areas of two similar polygons are in the ratio \\(16:25\\), first to second. What is the corresponding linear ratio?",
+        "choices": [
+          "\\(8:5\\)",
+          "\\(2:5\\)",
+          "\\(16:25\\)",
+          "\\(4:5\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Take the square root of each term in the area ratio.",
+        "explanation": "\\(\\sqrt{16}:\\sqrt{25}=4:5\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "reverse_volume_process",
+      "html": "<h2>From volume back to length</h2><p>A volume ratio is the cube of the linear ratio. Take cube roots to recover it. Volume ratio 8:125 gives linear ratio 2:5.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "reverse_volume_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The volumes of two similar solids are in the ratio \\(27:64\\), first to second. What is the corresponding linear ratio?",
+        "choices": [
+          "\\(9:8\\)",
+          "\\(3:4\\)",
+          "\\(27:64\\)",
+          "\\(\\sqrt{27}:8\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Take the cube root of both terms.",
+        "explanation": "\\(\\sqrt[3]{27}:\\sqrt[3]{64}=3:4\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "area_to_volume_process",
+      "html": "<h2>Bridge through the linear ratio</h2><p>For area ratio 9:25, take square roots to get linear ratio 3:5. Then cube to get volume ratio 27:125.</p><p>Recover the linear ratio before changing to a different measurement.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "area_to_volume_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two similar solids have surface areas in the ratio \\(4:49\\), first to second. What is their volume ratio in that same direction?",
+        "choices": [
+          "\\(4:49\\)",
+          "\\(16:2401\\)",
+          "\\(8:343\\)",
+          "\\(2:7\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "solution": "Do not cube the area ratio directly; bridge through the linear factor first.\nSurface area follows \\(s^2\\), so the linear ratio is \\(\\sqrt{4}:\\sqrt{49}=2:7\\), keeping the first-to-second direction.\nCube the linear ratio to get the volume ratio: \\(2^3:7^3=8:343\\).\nSo the answer is choice C, \\(8:343\\).",
+        "hint": "Surface area gives \\(s^2\\). Take the square root to get \\(2:7\\), then cube.",
+        "explanation": "The linear ratio is \\(2:7\\), so the volume ratio is \\(2^3:7^3=8:343\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "volume_to_area_process",
+      "html": "<h2>The bridge works in reverse too</h2><p>For volume ratio 64:343, take cube roots to get linear ratio 4:7. Square that to get area ratio 16:49.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "volume_to_area_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two similar solids have volumes in the ratio \\(125:216\\), first to second. What is their surface-area ratio?",
+        "choices": [
+          "\\(25:36\\)",
+          "\\(125:216\\)",
+          "\\(5:6\\)",
+          "\\(625:1296\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Take the cube root to get the linear ratio, then square that ratio for surface area.",
+        "explanation": "The linear ratio is \\(5:6\\), so the surface-area ratio is \\(25:36\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_arbitrary_variables",
+        "title": "Corresponding sides in terms of n",
+        "html": "<p>Two similar figures have corresponding sides of lengths \\(4n\\) and \\(10n\\), respectively.</p>"
+      },
+      "kind": "text",
+      "id": "arbitrary_variables",
+      "html": "<h2>A shared variable can cancel</h2><p>Corresponding lengths 4n and 10n have ratio 10n/4n=5/2. If only a ratio is requested, the common scale does not change it. Choosing a positive n such as 1 can make the arithmetic easier.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_arbitrary_variables",
+      "kind": "raw_block",
+      "id": "arbitrary_ratio_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is the second-to-first area ratio?",
+        "choices": [
+          "\\(5:2\\)",
+          "\\(4:25\\)",
+          "\\(125:8\\)",
+          "\\(25:4\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The variable cancels. The linear ratio is \\(10/4=5/2\\); square it for area.",
+        "explanation": "The second-to-first linear factor is \\(5/2\\), so the area ratio is \\(25/4\\), or \\(25:4\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "when_values_are_not_arbitrary",
+      "html": "<h2>Keep fixed measurements fixed</h2><p>Choosing a common scale is useful for a ratio. If the question asks for an actual length or gives an equation determining the variable, use that information. For a square of area 144, its side is fixed at 12.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "arbitrary_decision_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In which problem is the variable not arbitrary?",
+        "choices": [
+          "Corresponding sides are \\(2z\\) and \\(7z\\); find the perimeter ratio.",
+          "Corresponding edges are \\(w\\) and \\(5w\\); find the volume ratio.",
+          "A square has side \\(x\\) and area \\(196\\); find its actual side length.",
+          "Corresponding heights are \\(3k\\) and \\(8k\\); find the surface-area ratio."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Look for the problem that asks for an actual measurement fixed by numerical information.",
+        "explanation": "The area \\(196\\) determines the actual side length, so \\(x\\) must be solved rather than chosen. In the other problems, the common variable cancels from a ratio."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the surface-area comparison</h2><p>Try the opening question again. Decide which ratio you have and which measurement the answer needs.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_area_to_volume",
+      "block_type": "check",
+      "content": {
+        "prompt": "Return to the opening question. What answer do you get now?",
+        "choices": [
+          "\\(25:4\\)",
+          "\\(5:2\\)",
+          "\\(125:8\\)",
+          "\\(625:16\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Recover the linear ratio by taking square roots of the surface-area ratio. Then cube that linear ratio to get the volume ratio.",
+        "explanation": "The linear ratio is \\(5:2\\), so the volume ratio is \\(5^3:2^3=125:8\\).",
+        "solution": "The linear ratio is \\(5:2\\), so the volume ratio is \\(5^3:2^3=125:8\\)."
+      },
+      "shared_prompt": "revision_opening_question",
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two similar solids, surface areas in the ratio \\(4:49\\), and the question wants volumes. Without looking back: what's the rule, and what's the trap?",
+        "choices": [
+          "Use \\(s\\) for lengths and perimeters, \\(s^3\\) for areas and surface areas, and \\(s^2\\) for volumes; use roots to work backward.",
+          "Use \\(s^2\\) for lengths and perimeters, \\(s^3\\) for areas and surface areas, and \\(s\\) for volumes; use powers to work backward.",
+          "Use \\(s\\) for lengths and perimeters, \\(s^2\\) for areas and surface areas, and \\(s^3\\) for volumes; use roots to work backward.",
+          "Use \\(s\\) for lengths, areas, and volumes alike, since similar shapes preserve every ratio; use roots to work backward."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "explanation": "You have it. Length and perimeter are linear, area and surface area are two-dimensional, and volume is three-dimensional. For a linear factor of \\(2\\), those multipliers are \\(2\\), \\(4\\), and \\(8\\). Moving backward requires the matching root."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_linear_to_area",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two similar figures have a small-to-large linear scale factor of \\(\\frac43\\). The smaller area is \\(45\\). What is the larger area?",
+        "choices": null,
+        "correct_index": null,
+        "allow_retry": false,
+        "explanation": "\\(45(16/9)=80\\).",
+        "input": "numeric",
+        "answer": "80"
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_surface_to_linear",
+      "block_type": "check",
+      "content": {
+        "prompt": "The surface areas of similar solids A and B are in the ratio \\(121:64\\). What is the A-to-B linear ratio?",
+        "choices": [
+          "\\(121:64\\)",
+          "\\(\\sqrt{121}:64\\)",
+          "\\(1331:512\\)",
+          "\\(11:8\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "The linear ratio is \\(\\sqrt{121}:\\sqrt{64}=11:8\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_linear_to_volume",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two similar solids have a small-to-large linear scale factor of \\(\\frac32\\). The smaller volume is \\(80\\). What is the larger volume?",
+        "choices": null,
+        "correct_index": null,
+        "allow_retry": false,
+        "explanation": "\\(80(27/8)=270\\).",
+        "input": "numeric",
+        "answer": "270"
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_volume_to_linear",
+      "block_type": "check",
+      "content": {
+        "prompt": "The volumes of similar solids A and B are in the ratio \\(216:125\\). What is the A-to-B linear ratio?",
+        "choices": [
+          "\\(36:25\\)",
+          "\\(6:5\\)",
+          "\\(216:125\\)",
+          "\\(5:6\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "\\(\\sqrt[3]{216}:\\sqrt[3]{125}=6:5\\). \\(5:6\\) is the B-to-A ratio, \\(36:25\\) is the surface-area ratio, and \\(216:125\\) is the volume ratio you started with."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_volume_to_area",
+      "block_type": "check",
+      "content": {
+        "prompt": "The volumes of similar solids A and B are in the ratio \\(1000:27\\). What is their A-to-B surface-area ratio?",
+        "choices": [
+          "\\(1000:27\\)",
+          "\\(10:3\\)",
+          "\\(10000:729\\)",
+          "\\(100:9\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "The linear ratio is \\(10:3\\), so the surface-area ratio is \\(100:9\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_perimeter",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two similar polygons have corresponding side lengths in the ratio \\(7:3\\). What is their perimeter ratio?",
+        "choices": [
+          "\\(7:3\\)",
+          "\\(49:9\\)",
+          "\\(343:27\\)",
+          "\\(7:6\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "Perimeters scale linearly, so their ratio is also \\(7:3\\)."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Rectangle A has an area of \\(24\\) square centimeters. Each side of rectangle B is \\(3\\) times the length of the corresponding side of rectangle A. What is the area, in square centimeters, of rectangle B?",
+        "input": "numeric",
+        "answer": "216",
+        "allow_retry": false,
+        "explanation": "Area scales by \\(s^2\\): \\(24\\cdot3^2=216\\). Multiplying by \\(3\\) once treats area like a length, and \\(3^3\\) belongs to volume."
+      },
+      "calculator": {
+        "display": "available",
+        "mode": "scratch",
+        "title": "Scratch calculator"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Go Through the Linear Factor</h2><p>Keep the direction fixed and choose the power for the measurement.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

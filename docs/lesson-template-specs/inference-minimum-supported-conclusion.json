@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice most logically completes the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>a change in customers’ preferences may have encouraged workshops in both areas to adopt clay from distant regions.</li><li>workshops’ access to the new import route may help explain their different rates of adopting clay from distant regions.</li><li>increasing prices for local clay may have encouraged harbor workshops to seek cheaper materials from distant regions.</li><li>improved access to imported clay may have led harbor workshops to sell their pottery in new and more distant markets.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_clay_access",
         "title": "Clay sources in a port city",
-        "html": "<p>A historian compared pottery from harbor and inland workshops in a port city. Before 1750, both groups mainly used local clay. A new trade route began bringing distant clay to the harbor in the 1740s. After 1750, distant clay became common in harbor pottery but remained unusual inland. Sales records indicate that both workshop groups continued selling to their previous customers, and local clay prices stayed stable over the period. Together, the findings suggest that _____</p>"
+        "html": "<p>A historian compared pottery from harbor and inland workshops in a port city. Before 1750, both groups mainly used local clay. A new trade route began bringing distant clay to the harbor in the 1740s. After 1750, distant clay became common in harbor pottery but remained unusual inland. Sales records indicate that both workshop groups continued selling to their previous customers, and local clay prices stayed stable over the period. Together, the findings suggest that _____</p><p>Which choice most logically completes the text?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>a change in customers’ preferences may have encouraged workshops in both areas to adopt clay from distant regions.</li><li>workshops’ access to the new import route may help explain their different rates of adopting clay from distant regions.</li><li>increasing prices for local clay may have encouraged harbor workshops to seek cheaper materials from distant regions.</li><li>improved access to imported clay may have led harbor workshops to sell their pottery in new and more distant markets.</li></ol>"
       }
     },
     {
@@ -62,27 +62,6 @@
       "kind": "text",
       "id": "definition_and_cue",
       "html": "<h2>Look for the supported conclusion</h2><p>“Which choice most logically completes the text?” asks you to finish the passage’s reasoning. Use its facts and relationships to make a short answer target before you read the choices.</p>",
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "definition_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which statement best defines an SAT inference?",
-        "choices": [
-          "Any explanation that seems reasonable when you combine the topic with your own background knowledge",
-          "A detail restated word for word from one sentence, supported by that sentence alone",
-          "A reasonable prediction about what will most likely happen after the passage ends",
-          "A conclusion not stated directly but supported by the facts and relationships in the text"
-        ],
-        "correct_index": 3,
-        "allow_retry": true,
-        "hint": "The answer can go one small step beyond the wording, but the passage must supply the path.",
-        "explanation": "An inference connects stated information into a supported conclusion; it does not depend on outside knowledge or speculation."
-      },
       "calculator": {
         "display": "hidden"
       }
@@ -304,7 +283,11 @@
       }
     },
     {
-      "shared_prompt": "opening_clay_access",
+      "shared_prompt": {
+        "id": "opening_clay_access_return",
+        "title": "Clay sources in a port city",
+        "html": "<p>A historian compared pottery from harbor and inland workshops in a port city. Before 1750, both groups mainly used local clay. A new trade route began bringing distant clay to the harbor in the 1740s. After 1750, distant clay became common in harbor pottery but remained unusual inland. Sales records indicate that both workshop groups continued selling to their previous customers, and local clay prices stayed stable over the period. Together, the findings suggest that _____</p>"
+      },
       "kind": "raw_block",
       "id": "opening_clay_access_result",
       "block_type": "check",
@@ -413,5 +396,5 @@
       }
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use sentence summaries to infer a modest access/adoption relationship while rejecting plausible but unsupported price, demand, and export explanations. Previous specification: archive/rw-openings-2026-11/inference-minimum-supported-conclusion.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use sentence summaries to infer a modest access/adoption relationship while rejecting plausible but unsupported price, demand, and export explanations. Previous specification: archive/rw-openings-2026-11/inference-minimum-supported-conclusion.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Remove the stand-alone definition quiz; retain applied inference, evidence scope, and association-versus-cause decisions. Previous specification: archive/tool-focus-2026-11/inference-minimum-supported-conclusion.json."
 }

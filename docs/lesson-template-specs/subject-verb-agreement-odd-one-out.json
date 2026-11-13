@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>are</li><li>is</li><li>were</li><li>have been</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "revision_opening_question",
         "title": "Opening question",
-        "html": "<p>In 1911, a university expedition crossed the high plateau collecting alpine plants. The collection of field notebooks, sketches, and pressed specimens assembled by the expedition&#x27;s two botanists ______ now housed in the university&#x27;s herbarium, where conservators recently began digitizing it. Which choice completes the text so that it conforms to the conventions of Standard English?</p>"
+        "html": "<p>In 1911, a university expedition crossed the high plateau collecting alpine plants. The collection of field notebooks, sketches, and pressed specimens assembled by the expedition&#x27;s two botanists ______ now housed in the university&#x27;s herbarium, where conservators recently began digitizing it. Which choice completes the text so that it conforms to the conventions of Standard English?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>are</li><li>is</li><li>were</li><li>have been</li></ol>"
       }
     },
     {
@@ -364,15 +364,6 @@
         "title": "Maps and field journals sentence",
         "html": "<blockquote><p>The collection of maps, together with several handwritten field journals, ___ how rapidly the coastline changed.</p></blockquote>"
       },
-      "kind": "text",
-      "id": "sat_example_one",
-      "html": "<h2>Try the full sentence pattern</h2><p>Test the four verb choices in the shared sentence. Use the he/they frames before deciding whether the shortcut is eligible.</p>",
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "shared_prompt": "shared_sat_example_one",
       "kind": "raw_block",
       "id": "sat_example_one_check",
       "block_type": "check",
@@ -399,15 +390,6 @@
         "title": "Distant stars sentence",
         "html": "<blockquote><p>New measurements of the distant stars, despite the limits of the original instruments, ___ the research team's conclusion.</p></blockquote>"
       },
-      "kind": "text",
-      "id": "sat_example_two",
-      "html": "<h2>Now look for the other frame</h2><p>Run the same eligibility checks on this new set. The odd choice can be plural as well as singular.</p>",
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "shared_prompt": "shared_sat_example_two",
       "kind": "raw_block",
       "id": "sat_example_two_check",
       "block_type": "check",
@@ -507,7 +489,11 @@
       "calculator": {
         "display": "hidden"
       },
-      "shared_prompt": "revision_opening_question"
+      "shared_prompt": {
+        "id": "revision_opening_question_return",
+        "title": "Opening question",
+        "html": "<p>In 1911, a university expedition crossed the high plateau collecting alpine plants. The collection of field notebooks, sketches, and pressed specimens assembled by the expedition&#x27;s two botanists ______ now housed in the university&#x27;s herbarium, where conservators recently began digitizing it. Which choice completes the text so that it conforms to the conventions of Standard English?</p>"
+      }
     },
     {
       "kind": "raw_block",
@@ -594,5 +580,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Put the sentence and verb choices together at each application instead of asking students to inspect choices on the following card. Previous specification: archive/tool-focus-2026-11/subject-verb-agreement-odd-one-out.json."
 }

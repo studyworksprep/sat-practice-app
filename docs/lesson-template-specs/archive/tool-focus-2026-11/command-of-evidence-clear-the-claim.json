@@ -1,0 +1,554 @@
+{
+  "title": "CLEAR the Claim: Command of Evidence",
+  "description": "Use the CLEAR routine to predict the evidence a claim needs, control strengthen-versus-weaken direction, and choose textual or quantitative evidence that is both accurate and relevant.",
+  "authoring_notes": "COUPLING: the debrief text blocks 'authentic_textual_debrief' and 'authentic_quant_debrief' restate the content and answers of the two linked bank questions (question_link ids 7d1178af-ad95-466c-ab85-78f98cbefa25 and 80df19d8-611c-47f8-9a20-49078658f64e). If either bank question is edited or replaced, rewrite the matching debrief in the same change — it will not go stale on its own.\nReading and Writing opening revision 2026-11-12: Use CLEAR to distinguish a complete matched comparison from familiar-material, immediate-only, and unmatched before/after findings. Previous specification: archive/rw-openings-2026-11/command-of-evidence-clear-the-claim.json. The replacement question has a new block ID; unrelated lesson items retain their identities.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Which finding, if true, would most directly support the researchers’ claim?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>One week after training, trained volunteers identified 84% of training recordings correctly, compared with 61% for the untrained group.</li><li>One week after training, trained volunteers identified 84% of new recordings correctly, compared with 61% for the untrained group.</li><li>Immediately after training, trained volunteers identified 84% of new recordings correctly, compared with 61% for the untrained group.</li><li>One week after training, trained volunteers identified 84% of new recordings correctly, compared with their own 61% pre-program score.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "opening_retained_training",
+        "title": "A training claim",
+        "html": "<p>Researchers designed a short program to help volunteers identify bird species from recordings. They argued that the program would improve identification of recordings the volunteers had not heard during training, and that the benefit would still be detectable a week later. To test the claim, they compared volunteers who completed the program with volunteers of similar starting ability who did not. Both groups took identification tests under the same conditions.</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_goal",
+      "html": "<h2>Make the evidence meet the whole claim</h2><p>Every opening choice reports identification accuracy. They differ in which recordings were tested, when, and against which comparison.</p><p>We’ll use <strong>CLEAR</strong> to predict the evidence the exact claim needs. Start with a simpler shade-and-temperature claim.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_opening_exploration",
+        "title": "Street-tree shade claim",
+        "html": "<p><strong>Claim:</strong> Shade from street trees reduces sidewalk surface temperatures at midday.</p>"
+      },
+      "kind": "text",
+      "id": "opening_exploration",
+      "html": "<h2>Predict a useful finding</h2><p>Read the street-tree claim. Which two groups would you compare, and what would you measure? Describe the finding that would make the claim more believable.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_opening_exploration",
+      "kind": "raw_block",
+      "id": "opening_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which finding, if true, would most directly support the claim about street-tree shade?",
+        "choices": [
+          "Residents of streets with more trees rated their neighborhoods as more attractive in a survey.",
+          "At midday, shaded sidewalk segments carried noticeably less foot traffic than unshaded segments.",
+          "At matched locations measured at midday, shaded sidewalk surfaces averaged 12°F cooler than unshaded surfaces.",
+          "At shaded locations, sidewalk surfaces measured substantially cooler in the early morning than at midday."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The claim compares surface temperature with shade to surface temperature without shade at the same time of day.",
+        "explanation": "The matched shaded-versus-unshaded comparison measures the exact outcome in the claim and points in the supporting direction."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_opening_exploration",
+      "kind": "text",
+      "id": "opening_observation",
+      "html": "<h2>Make the evidence match the claim</h2><p>The shade claim compares shaded and unshaded sidewalks and predicts lower surface temperature with shade. Useful support keeps those groups, that measurement, and that direction.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "clear_process",
+      "html": "<h2>CLEAR the Claim</h2><ol><li><strong>C:</strong> Capture the task: support or weaken?</li><li><strong>L:</strong> Lock onto the exact claim.</li><li><strong>E:</strong> Expect a particular evidence pattern.</li><li><strong>A:</strong> Audit the source and choices.</li><li><strong>R:</strong> Reject a choice when an important part fails.</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "capture_task_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A question asks which finding would most directly weaken a researcher's conclusion. What is your job?",
+        "choices": [
+          "Find a result that makes the conclusion less likely or exposes a missing link.",
+          "Find a result that comes from the same field of research as the conclusion.",
+          "Find the result that reports the largest and most precise measurements.",
+          "Find a result that restates the conclusion in stronger, more dramatic language."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Translate weaken into an action you will perform on the claim.",
+        "explanation": "A weakening result pushes against the claim, breaks its predicted pattern, or shows that the claimed relationship may not exist."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_lock_claim",
+        "title": "Compound R claim",
+        "html": "<blockquote><p><strong>Claim:</strong> Worms exposed to Compound R grew faster than worms receiving no Compound R.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "lock_claim",
+      "html": "<h2>Describe the comparison you need</h2><p>The worm claim compares Compound R with no Compound R. The outcome is growth rate, and the predicted direction is higher with Compound R. Keep the comparison within the tested conditions.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_lock_claim",
+      "kind": "raw_block",
+      "id": "expect_evidence_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which prediction best matches the Compound R claim?",
+        "choices": [
+          "The Compound R worms should consume noticeably more food than the other worms, whether or not they also grow faster.",
+          "The worms receiving no Compound R should be older on average than the Compound R worms.",
+          "Both groups of worms should grow at approximately the same rate under comparable conditions.",
+          "Under comparable conditions, the Compound R worms should show a higher growth rate than the no-Compound-R worms."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Keep the two groups, the measured outcome, and the direction from the claim.",
+        "explanation": "That prediction mirrors every essential part of the claim without adding a new variable."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "direction_switch",
+      "html": "<h2>“Weaken” changes what you look for</h2><p>To support a claim, look for evidence that fits its prediction. To <strong>weaken</strong> it, look for a result that challenges the prediction or a missing link. Name that job before reading the choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "weaken_direction_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A researcher claims that exposure to blue light at night increases the number of flowers a plant produces. Which finding would most directly weaken the claim?",
+        "choices": [
+          "Plants exposed to blue light opened their flowers earlier in the morning.",
+          "Matched plants exposed to blue light and to darkness produced the same average number of flowers.",
+          "Blue-light bulbs used less electricity than another kind of bulb.",
+          "Plants exposed to blue light grew taller than plants exposed to darkness."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The claim is about the number of flowers, not timing, electricity, or height.",
+        "explanation": "No difference in the claimed outcome under matched conditions directly pushes against the claim that blue light increases flower production."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_literature_variant",
+        "title": "Literary interpretation",
+        "html": "<blockquote><p><strong>Interpretive claim:</strong> The speaker initially resists leaving home but later accepts the journey.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "literature_variant",
+      "html": "<h2>A quotation can be evidence too</h2><p>A literary claim may have two parts, such as initial resistance and later acceptance. Look for a quotation showing both. A line about only one feeling leaves the claim partly unsupported.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_literature_variant",
+      "kind": "raw_block",
+      "id": "literature_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which invented quotation best illustrates both parts of the claim?",
+        "choices": [
+          "“The road unwound beneath the morning sun, / A silver thread beyond the hill.”",
+          "“I barred the door and begged the dawn to wait; / By noon, I took my pack and called the road my own.”",
+          "“At every mile I counted what was lost, / The names, the rooms, the garden wall.”",
+          "“Tomorrow's road may bend beside the sea, / Or climb through pines where cold winds blow.”"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Require evidence of both resistance and acceptance, not merely travel or emotion.",
+        "explanation": "B moves from barring the door and resisting departure to taking the pack and claiming the road. It satisfies the whole checklist."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "audit_three_tests",
+      "html": "<h2>Check a possible match</h2><p>Is the choice accurate? Does it address the exact claim in the requested direction? Does it cover the claim’s important parts without adding more than the source supports?</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_data_passage_first",
+        "title": "Seedling growth study",
+        "html": "<p>Researchers randomly assigned otherwise comparable seedlings to grow for 14 days under low, medium, or high light. At each light level, one group received a standard solution and another received a mineral supplement. They claim that the supplement increased seedling growth at every light level.</p>"
+      },
+      "kind": "text",
+      "id": "data_passage_first",
+      "html": "<h2>Predict before reading the bars</h2><p>The seedling claim predicts greater average height with the supplement at each light level. Keep that comparison in mind as you read the graph.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "outside_in",
+      "html": "<h2>Read the labels before the values</h2><p>Start with the title, axes and units, then the legend. Those labels tell you what a bar or point means. Now locate the comparison your claim needs.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_data_passage_first",
+      "kind": "text",
+      "id": "graph_exploration",
+      "html": "<h2>Read one bar completely</h2><p>Use the title, axes, and legend to say exactly what one bar measures.</p><p><img src=\"/images/command-of-evidence-seedling-growth.svg\" alt=\"Average seedling heights after 14 days. Standard and supplement heights are 4 and 5 cm in low light, 8 and 12 cm in medium light, and 12 and 18 cm in high light.\" width=\"760\"></p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_data_passage_first",
+      "kind": "raw_block",
+      "id": "specific_bar_check",
+      "figure": {
+        "src": "/images/command-of-evidence-seedling-growth.svg",
+        "alt": "Grouped bar graph of average seedling height after 14 days. Standard versus mineral-supplement heights are 4 versus 5 centimeters in low light, 8 versus 12 in medium light, and 12 versus 18 in high light."
+      },
+      "block_type": "check",
+      "content": {
+        "prompt": "What does the blue bar labeled 12 at medium light specifically mean?",
+        "choices": [
+          "Seedlings receiving the mineral supplement under medium light averaged 12 centimeters after 14 days.",
+          "Twelve of the seedlings in the study received the standard solution under medium light.",
+          "The medium-light group's growing period lasted 12 days instead of the full 14.",
+          "Every seedling grown under the medium-light condition reached a final height of exactly 12 centimeters."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Combine the x-axis category, legend, y-axis measurement, and title.",
+        "explanation": "One bar encodes a group, a condition, a measured average with units, and a time frame. It does not report sample size or every individual's value."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_data_passage_first",
+      "kind": "raw_block",
+      "id": "graph_prediction_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "To support the claim that the supplement increased growth at every light level, what pattern must the graph show?",
+        "choices": [
+          "The supplement group should reach its tallest average under the high-light condition.",
+          "Both solution groups should grow taller whenever the light level increases.",
+          "The standard-solution group should average at least 4 centimeters under every light condition.",
+          "Within low, medium, and high light, the supplement average must exceed the standard-solution average."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The claim is about the supplement's effect within every light condition.",
+        "explanation": "The needed comparison is supplement versus standard within each matched light level—not a comparison across unmatched conditions."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_data_passage_first",
+      "kind": "raw_block",
+      "id": "graph_claim_check",
+      "figure": {
+        "src": "/images/command-of-evidence-seedling-growth.svg",
+        "alt": "Grouped bar graph of average seedling height after 14 days. Standard versus mineral-supplement heights are 4 versus 5 centimeters in low light, 8 versus 12 in medium light, and 12 versus 18 in high light."
+      },
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice best describes graph data that support the researchers' claim?",
+        "choices": [
+          "The mineral-supplement group reached its highest average, 18 centimeters, under the high-light condition.",
+          "The standard-solution group averaged more under high light (12 centimeters) than under low light (4 centimeters).",
+          "The mineral-supplement average exceeded the standard-solution average under low light (5 versus 4), medium light (12 versus 8), and high light (18 versus 12).",
+          "The mineral-supplement group under medium light averaged exactly the same height, 12 centimeters, as the standard-solution group growing under high light."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The words every light level require all three matched comparisons.",
+        "explanation": "C is accurate, makes the claim-relevant within-condition comparison, and covers the full scope. A, B, and D state facts but do not establish the supplement's advantage at every light level."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_data_passage_first",
+      "kind": "text",
+      "id": "provably_wrong",
+      "html": "<h2>Use a clear contradiction</h2><p>Check the group, number, unit, and direction in a choice. One contradicted detail is enough to reject it. Make sure a statement about every individual is supported by individual data.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_data_passage_first",
+      "kind": "raw_block",
+      "id": "provably_wrong_check",
+      "figure": {
+        "src": "/images/command-of-evidence-seedling-growth.svg",
+        "alt": "Grouped bar graph of average seedling height after 14 days. Standard versus mineral-supplement heights are 4 versus 5 centimeters in low light, 8 versus 12 in medium light, and 12 versus 18 in high light."
+      },
+      "block_type": "check",
+      "content": {
+        "prompt": "Which statement can be eliminated immediately because the graph disproves it?",
+        "choices": [
+          "Average height was greater under high light than under low light for both solution groups.",
+          "Under medium light, the mineral-supplement group averaged 14 centimeters.",
+          "Under high light, the supplement-standard gap was 6 centimeters.",
+          "The supplement group had a higher average than the standard group at each light level."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Verify each stated value against the labeled bars.",
+        "explanation": "The medium-light supplement bar is 12 centimeters, not 14. That exact contradiction is enough to eliminate B safely."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_data_passage_first",
+      "kind": "text",
+      "id": "accurate_not_enough",
+      "html": "<h2>Ask whether an accurate fact helps</h2><p>A claim about a treatment needs the relevant treatment-versus-control comparison. A true fact about the treatment group alone may not establish the claimed advantage.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_data_passage_first",
+      "kind": "raw_block",
+      "id": "gap_pattern_check",
+      "figure": {
+        "src": "/images/command-of-evidence-seedling-growth.svg",
+        "alt": "Grouped bar graph of average seedling height after 14 days. Standard versus mineral-supplement heights are 4 versus 5 centimeters in low light, 8 versus 12 in medium light, and 12 versus 18 in high light."
+      },
+      "block_type": "check",
+      "content": {
+        "prompt": "A new claim says the supplement's advantage grew as light increased. Which evidence best supports that claim?",
+        "choices": [
+          "The standard-solution averages rose steadily from 4 centimeters to 8 to 12 as the light level increased.",
+          "The supplement averages increased from 5 to 12 to 18 centimeters as light increased.",
+          "The supplement-standard gaps were 1 centimeter in low light, 4 in medium light, and 6 in high light.",
+          "The medium-light supplement average, 12 centimeters, equaled the high-light standard-solution average."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Advantage means the difference between matched supplement and standard groups.",
+        "explanation": "The growing gaps directly measure the supplement's advantage. A and B describe separate trends; D compares unmatched conditions."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "scope_and_aggregation",
+      "html": "<h2>Counts may leave individual relationships unknown</h2><p>This table counts the same 12 species separately for two activities. You can read how many fall in each range. You cannot tell which escaping and pursuing values belong to the same species.</p>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "species_activity_counts",
+        "title": "Example counts for 12 species",
+        "html": "<p>Each activity is counted separately. The table does not link a species’ escaping speed with that same species’ pursuing speed.</p><table><caption>Number of species in each percentage-of-maximal-speed range</caption><thead><tr><th scope=\"col\">Speed range</th><th scope=\"col\">Escaping</th><th scope=\"col\">Pursuing</th></tr></thead><tbody><tr><th scope=\"row\">60%–69%</th><td>1</td><td>2</td></tr><tr><th scope=\"row\">70%–79%</th><td>2</td><td>4</td></tr><tr><th scope=\"row\">80%–89%</th><td>3</td><td>4</td></tr><tr><th scope=\"row\">90%–100%</th><td>6</td><td>2</td></tr></tbody></table>"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "aggregation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The table counts species separately for escaping and pursuing. Which conclusion is not supported?",
+        "choices": [
+          "At least one of the lizard species was recorded in the 90%–100% range of maximal speed while it pursued prey.",
+          "More escaping species fell in the 90%–100% speed range than fell in the 60%–69% speed range.",
+          "Multiple lizard species escaped from predators at speeds below 90% of their maximal sprint speed.",
+          "Most individual species used about the same percentage of maximal speed when escaping as when pursuing."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "Without linked individual-species data, you cannot compare each species' two behaviors. The other statements can be read from category counts."
+      },
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": "species_activity_counts"
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_hard_bridge",
+        "title": "Government efficiency evidence",
+        "html": "<blockquote><p><strong>Theory:</strong> If government efficiency rises, the share of expansion linked to investment should rise.</p></blockquote><p>Now suppose the graph shows that the investment-linked share fell from 38% in the earlier period to 26% in the later period.</p>"
+      },
+      "kind": "text",
+      "id": "hard_bridge",
+      "html": "<h2>Connect a theory with the data</h2><p>First say what movement the theory predicts. Then compare that with the observed movement. Keep your conclusion within that comparison.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_hard_bridge",
+      "kind": "raw_block",
+      "id": "hard_bridge_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which conclusion is best supported by the theory and the two percentages?",
+        "choices": [
+          "The data confirm that investment caused the expansion observed in both periods.",
+          "Government efficiency rose in the later period, since a 26% share is still a positive value.",
+          "The data have no bearing on the theory, because the theory concerns government efficiency rather than investment levels.",
+          "The observed change does not fit the theory’s prediction for an increase in government efficiency."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Compare the direction the theory predicts with the direction of the change from 38% to 26%.",
+        "explanation": "The share fell instead of rising, so the result does not fit what the theory predicts for increased government efficiency.",
+        "solution": "The investment-linked share fell from 38% to 26%. The theory predicts a rise when government efficiency increases. This result does not fit that prediction."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "reject_traps",
+      "html": "<h2>Find the failed match</h2><p>Check for the wrong measurement, group, direction, or scope. A choice can use real source details and still miss the comparison the claim needs.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the training study</h2><p>Try the opening question again. Predict a useful finding before testing the choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "opening_retained_training_result",
+      "block_type": "check",
+      "content": {
+        "id": "opening_retained_training_result",
+        "prompt": "Which finding, if true, would most directly support the researchers’ claim?",
+        "choices": [
+          "One week after training, trained volunteers identified 84% of training recordings correctly, compared with 61% for the untrained group.",
+          "One week after training, trained volunteers identified 84% of new recordings correctly, compared with 61% for the untrained group.",
+          "Immediately after training, trained volunteers identified 84% of new recordings correctly, compared with 61% for the untrained group.",
+          "One week after training, trained volunteers identified 84% of new recordings correctly, compared with their own 61% pre-program score."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Keep all parts of the claim together: unfamiliar recordings, a benefit that lasts, and the comparison that can isolate the training’s effect.",
+        "solution": "Capture the task: find support. Lock onto improved accuracy on new recordings that remains after one week.\nExpect a delayed test of new recordings comparing trained and untrained volunteers under matching conditions.\nAudit each choice against that full pattern; a finding that misses a condition supplies less direct support.\nChoose B.\nA: This gives the delayed comparison, but on familiar training recordings rather than new ones.\nC: This compares the right groups on new recordings but does not establish the one-week benefit.\nD: This improvement is promising, but the before-and-after comparison does not separate the program’s benefit from changes also affecting untrained volunteers.",
+        "explanation": "Good choice. The finding matches the new recordings, the delay, and the comparison group. Mentioning accuracy by itself was not enough."
+      },
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": "opening_retained_training"
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Spell it out from memory: what does each letter of CLEAR tell you to do, in order?",
+        "choices": [
+          "Capture the task word; Lock onto the claim; Expect the evidence; Audit the source and choices; Reject failed matches.",
+          "Capture the claim; Lock onto the task word; Expect the evidence; Audit the source and choices; Reject failed matches.",
+          "Capture the task word; Lock onto the claim; Expect the answer choices; Audit the evidence; Reject any choice that quotes the source.",
+          "Capture the task word; Lock onto the claim; Expect the evidence; Audit only the source; Accept the first supported match."
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "You have it. CLEAR turns an abstract evidence question into a predicted pattern and a short series of checks."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_textual_question",
+      "block_type": "question_link",
+      "content": {
+        "question_id": "7d1178af-ad95-466c-ab85-78f98cbefa25"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_quant_question",
+      "block_type": "question_link",
+      "content": {
+        "question_id": "80df19d8-611c-47f8-9a20-49078658f64e"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>CLEAR the Claim</h2><p>Predict the evidence you need, then choose the finding that does that job.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}

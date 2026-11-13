@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which choice best describes the overall structure of the text?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>It introduces an interpretation, presents a test designed to confirm it, and explains why part of the original account remains plausible.</li><li>It introduces two interpretations, presents evidence favoring the earlier one, and keeps the later explanation as a possibility.</li><li>It introduces an interpretation, presents evidence that overturns it, and replaces the original account with a competing explanation.</li><li>It introduces an interpretation, presents evidence that broadens it, and explains why part of the original account remains plausible.</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_channels_structure",
         "title": "Interpreting stone channels",
-        "html": "<p>Early accounts describe a valley’s stone channels as boundaries between farms. A recent survey mapped the channels’ slopes and their connections to several storage pools. Water released experimentally at the higher end flowed toward low fields, including fields separated by different property lines. The survey team proposes that the channels distributed water as well as marking land. Some stretches still follow old property edges, so the team does not discard the boundary interpretation. Instead, the team argues that the surviving layout makes more sense if the structures served both purposes.</p>"
+        "html": "<p>Early accounts describe a valley’s stone channels as boundaries between farms. A recent survey mapped the channels’ slopes and their connections to several storage pools. Water released experimentally at the higher end flowed toward low fields, including fields separated by different property lines. The survey team proposes that the channels distributed water as well as marking land. Some stretches still follow old property edges, so the team does not discard the boundary interpretation. Instead, the team argues that the surviving layout makes more sense if the structures served both purposes.</p><p>Which choice best describes the overall structure of the text?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>It introduces an interpretation, presents a test designed to confirm it, and explains why part of the original account remains plausible.</li><li>It introduces two interpretations, presents evidence favoring the earlier one, and keeps the later explanation as a possibility.</li><li>It introduces an interpretation, presents evidence that overturns it, and replaces the original account with a competing explanation.</li><li>It introduces an interpretation, presents evidence that broadens it, and explains why part of the original account remains plausible.</li></ol>"
       }
     },
     {
@@ -387,7 +387,11 @@
         "explanation": "You tracked the structure. The new evidence broadens the account while the ending preserves a role for the original interpretation."
       },
       "block_type": "check",
-      "shared_prompt": "opening_channels_structure",
+      "shared_prompt": {
+        "id": "opening_channels_structure_return",
+        "title": "Interpreting stone channels",
+        "html": "<p>Early accounts describe a valley’s stone channels as boundaries between farms. A recent survey mapped the channels’ slopes and their connections to several storage pools. Water released experimentally at the higher end flowed toward low fields, including fields separated by different property lines. The survey team proposes that the channels distributed water as well as marking land. Some stretches still follow old property edges, so the team does not discard the boundary interpretation. Instead, the team argues that the surviving layout makes more sense if the structures served both purposes.</p>"
+      },
       "calculator": {
         "display": "hidden"
       }
@@ -483,5 +487,5 @@
       "block_type": "lesson_complete"
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Name the Job to distinguish broadening from confirmation or replacement; the closest distractor preserves the same ending but misstates the job of the test. Previous specification: archive/rw-openings-2026-11/text-structure-and-purpose-name-the-job.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use Name the Job to distinguish broadening from confirmation or replacement; the closest distractor preserves the same ending but misstates the job of the test. Previous specification: archive/rw-openings-2026-11/text-structure-and-purpose-name-the-job.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/text-structure-and-purpose-name-the-job.json."
 }

@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(t=\\frac{3ab}{2(a+b)}\\)</li><li>\\(t=\\frac{2(a+b)}{3ab}\\)</li><li>\\(t=\\frac{2ab}{3(a+b)}\\)</li><li>\\(t=\\frac{2ab}{a+b}\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "opening_two_hoses",
         "title": "Two hoses filling a tank",
-        "html": "<p>One hose can fill an empty tank in \\(a\\) hours, and another can fill it in \\(b\\) hours. Each runs at a constant rate, and \\(a,b>0\\).</p><p>The tank is already one-third full when both hoses are turned on. They finish filling it together in \\(t\\) hours. Which equation relates \\(a,b,t\\)?</p>"
+        "html": "<p>One hose can fill an empty tank in \\(a\\) hours, and another can fill it in \\(b\\) hours. Each runs at a constant rate, and \\(a,b>0\\).</p><p>The tank is already one-third full when both hoses are turned on. They finish filling it together in \\(t\\) hours. Which equation relates \\(a,b,t\\)?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(t=\\frac{3ab}{2(a+b)}\\)</li><li>\\(t=\\frac{2(a+b)}{3ab}\\)</li><li>\\(t=\\frac{2ab}{3(a+b)}\\)</li><li>\\(t=\\frac{2ab}{a+b}\\)</li></ol>"
       }
     },
     {
@@ -107,7 +107,7 @@
     {
       "kind": "text",
       "id": "record_the_set",
-      "html": "<h2>Keep the complete set in view</h2><p>For the theater example, record \\(s=20,p=13\\). Reuse those values in every choice so the equations all face the same test.</p>",
+      "html": "<h2>Keep the complete set in view</h2><p>Write down every value from the situation you built, including the dependent amounts. Reuse that complete set in every answer choice.</p><p>Each equation must face the same numerical test.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -151,7 +151,7 @@
     {
       "kind": "text",
       "id": "direction_language",
-      "html": "<h2>Picture “fewer than” first</h2><p>Six fewer shrubs than flowers means 20 flowers would go with 14 shrubs. Use that concrete pair to test direction instead of deciding from the equation’s appearance.</p>",
+      "html": "<h2>Picture “fewer than” first</h2><p>When a story compares two amounts, choose one amount and work out the other from the words. Keep track of which amount is smaller.</p><p>Test the equations with that concrete pair instead of deciding from their appearance.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -180,7 +180,7 @@
     {
       "kind": "text",
       "id": "rate_context",
-      "html": "<h2>Build a rate example</h2><p>At 12 liters per minute, 5 minutes gives 60 liters. Record \\(t=5,v=60\\), then test the equations with those units and values.</p>",
+      "html": "<h2>Build a rate example</h2><p>For a rate, choose an easy amount of time and calculate how much is produced or used. Record both values with their units.</p><p>Use that same complete situation to test every equation.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -385,7 +385,11 @@
         "title": "Try the opening question again",
         "resettable": true
       },
-      "shared_prompt": "opening_two_hoses"
+      "shared_prompt": {
+        "id": "opening_two_hoses_return",
+        "title": "Two hoses filling a tank",
+        "html": "<p>One hose can fill an empty tank in \\(a\\) hours, and another can fill it in \\(b\\) hours. Each runs at a constant rate, and \\(a,b>0\\).</p><p>The tank is already one-third full when both hoses are turned on. They finish filling it together in \\(t\\) hours. Which equation relates \\(a,b,t\\)?</p>"
+      }
     },
     {
       "kind": "raw_block",
@@ -473,5 +477,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Two combined rates and a partially full tank require reciprocal algebra in general; choosing two-hour and six-hour hoses creates an easy complete numerical story. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Two combined rates and a partially full tank require reciprocal algebra in general; choosing two-hour and six-hour hoses creates an easy complete numerical story. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Introduce direction language before showing the garden’s specific counts. Introduce rate examples generally before the water-flow question. Keep the recorded-values reminder about the reusable method rather than repeating a completed example. Previous specification: archive/tool-focus-2026-11/find-the-equation-with-my-numbers.json."
 }

@@ -308,14 +308,6 @@
     },
     {
       "kind": "text",
-      "id": "right_altitude_rank_table",
-      "html": "<h2>Track a side’s role within each triangle</h2><p>In the 15–20–25 example, ABC has sides 15, 20, 25; ACD has 9, 12, 15; CBD has 12, 16, 20. Corresponding sides have matching ranks.</p><p>Use angle matches to establish the pairing. A sketch’s apparent size alone is not reliable.</p>",
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "kind": "text",
       "id": "right_altitude_process",
       "html": "<h2>Keep the same proportion routine</h2><p>Pick two of the similar triangles. Match their right angles and a shared acute angle, then pair the opposite sides. Keep the ratio order consistent, just as before.</p>",
       "calculator": {
@@ -326,7 +318,7 @@
       "shared_prompt": {
         "id": "shared_projection_model",
         "title": "Hypotenuse piece problem",
-        "html": "<p>Suppose the large triangle has \\(AB=25\\) and \\(AC=15\\). Find \\(AD=d\\).</p>"
+        "html": "<p><img src=\"/images/similar-triangles-right-altitude.svg\" alt=\"Right triangle ABC, right angle at C, with altitude CD meeting hypotenuse AB at D\" width=\"1000\"></p><p>Suppose the large triangle has \\(AB=25\\) and \\(AC=15\\). Find \\(AD=d\\).</p>"
       },
       "kind": "text",
       "id": "projection_model",
@@ -341,6 +333,11 @@
       "html": "<h2>Find the altitude</h2><p>Compare ACD with CBD. AD=9 matches CD=h, and CD=h matches DB=16. Use 9/h=h/16, giving \\(h^2=144\\). A length is positive, so h=12.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "altitude_model_diagram",
+        "title": "Right-triangle altitude",
+        "html": "<p><img src=\"/images/similar-triangles-right-altitude.svg\" alt=\"Right triangle ABC, right angle at C, with altitude CD meeting hypotenuse AB at D\" width=\"1000\"></p>"
       }
     },
     {
@@ -368,6 +365,11 @@
         "editable": true,
         "resettable": true,
         "lock_viewport": false
+      },
+      "shared_prompt": {
+        "id": "altitude_variation_check_diagram",
+        "title": "Right-triangle altitude",
+        "html": "<p><img src=\"/images/similar-triangles-right-altitude.svg\" alt=\"Right triangle ABC, right angle at C, with altitude CD meeting hypotenuse AB at D\" width=\"1000\"></p>"
       }
     },
     {
@@ -376,6 +378,11 @@
       "html": "<h2>Find a leg of the large triangle</h2><p>Compare ABC with CBD. AB=25 matches BC=b, and BC=b matches DB=16. Use 25/b=b/16, giving \\(b^2=400\\), so b=20.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "leg_model_diagram",
+        "title": "Right-triangle altitude",
+        "html": "<p><img src=\"/images/similar-triangles-right-altitude.svg\" alt=\"Right triangle ABC, right angle at C, with altitude CD meeting hypotenuse AB at D\" width=\"1000\"></p>"
       }
     },
     {
@@ -453,7 +460,7 @@
       "shared_prompt": {
         "id": "shared_leg_setup_check",
         "title": "Leg length problem",
-        "html": "<p>Altitude \\(CD\\) meets the hypotenuse \\(AB\\) at \\(D\\). Given \\(AB=18\\) and \\(DB=8\\), find \\(BC=x\\).</p>"
+        "html": "<p><img src=\"/images/similar-triangles-right-altitude.svg\" alt=\"Right triangle ABC, right angle at C, with altitude CD meeting hypotenuse AB at D\" width=\"1000\"></p><p>Altitude \\(CD\\) meets the hypotenuse \\(AB\\) at \\(D\\). Given \\(AB=18\\) and \\(DB=8\\), find \\(BC=x\\).</p>"
       },
       "kind": "raw_block",
       "id": "right_altitude_transfer_check",
@@ -483,5 +490,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Tool-focus revision 2026-11-13: Remove the side-ranking detour and keep the altitude diagram visible with each problem that needs it. Previous specification: archive/tool-focus-2026-11/similar-triangles.json."
 }

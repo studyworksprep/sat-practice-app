@@ -152,12 +152,7 @@
     {
       "kind": "text",
       "id": "given_restricts_total",
-      "shared_prompt": {
-        "id": "library_table",
-        "title": "Library table",
-        "html": "<table><caption>Library books by format and genre</caption><thead><tr><th scope=\"col\">Format</th><th scope=\"col\">Nonfiction</th><th scope=\"col\">Fiction</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Hardcover</th><td>16</td><td>24</td><td>40</td></tr><tr><th scope=\"row\">Paperback</th><td>20</td><td>30</td><td>50</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>54</td><td>90</td></tr></tbody></table>"
-      },
-      "html": "<h2>“Given that” restricts the group</h2><p>For “fiction, given that the book is hardcover,” only hardcover books can be selected. Hardcover sets the Total. Fiction is what you count inside that group.</p>",
+      "html": "<h2>“Given that” narrows the selection group</h2><p>The condition after <strong>given that</strong> tells you which outcomes can still be selected. That restricted group becomes Total. Count Favorable only inside it.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -165,7 +160,11 @@
     {
       "kind": "raw_block",
       "id": "given_total_check",
-      "shared_prompt": "library_table",
+      "shared_prompt": {
+        "id": "library_table",
+        "title": "Library table",
+        "html": "<table><caption>Library books by format and genre</caption><thead><tr><th scope=\"col\">Format</th><th scope=\"col\">Nonfiction</th><th scope=\"col\">Fiction</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Hardcover</th><td>16</td><td>24</td><td>40</td></tr><tr><th scope=\"row\">Paperback</th><td>20</td><td>30</td><td>50</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>54</td><td>90</td></tr></tbody></table>"
+      },
       "block_type": "check",
       "content": {
         "prompt": "A book represented in the library table is selected at random. What is the probability of selecting a fiction book, given that the book selected is hardcover? Which number is the Total?",
@@ -219,12 +218,7 @@
     {
       "kind": "text",
       "id": "grand_total_trap",
-      "shared_prompt": {
-        "id": "arts_choice_table",
-        "title": "Arts choice table",
-        "html": "<table><caption>Students by grade and arts choice</caption><thead><tr><th scope=\"col\">Grade</th><th scope=\"col\">Art</th><th scope=\"col\">Music</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Grade 10</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Grade 11</th><td>14</td><td>26</td><td>40</td></tr><tr><th scope=\"row\">Total</th><td>32</td><td>38</td><td>70</td></tr></tbody></table>"
-      },
-      "html": "<h2>Check before using the grand total</h2><p>If the selected student is already restricted to grade 10, grade 11 students cannot be selected. Use the grade 10 total, then find the art students inside it.</p>",
+      "html": "<h2>Use the grand total only when everyone can be selected</h2><p>Before using the bottom-right total, check the selection wording. If it limits the selection to one group, use that group’s total instead.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -232,7 +226,11 @@
     {
       "kind": "raw_block",
       "id": "denominator_trap_check",
-      "shared_prompt": "arts_choice_table",
+      "shared_prompt": {
+        "id": "arts_choice_table",
+        "title": "Arts choice table",
+        "html": "<table><caption>Students by grade and arts choice</caption><thead><tr><th scope=\"col\">Grade</th><th scope=\"col\">Art</th><th scope=\"col\">Music</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Grade 10</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Grade 11</th><td>14</td><td>26</td><td>40</td></tr><tr><th scope=\"row\">Total</th><td>32</td><td>38</td><td>70</td></tr></tbody></table>"
+      },
       "block_type": "check",
       "content": {
         "prompt": "One student represented in the arts-choice table is selected at random. What is the probability of selecting a student who chose art, given that the student selected is in grade 10?",
@@ -254,8 +252,7 @@
     {
       "kind": "text",
       "id": "without_given",
-      "shared_prompt": "arts_choice_table",
-      "html": "<h2>A restriction can use different words</h2><p>“One grade 10 student” and “one student who chose music” also restrict the selection. Follow the wording even when it does not say “given that.”</p>",
+      "html": "<h2>Follow the selection wording</h2><p>A question can restrict the group without saying “given that”—for example, “one student from the morning class.” If it selects from everyone represented in the table, use the grand total. The same Total-first routine handles both.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -291,7 +288,7 @@
         "title": "Plant table",
         "html": "<table><caption>Plants by size and flower color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Green</th><th scope=\"col\">Yellow</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>9</td><td>6</td><td>15</td></tr><tr><th scope=\"row\">Medium</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>15</td><td>10</td><td>25</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>24</td><td>60</td></tr></tbody></table>"
       },
-      "html": "<h2>Use all three moves</h2><p>The plant is selected from the medium row, so Total is \\(20\\). The matching green plants number \\(12\\). Write \\(12/20\\), or \\(3/5\\).</p>",
+      "html": "<h2>Use all three moves</h2><p>Suppose we want the probability of green, given that the selected plant is medium. The medium row gives Total: \\(20\\). Within that row, \\(12\\) plants are green.</p><p>Write Favorable over Total: \\(12/20\\), or \\(3/5\\).</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -321,12 +318,7 @@
     {
       "kind": "text",
       "id": "reverse_table_direction",
-      "shared_prompt": {
-        "id": "commuter_table",
-        "title": "Commuter table",
-        "html": "<table><caption>Commuters by role and transportation</caption><thead><tr><th scope=\"col\">Role</th><th scope=\"col\">Bus</th><th scope=\"col\">Bike</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Student</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Teacher</th><td>6</td><td>4</td><td>10</td></tr><tr><th scope=\"row\">Total</th><td>24</td><td>16</td><td>40</td></tr></tbody></table>"
-      },
-      "html": "<h2>The selected group can be a column</h2><p>For “teacher, given that the person rides the bus,” use all bus riders as Total. Then count the teachers in that column. Keep the same routine when the table’s direction changes.</p>",
+      "html": "<h2>The selection group can be a column</h2><p>Some conditions point to a column instead of a row. Find the whole allowed group first, then count Favorable within that same column. The procedure stays the same.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -334,7 +326,11 @@
     {
       "kind": "raw_block",
       "id": "reverse_direction_check",
-      "shared_prompt": "commuter_table",
+      "shared_prompt": {
+        "id": "commuter_table",
+        "title": "Commuter table",
+        "html": "<table><caption>Commuters by role and transportation</caption><thead><tr><th scope=\"col\">Role</th><th scope=\"col\">Bus</th><th scope=\"col\">Bike</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Student</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Teacher</th><td>6</td><td>4</td><td>10</td></tr><tr><th scope=\"row\">Total</th><td>24</td><td>16</td><td>40</td></tr></tbody></table>"
+      },
       "block_type": "check",
       "content": {
         "prompt": "One person represented in the commuter table is selected at random. What is the probability of selecting a teacher, given that the person selected rides the bus?",
@@ -356,12 +352,7 @@
     {
       "kind": "text",
       "id": "missing_totals",
-      "shared_prompt": {
-        "id": "class_table",
-        "title": "Class table",
-        "html": "<table><caption>Students by session and class</caption><thead><tr><th scope=\"col\">Session</th><th scope=\"col\">Algebra</th><th scope=\"col\">Geometry</th></tr></thead><tbody><tr><th scope=\"row\">Afternoon</th><td>16</td><td>9</td></tr><tr><th scope=\"row\">Evening</th><td>14</td><td>11</td></tr></tbody></table>"
-      },
-      "html": "<h2>Add a missing total when you need it</h2><p>If the afternoon row has no total, add its algebra and geometry counts. Then use the geometry count over that afternoon total. You do not need to fill in every total first.</p>",
+      "html": "<h2>Add a missing total only when you need it</h2><p>A table may omit row or column totals. Identify the allowed selection group, then add its counts to get Total. You do not need to fill in every missing total before finding the probability.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -369,7 +360,11 @@
     {
       "kind": "raw_block",
       "id": "missing_total_check",
-      "shared_prompt": "class_table",
+      "shared_prompt": {
+        "id": "class_table",
+        "title": "Class table",
+        "html": "<table><caption>Students by session and class</caption><thead><tr><th scope=\"col\">Session</th><th scope=\"col\">Algebra</th><th scope=\"col\">Geometry</th></tr></thead><tbody><tr><th scope=\"row\">Afternoon</th><td>16</td><td>9</td></tr><tr><th scope=\"row\">Evening</th><td>14</td><td>11</td></tr></tbody></table>"
+      },
       "block_type": "check",
       "content": {
         "prompt": "One student represented in the class table is selected at random. What is the probability of selecting a geometry student, given that the student selected attends the afternoon session?",
@@ -392,7 +387,6 @@
     {
       "kind": "text",
       "id": "match_answer_form",
-      "shared_prompt": "plant_table",
       "html": "<h2>Choose the requested form</h2><p>Set up Favorable over Total before simplifying. For example, \\(12/20=3/5\\). A fraction, decimal, or percent can describe the same chance; report the form the question requests.</p>",
       "calculator": {
         "display": "hidden"
@@ -534,5 +528,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Tool-focus revision 2026-11-13: Introduce restrictions, column selections, and missing totals generally before asking students to apply them; keep worked examples self-contained. Previous specification: archive/tool-focus-2026-11/probability-from-tables-favorable-over-total.json."
 }

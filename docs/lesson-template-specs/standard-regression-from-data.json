@@ -527,7 +527,7 @@
         "correct_index": 1,
         "allow_retry": true,
         "solution": "Enter \\((0,96)\\), \\((1,48)\\), and \\((2,24)\\) in a table and click the Regression button.\nEach step multiplies the output by the same factor, so select Exponential from the model dropdown.\nDesmos displays \\(y=96(0.5)^x\\); translate the roles back to the problem, where \\(x\\) stands for \\(t\\) and \\(y\\) stands for \\(g(t)\\).\nSo the answer is choice B, \\(g(t)=96(0.5)^t\\).",
-        "hint": "The initial output is 96, and each one-hour increase multiplies the output by 0.5.",
+        "hint": "Read the exponential equation displayed by Regression, then translate its input and output back to the problem’s letters.",
         "explanation": "Desmos's \\(y=96(0.5)^x\\) becomes \\(g(t)=96(0.5)^t\\) in the problem's notation."
       },
       "calculator": {
@@ -549,20 +549,33 @@
     },
     {
       "kind": "raw_block",
-      "id": "boundary_check",
+      "id": "choose_required_regression_form",
       "block_type": "check",
       "content": {
-        "prompt": "Which requested model is directly covered by this standard-regression lesson?",
+        "id": "choose_required_regression_form",
+        "prompt": "A question asks for h in \\(y=a(x-h)^2+k\\). The standard Quadratic option returns \\(y=ax^2+bx+c\\). Which approach lets you read h in the requested form?",
         "choices": [
-          "A logarithmic model \\(y=a+b\\log x\\)",
-          "A power model \\(y=ax^p\\)",
-          "A specially required vertex-form model \\(y=a(x-h)^2+k\\)",
-          "An exponential model \\(y=a\\cdot b^x\\)"
+          "Use the standard Quadratic regression and report the coefficient of x as h.",
+          "Use the standard Quadratic regression and report its constant term as h.",
+          "Choose Linear regression so its two constants can stand for h and k.",
+          "Use custom regression with the required form so Desmos fits h directly."
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "Use only the linear, standard quadratic, or exponential form supplied by the Regression dropdown.",
-        "explanation": "\\(y=a\\cdot b^x\\) is one of the standard models in this lesson. The other requests need a different workflow or custom form."
+        "hint": "Keep the form the question asks about. The standard quadratic coefficients have different jobs.",
+        "solution": "The question needs h from \\(a(x-h)^2+k\\). The standard dropdown supplies another form, \\(ax^2+bx+c\\). Use custom regression to fit the required form directly: choice D.",
+        "explanation": "Good decision. The requested form determines the workflow. Custom regression can fit h directly, while the standard button reports a different set of coefficients.",
+        "calculator": {
+          "display": "hidden"
+        }
+      }
+    },
+    {
+      "kind": "text",
+      "id": "quadratic_two_point_problem",
+      "html": "<h2>A vertex can supply a third point</h2><p>Quadratic regression needs three points. If the question gives a vertex and one other point, the graph’s symmetry can supply another row.</p><p>Reflect the other point across the vertical line through the vertex: keep its height and move the same distance to the opposite side.</p>",
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -572,15 +585,6 @@
         "html": "<p>A question may tell you that a parabola has vertex \\((2,-3)\\) and passes through \\((5,6)\\).</p>"
       },
       "kind": "text",
-      "id": "quadratic_two_point_problem",
-      "html": "<h2>A vertex gives you useful extra information</h2><p>A quadratic table needs enough information for three coefficients. When the question gives a vertex and one other point, symmetry can supply another table row.</p>",
-      "calculator": {
-        "display": "hidden"
-      }
-    },
-    {
-      "shared_prompt": "shared_quadratic_two_point_problem",
-      "kind": "text",
       "id": "quadratic_symmetry_visual",
       "html": "<h2>Find the matching point</h2><p>The vertex has x-coordinate 2. The point \\((5,6)\\) is 3 units to its right. Find the point 3 units to its left at the same height, then use both points with the vertex.</p>",
       "calculator": {
@@ -588,10 +592,6 @@
         "mode": "preset",
         "title": "Compare the symmetric points",
         "initial_expressions": [
-          {
-            "id": "symmetry_parabola",
-            "latex": "y=\\left(x-2\\right)^2-3"
-          },
           {
             "id": "symmetry_axis",
             "latex": "x=2"
@@ -603,13 +603,9 @@
           {
             "id": "symmetry_known_point",
             "latex": "\\left(5,6\\right)"
-          },
-          {
-            "id": "symmetry_reflected_point",
-            "latex": "\\left(-1,6\\right)"
           }
         ],
-        "editable": false,
+        "editable": true,
         "resettable": true,
         "lock_viewport": false
       }
@@ -748,8 +744,8 @@
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Read the displayed quadratic. As a quick check, substitute \\(x=5\\); the result must be \\(6\\).",
-        "explanation": "\\(y=x^2-4x+1\\) gives \\(y=-3\\) at \\(x=2\\) and \\(y=6\\) at both symmetric inputs \\(x=-1\\) and \\(x=5\\)."
+        "hint": "Read the quadratic equation displayed beside the table. Keep the signs on its coefficients.",
+        "explanation": "Desmos displays \\(y=x^2-4x+1\\). That is choice B, the standard-form quadratic fitted to the three table rows."
       },
       "calculator": {
         "display": "open",
@@ -832,7 +828,7 @@
         ],
         "correct_index": 0,
         "allow_retry": false,
-        "explanation": "The intercept is \\(h(0)=12\\) and the rate is \\(-3\\) per unit, so \\(h(x)=-3x+12\\). Entering the points \\((0,12)\\) and \\((1,9)\\) in a table and clicking Regression displays the same line."
+        "explanation": "Use the statements to form \\((0,12)\\) and \\((1,9)\\). Enter those points in a table, click Regression, and keep Linear. Desmos displays \\(y=-3x+12\\), so choose A, \\(h(x)=-3x+12\\)."
       },
       "calculator": {
         "display": "open",
@@ -850,7 +846,7 @@
         "prompt": "A quadratic function f satisfies \\(f(0)=1\\), \\(f(1)=4\\), and \\(f(2)=11\\). What is the coefficient of \\(x^2\\) in its standard-form equation?",
         "answer": "2",
         "allow_retry": false,
-        "explanation": "The points \\((0,1),(1,4),(2,11)\\) give \\(f(x)=2x^2+x+1\\), so the requested coefficient is 2."
+        "explanation": "Enter \\((0,1)\\), \\((1,4)\\), and \\((2,11)\\) in a table. Choose Quadratic from Regression. Desmos displays \\(y=2x^2+x+1\\); the requested coefficient is \\(2\\)."
       },
       "calculator": {
         "display": "open",
@@ -871,5 +867,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Unevenly spaced quadratic data require solving for three coefficients. A numeric coefficient question removes the one-point answer-choice shortcut. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Unevenly spaced quadratic data require solving for three coefficients. A numeric coefficient question removes the one-point answer-choice shortcut. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Replace a model-category quiz with choosing the regression workflow that preserves the requested form. Introduce the symmetry variation before showing its vertex-and-point example. Lead regression feedback with table entry, the model selection, and the displayed result. Let the student find the reflected point without preloading that point or the equation the later regression is meant to discover. Previous specification: archive/tool-focus-2026-11/standard-regression-from-data.json."
 }

@@ -5,14 +5,14 @@
     {
       "kind": "text",
       "id": "revision_opening_attempt",
-      "html": "<h2>Give it a try</h2><p>Which is the exact length of \\(NP\\)?</p><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(7\\tan(52^\\circ)\\)</li><li>\\(\\dfrac{20}{\\tan(52^\\circ)}\\)</li><li>\\(20\\cos(52^\\circ)\\)</li><li>\\(20\\tan(52^\\circ)\\)</li></ol>",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep your first idea, even if you are unsure. You can continue without submitting an answer.</p>",
       "calculator": {
         "display": "hidden"
       },
       "shared_prompt": {
         "id": "shared_independent_transfer_prompt",
         "title": "Similar triangles JKL and MNP",
-        "html": "<p>Right triangles \\(JKL\\) and \\(MNP\\) are similar, with \\(J\\leftrightarrow M\\), \\(K\\leftrightarrow N\\), and \\(L\\leftrightarrow P\\). Angles \\(L\\) and \\(P\\) are right angles. Also, \\(\\angle J=52^\\circ\\), \\(JL=7\\), and \\(MP=20\\).</p><p>Find the exact length of \\(NP\\).</p>"
+        "html": "<p>Right triangles \\(JKL\\) and \\(MNP\\) are similar, with \\(J\\leftrightarrow M\\), \\(K\\leftrightarrow N\\), and \\(L\\leftrightarrow P\\). Angles \\(L\\) and \\(P\\) are right angles. Also, \\(\\angle J=52^\\circ\\), \\(JL=7\\), and \\(MP=20\\).</p><p>Which is the exact length of \\(NP\\)?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(7\\tan(52^\\circ)\\)</li><li>\\(\\dfrac{20}{\\tan(52^\\circ)}\\)</li><li>\\(20\\cos(52^\\circ)\\)</li><li>\\(20\\tan(52^\\circ)\\)</li></ol>"
       }
     },
     {
@@ -405,7 +405,11 @@
       }
     },
     {
-      "shared_prompt": "shared_independent_transfer_prompt",
+      "shared_prompt": {
+        "id": "shared_independent_transfer_prompt_return",
+        "title": "Similar triangles JKL and MNP",
+        "html": "<p>Right triangles \\(JKL\\) and \\(MNP\\) are similar, with \\(J\\leftrightarrow M\\), \\(K\\leftrightarrow N\\), and \\(L\\leftrightarrow P\\). Angles \\(L\\) and \\(P\\) are right angles. Also, \\(\\angle J=52^\\circ\\), \\(JL=7\\), and \\(MP=20\\).</p><p>Find the exact length of \\(NP\\).</p>"
+      },
       "kind": "raw_block",
       "id": "independent_transfer_check",
       "block_type": "check",
@@ -534,5 +538,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Keep one complete question stem with the opening choices. Previous specification: archive/tool-focus-2026-11/right-triangle-trigonometry-sohcahtoa.json."
 }

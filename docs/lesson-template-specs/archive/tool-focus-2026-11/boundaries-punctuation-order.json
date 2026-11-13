@@ -1,0 +1,689 @@
+{
+  "title": "Solve SAT Boundaries Questions in the Fastest Order",
+  "description": "Use a fixed full stop, colon, dash, and comma order to solve SAT Boundaries questions quickly and avoid punctuation traps.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Which choice completes the text so that it conforms to the conventions of Standard English?</p><p>Spend about a minute on this question. Keep your first choice and what made it seem plausible. You can continue without submitting an answer.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>observations;</li><li>observations:</li><li>observations</li><li>observations,</li></ol>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "opening_logbook_boundary",
+        "title": "Shipboard observations",
+        "html": "<p>Historian Mara Vidal used ships’ logbooks to study the routines of nineteenth-century navigators. The pattern of small corrections in the star charts that the navigators kept beside their written _____ suggests that they revised their positions throughout each voyage rather than recording a single final estimate.</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Give a pause a grammatical test</h2><p>The long opening sentence can make several marks sound reasonable. A pause alone does not tell you where a sentence can stop.</p><p>We’ll use <strong>Full Stop, Colon, Dash, Comma</strong> to test what each mark would do. First, practise recognizing a complete sentence.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": {
+        "id": "shared_first_exploration",
+        "title": "Museum sentence",
+        "html": "<blockquote><p>The museum displayed one object from the expedition ___ a compass recovered from the wreck.</p></blockquote>"
+      },
+      "kind": "text",
+      "id": "first_exploration",
+      "html": "<h2>Start with a full-stop candidate</h2><p>A semicolon normally joins two complete sentences. It belongs to the full-stop category, which we test first. Look at the museum sentence and identify that candidate.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "shared_prompt": "shared_first_exploration",
+      "kind": "raw_block",
+      "id": "exploration_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which answer should you test first in the museum sentence?",
+        "choices": [
+          "The comma, because commas appear most often inside sentences.",
+          "The colon, because the words after the blank name an object.",
+          "The semicolon, because it belongs to the full-stop category.",
+          "The dash, because it creates the strongest visual break."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Return to the four-category order. Which category comes before colon, dash, and comma?",
+        "explanation": "A semicolon is a full-stop candidate, so test it before the colon, dash, or comma."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "complete_sentence_definition",
+      "html": "<h2>Can the words stand alone?</h2><p>A <strong>complete sentence</strong> has a subject, a verb, and a finished thought. “The instruments recorded the tremor” can stand alone. “Because the instruments recorded the tremor” leaves you waiting for more.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "complete_sentence_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice is a complete sentence?",
+        "choices": [
+          "The instruments recorded the tremor.",
+          "Because the instruments recorded the tremor.",
+          "The instruments near the rocky coast.",
+          "Recording the tremor throughout the night."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Look for a choice that names who or what, tells what it did, and finishes the thought.",
+        "explanation": "The instruments recorded the tremor names what acted, tells what it did, and completes the thought."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "four_step_process",
+      "html": "<h2>Use the same order</h2><ol><li>Test full-stop choices.</li><li>Test the colon.</li><li>Test the dash.</li><li>Test comma placement.</li></ol><p>Choose the answer that is uniquely supported by the sentence and the supplied choices.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "why_order",
+      "html": "<h2>Full stops have a quick test</h2><p>Cover the mark and read each side. If both can stand alone, a normal full stop can connect them. Starting with this clear test helps you work through the choices efficiently.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "order_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which sequence should you retrieve at the start of every Boundaries question?",
+        "choices": [
+          "Comma, dash, colon, full stop",
+          "Colon, full stop, comma, dash",
+          "Dash, comma, full stop, colon",
+          "Full stop, colon, dash, comma"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Begin with the category that has the easiest and most common test. Leave commas until last.",
+        "explanation": "full stop, colon, dash, comma. Keep that order visible in your mind as each category is introduced."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "full_stop_intro",
+      "html": "<h2>Recognize the full-stop forms</h2><p>A semicolon, a period, or a comma with a joining word can connect two complete sentences. Before applying that test to a semicolon, check whether it is separating items in a complicated list.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "serial_semicolon",
+      "html": "<h2>A list gives semicolons another job</h2><p>A <strong>serial semicolon</strong> separates list items that already contain commas: “Lima, Peru; Quito, Ecuador; and Bogota, Colombia.” Check the whole list, especially its final “; and,” before testing sentence boundaries.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "serial_semicolon_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why are semicolons appropriate in this sentence? The speakers were Ana Ruiz, a chemist; Marcus Lee, an engineer; and Priya Shah, a physician.",
+        "choices": [
+          "Every word between semicolons is a complete sentence.",
+          "A semicolon is required before each occurrence of the word and.",
+          "The semicolons separate list items that already contain commas.",
+          "The semicolons surround information that can be removed."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Look inside each item: a person's name is followed by a comma and a description.",
+        "explanation": "Each list item already contains a comma, so semicolons keep the three items clear. The ending ; and is a strong clue."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "full_stop_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why can a semicolon correctly fill the blank? The storm ended before dawn ___ the crew returned at sunrise.",
+        "choices": [
+          "The words after the blank are a list.",
+          "The words on both sides are complete sentences.",
+          "The words before the blank are an opening phrase.",
+          "The words after the blank are removable extra information."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Read each side by itself: 'The storm ended before dawn.' 'The crew returned at sunrise.'",
+        "explanation": "Both sides stand alone, so a semicolon can act as a full stop between them."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "fanboys_definition",
+      "html": "<h2>Remember the joining words</h2><p><strong>FANBOYS</strong> stands for “for, and, nor, but, or, yet, so.” A comma plus one of these can join complete sentences: “The storm ended, and the crew returned.” The comma alone cannot do that job.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "fanboys_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which punctuation entry belongs to the full-stop category?",
+        "choices": [
+          ", however,",
+          ": because",
+          ", because",
+          ", but"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The full-stop category includes comma + FANBOYS. Recall the seven FANBOYS words, then check which choice pairs a comma with one of them.",
+        "explanation": "but is comma plus FANBOYS, so it can join two complete sentences."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "full_stop_equivalence",
+      "html": "<h2>Use the same sentence test</h2><p>“The storm ended; the crew returned,” “The storm ended. The crew returned,” and “The storm ended, and the crew returned” all connect complete thoughts. Check any joining word’s meaning as well.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "duplicate_choice_trap",
+      "html": "<h2>Notice choices that do the same job</h2><p>Outside a list, choices identical except for a period and a semicolon pass or fail the same sentence test. In a single-answer SAT question, neither can be the unique answer. Check the list exception before eliminating them.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "duplicate_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two choices are identical except that one uses a semicolon and one uses a period. The sentence is not a list. What should you do?",
+        "choices": [
+          "Eliminate both because they pass or fail the same complete-sentence test.",
+          "Keep only the semicolon because it is stronger than a period.",
+          "Keep the period instead, because a semicolon does not truly separate sentences.",
+          "Choose whichever mark creates the longer pause when read aloud."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "If both marks have the same grammatical job here, can only one of them be the unique correct answer?",
+        "explanation": "If the choices differ only by semicolon versus period, both would be grammatical or both would fail. Eliminate both."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "colon_transition",
+      "html": "<h2>Move to the colon</h2><p>If the full-stop choices fail, test what comes before a colon. Then ask whether the ending explains or identifies something that came before.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "colon_gate",
+      "html": "<h2>Finish a thought before the colon</h2><p>“The committee needed one final document” can stand alone. “Because the committee needed one final document” cannot. A colon needs the complete version before it.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "colon_gate_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which words could correctly appear before a colon?",
+        "choices": [
+          "Although the team found one clue",
+          "The team found one important clue",
+          "Finding one important clue",
+          "The one important clue near the entrance"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Choose the option that can stand alone and finish a thought.",
+        "explanation": "The team found one important clue is a complete sentence, so it passes the colon's first test."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "colon_cliffhanger",
+      "html": "<h2>Use the ending to explain</h2><p>“The team found one important clue: a muddy footprint beside the window.” The ending identifies the clue. It does not need to be a complete sentence.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "colon_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which sentence uses a colon correctly?",
+        "choices": [
+          "The garden needed one improvement: more shade near the benches.",
+          "Because the garden needed one improvement: more shade near the benches.",
+          "The garden: needed one improvement near the benches.",
+          "The garden needed: one improvement near the benches."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The words before the colon must stand alone, and the words after it must explain or identify something before it.",
+        "explanation": "The garden needed one improvement is complete, and more shade near the benches identifies the improvement."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "colon_model",
+      "html": "<h2>Apply the two tests</h2><p>In the museum example, “a compass recovered from the wreck” cannot stand alone, so a semicolon fails. A colon can introduce that phrase because the preceding thought is complete and the phrase identifies the object.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "dash_transition",
+      "html": "<h2>Now test the dash</h2><p>Look for a pair enclosing an interruption, or a single dash introducing an ending detail. First check whether the sentence already has a dash that needs a partner.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "paired_dash",
+      "html": "<h2>A pair surrounds extra information</h2><p>“The comet—first seen in May—returned in August.” Remove the middle detail: “The comet returned in August” still works. Keep the matching dashes around that interruption.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "paired_dash_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which sentence correctly uses a pair of dashes around removable information?",
+        "choices": [
+          "The comet, first seen in May—returned in August.",
+          "The comet: first seen in May: returned in August.",
+          "The comet first seen in May, returned in August.",
+          "The comet—first seen in May—returned in August."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Look for two matching dashes. Remove the words between them and check whether the sentence still works.",
+        "explanation": "The two dashes match, and removing first seen in May leaves the complete sentence The comet returned in August."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "single_dash",
+      "html": "<h2>A single dash can introduce an ending</h2><p>“The team reached one conclusion—the valley had once held a lake.” The first part is complete, and the ending states the conclusion. Use the supplied choices and context to decide which mark fits.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "single_dash_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which sentence follows the single-dash pattern?",
+        "choices": [
+          "The field team—reached one conclusion about the ancient valley.",
+          "The field team reached one conclusion—the valley had once held a lake.",
+          "The field team reached—one conclusion about the ancient valley.",
+          "—The field team reached one conclusion about the ancient valley."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Look for a complete sentence before the dash and an ending detail after it.",
+        "explanation": "The words before the dash form a complete sentence, and the words after it reveal the conclusion at the end."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "comma_transition",
+      "html": "<h2>Give a comma a specific job</h2><p>Read the whole sentence before deciding. Look for a list, an opening phrase, or removable information. A pause you hear is not enough to establish a comma’s job.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "comma_jobs",
+      "html": "<h2>Check three common jobs</h2><ul><li>A list: “copper, silver, and gold.”</li><li>An opening phrase: “After the storm, the crew returned.”</li><li>Extra information: “The sensor, installed in 1998, still works.”</li></ul>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "comma_jobs_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which sentence gives the comma a clear, necessary job?",
+        "choices": [
+          "The research team, finished the survey.",
+          "The novel, Beloved won several awards.",
+          "After the rain ended, the volunteers reopened the trail.",
+          "The volunteers reopened the trail, the hikers returned."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Look for a comma that closes an opening phrase, separates list items, or surrounds removable extra information.",
+        "explanation": "After the rain ended is an opening phrase, so the comma clearly marks where the main statement begins."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "subject_verb_rule",
+      "html": "<h2>Keep the subject with its verb</h2><p>In “The collection of masks attracts visitors,” the collection attracts. A long phrase between those essential parts does not create a reason to insert a comma.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "subject_verb_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What belongs in the blank? The collection of hand-carved masks from the coastal villages ___ attracts many visitors.",
+        "choices": [
+          "a comma",
+          "a semicolon",
+          "a colon",
+          "no punctuation"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Ask what attracts visitors. Do not separate that person or thing from its action.",
+        "explanation": "The collection attracts is the essential connection, so no punctuation belongs between the long subject and its verb."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "essential_name_rule",
+      "html": "<h2>Keep an identifying name attached</h2><p>“Author Toni Morrison” and “the novel Beloved” use a name to identify the person or work. Keep that name attached without separating it from its label with commas.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "essential_name_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which version correctly keeps an identifying name attached to its label?",
+        "choices": [
+          "Author, Toni Morrison won the Nobel Prize in Literature.",
+          "Author Toni Morrison won the Nobel Prize in Literature.",
+          "Author; Toni Morrison won the Nobel Prize in Literature.",
+          "Author: Toni Morrison won the Nobel Prize in Literature."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The name tells the reader which author. Keep the label and identifying name together.",
+        "explanation": "Toni Morrison identifies which author, so no punctuation separates author from the name."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "comma_splice_rule",
+      "html": "<h2>A comma alone cannot join complete sentences</h2><p>“The rain stopped, the hikers returned” needs a stronger connection. “The rain stopped, so the hikers returned” works because the joining word is part of the full-stop form.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "comma_splice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Both sides are complete sentences. Which choice repairs the boundary? The rain stopped ___ the hikers returned.",
+        "choices": [
+          ",",
+          ", however,",
+          ", so",
+          "no punctuation"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "A comma alone cannot join the sentences. Look for comma plus a FANBOYS word.",
+        "explanation": "so is comma plus FANBOYS, one of the three full-stop forms."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the logbooks</h2><p>Try the opening question again. Use the punctuation tests to decide which version completes the sentence.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "opening_logbook_boundary_result",
+      "block_type": "check",
+      "content": {
+        "id": "opening_logbook_boundary_result",
+        "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+        "choices": [
+          "observations;",
+          "observations:",
+          "observations",
+          "observations,"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Find the main verb after the blank. Read the words before the blank on their own, then ask whether a comma has a job between these essential parts.",
+        "solution": "Shrink the sentence to its essential parts: “The pattern suggests a revision.”\nThe words before the blank are the subject and its descriptions; they have not reached the main verb, suggests.\nA semicolon or colon cannot follow that unfinished thought. A comma has no job between the subject and its verb.\nChoose C.\nA: The long lead-in may sound finished, but it has not reached the main verb. A semicolon would split an unfinished thought.\nB: The material after the blank sounds explanatory, but the words before a colon must first form a complete sentence.\nD: A pause after the long subject may sound natural, but a comma would separate that subject from suggests.",
+        "explanation": "You got it. Leaving out the punctuation keeps the long subject attached to suggests. You tested the sentence’s structure instead of its pauses."
+      },
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": "opening_logbook_boundary"
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Cover the screen. A Boundaries question is in front of you and the clock is running — in order, what do you test?",
+        "choices": [
+          "Check for a serial-semicolon list; test commas first, then dash, then colon, then full stops; stop when one answer is uniquely supported.",
+          "Test full stops, then colon, then dash, then comma; check for a serial-semicolon list only when two answers remain supported.",
+          "Check for a serial-semicolon list; test full stops, then colon, then dash; eliminate the comma answers without testing them.",
+          "Check for a serial-semicolon list; test full stops, then colon, then dash, then comma; stop when one answer is uniquely supported."
+        ],
+        "correct_index": 3,
+        "allow_retry": false,
+        "explanation": "Check the serial-semicolon possibility, then use full stop, colon, dash, comma. The order saves time and keeps later traps from influencing a decision you have already proved."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_full_stop",
+      "block_type": "check",
+      "content": {
+        "prompt": "The northern trail remained closed ___ the southern trail opened at sunrise.",
+        "choices": [
+          ";",
+          ",",
+          ":",
+          "no punctuation"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "Both sides are complete sentences, so the semicolon passes the full-stop test. The second sentence contrasts with the first rather than explaining it, so the colon does not fit."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_colon",
+      "block_type": "check",
+      "content": {
+        "prompt": "The restoration team faced one remaining problem ___ a shortage of matching stone.",
+        "choices": [
+          ";",
+          ", because",
+          ":",
+          "."
+        ],
+        "correct_index": 2,
+        "allow_retry": false,
+        "explanation": "The words before the colon are complete, and a shortage of matching stone identifies the remaining problem."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_comma",
+      "block_type": "check",
+      "content": {
+        "prompt": "Although the temperature fell below freezing ___ the sensors continued recording data.",
+        "choices": [
+          ",",
+          ":",
+          ";",
+          "no punctuation"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "The comma closes the opening part Although the temperature fell below freezing before the main statement begins."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_serial_semicolon",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which pair of marks completes the list? The itinerary included Lima, Peru ___ Quito, Ecuador ___ and Bogota, Colombia.",
+        "choices": [
+          "comma, then comma",
+          "semicolon, then semicolon",
+          "colon, then semicolon",
+          "period, then period"
+        ],
+        "correct_index": 1,
+        "allow_retry": false,
+        "explanation": "Semicolons separate the three list items, and the final boundary creates the useful clue ; and."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "authentic_item",
+      "block_type": "check",
+      "content": {
+        "prompt": "Photographer Dario Nkemelu spent four consecutive winters aboard trawlers, documenting the harbor's aging fishing fleet. The resulting collection pairs stark images of iced-over decks with the crews' own ______ caption comes from an interview the photographer recorded between voyages. Which choice completes the text so that it conforms to the conventions of Standard English?",
+        "choices": [
+          "words. Every",
+          "words, every",
+          "words every",
+          "words; and every"
+        ],
+        "correct_index": 0,
+        "allow_retry": false,
+        "explanation": "\"The resulting collection pairs… words\" and \"Every caption comes…\" are both independent clauses, so a full stop works. A comma alone splices them, no punctuation fuses them, and a semicolon plus \"and\" mixes two joining strategies."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Full Stop, Colon, Dash, Comma</h2><p>Use the same tests in the same order when the choices make punctuation feel uncertain.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ],
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use the full-stop/colon/comma tests on a long subject; the distractors are a false sentence boundary, a colon after an unfinished thought, and a subject–verb comma. Previous specification: archive/rw-openings-2026-11/boundaries-punctuation-order.json. The replacement question has a new block ID; unrelated lesson items retain their identities."
+}
