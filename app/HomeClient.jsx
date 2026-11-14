@@ -175,9 +175,13 @@ export function HomeClient({ emailConfirmed }) {
         setSignupMsg({ kind: 'err', text: data.error });
         return;
       }
+      // A tutor-issued invitation joins the roster but doesn't include
+      // a subscription; only Studyworks-sponsored invitations do.
       setSignupMsg({
         kind: 'ok',
-        text: 'Check your email to verify your account. Once confirmed, you can log in.',
+        text: data.joinedTutor && data.needsSubscription
+          ? 'Check your email to verify your account. You’re on your tutor’s roster; after you log in, start your 7-day free trial to begin practicing.'
+          : 'Check your email to verify your account. Once confirmed, you can log in.',
       });
     } catch {
       setSignupMsg({ kind: 'err', text: 'Something went wrong. Please try again.' });
@@ -466,7 +470,7 @@ export function HomeClient({ emailConfirmed }) {
                     <>
                       <span className={s.trialNoteEmph}>7-day free trial</span> — full access to SAT and ACT
                       practice, practice tests, lessons, and score reports. After your trial it’s $28.99/month for accounts created November 8, 2026 or later ($12.99 for earlier accounts). Cancel anytime.
-                      Have a teacher code? Enter it above for free access.
+                      Invited by your tutor? Enter the code above to join their roster.
                     </>
                   )}
                 </div>

@@ -20,7 +20,7 @@ interface InviteResult {
   ok: boolean;
   error?: string;
   // actionOk() nests the payload under `data`.
-  data?: { code: string; email: string; emailSent: boolean } | null;
+  data?: { code: string; email: string; emailSent: boolean; sponsored?: boolean } | null;
 }
 
 export function InviteStudentForm({ tutors }: { tutors: TutorOption[] }) {
@@ -52,6 +52,10 @@ export function InviteStudentForm({ tutors }: { tutors: TutorOption[] }) {
             ))}
           </select>
         </label>
+        <label style={S.check} title="Sponsored students get free access while their tutor is a Studyworks tutor. Untick for a student who will subscribe.">
+          <input type="checkbox" name="sponsored" defaultChecked />
+          Sponsored by Studyworks
+        </label>
         <Button type="submit" variant="primary" size="sm" disabled={pending}>
           {pending ? 'Inviting…' : 'Invite student'}
         </Button>
@@ -63,7 +67,10 @@ export function InviteStudentForm({ tutors }: { tutors: TutorOption[] }) {
       {state?.ok && state.data && (
         <p style={state.data.emailSent ? S.ok : S.warn}>
           {state.data.emailSent ? (
-            <>Invitation emailed to <strong>{state.data.email}</strong> — code <code style={S.code}>{state.data.code}</code>. Track it on the Codes tab.</>
+            <>
+              {state.data.sponsored === false ? 'Subscribing-student invitation' : 'Sponsored invitation'} emailed to{' '}
+              <strong>{state.data.email}</strong> — code <code style={S.code}>{state.data.code}</code>. Track it on the Codes tab.
+            </>
           ) : (
             <>Invitation created for <strong>{state.data.email}</strong>, but the email could not be sent — pass the code <code style={S.code}>{state.data.code}</code> along manually.</>
           )}
@@ -74,6 +81,7 @@ export function InviteStudentForm({ tutors }: { tutors: TutorOption[] }) {
 }
 
 const S: Record<string, React.CSSProperties> = {
+  check: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, alignSelf: 'center' },
   error: { color: '#991b1b', fontSize: 13, marginTop: 8 },
   ok: { color: '#166534', fontSize: 13, marginTop: 8 },
   warn: { color: '#92400e', fontSize: 13, marginTop: 8 },

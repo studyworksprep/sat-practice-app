@@ -315,7 +315,7 @@ function TeachersSection({ teachers, userRole, addTeacherCodeAction }) {
         title="Your teachers"
         subtitle={
           canAddCode
-            ? 'Add a teacher code to link your account so your teacher can give you assignments and track your progress.'
+            ? 'Enter the invitation or teacher code from your tutor to link your account, so they can give you assignments and track your progress.'
             : 'Teachers and managers manage their rosters from the tutor tools.'
         }
       />
@@ -334,9 +334,11 @@ function TeachersSection({ teachers, userRole, addTeacherCodeAction }) {
                   <span className={s.teacherEmail}>{t.email}</span>
                 )}
               </div>
-              {t.subscription_exempt && (
+              {t.sponsored ? (
+                <span className={`${s.pill} ${s.pillExempt}`}>Sponsored by Studyworks</span>
+              ) : t.subscription_exempt ? (
                 <span className={`${s.pill} ${s.pillExempt}`}>Studyworks</span>
-              )}
+              ) : null}
             </li>
           ))}
         </ul>
@@ -344,7 +346,7 @@ function TeachersSection({ teachers, userRole, addTeacherCodeAction }) {
 
       {canAddCode && (
         <form action={submit} className={s.form}>
-          <div className={s.eyebrow}>Add a teacher code</div>
+          <div className={s.eyebrow}>Add an invitation or teacher code</div>
           <div className={s.codeRow}>
             <input
               type="text"
@@ -352,7 +354,7 @@ function TeachersSection({ teachers, userRole, addTeacherCodeAction }) {
               autoComplete="off"
               autoCapitalize="characters"
               spellCheck={false}
-              placeholder="e.g. K7P3RX"
+              placeholder="e.g. K7P3RXM2"
               className={`${s.input} ${s.codeInput}`}
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -365,7 +367,7 @@ function TeachersSection({ teachers, userRole, addTeacherCodeAction }) {
             state={state}
             successText={
               state?.ok && state.data?.grantedExemption
-                ? 'Linked. Your account now has Studyworks access at no cost — no subscription required.'
+                ? 'Linked. Studyworks now sponsors your access at no cost. If you were paying for a subscription, you can cancel it under Billing.'
                 : state?.ok
                   ? 'Linked. Your teacher can now assign you work.'
                   : 'Linked.'

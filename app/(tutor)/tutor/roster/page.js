@@ -28,12 +28,14 @@ import {
 import { loadStudentSignals } from '@/lib/practice/load-tutor-dashboard';
 import { buildAttention } from '@/lib/tutor/dashboard-attention';
 import { RosterInteractive } from './RosterInteractive';
+import { InviteStudents } from './InviteStudents';
 import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Roster.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TutorRosterPage() {
+export default async function TutorRosterPage(props) {
+  const searchParams = (await props.searchParams) ?? {};
   const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'student' || profile.role === 'practice') redirect('/dashboard');
@@ -45,7 +47,13 @@ export default async function TutorRosterPage() {
   // students whose start_date hasn't been set explicitly.
   // These three reads are independent. Only foundation progress needs the
   // syllabus ids; chain that read without delaying profiles or plan adherence.
-  const [{ data: rows }, { data: planRows }, { lessons: foundationLessons, progress: foundationRows }] =
+  const [
+    { data: rows },
+    { data: planRows },
+    { lessons: foundationLessons, progress: foundationRows },
+    { data: inviteRows },
+    { data: me },
+  ] =
     await Promise.all([
       supabase.from('profiles')
         .select('id, email, first_name, last_name, high_school, graduation_year, target_sat_score, sat_test_date, start_date, is_active, created_at')
@@ -59,7 +67,24 @@ export default async function TutorRosterPage() {
         lessons,
         progress: await loadFoundationProgress(supabase, lessons.map((f) => f.lessonId)),
       })),
+      // This tutor's own unclaimed invitations (RLS:
+      // student_invite_codes_issuer_select).
+      supabase.from('student_invite_codes')
+        .select('id, code, email, created_at')
+        .eq('created_by', user.id)
+        .is('used_by', null)
+        .order('created_at', { ascending: false })
+        .limit(100),
+      // Studyworks tutors get one extra line of copy (sponsorship is
+      // an admin decision); requireUser's profile doesn't carry it.
+      supabase.from('profiles').select('subscription_exempt').eq('id', user.id).maybeSingle(),
     ]);
+  const pendingInvitations = (inviteRows ?? []).map((r) => ({
+    id: r.id,
+    code: r.code,
+    email: r.email,
+    createdAt: r.created_at,
+  }));
   const foundationRowsByStudent = new Map();
   for (const r of foundationRows) {
     const arr = foundationRowsByStudent.get(r.student_id) ?? [];
@@ -199,6 +224,13 @@ export default async function TutorRosterPage() {
         eyebrow="Teach · Roster"
         title="Roster"
         description={`${activeBase.length} active student${activeBase.length === 1 ? '' : 's'}. Archived students keep their score summary under Past.`}
+      />
+      <InviteStudents
+        pending={pendingInvitations}
+        isStudyworksTutor={me?.subscription_exempt === true}
+        defaultOpen={
+          searchParams.invite === '1' || baseStudents.length === 0 || pendingInvitations.length > 0
+        }
       />
       <RosterInteractive
         students={students}

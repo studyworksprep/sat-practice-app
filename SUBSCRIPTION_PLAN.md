@@ -21,7 +21,7 @@ Charge a monthly subscription for new public users while keeping the service **f
 | User Type | Pays? | How They're Identified |
 |-----------|-------|------------------------|
 | **Your tutors** (registered with a teacher code) | No | `role = 'teacher'` + registered via `teacher_codes` table. *As built: only codes with `teacher_codes.exempt = true` grant free access (all pre-existing codes were marked exempt — `add_exempt_flag_to_teacher_codes.sql`)* |
-| **Your tutors' students** (joined via teacher invite code) | No | *As built: exemption is inherited from the teacher — signup with an exempt teacher's invite code, or a DB trigger when later assigned to an exempt teacher via `teacher_student_assignments`* |
+| **Your tutors' students** (joined via teacher invite code) | No | *As built (2026-11): only **sponsored** students: an admin-issued invitation or an admin-sponsored roster link to a Studyworks tutor (`teacher_student_assignments.sponsored`). A tutor's own invitations put a student on the roster without sponsoring them; that student subscribes. The earlier roster-link trigger is retired. See docs/billing.md, "Who gets free access".* |
 | **Managers/Admins** | No | `role IN ('manager', 'admin')` |
 | **New public students** (sign up independently, no teacher code) | Yes | `user_type = 'student'` or `'exploring'` with no teacher assignment. *As built: `exploring` signups are not sent to checkout at signup (`needsSubscription` is false for them), but the `proxy.js` gate still requires a subscription or exemption to reach protected routes* |
 | **New public teachers** (independent tutors) | Yes | Teachers without an exempt `teacher_code` (shipped — no longer a future flow) |

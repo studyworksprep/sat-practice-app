@@ -295,6 +295,12 @@ export async function deleteUser(_prev, formData) {
  * Add a teacher-student assignment. Called from the relationship
  * editor on the user-detail page. Either id may be the page subject;
  * the form passes both explicitly.
+ *
+ * `sponsored` (checkbox, on by default — linking a student to a
+ * Studyworks tutor used to sponsor them implicitly) marks the link as
+ * Studyworks-sponsored. It only takes when the tutor is exempt: a
+ * sponsored flag on an outside tutor's link would silently start
+ * granting free access if that tutor were later made exempt.
  */
 export async function assignTeacherStudent(prevOrFD, maybeFD) {
   const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
@@ -312,15 +318,80 @@ export async function assignTeacherStudent(prevOrFD, maybeFD) {
     return actionFail('Both teacher_id and student_id required');
   }
 
+  let sponsored = false;
+  if (formData.get('sponsored') === 'on') {
+    const { data: tutor } = await ctx.supabase
+      .from('profiles')
+      .select('subscription_exempt')
+      .eq('id', teacherId)
+      .maybeSingle();
+    sponsored = tutor?.subscription_exempt === true;
+  }
+
   const { error } = await ctx.supabase
     .from('teacher_student_assignments')
-    .insert({ teacher_id: teacherId, student_id: studentId });
+    .insert({
+      teacher_id: teacherId,
+      student_id: studentId,
+      sponsored,
+      sponsored_by: sponsored ? ctx.user.id : null,
+    });
 
   if (error) return actionFail(`Failed to assign: ${error.message}`);
 
   const subjectId = formData.get('subject_id');
   if (typeof subjectId === 'string') revalidatePath(`/admin/users/${subjectId}`);
   return actionOk({});
+}
+
+/**
+ * Turn Studyworks sponsorship on or off for one existing link. Admin
+ * only — the database guard (guard_link_sponsorship) and the
+ * tsa_update policy enforce the same rule. Turning it off sends the
+ * student to the subscription flow on their next page load.
+ */
+export async function setLinkSponsorship(prevOrFD, maybeFD) {
+  const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
+  let ctx;
+  try {
+    ctx = await requireRole(['admin']);
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  const teacherId = formData.get('teacher_id');
+  const studentId = formData.get('student_id');
+  if (typeof teacherId !== 'string' || typeof studentId !== 'string') {
+    return actionFail('Both teacher_id and student_id required');
+  }
+  const sponsored = formData.get('sponsored') === 'true';
+
+  if (sponsored) {
+    const { data: tutor } = await ctx.supabase
+      .from('profiles')
+      .select('subscription_exempt')
+      .eq('id', teacherId)
+      .maybeSingle();
+    if (tutor?.subscription_exempt !== true) {
+      return actionFail('Only a Studyworks tutor’s students can be sponsored.');
+    }
+  }
+
+  const { data: updated, error } = await ctx.supabase
+    .from('teacher_student_assignments')
+    .update({ sponsored, sponsored_by: sponsored ? ctx.user.id : null })
+    .eq('teacher_id', teacherId)
+    .eq('student_id', studentId)
+    .select('student_id');
+
+  if (error) return actionFail(`Failed to update sponsorship: ${error.message}`);
+  if (!updated?.length) return actionFail('That tutor link no longer exists.');
+
+  const subjectId = formData.get('subject_id');
+  if (typeof subjectId === 'string') revalidatePath(`/admin/users/${subjectId}`);
+  revalidatePath('/admin/users');
+  return actionOk({ sponsored });
 }
 
 export async function unassignTeacherStudent(prevOrFD, maybeFD) {
