@@ -184,6 +184,20 @@
 }
 .nameLink:hover { text-decoration: underline; }
 
+/* Access badge under a student's name (no subscription / trial). */
+.accessWarn,
+.accessInfo {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.accessWarn { background: #fef2f2; color: #b91c1c; }
+.accessInfo { background: var(--color-slate-100, #f1f5f9); color: var(--fg2, #475569); }
+
 /* The row's one visible action: the session workspace. */
 .sessionBtn {
   display: inline-flex;

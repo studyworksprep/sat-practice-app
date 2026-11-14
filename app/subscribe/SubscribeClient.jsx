@@ -37,12 +37,15 @@ const PLANS = [
       'Student roster & progress',
       'Custom assignments',
       'Score tracking & reports',
-      'Unlimited students',
+      'Invite as many students as you like (each has their own plan)',
     ],
   },
 ];
 
-export function SubscribeClient({ canceled, signedIn, studentPrice, teacherPrice }) {
+export function SubscribeClient({ canceled, signedIn, studentPrice, teacherPrice, onlyPlan = null }) {
+  // A signed-in account is offered only the plan its role may buy
+  // (planForRole); checkout enforces the same rule server-side.
+  const plans = onlyPlan ? PLANS.filter((p) => p.plan === onlyPlan) : PLANS;
   const [loading, setLoading] = useState(null);
   const [error, setError] = useState(null);
 
@@ -72,7 +75,7 @@ export function SubscribeClient({ canceled, signedIn, studentPrice, teacherPrice
     <main className={s.page}>
       <header className={s.header}>
         <img src="/studyworks-logo.png" alt="Studyworks" className={s.logo} />
-        <h1 className={s.h1}>Choose your plan</h1>
+        <h1 className={s.h1}>{onlyPlan ? 'Start your free trial' : 'Choose your plan'}</h1>
         <p className={s.sub}>Start with a 7-day free trial. Cancel anytime.</p>
         {canceled && (
           <div className={s.canceledBanner}>
@@ -81,8 +84,8 @@ export function SubscribeClient({ canceled, signedIn, studentPrice, teacherPrice
         )}
       </header>
 
-      <section className={s.plans}>
-        {PLANS.map((p) => (
+      <section className={plans.length === 1 ? `${s.plans} ${s.plansSingle}` : s.plans}>
+        {plans.map((p) => (
           <div
             key={p.plan}
             className={p.accentClass === 'teacher' ? `${s.planCard} ${s.planCardTeacher}` : s.planCard}
@@ -135,8 +138,8 @@ export function SubscribeClient({ canceled, signedIn, studentPrice, teacherPrice
           >
             Studyworks Prep
           </a>{' '}
-          get full access at no cost. Sign up with your tutor&rsquo;s invite code to activate
-          free access.
+          can get full access at no cost. Studyworks sends sponsored students a personal
+          invitation code to use when they sign up.
         </p>
       </section>
     </main>

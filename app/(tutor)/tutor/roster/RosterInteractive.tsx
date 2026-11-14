@@ -33,6 +33,7 @@ import s from './Roster.module.css';
 
 interface PlanInfo { status: string; label: string; line: string; overdueCount: number }
 interface FoundationsSummary { covered: number; total: number }
+interface AccessBadge { tone: 'warn' | 'info'; label: string; title: string }
 interface ArchiveSummary {
   startingScore?: number | null;
   finalScore?: number | null;
@@ -56,6 +57,9 @@ export interface RosterStudent {
   signals?: StudentSignals | null;
   attentionWeight?: number;
   archive?: ArchiveSummary;
+  /** Only set when the tutor should act: no subscription, failed
+   *  payment, or a trial (lib/tutor/roster-access.ts). */
+  access?: AccessBadge | null;
 }
 
 type Sort = { label: string; cmp: (a: RosterStudent, b: RosterStudent) => number };
@@ -227,6 +231,14 @@ function ActiveTable({ students, canEdit, onEdit, showFoundations, nowMs }: {
                 <div className={s.subline}>
                   {[st.highSchool, st.graduationYear].filter(Boolean).join(' · ') || st.email || '—'}
                 </div>
+                {st.access && (
+                  <span
+                    className={st.access.tone === 'warn' ? s.accessWarn : s.accessInfo}
+                    title={st.access.title}
+                  >
+                    {st.access.label}
+                  </span>
+                )}
               </td>
               <td className={`${s.td} ${s.nowrap}`}><LastActive at={st.signals?.lastActiveAt ?? null} known={st.signals != null} nowMs={nowMs} /></td>
               <td className={s.td}><PlanCell st={st} /></td>
