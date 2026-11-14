@@ -40,7 +40,7 @@ export default async function AccountPage() {
   const [
     { data: profile },
     access,
-    { data: teacherLinks },
+    { data: tutorRows },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -50,13 +50,11 @@ export default async function AccountPage() {
       .eq('id', user.id)
       .maybeSingle(),
     userHasAccess(supabase, user.id),
-    // Nested join: read each linked teacher's profile row in the
-    // same trip. RLS on profiles lets a student see their assigned
-    // teachers, so this works under the user-scoped client.
-    supabase
-      .from('teacher_student_assignments')
-      .select('teacher_id, teacher:profiles!teacher_student_assignments_teacher_id_fkey(id, first_name, last_name, email, subscription_exempt)')
-      .eq('student_id', user.id),
+    // The caller's tutors. Profiles RLS gives a student no path to
+    // their tutor's row (a nested join here always came back null), so
+    // my_tutors() returns just the shown fields — migration
+    // 20261114012820.
+    supabase.rpc('my_tutors'),
   ]);
 
   let subscription = null;
@@ -70,14 +68,19 @@ export default async function AccountPage() {
     subscription = data;
   }
 
-  const teachers = (teacherLinks ?? [])
-    .map((row) => row.teacher)
-    .filter(Boolean);
+  const teachers = (tutorRows ?? []).map((t) => ({
+    id: t.id,
+    first_name: t.first_name,
+    last_name: t.last_name,
+    email: t.email,
+    subscription_exempt: t.is_studyworks,
+    sponsored: t.sponsored,
+  }));
 
   // §3.2 step-back offers. The tutor-link read above already tells us
   // whether the derived default is off, so this costs no extra trip.
   const detourPreference = profile?.practice_detours_enabled ?? null;
-  const hasAssignedTutor = (teacherLinks ?? []).length > 0;
+  const hasAssignedTutor = teachers.length > 0;
 
   return (
     <AccountClient

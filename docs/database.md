@@ -252,8 +252,14 @@ resolver `has_plan()`/`effective_plan()` is **live**: the
 (after re-verifying parity — 0 lose / 0 gain across 78 users — and a
 33/33 e2e auth run against dev soaking `on`). The enforcement path
 (`proxy.js`, `lib/subscription.js`) consults the resolver, which also
-activates the owner-chosen live-derived sponsored policy: roster
-removal revokes access immediately. Resolver errors fall back to the
+activates the owner-chosen live-derived sponsored policy: removing or
+un-sponsoring the link revokes access immediately. Since migration
+`20261114011641` (dev and production 2026-11-14; production dry-run
+parity 0 changes across 98 users) only a link with
+`teacher_student_assignments.sponsored` to a still-exempt tutor
+sponsors; a plain roster link grants nothing (see docs/billing.md, "Who
+gets free access"). Students read their own tutors through `my_tutors()`
+(`20261114012820`) because profiles RLS has no student → tutor path. Resolver errors fall back to the
 legacy verdict. Rollback is `update feature_flags set value='off'
 where key='entitlements_gate'` (propagates within the 30s cache).
 

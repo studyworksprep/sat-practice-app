@@ -44,11 +44,20 @@ export default async function AdminUserDetailPage({ params }) {
   if (error) return <ErrorState message={`Failed to load user: ${error.message}`} />;
   if (!subject) notFound();
 
-  const { data: subscription } = await supabase
-    .from('subscriptions')
-    .select('plan, status')
-    .eq('user_id', userId)
-    .maybeSingle();
+  const isStudentRole = subject.role === 'student' || subject.role === 'practice';
+  const [{ data: subscription }, { data: sponsored }] = await Promise.all([
+    supabase
+      .from('subscriptions')
+      .select('plan, status')
+      .eq('user_id', userId)
+      .maybeSingle(),
+    // A student's exemption is a sponsored roster link, not their own
+    // (stale) profile flag — migration 20261114011641.
+    isStudentRole
+      ? supabase.rpc('is_sponsored_student', { p_user: userId })
+      : Promise.resolve({ data: null }),
+  ]);
+  const exempt = isStudentRole ? sponsored === true : subject.subscription_exempt === true;
 
   const displayName = [subject.first_name, subject.last_name].filter(Boolean).join(' ') || subject.email || subject.id;
   const isSelf = subject.id === user.id;
@@ -71,7 +80,7 @@ export default async function AdminUserDetailPage({ params }) {
             banned={subject.banned_at != null}
           />
           <SubscriptionBadge
-            exempt={subject.subscription_exempt}
+            exempt={exempt}
             subscription={subscription ?? null}
           />
           {subject.email && <span style={S.email}>{subject.email}</span>}

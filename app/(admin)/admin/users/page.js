@@ -107,13 +107,32 @@ export default async function AdminUsersPage({ searchParams }) {
   // lookup is 1:1. Plan + status drive the diagnostic Subscription
   // column below; profile.role is intentionally not consulted there.
   const subsByUser = new Map();
+  // A student is exempt only through a sponsored link to a Studyworks
+  // tutor (migration 20261114011641); profiles.subscription_exempt on a
+  // student is a stale leftover of the retired roster trigger.
+  const sponsoredStudents = new Set();
   if (rows.length > 0) {
-    const { data: subs } = await supabase
-      .from('subscriptions')
-      .select('user_id, plan, status')
-      .in('user_id', rows.map((r) => r.id));
+    const ids = rows.map((r) => r.id);
+    const [{ data: subs }, { data: sponsoredLinks }] = await Promise.all([
+      supabase
+        .from('subscriptions')
+        .select('user_id, plan, status')
+        .in('user_id', ids),
+      supabase
+        .from('teacher_student_assignments')
+        .select('student_id, teacher:profiles!teacher_student_assignments_teacher_id_fkey(subscription_exempt)')
+        .eq('sponsored', true)
+        .in('student_id', ids),
+    ]);
     for (const s of subs ?? []) subsByUser.set(s.user_id, s);
+    for (const l of sponsoredLinks ?? []) {
+      if (l.teacher?.subscription_exempt) sponsoredStudents.add(l.student_id);
+    }
   }
+  const isExempt = (u) =>
+    u.role === 'student' || u.role === 'practice'
+      ? sponsoredStudents.has(u.id)
+      : u.subscription_exempt === true;
 
   const roleTally = {
     practice: practiceCountResult.count ?? 0,
@@ -145,10 +164,13 @@ export default async function AdminUsersPage({ searchParams }) {
         <h2 className={a.h2}>Invite a student</h2>
         <p className={a.sub}>
           Generates a single-use invitation code, emails it to the student,
-          and assigns them to the chosen tutor at signup. The email is the
-          contact point — students may sign up under a different address;
-          each code works exactly once, and the Codes tab tracks who
-          claimed it.
+          and assigns them to the chosen tutor at signup. Sponsored
+          invitations give free access while the tutor is a Studyworks
+          tutor; untick it for a student who will subscribe. Tutors send
+          their own (never sponsored) invitations from their roster. The
+          email is the contact point — students may sign up under a
+          different address; each code works exactly once, and the Codes
+          tab tracks who claimed it.
         </p>
         <InviteStudentForm
           tutors={(tutorsResult.data ?? []).map((t) => ({
@@ -211,7 +233,7 @@ export default async function AdminUsersPage({ searchParams }) {
                     </Td>
                     <Td>
                       <SubscriptionBadge
-                        exempt={u.subscription_exempt}
+                        exempt={isExempt(u)}
                         subscription={subsByUser.get(u.id) ?? null}
                       />
                     </Td>

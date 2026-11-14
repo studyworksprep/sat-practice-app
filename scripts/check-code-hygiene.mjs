@@ -78,6 +78,11 @@ const RETIRED_TERMS = [
   'pattern_id',
   'set_question_pattern',
   'QuestionPatternTag',
+  // The one-way roster→exemption trigger, retired 2026-11-14 in favor of
+  // explicit sponsorship on the roster link (teacher_student_assignments
+  // .sponsored, migration 20261114011641).
+  'exempt_student_on_teacher_assignment',
+  'trg_exempt_student_on_assignment',
 ];
 
 // Proper nouns for things that still exist and merely happen to contain a

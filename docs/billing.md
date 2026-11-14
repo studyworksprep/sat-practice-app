@@ -1,9 +1,47 @@
 # Billing and subscription enforcement
 
 > **Status: Living document.** Last verified against code + production: 2026-08-18.
+> Sponsorship section verified against code + production 2026-11-14
+> (dry-run parity before applying: 0 of 98 users' access changed).
 
 How a Studyworks student gets access, how a trial ends, and what happens
 when Stripe and the database disagree.
+
+## Who gets free access (sponsorship)
+
+`effective_plan()` grants `full` without Stripe to: admins and managers;
+a **Studyworks tutor** (role `teacher` with `profiles.subscription_exempt`,
+set by redeeming an admin-issued `teacher_codes` code); a **sponsored
+student**; and anyone holding an active `entitlements` row.
+
+A student is sponsored only through `teacher_student_assignments.sponsored`
+on a link to a tutor who is still exempt (`is_sponsored_student()`,
+migration `20261114011641`). A roster link by itself grants nothing, so any
+tutor, Studyworks or outside, can take on private students who subscribe.
+Before that migration every link to an exempt tutor implied sponsorship, and
+a trigger copied `subscription_exempt` onto the student one-way.
+
+| Path | Who | Sponsored? |
+| --- | --- | --- |
+| Admin "Invite student" (`/admin/users`), single-use code | Admin | Yes by default (checkbox); only for an exempt tutor |
+| Admin assigns or toggles a link (`/admin/users/[id]`) | Admin | Admin's choice; only for an exempt tutor |
+| Tutor "Invite students" (`/tutor/roster`), single-use code via `create_student_invitation()` | Any tutor | Never |
+| Tutor's multi-use `teacher_invite_code` | Outside tutors only | Never |
+
+Writers are fenced in the database: `guard_link_sponsorship()` rejects
+turning `sponsored` on unless the request is from an admin, the service
+role (signup redeeming an admin-issued invitation), or
+`link_self_to_teacher_by_code()` redeeming a sponsored invitation. Tutors
+are capped at 25 new invitations per 24 hours.
+
+Sponsorship ends with no further step when an admin un-sponsors or removes
+the link, or the tutor loses `subscription_exempt`; the student is sent to
+`/subscribe` on their next page load. A student's own
+`subscription_exempt` no longer decides anything while the gate is on:
+checkout refuses only users who already have access (`userHasAccess`), so
+a formerly sponsored student can subscribe. When a paying student becomes
+sponsored, their Stripe subscription is **not** cancelled automatically;
+an admin cancels it.
 
 ## The access rule
 

@@ -6,6 +6,7 @@
 import {
   assignTeacherStudent,
   unassignTeacherStudent,
+  setLinkSponsorship,
   assignManagerTeacher,
   unassignManagerTeacher,
 } from './actions';
@@ -52,7 +53,7 @@ async function StudentRelationships({ supabase, subject }) {
   const [{ data: tsa }, { data: tutors }] = await Promise.all([
     supabase
       .from('teacher_student_assignments')
-      .select('teacher_id, profiles!teacher_student_assignments_teacher_id_fkey(id, first_name, last_name, email, role)')
+      .select('teacher_id, sponsored, profiles!teacher_student_assignments_teacher_id_fkey(id, first_name, last_name, email, role, subscription_exempt)')
       .eq('student_id', subject.id),
     supabase
       .from('profiles')
@@ -73,12 +74,21 @@ async function StudentRelationships({ supabase, subject }) {
         {(tsa ?? []).map((row) => (
           <li key={row.teacher_id} style={S.listRow}>
             <span>{tutorLabel(row.profiles) || row.teacher_id.slice(0, 8)}</span>
-            <form action={unassignTeacherStudent}>
-              <input type="hidden" name="teacher_id" value={row.teacher_id} />
-              <input type="hidden" name="student_id" value={subject.id} />
-              <input type="hidden" name="subject_id" value={subject.id} />
-              <Button type="submit" variant="remove" size="sm">Remove</Button>
-            </form>
+            <span style={S.rowActions}>
+              <SponsorshipControl
+                teacherId={row.teacher_id}
+                studentId={subject.id}
+                subjectId={subject.id}
+                sponsored={row.sponsored === true}
+                tutorExempt={row.profiles?.subscription_exempt === true}
+              />
+              <form action={unassignTeacherStudent}>
+                <input type="hidden" name="teacher_id" value={row.teacher_id} />
+                <input type="hidden" name="student_id" value={subject.id} />
+                <input type="hidden" name="subject_id" value={subject.id} />
+                <Button type="submit" variant="remove" size="sm">Remove</Button>
+              </form>
+            </span>
           </li>
         ))}
         {(tsa ?? []).length === 0 && <li style={S.empty}>No tutors assigned.</li>}
@@ -95,6 +105,7 @@ async function StudentRelationships({ supabase, subject }) {
             </option>
           ))}
         </select>
+        <SponsoredCheckbox />
         <Button type="submit" variant="primary" size="sm">Assign</Button>
       </form>
     </div>
@@ -105,7 +116,7 @@ async function TeacherRelationships({ supabase, subject }) {
   const [{ data: tsaStudents }, { data: mtaManagers }, { data: students }, { data: managers }] = await Promise.all([
     supabase
       .from('teacher_student_assignments')
-      .select('student_id, profiles!teacher_student_assignments_student_id_fkey(id, first_name, last_name, email)')
+      .select('student_id, sponsored, profiles!teacher_student_assignments_student_id_fkey(id, first_name, last_name, email)')
       .eq('teacher_id', subject.id),
     supabase
       .from('manager_teacher_assignments')
@@ -138,12 +149,21 @@ async function TeacherRelationships({ supabase, subject }) {
           {(tsaStudents ?? []).map((row) => (
             <li key={row.student_id} style={S.listRow}>
               <span>{displayName(row.profiles) || row.profiles?.email || row.student_id.slice(0, 8)}</span>
-              <form action={unassignTeacherStudent}>
-                <input type="hidden" name="teacher_id" value={subject.id} />
-                <input type="hidden" name="student_id" value={row.student_id} />
-                <input type="hidden" name="subject_id" value={subject.id} />
-                <Button type="submit" variant="remove" size="sm">Remove</Button>
-              </form>
+              <span style={S.rowActions}>
+                <SponsorshipControl
+                  teacherId={subject.id}
+                  studentId={row.student_id}
+                  subjectId={subject.id}
+                  sponsored={row.sponsored === true}
+                  tutorExempt={subject.subscription_exempt === true}
+                />
+                <form action={unassignTeacherStudent}>
+                  <input type="hidden" name="teacher_id" value={subject.id} />
+                  <input type="hidden" name="student_id" value={row.student_id} />
+                  <input type="hidden" name="subject_id" value={subject.id} />
+                  <Button type="submit" variant="remove" size="sm">Remove</Button>
+                </form>
+              </span>
             </li>
           ))}
           {(tsaStudents ?? []).length === 0 && <li style={S.empty}>No students assigned.</li>}
@@ -157,6 +177,7 @@ async function TeacherRelationships({ supabase, subject }) {
               <option key={s.id} value={s.id}>{displayName(s) || s.email}</option>
             ))}
           </select>
+          {subject.subscription_exempt === true && <SponsoredCheckbox />}
           <Button type="submit" variant="primary" size="sm">Assign</Button>
         </form>
       </div>
@@ -209,7 +230,7 @@ async function ManagerRelationships({ supabase, subject }) {
     // opposed to the ones they reach through the teachers they manage.
     supabase
       .from('teacher_student_assignments')
-      .select('student_id, profiles!teacher_student_assignments_student_id_fkey(id, first_name, last_name, email)')
+      .select('student_id, sponsored, profiles!teacher_student_assignments_student_id_fkey(id, first_name, last_name, email)')
       .eq('teacher_id', subject.id),
     supabase
       .from('profiles')
@@ -236,12 +257,21 @@ async function ManagerRelationships({ supabase, subject }) {
         {(tsaStudents ?? []).map((row) => (
           <li key={row.student_id} style={S.listRow}>
             <span>{displayName(row.profiles) || row.profiles?.email || row.student_id.slice(0, 8)}</span>
-            <form action={unassignTeacherStudent}>
-              <input type="hidden" name="teacher_id" value={subject.id} />
-              <input type="hidden" name="student_id" value={row.student_id} />
-              <input type="hidden" name="subject_id" value={subject.id} />
-              <Button type="submit" variant="remove" size="sm">Remove</Button>
-            </form>
+            <span style={S.rowActions}>
+              <SponsorshipControl
+                teacherId={subject.id}
+                studentId={row.student_id}
+                subjectId={subject.id}
+                sponsored={row.sponsored === true}
+                tutorExempt={subject.subscription_exempt === true}
+              />
+              <form action={unassignTeacherStudent}>
+                <input type="hidden" name="teacher_id" value={subject.id} />
+                <input type="hidden" name="student_id" value={row.student_id} />
+                <input type="hidden" name="subject_id" value={subject.id} />
+                <Button type="submit" variant="remove" size="sm">Remove</Button>
+              </form>
+            </span>
           </li>
         ))}
         {(tsaStudents ?? []).length === 0 && <li style={S.empty}>No students tutored directly.</li>}
@@ -255,6 +285,7 @@ async function ManagerRelationships({ supabase, subject }) {
             <option key={s.id} value={s.id}>{displayName(s) || s.email}</option>
           ))}
         </select>
+        {subject.subscription_exempt === true && <SponsoredCheckbox />}
         <Button type="submit" variant="primary" size="sm">Assign</Button>
       </form>
     </div>
@@ -289,6 +320,45 @@ async function ManagerRelationships({ supabase, subject }) {
       </form>
     </div>
     </>
+  );
+}
+
+/**
+ * Studyworks sponsorship on one tutor–student link (migration
+ * 20261114011641). Only a Studyworks (exempt) tutor's link can be
+ * sponsored; any other link means the student subscribes.
+ */
+function SponsorshipControl({ teacherId, studentId, subjectId, sponsored, tutorExempt }) {
+  if (!tutorExempt) {
+    return <span style={S.pillMuted} title="Not a Studyworks tutor — the student subscribes">Subscribes</span>;
+  }
+  return (
+    <form action={setLinkSponsorship} style={S.inlineForm}>
+      <input type="hidden" name="teacher_id" value={teacherId} />
+      <input type="hidden" name="student_id" value={studentId} />
+      <input type="hidden" name="subject_id" value={subjectId} />
+      <input type="hidden" name="sponsored" value={sponsored ? 'false' : 'true'} />
+      {sponsored ? (
+        <span style={S.pillSponsored} title="Free access through Studyworks">Sponsored</span>
+      ) : (
+        <span style={S.pillMuted} title="On the roster; the student subscribes">Subscribes</span>
+      )}
+      <Button type="submit" variant="secondary" size="sm">
+        {sponsored ? 'Stop sponsoring' : 'Sponsor'}
+      </Button>
+    </form>
+  );
+}
+
+/** "Sponsored" on the assign form. On by default: linking a student to
+ *  a Studyworks tutor used to sponsor them implicitly, and the action
+ *  ignores it for a tutor who is not exempt. */
+function SponsoredCheckbox() {
+  return (
+    <label style={S.check} title="Free access while the tutor is a Studyworks tutor. Untick for a private student who subscribes.">
+      <input type="checkbox" name="sponsored" defaultChecked />
+      Sponsored
+    </label>
   );
 }
 
@@ -349,6 +419,25 @@ const S = {
     gap: 8,
     marginTop: 'var(--s2)',
     alignItems: 'center',
+  },
+  rowActions: { display: 'inline-flex', alignItems: 'center', gap: 8 },
+  inlineForm: { display: 'inline-flex', alignItems: 'center', gap: 8, margin: 0 },
+  check: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--fg2)' },
+  pillSponsored: {
+    fontSize: 11,
+    fontWeight: 600,
+    padding: '2px 8px',
+    borderRadius: 999,
+    background: 'var(--color-green-50, #ecfdf5)',
+    color: 'var(--color-green-700, #047857)',
+  },
+  pillMuted: {
+    fontSize: 11,
+    fontWeight: 600,
+    padding: '2px 8px',
+    borderRadius: 999,
+    background: 'var(--color-slate-100, #f1f5f9)',
+    color: 'var(--fg3)',
   },
   select: {
     padding: '8px 10px',

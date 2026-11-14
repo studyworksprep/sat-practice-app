@@ -3,9 +3,10 @@
 // - Teacher Codes: bulk admin-created signup tokens identifying
 //   STUDYWORKS tutors. Anyone signing up with one becomes an exempt
 //   (free) teacher. Single-use, tracked.
-// - Student Invitations: admin-issued, single-use, email-bound codes
-//   (created from the Users page) that assign a student to a tutor at
-//   signup and grant sponsored access. The tracker below shows each
+// - Student Invitations: single-use, email-bound codes that assign a
+//   student to a tutor at signup. Issued by an admin from the Users
+//   page (sponsored by default) or by a tutor from their roster (never
+//   sponsored — the student subscribes; migration 20261114011641). The tracker below shows each
 //   code, who claimed it and when, and the tutor it belongs to.
 //   (This replaced the retired per-teacher multi-use invite-code
 //   manager — those codes were shareable bearer tokens for free
@@ -43,7 +44,7 @@ export default async function AdminUserCodesPage() {
     supabase
       .from('student_invite_codes')
       .select(`
-        id, code, email, used_by, used_at, created_at,
+        id, code, email, used_by, used_at, created_at, sponsored, created_by,
         teacher:profiles!student_invite_codes_teacher_id_fkey(id, first_name, last_name, email),
         claimed_by:profiles!student_invite_codes_used_by_fkey(id, first_name, last_name, email)
       `)
@@ -142,9 +143,10 @@ export default async function AdminUserCodesPage() {
 
       <Section title={`Student Invitations (${invitesOpen} open · ${invitesClaimed} claimed)`}>
         <p className={f.formHint}>
-          Issued from the <a href="/admin/users" style={S.userLink}>Users page</a> —
-          each code works exactly once and assigns the student to its tutor
-          at signup. The invited email is the contact point; students may
+          Issued from the <a href="/admin/users" style={S.userLink}>Users page</a> or
+          by tutors from their roster — each code works exactly once and
+          assigns the student to its tutor at signup. Only sponsored codes
+          give free access; tutor-issued codes never do. The invited email is the contact point; students may
           sign up under a different address, so the Claimed-by column is the
           record of who actually redeemed each code. Revoking an open
           invitation invalidates it immediately.
@@ -159,6 +161,7 @@ export default async function AdminUserCodesPage() {
                 <Th>Code</Th>
                 <Th>Invited email</Th>
                 <Th>Tutor</Th>
+                <Th>Access</Th>
                 <Th>Status</Th>
                 <Th>Claimed by</Th>
                 <Th>Claimed</Th>
@@ -179,6 +182,12 @@ export default async function AdminUserCodesPage() {
                     ) : (
                       '—'
                     )}
+                  </Td>
+                  <Td>
+                    {i.sponsored ? 'Sponsored' : 'Subscribes'}
+                    <div style={{ color: 'var(--fg3)', fontSize: 11 }}>
+                      {i.created_by && i.created_by === i.teacher?.id ? 'Issued by tutor' : 'Issued by admin'}
+                    </div>
                   </Td>
                   <Td>
                     {i.used_by ? (

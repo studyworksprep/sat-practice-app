@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { requireUser } from '@/lib/api/auth';
 import { legacyApiRoute } from '@/lib/api/response';
+import { userHasAccess } from '@/lib/subscription';
 
 let _stripe;
 function getStripe() {
@@ -42,16 +43,21 @@ export const POST = legacyApiRoute(async (request) => {
     return NextResponse.json({ error: 'You already have an active subscription. Manage it from your account settings.' }, { status: 400 });
   }
 
-  // Check if user is exempt
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, subscription_exempt, email')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.subscription_exempt || ['admin', 'manager'].includes(profile?.role)) {
+  // Refuse only a user who already has access (staff, a Studyworks
+  // tutor, a sponsored student, an entitlement). This used to test
+  // profiles.subscription_exempt, which the one-way roster trigger left
+  // set on students whose sponsorship had ended — so they could neither
+  // get in nor pay.
+  const access = await userHasAccess(supabase, user.id);
+  if (access.hasAccess) {
     return NextResponse.json({ error: 'Your account has full access. No subscription needed.' }, { status: 400 });
   }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('id', user.id)
+    .maybeSingle();
 
   const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'https://studyworks.io';
 

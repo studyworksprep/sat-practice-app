@@ -13,15 +13,14 @@
 //   3. Practice experience — the §3.2 step-back-offers switch.
 //      Same RLS story as profile edits: the student owns their row.
 //
-//   4. Teacher connection — student enters a code (the
-//      teacher's profiles.teacher_invite_code). The lookup,
-//      assignment insert, and one-way subscription_exempt flip
-//      live in the link_self_to_teacher_by_code SECURITY DEFINER
-//      RPC (migration 20260524000000) so the privilege boundary
-//      is in SQL, not in Node. Adding a Studyworks tutor's code
-//      keeps the student on access even if they cancel a paid
-//      subscription later; adding a non-Studyworks teacher just
-//      links them for assignments.
+//   4. Teacher connection — student enters a single-use invitation
+//      code (admin- or tutor-issued) or a tutor's multi-use roster
+//      code. The lookup, roster link, and invitation burn live in the
+//      link_self_to_teacher_by_code SECURITY DEFINER RPC (migration
+//      20261114011641) so the privilege boundary is in SQL, not in
+//      Node. Only an admin-issued (sponsored) invitation to a
+//      Studyworks tutor gives free access; every other code just
+//      links the student for assignments.
 //
 // All actions use the { ok, data | error } envelope from
 // lib/api/response.js and are consumed via useActionState in the
@@ -212,18 +211,19 @@ export async function updateEmail(_prev, formData) {
 }
 
 /**
- * Link the caller to a teacher via the teacher's invite code.
+ * Link the caller to a teacher via an invitation or teacher code.
  *
  * Delegates the entire transaction to the
  * link_self_to_teacher_by_code(p_code) SECURITY DEFINER RPC
- * (migration 20260524000000). The function:
+ * (migration 20261114011641). The function:
  *
  *   1. Reads auth.uid() internally — the student_id can't be
  *      spoofed by the caller.
  *   2. Resolves the code, validates the caller's role, inserts
- *      the assignment, and one-way flips subscription_exempt
- *      when the teacher is a Studyworks tutor, all in one
- *      transaction.
+ *      the roster link (sponsored only for an admin-issued
+ *      invitation to a Studyworks tutor), burns a single-use
+ *      invitation, and promotes a 'practice' account to 'student',
+ *      all in one transaction.
  *   3. Returns a jsonb { ok, error? | teacher_id, ... } envelope
  *      so we never have to parse Postgres exception messages
  *      for the user-visible "bad code" cases.
@@ -261,6 +261,6 @@ export async function addTeacherCode(_prev, formData) {
       last_name: data.teacher_last_name,
       exempt: data.teacher_exempt === true,
     },
-    grantedExemption: data.granted_exemption === true,
+    grantedExemption: data.sponsored === true,
   });
 }

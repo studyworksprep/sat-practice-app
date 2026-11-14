@@ -76,8 +76,11 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /**
  * Invite a student (owner policy 2026-07-16): generates a single-use,
  * email-bound invitation code tied to a tutor, emails it to the
- * student, and tracks it on the Codes page. The invitation is the ONLY
- * path to sponsored (free) student access.
+ * student, and tracks it on the Codes page. A sponsored admin
+ * invitation is the self-serve path to free student access (admins can
+ * also sponsor a link directly on the user page); tutors issue their
+ * own, never-sponsored invitations from the roster
+ * (migration 20261114011641).
  */
 export async function inviteStudent(prevOrFD, maybeFD) {
   const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
@@ -86,18 +89,26 @@ export async function inviteStudent(prevOrFD, maybeFD) {
 
     const email = String(formData.get('email') ?? '').trim().toLowerCase();
     const teacherId = String(formData.get('teacher_id') ?? '');
+    // Sponsored by default (the admin invitation was the sponsored
+    // intake before tutors could invite); unticking it issues a plain
+    // roster invitation — the student subscribes.
+    const sponsored = formData.get('sponsored') === 'on';
     if (!EMAIL_RE.test(email)) return actionFail('Enter a valid email address.');
     if (!teacherId) return actionFail('Pick a tutor.');
 
     const { data: teacher } = await ctx.supabase
       .from('profiles')
-      .select('id, first_name, last_name, email, role')
+      .select('id, first_name, last_name, email, role, subscription_exempt')
       .eq('id', teacherId)
       .in('role', ['teacher', 'manager'])
       .maybeSingle();
     if (!teacher) return actionFail('That tutor could not be found.');
+    if (sponsored && !teacher.subscription_exempt) {
+      return actionFail('Only a Studyworks tutor’s students can be sponsored. Untick “Sponsored” to invite this student to subscribe.');
+    }
 
-    // An existing account can't redeem a signup invitation.
+    // An existing account is linked from its user page instead (the
+    // code would also work from Account → Your teachers).
     const { data: existingUser } = await ctx.supabase
       .from('profiles')
       .select('id')
@@ -129,6 +140,7 @@ export async function inviteStudent(prevOrFD, maybeFD) {
           teacher_id: teacher.id,
           email,
           created_by: ctx.user.id,
+          sponsored,
         });
       if (!error) {
         code = candidate;
@@ -145,11 +157,12 @@ export async function inviteStudent(prevOrFD, maybeFD) {
       code,
       teacherName,
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+      sponsored,
     });
 
     revalidatePath('/admin/users');
     revalidatePath('/admin/users/codes');
-    return actionOk({ code, email, emailSent });
+    return actionOk({ code, email, emailSent, sponsored });
   } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
     return actionFail(err?.message ?? 'Unexpected error creating the invitation');

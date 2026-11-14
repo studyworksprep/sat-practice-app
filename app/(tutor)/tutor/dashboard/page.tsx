@@ -75,8 +75,9 @@ export default async function TutorDashboardPage() {
         <PageHeader eyebrow="Teach · Dashboard" title={greeting} description={dashboardSummary(0, 0)} actions={actions} />
         <section className={s.card}>
           <p className={s.empty}>
-            You don&apos;t have any students assigned yet. Once an admin
-            assigns them to you, they&apos;ll show up here.
+            You don&apos;t have any students yet.{' '}
+            <Link href="/tutor/roster?invite=1#invite">Invite a student</Link> from your
+            roster, and they&apos;ll show up here once they join.
           </p>
         </section>
       </main>

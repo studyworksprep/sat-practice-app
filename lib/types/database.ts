@@ -4500,6 +4500,7 @@ export type Database = {
           created_by: string | null
           email: string
           id: string
+          sponsored: boolean
           teacher_id: string
           used_at: string | null
           used_by: string | null
@@ -4510,6 +4511,7 @@ export type Database = {
           created_by?: string | null
           email: string
           id?: string
+          sponsored?: boolean
           teacher_id: string
           used_at?: string | null
           used_by?: string | null
@@ -4520,6 +4522,7 @@ export type Database = {
           created_by?: string | null
           email?: string
           id?: string
+          sponsored?: boolean
           teacher_id?: string
           used_at?: string | null
           used_by?: string | null
@@ -4820,20 +4823,50 @@ export type Database = {
       teacher_student_assignments: {
         Row: {
           created_at: string | null
+          sponsored: boolean
+          sponsored_at: string | null
+          sponsored_by: string | null
           student_id: string
           teacher_id: string
         }
         Insert: {
           created_at?: string | null
+          sponsored?: boolean
+          sponsored_at?: string | null
+          sponsored_by?: string | null
           student_id: string
           teacher_id: string
         }
         Update: {
           created_at?: string | null
+          sponsored?: boolean
+          sponsored_at?: string | null
+          sponsored_by?: string | null
           student_id?: string
           teacher_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "teacher_student_assignments_sponsored_by_fkey"
+            columns: ["sponsored_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_student_assignments_sponsored_by_fkey"
+            columns: ["sponsored_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_student_assignments_sponsored_by_fkey"
+            columns: ["sponsored_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "teacher_student_assignments_student_id_fkey"
             columns: ["student_id"]
@@ -5134,6 +5167,10 @@ export type Database = {
         Args: { p_base_lesson_id?: string; p_title?: string }
         Returns: string
       }
+      create_student_invitation: {
+        Args: { p_code: string; p_email: string }
+        Returns: Json
+      }
       effective_plan: { Args: { p_user: string }; Returns: string }
       find_question_import_matches: {
         Args: { p_identifiers: string[]; p_stem: string }
@@ -5361,6 +5398,7 @@ export type Database = {
       }
       is_lesson_author: { Args: { p_lesson_id: string }; Returns: boolean }
       is_manager: { Args: never; Returns: boolean }
+      is_sponsored_student: { Args: { p_user: string }; Returns: boolean }
       is_teacher: { Args: never; Returns: boolean }
       is_v2_assignment_student: {
         Args: { p_assignment_id: string; p_student_id: string }
@@ -5397,6 +5435,17 @@ export type Database = {
           questions_without_current_version: number
           remaining_questions: number
           total_questions: number
+        }[]
+      }
+      my_tutors: {
+        Args: never
+        Returns: {
+          email: string
+          first_name: string
+          id: string
+          is_studyworks: boolean
+          last_name: string
+          sponsored: boolean
         }[]
       }
       plan_rank: { Args: { p_plan: string }; Returns: number }
