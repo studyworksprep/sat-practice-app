@@ -257,6 +257,47 @@
     },
     {
       "kind": "text",
+      "id": "bank_rw00372_goal_filter_model",
+      "html": "<h2>Use the goal to keep two candidates</h2><p>The goal asks for a comparison of the two species’ <strong>extinction risks</strong>.</p><ul><li><strong>A and B</strong> both compare those risks, so both survive the goal check.</li><li><strong>C</strong> mentions that both risks were evaluated, but does not compare them.</li><li><strong>D</strong> discusses only one species.</li></ul><blockquote><p><strong>Next step:</strong> A and B disagree about which species faces greater risk. Check the relevant notes to decide between them.</p></blockquote>",
+      "shared_prompt": {
+        "id": "bank_rw00372_full_question",
+        "title": "Comparing extinction risks",
+        "html": "<p>While researching a topic, a student has taken the following notes:</p>\n<ul>\n<li><em>Certhidea olivacea</em> is a perching bird that can be found on the Gal&aacute;pagos Island of Pinz&oacute;n.</li>\n<li><em>Creagrus furcatus</em> is a seabird that can be found on the Gal&aacute;pagos Island of Darwin.&nbsp;</li>\n<li>Conservation organizations evaluate the risk that species will become extinct in the near future.</li>\n<li><em>C. olivacea</em> faces a high risk of extinction.</li>\n<li><em>C. furcatus</em> faces little risk of becoming extinct in the near future.</li>\n</ul><p>The student wants to compare the extinction risk faced by <em>C. olivacea</em> with that faced by <em>C. furcatus</em>. Which choice most effectively uses relevant information from the notes to accomplish this goal?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><p>According to conservation organizations, <em>C. olivacea</em> has a higher risk of becoming extinct in the near future than <em>C. furcatus</em>.</p></li><li><p><em>C. furcatus</em> faces a high risk of extinction, while <em>C. olivacea</em> faces little risk of becoming extinct in the near future.</p></li><li><p>Conservation organizations have evaluated both <em>C. furcatus</em>&rsquo;s and <em>C. olivacea</em>&rsquo;s risk of becoming extinct in the near future.&nbsp;</p></li><li><p><em>C. olivacea</em> is a perching bird that faces a high risk of extinction.</p></li></ol>"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "bank_rw00372_notes_fallback_check",
+      "block_type": "check",
+      "shared_prompt": {
+        "id": "bank_rw00372_notes",
+        "title": "Bird species notes",
+        "html": "<p>While researching a topic, a student has taken the following notes:</p>\n<ul>\n<li><em>Certhidea olivacea</em> is a perching bird that can be found on the Gal&aacute;pagos Island of Pinz&oacute;n.</li>\n<li><em>Creagrus furcatus</em> is a seabird that can be found on the Gal&aacute;pagos Island of Darwin.&nbsp;</li>\n<li>Conservation organizations evaluate the risk that species will become extinct in the near future.</li>\n<li><em>C. olivacea</em> faces a high risk of extinction.</li>\n<li><em>C. furcatus</em> faces little risk of becoming extinct in the near future.</li>\n</ul>"
+      },
+      "calculator": {
+        "display": "hidden"
+      },
+      "content": {
+        "id": "bank_rw00372_notes_fallback_check",
+        "prompt": "The student wants to compare the extinction risk faced by C. olivacea with that faced by C. furcatus. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+        "choices": [
+          "According to conservation organizations, C. olivacea has a higher risk of becoming extinct in the near future than C. furcatus.",
+          "C. furcatus faces a high risk of extinction, while C. olivacea faces little risk of becoming extinct in the near future.",
+          "Conservation organizations have evaluated both C. furcatus’s and C. olivacea’s risk of becoming extinct in the near future.",
+          "C. olivacea is a perching bird that faces a high risk of extinction."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Both A and B make the requested comparison. Check which species the notes describe as facing high risk and which as facing little risk.",
+        "solution": "The goal keeps A and B because both compare the species’ extinction risks. The notes say C. olivacea faces high risk and C. furcatus faces little risk. A preserves that direction. B reverses the facts. C only reports that the risks were evaluated, and D leaves out C. furcatus. Choose A after checking the facts that separate the two goal-fitting candidates.",
+        "explanation": "The notes place C. olivacea at higher risk, so A is accurate. B has the requested comparison structure but reverses the two species’ risks."
+      }
+    },
+    {
+      "kind": "text",
       "id": "revision_return_to_opening",
       "html": "<h2>Return to the seal estimates</h2><p>Try the opening question again. Use the student’s goal to test the choices, then check any facts that separate the remaining possibilities.</p>",
       "calculator": {
@@ -372,5 +413,5 @@
       }
     }
   ],
-  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use a two-part goal checklist and the notes fallback. Distractors give the wrong attribute, omit accuracy, or substitute a nearby but incorrect time value. Previous specification: archive/rw-openings-2026-11/rhetorical-synthesis-goal-first.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/rhetorical-synthesis-goal-first.json."
+  "authoring_notes": "Reading and Writing opening revision 2026-11-12: Use a two-part goal checklist and the notes fallback. Distractors give the wrong attribute, omit accuracy, or substitute a nearby but incorrect time value. Previous specification: archive/rw-openings-2026-11/rhetorical-synthesis-goal-first.json. The replacement question has a new block ID; unrelated lesson items retain their identities.\nTool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/rhetorical-synthesis-goal-first.json.\nSeventh optional quality batch 2026-11-14: Add a worked strategy decision and retry use of content-bank question RW-00372 (d22e2993-85b0-4644-a926-399ee31b6d9d), keyed A. The question’s stimulus, task, option order, and key are retained; presentation whitespace and blank markup are normalized. Existing strategy, examples, checks, and endings remain unchanged."
 }

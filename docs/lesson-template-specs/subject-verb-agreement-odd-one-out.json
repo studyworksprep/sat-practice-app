@@ -440,6 +440,47 @@
       }
     },
     {
+      "kind": "text",
+      "id": "bank_rw00510_gate_model",
+      "html": "<h2>Check this question before choosing a method</h2><p>Test the complete choices after “he” and “they.” <strong>Studies</strong>, <strong>has been studying</strong>, and <strong>was studying</strong> fit “he” only. <strong>Will study</strong> fits both frames.</p><blockquote><p><strong>Eligibility:</strong> A choice fits both frames, so this answer set is ineligible for Odd-One-Out.</p></blockquote><p>With the gate closed, read the sentence for its time clues. Use them to answer the question on the next card.</p>",
+      "shared_prompt": {
+        "id": "bank_rw00510_full_question",
+        "title": "Bonnie Buratti’s discovery",
+        "html": "<p>Bonnie Buratti of NASA&rsquo;s Jet Propulsion Laboratory ______ data about Saturn&rsquo;s rings collected by the <em>Cassini </em>spacecraft when she made an interesting discovery: the tiny moons embedded between and within Saturn&rsquo;s rings are shaped by the buildup of ring material on the moons&rsquo; surfaces. </p><p>Which choice completes the text so that it conforms to the conventions of Standard English?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><p>studies&nbsp;</p></li><li><p>has been studying</p></li><li><p>will study</p></li><li><p>was studying</p></li></ol>"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "bank_rw00510_tense_check",
+      "block_type": "check",
+      "shared_prompt": {
+        "id": "bank_rw00510_stimulus",
+        "title": "Bonnie Buratti’s discovery",
+        "html": "<p>Bonnie Buratti of NASA&rsquo;s Jet Propulsion Laboratory ______ data about Saturn&rsquo;s rings collected by the <em>Cassini </em>spacecraft when she made an interesting discovery: the tiny moons embedded between and within Saturn&rsquo;s rings are shaped by the buildup of ring material on the moons&rsquo; surfaces. </p>"
+      },
+      "calculator": {
+        "display": "hidden"
+      },
+      "content": {
+        "id": "bank_rw00510_tense_check",
+        "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+        "choices": [
+          "studies",
+          "has been studying",
+          "will study",
+          "was studying"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The shortcut is ineligible. Look at “when she made an interesting discovery.” When was the studying happening?",
+        "solution": "“When she made” places the discovery in the past. The studying was ongoing when that discovery occurred, so the past progressive “was studying” fits: D. “Studies” is present, “has been studying” connects past activity with the present, and “will study” is future. The eligibility check correctly signaled that this question needs tense reasoning.",
+        "explanation": "“Was studying” places the ongoing study at the time of the past discovery. The eligibility check sent you to the sentence’s time relationship."
+      }
+    },
+    {
       "kind": "raw_block",
       "id": "form_trap_check",
       "block_type": "check",
@@ -581,5 +622,5 @@
       }
     }
   ],
-  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Put the sentence and verb choices together at each application instead of asking students to inspect choices on the following card. Previous specification: archive/tool-focus-2026-11/subject-verb-agreement-odd-one-out.json."
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Put the sentence and verb choices together at each application instead of asking students to inspect choices on the following card. Previous specification: archive/tool-focus-2026-11/subject-verb-agreement-odd-one-out.json.\nSeventh optional quality batch 2026-11-14: Add a worked strategy decision and retry use of content-bank question RW-00510 (d65b49ab-20db-4d40-bf81-7e8a34415f9d), keyed D. The question’s stimulus, task, option order, and key are retained; presentation whitespace and blank markup are normalized. Existing strategy, examples, checks, and endings remain unchanged."
 }
