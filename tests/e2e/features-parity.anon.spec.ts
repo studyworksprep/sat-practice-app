@@ -19,8 +19,11 @@
 import { test, expect } from '@playwright/test';
 
 const ROUTES: Array<{ path: string; marker: RegExp }> = [
-  { path: '/features/students',                     marker: /SAT Practice That Actually/i },
-  { path: '/features/teachers',                     marker: /The SAT Platform Built/i },
+  // Headings reworded in #477 ("SAT & ACT Practice That / Actually…",
+  // "The Test Prep Platform Built / for…"); the <br/> joins the halves
+  // with no space, hence \s*.
+  { path: '/features/students',                     marker: /Practice That\s*Actually/i },
+  { path: '/features/teachers',                     marker: /Platform Built/i },
   { path: '/features/tutor-managers',               marker: /Train Your Tutors/i },
   { path: '/features/tutor-managers/demo/team-roster',    marker: /Team Roster/i },
   { path: '/features/tutor-managers/demo/cohort-reports', marker: /Tutor Team/i },

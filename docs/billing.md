@@ -111,6 +111,13 @@ never looks at which plan was bought. After checkout a tutor returns to
 `/tutor/dashboard?checkout=success`; routing them through `/dashboard`
 dropped the marker on the role redirect.
 
+**Leaving and removing.** A tutor can remove a student from their
+roster (Roster → ⋯ → Remove from roster) unless Studyworks sponsors that
+link; ending a sponsorship stays with an admin. A student can leave any
+tutor under Account → Your teachers. Leaving the tutor that sponsors them
+ends the free access, and the confirmation says so. Either way the
+student keeps their account and any subscription.
+
 **Tutors see who hasn't paid.** `/tutor/roster` badges each active
 student whose access needs attention ("Needs a subscription", "Payment
 failed", "Trial until …"), from `roster_plan_status()` (migration

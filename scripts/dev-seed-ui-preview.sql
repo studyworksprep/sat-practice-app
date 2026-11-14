@@ -345,3 +345,61 @@ update public.questions_v2
 set is_broken = true
 where id = 'a0000007-0000-0000-0000-000000000007'
   and is_broken = false;
+
+-- ============================================================
+-- 10. STUDENT6 — the tutor-invitation e2e fixture
+--     (tests/e2e/tutor-invite.teacher.spec.ts, 2026-11-14).
+--     A student with NO tutor and NO plan, used by nothing else: the
+--     spec invites them from the teacher's roster, redeems the code
+--     on /account, checks the paywall, then leaves the tutor and
+--     cleans up. Do not link student6 to anyone here.
+-- ============================================================
+
+insert into auth.users (
+  id, instance_id, aud, role, email, encrypted_password,
+  email_confirmed_at, created_at, updated_at,
+  raw_app_meta_data, raw_user_meta_data,
+  is_sso_user, is_anonymous
+) values
+  ('99999999-9999-9999-9999-999999999999', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'student6@test.studyworks', 'x', now(), now(), now(),
+   '{"role":"student"}'::jsonb, '{}'::jsonb, false, false)
+on conflict (id) do nothing;
+
+insert into public.profiles (
+  id, role, email, first_name, last_name,
+  is_active, target_sat_score, high_school, graduation_year
+) values
+  ('99999999-9999-9999-9999-999999999999', 'student', 'student6@test.studyworks', 'Stu', 'Six', true, 1250, 'Invite High', 2027)
+on conflict (id) do update set
+  role=excluded.role, email=excluded.email, first_name=excluded.first_name,
+  last_name=excluded.last_name, is_active=excluded.is_active,
+  target_sat_score=excluded.target_sat_score,
+  high_school=excluded.high_school, graduation_year=excluded.graduation_year;
+
+update auth.users
+set encrypted_password = crypt('devseed123', gen_salt('bf', 10))
+where id = '99999999-9999-9999-9999-999999999999';
+
+update auth.users set
+  confirmation_token         = coalesce(confirmation_token, ''),
+  recovery_token             = coalesce(recovery_token, ''),
+  email_change               = coalesce(email_change, ''),
+  email_change_token_new     = coalesce(email_change_token_new, ''),
+  email_change_token_current = coalesce(email_change_token_current, ''),
+  phone_change               = coalesce(phone_change, ''),
+  phone_change_token         = coalesce(phone_change_token, ''),
+  reauthentication_token     = coalesce(reauthentication_token, '')
+where id = '99999999-9999-9999-9999-999999999999';
+
+insert into auth.identities (
+  id, user_id, provider_id, provider, identity_data,
+  last_sign_in_at, created_at, updated_at
+)
+select u.id, u.id, u.id::text, 'email',
+  jsonb_build_object('sub', u.id::text, 'email', u.email,
+    'email_verified', true, 'phone_verified', false),
+  now(), now(), now()
+from auth.users u
+where u.id = '99999999-9999-9999-9999-999999999999'
+on conflict (id) do nothing;

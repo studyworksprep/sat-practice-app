@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { requireUser } from '@/lib/api/auth';
+import { isOutsideTeacher, requireUser } from '@/lib/api/auth';
 import { Button } from '@/lib/ui/Button';
 import { filterLessonCatalog, getLessonCatalogFacets } from '@/lib/lesson/catalog';
 import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
@@ -36,6 +36,10 @@ export default async function TutorLessonsPage({
   const { user, profile, supabase } = await requireUser();
   if (profile.role === 'admin') redirect('/admin/lessons');
   if (!['teacher', 'manager'].includes(profile.role)) redirect('/dashboard');
+  // Proposing edits and drafting new lessons is a Studyworks tool
+  // (lesson_revisions RLS, migration 20261114160750). Outside tutors get
+  // the library: preview and assign.
+  const canDraft = !isOutsideTeacher(profile);
 
   const sp = (await searchParams) ?? {};
   const catalogFilters = {
@@ -70,15 +74,22 @@ export default async function TutorLessonsPage({
       <PageHeader
         eyebrow="Teach · Lessons"
         title="Lesson library"
-        description="Preview the published student experience, propose improvements without touching the live lesson, or draft something new for admin review."
+        description={
+          canDraft
+            ? 'Preview the published student experience, propose improvements without touching the live lesson, or draft something new for admin review.'
+            : 'Preview the lessons your students see, then assign them from Assignments.'
+        }
         actions={
-          <form action={createDraftAction} className={s.newForm}>
-            <input name="title" aria-label="New lesson title" placeholder="New lesson title" />
-            <Button type="submit">Create draft</Button>
-          </form>
+          canDraft ? (
+            <form action={createDraftAction} className={s.newForm}>
+              <input name="title" aria-label="New lesson title" placeholder="New lesson title" />
+              <Button type="submit">Create draft</Button>
+            </form>
+          ) : undefined
         }
       />
 
+      {canDraft && (
       <section className={s.section}>
         <div className={s.sectionHead}>
           <div>
@@ -108,6 +119,7 @@ export default async function TutorLessonsPage({
           </div>
         )}
       </section>
+      )}
 
       <section className={s.section}>
         <div className={s.sectionHead}>
@@ -149,7 +161,7 @@ export default async function TutorLessonsPage({
                     <Button href={`/tutor/lessons/${lesson.id}/preview`} variant="secondary">
                       Preview
                     </Button>
-                    {active ? (
+                    {!canDraft ? null : active ? (
                       <Button href={`/tutor/lessons/drafts/${active.id}`}>
                         {active.state === 'submitted' ? 'View submission' : 'Resume draft'}
                       </Button>

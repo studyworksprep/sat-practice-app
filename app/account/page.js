@@ -22,6 +22,7 @@ import {
   updateEmail,
   updateDetourPreference, updateTimeAccommodation,
   addTeacherCode,
+  leaveTeacher,
 } from './actions';
 import { AccountClient } from './AccountClient';
 import { parseTimeAccommodation } from '@/lib/practice/time-accommodation';
@@ -103,6 +104,7 @@ export default async function AccountPage() {
       timeAccommodation={parseTimeAccommodation(profile?.time_accommodation)}
       updateTimeAccommodationAction={updateTimeAccommodation}
       addTeacherCodeAction={addTeacherCode}
+      leaveTeacherAction={leaveTeacher}
     />
   );
 }

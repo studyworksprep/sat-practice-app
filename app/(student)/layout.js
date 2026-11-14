@@ -83,7 +83,8 @@ export default async function StudentTreeLayout({ children }) {
   // surfaces they can't use.
   const isTutor = sharedInfra
     && (profile.role === 'teacher' || profile.role === 'manager' || profile.role === 'admin');
-  let links = isTutor ? tutorLinksForRole(profile.role) : STUDENT_LINKS;
+  const tutorNavOpts = { studyworks: profile.subscription_exempt === true };
+  let links = isTutor ? tutorLinksForRole(profile.role, tutorNavOpts) : STUDENT_LINKS;
 
   const isStudent = !isTutor && profile.role === 'student';
 
@@ -160,7 +161,7 @@ export default async function StudentTreeLayout({ children }) {
     let badges;
     let tabs;
     if (isTutor) {
-      sections = tutorSectionsForRole(profile.role);
+      sections = tutorSectionsForRole(profile.role, tutorNavOpts);
     } else {
       // Plan joins the sidebar anchor only when the student has an
       // active plan — without one the link would open an empty hub.

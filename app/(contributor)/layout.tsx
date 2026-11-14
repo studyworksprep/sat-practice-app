@@ -13,7 +13,7 @@
 // a short one.
 
 import { redirect } from 'next/navigation';
-import { requireUserPage } from '@/lib/api/auth';
+import { isOutsideTeacher, requireUserPage } from '@/lib/api/auth';
 import { sidebarEnabledFor } from '@/lib/flags-server';
 import { AppNav } from '@/lib/ui/AppNav';
 import { AppShell } from '@/lib/ui/AppSidebar';
@@ -31,7 +31,11 @@ export default async function ContributorTreeLayout({
 }) {
   const { user, profile } = await requireUserPage();
 
-  // The application-layer mirror of the DB's can_contribute().
+  // The application-layer mirror of the DB's can_contribute():
+  // Studyworks staff (admin, manager, a Studyworks teacher) or the
+  // contributor role. An outside, paying teacher has the 'teacher' role
+  // but is not staff (migration 20261114160750).
+  if (isOutsideTeacher(profile)) redirect('/tutor/dashboard');
   const isStaff = ['teacher', 'manager', 'admin'].includes(profile.role);
   const isContributor = profile.role === 'contributor';
   if (!isStaff && !isContributor) {

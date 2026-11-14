@@ -178,6 +178,31 @@ export function assertWriter(
 }
 
 /**
+ * An independent, paying tutor: role 'teacher' without the Studyworks
+ * marker (subscription_exempt). They hold the same role as a Studyworks
+ * tutor, so a role list alone can't tell them apart.
+ */
+export function isOutsideTeacher(
+  profile: { role?: string | null; subscription_exempt?: boolean | null } | null | undefined,
+): boolean {
+  return profile?.role === 'teacher' && profile?.subscription_exempt !== true;
+}
+
+/**
+ * Throw for an outside teacher. Studyworks-internal tools (Bluebook
+ * contributions and review, lesson-edit drafting) call this after their
+ * requireRole; the database mirror is is_studyworks_staff() (migrations
+ * 20261114115428, 20261114160750).
+ */
+export function assertStudyworksTool(
+  ctx: { profile?: { role?: string | null; subscription_exempt?: boolean | null } | null } | null | undefined,
+): void {
+  if (isOutsideTeacher(ctx?.profile)) {
+    throw new ApiError('Forbidden', 403);
+  }
+}
+
+/**
  * Throw unless the authenticated user has one of the allowed roles.
  * e.g. requireRole(['admin']) or requireRole(['teacher', 'admin'])
  */

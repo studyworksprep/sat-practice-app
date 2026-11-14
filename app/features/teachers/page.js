@@ -202,7 +202,7 @@ const slides = [
         src="/screenshots/teacher-student-detail-3.png"
         alt="Progress over time and suggested review"
         title="Track Progress and Share It"
-        description="See which areas are improving and which have stalled. Studyworks suggests what to review based on where each student has the most room to grow. Export the data to build progress reports for families or to use in the other tools you rely on."
+        description="See which areas are improving and which have stalled. Studyworks suggests what to review based on where each student has the most room to grow, and every report is one you can walk through with students and their families."
       />
     ),
   },
@@ -217,8 +217,8 @@ const slides = [
             items: [
               { title: 'Live student roster', desc: 'Who’s active, how they’re doing, and who needs attention.' },
               { title: 'Student profiles', desc: 'Mastery, test history, sessions, official scores, and assignments.' },
-              { title: 'Add students to your roster', desc: 'One at a time or in bulk.' },
-              { title: 'Class groups', desc: 'Group students by class to compare and report on them.' },
+              { title: 'Invite students by email', desc: 'Each student gets a personal code to join your roster.' },
+              { title: 'Subscription status', desc: 'See at a glance which students still need to subscribe.' },
             ],
           },
           {
@@ -258,14 +258,13 @@ const slides = [
               { title: 'Weak questions drill', desc: 'Send any student back to the questions they’ve missed most.' },
               { title: 'Error Log', desc: 'Students note why they missed each question and how to avoid it. You see every entry.' },
               { title: 'Flashcards', desc: 'Students save any idea, term, or formula you want them to remember, and you can check they’re using them.' },
-              { title: 'Question notes', desc: 'Leave notes on any question for yourself or your students.' },
+              { title: 'Question notes', desc: 'Keep your own notes on any question in the bank.' },
             ],
           },
           {
             label: 'Tools',
             items: [
               { title: 'Desmos solutions', desc: 'One-click graphing solutions for most SAT math questions.' },
-              { title: 'CSV exports', desc: 'Take your data into the other tools you use.' },
             ],
           },
         ]}
@@ -279,17 +278,17 @@ const slides = [
         price="$39.99"
         period="per month for accounts created November 8, 2026 or later; earlier accounts keep $29.99/month"
         items={[
-          'Unlimited students',
+          'Invite as many students as you like (each student has their own subscription)',
           'SAT and ACT question banks and practice tests',
           'Assignments, including lessons',
           'Mastery tracking and score reports',
           'Bluebook upload and timing for every question',
           'Concept tags and Desmos solutions',
-          'Session notes and data exports',
+          'Session notes',
         ]}
         note={{
           title: 'Studyworks Prep educators',
-          text: <>Teachers with <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: 'var(--color-app-primary, #102a43)' }}>Studyworks Prep</a> get full access at no cost, along with all their students.</>,
+          text: <>Teachers with <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: 'var(--color-app-primary, #102a43)' }}>Studyworks Prep</a> get full access at no cost, along with the students Studyworks sponsors.</>,
           bg: 'rgba(16,42,67,0.05)',
           border: 'rgba(16,42,67,0.2)',
           titleColor: 'var(--color-app-primary, #102a43)',

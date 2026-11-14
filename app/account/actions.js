@@ -264,3 +264,38 @@ export async function addTeacherCode(_prev, formData) {
     grantedExemption: data.sponsored === true,
   });
 }
+
+/**
+ * Leave one of the caller's tutors (migration 20261114160750). RLS
+ * (tsa_delete_own_student) lets a student delete only their own links.
+ * Leaving a tutor who sponsored the student's access ends that
+ * sponsorship; the UI says so before confirming.
+ */
+export async function leaveTeacher(input) {
+  const teacherId = typeof input?.teacherId === 'string' ? input.teacherId : '';
+  if (!teacherId) return actionFail('teacherId required');
+
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  if (!['student', 'practice'].includes(ctx.profile?.role)) {
+    return actionFail('Only students can leave a teacher here');
+  }
+
+  const { data: removed, error } = await ctx.supabase
+    .from('teacher_student_assignments')
+    .delete()
+    .eq('student_id', ctx.user.id)
+    .eq('teacher_id', teacherId)
+    .select('teacher_id');
+  if (error) return actionFail(`Could not leave this teacher: ${error.message}`);
+  if (!removed?.length) return actionFail('That teacher is no longer linked to your account.');
+
+  revalidatePath('/account');
+  revalidatePath('/', 'layout');
+  return actionOk({ teacherId });
+}

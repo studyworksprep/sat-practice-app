@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import type { CSSProperties } from 'react';
-import { requireUser } from '@/lib/api/auth';
+import { isOutsideTeacher, requireUser } from '@/lib/api/auth';
 import { loadAllTechniques } from '@/lib/practice/load-question-techniques';
 import { Button } from '@/lib/ui/Button';
 import type { Json } from '@/lib/types';
@@ -73,6 +73,9 @@ export default async function TutorLessonDraftPage({
   const { user, profile, supabase } = await requireUser();
   if (profile.role === 'admin') redirect(`/admin/lessons/review/${revisionId}`);
   if (!['teacher', 'manager'].includes(profile.role)) redirect('/dashboard');
+  // Lesson-edit drafting is a Studyworks tool; outside tutors use the
+  // library only.
+  if (isOutsideTeacher(profile)) redirect('/tutor/lessons');
 
   const [{ data: revisionData }, { data: blocks }, { data: topics }, { data: techniqueRows }, techniqueCatalog] = await Promise.all([
     supabase.from('lesson_revisions').select(`
