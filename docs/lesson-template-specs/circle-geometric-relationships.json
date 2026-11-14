@@ -30,6 +30,14 @@
         "calculator": {
           "display": "hidden"
         }
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/8208a60ea3cc84953ca8e5dd0abf54035c7d57f4/public/images/lesson-quality-second-batch/circle-highlighted-arc.svg",
+        "alt": "Circle centered at O. Radii OA and OB meet at a right angle; the arc from A to B is highlighted in blue.",
+        "caption": "Trace the highlighted arc between the two radii."
+      },
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -98,6 +106,14 @@
         "allow_retry": true,
         "explanation": "Four equal copies complete the circle, so this arc has one fourth of the full circumference.",
         "correct_index": 1
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/8208a60ea3cc84953ca8e5dd0abf54035c7d57f4/public/images/lesson-quality-second-batch/circle-highlighted-arc.svg",
+        "alt": "Circle centered at O. Radii OA and OB meet at a right angle; the arc from A to B is highlighted in blue.",
+        "caption": "Compare the highlighted part with the whole circumference."
+      },
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -113,12 +129,36 @@
       }
     },
     {
+      "kind": "text",
+      "id": "radius_diameter_relationship",
+      "html": "<h2>Connect radius and diameter</h2><p>A <strong>radius</strong> \\(r\\) runs from the center to the circle’s edge. A <strong>diameter</strong> \\(d\\) crosses the circle through the center, so it spans two radii.</p><blockquote><p><strong>Diameter:</strong></p><p>\\[d=2r\\]</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "circumference_formula",
+      "html": "<h2>Measure the distance around</h2><p>The <strong>circumference</strong> \\(C\\) is the distance around a circle. Use the radius \\(r\\).</p><blockquote><p><strong>Circumference:</strong></p><p>\\[C=2\\pi r\\]</p></blockquote><p>This formula is on the SAT reference sheet. Circumference uses length units, such as centimeters.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "area_formula",
+      "html": "<h2>Measure the space inside</h2><p>The <strong>area</strong> \\(A\\) measures the space inside a circle. Use the radius \\(r\\).</p><blockquote><p><strong>Area:</strong></p><p>\\[A=\\pi r^2\\]</p></blockquote><p>This formula is on the SAT reference sheet. Area uses square units, such as square centimeters.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
       "kind": "raw_block",
       "id": "whole_circle_model",
       "block_type": "text",
       "content": {
         "id": "whole_circle_model",
-        "html": "<h2>Use the radius to connect whole-circle measurements</h2><p>A <strong>radius</strong> runs from center to edge; a <strong>diameter</strong> is twice the radius. Use \\(d=2r\\), \\(C=2\\pi r\\), and \\(A=\\pi r^2\\).</p><p>For circumference \\(12\\pi\\), r=6. The area is then \\(36\\pi\\). Keep going if the radius is only an intermediate result.</p>",
+        "html": "<h2>Use the radius to connect measurements</h2><p>A circle has circumference \\(12\\pi\\). Find its area.</p><p>First use the circumference to find the radius:</p><p>\\[12\\pi=2\\pi r\\quad\\Rightarrow\\quad r=6\\]</p><p>Then use that radius to find the area:</p><p>\\[A=\\pi(6)^2=36\\pi\\]</p><p>The radius is an intermediate result. Keep going to the requested area.</p>",
         "calculator": {
           "display": "hidden"
         }
@@ -235,6 +275,14 @@
             }
           ]
         }
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/8208a60ea3cc84953ca8e5dd0abf54035c7d57f4/public/images/lesson-quality-second-batch/circle-two-angle-vertices.svg",
+        "alt": "Circle centered at O with A at the right, B at the top, and C at the left. Arc AB is highlighted. The central angle AOB is 90 degrees, and the inscribed angle ACB is 45 degrees.",
+        "caption": "Both angles intercept the same highlighted arc AB."
+      },
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -376,6 +424,14 @@
             }
           ]
         }
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/8208a60ea3cc84953ca8e5dd0abf54035c7d57f4/public/images/lesson-quality-second-batch/circle-equal-radii.svg",
+        "alt": "Circle centered at O, with A and B on its upper half. OA and OB have matching tick marks. Angle AOB is 90 degrees; both base angles are 45 degrees.",
+        "caption": "The two radii have matching length marks."
+      },
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -447,6 +503,14 @@
             }
           ]
         }
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/8208a60ea3cc84953ca8e5dd0abf54035c7d57f4/public/images/lesson-quality-second-batch/circle-tangent-right-triangle.svg",
+        "alt": "A circle centered at O has radius OA labeled 3. Tangent AP is labeled 4, angle OAP is a right angle, and OP is labeled 5.",
+        "caption": "The radius is perpendicular to the tangent at A."
+      },
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -520,6 +584,14 @@
             }
           ]
         }
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/8208a60ea3cc84953ca8e5dd0abf54035c7d57f4/public/images/lesson-quality-second-batch/circle-paired-tangents.svg",
+        "alt": "A circle centered at O has tangent segments PA and PB from outside point P. PA is labeled 2u and PB is labeled 3u minus 2; both have matching length marks.",
+        "caption": "Both tangent segments start at P."
+      },
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -606,6 +678,14 @@
             }
           ]
         }
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/8208a60ea3cc84953ca8e5dd0abf54035c7d57f4/public/images/lesson-quality-second-batch/circle-tangent-area.svg",
+        "alt": "Circle centered at O with tangent segments PA and PB from outside point P. Radii OA and OB are each labeled 3, tangents PA and PB are each labeled 4, and OP divides quadrilateral OAPB into two shaded right triangles.",
+        "caption": "OP divides the quadrilateral into two right triangles."
+      },
+      "calculator": {
+        "display": "hidden"
       }
     },
     {
@@ -713,5 +793,6 @@
         "button_label": "Complete Lesson"
       }
     }
-  ]
+  ],
+  "authoring_notes": "\nSecond optional quality batch 2026-11-13: Replace seven non-coordinate Desmos geometry views with labeled standalone figures. Keep the prior highlighted-arc reference fix and all existing questions and keys. Formula-layout refinements are deferred."
 }

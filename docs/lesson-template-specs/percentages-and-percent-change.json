@@ -283,7 +283,15 @@
     {
       "kind": "text",
       "id": "percent_change_template",
-      "html": "<h2>Add or remove a percent of Old</h2><p>An increase gives \\(\\text{New}=\\text{Old}+p\\%\\text{ of Old}\\). A decrease gives \\(\\text{New}=\\text{Old}-p\\%\\text{ of Old}\\).</p><p>Replace the equals sign with ~ when regression will find an unknown.</p>",
+      "html": "<h2>Increase: add a percent of Old</h2><p>Start with <strong>Old</strong>, then add \\(p\\%\\) of that starting value.</p><blockquote><p><strong>Increase template:</strong></p><p>\\[\\text{New}=\\text{Old}+p\\%\\text{ of Old}\\]</p></blockquote><p>Both uses of <strong>Old</strong> mean the same starting value. The percent is based on Old.</p><p>In Desmos, replace \\(=\\) with \\(\\sim\\) when regression will find an unknown.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "percent_decrease_template",
+      "html": "<h2>Decrease: subtract a percent of Old</h2><p>Start with <strong>Old</strong>, then subtract \\(p\\%\\) of that starting value.</p><blockquote><p><strong>Decrease template:</strong></p><p>\\[\\text{New}=\\text{Old}-p\\%\\text{ of Old}\\]</p></blockquote><p>Both uses of <strong>Old</strong> mean the same starting value. The percent is based on Old.</p><p>In Desmos, replace \\(=\\) with \\(\\sim\\) when regression will find an unknown.</p>",
       "calculator": {
         "display": "hidden"
       }

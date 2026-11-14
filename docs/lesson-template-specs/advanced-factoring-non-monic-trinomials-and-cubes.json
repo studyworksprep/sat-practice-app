@@ -273,6 +273,29 @@
       }
     },
     {
+      "kind": "raw_block",
+      "id": "difference_cube_changed_check",
+      "block_type": "check",
+      "calculator": {
+        "display": "hidden"
+      },
+      "content": {
+        "id": "difference_cube_changed_check",
+        "prompt": "Which expression is the complete factorization of \\(64z^3-125\\)?",
+        "choices": [
+          "\\((4z-5)(16z^2-20z+25)\\)",
+          "\\((4z-5)(16z^2+25)\\)",
+          "\\((4z-5)(16z^2+20z+25)\\)",
+          "\\((4z+5)(16z^2-20z+25)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Find the cube root of each term. Then use Keep, Opposite, Plus and check the product of the two cube roots in the quadratic factor.",
+        "solution": "The cube roots are \\(A=4z\\) and \\(B=5\\). For a difference, use \\((A-B)(A^2+AB+B^2)\\). Here \\(A^2=16z^2\\), \\(AB=20z\\), and \\(B^2=25\\), giving \\((4z-5)(16z^2+20z+25)\\). The middle term is positive so the cross-products cancel when the factors are multiplied.",
+        "explanation": "The roots are \\(4z\\) and \\(5\\), so the quadratic needs \\(16z^2+20z+25\\). Keeping the negative middle sign, omitting \\(20z\\), or starting with \\(4z+5\\) changes the product."
+      }
+    },
+    {
       "kind": "text",
       "id": "sum_of_cubes_model",
       "html": "<h2>Use the sum pattern</h2><p>For \\(8x^3+125\\), use 2x and 5. Keep plus, then use minus: \\((2x+5)(4x^2-10x+25)\\). Square the whole 2x and multiply the whole pair for the middle term.</p>",
