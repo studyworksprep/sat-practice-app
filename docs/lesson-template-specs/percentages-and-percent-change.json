@@ -283,7 +283,15 @@
     {
       "kind": "text",
       "id": "percent_change_template",
-      "html": "<h2>Add or remove a percent of Old</h2><p>An increase gives \\(\\text{New}=\\text{Old}+p\\%\\text{ of Old}\\). A decrease gives \\(\\text{New}=\\text{Old}-p\\%\\text{ of Old}\\).</p><p>Replace the equals sign with ~ when regression will find an unknown.</p>",
+      "html": "<h2>Increase: add a percent of Old</h2><p>Start with <strong>Old</strong>, then add \\(p\\%\\) of that starting value.</p><blockquote><p><strong>Increase template:</strong></p><p>\\[\\text{New}=\\text{Old}+p\\%\\text{ of Old}\\]</p></blockquote><p>Both uses of <strong>Old</strong> mean the same starting value. The percent is based on Old.</p><p>In Desmos, replace \\(=\\) with \\(\\sim\\) when regression will find an unknown.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "percent_decrease_template",
+      "html": "<h2>Decrease: subtract a percent of Old</h2><p>Start with <strong>Old</strong>, then subtract \\(p\\%\\) of that starting value.</p><blockquote><p><strong>Decrease template:</strong></p><p>\\[\\text{New}=\\text{Old}-p\\%\\text{ of Old}\\]</p></blockquote><p>Both uses of <strong>Old</strong> mean the same starting value. The percent is based on Old.</p><p>In Desmos, replace \\(=\\) with \\(\\sim\\) when regression will find an unknown.</p>",
       "calculator": {
         "display": "hidden"
       }
@@ -875,6 +883,26 @@
     },
     {
       "kind": "raw_block",
+      "id": "independent_discount_tax_original_fee",
+      "block_type": "check",
+      "content": {
+        "id": "independent_discount_tax_original_fee",
+        "input": "numeric",
+        "answer": "120",
+        "tolerance": 0,
+        "allow_retry": false,
+        "prompt": "A craft kit’s discounted price is \\(20\\%\\) less than its original price. A sales tax equal to \\(5\\%\\) of the discounted price and a handling fee equal to \\(3\\%\\) of the original price are added. The customer pays \\(\\$104.40\\) in total. What is the original price of the kit, in dollars?",
+        "explanation": "Let b be the original price and d the discounted price. Define \\(d=b-20\\%\\text{ of }b\\). In one regression, match d plus 5% of d plus 3% of b to 104.40. Desmos finds \\(b=120\\) and \\(d=96\\), with zero or tiny RMSE. The tax is $4.80 and the fee is $3.60, giving \\(96+4.80+3.60=104.40\\). Report the original price, 120, rather than the discounted price, 96."
+      },
+      "calculator": {
+        "mode": "scratch",
+        "display": "open",
+        "title": "Reset before this new question",
+        "resettable": true
+      }
+    },
+    {
+      "kind": "raw_block",
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
@@ -886,5 +914,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Three percent operations use two different bases. The return requires an independent two-row setup and a numeric answer, without preloading the solution or rejecting valid alternative setups. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Remove the decimal-conversion lesson because the taught percent-of workflow uses the written percent directly. Remove the decimal-conversion quiz because it is not needed to enter or read percent-of regression. Practise the direct percent-of entry and remove the unnecessary decimal-multiplication comparison. Introduce connected percent statements before showing the worked discount-and-fee example. Show the Desmos translation and readout in percent answer feedback. Merge the repeated one-definition reminder into the worked regression card. Describe the values Desmos shows instead of asking students to interpret assigned-value terminology. Previous specification: archive/tool-focus-2026-11/percentages-and-percent-change.json."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Three percent operations use two different bases. The return requires an independent two-row setup and a numeric answer, without preloading the solution or rejecting valid alternative setups. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Remove the decimal-conversion lesson because the taught percent-of workflow uses the written percent directly. Remove the decimal-conversion quiz because it is not needed to enter or read percent-of regression. Practise the direct percent-of entry and remove the unnecessary decimal-multiplication comparison. Introduce connected percent statements before showing the worked discount-and-fee example. Show the Desmos translation and readout in percent answer feedback. Merge the repeated one-definition reminder into the worked regression card. Describe the values Desmos shows instead of asking students to interpret assigned-value terminology. Previous specification: archive/tool-focus-2026-11/percentages-and-percent-change.json.\nFifth optional quality batch 2026-11-14: Add independent discount, discounted-price tax, and original-price fee practice. Preserve the separate formula templates from the fourth batch."
 }

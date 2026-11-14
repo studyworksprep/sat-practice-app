@@ -478,6 +478,26 @@
       }
     },
     {
+      "kind": "raw_block",
+      "id": "independent_coupled_mass_percent",
+      "block_type": "check",
+      "content": {
+        "id": "independent_coupled_mass_percent",
+        "input": "numeric",
+        "answer": "87.5",
+        "tolerance": 0,
+        "allow_retry": false,
+        "prompt": "Samples U, V, and W have positive masses. The mass of U is \\(50\\%\\) of the combined mass of V and W. The mass of V is \\(25\\%\\) of the combined mass of U and W. The mass of W is \\(p\\%\\) of the combined mass of U and V. What is the value of \\(p\\)?",
+        "explanation": "Use one list regression with \\([U,V,W]\\) on the left. On the right, pair them with \\(50\\%\\text{ of }(V+W)\\), \\(25\\%\\text{ of }(U+W)\\), and \\(p\\%\\text{ of }(U+V)\\), in that order. Inspect the positive amounts and RMSE. If all masses become zero, define a free mass, such as \\(W=7\\), and refit. One valid fit is \\(U=5\\), \\(V=3\\), \\(W=7\\), and \\(p=87.5\\). Report the percent value, not the mass 7 or the ratio 0.875."
+      },
+      "calculator": {
+        "mode": "scratch",
+        "display": "open",
+        "title": "Reset before this new question",
+        "resettable": true
+      }
+    },
+    {
       "id": "90c1ce38-99e5-4fe1-884a-c13d33c98b93",
       "kind": "raw_block",
       "content": {
@@ -491,5 +511,5 @@
       }
     }
   ],
-  "authoring_notes": "Calculator opening revision 2026-11-12: Coupled percentages of combined amounts require simultaneous equations rather than one direct ratio. A short grouping explanation and check prepare this genuine variation before the return. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Introduce the target-percent equation generally, then show each complete worked or guided problem alongside its setup. Introduce supplied measurements without previewing the next question’s number. Show only the percent-of interface control, without an unrelated decimal-multiplication row. Previous specification: archive/tool-focus-2026-11/solve-multiple-percent-equations-with-list-regression.json."
+  "authoring_notes": "Calculator opening revision 2026-11-12: Coupled percentages of combined amounts require simultaneous equations rather than one direct ratio. A short grouping explanation and check prepare this genuine variation before the return. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Introduce the target-percent equation generally, then show each complete worked or guided problem alongside its setup. Introduce supplied measurements without previewing the next question’s number. Show only the percent-of interface control, without an unrelated decimal-multiplication row. Previous specification: archive/tool-focus-2026-11/solve-multiple-percent-equations-with-list-regression.json.\nFifth optional quality batch 2026-11-14: Add independent coupled combined-mass percent practice."
 }

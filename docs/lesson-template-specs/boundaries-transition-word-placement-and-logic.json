@@ -188,6 +188,11 @@
       "html": "<h2>Identify the pair it connects</h2><p>If the transition belongs to B, test the connection from A to B. If it belongs to C, test B to C. A semicolon and a period both separate complete clauses for this decision.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/64cad1fd3872b1297faf44dd1863feb917cb9fb1/public/images/lesson-quality-fifth-batch/transition-clause-pairs.svg",
+        "alt": "Two A–B–C maps: A. B, however; C connects A to B, while A. B; however, C connects B to C. In each pattern, however belongs to the later clause of the connected pair.",
+        "caption": "The transition stays in the clause that contains it. Test that clause against the one before it."
       }
     },
     {
@@ -230,6 +235,11 @@
       "html": "<h2>Find the result in this passage</h2><p>The repair explains why astronomers used the backup: A leads to B. Using the backup does not explain its installation date. “Therefore” belongs to B, before the full stop separating B and C.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/64cad1fd3872b1297faf44dd1863feb917cb9fb1/public/images/lesson-quality-fifth-batch/transition-result-before-stop.svg",
+        "alt": "Clause A: The observatory’s main telescope was under repair. Clause B: Astronomers used a smaller backup telescope, therefore; clause C: The backup instrument had been installed in 2018. A causes B, so therefore stays in B before the semicolon. C gives background.",
+        "caption": "The repair causes the use of the backup: A → B. Therefore belongs to B, before the semicolon."
       }
     },
     {
@@ -261,6 +271,11 @@
       "html": "<h2>Hear the same connection another way</h2><p>Think: “The main telescope was under repair. Therefore, astronomers used a backup. The backup had been installed in 2018.” Moving “therefore” to the end of the backup clause keeps that meaning.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/64cad1fd3872b1297faf44dd1863feb917cb9fb1/public/images/lesson-quality-fifth-batch/transition-result-before-stop.svg",
+        "alt": "Clause A: The observatory’s main telescope was under repair. Clause B: Astronomers used a smaller backup telescope, therefore; clause C: The backup instrument had been installed in 2018. A causes B, so therefore stays in B before the semicolon. C gives background.",
+        "caption": "Moving therefore within B keeps the A → B relationship."
       }
     },
     {
@@ -296,6 +311,11 @@
       "html": "<h2>This time the contrast comes later</h2><p>In the new passage, the repairs explain the expectation of observing. The clouds contrast with that expectation. “However” belongs to C, after the full stop separating B and C.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/64cad1fd3872b1297faf44dd1863feb917cb9fb1/public/images/lesson-quality-fifth-batch/transition-contrast-after-stop.svg",
+        "alt": "Clause A: Repairs to the telescope ended on Monday. Clause B: Astronomers expected to resume observations that night; clause C: however, dense clouds covered the sky. B and C contrast, so however begins C after the semicolon.",
+        "caption": "The clouds contrast with the expectation: B → C. However begins C, after the semicolon."
       }
     },
     {
@@ -582,5 +602,5 @@
       }
     }
   ],
-  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/boundaries-transition-word-placement-and-logic.json."
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/boundaries-transition-word-placement-and-logic.json.\nFifth optional quality batch 2026-11-14: Attach generic and worked A–B–C clause maps to four explanatory cards; retain existing questions and keys."
 }

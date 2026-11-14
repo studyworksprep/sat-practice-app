@@ -154,6 +154,29 @@
       }
     },
     {
+      "kind": "raw_block",
+      "id": "leading_wording_changed_check",
+      "block_type": "check",
+      "content": {
+        "id": "leading_wording_changed_check",
+        "prompt": "A town wants to estimate adult residents’ support for adding benches to its public parks. It selects residents randomly from a complete list, and every selected resident responds. Which survey question is most likely to bias responses in favor of adding the benches?",
+        "choices": [
+          "Do you support or oppose the proposal to add benches to the town’s public parks?",
+          "Would you vote for or against a proposal to add benches to the town’s public parks?",
+          "Do you agree that the town should finally add much-needed benches to its public parks?",
+          "Do you approve or disapprove of the proposal to add benches to the town’s public parks?"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Compare how the questions describe the proposal. Which wording suggests an opinion the respondent is expected to share?",
+        "solution": "“Finally” and “much-needed” present the benches as overdue and necessary. That wording encourages support, so choice C is leading. The other questions allow support or opposition without praising the proposal. Random selection and full response do not remove a bias introduced by the question itself.",
+        "explanation": "The phrases “finally” and “much-needed” favor the proposal before the resident answers. The other three questions describe the proposal without that favorable judgment. Good selection cannot correct leading wording."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
       "kind": "text",
       "id": "largest_population_rule",
       "html": "<h2>Keep every restriction on the sampled group</h2><p>A random sample of district eleventh graders can support estimates about district eleventh graders. It cannot automatically describe all district students or all statewide eleventh graders.</p><p>The selection process determines how far you can generalize.</p>",
@@ -527,5 +550,5 @@
       }
     }
   ],
-  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/surveys-sampling-and-margin-of-error.json."
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Previous specification: archive/tool-focus-2026-11/surveys-sampling-and-margin-of-error.json.\nFifth optional quality batch 2026-11-14: Add a changed retry check on leading versus neutral wording."
 }

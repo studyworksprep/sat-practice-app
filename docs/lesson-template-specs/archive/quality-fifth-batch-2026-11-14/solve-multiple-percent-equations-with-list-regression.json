@@ -1,0 +1,495 @@
+{
+  "title": "Solve Multiple Percent Equations with List Regression",
+  "description": "Translate connected percent and percent-change statements with Desmos % of notation, pair them in one list regression, and repair a zero-out fit only when it occurs.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "revision_opening_attempt",
+      "html": "<h2>Give it a try</h2><p>Spend about a minute on this question. Keep what you tried, even if you got stuck. You can continue without submitting an answer.</p>",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "opening_coupled_percent_masses",
+        "title": "Three related samples",
+        "html": "<p>Samples R, S, and T have positive masses. The mass of R is \\(75\\%\\) of the combined mass of S and T. The mass of S is \\(20\\%\\) of the combined mass of R and T.</p><p>The mass of T is \\(p\\%\\) of the combined mass of R and S. What is the value of \\(p\\)?</p>"
+      }
+    },
+    {
+      "id": "ed9512e2-2bf1-49fe-9769-f5fafe14bf32",
+      "kind": "raw_block",
+      "content": {
+        "id": "lesson_preview",
+        "html": "<h2>Let the percent statements work together</h2><p>In the opening question, each percentage uses a combined mass, and the unknown amounts depend on one another. Solving the statements one at a time would require several rearrangements.</p><p>One <strong>list regression</strong> can connect them as written. We’ll refresh the paired-list entry, then add the percent statements.</p>"
+      },
+      "block_type": "text",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "a1c51dc4-41c3-4865-b284-01dbb9541632",
+      "kind": "raw_block",
+      "content": {
+        "id": "list_refresher",
+        "html": "<h2>Refresh the matching pairs</h2><p>For \\(a+b=11\\) and \\(a-b=3\\), \\([a+b,a-b]\\sim[11,3]\\) matches first to first and second to second. The tilde, <strong>~</strong>, asks Desmos to find the unknowns. This is <strong>list regression</strong>.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text"
+    },
+    {
+      "id": "3e6eb5ee-5333-4aad-92a4-de8220cb00a4",
+      "kind": "raw_block",
+      "content": {
+        "id": "refresh_pairing",
+        "hint": "Keep each equation’s sides in matching positions, then check the symbol between the lists.",
+        "prompt": "Which single row pairs \\(A+B=18\\) and \\(A-B=6\\) correctly?",
+        "choices": [
+          "\\([A+B,A-B]\\sim[6,18]\\)",
+          "\\([A+B,A-B]\\sim[18,6]\\)",
+          "\\([A+B,18]\\sim[A-B,6]\\)",
+          "\\([A+B,A-B]=[18,6]\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "The first pair says \\(A+B=18\\); the second says \\(A-B=6\\). The tilde fits their unknowns together.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "b3938a08-7ed6-459c-9378-b7cd8c340e61",
+      "kind": "raw_block",
+      "content": {
+        "id": "percent_translation",
+        "html": "<h2>Translate “percent of” directly</h2><p>“A is 240% of B” becomes \\(A=240\\%\\text{ of }B\\). The amount after “of” is the <strong>base</strong> of the comparison.</p><p>In Desmos, typing % inserts “of” automatically. Type the base after it. Keep decimal percents such as 0.8% as written.</p>"
+      },
+      "block_type": "text",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "20c4ed68-f479-4521-b050-2a51cabe5181",
+      "kind": "raw_block",
+      "content": {
+        "id": "percent_direction",
+        "hint": "Identify the mass being described, then the mass named after “of.”",
+        "prompt": "A sample’s mass A is 0.8% of mass C. Which equation translates that statement?",
+        "choices": [
+          "\\(C=0.8\\%\\operatorname{of}A\\)",
+          "\\(A=C+0.8\\%\\operatorname{of}C\\)",
+          "\\(A=0.8\\%\\operatorname{of}C\\)",
+          "\\(A=8\\%\\operatorname{of}C\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "A is the described mass; C is the base. Keep 0.8% as written. The other entries reverse the comparison, add an increase, or change the percent.",
+        "correct_index": 2
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "56f2020d-265d-46d3-9185-2ebf44a78f84",
+      "kind": "raw_block",
+      "content": {
+        "id": "worked_statements",
+        "html": "<h2>Make the question an equation too</h2><p>The requested percent is another unknown. For “C is p% of B,” write \\(C=p\\%\\text{ of }B\\).</p><p>Include that equation alongside the given comparisons so regression can find the requested percent directly.</p>"
+      },
+      "block_type": "text",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "0db17290-a0de-4059-ac5c-8107406413e0",
+      "kind": "raw_block",
+      "content": {
+        "id": "worked_regression",
+        "html": "<h2>Put the statements in one regression</h2><p>Define \\(B=50\\). Enter \\([A,A,C]\\sim[240\\%\\text{ of }B,0.8\\%\\text{ of }C,p\\%\\text{ of }B]\\). Desmos finds \\(p=30000\\).</p><p><strong>RMSE</strong> measures the mismatch between paired sides. For exact equations, look for zero or a tiny value and amounts that fit the problem.</p>",
+        "calculator": {
+          "display": "hidden"
+        }
+      },
+      "block_type": "text",
+      "shared_prompt": {
+        "id": "percent_list_worked_example",
+        "title": "Connected percent statements",
+        "html": "<p>Sample A is 240% of sample B and 0.8% of sample C. Sample B has mass 50 grams. If C is p% of B, find p.</p>"
+      }
+    },
+    {
+      "id": "2a519c76-6082-4506-a21e-f3749e068e85",
+      "kind": "raw_block",
+      "content": {
+        "id": "target_equation",
+        "hint": "Translate the question using the same “is” and “of” order as a given statement.",
+        "prompt": "The question asks: “C is p% of B.” Which equation belongs in the paired lists?",
+        "choices": [
+          "\\(C=p\\%\\operatorname{of}B\\)",
+          "\\(B=p\\%\\operatorname{of}C\\)",
+          "\\(C=B+p\\%\\operatorname{of}B\\)",
+          "\\(p=C-B\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "C is the described amount, p is the unknown percent, and B is its base. Reversing B and C changes the comparison.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "9aa82da4-a668-4098-9da6-023caa0e1c4c",
+      "kind": "raw_block",
+      "content": {
+        "id": "guided_setup",
+        "html": "<h2>Translate, then Pair</h2><ol><li>Translate each comparison, including the question.</li><li>Keep any given measurement.</li><li>Pair matching sides with one tilde.</li><li>Inspect the amounts and RMSE, then read the requested value.</li></ol>"
+      },
+      "block_type": "text",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "141e9bbc-fd00-47b0-820b-3517b1445c0d",
+      "kind": "raw_block",
+      "content": {
+        "id": "guided_percent_list",
+        "goal": {
+          "type": "multi_expression",
+          "required_count": 2
+        },
+        "title": "Translate, then pair",
+        "feedback": {
+          "solution_html": "<p>Keep \\(B=40\\). Enter \\([A,A,C]\\sim[150\\%\\text{ of }B,25\\%\\text{ of }C,p\\%\\text{ of }B]\\). Desmos fits \\(A=60,C=240,p=600\\).</p>",
+          "retry_message_html": "<p>Keep B=40. Check the order of the three percent entries, including which amount follows each “of.”</p>",
+          "success_message_html": "<p>Nice work! The three percent statements are paired correctly. Read p and check the fit.</p>",
+          "reveal_solution_after_attempts": 3
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "B=40",
+            "\\left[A,A,C\\right]\\sim\\left[150\\%\\operatorname{of}B,25\\%\\operatorname{of}C,p\\%\\operatorname{of}B\\right]"
+          ],
+          "state_rules": {
+            "max_expressions": 2,
+            "min_expressions": 2,
+            "require_regression": true
+          },
+          "expected_parameters": [
+            {
+              "name": "A",
+              "value": 60,
+              "tolerance": 0.0001
+            },
+            {
+              "name": "C",
+              "value": 240,
+              "tolerance": 0.0001
+            },
+            {
+              "name": "p",
+              "value": 600,
+              "tolerance": 0.0001
+            }
+          ]
+        },
+        "progression": {
+          "require_success": true
+        },
+        "instructions_html": "<p>Keep \\(B=40\\). Enter one list regression for A being 150% of B, A being 25% of C, and C being p% of B. Use \\([A,A,C]\\) on the left and matching percent expressions on the right.</p>",
+        "initial_expressions": [
+          {
+            "id": "given",
+            "latex": "B=40"
+          }
+        ]
+      },
+      "block_type": "desmos_interactive",
+      "shared_prompt": {
+        "id": "percent_list_guided_problem",
+        "title": "Find the requested percent",
+        "html": "<p>Sample A is 150% of sample B and 25% of sample C. Sample B has mass 40 grams. If C is p% of B, find p.</p>"
+      }
+    },
+    {
+      "id": "2d613b7b-c103-4eb6-a6b5-dd19557709d2",
+      "kind": "raw_block",
+      "content": {
+        "id": "guided_percent_answer",
+        "hint": "Read the fitted parameter for the requested percent, rather than one of the fitted amounts.",
+        "input": "numeric",
+        "answer": "600",
+        "prompt": "In the problem you just entered, A is 150% of B, A is 25% of C, and B is 40. If C is p% of B, what is p?",
+        "solution": "Enter \\(B=40\\), then \\([A,A,C]\\sim[150\\%\\text{ of }B,25\\%\\text{ of }C,p\\%\\text{ of }B]\\).\nRead \\(p=600\\) under REGRESSION PARAMETERS. Report 600, not C or C/B.",
+        "allow_retry": true,
+        "explanation": "The fitted p is 600. C is six times B, which is 600% of B."
+      },
+      "block_type": "check",
+      "shared_prompt": "percent_list_guided_problem"
+    },
+    {
+      "id": "11576aef-0779-4c33-bb47-354f5ddc1906",
+      "kind": "raw_block",
+      "content": {
+        "id": "relative_only",
+        "html": "<h2>What if no mass is given?</h2><p>The ratios can fix the requested percent even when the individual masses can vary. Try the three-pair regression without defining a mass first. If it gives positive masses that satisfy the statements and zero or tiny RMSE, read \\(p\\).</p>"
+      },
+      "block_type": "text",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "a4aa526f-b993-41ee-8a69-6e2db86da263",
+      "kind": "raw_block",
+      "content": {
+        "id": "zero_out_repair",
+        "html": "<h2>If the masses all become zero</h2><p>Zero masses make every entered comparison read zero equals zero, regardless of \\(p\\). That fit cannot determine the percent.</p><p>If this happens and no mass was supplied, define one free base, such as \\(B=1\\), and refit. Scaling all masses together preserves their percent comparisons.</p>"
+      },
+      "block_type": "text",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "bb917e7d-c9e6-430a-a44c-dcfbee4defe3",
+      "kind": "raw_block",
+      "content": {
+        "id": "valid_fit_action",
+        "hint": "The result already satisfies the equations and the positive-mass context.",
+        "prompt": "With no given mass, Desmos returns positive masses that satisfy every percent statement and zero RMSE. What should you do?",
+        "choices": [
+          "Replace every fitted mass with 1 and run again.",
+          "Define B=1 before using any fitted percent.",
+          "Report RMSE as the requested percent value.",
+          "Read the requested percent from the fitted p."
+        ],
+        "allow_retry": true,
+        "explanation": "A valid positive fit already answers the question. Setting a free base is a response to a zero-out result, not a required first step.",
+        "correct_index": 3
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "457a4674-cf11-44cb-8290-476a69299b2a",
+      "kind": "raw_block",
+      "content": {
+        "id": "zero_fit_action",
+        "hint": "A free reference amount sets the scale. The other amounts and the requested percent still need to satisfy the relationships.",
+        "prompt": "No actual mass is given. Your percent equations return A=B=C=0, although the samples have positive masses. What is the appropriate repair?",
+        "choices": [
+          "Accept p because the RMSE is zero.",
+          "Set one free mass, such as B, to 1 and refit.",
+          "Set every mass to 1 and keep the same p.",
+          "Replace the requested percent p with 1 and refit."
+        ],
+        "allow_retry": true,
+        "explanation": "Fix one free positive base and let the other values refit. Defining every mass would conflict with the comparisons; fixing p would choose the answer.",
+        "correct_index": 1
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "aa0bf28f-f724-435a-ac60-d716a5d25486",
+      "kind": "raw_block",
+      "content": {
+        "id": "given_value_boundary",
+        "html": "<h2>Keep a supplied mass</h2><p>If the question gives a mass, use that measurement in its definition. It is no longer a free base.</p><p>Choosing a reference amount helps with relative comparisons; it cannot replace a stated measurement.</p>"
+      },
+      "block_type": "text",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "47387c22-70a8-4aac-a2a2-72362bc4d34c",
+      "kind": "raw_block",
+      "content": {
+        "id": "fixed_measurement",
+        "hint": "Use the measurement supplied by the question.",
+        "prompt": "A percent-equations problem gives B=75 grams. Which definition should the calculator use?",
+        "choices": [
+          "\\(B=1\\)",
+          "\\(B=0\\)",
+          "\\(B=75\\)",
+          "\\(p=75\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Keep B=75. A convenient reference value cannot replace an actual stated quantity.",
+        "correct_index": 2
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "3b1409fa-96ab-4aae-b783-cf30946396d1",
+      "kind": "raw_block",
+      "content": {
+        "id": "percent_change",
+        "html": "<h2>Keep the base in “greater than” and “less than”</h2><p>“A is 20% greater than B” becomes \\(A=B+20\\%\\text{ of }B\\). “A is 25% less than C” becomes \\(A=C-25\\%\\text{ of }C\\).</p><p>The amount after “than” is the base. Include that original amount as well as its change.</p>"
+      },
+      "block_type": "text",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "f6b73a88-a3e3-48ec-ac98-e231902d19b1",
+      "kind": "raw_block",
+      "content": {
+        "id": "change_translation",
+        "hint": "Start with the amount named after “than,” then subtract a percent of that same amount.",
+        "prompt": "A is 25% less than C. Which equation preserves the base and the remaining amount?",
+        "choices": [
+          "\\(A=C-25\\%\\operatorname{of}C\\)",
+          "\\(A=25\\%\\operatorname{of}C\\)",
+          "\\(A=C-25\\%\\operatorname{of}A\\)",
+          "\\(A=C+25\\%\\operatorname{of}C\\)"
+        ],
+        "allow_retry": true,
+        "explanation": "Start with C and subtract 25% of C. The other choices keep just the removed part, use A as the base, or make an increase.",
+        "correct_index": 0
+      },
+      "block_type": "check"
+    },
+    {
+      "id": "322557db-d16f-4be4-8cd2-435a998e9db4",
+      "kind": "raw_block",
+      "content": {
+        "id": "change_pairing",
+        "html": "<h2>Only the expressions change</h2><p>Pair those statements the same way:</p><p>\\[[A,A,C]\\sim[B+20\\%\\text{ of }B,C-25\\%\\text{ of }C,p\\%\\text{ of }B]\\]</p><p>Inspect the positive amounts and RMSE. If the free masses all become zero, define \\(B=1\\) and refit.</p>"
+      },
+      "block_type": "text",
+      "calculator": {
+        "display": "hidden"
+      },
+      "shared_prompt": {
+        "id": "percent_change_list_example",
+        "title": "Connected percent changes",
+        "html": "<p>A is 20% greater than B and 25% less than C. All three amounts are positive. If C is p% of B, find p.</p>"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "percent_of_combined_amount",
+      "html": "<h2>A combined amount is one base</h2><p>“A is \\(30\\%\\) of the combined mass of B and C” becomes \\(A=30\\%\\text{ of }(B+C)\\).</p><p>Put the whole sum in parentheses after “of.” The rest of Translate, then Pair stays the same.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "combined_percent_base_check",
+      "block_type": "check",
+      "content": {
+        "id": "combined_percent_base_check",
+        "prompt": "A is \\(30\\%\\) of the combined mass of B and C. Which entry keeps the complete base?",
+        "choices": [
+          "\\(A=30\\%\\text{ of }B+C\\)",
+          "\\(A=(B+C)+30\\%\\text{ of }(B+C)\\)",
+          "\\(A=30\\%\\text{ of }(B+C)\\)",
+          "\\(A=30\\%\\text{ of }(B-C)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The percent applies to the combined mass. Keep everything in that combined amount grouped after “of.”",
+        "solution": "The base is the sum \\(B+C\\).\nPut parentheses around that sum: \\(A=30\\%\\text{ of }(B+C)\\).",
+        "explanation": "C keeps the combined mass together. Without those parentheses, the entry adds all of C after taking a percent of B."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_return_to_opening",
+      "html": "<h2>Return to the three samples</h2><p>Try the opening question again. Translate the linked comparisons and find the requested percent.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "opening_coupled_percent_masses_result",
+      "kind": "raw_block",
+      "content": {
+        "id": "opening_coupled_percent_masses_result",
+        "prompt": "What is the value of \\(p\\)?",
+        "allow_retry": true,
+        "hint": "Treat each combined mass as one parenthesized base. Include the requested percent as another paired equation, then inspect the amounts and RMSE. Repair a zero-mass fit if needed.",
+        "solution": "Enter \\([R,S,T]\\sim[75\\%\\text{ of }(S+T),20\\%\\text{ of }(R+T),p\\%\\text{ of }(R+S)]\\).\nRead p only from positive masses with zero or tiny RMSE.\nIf the masses all become zero, define a free mass, such as \\(T=100\\), and refit.\nAt that scale, \\(R\\approx105.882353,\\ S\\approx41.176471\\), and \\(p=68\\).\nReport \\(68\\).",
+        "explanation": "You found \\(p=68\\). One regression connected all three comparisons while keeping each combined mass as its own percent base.",
+        "input": "numeric",
+        "answer": "68"
+      },
+      "block_type": "check",
+      "shared_prompt": "opening_coupled_percent_masses",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the opening question again",
+        "resettable": true
+      }
+    },
+    {
+      "id": "2d708e45-8f1d-4f8b-ada3-ee0d9785da56",
+      "kind": "raw_block",
+      "content": {
+        "id": "final_retrieval",
+        "prompt": "Recall “translate, then pair.” Which routine carries several percent statements through to an answer?",
+        "choices": [
+          "Translate with % of; pair matching sides with ~; check the amounts; report RMSE as the requested percent.",
+          "Translate with % of; pair sides in separate orders with ~; check the fit and read the requested value.",
+          "Translate with % of; pair matching sides with ~; check the fit and read the requested value; repair a zero-out result if needed.",
+          "Translate with % of; fix each unknown amount at 1; pair matching sides with ~; check the fit and read the requested value."
+        ],
+        "allow_retry": false,
+        "explanation": "Translate each comparison, including the requested one. Matching list positions preserve the statements. Inspect the fit before making any manual assignment, and preserve given quantities.",
+        "correct_index": 2
+      },
+      "block_type": "check",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "revision_independent_practice",
+      "html": "<h2>Try it on your own</h2><p>Choose the approach for each question. Try these now or save them for homework.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "id": "b72e23de-a0c5-4c1b-aa88-4a450bdb3463",
+      "kind": "raw_block",
+      "content": {
+        "id": "independent_change",
+        "input": "numeric",
+        "answer": "187.5",
+        "prompt": "A is 50% greater than B and 20% less than C. All three quantities are positive. If C is p% of B, what is the value of p?",
+        "allow_retry": false,
+        "explanation": "Enter \\([A,A,C]\\sim[B+50\\%\\text{ of }B,C-20\\%\\text{ of }C,p\\%\\text{ of }B]\\). Inspect the fit; if the amounts zero out, define the free base \\(B=1\\) and rerun. A valid positive fit gives \\(p=187.5\\)."
+      },
+      "block_type": "check",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the question"
+      }
+    },
+    {
+      "id": "90c1ce38-99e5-4fe1-884a-c13d33c98b93",
+      "kind": "raw_block",
+      "content": {
+        "id": "finish",
+        "html": "<h2>Translate, then Pair</h2><p>Use the comparison’s base and keep the related statements in one regression.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "block_type": "lesson_complete",
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ],
+  "authoring_notes": "Calculator opening revision 2026-11-12: Coupled percentages of combined amounts require simultaneous equations rather than one direct ratio. A short grouping explanation and check prepare this genuine variation before the return. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Introduce the target-percent equation generally, then show each complete worked or guided problem alongside its setup. Introduce supplied measurements without previewing the next question’s number. Show only the percent-of interface control, without an unrelated decimal-multiplication row. Previous specification: archive/tool-focus-2026-11/solve-multiple-percent-equations-with-list-regression.json."
+}
