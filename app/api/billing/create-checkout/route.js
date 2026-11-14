@@ -5,6 +5,7 @@ import Stripe from 'stripe';
 import { requireUser } from '@/lib/api/auth';
 import { legacyApiRoute } from '@/lib/api/response';
 import { userHasAccess } from '@/lib/subscription';
+import { planForRole, checkoutReturnPath } from '@/lib/billing/plan-for-role';
 
 let _stripe;
 function getStripe() {
@@ -19,12 +20,24 @@ const PRICE_IDS = {
 
 // POST /api/billing/create-checkout
 // Creates a Stripe Checkout session for the authenticated user.
-// Body: { plan: 'student' | 'teacher' }
+// Body: { plan?: 'student' | 'teacher' } — optional, and only accepted
+// when it matches the plan the account's role allows (planForRole). A
+// tutor buys the teacher plan; everyone else the student plan.
 export const POST = legacyApiRoute(async (request) => {
-  const { user, supabase } = await requireUser();
+  const { user, profile: authProfile, supabase } = await requireUser();
 
-  const body = await request.json();
-  const plan = body.plan || 'student';
+  const body = await request.json().catch(() => ({}));
+  const plan = planForRole(authProfile?.role);
+  if (!plan) {
+    return NextResponse.json({ error: 'Your account has full access. No subscription needed.' }, { status: 400 });
+  }
+  if (body?.plan && body.plan !== plan) {
+    return NextResponse.json({
+      error: plan === 'teacher'
+        ? 'Tutor accounts use the Teacher plan.'
+        : 'Student accounts use the Student plan.',
+    }, { status: 400 });
+  }
   const priceId = PRICE_IDS[plan];
 
   if (!priceId) {
@@ -72,7 +85,7 @@ export const POST = legacyApiRoute(async (request) => {
       user_id: user.id,
       plan,
     },
-    success_url: `${origin}/dashboard?checkout=success`,
+    success_url: `${origin}${checkoutReturnPath(plan)}`,
     cancel_url: `${origin}/subscribe?checkout=canceled`,
     subscription_data: {
       metadata: {

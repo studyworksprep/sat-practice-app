@@ -263,6 +263,31 @@ gets free access"). Students read their own tutors through `my_tutors()`
 legacy verdict. Rollback is `update feature_flags set value='off'
 where key='entitlements_gate'` (propagates within the 30s cache).
 
+## Rules that trusted every teacher
+
+Until 2026-11-14 several policies used `is_teacher()` as if it meant
+"Studyworks staff". Once codeless tutor signup opened to outside, paying
+tutors, that let any tutor, through the database API, add or delete any
+student's official scores and test registrations, put any student on
+their own assignment, read and approve Bluebook submissions, and read
+every tutor's question notes. Migration `20261114115428` scoped them:
+
+| Table | Rule now |
+| --- | --- |
+| `sat_official_scores`, `sat_test_registrations` (INSERT/DELETE) | `is_teacher() and can_view(student_id)` |
+| `assignment_students_v2` (INSERT) | assignment's teacher **and** `can_view(student_id)`, or admin |
+| `bluebook_submissions` (staff SELECT/review), `bluebook_calibration_responses` (SELECT) | `is_studyworks_staff()` |
+| `question_notes` (SELECT) | own notes, or `is_studyworks_staff()` |
+
+`is_studyworks_staff()` is admin, manager, or a teacher with
+`subscription_exempt` — what `is_teacher()` used to mean. The Bluebook
+review server actions apply the same rule. On-screen question notes are
+unchanged (the loader reads with the service client and filters by
+author hierarchy). Still `is_teacher()` and deliberately left: concept
+tags, saved Desmos states, and draft/generated question pools (content,
+not student data). New policies should not use bare `is_teacher()` for
+anything student- or Studyworks-internal.
+
 ## Who may write the question bank
 
 `questions_v2` write policies, as of 2026-09-01:

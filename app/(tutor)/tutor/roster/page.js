@@ -29,6 +29,7 @@ import { loadStudentSignals } from '@/lib/practice/load-tutor-dashboard';
 import { buildAttention } from '@/lib/tutor/dashboard-attention';
 import { RosterInteractive } from './RosterInteractive';
 import { InviteStudents } from './InviteStudents';
+import { rosterAccessBadge } from '@/lib/tutor/roster-access';
 import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './Roster.module.css';
 
@@ -138,6 +139,23 @@ export default async function TutorRosterPage(props) {
     };
   });
 
+  // How each active student has access (roster_plan_status, migration
+  // 20261114115405). Invited students subscribe themselves, and until
+  // they do they can't open practice, lessons or assignments, so the
+  // tutor sees a badge. Best-effort: a failed read shows no badges.
+  const activeIds = baseStudents.filter((st) => st.isActive).map((st) => st.id);
+  const accessById = new Map();
+  if (activeIds.length > 0) {
+    const { data: accessRows, error: accessErr } = await supabase.rpc('roster_plan_status', {
+      p_student_ids: activeIds,
+    });
+    if (accessErr) console.error('Roster access status load failed', accessErr.message);
+    for (const row of accessRows ?? []) {
+      const badge = rosterAccessBadge(row);
+      if (badge) accessById.set(row.student_id, badge);
+    }
+  }
+
   // Score lookups for inactive students only — keep the active
   // path's row count unchanged. RLS still applies as the calling
   // user, so we only see what we're allowed to see.
@@ -205,9 +223,16 @@ export default async function TutorRosterPage(props) {
   const nowMs = Date.now();
   const weightById = new Map(buildAttention(signals, nowMs).map((r) => [r.student.id, r.weight]));
 
+  const needsPlanCount = [...accessById.values()].filter((b) => b.tone === 'warn').length;
+
   const students = baseStudents.map((st) => {
     if (st.isActive) {
-      return { ...st, signals: signalsById.get(st.id) ?? null, attentionWeight: weightById.get(st.id) ?? 0 };
+      return {
+        ...st,
+        signals: signalsById.get(st.id) ?? null,
+        attentionWeight: weightById.get(st.id) ?? 0,
+        access: accessById.get(st.id) ?? null,
+      };
     }
     const summary = buildArchiveSummary({
       officialScores: officialByStudent.get(st.id) ?? [],
@@ -223,7 +248,7 @@ export default async function TutorRosterPage(props) {
       <PageHeader
         eyebrow="Teach · Roster"
         title="Roster"
-        description={`${activeBase.length} active student${activeBase.length === 1 ? '' : 's'}. Archived students keep their score summary under Past.`}
+        description={rosterDescription(activeBase.length, needsPlanCount)}
       />
       <InviteStudents
         pending={pendingInvitations}
@@ -240,4 +265,12 @@ export default async function TutorRosterPage(props) {
       />
     </main>
   );
+}
+
+function rosterDescription(activeCount, needsPlanCount) {
+  const active = `${activeCount} active student${activeCount === 1 ? '' : 's'}.`;
+  const needs = needsPlanCount > 0
+    ? ` ${needsPlanCount} ${needsPlanCount === 1 ? 'needs' : 'need'} a subscription before they can practice.`
+    : '';
+  return `${active}${needs} Archived students keep their score summary under Past.`;
 }

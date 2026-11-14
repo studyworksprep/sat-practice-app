@@ -44,11 +44,30 @@ const BLOCKED_FOR_PRACTICE = [
 
 // Routes that require an active subscription (or exemption).
 //
+// Every signed-in student surface that delivers content is here: a
+// student a tutor invited is on the roster but has no access until they
+// subscribe, and before 2026-11 lessons, assignments, flashcards, the
+// study plan, performance and notes were all reachable by URL without
+// one. /welcome (the onboarding intake) and /help stay open, as do
+// /account and /subscribe (ALWAYS_ACCESSIBLE).
+//
 // /contribute is deliberately absent. Contributors donate calibration
 // data; the `contributor` role has no subscription and never will, and
 // gating the one surface they exist to use behind /subscribe would put
 // them in a redirect loop.
-const SUBSCRIPTION_REQUIRED = ['/practice', '/review', '/dashboard', '/tutor', '/today'];
+const SUBSCRIPTION_REQUIRED = [
+  '/practice',
+  '/review',
+  '/dashboard',
+  '/tutor',
+  '/today',
+  '/learn',
+  '/assignments',
+  '/flashcards',
+  '/plan',
+  '/performance',
+  '/notes',
+];
 
 // Routes that are always accessible (no subscription check).
 const ALWAYS_ACCESSIBLE = ['/', '/login', '/subscribe', '/features', '/account', '/auth'];

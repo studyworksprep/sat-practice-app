@@ -5399,6 +5399,7 @@ export type Database = {
       is_lesson_author: { Args: { p_lesson_id: string }; Returns: boolean }
       is_manager: { Args: never; Returns: boolean }
       is_sponsored_student: { Args: { p_user: string }; Returns: boolean }
+      is_studyworks_staff: { Args: never; Returns: boolean }
       is_teacher: { Args: never; Returns: boolean }
       is_v2_assignment_student: {
         Args: { p_assignment_id: string; p_student_id: string }
@@ -5488,6 +5489,16 @@ export type Database = {
       reset_test_student: {
         Args: { p_resend_welcome?: boolean; p_student: string }
         Returns: Json
+      }
+      roster_plan_status: {
+        Args: { p_student_ids: string[] }
+        Returns: {
+          access: string
+          current_period_end: string
+          student_id: string
+          subscription_status: string
+          trial_end: string
+        }[]
       }
       sat_scaled_for_raw: {
         Args: { p_raw: number; p_section: string }

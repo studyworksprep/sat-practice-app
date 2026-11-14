@@ -93,7 +93,29 @@ to `/subscribe`.
 
 Gating is **page-level only**: `proxy.js` skips all `/api/` paths and no
 API route calls `requirePlan`. Gated prefixes are `/practice`, `/review`,
-`/dashboard`, `/tutor`, `/today`.
+`/dashboard`, `/tutor`, `/today`, `/learn`, `/assignments`, `/flashcards`,
+`/plan`, `/performance` and `/notes`. The last six were added 2026-11-14:
+before then a student without a plan (for example one a tutor had just
+invited) could open lessons, assignments and the rest by URL. `/welcome`,
+`/help`, `/account` and `/subscribe` stay open so an unsubscribed student
+can finish setup and pay. The route list is covered by
+`lib/supabase/proxy-session.test.mjs`.
+
+**Which plan an account can buy** comes from its role, not the request
+(`lib/billing/plan-for-role.ts`): a tutor buys the Teacher plan,
+everyone else the Student plan, and staff none. `create-checkout`
+rejects a mismatched `plan`, and `/subscribe` shows a signed-in account
+only its own plan. Before 2026-11-14 a tutor could buy the cheaper
+Student plan and still get every tutor feature, because the resolver
+never looks at which plan was bought. After checkout a tutor returns to
+`/tutor/dashboard?checkout=success`; routing them through `/dashboard`
+dropped the marker on the role redirect.
+
+**Tutors see who hasn't paid.** `/tutor/roster` badges each active
+student whose access needs attention ("Needs a subscription", "Payment
+failed", "Trial until …"), from `roster_plan_status()` (migration
+`20261114115405`), which returns Stripe status only for students the
+tutor can view; subscriptions RLS is own-row only.
 
 ## The webhook contract
 

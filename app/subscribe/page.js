@@ -10,6 +10,7 @@ import { studentPriceLabel } from '@/lib/billing/student-pricing.mjs';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { userHasAccess } from '@/lib/subscription';
+import { planForRole, homePathForRole } from '@/lib/billing/plan-for-role';
 import { SubscribeClient } from './SubscribeClient';
 import { publicPageMetadata } from '@/lib/config/site';
 
@@ -32,9 +33,11 @@ export default async function SubscribePage(props) {
   let studentPrice = studentPriceLabel(prospectiveSignup);
   let teacherPrice = teacherPriceLabel(prospectiveSignup);
   let hasAccess = false;
+  let role = null;
   try {
     const ctx = await requireUser();
     signedIn = true;
+    role = ctx.profile?.role ?? null;
     studentPrice = studentPriceLabel(ctx.user.created_at);
     teacherPrice = teacherPriceLabel(ctx.user.created_at);
     const access = await userHasAccess(ctx.supabase, ctx.user.id);
@@ -44,7 +47,19 @@ export default async function SubscribePage(props) {
     // login before charging.
   }
 
-  if (hasAccess) redirect('/dashboard');
+  if (hasAccess) redirect(homePathForRole(role));
 
-  return <SubscribeClient teacherPrice={teacherPrice} studentPrice={studentPrice} canceled={canceled} signedIn={signedIn} />;
+  // A signed-in account sees only the plan its role may buy (a tutor
+  // can't pick the cheaper student plan); visitors see both.
+  const onlyPlan = signedIn ? planForRole(role) : null;
+
+  return (
+    <SubscribeClient
+      teacherPrice={teacherPrice}
+      studentPrice={studentPrice}
+      canceled={canceled}
+      signedIn={signedIn}
+      onlyPlan={onlyPlan}
+    />
+  );
 }

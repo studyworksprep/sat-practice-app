@@ -66,6 +66,12 @@
   }
 }
 
+/* A signed-in account sees only its own plan: one centred card. */
+.plansSingle {
+  grid-template-columns: minmax(0, 360px);
+  justify-content: center;
+}
+
 .planCard {
   padding: 32px 28px;
   border-radius: var(--radius-md);
