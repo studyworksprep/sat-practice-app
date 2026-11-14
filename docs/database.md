@@ -254,7 +254,8 @@ resolver `has_plan()`/`effective_plan()` is **live**: the
 (`proxy.js`, `lib/subscription.js`) consults the resolver, which also
 activates the owner-chosen live-derived sponsored policy: removing or
 un-sponsoring the link revokes access immediately. Since migration
-`20261114011641` (dev 2026-11-14, production pending) only a link with
+`20261114011641` (dev and production 2026-11-14; production dry-run
+parity 0 changes across 98 users) only a link with
 `teacher_student_assignments.sponsored` to a still-exempt tutor
 sponsors; a plain roster link grants nothing (see docs/billing.md, "Who
 gets free access"). Students read their own tutors through `my_tutors()`

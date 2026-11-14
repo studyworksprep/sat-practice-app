@@ -1,8 +1,8 @@
 # Billing and subscription enforcement
 
 > **Status: Living document.** Last verified against code + production: 2026-08-18.
-> Sponsorship section verified against code + studyworks-dev 2026-11-14;
-> its migrations are not yet in production.
+> Sponsorship section verified against code + production 2026-11-14
+> (dry-run parity before applying: 0 of 98 users' access changed).
 
 How a Studyworks student gets access, how a trial ends, and what happens
 when Stripe and the database disagree.
