@@ -21,13 +21,14 @@
 
 'use client';
 
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatRelativeShort } from '@/lib/formatters';
 import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import { ACTIVITY_LOOKBACK_DAYS, daysSince, daysUntil, IDLE_DAYS, type StudentSignals } from '@/lib/tutor/dashboard-attention';
 import { QuickEditModal } from './QuickEditModal';
+import { removeStudentFromRoster } from './membership-actions';
 import { updateStudentProfile } from './actions';
 import s from './Roster.module.css';
 
@@ -60,6 +61,9 @@ export interface RosterStudent {
   /** Only set when the tutor should act: no subscription, failed
    *  payment, or a trial (lib/tutor/roster-access.ts). */
   access?: AccessBadge | null;
+  /** The caller's own, unsponsored link: they may remove the student
+   *  (tsa_delete_own_tutor). Sponsored students need a Studyworks admin. */
+  removable?: boolean;
 }
 
 type Sort = { label: string; cmp: (a: RosterStudent, b: RosterStudent) => number };
@@ -353,6 +357,23 @@ function RowMenu({ student, canEdit, onEdit }: {
     };
   }, [open]);
 
+  // A fixed menu can't scroll with the page, so if it would run past the
+  // bottom of the window (a row near the foot of the roster), flip it
+  // above the button before it paints. Set on the element directly:
+  // React leaves the style alone while `pos` is unchanged.
+  useLayoutEffect(() => {
+    if (!open) return;
+    const el = menu.current;
+    const b = button.current?.getBoundingClientRect();
+    if (!el || !b) return;
+    const m = el.getBoundingClientRect();
+    const roomBelow = window.innerHeight - b.bottom;
+    if (m.bottom > window.innerHeight - 8 && b.top > roomBelow) {
+      el.style.top = 'auto';
+      el.style.bottom = `${window.innerHeight - b.top + 4}px`;
+    }
+  }, [open, pos]);
+
   function toggle() {
     if (open) { setOpen(false); return; }
     const r = button.current?.getBoundingClientRect();
@@ -380,6 +401,21 @@ function RowMenu({ student, canEdit, onEdit }: {
     startTransition(async () => {
       const res = await updateStudentProfile({ studentId: student.id, patch: { is_active: false } });
       if (res?.ok) router.refresh();
+    });
+  }
+
+  async function onRemove() {
+    setOpen(false);
+    const ok = await confirm({
+      title: `Remove ${name} from your roster?`,
+      body: 'They keep their account, subscription and practice history, but you’ll no longer see their work or be able to assign them anything. You can invite them again later.',
+      confirmLabel: 'Remove student',
+    });
+    if (!ok) return;
+    startTransition(async () => {
+      const res = await removeStudentFromRoster({ studentId: student.id });
+      if (res?.ok) router.refresh();
+      else if (res && !res.ok) window.alert(res.error);
     });
   }
 
@@ -420,6 +456,11 @@ function RowMenu({ student, canEdit, onEdit }: {
                 Archive student
               </button>
             </>
+          )}
+          {student.removable && (
+            <button role="menuitem" type="button" className={`${s.menuItem} ${s.menuDanger}`} onClick={onRemove}>
+              Remove from roster
+            </button>
           )}
         </div>
       )}

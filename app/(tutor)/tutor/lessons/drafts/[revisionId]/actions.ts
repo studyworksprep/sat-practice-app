@@ -3,7 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { assertWriter, requireRole } from '@/lib/api/auth';
+import { assertStudyworksTool, assertWriter, requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import { validateLessonBlocks } from '@/lib/lesson/lesson-validation.mjs';
 
@@ -15,6 +15,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 async function tutorContext() {
   const ctx = await requireRole(['teacher', 'manager']);
   assertWriter(ctx);
+  assertStudyworksTool(ctx);
   return ctx;
 }
 

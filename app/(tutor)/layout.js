@@ -38,6 +38,9 @@ export default async function TutorTreeLayout({ children }) {
     role: profile.role,
     firstName: profile.first_name ?? null,
   };
+  // Outside (non-Studyworks) teachers don't get Studyworks-internal
+  // tools such as Contribute.
+  const navOpts = { studyworks: profile.subscription_exempt === true };
 
   // "N behind" on Roster, "N late" on Assignments (teachers and
   // managers only; see lib/tutor/nav-badges). Loaded alongside the
@@ -49,7 +52,7 @@ export default async function TutorTreeLayout({ children }) {
 
   if (sidebarOn) {
     return (
-      <AppShell user={navUser} sections={tutorSectionsForRole(profile.role)} badges={badges}>
+      <AppShell user={navUser} sections={tutorSectionsForRole(profile.role, navOpts)} badges={badges}>
         <DashboardHistory key={user.id} userId={user.id}>{children}</DashboardHistory>
       </AppShell>
     );
@@ -57,7 +60,7 @@ export default async function TutorTreeLayout({ children }) {
 
   return (
     <>
-      <AppNav user={navUser} links={tutorLinksForRole(profile.role)} />
+      <AppNav user={navUser} links={tutorLinksForRole(profile.role, navOpts)} />
       <DashboardHistory key={user.id} userId={user.id}>{children}</DashboardHistory>
     </>
   );

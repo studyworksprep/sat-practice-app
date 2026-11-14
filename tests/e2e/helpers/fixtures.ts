@@ -41,6 +41,12 @@ export const USERS = {
     id: '44444444-4444-4444-4444-444444444444',
     email: 'student2@test.studyworks',
   },
+  // No tutor, no plan; used only by tutor-invite.teacher.spec.ts, which
+  // links and unlinks it (scripts/dev-seed-ui-preview.sql §10).
+  student6: {
+    id: '99999999-9999-9999-9999-999999999999',
+    email: 'student6@test.studyworks',
+  },
 } as const;
 
 /** HTTP routes guarded by requireUser (generated matrix). An anonymous

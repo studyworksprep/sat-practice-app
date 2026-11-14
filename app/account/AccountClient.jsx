@@ -13,6 +13,8 @@ import { Button } from '@/lib/ui/Button';
 import { Card } from '@/lib/ui/Card';
 import { Toggle } from '@/lib/ui/Toggle';
 import { ManagePortalButton } from './billing/ManagePortalButton';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
+import { useRouter } from 'next/navigation';
 import s from './Account.module.css';
 
 function formatDate(iso) {
@@ -37,6 +39,7 @@ export function AccountClient({
   timeAccommodation = 1,
   updateTimeAccommodationAction,
   addTeacherCodeAction,
+  leaveTeacherAction,
 }) {
   // /account is shared with staff roles; the practice settings only
   // mean anything for someone who actually works question sets.
@@ -69,6 +72,7 @@ export function AccountClient({
         teachers={teachers}
         userRole={profile.role}
         addTeacherCodeAction={addTeacherCodeAction}
+        leaveTeacherAction={leaveTeacherAction}
       />
 
       <SubscriptionSection
@@ -304,10 +308,32 @@ function PracticeExperienceSection({
 // Teachers
 // ─────────────────────────────────────────────────────────────
 
-function TeachersSection({ teachers, userRole, addTeacherCodeAction }) {
+function TeachersSection({ teachers, userRole, addTeacherCodeAction, leaveTeacherAction }) {
   const canAddCode = userRole === 'student' || userRole === 'practice';
   const [state, submit, pending] = useActionState(addTeacherCodeAction, null);
   const [code, setCode] = useState('');
+  const [confirm, confirmDialog] = useConfirm();
+  const [leaving, startLeaving] = useTransition();
+  const [leaveError, setLeaveError] = useState(null);
+  const router = useRouter();
+
+  async function onLeave(t) {
+    const name = [t.first_name, t.last_name].filter(Boolean).join(' ') || t.email || 'this teacher';
+    const ok = await confirm({
+      title: `Leave ${name}?`,
+      body: t.sponsored
+        ? `Studyworks sponsors your access through ${name}. If you leave, you'll need a subscription to keep practicing.`
+        : `${name} will no longer see your work or be able to give you assignments. You can rejoin with a new invitation code.`,
+      confirmLabel: 'Leave teacher',
+    });
+    if (!ok) return;
+    setLeaveError(null);
+    startLeaving(async () => {
+      const res = await leaveTeacherAction({ teacherId: t.id });
+      if (res?.ok) router.refresh();
+      else setLeaveError(res?.error ?? 'Could not leave this teacher.');
+    });
+  }
 
   return (
     <Card className={s.card}>
@@ -334,15 +360,30 @@ function TeachersSection({ teachers, userRole, addTeacherCodeAction }) {
                   <span className={s.teacherEmail}>{t.email}</span>
                 )}
               </div>
-              {t.sponsored ? (
-                <span className={`${s.pill} ${s.pillExempt}`}>Sponsored by Studyworks</span>
-              ) : t.subscription_exempt ? (
-                <span className={`${s.pill} ${s.pillExempt}`}>Studyworks</span>
-              ) : null}
+              <div className={s.teacherActions}>
+                {t.sponsored ? (
+                  <span className={`${s.pill} ${s.pillExempt}`}>Sponsored by Studyworks</span>
+                ) : t.subscription_exempt ? (
+                  <span className={`${s.pill} ${s.pillExempt}`}>Studyworks</span>
+                ) : null}
+                {canAddCode && (
+                  <Button
+                    type="button"
+                    variant="remove"
+                    size="sm"
+                    disabled={leaving}
+                    onClick={() => onLeave(t)}
+                  >
+                    Leave
+                  </Button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
       )}
+      {leaveError && <p className={s.leaveError} role="alert">{leaveError}</p>}
+      {confirmDialog}
 
       {canAddCode && (
         <form action={submit} className={s.form}>

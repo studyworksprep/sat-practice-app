@@ -54,6 +54,7 @@ export default async function TutorRosterPage(props) {
     { lessons: foundationLessons, progress: foundationRows },
     { data: inviteRows },
     { data: me },
+    { data: myLinks },
   ] =
     await Promise.all([
       supabase.from('profiles')
@@ -79,7 +80,16 @@ export default async function TutorRosterPage(props) {
       // Studyworks tutors get one extra line of copy (sponsorship is
       // an admin decision); requireUser's profile doesn't carry it.
       supabase.from('profiles').select('subscription_exempt').eq('id', user.id).maybeSingle(),
+      // The caller's own links: an unsponsored one can be removed from
+      // the roster (tsa_delete_own_tutor). A manager's roster also shows
+      // their teachers' students, which aren't theirs to remove.
+      supabase.from('teacher_student_assignments')
+        .select('student_id, sponsored')
+        .eq('teacher_id', user.id),
     ]);
+  const removableIds = new Set(
+    (myLinks ?? []).filter((l) => !l.sponsored).map((l) => l.student_id),
+  );
   const pendingInvitations = (inviteRows ?? []).map((r) => ({
     id: r.id,
     code: r.code,
@@ -232,6 +242,7 @@ export default async function TutorRosterPage(props) {
         signals: signalsById.get(st.id) ?? null,
         attentionWeight: weightById.get(st.id) ?? 0,
         access: accessById.get(st.id) ?? null,
+        removable: removableIds.has(st.id),
       };
     }
     const summary = buildArchiveSummary({
@@ -240,7 +251,7 @@ export default async function TutorRosterPage(props) {
       startDate: st.effectiveStartDate,
       targetScore: st.targetScore,
     });
-    return { ...st, archive: summary };
+    return { ...st, archive: summary, removable: removableIds.has(st.id) };
   });
 
   return (

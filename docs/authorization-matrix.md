@@ -93,6 +93,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/lessons/drafts/[revisionId]/actions.ts` | `updateRevisionMetadata`, `saveRevisionBlocks`, `addRevisionTopic`, `removeRevisionTopic`, `addRevisionTechnique`, `removeRevisionTechnique`, `deleteRevision`, `submitRevision` | requireRole[manager|teacher] + assertWriter |
 | `app/(tutor)/tutor/roster/actions.ts` | `updateStudentProfile` | requireRole[admin|manager|teacher] + requireServiceRole |
 | `app/(tutor)/tutor/roster/invite-actions.ts` | `inviteStudentToRoster`, `revokeRosterInvitation` | requireRole[admin|manager|teacher] + assertWriter |
+| `app/(tutor)/tutor/roster/membership-actions.ts` | `removeStudentFromRoster` | requireRole[admin|manager|teacher] + assertWriter |
 | `app/(tutor)/tutor/session/[studentId]/actions.ts` | `addTutorNote`, `deleteTutorNote` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/students/[studentId]/actions.js` | `importStudentPracticeHistory`, `addTestRegistration`, `removeTestRegistration`, `addOfficialScore`, `deleteStudentPracticeTest`, `removeOfficialScore` | requireUser + requireServiceRole |
 | `app/(tutor)/tutor/students/[studentId]/foundation-actions.ts` | `markLessonCovered`, `unmarkLessonCovered` | requireRole[admin|manager|teacher] + assertWriter |
@@ -101,7 +102,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/training/assignments/[id]/actions.js` | `startTrainingAssignment` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/practice/actions.js` | `createTrainingSession`, `countAvailable` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/review/actions.js` | `createTrainingWeakQueueDrill`, `createTrainingSkillDrill` | requireUser + rateLimit |
-| `app/account/actions.js` | `updateProfile`, `updateDetourPreference`, `updateTimeAccommodation`, `updateEmail`, `addTeacherCode` | requireUser |
+| `app/account/actions.js` | `updateProfile`, `updateDetourPreference`, `updateTimeAccommodation`, `updateEmail`, `addTeacherCode`, `leaveTeacher` | requireUser |
 | `lib/bluebook/submission-actions.ts` | `crossCheckAttempt`, `loadAttemptEntryView`, `createHtmlUploadSubmission`, `createAttemptLinkedSubmission`, `createManualGridSubmission`, `reviewSubmission`, `artifactDownloadUrl`, `promoteSubmission` | requireRole[...CONTRIBUTOR_ROLES|...STAFF_ROLES] + requireServiceRole |
 | `lib/lesson/editor-question-actions.ts` | `searchLessonEditorQuestions`, `getLessonEditorQuestion` | requireRole[admin|manager|teacher] |
 | `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan`, `proposeRepace` | requireUser |
@@ -129,4 +130,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_22 route handlers, 76 server-action modules enumerated._
+_22 route handlers, 77 server-action modules enumerated._

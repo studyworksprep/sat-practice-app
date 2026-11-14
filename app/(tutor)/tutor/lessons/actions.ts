@@ -1,12 +1,15 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { assertWriter, requireRole } from '@/lib/api/auth';
+import { assertStudyworksTool, assertWriter, requireRole } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 
 async function tutorContext() {
   const ctx = await requireRole(['teacher', 'manager']);
   assertWriter(ctx);
+  // Lesson-edit drafting is a Studyworks tool (lesson_revisions RLS,
+  // migration 20261114160750); outside tutors use the library only.
+  assertStudyworksTool(ctx);
   return ctx;
 }
 

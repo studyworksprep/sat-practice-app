@@ -279,8 +279,18 @@ every tutor's question notes. Migration `20261114115428` scoped them:
 | `bluebook_submissions` (staff SELECT/review), `bluebook_calibration_responses` (SELECT) | `is_studyworks_staff()` |
 | `question_notes` (SELECT) | own notes, or `is_studyworks_staff()` |
 
+Migration `20261114160750` added the rest:
+
+| Table / function | Rule now |
+| --- | --- |
+| `teacher_student_assignments` (DELETE) | admin; a tutor's **own unsponsored** link (`tsa_delete_own_tutor`); a student's own link (`tsa_delete_own_student`) |
+| `can_contribute()` (Bluebook submission inserts) | `is_studyworks_staff()` or the `contributor` role |
+| `lesson_revisions` (INSERT/UPDATE) | `is_studyworks_staff()` (lesson-edit drafting) |
+
 `is_studyworks_staff()` is admin, manager, or a teacher with
-`subscription_exempt` — what `is_teacher()` used to mean. The Bluebook
+`subscription_exempt` — what `is_teacher()` used to mean. In the app,
+`isOutsideTeacher()` / `assertStudyworksTool()` (`lib/api/auth.ts`) are
+the mirror: outside tutors don't see Contribute or lesson drafting. The Bluebook
 review server actions apply the same rule. On-screen question notes are
 unchanged (the loader reads with the service client and filters by
 author hierarchy). Still `is_teacher()` and deliberately left: concept

@@ -30,7 +30,7 @@
 'use server';
 
 import { randomUUID } from 'node:crypto';
-import { requireRole, requireServiceRole } from '@/lib/api/auth';
+import { assertStudyworksTool, requireRole, requireServiceRole } from '@/lib/api/auth';
 import { actionOk, actionFail, ApiError } from '@/lib/api/response';
 import type { ActionResult } from '@/lib/types';
 import {
@@ -46,20 +46,14 @@ import { recognizeStudyForm, type ResponseSnapshotItem } from './scoring-study.t
 const ARTIFACT_BUCKET = 'bluebook-reports';
 const MAX_SCORE_SUMMARY_BYTES = 5 * 1024 * 1024;
 
-/** Mirrors the DB's can_contribute(): staff, or the contributor role. */
+/** Mirrors the DB's can_contribute(): Studyworks staff (see
+ *  assertStudyworksTool), or the contributor role. */
 const CONTRIBUTOR_ROLES = ['teacher', 'manager', 'admin', 'contributor'] as const;
 const STAFF_ROLES = ['teacher', 'manager', 'admin'] as const;
-/**
- * Review is Studyworks staff only: admins, managers, and Studyworks
- * (exempt) tutors. An outside tutor holds the 'teacher' role too, so the
- * role list alone is not enough; the database enforces the same rule
- * (is_studyworks_staff(), migration 20261114115428).
- */
-function assertStudyworksStaff(profile: { role: string; subscription_exempt: boolean | null }): void {
-  if (profile.role === 'teacher' && profile.subscription_exempt !== true) {
-    throw new ApiError('Forbidden', 403);
-  }
-}
+// Contributing and reviewing exclude outside (non-Studyworks) tutors:
+// each action follows its requireRole with assertStudyworksTool. The
+// database enforces the same rule (is_studyworks_staff() in migration
+// 20261114115428; can_contribute() in 20261114160750).
 /** Promotion writes ground truth, so it sits a rung above review. */
 const PROMOTER_ROLES = ['manager', 'admin'] as const;
 
@@ -149,6 +143,7 @@ export async function crossCheckAttempt(input: {
   let ctx;
   try {
     ctx = await requireRole([...CONTRIBUTOR_ROLES]);
+    assertStudyworksTool(ctx);
   } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
     return actionFail('Unexpected error');
@@ -228,6 +223,7 @@ export async function loadAttemptEntryView(input: {
   let ctx;
   try {
     ctx = await requireRole([...CONTRIBUTOR_ROLES]);
+    assertStudyworksTool(ctx);
   } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
     return actionFail('Unexpected error');
@@ -366,6 +362,7 @@ export async function createHtmlUploadSubmission(input: {
   let ctx;
   try {
     ctx = await requireRole([...CONTRIBUTOR_ROLES]);
+    assertStudyworksTool(ctx);
   } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
     return actionFail('Unexpected error');
@@ -484,6 +481,7 @@ export async function createAttemptLinkedSubmission(input: {
   let ctx;
   try {
     ctx = await requireRole([...CONTRIBUTOR_ROLES]);
+    assertStudyworksTool(ctx);
   } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
     return actionFail('Unexpected error');
@@ -601,6 +599,7 @@ export async function createManualGridSubmission(input: {
   let ctx;
   try {
     ctx = await requireRole([...CONTRIBUTOR_ROLES]);
+    assertStudyworksTool(ctx);
   } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
     return actionFail('Unexpected error');
@@ -783,7 +782,7 @@ export async function reviewSubmission(input: {
   let ctx;
   try {
     ctx = await requireRole([...STAFF_ROLES]);
-    assertStudyworksStaff(ctx.profile);
+    assertStudyworksTool(ctx);
   } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
     return actionFail('Unexpected error');
@@ -833,7 +832,7 @@ export async function artifactDownloadUrl(input: {
   let ctx;
   try {
     ctx = await requireRole([...STAFF_ROLES]);
-    assertStudyworksStaff(ctx.profile);
+    assertStudyworksTool(ctx);
   } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
     return actionFail('Unexpected error');

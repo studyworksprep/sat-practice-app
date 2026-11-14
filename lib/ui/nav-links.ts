@@ -325,12 +325,24 @@ export function contributorSections(): NavSection[] {
  *  admin nav (Operate · Teach · Train) on every tree — keeps
  *  "Dashboard" pointing at /admin instead of silently rebinding to
  *  /tutor/dashboard when an admin drills into a tutor surface. */
-export function tutorLinksForRole(role: string): NavItem[] {
+/** Options for the tutor navs. `studyworks: false` marks an outside
+ *  (paying, non-exempt) teacher: Contribute is a Studyworks-internal
+ *  tool, so it drops out of their nav (migration 20261114160750 closes
+ *  it in the database too). Managers and admins are always staff. */
+export interface TutorNavOptions {
+  studyworks?: boolean;
+}
+
+function showsContribute(role: string, { studyworks = true }: TutorNavOptions): boolean {
+  return role !== 'teacher' || studyworks;
+}
+
+export function tutorLinksForRole(role: string, opts: TutorNavOptions = {}): NavItem[] {
   if (role === 'admin') return adminLinks();
   if (role === 'manager') {
     return [...BASE_TUTOR_LINKS, MANAGER_TEACHERS, MANAGER_TAGGING, CONTRIBUTE];
   }
-  return [...BASE_TUTOR_LINKS, CONTRIBUTE];
+  return showsContribute(role, opts) ? [...BASE_TUTOR_LINKS, CONTRIBUTE] : [...BASE_TUTOR_LINKS];
 }
 
 // ── Sidebar sections (Phase 6.1) ─────────────────────────────────
@@ -411,12 +423,15 @@ const ADMIN_SECTIONS: readonly NavSection[] = [
 
 /** Sidebar sections for the tutor/admin trees. Mirrors
  *  tutorLinksForRole's role semantics. */
-export function tutorSectionsForRole(role: string): NavSection[] {
+export function tutorSectionsForRole(role: string, opts: TutorNavOptions = {}): NavSection[] {
   if (role === 'admin') return [...ADMIN_SECTIONS];
   // Team leads the manager sidebar: checking on the teachers is the
   // manager's first job, their own teaching second.
   if (role === 'manager') {
     return [{ title: 'Team', links: [MANAGER_TEACHERS, MANAGER_TAGGING] }, ...TEACHER_SECTIONS];
+  }
+  if (!showsContribute(role, opts)) {
+    return TEACHER_SECTIONS.filter((section) => !section.links.includes(CONTRIBUTE));
   }
   return [...TEACHER_SECTIONS];
 }
