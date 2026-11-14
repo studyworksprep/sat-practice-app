@@ -454,6 +454,11 @@
       "html": "<h2>Use the common multiplier</h2><p>Compare \\(4x+6y=10\\) with \\(10x+ny=25\\). The x-coefficient and constant both multiply by 2.5. For the same line, n must be 6(2.5)=15.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/f38084e6eceb848a39c69a2406a161fe75e6d64e/public/images/lesson-quality-sixth-batch/special-systems-same-line.svg",
+        "alt": "Coordinate graph of 4x+6y=10 and 10x+15y=25. A solid blue line and dashed orange line lie on the same path. Both have slope negative 2/3 and y-intercept 5/3, so every point on the line satisfies both equations.",
+        "caption": "At n = 15, the two equations describe the same line. The dashed path lies on the solid path."
       }
     },
     {
@@ -462,6 +467,11 @@
       "html": "<h2>A different constant keeps the lines apart</h2><p>For \\(4x+6y=10\\) and \\(10x+15y=30\\), both variable coefficients multiply by 2.5. But 10(2.5)=25, not 30. The slopes match while the intercepts differ: no solution.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/f38084e6eceb848a39c69a2406a161fe75e6d64e/public/images/lesson-quality-sixth-batch/special-systems-parallel-lines.svg",
+        "alt": "Coordinate graph of 4x+6y=10 and 10x+15y=30. The solid blue line and dashed orange line are parallel. Both have slope negative 2/3, with y-intercepts 5/3 and 2 respectively, so the lines have no shared point.",
+        "caption": "The variable coefficients scale together, but the constants do not. The lines have the same slope and different intercepts."
       }
     },
     {
@@ -598,5 +608,6 @@
         "display": "hidden"
       }
     }
-  ]
+  ],
+  "authoring_notes": "\nSixth optional quality batch 2026-11-14: Add visual support to existing explanatory cards only. Preserve every question, answer, calculator setting, and block identity."
 }

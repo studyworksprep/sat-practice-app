@@ -114,6 +114,11 @@
       "html": "<h2>Do the sides match?</h2><p>Desmos also shows <strong>RMSE</strong>, which measures how closely the two sides match. Look for zero or a tiny number close to zero, such as \\(10^{-13}\\).</p><p>A larger error means the sides still don’t match at the value Desmos found. Check the entry before using that value as a solution.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/f38084e6eceb848a39c69a2406a161fe75e6d64e/public/images/lesson-quality-sixth-batch/equation-regression-readout.svg",
+        "alt": "Illustrated Desmos readout for 3n+4~19: REGRESSION PARAMETERS shows n=5. STATISTICS shows RMSE=0. Read n as the solution; use RMSE to check the match.",
+        "caption": "Illustrated readout for 3n + 4 = 19: n gives the solution, while RMSE describes the mismatch."
       }
     },
     {
@@ -625,5 +630,5 @@
       }
     }
   ],
-  "authoring_notes": "Tool-focus revision 2026-11-13: Introduce parameter restrictions and their placement before the numerical example. Previous specification: archive/tool-focus-2026-11/solving-equations-with-regression.json."
+  "authoring_notes": "Tool-focus revision 2026-11-13: Introduce parameter restrictions and their placement before the numerical example. Previous specification: archive/tool-focus-2026-11/solving-equations-with-regression.json.\nSixth optional quality batch 2026-11-14: Add visual support to existing explanatory cards only. Preserve every question, answer, calculator setting, and block identity."
 }

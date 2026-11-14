@@ -1,7 +1,7 @@
 {
   "title": "Find Missing Constants in Equivalent Expressions with Regression",
   "description": "Use Desmos regression with a list of allowed input values to find missing constants in expressions that are equivalent for every permitted value of the variable.",
-  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 4c22e546-2a07-4ffc-8f99-a2f3e3b21f59 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nCalculator opening revision 2026-11-12: Two products with squared binomials require substantial expansion and collection; four constants are fitted using five distinct inputs. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Introduce allowed-input restrictions generally before applying a numerical domain example. Use the fitted constants directly rather than requiring a manual sign calculation. Show List, Match, Read in the worked answer rather than solving coefficient equations by hand. Describe the values Desmos shows instead of asking students to interpret assigned-value terminology. Previous specification: archive/tool-focus-2026-11/find-missing-constants-in-equivalent-expressions-with-regression.json.",
+  "authoring_notes": "Reverse-drift export 2026-08-26: reconstructed from the production lesson 4c22e546-2a07-4ffc-8f99-a2f3e3b21f59 (md5-verified block dump) so the repo is the source of truth again. Block ids without semantic names were authored in-app; generated ids follow block_type_N.\nCalculator opening revision 2026-11-12: Two products with squared binomials require substantial expansion and collection; four constants are fitted using five distinct inputs. The previous specification is preserved in archive/calculator-openings-2026-11/. New question IDs distinguish these items from the earlier student attempts.\nTool-focus revision 2026-11-13: Introduce allowed-input restrictions generally before applying a numerical domain example. Use the fitted constants directly rather than requiring a manual sign calculation. Show List, Match, Read in the worked answer rather than solving coefficient equations by hand. Describe the values Desmos shows instead of asking students to interpret assigned-value terminology. Previous specification: archive/tool-focus-2026-11/find-missing-constants-in-equivalent-expressions-with-regression.json.\nSixth optional quality batch 2026-11-14: Add visual support to existing explanatory cards only. Preserve every question, answer, calculator setting, and block identity.",
   "blocks": [
     {
       "kind": "text",
@@ -132,6 +132,11 @@
       "html": "<h2>List, Match, Read</h2><ol><li>Rename an input x or y to \\(x_1\\) or \\(y_1\\) throughout.</li><li>Define several distinct allowed inputs in a list.</li><li>Put a tilde, <strong>~</strong>, between the expressions.</li><li>Read the constants, then type the requested combination.</li></ol><p>For exact identities, inspect RMSE for zero or a tiny mismatch. If the constants remain undetermined, add more distinct allowed inputs.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/f38084e6eceb848a39c69a2406a161fe75e6d64e/public/images/lesson-quality-sixth-batch/identity-regression-readout.svg",
+        "alt": "Illustrated Desmos readout for the polynomial identity: REGRESSION PARAMETERS shows a=3 and b=9. STATISTICS shows RMSE=0. The constants are values to use; RMSE measures mismatch.",
+        "caption": "Illustrated readout for the polynomial example: a and b are the fitted constants. RMSE checks the match."
       }
     },
     {
@@ -466,7 +471,6 @@
       "id": "check_13",
       "block_type": "check",
       "content": {
-        "hint": "Recall the five actions: regression symbol, rename x or y if needed, safe list, constant values, requested calculation.",
         "prompt": "You need constants that work for every allowed input. What setup keeps the input separate from the constants?",
         "choices": [
           "Use =, let Desmos choose one input value on its own, and report the first constant value shown for the expression.",
@@ -474,7 +478,7 @@
           "Replace each letter, constants included, with its own list, graph both sides, and read the intersection.",
           "Use ~ with the ordinary letter x, include the forbidden input values in the list, and round the constants to integers."
         ],
-        "allow_retry": true,
+        "allow_retry": false,
         "explanation": "You have it. That sequence makes the expressions match at several valid inputs and then uses the stored constants to answer exactly what the SAT asks. Inputs other than x or y keep their original names.",
         "correct_index": 1
       },

@@ -64,6 +64,11 @@
       "html": "<h2>“Per” connects two units</h2><p>A <strong>rate</strong> gives an amount per unit, such as dollars per notebook. Multiply by the matching quantity to get an amount: dollars per notebook times notebooks gives dollars.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/f38084e6eceb848a39c69a2406a161fe75e6d64e/public/images/lesson-quality-sixth-batch/notebook-unit-cancellation.svg",
+        "alt": "Five dollars per notebook multiplied by n notebooks equals 5n dollars. The notebook unit in the denominator and the notebook unit in the quantity are crossed out; dollars remain.",
+        "caption": "Price per notebook times notebooks leaves dollars. The n remains in the total 5n."
       }
     },
     {
@@ -123,6 +128,11 @@
       "html": "<h2>The variable can be the rate</h2><p>If \\(a\\) means trees per acre, then \\(6a\\) means six acres times trees per acre. The variable is the rate here. Read its definition before deciding what a number or term means.</p>",
       "calculator": {
         "display": "hidden"
+      },
+      "figure": {
+        "src": "https://raw.githubusercontent.com/studyworksprep/sat-practice-app/f38084e6eceb848a39c69a2406a161fe75e6d64e/public/images/lesson-quality-sixth-batch/acre-unit-cancellation.svg",
+        "alt": "Six acres multiplied by a trees per acre equals 6a trees. Acre units in the quantity and denominator are crossed out; trees remain. Here a is the rate.",
+        "caption": "Here 6 counts acres and a is the rate. The acre units cancel, leaving 6a trees."
       }
     },
     {
@@ -428,5 +438,5 @@
       }
     }
   ],
-  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Keep one complete question stem with the opening choices. Show the complete worked situation before interpreting its two terms. Previous specification: archive/tool-focus-2026-11/rates-and-units-in-two-variable-equations.json."
+  "authoring_notes": "Tool-focus revision 2026-11-13: Keep the complete opening question and choices together; show the graded return choices once. Keep one complete question stem with the opening choices. Show the complete worked situation before interpreting its two terms. Previous specification: archive/tool-focus-2026-11/rates-and-units-in-two-variable-equations.json.\nSixth optional quality batch 2026-11-14: Add visual support to existing explanatory cards only. Preserve every question, answer, calculator setting, and block identity."
 }
