@@ -787,6 +787,11 @@ Required: `instructions_html`, `initial_expressions` (array, may be `[]`),
   `forbid_default_slider_values_on_submit`.
 - **Regression-workflow rules** (see §3g) — `state_rules.require_table`,
   `state_rules.require_regression`, and `validation.expected_parameters`.
+  `require_regression` accepts both a typed `~` regression and a model
+  created with the table's Add Regression button. Button models must
+  reference two distinct columns still present in that table. Required
+  table values and expected fitted parameters remain separate checks;
+  button metadata alone does not supply fitted parameter values.
 - `goal.roles` — array labeling the expected expressions (e.g.
   `["original", "candidate"]` in the graph-comparison workflow). Rarely
   needed by hand; the convenience kinds set it for you.
