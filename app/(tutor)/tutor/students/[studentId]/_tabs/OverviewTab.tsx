@@ -142,7 +142,10 @@ export function OverviewTab({ d, tabHref }: { d: StudentDetail; tabHref: (tab: s
               {latestOfficial && (
                 <div>
                   <dt>Latest official</dt>
-                  <dd>{latestOfficial.composite_score} <span className={s.muted}>· {formatCalendarDate(latestOfficial.test_date)}</span></dd>
+                  <dd>
+                    {latestOfficial.composite_score} <span className={s.muted}>· {formatCalendarDate(latestOfficial.test_date)}</span>
+                    {latestOfficial.self_reported && <span className={s.selfReported}>Self-reported</span>}
+                  </dd>
                 </div>
               )}
             </dl>

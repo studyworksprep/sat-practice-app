@@ -87,6 +87,9 @@ function RegRow({ studentId, registration, upcoming, onRemoved }) {
     <li className={s.regRow}>
       <span className={upcoming ? s.regDateUpcoming : s.regDate}>
         {formatDate(registration.test_date)}
+        {registration.self_reported && (
+          <span className={s.selfReported} title="The student added this date.">Added by student</span>
+        )}
       </span>
       <button
         type="button"

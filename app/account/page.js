@@ -5,7 +5,8 @@
 // paint. See docs/architecture-plan.md §3.4.
 //
 // Four sections render in the island:
-//   - Profile (name, school, grad year, target SAT, test date, email)
+//   - Profile (name, school, grad year, target SAT, email; students see
+//     their test date with a link to Performance → Test dates & scores)
 //   - Practice experience (§3.2 step-back offers — students only)
 //   - Teachers (linked list + add-by-code form)
 //   - Subscription (status snapshot + manage / choose plan)

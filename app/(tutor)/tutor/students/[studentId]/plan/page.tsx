@@ -17,6 +17,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { adherenceSummaryLine, ADHERENCE_LABELS } from '@/lib/plan/adherence';
 import { loadStudentPlanState, type PlanTaskRow } from '@/lib/plan/load-plan-state';
+import { resolveTestDate, soonestUpcoming } from '@/lib/practice/official-tests';
 import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
 import {
   generatePlanAction,
@@ -175,11 +176,16 @@ export default async function StudentPlanPage({ params }: PageProps) {
   if (!student) notFound();
 
   const today = new Date().toISOString().slice(0, 10);
-  const { draft, active, tasksByPlan, adherence } = await loadStudentPlanState(
-    supabase,
-    studentId,
-    today,
-  );
+  const [{ draft, active, tasksByPlan, adherence }, { data: registrationRows }] = await Promise.all([
+    loadStudentPlanState(supabase, studentId, today),
+    // The soonest upcoming registration fills in when the student never
+    // chose a date (lib/practice/official-tests.ts resolveTestDate).
+    supabase
+      .from('sat_test_registrations')
+      .select('test_date')
+      .eq('student_id', studentId)
+      .gte('test_date', today),
+  ]);
 
   // Unit options for the editor's skill selects (swap + manual drill/lesson).
   const { data: unitRows } = await supabase
@@ -196,7 +202,15 @@ export default async function StudentPlanPage({ params }: PageProps) {
   const name = studentName(student);
   const defaults = {
     goalScore: (draft?.goal_score ?? student.target_sat_score ?? '') as number | '',
-    testDate: (draft?.test_date ?? student.sat_test_date ?? '') as string,
+    testDate: (
+      draft?.test_date
+      ?? resolveTestDate({
+        profileDate: student.sat_test_date,
+        nextRegistration: soonestUpcoming((registrationRows ?? []).map((r) => r.test_date), today),
+        today,
+      })
+      ?? ''
+    ) as string,
     weeklyHours: num(draft?.config, 'weekly_hours') ?? 5,
   };
 

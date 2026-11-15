@@ -13,6 +13,8 @@
 //   - Weekly trend — 13-week accuracy vs volume
 //   - Daily activity — 90-day heatmap
 //   - By difficulty — difficulty + score-band tiles
+//   - Test dates & scores — student only, when the page passes
+//                    `testsPanel` (app/(student)/performance)
 //
 // `focus` picks the test: the student page follows the sidebar
 // SAT/ACT switch; the tutor sees both. Stat tiles count only the
@@ -38,6 +40,7 @@ import { ReviewDailyMap } from './ReviewDailyMap';
 import {
   FOCUS_MIN_SAMPLE,
   STATS_TABS,
+  TESTS_TAB,
   pickFocusSkills,
 } from './stats-focus';
 import type { FocusInput, StatsTab } from './stats-focus';
@@ -73,13 +76,19 @@ interface Props {
   eyebrow?: string;
   /** Optional intro line beneath the h1. */
   subtitle?: string;
+  /** Student only: content of the "Test dates & scores" tab. Without
+   *  it the tab is hidden and `?tab=tests` shows the overview. */
+  testsPanel?: ReactNode;
+  /** Overrides the Test date tile (the student page passes the date
+   *  their countdown uses; the tutor view shows the profile date). */
+  testDate?: string | null;
 }
 
 export async function StudentStatsView({
   userId,
   basePath,
   keepQuery = {},
-  tab = 'overview',
+  tab: requestedTab = 'overview',
   focus = 'both',
   drill = false,
   h1,
@@ -87,7 +96,11 @@ export async function StudentStatsView({
   backHref,
   eyebrow = `Statistics · last ${LOOKBACK_DAYS} days`,
   subtitle,
+  testsPanel,
+  testDate,
 }: Props) {
+  const tab: StatsTab = requestedTab === TESTS_TAB.id && !testsPanel ? 'overview' : requestedTab;
+  const tabs = testsPanel ? [...STATS_TABS, TESTS_TAB] : STATS_TABS;
   const supabase = await createClient();
 
   const nowMs = Date.now();
@@ -302,15 +315,16 @@ export async function StudentStatsView({
         {showSat && (
           <StatTile
             label="Test date"
-            value={formatCalendarDate(row.sat_test_date) || '—'}
+            value={formatCalendarDate(testDate === undefined ? row.sat_test_date : testDate) || '—'}
             sub={row.target_sat_score ? `Target ${row.target_sat_score.toLocaleString()}` : 'No target set'}
+            href={testsPanel ? tabHref(TESTS_TAB.id) : undefined}
           />
         )}
       </section>
 
       {/* ---------- Tabs ---------- */}
       <nav className={s.tabs} aria-label="Statistics views">
-        {STATS_TABS.map((t) => (
+        {tabs.map((t) => (
           <Link
             key={t.id}
             href={tabHref(t.id)}
@@ -322,6 +336,8 @@ export async function StudentStatsView({
           </Link>
         ))}
       </nav>
+
+      {tab === TESTS_TAB.id && testsPanel}
 
       {tab === 'overview' && (
         <>
@@ -848,19 +864,27 @@ interface StatTileProps {
   value: number | string;
   sub?: string;
   tone?: 'good' | 'ok' | 'bad';
+  /** Makes the whole tile a link. */
+  href?: string;
 }
-function StatTile({ label, value, sub, tone }: StatTileProps) {
+function StatTile({ label, value, sub, tone, href }: StatTileProps) {
   const cls = [
     s.statCard,
     tone === 'good' ? s.statGood : null,
     tone === 'ok'   ? s.statOk   : null,
     tone === 'bad'  ? s.statBad  : null,
+    href ? s.statLink : null,
   ].filter(Boolean).join(' ');
-  return (
-    <div className={cls}>
+  const body = (
+    <>
       <div className={s.statLabel}>{label}</div>
       <div className={s.statValue}>{value}</div>
       {sub && <div className={s.statSub}>{sub}</div>}
-    </div>
+    </>
+  );
+  return href ? (
+    <Link href={href} className={cls} scroll={false}>{body}</Link>
+  ) : (
+    <div className={cls}>{body}</div>
   );
 }

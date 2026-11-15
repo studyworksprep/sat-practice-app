@@ -1,6 +1,11 @@
 // Official SAT/PSAT scores panel for the tutor's student-detail
 // page. Shows past entries newest-first and an inline Add modal
 // with optional per-domain (1-7) breakdown.
+//
+// Scores the student entered themselves carry a "Self-reported" badge.
+// They don't count toward the impact numbers or the LessonWorks sync
+// (lib/practice/official-tests.ts). To count one, remove it and add it
+// here from the score report.
 
 'use client';
 
@@ -9,7 +14,12 @@ import { useRouter } from 'next/navigation';
 import { addOfficialScore, removeOfficialScore } from './actions';
 import { parseLocalOrIso } from '@/lib/formatters';
 import { useConfirm } from '@/lib/ui/ConfirmDialog';
+import { SECTION_RANGE } from '@/lib/practice/official-tests';
 import s from './StudentDetail.module.css';
+
+const SELF_REPORTED_TITLE =
+  'Entered by the student. Not counted in impact numbers or sent to LessonWorks. '
+  + 'To count it, check the score report, remove this row, and add the score yourself.';
 
 const RW_DOMAINS = [
   ['domain_ini', 'Information & Ideas'],
@@ -81,6 +91,9 @@ function ScoreRow({ studentId, score, onRemoved }) {
               "Dec 5, 2025". */}
           {formatScoreDate(score.test_date)}
           <span className={s.scoreRowType}>{score.test_type ?? 'SAT'}</span>
+          {score.self_reported && (
+            <span className={s.selfReported} title={SELF_REPORTED_TITLE}>Self-reported</span>
+          )}
         </div>
         <div className={s.scoreRowScores}>
           <span className={s.scorePillTotal}>{score.composite_score}</span>
@@ -138,6 +151,7 @@ function AddScoreModal({ studentId, onClose, onSaved }) {
   const [error, setError] = useState(null);
 
   const composite = (Number(rw) || 0) + (Number(math) || 0);
+  const range = SECTION_RANGE[testType === 'PSAT' ? 'PSAT' : 'SAT'];
 
   function onSubmit(e) {
     e.preventDefault();
@@ -199,13 +213,13 @@ function AddScoreModal({ studentId, onClose, onSaved }) {
               <span className={s.fieldLabel}>Reading & Writing</span>
               <input
                 type="number"
-                min={200}
-                max={800}
+                min={range.min}
+                max={range.max}
                 step={10}
                 value={rw}
                 onChange={(e) => setRw(e.target.value)}
                 required
-                placeholder="200-800"
+                placeholder={`${range.min}-${range.max}`}
                 className={s.input}
               />
             </label>
@@ -213,13 +227,13 @@ function AddScoreModal({ studentId, onClose, onSaved }) {
               <span className={s.fieldLabel}>Math</span>
               <input
                 type="number"
-                min={200}
-                max={800}
+                min={range.min}
+                max={range.max}
                 step={10}
                 value={math}
                 onChange={(e) => setMath(e.target.value)}
                 required
-                placeholder="200-800"
+                placeholder={`${range.min}-${range.max}`}
                 className={s.input}
               />
             </label>

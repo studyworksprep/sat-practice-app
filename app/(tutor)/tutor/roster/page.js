@@ -181,7 +181,8 @@ export default async function TutorRosterPage(props) {
     ] = await Promise.all([
       supabase
         .from('sat_official_scores')
-        .select('student_id, test_date, rw_score, math_score, composite_score')
+        // created_by lets buildArchiveSummary drop self-reported scores.
+        .select('student_id, test_date, rw_score, math_score, composite_score, created_by')
         .in('student_id', inactiveIds),
       supabase
         .from('practice_test_attempts_v2')
