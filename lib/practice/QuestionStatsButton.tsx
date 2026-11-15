@@ -15,6 +15,11 @@
 // (bank-wide, SECURITY DEFINER) and "Your students" (the viewer's
 // roster under RLS). Admins get a single column.
 //
+// SAT and ACT questions share the payload (get_question_stats hands
+// ACT ids to act_question_stats); `test_type` drives the few
+// differences: ACT difficulty runs 1–5, placements are form sections
+// rather than test modules, and test omissions leave no attempt row.
+//
 // Built on the native <dialog> like lib/ui/ConfirmDialog — focus
 // trap, Escape, ::backdrop and top-layer stacking come free.
 
@@ -23,7 +28,9 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import type { ReactNode } from 'react';
 import { loadQuestionStatsAction } from './question-stats-actions';
+import { MAX_DIFFICULTY } from './question-stats';
 import type { QuestionStats, QuestionStatsCut } from './question-stats';
+import { sectionLabel } from './act-taxonomy';
 import s from './QuestionStatsButton.module.css';
 
 export interface QuestionStatsButtonProps {
@@ -156,7 +163,9 @@ function StatsDialog({
                 <>
                   {stats.question_type.toUpperCase()}
                   {stats.key_label && <> · key <strong>{stats.key_label}</strong></>}
-                  {stats.difficulty != null && <> · difficulty {stats.difficulty}</>}
+                  {stats.difficulty != null && (
+                    <> · difficulty {stats.difficulty}{isAct(stats) && ` of ${MAX_DIFFICULTY.act}`}</>
+                  )}
                   {stats.score_band != null && <> · band {stats.score_band}</>}
                   <> · as of {fmtTime(stats.computed_at)}</>
                 </>
@@ -226,7 +235,12 @@ function StatsBody({ stats, optionLabels }: { stats: QuestionStats; optionLabels
 
       <ItemFlags stats={stats} />
 
-      <Section title="Overview" hint="First attempt = each student's earliest attempt. A blank response counts as incorrect.">
+      <Section
+        title="Overview"
+        hint={isAct(stats)
+          ? "First attempt = each student's earliest attempt. Unanswered ACT test questions leave no attempt and aren't counted."
+          : "First attempt = each student's earliest attempt. A blank response counts as incorrect."}
+      >
         <CutTable
           hasRoster={hasRoster}
           rows={[
@@ -365,7 +379,9 @@ function Distribution({ stats, optionLabels }: { stats: QuestionStats; optionLab
   if (isSpr) {
     order = all.distribution.map((d) => d.response);
   } else {
-    const labels = optionLabels.length > 0 ? optionLabels : ['A', 'B', 'C', 'D'];
+    const labels = optionLabels.length > 0
+      ? optionLabels
+      : stats.option_labels?.length ? stats.option_labels : ['A', 'B', 'C', 'D'];
     const strays = all.distribution.map((d) => d.response).filter((r) => !labels.includes(r));
     order = [...labels, ...strays];
   }
@@ -561,7 +577,8 @@ function Placements({ stats }: { stats: QuestionStats }) {
                 <li key={i}>
                   {p.test_name}
                   <span className={s.muted}>
-                    {' '}· {p.subject_code} · module {p.module_number}
+                    {' '}· {isAct(stats) ? sectionLabel(p.subject_code) : p.subject_code}
+                    {p.module_number != null && ` · module ${p.module_number}`}
                     {p.route_code && p.route_code !== 'std' && ` (${p.route_code})`} · #{p.ordinal}
                     {!p.is_published && ' · unpublished'}
                   </span>
@@ -618,7 +635,8 @@ function ItemFlags({ stats }: { stats: QuestionStats }) {
   if (stats.discrimination.r != null && stats.discrimination.n >= 10 && stats.discrimination.r < -0.15) {
     flags.push('Negative discrimination: stronger students do worse on this item than weaker ones.');
   }
-  if (acc != null && stats.difficulty === 3 && acc >= 0.85) {
+  const maxDifficulty = MAX_DIFFICULTY[isAct(stats) ? 'act' : 'sat'];
+  if (acc != null && stats.difficulty === maxDifficulty && acc >= 0.85) {
     flags.push('Labelled hard, but most students get it right — the difficulty label may be high.');
   }
   if (acc != null && stats.difficulty === 1 && acc <= 0.4) {
@@ -636,6 +654,11 @@ function ItemFlags({ stats }: { stats: QuestionStats }) {
 // ──────────────────────────────────────────────────────────────
 // Formatting helpers
 // ──────────────────────────────────────────────────────────────
+
+/** Payloads from before the ACT hand-off carry no test_type — SAT. */
+function isAct(stats: QuestionStats): boolean {
+  return stats.test_type === 'act';
+}
 
 function ratio(num: number, den: number): number | null {
   return den > 0 ? num / den : null;

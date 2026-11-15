@@ -4,7 +4,8 @@
 > (question-bank write policies re-verified against production
 > 2026-09-01; attempt-stat read paths re-verified 2026-09-06; ACT union of
 > those paths verified against production 2026-10-13;
-> September 2024 H11 student readiness verified 2026-10-28).
+> September 2024 H11 student readiness verified 2026-10-28; ACT
+> branch of `get_question_stats` verified against production 2026-11-15).
 
 Short runbook for anything that touches the Supabase database.
 
@@ -176,6 +177,17 @@ Since 2026-09-06 every attempts scan inside both functions requires a
 (a test account) no longer feeds the bank-wide cut, the discrimination
 coefficient, or the skill baselines. Staff attempts (tutor training,
 tutors' own practice) still count in the `all` cut.
+Since 2026-11-15 (`20261115180000_act_question_stats.sql`) the same
+entry point serves ACT ids: when the id is not a `questions_v2` row it
+hands off to `public.act_question_stats(uuid)`, which builds the same
+payload from `act_attempts` (chosen label via `act_answer_options`),
+ACT taxonomy (math subcategory, else category), the question's own
+form placement, and `practice_sessions.marked_positions` on ACT test
+section sessions. Payloads carry `test_type` (`sat` | `act`); ACT adds
+`option_labels`. ACT test omissions write no attempt row, so ACT
+`no_response` is always 0. Before this, every ACT Stats click returned
+"Question not found". Both ACT helpers (`act_question_stats`,
+`act_question_stats_cut`) have execute revoked from every app role.
 
 **Student stat tiles count every attempt source (2026-09-06).** The
 tutor student detail page, the student dashboard and the shared
