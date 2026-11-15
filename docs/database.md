@@ -6,7 +6,8 @@
 > those paths verified against production 2026-10-13;
 > September 2024 H11 student readiness verified 2026-10-28; ACT
 > branch of `get_question_stats` verified against production 2026-11-15;
-student-entered test dates and scores verified against dev 2026-11-15).
+student-entered test dates and scores applied and verified against
+production 2026-11-15).
 
 Short runbook for anything that touches the Supabase database.
 
