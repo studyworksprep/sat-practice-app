@@ -24,9 +24,9 @@ test.describe('Teacher — page-level access', () => {
     await page.goto(`/tutor/students/${USERS.student1.id}`);
     // The detail page heading is the student's name.
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    // The Overview tab's "Open work" card is a stable fingerprint of the
+    // The Overview tab's "Not yet reviewed" card is a fingerprint of the
     // detail body; if we 404'd we'd see Next's not-found page instead.
-    await expect(page.getByRole('heading', { name: 'Open work' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Not yet reviewed', exact: true })).toBeVisible();
   });
 
   test('GET /tutor/students/<not-on-roster> 404s', async ({ page }) => {

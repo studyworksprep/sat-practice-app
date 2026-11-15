@@ -24,7 +24,7 @@ test('the sidebar starts expanded each session and collapses only on click', asy
   await expect(label).toBeVisible();
 
   // The toggle sits on the sidebar's right edge, around mid-height.
-  const sidebar = page.locator('aside');
+  const sidebar = page.locator('aside').filter({ has: nav });
   const [toggleBox, sidebarBox] = await Promise.all([
     page.getByRole('button', { name: COLLAPSE }).boundingBox(),
     sidebar.boundingBox(),

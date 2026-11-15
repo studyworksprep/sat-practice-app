@@ -1254,7 +1254,12 @@ function DesmosInteractiveBlock({
         const stateRow = byId.get(expr?.id);
         const type = expr?.type || stateRow?.type || 'expression';
         if (type === 'table') {
-          return { type, latex: '', columns: expr?.columns || stateRow?.columns || [] };
+          return {
+            type,
+            latex: '',
+            columns: expr?.columns || stateRow?.columns || [],
+            regression: stateRow?.regression || expr?.regression || null,
+          };
         }
         return {
           latex: expr?.latex || stateRow?.latex || '',
