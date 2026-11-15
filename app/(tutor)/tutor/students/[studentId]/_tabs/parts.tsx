@@ -24,8 +24,12 @@ export function assignmentTitle(a: StudentAssignment): string {
     ?? 'Assignment';
 }
 
-/** One assignment: the row links to its report (or the assignment),
- *  and the Reviewed checkbox sits beside the link, not inside it. */
+/** One assignment: the row links to its report (or, while open, the
+ *  assignment), and the Reviewed checkbox sits beside the link, not
+ *  inside it. A finished row without a known session goes through
+ *  /tutor/dashboard/review, which redirects to the right report for
+ *  any type: a practice test's results, a lesson's per-student report,
+ *  or a question set rebuilt from attempts. */
 export function AssignmentRow({ a, reportSessionId, studentId, viewerId }: {
   a: StudentAssignment;
   reportSessionId: string | null;
@@ -33,7 +37,11 @@ export function AssignmentRow({ a, reportSessionId, studentId, viewerId }: {
   viewerId: string;
 }) {
   const n = Array.isArray(a.question_ids) ? (a.question_ids as unknown[]).length : null;
-  const href = reportSessionId ? `/tutor/sessions/${reportSessionId}` : `/tutor/assignments/${a.id}`;
+  const href = reportSessionId
+    ? `/tutor/sessions/${reportSessionId}`
+    : a.completed_at
+      ? `/tutor/dashboard/review/${a.id}/${studentId}`
+      : `/tutor/assignments/${a.id}`;
   const overdue = a.due_date != null && !a.completed_at && isPastDueDate(a.due_date);
   const review = reviewStateOf(
     { reviewedAt: a.reviewed_at, reviewedBy: a.reviewed_by, reviewedByName: a.reviewed_by_name },
@@ -61,8 +69,7 @@ export function AssignmentRow({ a, reportSessionId, studentId, viewerId }: {
           )}
           {review.label && <span className={s.reviewedLine}>{review.label}</span>}
         </span>
-        {a.completed_at && reportSessionId && <span className={s.reportPill}>View report →</span>}
-        {a.completed_at && !reportSessionId && <span className={s.completedTag}>Completed</span>}
+        {a.completed_at && <span className={s.reportPill}>View report →</span>}
       </Link>
       <div className={s.assignmentReview}>
         <ReviewedCheckbox assignmentId={a.id} studentId={studentId} reviewed={review.reviewed} title={review.title} />

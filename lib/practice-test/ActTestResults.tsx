@@ -8,6 +8,7 @@
 // reported separately). Forms that lack a section or a conversion
 // table show why the composite is blank.
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/formatters';
 import { ActScoreSummary } from './ActScoreSummary';
@@ -49,6 +50,9 @@ interface ActTestResultsProps {
   /** Optional line under the title (e.g. the student's name on the
    *  tutor route). */
   viewerNote?: string | null;
+  /** Optional control under the title line; the tutor route puts the
+   *  Reviewed checkbox here (lib/tutor/ReviewedCheckbox). */
+  headerExtra?: ReactNode;
 }
 
 export function ActTestResults({
@@ -58,6 +62,7 @@ export function ActTestResults({
   backHref = null,
   backLabel = '← Back',
   viewerNote = null,
+  headerExtra = null,
 }: ActTestResultsProps) {
   const needed = compositeSectionsFor(attempt.format);
   const present = new Set(sectionRows.map((r) => r.section));
@@ -80,6 +85,7 @@ export function ActTestResults({
           {attempt.untimed ? ' · Untimed' : attempt.timeMultiplier > 1 ? ` · ${attempt.timeMultiplier}× time` : ''}
           {viewerNote ? ` · ${viewerNote}` : ''}
         </p>
+        {headerExtra && <div className={s.headerExtra}>{headerExtra}</div>}
       </header>
 
       <ActScoreSummary

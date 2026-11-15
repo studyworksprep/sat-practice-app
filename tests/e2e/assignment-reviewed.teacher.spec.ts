@@ -49,13 +49,17 @@ test('the homework report header carries the same checkbox', async ({ page }) =>
   const links = await page.locator('li a[href^="/tutor/"]').evaluateAll(
     (as) => as.map((a) => a.getAttribute('href')),
   );
-  // A row links to its session report, or to the assignment; the
-  // per-student report lives under the assignment.
+  // A row links to its session report, to the report resolver (finished
+  // work), or to the assignment (open work; the per-student report lives
+  // under it).
   const assignmentHref = links.find((h) => h && /^\/tutor\/assignments\/[^/]+$/.test(h));
   const sessionHref = links.find((h) => h && h.startsWith('/tutor/sessions/'));
-  const reportHref = assignmentHref
-    ? `${assignmentHref}/students/${USERS.student1.id}`
-    : sessionHref;
+  const resolverHref = links.find((h) => h && h.startsWith('/tutor/dashboard/review/'));
+  // The resolver goes last: for work completed without an attempt it
+  // lands on "Report unavailable", which has no checkbox.
+  const reportHref = sessionHref
+    ?? (assignmentHref ? `${assignmentHref}/students/${USERS.student1.id}` : undefined)
+    ?? resolverHref;
   test.skip(!reportHref, 'student1 has no assignments in this seed');
 
   await page.goto(reportHref!);
@@ -71,4 +75,18 @@ test('the homework report header carries the same checkbox', async ({ page }) =>
   // Put it back.
   await page.getByRole('checkbox', { name: /Reviewed/ }).setChecked(was);
   await expect(page.getByRole('checkbox', { name: /Reviewed/ })).toBeChecked({ checked: was });
+});
+
+test('a finished practice-test assignment opens its results with the checkbox', async ({ page }) => {
+  await page.goto(`/tutor/students/${USERS.student1.id}?tab=assignments`);
+  // Finished rows link through /tutor/dashboard/review, which redirects
+  // to the practice test's results page.
+  const row = page.locator('li').filter({ hasText: 'Practice test' }).filter({ hasText: 'View report' }).first();
+  test.skip((await row.count()) === 0, 'student1 has no finished practice-test assignment in this seed');
+
+  await row.getByRole('link').click();
+  await page.waitForURL((url) => !url.pathname.startsWith('/tutor/dashboard/review/'));
+  // Marked complete without a test attempt behind it: "Report unavailable".
+  test.skip(!/\/tests\/[^/]+\/results$/.test(new URL(page.url()).pathname), 'no attempt behind this assignment');
+  await expect(page.getByRole('checkbox', { name: /Reviewed/ })).toBeVisible();
 });

@@ -68,6 +68,10 @@ export function TestResultsInteractive({
   questionNotesIsAdmin = false,
   currentUserId = null,
   isViewerOwner = true,
+  // Optional control at the front of the header actions; the tutor
+  // route puts the Reviewed checkbox here (lib/tutor/ReviewedCheckbox)
+  // when the attempt completed a practice-test assignment.
+  headerExtra = null,
 }) {
   const [selectedOrdinal, setSelectedOrdinal] = useState(
     reviewItems.find((r) => !r.missing)?.ordinal ?? reviewItems[0]?.ordinal ?? 1,
@@ -222,6 +226,7 @@ export function TestResultsInteractive({
           </div>
         </div>
         <div className={s.headerActions}>
+          {headerExtra}
           {canPresent && (
             <Button
               onClick={() => setPresenting(true)}
