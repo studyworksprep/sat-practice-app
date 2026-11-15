@@ -204,6 +204,8 @@ test('tutor route opens untouched SAT and ACT question sets without writing stud
     const expandToAttemptIds = async (_db, ids) => ({ allIds: ids });
     const buildSessionReview = args => builder(args);
     const AssignmentReport = () => null;
+    const ReviewedCheckbox = () => null;
+    const loadReviewState = async () => ({ reviewed: false, label: null, title: 'Tick once reviewed' });
   `;
   const compiled = ts.transpileModule(routeStubs + routeSource, {
     compilerOptions: { module: ts.ModuleKind.ESNext, jsx: ts.JsxEmit.React },
@@ -238,6 +240,10 @@ test('tutor route opens untouched SAT and ACT question sets without writing stud
     assert.equal(page.props.metrics.attempted, 0);
     assert.equal(page.props.assignment.startedAt, null);
     assert.equal(page.props.assignment.completedAt, null);
+    // A student's report carries the Reviewed checkbox in its header.
+    assert.equal(page.props.headerExtra?.type?.name, 'ReviewedCheckbox');
+    assert.equal(page.props.headerExtra.props.assignmentId, 'new');
+    assert.equal(page.props.headerExtra.props.studentId, 'student');
     assert.equal(JSON.stringify(tables), before);
     route.configure({ ...ctx, profile: { role: 'student' } }, () => { throw new Error('must not load'); });
     await assert.rejects(route.default(props), /forbidden/);

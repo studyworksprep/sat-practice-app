@@ -27,14 +27,14 @@ test('a tutor can mark an assignment reviewed and undo it', async ({ page }) => 
   const rowFor = (scope: typeof page | typeof reviewedSection) =>
     scope.locator('li').filter({ has: page.locator(`a[href="${href}"]`) });
 
-  await rowFor(page).getByRole('checkbox', { name: 'Reviewed' }).check();
-  await expect(rowFor(reviewedSection).getByRole('checkbox', { name: 'Reviewed' })).toBeChecked();
+  await rowFor(page).getByRole('checkbox', { name: /Reviewed/ }).check();
+  await expect(rowFor(reviewedSection).getByRole('checkbox', { name: /Reviewed/ })).toBeChecked();
   await expect(rowFor(reviewedSection)).toContainText('Reviewed');
 
   // Undo: back out of the Reviewed section, unchecked.
-  await rowFor(reviewedSection).getByRole('checkbox', { name: 'Reviewed' }).uncheck();
+  await rowFor(reviewedSection).getByRole('checkbox', { name: /Reviewed/ }).uncheck();
   await expect(rowFor(reviewedSection)).toHaveCount(0);
-  await expect(rowFor(page).getByRole('checkbox', { name: 'Reviewed' })).not.toBeChecked();
+  await expect(rowFor(page).getByRole('checkbox', { name: /Reviewed/ })).not.toBeChecked();
 });
 
 test('the overview carries work not yet reviewed, not just open work', async ({ page }) => {
@@ -42,4 +42,33 @@ test('the overview carries work not yet reviewed, not just open work', async ({ 
   await expect(page.getByRole('heading', { name: 'Not yet reviewed' })).toBeVisible();
   // The card the overview used to carry only open work under.
   await expect(page.getByRole('heading', { name: 'Open work' })).toHaveCount(0);
+});
+
+test('the homework report header carries the same checkbox', async ({ page }) => {
+  await page.goto(`/tutor/students/${USERS.student1.id}?tab=assignments`);
+  const links = await page.locator('li a[href^="/tutor/"]').evaluateAll(
+    (as) => as.map((a) => a.getAttribute('href')),
+  );
+  // A row links to its session report, or to the assignment; the
+  // per-student report lives under the assignment.
+  const assignmentHref = links.find((h) => h && /^\/tutor\/assignments\/[^/]+$/.test(h));
+  const sessionHref = links.find((h) => h && h.startsWith('/tutor/sessions/'));
+  const reportHref = assignmentHref
+    ? `${assignmentHref}/students/${USERS.student1.id}`
+    : sessionHref;
+  test.skip(!reportHref, 'student1 has no assignments in this seed');
+
+  await page.goto(reportHref!);
+  const box = page.getByRole('checkbox', { name: /Reviewed/ });
+  await expect(box).toBeVisible();
+  const was = await box.isChecked();
+
+  await box.setChecked(!was);
+  await expect(box).toBeChecked({ checked: !was });
+  await page.reload();
+  await expect(page.getByRole('checkbox', { name: /Reviewed/ })).toBeChecked({ checked: !was });
+
+  // Put it back.
+  await page.getByRole('checkbox', { name: /Reviewed/ }).setChecked(was);
+  await expect(page.getByRole('checkbox', { name: /Reviewed/ })).toBeChecked({ checked: was });
 });

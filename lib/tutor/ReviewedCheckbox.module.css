@@ -1,0 +1,61 @@
+/* Reviewed checkbox (lib/tutor/ReviewedCheckbox.tsx): a pill-shaped
+   label around a native checkbox. Callers own the spacing around it. */
+
+.cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 3px 10px 3px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg-white);
+  color: var(--fg2);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std);
+}
+.toggle:hover { border-color: var(--tile-success-fg); color: var(--fg1); }
+.toggle input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--tile-success-fg);
+  cursor: inherit;
+}
+.toggle:has(input:focus-visible) {
+  outline: 2px solid var(--color-navy-500);
+  outline-offset: 2px;
+}
+
+.toggleOn {
+  background: var(--tile-success-bg);
+  border-color: color-mix(in oklab, var(--tile-success-fg) 40%, transparent);
+  color: var(--tile-success-fg);
+}
+.toggleOn:hover { color: var(--tile-success-fg); }
+
+.togglePending { opacity: 0.6; cursor: progress; }
+
+.error {
+  max-width: 200px;
+  font-size: 11px;
+  color: var(--color-diff-hard-fg);
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle { transition: none; }
+}

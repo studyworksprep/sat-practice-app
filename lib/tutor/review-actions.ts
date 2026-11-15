@@ -1,12 +1,15 @@
-// Server Action for the "Reviewed" checkbox on the tutor's student page
-// (Overview and Assignments tabs). A tutor ticks it once they have gone
-// over an assignment with the student; unreviewed work stays on the
-// Overview and at the top of the Assignments tab.
+// Server Action behind the "Reviewed" checkbox (./ReviewedCheckbox.tsx)
+// on the tutor's student page and the homework report headers. A tutor
+// ticks it once they have gone over an assignment with the student;
+// unreviewed work stays on the student's Overview and at the top of
+// their Assignments tab.
 //
 // Writes through set_assignment_reviewed() (migration 20261115152919),
 // a SECURITY DEFINER RPC that gates on is_teacher() + can_view(student)
 // inside the database, so the RLS-scoped client is the right one — no
-// service-role bypass. Same shape as ./foundation-actions.ts.
+// service-role bypass. Same shape as the student page's
+// foundation-actions.ts. The checkbox refreshes whichever page it sits
+// on; this revalidates the student page, where the row changes section.
 
 'use server';
 

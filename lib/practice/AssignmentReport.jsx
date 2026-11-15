@@ -86,6 +86,10 @@ export function AssignmentReport({
   // v1 attempt ids). Set on the session view; null on the
   // already-rebuilt per-trainee view.
   rebuildHref = null,
+  // Optional control at the front of the header actions. The tutor
+  // homework reports put the Reviewed checkbox here
+  // (lib/tutor/ReviewedCheckbox).
+  headerExtra = null,
 }) {
   // Live Desmos calc handle for the saved-state button. The
   // FloatingCalculator below renders a single panel for the whole
@@ -212,6 +216,7 @@ export function AssignmentReport({
           </div>
         </div>
         <div className={s.headerActions}>
+          {headerExtra}
           <Button
             onClick={() => setPresenting(true)}
             title="Full-screen review for a live session: large type, arrow-key navigation, reveal controls, drawing overlay"

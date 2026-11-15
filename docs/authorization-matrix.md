@@ -98,7 +98,6 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/students/[studentId]/actions.js` | `importStudentPracticeHistory`, `addTestRegistration`, `removeTestRegistration`, `addOfficialScore`, `deleteStudentPracticeTest`, `removeOfficialScore` | requireUser + requireServiceRole |
 | `app/(tutor)/tutor/students/[studentId]/foundation-actions.ts` | `markLessonCovered`, `unmarkLessonCovered` | requireRole[admin|manager|teacher] + assertWriter |
 | `app/(tutor)/tutor/students/[studentId]/plan/actions.ts` | `generatePlanAction`, `activatePlanAction`, `moveTaskAction`, `removeTaskAction`, `swapSkillAction`, `addTaskAction`, `regenerateWeekAction` | requireUser |
-| `app/(tutor)/tutor/students/[studentId]/review-actions.ts` | `setAssignmentReviewed` | requireRole[admin|manager|teacher] + assertWriter |
 | `app/(tutor)/tutor/tagging/[unitId]/actions.ts` | `loadTaggingQuestion` | requireRole[admin|manager] |
 | `app/(tutor)/tutor/training/assignments/[id]/actions.js` | `startTrainingAssignment` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/practice/actions.js` | `createTrainingSession`, `countAvailable` | requireUser + rateLimit |
@@ -122,6 +121,7 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/practice/question-technique-actions.ts` | `setQuestionTechniques` | requireRole[admin|manager] |
 | `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `abandonPracticeSession`, `togglePracticeMark`, `getDetourOptions`, `injectEasierQuestion` | requireUser + rateLimit |
 | `lib/practice/test-type-actions.ts` | `switchTestType` | requireUser |
+| `lib/tutor/review-actions.ts` | `setAssignmentReviewed` | requireRole[admin|manager|teacher] + assertWriter |
 
 ## Attention list
 

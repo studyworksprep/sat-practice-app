@@ -407,60 +407,11 @@
   color: var(--tile-success-fg);
 }
 
-/* ---------- Reviewed checkbox ---------- */
-
-.reviewedCell {
+/* Wrapper around the shared Reviewed checkbox (lib/tutor/ReviewedCheckbox)
+   inside an assignment row. */
+.assignmentReview {
   flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
   padding: 6px 12px 6px 0;
-}
-
-.reviewedToggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 28px;
-  padding: 3px 10px 3px 8px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-pill);
-  background: var(--bg-white);
-  color: var(--fg2);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-  transition: background var(--dur-fast) var(--ease-std),
-              border-color var(--dur-fast) var(--ease-std),
-              color var(--dur-fast) var(--ease-std);
-}
-.reviewedToggle:hover { border-color: var(--tile-success-fg); color: var(--fg1); }
-.reviewedToggle input {
-  width: 14px;
-  height: 14px;
-  margin: 0;
-  accent-color: var(--tile-success-fg);
-  cursor: inherit;
-}
-.reviewedToggle:has(input:focus-visible) {
-  outline: 2px solid var(--color-navy-500);
-  outline-offset: 2px;
-}
-.reviewedToggleOn {
-  background: var(--tile-success-bg);
-  border-color: color-mix(in oklab, var(--tile-success-fg) 40%, transparent);
-  color: var(--tile-success-fg);
-}
-.reviewedTogglePending { opacity: 0.6; cursor: progress; }
-
-.reviewedError {
-  max-width: 180px;
-  font-size: 11px;
-  color: var(--color-diff-hard-fg);
-  text-align: right;
 }
 
 .assignmentType {
@@ -559,7 +510,7 @@
   .assignmentRow { flex: 1 1 100%; flex-wrap: wrap; row-gap: 6px; }
   .assignmentTitle { flex: 1 1 100%; order: -1; white-space: normal; }
   .assignmentDates { flex-direction: row; flex-wrap: wrap; gap: var(--s2); margin-right: auto; }
-  .reviewedCell { margin-left: auto; padding: 0 12px 10px; }
+  .assignmentReview { margin-left: auto; padding: 0 12px 10px; }
 }
 
 .assignmentItem:hover .reportPill {

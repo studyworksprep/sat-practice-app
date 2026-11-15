@@ -116,6 +116,7 @@ export function LessonStudentReport({
   completedBlocksCount,
   completedAt,
   staleProgress = null,
+  headerExtra = null,
 }: {
   title: string;
   studentName: string | null;
@@ -129,6 +130,8 @@ export function LessonStudentReport({
    *  excluded from every number above; surfaced so "0 / 22" on a
    *  student who did the work reads as a versioning gap, not idleness. */
   staleProgress?: { completed: number; answers: number } | null;
+  /** Optional control beside the title: the Reviewed checkbox. */
+  headerExtra?: React.ReactNode;
 }) {
   const answered = rows.filter((r) => r.attempted);
   const firstTryCorrect = answered.filter((r) => r.firstTryCorrect).length;
@@ -144,16 +147,19 @@ export function LessonStudentReport({
         ← Back to assignment
       </Link>
 
-      <header className={s.header}>
-        <div className={s.eyebrow}>Lesson report</div>
-        <h1 className={s.h1}>{title}</h1>
-        {studentName && (
-          <p className={s.description}>
-            <Link href={studentHref} className={s.nameLink}>
-              {studentName}
-            </Link>
-          </p>
-        )}
+      <header className={headerExtra ? `${s.header} ${s.headerWithAction}` : s.header}>
+        <div>
+          <div className={s.eyebrow}>Lesson report</div>
+          <h1 className={s.h1}>{title}</h1>
+          {studentName && (
+            <p className={s.description}>
+              <Link href={studentHref} className={s.nameLink}>
+                {studentName}
+              </Link>
+            </p>
+          )}
+        </div>
+        {headerExtra}
       </header>
 
       {staleProgress && (

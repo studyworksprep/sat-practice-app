@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { formatDate, isPastDueDate } from '@/lib/formatters';
 import type { SubjectCode } from '@/lib/types';
 import type { StudentAssignment } from '../load';
-import { ReviewedCheckbox } from './ReviewedCheckbox';
+import { ReviewedCheckbox } from '@/lib/tutor/ReviewedCheckbox';
+import { reviewStateOf } from '@/lib/tutor/assignment-review-state';
 import s from '../StudentDetail.module.css';
 
 // Readable names for assignments_v2.assignment_type (the pill is
@@ -23,14 +24,6 @@ export function assignmentTitle(a: StudentAssignment): string {
     ?? 'Assignment';
 }
 
-/** "Reviewed Nov 15 · by you" — empty for rows the 2026-11-15 backfill
- *  marked (no reviewer recorded), whose date would only be the rollout. */
-function reviewedLine(a: StudentAssignment, viewerId: string): string | null {
-  if (!a.reviewed_at || !a.reviewed_by) return null;
-  const who = a.reviewed_by === viewerId ? 'you' : a.reviewed_by_name;
-  return `Reviewed ${formatDate(a.reviewed_at)}${who ? ` · by ${who}` : ''}`;
-}
-
 /** One assignment: the row links to its report (or the assignment),
  *  and the Reviewed checkbox sits beside the link, not inside it. */
 export function AssignmentRow({ a, reportSessionId, studentId, viewerId }: {
@@ -42,7 +35,10 @@ export function AssignmentRow({ a, reportSessionId, studentId, viewerId }: {
   const n = Array.isArray(a.question_ids) ? (a.question_ids as unknown[]).length : null;
   const href = reportSessionId ? `/tutor/sessions/${reportSessionId}` : `/tutor/assignments/${a.id}`;
   const overdue = a.due_date != null && !a.completed_at && isPastDueDate(a.due_date);
-  const reviewed = reviewedLine(a, viewerId);
+  const review = reviewStateOf(
+    { reviewedAt: a.reviewed_at, reviewedBy: a.reviewed_by, reviewedByName: a.reviewed_by_name },
+    viewerId,
+  );
   const itemCls = [s.assignmentItem, a.completed_at ? s.assignmentItemDone : null, a.reviewed_at ? s.assignmentItemReviewed : null]
     .filter(Boolean).join(' ');
   return (
@@ -63,17 +59,14 @@ export function AssignmentRow({ a, reportSessionId, studentId, viewerId }: {
               {overdue ? 'Overdue · was due' : 'Due'} {formatDate(a.due_date)}
             </span>
           )}
-          {reviewed && <span className={s.reviewedLine}>{reviewed}</span>}
+          {review.label && <span className={s.reviewedLine}>{review.label}</span>}
         </span>
         {a.completed_at && reportSessionId && <span className={s.reportPill}>View report →</span>}
         {a.completed_at && !reportSessionId && <span className={s.completedTag}>Completed</span>}
       </Link>
-      <ReviewedCheckbox
-        assignmentId={a.id}
-        studentId={studentId}
-        reviewed={Boolean(a.reviewed_at)}
-        title={reviewed ?? (a.reviewed_at ? 'Reviewed' : 'Tick once you have gone over this with the student')}
-      />
+      <div className={s.assignmentReview}>
+        <ReviewedCheckbox assignmentId={a.id} studentId={studentId} reviewed={review.reviewed} title={review.title} />
+      </div>
     </li>
   );
 }

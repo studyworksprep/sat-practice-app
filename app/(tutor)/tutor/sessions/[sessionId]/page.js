@@ -17,12 +17,17 @@
 // practice_sessions + attempts + can_view does the real
 // authorization; if the caller can't see the session owner,
 // the row simply doesn't come back and we 404.
+//
+// When the session is a student's homework (tied to an assignment),
+// the header carries the Reviewed checkbox for that student's copy.
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
 import { AssignmentReport } from '@/lib/practice/AssignmentReport';
+import { ReviewedCheckbox } from '@/lib/tutor/ReviewedCheckbox';
+import { loadReviewState } from '@/lib/tutor/assignment-review-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,19 +64,6 @@ export default async function TutorSessionReviewPage({ params, searchParams }) {
     .eq('id', session.user_id)
     .maybeSingle();
 
-  const {
-    sessionMeta, items, metrics, timing, assignment,
-    desmosCanSave, conceptTagsCatalog, conceptTagsCanTag, conceptTagsCanDelete,
-    techniqueCatalog, techniquesCanTag,
-    questionNotesCanView, questionNotesIsAdmin, currentUserId,
-  } = await buildSessionReview({
-    supabase,
-    user,
-    target: { id: session.user_id },
-    role: profile.role,
-    session,
-  });
-
   const assignmentId =
     session.filter_criteria
     && typeof session.filter_criteria === 'object'
@@ -80,6 +72,30 @@ export default async function TutorSessionReviewPage({ params, searchParams }) {
       : null;
 
   const ownerRole = ownerProfile?.role ?? null;
+  // Staff owners are trainees doing training work, not homework.
+  const ownerIsStudent = !['teacher', 'manager', 'admin'].includes(ownerRole ?? '');
+
+  const [
+    {
+      sessionMeta, items, metrics, timing, assignment,
+      desmosCanSave, conceptTagsCatalog, conceptTagsCanTag, conceptTagsCanDelete,
+      techniqueCatalog, techniquesCanTag,
+      questionNotesCanView, questionNotesIsAdmin, currentUserId,
+    },
+    review,
+  ] = await Promise.all([
+    buildSessionReview({
+      supabase,
+      user,
+      target: { id: session.user_id },
+      role: profile.role,
+      session,
+    }),
+    assignmentId && ownerIsStudent
+      ? loadReviewState(supabase, assignmentId, session.user_id, user.id)
+      : null,
+  ]);
+
   const ownerName =
     [ownerProfile?.first_name, ownerProfile?.last_name].filter(Boolean).join(' ')
     || ownerProfile?.email
@@ -129,6 +145,15 @@ export default async function TutorSessionReviewPage({ params, searchParams }) {
       canFlagBroken={['manager', 'admin'].includes(profile.role)}
       canViewStats={QUESTION_STATS_ROLES.includes(profile.role)}
       rebuildHref={rebuildHref}
+      headerExtra={review && (
+        <ReviewedCheckbox
+          assignmentId={assignmentId}
+          studentId={session.user_id}
+          reviewed={review.reviewed}
+          title={review.title}
+          checkedLabel={review.label}
+        />
+      )}
     />
   );
 }
