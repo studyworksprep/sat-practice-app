@@ -4,7 +4,8 @@
 //
 // One Promise.all for everything student-shaped, then two small
 // dependent reads: the report session behind each assignment, and the
-// names of whoever marked foundation lessons covered.
+// names of whoever marked foundation lessons covered or assignments
+// reviewed.
 
 import type { TypedSupabaseClient } from '@/lib/supabase/server';
 import type { ViewRow } from '@/lib/types';
@@ -39,6 +40,11 @@ export type StudentAssignment = {
   lesson: { title: string | null } | null;
   practice_test: { name: string | null } | null;
   completed_at: string | null;
+  /** When a tutor marked this student's copy reviewed; null = not yet. */
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  /** Display name of whoever marked it, when the viewer can see them. */
+  reviewed_by_name: string | null;
 };
 
 export type TestRow =
@@ -91,7 +97,7 @@ export async function loadStudentDetail(supabase: TypedSupabaseClient, studentId
     // SAT and ACT assignments; each row carries its own test_type.
     supabase.from('assignment_students_v2')
       .select(`
-        completed_at,
+        completed_at, reviewed_at, reviewed_by,
         assignment:assignments_v2 (
           id, assignment_type, title, due_date, archived_at, deleted_at, created_at,
           question_ids, test_type,
@@ -268,11 +274,22 @@ export async function loadStudentDetail(supabase: TypedSupabaseClient, studentId
     }));
 
   // Newest-assigned first. PostgREST types the one-to-one embed as an
-  // array; the response is a single object.
-  const assignments = (
-    (assignmentJunctions ?? []) as unknown as { completed_at: string | null; assignment: StudentAssignment }[]
-  )
-    .map((j) => ({ ...j.assignment, completed_at: j.completed_at }))
+  // array; the response is a single object. Reviewer names are filled
+  // in below, with the foundation names.
+  type Junction = {
+    completed_at: string | null;
+    reviewed_at: string | null;
+    reviewed_by: string | null;
+    assignment: StudentAssignment;
+  };
+  const assignments: StudentAssignment[] = ((assignmentJunctions ?? []) as unknown as Junction[])
+    .map((j) => ({
+      ...j.assignment,
+      completed_at: j.completed_at,
+      reviewed_at: j.reviewed_at,
+      reviewed_by: j.reviewed_by,
+      reviewed_by_name: null,
+    }))
     .filter((a) => a && a.id && !a.deleted_at && !a.archived_at)
     .sort((a, b) => (b.created_at ? Date.parse(b.created_at) : 0) - (a.created_at ? Date.parse(a.created_at) : 0));
 
@@ -309,19 +326,26 @@ export async function loadStudentDetail(supabase: TypedSupabaseClient, studentId
     if (c.status === 'decayed') coverage.decayed++;
   }
 
-  // Foundations: who marked a lesson covered comes from profile_cards,
-  // so a co-instructor's name shows only to someone who can see them.
+  // Who marked a foundation lesson covered or an assignment reviewed
+  // comes from profile_cards, so a co-instructor's name shows only to
+  // someone who can see them.
   const foundationRows = buildFoundationRows(foundationLessons, foundationProgressRows ?? []);
   const foundationSummary = summarizeFoundations(foundationLessons, foundationProgressRows ?? []);
-  const coveredByIds = [...new Set(foundationRows.map((r) => r.coveredBy).filter((id): id is string => Boolean(id)))];
+  const staffIds = [...new Set(
+    [...foundationRows.map((r) => r.coveredBy), ...assignments.map((a) => a.reviewed_by)]
+      .filter((id): id is string => Boolean(id)),
+  )];
   const coveredByNames = new Map<string, string>();
-  if (coveredByIds.length > 0) {
+  if (staffIds.length > 0) {
     const { data: cards } = await supabase
-      .from('profile_cards').select('id, first_name, last_name, tutor_name').in('id', coveredByIds);
+      .from('profile_cards').select('id, first_name, last_name, tutor_name').in('id', staffIds);
     for (const c of cards ?? []) {
       const name = (c.tutor_name ?? '').trim() || [c.first_name, c.last_name].filter(Boolean).join(' ').trim();
       if (c.id && name) coveredByNames.set(c.id, name);
     }
+  }
+  for (const a of assignments) {
+    if (a.reviewed_by) a.reviewed_by_name = coveredByNames.get(a.reviewed_by) ?? null;
   }
   const foundationGroups: FoundationCardGroup[] = (['math', 'reading_writing'] as const)
     .map((section) => ({
@@ -343,6 +367,7 @@ export async function loadStudentDetail(supabase: TypedSupabaseClient, studentId
 
   return {
     kind: 'ok' as const,
+    viewerId,
     student,
     scoreSummary,
     testRows,

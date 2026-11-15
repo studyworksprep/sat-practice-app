@@ -1,12 +1,14 @@
-// Overview tab: skills (SAT, and ACT when there is ACT work), open
-// work, the latest session note, Foundations and official tests at a
-// glance. Everything here links through to its full tab.
+// Overview tab: skills (SAT, and ACT when there is ACT work), work not
+// yet reviewed (finished homework to go over, then open work), the
+// latest session note, Foundations and official tests at a glance.
+// Everything here links through to its full tab.
 
 import Link from 'next/link';
 import { formatCalendarDate, formatDate } from '@/lib/formatters';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import { FoundationsCard } from '../FoundationsCard';
 import type { StudentDetail } from '../load';
+import { splitForReview } from '@/lib/tutor/assignment-review';
 import { AssignmentRow, CardHead } from './parts';
 import s from '../StudentDetail.module.css';
 
@@ -16,7 +18,16 @@ export function OverviewTab({ d, tabHref }: { d: StudentDetail; tabHref: (tab: s
   const { student, aggregate, aggregateAct } = d;
   const satHasData = aggregate.performance.math.domains.length > 0 || aggregate.performance.rw.domains.length > 0;
   const actHasData = Boolean(aggregateAct && aggregateAct.totalAttempts > 0 && aggregateAct.performance.sections.length > 0);
-  const open = d.assignments.filter((a) => !a.completed_at);
+  const { toReview, open } = splitForReview(d.assignments);
+  const row = (a: StudentDetail['assignments'][number]) => (
+    <AssignmentRow
+      key={a.id}
+      a={a}
+      reportSessionId={d.reportSessionByAssignment.get(a.id) ?? null}
+      studentId={student.id}
+      viewerId={d.viewerId}
+    />
+  );
   const today = new Date().toISOString().slice(0, 10);
   const nextRegistration = d.registrations.find((r) => r.test_date >= today) ?? null;
   const latestOfficial = d.officialScores[0] ?? null;
@@ -56,24 +67,39 @@ export function OverviewTab({ d, tabHref }: { d: StudentDetail; tabHref: (tab: s
           )}
         </section>
 
+        {/* Every finished assignment stays here until a tutor ticks
+            Reviewed; open work follows, capped, with the rest one click
+            away at the top of the Assignments tab. */}
         <section className={s.card}>
-          <CardHead title="Open work">
+          <CardHead title="Not yet reviewed">
             <Link href={tabHref('assignments')} className={s.cardHeaderLink}>All assignments →</Link>
           </CardHead>
-          {open.length === 0 ? (
+          {toReview.length === 0 && open.length === 0 ? (
             <p className={s.empty}>
-              Nothing open.{' '}
+              Every assignment is reviewed and nothing is open.{' '}
               <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.cardHeaderLink}>Assign work →</Link>
             </p>
           ) : (
-            <ul className={s.assignmentList}>
-              {open.slice(0, OPEN_WORK_LIMIT).map((a) => (
-                <AssignmentRow key={a.id} a={a} reportSessionId={d.reportSessionByAssignment.get(a.id) ?? null} />
-              ))}
-            </ul>
-          )}
-          {open.length > OPEN_WORK_LIMIT && (
-            <p className={s.cardFoot}>{open.length - OPEN_WORK_LIMIT} more open.</p>
+            <>
+              {toReview.length > 0 && (
+                <div className={s.assignmentGroup}>
+                  <h3 className={s.assignmentGroupTitle}>Ready to review · {toReview.length}</h3>
+                  <ul className={s.assignmentList}>{toReview.map(row)}</ul>
+                </div>
+              )}
+              {open.length > 0 && (
+                <div className={s.assignmentGroup}>
+                  <h3 className={s.assignmentGroupTitle}>Open · {open.length}</h3>
+                  <ul className={s.assignmentList}>{open.slice(0, OPEN_WORK_LIMIT).map(row)}</ul>
+                  {open.length > OPEN_WORK_LIMIT && (
+                    <p className={s.cardFoot}>
+                      {open.length - OPEN_WORK_LIMIT} more open.{' '}
+                      <Link href={tabHref('assignments')} className={s.cardHeaderLink}>See all →</Link>
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>

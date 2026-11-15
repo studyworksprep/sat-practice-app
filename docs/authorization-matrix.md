@@ -98,6 +98,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/students/[studentId]/actions.js` | `importStudentPracticeHistory`, `addTestRegistration`, `removeTestRegistration`, `addOfficialScore`, `deleteStudentPracticeTest`, `removeOfficialScore` | requireUser + requireServiceRole |
 | `app/(tutor)/tutor/students/[studentId]/foundation-actions.ts` | `markLessonCovered`, `unmarkLessonCovered` | requireRole[admin|manager|teacher] + assertWriter |
 | `app/(tutor)/tutor/students/[studentId]/plan/actions.ts` | `generatePlanAction`, `activatePlanAction`, `moveTaskAction`, `removeTaskAction`, `swapSkillAction`, `addTaskAction`, `regenerateWeekAction` | requireUser |
+| `app/(tutor)/tutor/students/[studentId]/review-actions.ts` | `setAssignmentReviewed` | requireRole[admin|manager|teacher] + assertWriter |
 | `app/(tutor)/tutor/tagging/[unitId]/actions.ts` | `loadTaggingQuestion` | requireRole[admin|manager] |
 | `app/(tutor)/tutor/training/assignments/[id]/actions.js` | `startTrainingAssignment` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/practice/actions.js` | `createTrainingSession`, `countAvailable` | requireUser + rateLimit |
@@ -130,4 +131,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_22 route handlers, 77 server-action modules enumerated._
+_22 route handlers, 78 server-action modules enumerated._
