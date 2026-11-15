@@ -7,11 +7,15 @@
 // active-state matcher, same account/sign-out affordances.
 //
 // Behaviors:
-//   - Desktop: sticky full-height sidebar; collapse toggle shrinks it
-//     to an icon rail (preference persisted in localStorage — restored
+//   - Desktop: sticky full-height sidebar; a round toggle on its right
+//     edge, at mid-height, shrinks it to an icon rail. Every browser
+//     session starts expanded — many students never found the old
+//     corner toggle and sat on the rail indefinitely — so the rail
+//     only appears after an explicit click. The choice lives in
+//     sessionStorage for the rest of that tab's session (restored
 //     after mount, so a collapsed user sees a brief expanded flash on
-//     hard loads; acceptable v1 trade against SSR/localStorage
-//     hydration mismatches).
+//     a hard reload; acceptable trade against SSR hydration
+//     mismatches) and is forgotten on sign-out.
 //   - Mobile (<768px): slim top bar with a hamburger; the sidebar
 //     slides in as a drawer over a backdrop, closes on navigation,
 //     backdrop click, or Escape.
@@ -36,11 +40,11 @@ import { StudyworksWordmark } from './StudyworksWordmark';
 import { activeTabHref, isActive, isShellSuppressedPath } from './nav-links';
 import type { NavIconName, NavLink, NavSection } from './nav-links';
 import {
-  BarChartIcon,
   BookmarkIcon,
   BookOpenIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  DashboardIcon,
   GraduationCapIcon,
   InboxIcon,
   InformationIcon,
@@ -67,7 +71,7 @@ const asIcon = (icon: unknown): IconComponent => icon as IconComponent;
 // links carry string icon keys and this map owns the components.
 const NAV_ICONS: Record<NavIconName, IconComponent> = {
   plan: asIcon(ClipboardCheckIcon),
-  dashboard: asIcon(BarChartIcon),
+  dashboard: asIcon(DashboardIcon),
   practice: asIcon(PencilIcon),
   test: asIcon(TestIcon),
   inbox: asIcon(InboxIcon),
@@ -91,7 +95,19 @@ const NAV_ICONS: Record<NavIconName, IconComponent> = {
 const ChevronLeft = asIcon(ChevronLeftIcon);
 const ChevronRight = asIcon(ChevronRightIcon);
 
+// Session-scoped (sessionStorage). The same key in localStorage held
+// the old persist-forever preference; it is cleared on mount so a
+// student who once collapsed the sidebar is not stuck on the rail.
 const COLLAPSE_KEY = 'sw:sidebar-collapsed';
+
+function forgetCollapse() {
+  try {
+    window.sessionStorage.removeItem(COLLAPSE_KEY);
+    window.localStorage.removeItem(COLLAPSE_KEY);
+  } catch {
+    // storage unavailable — nothing persisted to forget
+  }
+}
 
 interface ShellUser {
   email?: string | null;
@@ -125,11 +141,13 @@ export function AppShell({ user, sections, headerSlot, badges, footer, tabs, chi
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Restore the desktop collapse preference after mount (reading
-  // localStorage during render would desync SSR hydration).
+  // Restore this session's collapse choice after mount (reading
+  // storage during render would desync SSR hydration). A new session
+  // has nothing stored, so it starts expanded.
   useEffect(() => {
     try {
-      if (window.localStorage.getItem(COLLAPSE_KEY) === '1') setCollapsed(true);
+      window.localStorage.removeItem(COLLAPSE_KEY);
+      if (window.sessionStorage.getItem(COLLAPSE_KEY) === '1') setCollapsed(true);
     } catch {
       // storage unavailable (private mode etc.) — stay expanded
     }
@@ -151,15 +169,18 @@ export function AppShell({ user, sections, headerSlot, badges, footer, tabs, chi
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => {
       try {
-        window.localStorage.setItem(COLLAPSE_KEY, prev ? '0' : '1');
+        if (prev) window.sessionStorage.removeItem(COLLAPSE_KEY);
+        else window.sessionStorage.setItem(COLLAPSE_KEY, '1');
       } catch {
-        // preference just won't persist
+        // choice just won't survive a reload
       }
       return !prev;
     });
   }, []);
 
   async function handleSignOut() {
+    // The next person to sign in on this tab starts expanded too.
+    forgetCollapse();
     const supabase = createClient();
     await supabase.auth.signOut();
     // Hard nav so the auth cookies clear and the next page render
@@ -218,15 +239,19 @@ export function AppShell({ user, sections, headerSlot, badges, footer, tabs, chi
           <Link href={home} className={s.logoLink} aria-label="Studyworks home">
             <StudyworksWordmark variant={collapsed ? 'mark' : 'full'} />
           </Link>
-          <button
-            type="button"
-            className={s.collapseBtn}
-            onClick={toggleCollapsed}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-          </button>
         </div>
+
+        {/* Positioned on the sidebar's right edge at mid-height (CSS);
+            kept here in the DOM so it stays second in tab order. */}
+        <button
+          type="button"
+          className={s.collapseBtn}
+          onClick={toggleCollapsed}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
 
         {headerSlot && <div className={s.headerSlot}>{headerSlot}</div>}
 

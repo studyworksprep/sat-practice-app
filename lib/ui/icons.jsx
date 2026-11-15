@@ -324,6 +324,20 @@ export function PerformanceIcon(props) {
 /** @deprecated Use PerformanceIcon — kept for compatibility. */
 export const BarChartIcon = PerformanceIcon;
 
+// Dashboard / home: an uneven panel layout, so the nav's Dashboard
+// link no longer shares Performance's bar chart. Panels sit 4 units
+// apart so the gaps survive the 14px sidebar tile.
+export function DashboardIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <rect x="3.5" y="3.5" width="6.5" height="9" rx="1.5" />
+      <rect x="14" y="3.5" width="6.5" height="4" rx="1.5" />
+      <rect x="14" y="11.5" width="6.5" height="9" rx="1.5" />
+      <rect x="3.5" y="16.5" width="6.5" height="4" rx="1.5" />
+    </SvgRoot>
+  );
+}
+
 export function ProgressIcon(props) {
   return (
     <SvgRoot {...props}>
