@@ -5182,6 +5182,11 @@ export type Database = {
       }
     }
     Functions: {
+      act_question_stats: { Args: { p_question_id: string }; Returns: Json }
+      act_question_stats_cut: {
+        Args: { p_question_id: string; p_users: string[] }
+        Returns: Json
+      }
       activate_study_plan: { Args: { p_plan_id: string }; Returns: string }
       assignment_has_visible_student: {
         Args: { p_assignment_id: string }

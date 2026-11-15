@@ -3,7 +3,8 @@
 // Fetched lazily — only when a staff viewer opens the modal — so the
 // page itself never pays for it. One RPC call:
 // public.get_question_stats(question_id) (SECURITY DEFINER,
-// staff-gated in SQL; aggregates only). We call it through the
+// staff-gated in SQL; aggregates only). The same call serves SAT
+// (questions_v2) and ACT (act_questions) ids; `test_type` says which. We call it through the
 // caller's own RLS-scoped client, so auth.uid() inside the function is
 // the viewer and the `roster` cut is computed for them specifically.
 //
@@ -15,6 +16,7 @@
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import type { ActionResult } from '@/lib/types';
+import { actFormName } from './act-form-names';
 import {
   QUESTION_STATS_ROLES,
   parseQuestionStats,
@@ -50,6 +52,15 @@ export async function loadQuestionStatsAction(
   // Admins see every student, so the roster cut is a duplicate of
   // `all` — drop it rather than render two identical columns.
   if (profile.role === 'admin') stats.roster = null;
+
+  // ACT placements carry act_forms.display_name or null; show the
+  // same readable form name the rest of the app does.
+  if (stats.test_type === 'act') {
+    stats.placements = (stats.placements ?? []).map((p) => ({
+      ...p,
+      test_name: actFormName(p.test_code, p.test_name),
+    }));
+  }
 
   return actionOk(stats);
 }

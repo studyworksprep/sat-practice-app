@@ -4,7 +4,9 @@
 //
 // The payload is produced by the SECURITY DEFINER RPC
 // public.get_question_stats(question_id) (migration 20260819120000).
-// Two cuts come back in one call:
+// It covers SAT (questions_v2) and ACT (act_questions — handed off to
+// act_question_stats, migration 20261115180000); `test_type` says
+// which. Two cuts come back in one call:
 //   all    — every student's attempts, bank-wide
 //   roster — restricted to list_visible_users(), i.e. the students the
 //            caller could already see row-by-row under RLS. Null for
@@ -59,19 +61,35 @@ export interface QuestionStatsBaseline {
 }
 
 export interface QuestionStatsPlacement {
+  /** SAT: practice_tests_v2.name. ACT: the form's readable name
+   *  (resolved in the Server Action from act_forms.display_name or
+   *  the default derived from the key). */
   test_name: string;
+  /** SAT: practice test code. ACT: act_questions.source_test. */
   test_code: string;
+  /** SAT: 'RW' | 'MATH'. ACT: the section ('english', 'math', …). */
   subject_code: string;
-  module_number: number;
-  route_code: string;
+  /** Null for ACT (sections, not modules). */
+  module_number: number | null;
+  /** Null for ACT. */
+  route_code: string | null;
   ordinal: number;
   is_published: boolean;
 }
 
+export type QuestionStatsTestType = 'sat' | 'act';
+
+/** Highest difficulty label per test: SAT 1–3, ACT 1–5. */
+export const MAX_DIFFICULTY: Record<QuestionStatsTestType, number> = { sat: 3, act: 5 };
+
 export interface QuestionStats {
+  /** Missing on payloads from before the ACT hand-off — read as SAT. */
+  test_type?: QuestionStatsTestType;
   question_id: string;
   question_type: string;
   key_label: string | null;
+  /** ACT only: the option labels in display order. */
+  option_labels?: string[] | null;
   difficulty: number | null;
   score_band: number | null;
   skill_code: string | null;
