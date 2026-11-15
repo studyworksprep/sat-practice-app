@@ -657,6 +657,17 @@ SAT", "Study · Notes"); the Help button and page buttons sit in
 `actions`. Detail pages (an assignment, a help article, a lesson, a
 review sub-page) keep their own headers.
 
+*2026-11-15 — sidebar opens by default.* Many students never found the
+icon rail's expand button, and the collapse preference lived in
+`localStorage`, so one click kept them on the rail for good. The desktop
+sidebar now starts expanded in every browser session; the rail appears
+only after an explicit click, which is remembered in `sessionStorage`
+for that tab and cleared on sign-out (the old `localStorage` key is
+deleted on load). The toggle moved from beside the logo to a round
+button on the sidebar's right edge at mid-height, filled navy while
+collapsed. Dashboard links got their own icon (`DashboardIcon`) instead
+of sharing Performance's bar chart. Applies to every role's shell.
+
 **6.2 One design language — with a codified Bluebook exception.**
 The practice-test and practice-session runners deliberately mirror the
 Bluebook layout so practice builds test-day familiarity: the test

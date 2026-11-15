@@ -52,8 +52,7 @@
 }
 
 .shellCollapsed .sidebarTop {
-  flex-direction: column;
-  gap: var(--s2);
+  justify-content: center;
   padding: 12px 8px 8px;
 }
 
@@ -64,25 +63,49 @@
   min-width: 0;
 }
 
+/* Collapse/expand toggle: a round tab straddling the sidebar's right
+   border at mid-height, where it reads as "this panel opens and
+   closes". It used to be a 24px square beside the logo, which many
+   students on the icon rail never noticed. The sticky .sidebar is its
+   containing block, so it rides the edge through the width transition. */
 .collapseBtn {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(50%, -50%);
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
-  color: var(--fg3);
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--color-navy-900);
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgb(16 42 67 / 0.14);
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease-std),
-              color var(--dur-fast) var(--ease-std);
+              color var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
 }
 
 .collapseBtn:hover {
   background: var(--color-slate-100);
-  color: var(--fg1);
+}
+
+/* On the rail the toggle is the way back to labels — fill it so it
+   is the most obvious control on the strip. */
+.shellCollapsed .collapseBtn {
+  color: var(--bg-white);
+  background: var(--color-app-primary);
+  border-color: var(--color-app-primary);
+}
+
+.shellCollapsed .collapseBtn:hover {
+  background: var(--color-app-primary-hover);
+  border-color: var(--color-app-primary-hover);
 }
 
 /* ---------- Nav sections ---------- */
@@ -374,7 +397,7 @@
   /* The collapse rail is a desktop affordance. */
   .collapseBtn { display: none; }
   .shellCollapsed .sidebar { width: 280px; }
-  .shellCollapsed .sidebarTop { flex-direction: row; padding: 14px 14px 10px; }
+  .shellCollapsed .sidebarTop { justify-content: space-between; padding: 14px 14px 10px; }
   .shellCollapsed .sectionTitle {
     font-size: 11px;
     height: auto;
