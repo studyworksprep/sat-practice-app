@@ -11,7 +11,7 @@ export interface TutorDashboardData {
   rawStudents: Array<RawStudentRow>;
   activities: DashboardActivity[];
   activityUnavailable: boolean;
-  /** Per-student signals for the attention list, tiles and students panel. */
+  /** Per-student signals for the attention summary, tiles and students panel. */
   signals: StudentSignals[];
   /** Same count as the sidebar's "N late" on Assignments. */
   lateAssignments: number;

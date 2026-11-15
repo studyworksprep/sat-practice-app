@@ -5,9 +5,11 @@
 //   Four count tiles — practiced this week, behind on their plan,
 //     overdue assignments (the sidebar's "late" count), tests in the
 //     next 30 days.
-//   Left: Needs your attention (lib/tutor/dashboard-attention — plan
-//     behind, overdue work, a week without practice; most urgent
-//     first) above Recent work (the activity feed grouped by day).
+//   Left: Recent work (the activity feed grouped by day) above Needs
+//     your attention — a summary of how many students have each
+//     problem (lib/tutor/dashboard-attention: plan behind, overdue
+//     work, a week without practice), linking to the roster, which
+//     lists those students first.
 //   Right: Your students — last active, test date, latest practice
 //     test score against the goal.
 
@@ -15,11 +17,11 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { loadTutorDashboard } from '@/lib/practice/load-tutor-dashboard';
-import { buildAttention, buildDashboardTiles, dashboardSummary } from '@/lib/tutor/dashboard-attention';
+import { buildAttention, buildDashboardTiles, dashboardSummary, summarizeAttention } from '@/lib/tutor/dashboard-attention';
 import { PageHeader } from '@/lib/ui/PageHeader';
 import { RosterFinder } from './RosterFinder';
 import { ActivityFeed } from './ActivityFeed';
-import { AttentionCard, CountTiles, StudentsPanel } from './DashboardSections';
+import { AttentionSummaryCard, CountTiles, StudentsPanel } from './DashboardSections';
 import s from './Dashboard.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -103,8 +105,8 @@ export default async function TutorDashboardPage() {
 
       <div className={s.layout}>
         <div className={s.mainCol}>
-          {!signalsUnavailable && <AttentionCard rows={attention} />}
           <ActivityFeed activities={activities} students={students} unavailable={activityUnavailable} />
+          {!signalsUnavailable && <AttentionSummaryCard summary={summarizeAttention(attention)} />}
         </div>
         {!signalsUnavailable && <StudentsPanel students={signals} nowMs={nowMs} />}
       </div>

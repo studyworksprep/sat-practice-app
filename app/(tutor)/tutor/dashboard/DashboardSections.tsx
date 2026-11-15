@@ -1,19 +1,29 @@
-// Server-rendered dashboard sections: the count tiles, "Needs your
-// attention", and "Your students". The data comes from
-// lib/tutor/dashboard-attention (pure) via the page.
+// Server-rendered dashboard sections: the count tiles, the "Needs your
+// attention" summary (how many students have each problem; the roster
+// lists them, most urgent first), and "Your students". The data comes
+// from lib/tutor/dashboard-attention (pure) via the page.
 
 import Link from 'next/link';
 import { formatRelativeShort } from '@/lib/formatters';
 import {
   ACTIVITY_LOOKBACK_DAYS,
-  type AttentionRow,
+  IDLE_DAYS,
+  type AttentionSummary,
   type DashboardTiles,
   type StudentSignals,
 } from '@/lib/tutor/dashboard-attention';
 import s from './Dashboard.module.css';
 
-const ATTENTION_LIMIT = 6;
 const STUDENTS_LIMIT = 8;
+
+/** The problems buildAttention flags, in the order the card lists them. */
+const PROBLEMS: ReadonlyArray<{
+  key: 'planBehind' | 'overdueAssignments' | 'idle'; label: string; tone: 'alert' | 'warn';
+}> = [
+  { key: 'planBehind', label: 'Behind on their study plan', tone: 'alert' },
+  { key: 'overdueAssignments', label: 'Overdue assignments', tone: 'alert' },
+  { key: 'idle', label: `No practice in ${IDLE_DAYS}+ days`, tone: 'warn' },
+];
 
 export function CountTiles({ tiles }: { tiles: DashboardTiles }) {
   return (
@@ -43,50 +53,38 @@ function Tile({ label, value, of, tone, href }: {
     : <div className={s.tile}>{body}</div>;
 }
 
-export function AttentionCard({ rows }: { rows: AttentionRow[] }) {
-  const shown = rows.slice(0, ATTENTION_LIMIT);
+export function AttentionSummaryCard({ summary }: { summary: AttentionSummary }) {
   return (
     <section className={s.card} aria-labelledby="attention-heading">
       <div className={s.cardHeader}>
-        <h2 id="attention-heading" className={s.cardTitle}>Needs your attention</h2>
-        {rows.length > 0 && <span className={s.cardHeaderHint}>Most urgent first</span>}
+        <div>
+          <h2 id="attention-heading" className={s.cardTitle}>Needs your attention</h2>
+          <p className={s.cardSub}>
+            {summary.students === 0
+              ? 'Everyone is on track this week.'
+              : `${studentCount(summary.students)} in all. A student can count under more than one problem.`}
+          </p>
+        </div>
+        <Link href="/tutor/roster" className={s.reviewAction}>Roster →</Link>
       </div>
-      {rows.length === 0 ? (
-        <p className={s.empty}>
-          Everyone is on track: no plan is behind, nothing you assigned is
-          overdue, and every student practiced in the last week.
-        </p>
-      ) : (
-        <ul className={s.attentionList}>
-          {shown.map(({ student, reasons }) => (
-            <li key={student.id} className={s.attentionRow}>
-              <span className={s.avatar} aria-hidden="true">{initials(student.name)}</span>
-              <div className={s.attentionBody}>
-                <Link href={`/tutor/students/${student.id}`} prefetch={false} className={s.attentionName}>
-                  {student.name}
-                </Link>
-                <ul className={s.reasonList} aria-label={`Why ${student.name} is listed`}>
-                  {reasons.map((r) => (
-                    <li key={r.label} className={`${s.reason} ${s[`reason_${r.tone}`]}`}>{r.label}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className={s.attentionActions}>
-                <Link href={`/tutor/students/${student.id}/plan`} prefetch={false} className={s.btnSecondary}>
-                  {student.hasPlan ? 'Open plan' : 'Build plan'}
-                </Link>
-                <Link href={`/tutor/session/${student.id}`} prefetch={false} className={s.btnDark}>
-                  Start session
-                </Link>
-              </div>
+      <ul className={s.problemList}>
+        {PROBLEMS.map(({ key, label, tone }) => {
+          const n = summary[key];
+          return (
+            <li key={key} className={s.problemRow}>
+              <span className={s.problemLabel}>{label}</span>
+              <span className={s.problemCount}>
+                <span className={`${s.problemValue} ${n > 0 ? s[`problemValue_${tone}`] : s.problemValue_zero}`}>{n}</span>
+                {n === 1 ? ' student' : ' students'}
+              </span>
             </li>
-          ))}
-        </ul>
-      )}
-      {rows.length > ATTENTION_LIMIT && (
+          );
+        })}
+      </ul>
+      {summary.students > 0 && (
         <p className={s.cardFoot}>
-          {rows.length - ATTENTION_LIMIT} more need attention.{' '}
-          <Link href="/tutor/roster" className={s.reviewAction}>See the roster →</Link>
+          The roster lists these students first. Archive anyone you no longer
+          tutor (the roster&apos;s ⋯ menu) to take them off these counts.
         </p>
       )}
     </section>
@@ -144,7 +142,6 @@ function studentMeta(st: StudentSignals, nowMs: number): string {
   return parts.join(' · ');
 }
 
-function initials(name: string): string {
-  const words = name.split(/\s+/).filter(Boolean);
-  return ((words[0]?.[0] ?? '') + (words.length > 1 ? words[words.length - 1][0] : '')).toUpperCase() || '?';
+function studentCount(n: number): string {
+  return `${n} ${n === 1 ? 'student' : 'students'}`;
 }

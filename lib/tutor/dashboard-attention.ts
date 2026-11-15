@@ -1,9 +1,10 @@
 // Tutor dashboard — who needs attention this week, and the four count
-// tiles. Pure (unit-tested in dashboard.test.mjs); the loader in
-// lib/practice/load-tutor-dashboard.ts gathers the per-student signals.
+// tiles. Pure (unit-tested in dashboard-attention.test.mjs); the loader
+// in lib/practice/load-tutor-dashboard.ts gathers the per-student
+// signals. The dashboard shows the per-problem counts
+// (summarizeAttention); the roster's default sort uses the weights.
 //
-// A student lands on "Needs your attention" for a problem, never for
-// context alone:
+// A student needs attention for a problem, never for context alone:
 //   - their active SAT plan is behind (the roster's Plan rule),
 //   - they have assignments from this tutor that are past due and
 //     unfinished (the sidebar's "late" rule), or
@@ -42,10 +43,12 @@ export interface StudentSignals {
 }
 
 export type ReasonTone = 'alert' | 'warn' | 'info';
+/** The three problems, then the two context notes. */
+export type ReasonKind = 'planBehind' | 'overdueAssignments' | 'idle' | 'testSoon' | 'noPlan';
 
 export interface AttentionRow {
   student: StudentSignals;
-  reasons: Array<{ label: string; tone: ReasonTone }>;
+  reasons: Array<{ kind: ReasonKind; label: string; tone: ReasonTone }>;
   /** Higher sorts first. */
   weight: number;
 }
@@ -79,21 +82,22 @@ export function buildAttention(students: readonly StudentSignals[], nowMs: numbe
 
     if (st.planBehind) {
       reasons.push({
+        kind: 'planBehind',
         label: st.overdueTasks > 0 ? `${plural(st.overdueTasks, 'plan task')} overdue` : 'Plan behind',
         tone: 'alert',
       });
       weight += 30 + Math.min(st.overdueTasks, 20);
     }
     if (st.overdueAssignments > 0) {
-      reasons.push({ label: `${plural(st.overdueAssignments, 'assignment')} overdue`, tone: 'alert' });
+      reasons.push({ kind: 'overdueAssignments', label: `${plural(st.overdueAssignments, 'assignment')} overdue`, tone: 'alert' });
       weight += 30 + Math.min(st.overdueAssignments, 20);
     }
     const idle = daysSince(st.lastActiveAt, nowMs);
     if (idle == null) {
-      reasons.push({ label: `No practice in ${ACTIVITY_LOOKBACK_DAYS}+ days`, tone: 'warn' });
+      reasons.push({ kind: 'idle', label: `No practice in ${ACTIVITY_LOOKBACK_DAYS}+ days`, tone: 'warn' });
       weight += 20 + ACTIVITY_LOOKBACK_DAYS / 3;
     } else if (idle >= IDLE_DAYS) {
-      reasons.push({ label: `No practice in ${idle} days`, tone: 'warn' });
+      reasons.push({ kind: 'idle', label: `No practice in ${idle} days`, tone: 'warn' });
       weight += 20 + Math.min(idle, ACTIVITY_LOOKBACK_DAYS) / 3;
     }
     if (weight === 0) continue;
@@ -101,14 +105,35 @@ export function buildAttention(students: readonly StudentSignals[], nowMs: numbe
     // Context, never a trigger on its own.
     const untilTest = daysUntil(st.testDate, nowMs);
     if (untilTest != null && untilTest >= 0 && untilTest <= TEST_SOON_DAYS) {
-      reasons.push({ label: untilTest === 0 ? 'Test today' : `Test in ${plural(untilTest, 'day')}`, tone: 'info' });
+      reasons.push({ kind: 'testSoon', label: untilTest === 0 ? 'Test today' : `Test in ${plural(untilTest, 'day')}`, tone: 'info' });
       weight += 10; // a near test makes the same gap more urgent
     }
-    if (!st.hasPlan) reasons.push({ label: 'No study plan', tone: 'info' });
+    if (!st.hasPlan) reasons.push({ kind: 'noPlan', label: 'No study plan', tone: 'info' });
 
     rows.push({ student: st, reasons, weight });
   }
   return rows.sort((a, b) => b.weight - a.weight || a.student.name.localeCompare(b.student.name));
+}
+
+export interface AttentionSummary {
+  /** Students with at least one problem (the header's "N need you"). */
+  students: number;
+  /** Students per problem; one student can count under several. */
+  planBehind: number;
+  overdueAssignments: number;
+  idle: number;
+}
+
+/** The dashboard's "Needs your attention" card: how many students
+ *  have each problem, from buildAttention's rows. */
+export function summarizeAttention(rows: readonly AttentionRow[]): AttentionSummary {
+  const summary: AttentionSummary = { students: rows.length, planBehind: 0, overdueAssignments: 0, idle: 0 };
+  for (const { reasons } of rows) {
+    for (const { kind } of reasons) {
+      if (kind === 'planBehind' || kind === 'overdueAssignments' || kind === 'idle') summary[kind] += 1;
+    }
+  }
+  return summary;
 }
 
 export interface DashboardTiles {

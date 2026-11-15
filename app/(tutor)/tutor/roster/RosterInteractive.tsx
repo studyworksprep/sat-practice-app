@@ -12,9 +12,10 @@
 // (assign work, the study plan, quick edit, archive) sits in the row's
 // ⋯ menu so the table reads as a list of students, not of buttons.
 //
-// The default sort, "Needs attention first", ranks by the same weight
-// as the dashboard's Needs-your-attention list (lib/tutor/dashboard-
-// attention): plan behind, overdue work, a week without practice.
+// The default sort, "Needs attention first", ranks by the weight from
+// lib/tutor/dashboard-attention (plan behind, overdue work, a week
+// without practice) — the same students the dashboard's Needs-your-
+// attention summary counts, and where its Roster link lands.
 //
 // The Foundations column (foundations doc §3.2) appears once a section
 // syllabus has a published lesson.

@@ -2,8 +2,9 @@
    Tutor dashboard. Tokens from [data-tree="next"].
 
    PageHeader (with the student finder), four count tiles, then a
-   two-column layout: Needs your attention + Recent work on the left,
-   Your students on the right. The columns stack below 1000px.
+   two-column layout: Recent work + the Needs-your-attention summary
+   on the left, Your students on the right. The columns stack below
+   1000px.
    The dashboard's review sub-page reuses .container / .card / .h1.
 ============================================================= */
 
@@ -32,13 +33,11 @@
 
 /* ---------- Buttons ---------- */
 
-.btnPrimary,
-.btnSecondary,
-.btnDark {
+.btnPrimary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 16px;
   font-weight: 600;
   font-size: 13px;
@@ -50,12 +49,8 @@
   transition: background var(--dur-fast) var(--ease-std),
               border-color var(--dur-fast) var(--ease-std);
 }
-.btnPrimary { min-height: 44px; background: var(--color-app-accent); color: #fff; border-color: var(--color-app-accent); }
+.btnPrimary { background: var(--color-app-accent); color: #fff; border-color: var(--color-app-accent); }
 .btnPrimary:hover { background: var(--color-app-accent-hover); border-color: var(--color-app-accent-hover); color: #fff; }
-.btnSecondary { background: var(--bg-white); color: var(--fg1); border-color: var(--border-strong); }
-.btnSecondary:hover { background: var(--color-slate-50); color: var(--fg1); }
-.btnDark { background: var(--color-navy-900); color: #fff; border-color: var(--color-navy-900); }
-.btnDark:hover { background: var(--color-app-primary-hover, #243b53); color: #fff; }
 
 /* ---------- Review sub-page ---------- */
 
@@ -203,47 +198,30 @@
 }
 .cardTitle { margin: 0; font-family: var(--font-serif); font-size: 21px; font-weight: 700; color: var(--color-navy-900); }
 .cardSub { margin: 4px 0 0; font-size: 13px; color: var(--fg3); }
-.cardHeaderHint { font-size: 12px; color: var(--fg3); }
 .cardFoot { margin: var(--s3) 0 0; font-size: 13px; color: var(--fg3); }
 .empty { margin: 0; color: var(--fg2); font-size: 14px; line-height: 1.5; }
 .footnote { margin: var(--s3) 0 0; font-size: 12px; color: var(--fg3); }
 .reviewAction { font-size: 13px; font-weight: 650; color: var(--color-app-accent); text-decoration: none; }
 .reviewAction:hover { text-decoration: underline; }
 
-/* ---------- Needs your attention ---------- */
+/* ---------- Needs your attention (summary) ---------- */
 
-.attentionList { list-style: none; margin: 0; padding: 0; }
-.attentionRow {
+.problemList { list-style: none; margin: 0; padding: 0; }
+.problemRow {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 14px;
-  padding: 14px 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: 10px 0;
   border-top: 1px solid var(--border);
 }
-.attentionRow:first-child { border-top: 0; padding-top: 4px; }
-.avatar {
-  flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-navy-900);
-  background: var(--color-gold-100, #fff3c4);
-}
-.attentionBody { flex: 1 1 240px; min-width: 0; }
-.attentionName { font-size: 15px; font-weight: 700; color: var(--fg1); text-decoration: none; }
-.attentionName:hover { text-decoration: underline; }
-.reasonList { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 0; padding: 0; }
-.reason { padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
-.reason_alert { background: var(--color-diff-hard-bg); color: var(--color-diff-hard-fg); }
-.reason_warn { background: var(--color-diff-med-bg); color: var(--color-diff-med-fg); }
-.reason_info { background: var(--color-slate-100, #f1f5f9); color: var(--fg2); }
-.attentionActions { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.problemRow:first-child { border-top: 0; padding-top: 0; }
+.problemLabel { font-size: 14px; font-weight: 600; color: var(--fg1); }
+.problemCount { flex: none; font-size: 13px; color: var(--fg3); white-space: nowrap; }
+.problemValue { font-size: 18px; font-weight: 700; color: var(--color-navy-900); }
+.problemValue_alert { color: var(--color-diff-hard-fg); }
+.problemValue_warn { color: var(--color-diff-med-fg); }
+.problemValue_zero { color: var(--fg3); }
 
 /* ---------- Recent work ---------- */
 
@@ -309,7 +287,6 @@
 .searchResult:focus-visible,
 .activityAction:focus-visible,
 .activityStudent:focus-visible,
-.attentionName:focus-visible,
 .reviewAction:focus-visible,
 .studentRow:focus-visible,
 .tileLink:focus-visible,
