@@ -17,6 +17,9 @@
 //   3. With no attempts, the read-only question view supports live teaching.
 //
 // Auth: tutor / manager / admin. RLS does the real authorization.
+//
+// For a student (not a trainee), every report variant carries the
+// Reviewed checkbox for this student's copy of the assignment.
 
 import { notFound } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
@@ -24,6 +27,8 @@ import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentReport } from '@/lib/practice/AssignmentReport';
+import { ReviewedCheckbox } from '@/lib/tutor/ReviewedCheckbox';
+import { loadReviewState } from '@/lib/tutor/assignment-review-state';
 import { buildLessonCheckRows, resolveLessonProgress } from '@/lib/lesson/progress-report.mjs';
 import { LessonStudentReport } from '../../LessonProgressSections';
 
@@ -42,13 +47,14 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
   const { user, profile, supabase } = await requireRole(['teacher', 'manager', 'admin']);
 
   // Parent assignment, junction confirming the pair, owner
-  // profile (drives the back-link target), and any latest
-  // completed v2 session — all in parallel.
+  // profile (drives the back-link target), any latest completed v2
+  // session, and the review state — all in parallel.
   const [
     { data: assignment },
     { data: junction },
     { data: ownerProfile },
     { data: realSessionOrNull },
+    review,
   ] = await Promise.all([
     supabase
       .from('assignments_v2')
@@ -78,6 +84,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    loadReviewState(supabase, assignmentId, studentId, user.id),
   ]);
 
   if (!assignment || assignment.deleted_at) notFound();
@@ -92,6 +99,17 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
     ownerRole === 'teacher' || ownerRole === 'manager'
       ? `/tutor/teachers/${studentId}`
       : `/tutor/students/${studentId}`;
+
+  // Trainees' training work isn't homework; only students get the box.
+  const reviewControl = review && !['teacher', 'manager', 'admin'].includes(ownerRole ?? '') ? (
+    <ReviewedCheckbox
+      assignmentId={assignmentId}
+      studentId={studentId}
+      reviewed={review.reviewed}
+      title={review.title}
+      checkedLabel={review.label}
+    />
+  ) : null;
 
   // Lesson assignment: the report is the per-check attempt table from
   // lesson_progress (which RLS lets the tutor read via can_view), not a
@@ -127,6 +145,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
         completedBlocksCount={resolved.completedBlockIds.length}
         completedAt={resolved.completedAt ?? junction.completed_at ?? null}
         staleProgress={resolved.hasStale ? resolved.stale : null}
+        headerExtra={reviewControl}
       />
     );
   }
@@ -222,6 +241,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
         canFlagBroken={['manager', 'admin'].includes(profile.role)}
         canViewStats={QUESTION_STATS_ROLES.includes(profile.role)}
         rebuildHref={`/tutor/assignments/${assignmentId}/students/${studentId}?rebuild=1`}
+        headerExtra={reviewControl}
       />
     );
   }
@@ -276,6 +296,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       currentUserId={view.currentUserId}
       canFlagBroken={['manager', 'admin'].includes(profile.role)}
       canViewStats={QUESTION_STATS_ROLES.includes(profile.role)}
+      headerExtra={reviewControl}
     />
   );
 }

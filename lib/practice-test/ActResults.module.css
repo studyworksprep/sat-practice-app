@@ -18,6 +18,9 @@
   gap: 6px;
 }
 
+/* Tutor route: the Reviewed checkbox under the title line. */
+.headerExtra { margin-top: 4px; }
+
 .eyebrow {
   font-size: 12px;
   font-weight: 700;

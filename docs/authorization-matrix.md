@@ -121,6 +121,7 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/practice/question-technique-actions.ts` | `setQuestionTechniques` | requireRole[admin|manager] |
 | `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `abandonPracticeSession`, `togglePracticeMark`, `getDetourOptions`, `injectEasierQuestion` | requireUser + rateLimit |
 | `lib/practice/test-type-actions.ts` | `switchTestType` | requireUser |
+| `lib/tutor/review-actions.ts` | `setAssignmentReviewed` | requireRole[admin|manager|teacher] + assertWriter |
 
 ## Attention list
 
@@ -130,4 +131,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_22 route handlers, 77 server-action modules enumerated._
+_22 route handlers, 78 server-action modules enumerated._

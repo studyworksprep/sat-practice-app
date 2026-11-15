@@ -358,21 +358,61 @@
   gap: 6px;
 }
 
+/* The bordered row is the <li>: the link (.assignmentRow) fills it and
+   the Reviewed checkbox sits beside the link, inside the border. */
+.assignmentItem {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.assignmentItem:hover { background: var(--color-slate-50); }
+.assignmentItemDone { background: var(--color-slate-50); }
+/* Reviewed work recedes; unreviewed finished work stays at full weight
+   because it is the work still to go over. */
+.assignmentItemReviewed { opacity: 0.8; }
+
 .assignmentRow {
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
   gap: var(--s3);
   padding: 10px 12px;
   border-radius: var(--radius-md);
-  background: var(--bg-white);
-  border: 1px solid var(--border);
   text-decoration: none;
   color: inherit;
   min-width: 0;
-  transition: background var(--dur-fast) var(--ease-std);
 }
-.assignmentRow:hover { background: var(--color-slate-50); }
-.assignmentRowDone { background: var(--color-slate-50); opacity: 0.85; }
+.assignmentRow:focus-visible {
+  outline: 2px solid var(--color-navy-500);
+  outline-offset: -2px;
+}
+
+/* Overview card subgroups ("Ready to review", "Open"). */
+.assignmentGroup + .assignmentGroup { margin-top: var(--s4); }
+.assignmentGroupTitle {
+  margin: 0 0 var(--s2);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.reviewedLine {
+  font-size: 11px;
+  color: var(--tile-success-fg);
+}
+
+/* Wrapper around the shared Reviewed checkbox (lib/tutor/ReviewedCheckbox)
+   inside an assignment row. */
+.assignmentReview {
+  flex: 0 0 auto;
+  padding: 6px 12px 6px 0;
+}
 
 .assignmentType {
   font-size: 10px;
@@ -443,13 +483,6 @@
   font-weight: 700;
 }
 
-.completedTag {
-  font-size: 11px;
-  color: var(--color-diff-easy-fg);
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
 .reportPill {
   font-size: 11px;
   font-weight: 700;
@@ -466,12 +499,14 @@
 /* Phone: the title takes its own line and the dates + status wrap
    under it, instead of one row that runs off the screen. */
 @media (max-width: 640px) {
-  .assignmentRow { flex-wrap: wrap; row-gap: 6px; }
+  .assignmentItem { flex-wrap: wrap; }
+  .assignmentRow { flex: 1 1 100%; flex-wrap: wrap; row-gap: 6px; }
   .assignmentTitle { flex: 1 1 100%; order: -1; white-space: normal; }
-  .assignmentDates { flex-direction: row; gap: var(--s2); margin-right: auto; }
+  .assignmentDates { flex-direction: row; flex-wrap: wrap; gap: var(--s2); margin-right: auto; }
+  .assignmentReview { margin-left: auto; padding: 0 12px 10px; }
 }
 
-.assignmentRow:hover .reportPill {
+.assignmentItem:hover .reportPill {
   background: var(--tile-success-fg);
   color: var(--bg-white, #fff);
   border-color: var(--tile-success-fg);

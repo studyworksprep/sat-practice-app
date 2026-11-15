@@ -47,9 +47,12 @@
 }
 .headerActions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  /* Wrap onto a second line on phones instead of running off-screen. */
+  max-width: 100%;
 }
 
 .eyebrow {

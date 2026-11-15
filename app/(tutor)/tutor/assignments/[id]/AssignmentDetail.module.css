@@ -24,6 +24,14 @@
 /* ---------- Header ---------- */
 
 .header { padding: var(--s2) 0; }
+/* Lesson report header with the Reviewed checkbox beside the title. */
+.headerWithAction {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
+}
 
 .eyebrow {
   font-size: 11px;

@@ -12,6 +12,10 @@
 // caller is actually allowed to see the specific student's
 // attempts — if not, the loader returns 'not-found' and this page
 // calls notFound().
+//
+// When the attempt completed one of the student's practice-test
+// assignments, the header carries the Reviewed checkbox for it
+// (loadPracticeTestReview matches attempt to assignment).
 
 import { notFound, redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
@@ -20,6 +24,8 @@ import { loadActTestResults } from '@/lib/practice-test/load-act-test-results';
 import { ActTestResults } from '@/lib/practice-test/ActTestResults';
 import { TestResultsInteractive } from
   '@/app/(student)/practice/test/attempt/[attemptId]/results/TestResultsInteractive';
+import { ReviewedCheckbox } from '@/lib/tutor/ReviewedCheckbox';
+import { loadPracticeTestReview } from '@/lib/tutor/assignment-review-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +58,12 @@ export default async function TutorPracticeTestResultsPage({ params }) {
       redirect(`/tutor/students/${studentId}`);
     }
     if (act.ok && act.attempt.userId === studentId) {
+      const review = await loadPracticeTestReview(supabase, {
+        studentId: act.attempt.userId,
+        testType: 'act',
+        testId: act.attempt.sourceTest,
+        finishedAt: act.attempt.finishedAt,
+      }, user.id);
       const reviewLinks = act.sectionRows
         .filter((r) => r.sessionId)
         .map((r) => ({
@@ -65,11 +77,34 @@ export default async function TutorPracticeTestResultsPage({ params }) {
           reviewLinks={reviewLinks}
           backHref={`/tutor/students/${studentId}`}
           backLabel="← Back to student"
+          headerExtra={reviewControl(review, act.attempt.userId)}
         />
       );
     }
     notFound();
   }
 
-  return <TestResultsInteractive {...result.props} />;
+  const { ownerUserId, practiceTestId, finishedAt, status } = result.props;
+  const review = status === 'completed' && ownerUserId
+    ? await loadPracticeTestReview(supabase, {
+      studentId: ownerUserId,
+      testType: 'sat',
+      testId: practiceTestId,
+      finishedAt,
+    }, user.id)
+    : null;
+  return <TestResultsInteractive {...result.props} headerExtra={reviewControl(review, ownerUserId)} />;
+}
+
+function reviewControl(review, studentId) {
+  if (!review) return null;
+  return (
+    <ReviewedCheckbox
+      assignmentId={review.assignmentId}
+      studentId={studentId}
+      reviewed={review.state.reviewed}
+      title={review.state.title}
+      checkedLabel={review.state.label}
+    />
+  );
 }

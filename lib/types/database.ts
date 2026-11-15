@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.18"
   }
   public: {
     Tables: {
@@ -264,6 +264,7 @@ export type Database = {
           difficulty: number | null
           id: string
           import_job_id: string
+          is_modeling: boolean
           linked_existing: boolean
           needs_figure: boolean
           options_json: Json
@@ -287,6 +288,7 @@ export type Database = {
           difficulty?: number | null
           id?: string
           import_job_id: string
+          is_modeling?: boolean
           linked_existing?: boolean
           needs_figure?: boolean
           options_json?: Json
@@ -310,6 +312,7 @@ export type Database = {
           difficulty?: number | null
           id?: string
           import_job_id?: string
+          is_modeling?: boolean
           linked_existing?: boolean
           needs_figure?: boolean
           options_json?: Json
@@ -563,6 +566,8 @@ export type Database = {
           assignment_id: string
           completed_at: string | null
           created_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
           student_id: string
           test_type: string
         }
@@ -570,6 +575,8 @@ export type Database = {
           assignment_id: string
           completed_at?: string | null
           created_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           student_id: string
           test_type?: string
         }
@@ -577,6 +584,8 @@ export type Database = {
           assignment_id?: string
           completed_at?: string | null
           created_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           student_id?: string
           test_type?: string
         }
@@ -587,6 +596,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "assignments_v2"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_students_v2_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_students_v2_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_students_v2_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "assignment_students_v2_student_id_fkey"
@@ -3434,6 +3464,57 @@ export type Database = {
           },
         ]
       }
+      question_variant_lineage: {
+        Row: {
+          alternative_question_id: string
+          batch_key: string
+          content_sha256: string
+          created_at: string
+          design_spec: Json
+          original_question_id: string
+          original_row_md5: string
+          validation_summary: Json
+          variant_key: string
+        }
+        Insert: {
+          alternative_question_id: string
+          batch_key: string
+          content_sha256: string
+          created_at?: string
+          design_spec: Json
+          original_question_id: string
+          original_row_md5: string
+          validation_summary: Json
+          variant_key: string
+        }
+        Update: {
+          alternative_question_id?: string
+          batch_key?: string
+          content_sha256?: string
+          created_at?: string
+          design_spec?: Json
+          original_question_id?: string
+          original_row_md5?: string
+          validation_summary?: Json
+          variant_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_variant_lineage_alternative_question_id_fkey"
+            columns: ["alternative_question_id"]
+            isOneToOne: true
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_variant_lineage_original_question_id_fkey"
+            columns: ["original_question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questions_v2: {
         Row: {
           approved_at: string | null
@@ -4354,6 +4435,7 @@ export type Database = {
           domain_code: string
           id: string
           mastery: number
+          reconstructed: boolean
           skill_code: string
           snapshot_date: string
           student_id: string
@@ -4367,6 +4449,7 @@ export type Database = {
           domain_code: string
           id?: string
           mastery: number
+          reconstructed?: boolean
           skill_code: string
           snapshot_date: string
           student_id: string
@@ -4380,6 +4463,7 @@ export type Database = {
           domain_code?: string
           id?: string
           mastery?: number
+          reconstructed?: boolean
           skill_code?: string
           snapshot_date?: string
           student_id?: string
@@ -5098,32 +5182,6 @@ export type Database = {
       }
     }
     Functions: {
-      get_act_student_dashboard_stats: {
-        Args: {
-          p_lookback_start: string
-          p_user_id: string
-          p_week_ago: string
-        }
-        Returns: {
-          correct_attempts: number
-          per_section: Json
-          total_attempts: number
-          week_attempts: number
-        }[]
-      }
-      get_dashboard_recent_accuracy: {
-        Args: {
-          p_assignment_ids: string[]
-          p_session_ids: string[]
-          p_user_id: string
-        }
-        Returns: {
-          attempted: number
-          correct: number
-          id: string
-          kind: string
-        }[]
-      }
       activate_study_plan: { Args: { p_plan_id: string }; Returns: string }
       assignment_has_visible_student: {
         Args: { p_assignment_id: string }
@@ -5178,6 +5236,19 @@ export type Database = {
           id: string
         }[]
       }
+      get_act_student_dashboard_stats: {
+        Args: {
+          p_lookback_start: string
+          p_user_id: string
+          p_week_ago: string
+        }
+        Returns: {
+          correct_attempts: number
+          per_section: Json
+          total_attempts: number
+          week_attempts: number
+        }[]
+      }
       get_act_student_stats: {
         Args: {
           p_lookback_start: string
@@ -5190,6 +5261,19 @@ export type Database = {
           per_section: Json
           total_attempts: number
           week_attempts: number
+        }[]
+      }
+      get_dashboard_recent_accuracy: {
+        Args: {
+          p_assignment_ids: string[]
+          p_session_ids: string[]
+          p_user_id: string
+        }
+        Returns: {
+          attempted: number
+          correct: number
+          id: string
+          kind: string
         }[]
       }
       get_plan_inputs: {
@@ -5504,6 +5588,10 @@ export type Database = {
         Args: { p_raw: number; p_section: string }
         Returns: number
       }
+      set_assignment_reviewed: {
+        Args: { p_assignment: string; p_reviewed: boolean; p_student: string }
+        Returns: Json
+      }
       set_question_techniques: {
         Args: { p_question_id: string; p_technique_ids: string[] }
         Returns: Json
@@ -5515,10 +5603,6 @@ export type Database = {
       snapshot_student_skill_mastery: {
         Args: { p_asof?: string; p_student: string; p_test_type?: string }
         Returns: number
-      }
-      student_has_lesson_assignment: {
-        Args: { p_lesson_id: string; p_student_id: string }
-        Returns: boolean
       }
       teacher_can_view_student: {
         Args: { target_student_id: string }

@@ -1,16 +1,27 @@
 // Assignments and Practice tabs: the running record of assigned work,
-// and the student's self-guided practice sessions.
+// and the student's self-guided practice sessions. Assignments lead
+// with what the tutor has not reviewed yet: finished work to go over,
+// then open work, then everything already reviewed.
 
 import Link from 'next/link';
 import { formatRelativeShort } from '@/lib/formatters';
+import { splitForReview } from '@/lib/tutor/assignment-review';
 import type { StudentDetail } from '../load';
 import { AssignmentRow, CardHead } from './parts';
 import s from '../StudentDetail.module.css';
 
 export function AssignmentsTab({ d }: { d: StudentDetail }) {
   const id = d.student.id;
-  const open = d.assignments.filter((a) => !a.completed_at);
-  const done = d.assignments.filter((a) => a.completed_at);
+  const { toReview, open, reviewed } = splitForReview(d.assignments);
+  const row = (a: StudentDetail['assignments'][number]) => (
+    <AssignmentRow
+      key={a.id}
+      a={a}
+      reportSessionId={d.reportSessionByAssignment.get(a.id) ?? null}
+      studentId={id}
+      viewerId={d.viewerId}
+    />
+  );
   const actions = (
     <>
       <Link
@@ -34,21 +45,25 @@ export function AssignmentsTab({ d }: { d: StudentDetail }) {
   return (
     <>
       <section className={s.card}>
-        <CardHead title={`Open · ${open.length}`}>{actions}</CardHead>
-        {open.length === 0 ? (
-          <p className={s.empty}>Nothing open — every assignment is finished.</p>
+        <CardHead title={`Ready to review · ${toReview.length}`}>{actions}</CardHead>
+        {toReview.length === 0 ? (
+          <p className={s.empty}>Nothing waiting. Finished work shows here until you tick Reviewed.</p>
         ) : (
-          <ul className={s.assignmentList}>
-            {open.map((a) => <AssignmentRow key={a.id} a={a} reportSessionId={d.reportSessionByAssignment.get(a.id) ?? null} />)}
-          </ul>
+          <ul className={s.assignmentList}>{toReview.map(row)}</ul>
         )}
       </section>
-      {done.length > 0 && (
+      <section className={s.card}>
+        <CardHead title={`Open · ${open.length}`} />
+        {open.length === 0 ? (
+          <p className={s.empty}>Nothing open.</p>
+        ) : (
+          <ul className={s.assignmentList}>{open.map(row)}</ul>
+        )}
+      </section>
+      {reviewed.length > 0 && (
         <section className={s.card}>
-          <CardHead title={`Finished · ${done.length}`} />
-          <ul className={s.assignmentList}>
-            {done.map((a) => <AssignmentRow key={a.id} a={a} reportSessionId={d.reportSessionByAssignment.get(a.id) ?? null} />)}
-          </ul>
+          <CardHead title={`Reviewed · ${reviewed.length}`} />
+          <ul className={s.assignmentList}>{reviewed.map(row)}</ul>
         </section>
       )}
     </>

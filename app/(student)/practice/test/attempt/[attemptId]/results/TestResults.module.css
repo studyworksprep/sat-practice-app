@@ -77,8 +77,12 @@
 
 .headerActions {
   display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--s2);
   flex-shrink: 0;
+  /* Wrap onto a second line on phones instead of running off-screen. */
+  max-width: 100%;
 }
 
 
