@@ -5182,6 +5182,20 @@ export type Database = {
       }
     }
     Functions: {
+      edit_study_plan: {
+        Args: { p_edit: Json; p_plan_id: string }
+        Returns: number
+      }
+      write_study_plan_draft: {
+        Args: {
+          p_empty?: boolean
+          p_expected_updated_at?: string
+          p_meta: Json
+          p_source_plan_id?: string
+          p_tasks: Json
+        }
+        Returns: string
+      }
       act_question_stats: { Args: { p_question_id: string }; Returns: Json }
       act_question_stats_cut: {
         Args: { p_question_id: string; p_users: string[] }

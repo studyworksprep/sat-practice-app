@@ -1,577 +1,206 @@
-// Plan-editor Server Actions (§2.4). The tutor's editing verbs over a
-// draft or active plan: move a task to another week, add a manual task,
-// remove a pending task, swap the unit a task targets, and regenerate a
-// single week from the student's current skill state.
-//
-// Authorization rides on RLS exactly like plan-actions.ts: study_plans /
-// plan_tasks policies gate on can_view(student_id), so a tutor can edit a
-// visible student's plan and a student their own — anyone else's write is
-// rejected by the database (reads come back empty → "not found" here).
-//
-// Every human edit stamps plan_tasks.source so regeneration (§2.5) and
-// week-regeneration below can preserve human judgment: 'tutor' when a
-// staff member edits, 'student' when the plan's owner does.
-
 'use server';
 
+import { randomUUID } from 'node:crypto';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import {
-  addDays,
-  buildDrillPayload,
-  buildLessonPayload,
-  daysBetween,
-  defaultUnitSteps,
-  expandUnitSyllabus,
-  regenerateWeekTasks,
-  survivesWeekRegeneration,
+  addDays, buildDrillPayload, buildLessonPayload, daysBetween,
+  defaultUnitSteps, expandUnitSyllabus, teachingSteps,
 } from './generate-plan';
-import { applyEvidencePriors, mapSkillRow, planCompositionFromRow } from './plan-inputs';
-import { UNIT_STEP_SELECT, buildSyllabi, loadSyllabusInputs, loadTechniqueNameMap, type UnitStepRow } from './unit-steps';
-import type { ExistingTask, PlanTaskSource, PlanTaskType, SkillState } from './generate-plan';
-import type { PlanInputRow } from './plan-inputs';
-import type { ActionResult, Fail } from '@/lib/types';
-import type { Json } from '@/lib/types/database';
+import { planStartDate, record, taskScheduleOrder, taskSkill, taskUnitKey } from './customization';
+import { applyPlanEdit, loadEditablePlan, loadEditableTasks, taskWrite } from './editor-state';
+import { regenerateRemainingTasks } from './repace-runner';
+import { UNIT_STEP_SELECT, buildSyllabi, loadTechniqueNameMap, type UnitStepRow } from './unit-steps';
+import type { PlanTaskDraft, PlanTaskType } from './generate-plan';
+import type { ActionResult } from '@/lib/types';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const MAX_WEEK_INDEX = 51; // mirrors the generator's MAX_WEEKS - 1
-
-// Task types a tutor can add by hand. full_test is deliberately included
-// (extra mock before test day is a classic tutor call); review/vocab/
-// flashcards resolve against the student's own queues at runtime.
-const MANUAL_TASK_TYPES: ReadonlySet<string> = new Set([
-  'lesson',
-  'drill',
-  'review',
-  'practice_set',
-  'full_test',
-  'vocab',
-  'flashcards',
-]);
-
-type SupabaseCtx = Awaited<ReturnType<typeof requireUser>>['supabase'];
-
-interface PlanRow {
-  mode?: string | null;
-  id: string;
-  student_id: string;
-  test_type: 'sat' | 'act';
-  status: string;
-  goal_score: number | null;
-  starting_score: number | null;
-  test_date: string | null;
-  config: unknown;
-  created_at: string;
-}
-
-interface TaskRow {
-  id: string;
-  plan_id: string;
-  week_index: number;
-  scheduled_date: string | null;
-  task_type: string;
-  payload: unknown;
-  source: string;
-  status: string;
-}
+const TYPES = new Set(['lesson', 'drill', 'review', 'practice_set', 'full_test', 'vocab', 'flashcards']);
 
 async function requireEditor() {
   const ctx = await requireUser();
-  if (ctx.profile?.is_demo) throw new ApiError('Demo accounts are read-only', 403);
+  if (ctx.profile.is_demo) throw new ApiError('Demo accounts are read-only', 403);
   return ctx;
 }
-
-function editErr(err: unknown): Fail {
+function failure(err: unknown): ActionResult {
   if (err instanceof ApiError) return err.toActionResult();
-  return actionFail('Unexpected error') as Fail;
+  return actionFail(err instanceof Error ? err.message : 'Could not edit the plan.');
+}
+function checkId(id: string) {
+  if (!UUID_RE.test(id)) throw new Error('Invalid plan or task.');
+}
+function checkWeek(week: number) {
+  if (!Number.isInteger(week) || week < 0 || week > 51) throw new Error('Choose a valid week.');
+}
+async function taskContext(taskId: string) {
+  checkId(taskId);
+  const ctx = await requireEditor();
+  const { data: task, error } = await ctx.supabase.from('plan_tasks')
+    .select('id, plan_id, task_type, payload, status').eq('id', taskId).maybeSingle();
+  if (error || !task) throw new Error('Task not found or not accessible.');
+  const plan = await loadEditablePlan(ctx.supabase, task.plan_id);
+  if (!plan) throw new Error('Plan not found or not accessible.');
+  if (task.status !== 'pending') throw new Error('Only open tasks can be edited.');
+  return { ...ctx, task, plan };
+}
+async function planContext(planId: string) {
+  checkId(planId);
+  const ctx = await requireEditor();
+  const plan = await loadEditablePlan(ctx.supabase, planId);
+  if (!plan) throw new Error('Plan not found or not accessible.');
+  return { ...ctx, plan };
+}
+async function unitFor(db: Awaited<ReturnType<typeof requireEditor>>['supabase'], testType: string, domain: string, skill: string) {
+  const { data, error } = await db.from('curriculum_units').select('id, title, expected_minutes')
+    .eq('test_type', testType).eq('domain_code', domain).eq('skill_code', skill).maybeSingle();
+  if (error || !data) throw new Error('Choose a skill in this curriculum.');
+  return data;
 }
 
-/** 'student' when the plan's owner edits their own plan, else 'tutor'. */
-function sourceFor(userId: string, plan: PlanRow): PlanTaskSource {
-  return userId === plan.student_id ? 'student' : 'tutor';
-}
-
-async function loadPlan(supabase: SupabaseCtx, planId: string): Promise<PlanRow | null> {
-  const { data } = await supabase
-    .from('study_plans')
-    .select('id, student_id, test_type, status, goal_score, starting_score, test_date, config, created_at, mode')
-    .eq('id', planId)
-    .in('status', ['draft', 'active'])
-    .maybeSingle();
-  return (data as PlanRow | null) ?? null;
-}
-
-async function loadTask(
-  supabase: SupabaseCtx,
-  taskId: string,
-): Promise<{ task: TaskRow; plan: PlanRow } | null> {
-  const { data } = await supabase
-    .from('plan_tasks')
-    .select('id, plan_id, week_index, scheduled_date, task_type, payload, source, status')
-    .eq('id', taskId)
-    .maybeSingle();
-  if (!data) return null;
-  const plan = await loadPlan(supabase, data.plan_id);
-  if (!plan) return null;
-  return { task: data as TaskRow, plan };
-}
-
-async function loadPlanTasks(supabase: SupabaseCtx, planId: string): Promise<TaskRow[]> {
-  const { data } = await supabase
-    .from('plan_tasks')
-    .select('id, plan_id, week_index, scheduled_date, task_type, payload, source, status')
-    .eq('plan_id', planId);
-  return (data ?? []) as TaskRow[];
-}
-
-/** Week-0 anchor: the earliest scheduled task, else the plan's creation
- *  date — the same convention proposeRepace uses. */
-function planAnchor(plan: PlanRow, tasks: readonly TaskRow[]): string {
-  const dates = tasks
-    .map((t) => t.scheduled_date)
-    .filter((d): d is string => Boolean(d))
-    .sort();
-  return dates[0] ?? String(plan.created_at).slice(0, 10);
-}
-
-/** Clamp a date to the plan's test date (never schedule past test day). */
-function clampToTest(date: string, plan: PlanRow): string {
-  return plan.test_date && date > plan.test_date ? plan.test_date : date;
-}
-
-/** Look up a curriculum unit, validating the codes belong to the plan's
- *  test type. Returns null when the unit doesn't exist. */
-async function loadUnit(
-  supabase: SupabaseCtx,
-  testType: string,
-  domainCode: string,
-  skillCode: string,
-): Promise<{ expected_minutes: number; title: string } | null> {
-  const { data } = await supabase
-    .from('curriculum_units')
-    .select('expected_minutes, title')
-    .eq('test_type', testType)
-    .eq('domain_code', domainCode)
-    .eq('skill_code', skillCode)
-    .maybeSingle();
-  return data ?? null;
-}
-
-// ── Move a task to another week ───────────────────────────────────
-
-export interface MoveTaskArgs {
-  taskId: string;
-  weekIndex: number;
-}
-
+export interface MoveTaskArgs { taskId: string; weekIndex: number }
 export async function movePlanTask(args: MoveTaskArgs): Promise<ActionResult> {
-  let ctx;
   try {
-    ctx = await requireEditor();
-  } catch (err) {
-    return editErr(err);
-  }
-  const { user, supabase } = ctx;
-
-  if (!UUID_RE.test(args.taskId)) return actionFail('Invalid task.');
-  if (!Number.isInteger(args.weekIndex) || args.weekIndex < 0 || args.weekIndex > MAX_WEEK_INDEX) {
-    return actionFail('Invalid week.');
-  }
-
-  const found = await loadTask(supabase, args.taskId);
-  if (!found) return actionFail('Task not found or not accessible.');
-  const { task, plan } = found;
-  if (task.status !== 'pending') return actionFail('Only open tasks can be moved.');
-  if (task.week_index === args.weekIndex) return { ok: true };
-
-  const tasks = await loadPlanTasks(supabase, plan.id);
-  const anchor = planAnchor(plan, tasks);
-
-  // Preserve the task's position within its week when it has one.
-  const oldWeekStart = addDays(anchor, task.week_index * 7);
-  const dayOffset = task.scheduled_date
-    ? Math.min(6, Math.max(0, daysBetween(oldWeekStart, task.scheduled_date)))
-    : 0;
-  const newDate = clampToTest(addDays(anchor, args.weekIndex * 7 + dayOffset), plan);
-
-  const { error } = await supabase
-    .from('plan_tasks')
-    .update({
-      week_index: args.weekIndex,
-      scheduled_date: newDate,
-      source: sourceFor(user.id, plan),
-    })
-    .eq('id', task.id);
-  if (error) return actionFail(error.message);
-  return { ok: true };
+    checkWeek(args.weekIndex);
+    const { supabase, task, plan } = await taskContext(args.taskId);
+    await applyPlanEdit(supabase, plan.id, { operation: 'move', task_ids: [task.id], week_index: args.weekIndex });
+    return { ok: true };
+  } catch (err) { return failure(err); }
 }
-
-// ── Add a manual task ─────────────────────────────────────────────
 
 export interface AddManualTaskArgs {
-  planId: string;
-  weekIndex: number;
-  taskType: PlanTaskType;
-  /** Required for drill / lesson tasks; must name a curriculum unit. */
-  domainCode?: string;
-  skillCode?: string;
-  /** Free-text title for tasks without a unit (and optional override). */
-  title?: string;
-  why?: string;
+  planId: string; weekIndex: number; taskType: PlanTaskType;
+  domainCode?: string; skillCode?: string; title?: string; why?: string;
+  questionCount?: number;
 }
-
 export async function addManualPlanTask(args: AddManualTaskArgs): Promise<ActionResult> {
-  let ctx;
   try {
-    ctx = await requireEditor();
-  } catch (err) {
-    return editErr(err);
-  }
-  const { user, supabase } = ctx;
+    checkWeek(args.weekIndex);
+    if (!TYPES.has(args.taskType)) throw new Error('Choose a task type.');
+    const { supabase, plan } = await planContext(args.planId);
+    const title = (args.title ?? '').trim().slice(0, 120);
+    const why = (args.why ?? '').trim().slice(0, 300) || 'Added by your tutor';
+    let payload: Record<string, unknown>;
+    if (['drill', 'lesson', 'practice_set'].includes(args.taskType)) {
+      const domainCode = (args.domainCode ?? '').trim();
+      const skillCode = (args.skillCode ?? '').trim();
+      const unit = await unitFor(supabase, plan.test_type, domainCode, skillCode);
+      const ref = { domainCode, skillCode, expectedMinutes: unit.expected_minutes };
+      payload = args.taskType === 'lesson' ? buildLessonPayload(ref, why) : buildDrillPayload(ref, why);
+      if (args.taskType !== 'lesson') {
+        const count = args.questionCount ?? 8;
+        if (!Number.isInteger(count) || count < 1 || count > 50) throw new Error('Choose 1–50 questions.');
+        payload.filter_criteria = { ...record(payload.filter_criteria), count };
+      }
+      if (args.taskType === 'practice_set') payload.title = `Practice set: ${unit.title}`;
+      if (title) payload.title = title;
+    } else {
+      if (!title) throw new Error('A title is required.');
+      payload = { title, why };
 
-  if (!UUID_RE.test(args.planId)) return actionFail('Invalid plan.');
-  if (!Number.isInteger(args.weekIndex) || args.weekIndex < 0 || args.weekIndex > MAX_WEEK_INDEX) {
-    return actionFail('Invalid week.');
-  }
-  if (!MANUAL_TASK_TYPES.has(args.taskType)) return actionFail('Invalid task type.');
-
-  const plan = await loadPlan(supabase, args.planId);
-  if (!plan) return actionFail('Plan not found or not accessible.');
-
-  const why = (args.why ?? '').trim().slice(0, 300) || 'Added by your tutor';
-  const title = (args.title ?? '').trim().slice(0, 120);
-
-  let payload: Record<string, unknown>;
-  if (args.taskType === 'drill' || args.taskType === 'lesson') {
-    const domainCode = (args.domainCode ?? '').trim();
-    const skillCode = (args.skillCode ?? '').trim();
-    if (!domainCode || !skillCode) return actionFail('Pick a skill for this task.');
-    const unit = await loadUnit(supabase, plan.test_type, domainCode, skillCode);
-    if (!unit) return actionFail('That skill is not in the curriculum.');
-    const ref = { domainCode, skillCode, expectedMinutes: unit.expected_minutes };
-    payload = args.taskType === 'drill' ? buildDrillPayload(ref, why) : buildLessonPayload(ref, why);
-    if (title) payload.title = title;
-  } else {
-    if (!title) return actionFail('A title is required.');
-    payload = { title, why };
-  }
-
-  const tasks = await loadPlanTasks(supabase, plan.id);
-  const anchor = planAnchor(plan, tasks);
-  const scheduledDate = clampToTest(addDays(anchor, args.weekIndex * 7), plan);
-
-  const { error } = await supabase.from('plan_tasks').insert({
-    plan_id: plan.id,
-    week_index: args.weekIndex,
-    scheduled_date: scheduledDate,
-    task_type: args.taskType,
-    payload: payload as unknown as Json,
-    status: 'pending',
-    source: sourceFor(user.id, plan),
-  });
-  if (error) return actionFail(error.message);
-  return { ok: true };
-}
-
-// ── Add a whole unit's syllabus ───────────────────────────────────
-//
-// The tutor's counterpart to the generator's coverage walk: drop one
-// unit's ordered steps into a week (lesson, its practice set, next
-// lesson, …, mixed set) as tutor-authored tasks. Not gated on the
-// unit_syllabus flag — a tutor choosing a unit is an explicit act. A
-// unit with no authored steps falls back to the built-in pair. The
-// student's completed lessons are skipped per step, exactly as a
-// generated plan would.
-
-export interface AddUnitSyllabusArgs {
-  planId: string;
-  weekIndex: number;
-  domainCode: string;
-  skillCode: string;
-  why?: string;
-}
-
-export async function addUnitSyllabusToWeek(
-  args: AddUnitSyllabusArgs,
-): Promise<ActionResult<{ data: { added: number; skipped: number } }>> {
-  let ctx;
-  try {
-    ctx = await requireEditor();
-  } catch (err) {
-    return editErr(err) as ActionResult<{ data: { added: number; skipped: number } }>;
-  }
-  const { user, supabase } = ctx;
-
-  if (!UUID_RE.test(args.planId)) return actionFail('Invalid plan.');
-  if (!Number.isInteger(args.weekIndex) || args.weekIndex < 0 || args.weekIndex > MAX_WEEK_INDEX) {
-    return actionFail('Invalid week.');
-  }
-  const domainCode = (args.domainCode ?? '').trim();
-  const skillCode = (args.skillCode ?? '').trim();
-  if (!domainCode || !skillCode) return actionFail('Pick a unit.');
-
-  const plan = await loadPlan(supabase, args.planId);
-  if (!plan) return actionFail('Plan not found or not accessible.');
-
-  const { data: unit } = await supabase
-    .from('curriculum_units')
-    .select('id, expected_minutes')
-    .eq('test_type', plan.test_type)
-    .eq('domain_code', domainCode)
-    .eq('skill_code', skillCode)
-    .maybeSingle();
-  if (!unit) return actionFail('That skill is not in the curriculum.');
-
-  const [{ data: stepRows }, { data: done }, { data: tagged }, techniqueNames] = await Promise.all([
-    supabase
-      .from('curriculum_unit_steps')
-      .select(UNIT_STEP_SELECT)
-      .eq('unit_id', unit.id)
-      .order('position', { ascending: true }),
-    supabase
-      .from('lesson_progress')
-      .select('lesson_id')
-      .eq('student_id', plan.student_id)
-      .not('completed_at', 'is', null),
-    // For the no-rows fallback: does the skill have a published lesson?
-    supabase
-      .from('lesson_topics')
-      .select('lesson_id, lessons!inner(status)')
-      .eq('skill_code', skillCode)
-      .eq('lessons.status', 'published')
-      .limit(1),
-    loadTechniqueNameMap(supabase),
-  ]);
-
-  let steps = buildSyllabi((stepRows ?? []) as unknown as UnitStepRow[], techniqueNames)[skillCode] ?? [];
-  if (steps.length === 0) {
-    steps = defaultUnitSteps({
-      domainCode,
-      skillCode,
-      section: 'math',
-      mastery: null,
-      attemptsCount: 0,
-      coverageStatus: 'not_started',
-      masteryThreshold: 80,
-      learnability: null,
-      expectedMinutes: unit.expected_minutes,
-      sequence: 0,
-      questionsAvailable: 1,
-      hasLesson: (tagged ?? []).length > 0,
+    }
+    payload.standalone = true;
+    const tasks = await loadEditableTasks(supabase, plan.id);
+    payload.schedule_order = Math.max(0, ...tasks.map((t) => taskScheduleOrder(t.payload))) + 1;
+    const anchor = planStartDate(plan.config, plan.created_at, tasks.map((t) => t.scheduled_date));
+    const date = addDays(anchor, args.weekIndex * 7);
+    if (plan.test_date && date > plan.test_date) throw new Error('Choose a week before the test date.');
+    await applyPlanEdit(supabase, plan.id, {
+      operation: 'add', restore_skills: args.skillCode ? [args.skillCode] : [],
+      tasks: [{ week_index: args.weekIndex, scheduled_date: date, task_type: args.taskType, payload }],
     });
-  }
-
-  const why = (args.why ?? '').trim().slice(0, 300) || 'Added by your tutor';
-  const expanded = expandUnitSyllabus(
-    { domainCode, skillCode, expectedMinutes: unit.expected_minutes },
-    steps,
-    { completedLessonIds: (done ?? []).map((r) => r.lesson_id), why },
-  );
-  if (expanded.length === 0) {
-    return actionFail('Every lesson in this unit is already completed and it has no drills — nothing to add.');
-  }
-
-  const tasks = await loadPlanTasks(supabase, plan.id);
-  const anchor = planAnchor(plan, tasks);
-  const weekStart = addDays(anchor, args.weekIndex * 7);
-  const source = sourceFor(user.id, plan);
-  // Spread the steps across the week, one per day, so the order the
-  // tutor authored is the order the student meets them.
-  const rows = expanded.map((t, i) => ({
-    plan_id: plan.id,
-    week_index: args.weekIndex,
-    scheduled_date: clampToTest(addDays(weekStart, Math.min(i, 6)), plan),
-    task_type: t.taskType,
-    payload: t.payload as unknown as Json,
-    status: 'pending' as const,
-    source,
-  }));
-  const { error } = await supabase.from('plan_tasks').insert(rows);
-  if (error) return actionFail(error.message);
-  return { ok: true, data: { added: rows.length, skipped: steps.length - rows.length } };
+    return { ok: true };
+  } catch (err) { return failure(err); }
 }
 
-// ── Remove a pending task ─────────────────────────────────────────
+export interface AddUnitSyllabusArgs { planId: string; weekIndex: number; domainCode: string; skillCode: string; why?: string }
+export async function addUnitSyllabusToWeek(args: AddUnitSyllabusArgs): Promise<ActionResult> {
+  try {
+    checkWeek(args.weekIndex);
+    const { supabase, plan } = await planContext(args.planId);
+    const unit = await unitFor(supabase, plan.test_type, args.domainCode, args.skillCode);
+    const [{ data: rows, error: stepError }, { data: done, error: doneError }, { data: tagged }, names, tasks] = await Promise.all([
+      supabase.from('curriculum_unit_steps').select(UNIT_STEP_SELECT).eq('unit_id', unit.id).order('position'),
+      supabase.from('lesson_progress').select('lesson_id').eq('student_id', plan.student_id).not('completed_at', 'is', null),
+      supabase.from('lesson_topics').select('lesson_id, lessons!inner(status)').eq('skill_code', args.skillCode).eq('lessons.status', 'published').limit(1),
+      loadTechniqueNameMap(supabase), loadEditableTasks(supabase, plan.id),
+    ]);
+    if (stepError || doneError) throw new Error('Could not load the unit syllabus.');
+    const authored = buildSyllabi((rows ?? []) as unknown as UnitStepRow[], names)[args.skillCode];
+    const fallback = defaultUnitSteps({
+      domainCode: args.domainCode, skillCode: args.skillCode, expectedMinutes: unit.expected_minutes,
+      section: 'math', mastery: null, attemptsCount: 0, coverageStatus: 'not_started',
+      masteryThreshold: 80, learnability: null, sequence: 0, questionsAvailable: 1, hasLesson: Boolean(tagged?.length),
+    });
+    const steps = teachingSteps(authored?.length ? authored : fallback);
+    if (!steps.some((s) => s.kind === 'drill' && s.role === 'mixed')) steps.push({ position: steps.length + 1, kind: 'drill', role: 'mixed' });
+    const expanded = expandUnitSyllabus(
+      { domainCode: args.domainCode, skillCode: args.skillCode, expectedMinutes: unit.expected_minutes }, steps,
+      { completedLessonIds: (done ?? []).map((r) => r.lesson_id), why: (args.why ?? '').trim().slice(0, 300) || 'Added by your tutor' },
+    );
+    const key = `unit:${randomUUID()}`;
+    const orderStart = Math.max(0, ...tasks.map((t) => taskScheduleOrder(t.payload))) + 1;
+    const anchor = planStartDate(plan.config, plan.created_at, tasks.map((t) => t.scheduled_date));
+    const start = addDays(anchor, args.weekIndex * 7);
+    const availableDays = plan.test_date ? daysBetween(start, plan.test_date) : 6;
+    if (availableDays < 0) throw new Error('Choose a week before the test date.');
+    const additions: PlanTaskDraft[] = expanded.map((t, i) => ({
+      ...t, weekIndex: args.weekIndex, scheduledDate: addDays(start, Math.min(i, 6, availableDays)), source: 'tutor',
+      payload: { ...t.payload, schedule_order: orderStart + i, plan_unit_key: key, plan_unit_title: unit.title, editor_unit: true },
+    }));
+    await applyPlanEdit(supabase, plan.id, { operation: 'add', tasks: additions.map(taskWrite), restore_skills: [args.skillCode] });
+    return { ok: true };
+  } catch (err) { return failure(err); }
+}
 
 export async function removePlanTask(args: { taskId: string }): Promise<ActionResult> {
-  let ctx;
   try {
-    ctx = await requireEditor();
-  } catch (err) {
-    return editErr(err);
-  }
-  const { supabase } = ctx;
-
-  if (!UUID_RE.test(args.taskId)) return actionFail('Invalid task.');
-  const found = await loadTask(supabase, args.taskId);
-  if (!found) return actionFail('Task not found or not accessible.');
-  // Completed/skipped rows are the student's history — never deleted.
-  if (found.task.status !== 'pending') return actionFail('Only open tasks can be removed.');
-
-  const { error } = await supabase.from('plan_tasks').delete().eq('id', found.task.id);
-  if (error) return actionFail(error.message);
-  return { ok: true };
+    const { supabase, plan, task } = await taskContext(args.taskId);
+    await applyPlanEdit(supabase, plan.id, { operation: 'remove', task_ids: [task.id] });
+    return { ok: true };
+  } catch (err) { return failure(err); }
 }
-
-// ── Swap the unit a drill / lesson targets ────────────────────────
-
-export interface SwapTaskSkillArgs {
-  taskId: string;
-  domainCode: string;
-  skillCode: string;
-}
-
+export interface SwapTaskSkillArgs { taskId: string; domainCode: string; skillCode: string }
 export async function swapPlanTaskSkill(args: SwapTaskSkillArgs): Promise<ActionResult> {
-  let ctx;
   try {
-    ctx = await requireEditor();
-  } catch (err) {
-    return editErr(err);
-  }
-  const { user, supabase } = ctx;
-
-  if (!UUID_RE.test(args.taskId)) return actionFail('Invalid task.');
-  const found = await loadTask(supabase, args.taskId);
-  if (!found) return actionFail('Task not found or not accessible.');
-  const { task, plan } = found;
-  if (task.status !== 'pending') return actionFail('Only open tasks can be changed.');
-  if (task.task_type !== 'drill' && task.task_type !== 'lesson') {
-    return actionFail('Only drill and lesson tasks target a skill.');
-  }
-
-  const domainCode = args.domainCode.trim();
-  const skillCode = args.skillCode.trim();
-  const unit = await loadUnit(supabase, plan.test_type, domainCode, skillCode);
-  if (!unit) return actionFail('That skill is not in the curriculum.');
-
-  const why = `Swapped in by ${user.id === plan.student_id ? 'you' : 'your tutor'}`;
-  const ref = { domainCode, skillCode, expectedMinutes: unit.expected_minutes };
-  const payload =
-    task.task_type === 'drill' ? buildDrillPayload(ref, why) : buildLessonPayload(ref, why);
-
-  const { error } = await supabase
-    .from('plan_tasks')
-    .update({ payload: payload as unknown as Json, source: sourceFor(user.id, plan) })
-    .eq('id', task.id);
-  if (error) return actionFail(error.message);
-  return { ok: true };
+    const { supabase, task, plan } = await taskContext(args.taskId);
+    if (!['lesson', 'drill', 'practice_set'].includes(task.task_type)) throw new Error('This task does not target a skill.');
+    const unit = await unitFor(supabase, plan.test_type, args.domainCode, args.skillCode);
+    const ref = { domainCode: args.domainCode, skillCode: args.skillCode, expectedMinutes: unit.expected_minutes };
+    const why = 'Selected by your tutor';
+    const payload = { ...(task.task_type === 'lesson' ? buildLessonPayload(ref, why) : buildDrillPayload(ref, why)),
+      standalone: true, schedule_order: taskScheduleOrder(task.payload) };
+    await applyPlanEdit(supabase, plan.id, { operation: 'update', task_ids: [task.id], payload });
+    return { ok: true };
+  } catch (err) { return failure(err); }
 }
 
-// ── Regenerate one week ───────────────────────────────────────────
-
-export interface RegenerateWeekArgs {
-  planId: string;
-  weekIndex: number;
-}
-
-type RegenerateWeekActionResult = ActionResult<{ replaced: number; added: number }>;
-
-export async function regeneratePlanWeek(
-  args: RegenerateWeekArgs,
-): Promise<RegenerateWeekActionResult> {
-  let ctx;
+export interface UnitEditArgs { planId: string; unitKey: string; weekIndex?: number }
+async function editUnit(args: UnitEditArgs, operation: 'move' | 'remove'): Promise<ActionResult> {
   try {
-    ctx = await requireEditor();
-  } catch (err) {
-    return editErr(err);
-  }
-  const { supabase } = ctx;
+    if (!args.unitKey || args.unitKey.length > 160) throw new Error('Choose a unit.');
+    if (operation === 'move') checkWeek(args.weekIndex as number);
+    const { supabase, plan } = await planContext(args.planId);
+    const tasks = await loadEditableTasks(supabase, plan.id);
+    const unit = tasks.filter((t) => taskUnitKey(t.task_type, t.payload) === args.unitKey && t.status === 'pending');
+    if (!unit.length) throw new Error('This unit has no open tasks.');
+    await applyPlanEdit(supabase, plan.id, {
+      operation, whole_unit: true, task_ids: unit.map((t) => t.id), week_index: args.weekIndex,
+      excluded_skills: operation === 'remove' ? [...new Set(unit.map((t) => taskSkill(t.payload)).filter(Boolean))] : [],
+    });
+    return { ok: true };
+  } catch (err) { return failure(err); }
+}
+export async function movePlanUnit(args: UnitEditArgs): Promise<ActionResult> { return editUnit(args, 'move'); }
+export async function removePlanUnit(args: UnitEditArgs): Promise<ActionResult> { return editUnit(args, 'remove'); }
 
-  if (!UUID_RE.test(args.planId)) return actionFail('Invalid plan.');
-  if (!Number.isInteger(args.weekIndex) || args.weekIndex < 0 || args.weekIndex > MAX_WEEK_INDEX) {
-    return actionFail('Invalid week.');
-  }
-
-  const plan = await loadPlan(supabase, args.planId);
-  if (!plan) return actionFail('Plan not found or not accessible.');
-  if (plan.goal_score == null || !plan.test_date) {
-    return actionFail('The plan is missing a goal or test date.');
-  }
-
-  const { data: inputRows, error: inErr } = await supabase.rpc('get_plan_inputs', {
-    p_student: plan.student_id,
-    p_test_type: plan.test_type,
-  });
-  if (inErr) return actionFail(`Could not load skill data: ${inErr.message}`);
-  const composition = planCompositionFromRow(plan);
-  const skills: SkillState[] = applyEvidencePriors(
-    ((inputRows ?? []) as PlanInputRow[]).map(mapSkillRow),
-    composition,
-  );
-
-  const [tasks, syllabus] = await Promise.all([
-    loadPlanTasks(supabase, plan.id),
-    loadSyllabusInputs(supabase, plan.student_id, plan.test_type),
-  ]);
-  const anchor = planAnchor(plan, tasks);
-  const existingTasks: ExistingTask[] = tasks.map((t) => ({
-    weekIndex: t.week_index,
-    scheduledDate: t.scheduled_date,
-    taskType: t.task_type as PlanTaskType,
-    payload: (t.payload ?? {}) as Record<string, unknown>,
-    source: (t.source ?? 'generated') as PlanTaskSource,
-    status: (t.status ?? 'pending') as 'pending' | 'completed' | 'skipped',
-  }));
-
-  const config = plan.config as Record<string, unknown> | null;
-  const weeklyHours =
-    typeof config?.weekly_hours === 'number' ? (config.weekly_hours as number) : 5;
-
-  const fresh = regenerateWeekTasks({
-    weekIndex: args.weekIndex,
-    planStart: anchor,
-    testDate: plan.test_date,
-    goalScore: plan.goal_score,
-    startingScore: plan.starting_score,
-    weeklyHours,
-    testType: plan.test_type,
-    skills,
-    existingTasks,
-    mode: composition.mode ?? undefined,
-    studyDays: composition.studyDays,
-    targets: composition.targets,
-    fullTests: composition.fullTests,
-    unitSteps: syllabus?.unitSteps ?? null,
-    sectionSteps: syllabus?.sectionSteps ?? null,
-    completedLessonIds: syllabus?.completedLessonIds ?? null,
-  });
-
-  // Replace the week's still-pending generated tasks. Delete first, then
-  // insert; a failure between the two leaves a thinner week (recoverable
-  // by regenerating again) rather than duplicate tasks.
-  const replaceIds = tasks
-    .filter(
-      (t) =>
-        t.week_index === args.weekIndex &&
-        !survivesWeekRegeneration({
-          weekIndex: t.week_index,
-          scheduledDate: t.scheduled_date,
-          taskType: t.task_type as PlanTaskType,
-          payload: (t.payload ?? {}) as Record<string, unknown>,
-          source: (t.source ?? 'generated') as PlanTaskSource,
-          status: (t.status ?? 'pending') as 'pending' | 'completed' | 'skipped',
-        }),
-    )
-    .map((t) => t.id);
-
-  if (replaceIds.length > 0) {
-    const { error: delErr } = await supabase.from('plan_tasks').delete().in('id', replaceIds);
-    if (delErr) return actionFail(delErr.message);
-  }
-  if (fresh.length > 0) {
-    const { error: insErr } = await supabase.from('plan_tasks').insert(
-      fresh.map((t) => ({
-        plan_id: plan.id,
-        week_index: t.weekIndex,
-        scheduled_date: clampToTest(t.scheduledDate, plan),
-        task_type: t.taskType,
-        payload: t.payload as unknown as Json,
-        status: 'pending',
-        source: 'generated',
-      })),
-    );
-    if (insErr) return actionFail(insErr.message);
-  }
-
-  return { ok: true, replaced: replaceIds.length, added: fresh.length };
+export interface RegenerateWeekArgs { planId: string; weekIndex: number }
+export async function regeneratePlanWeek(args: RegenerateWeekArgs): Promise<ActionResult> {
+  try {
+    checkWeek(args.weekIndex);
+    const { supabase, plan } = await planContext(args.planId);
+    const result = await regenerateRemainingTasks(supabase, {
+      planId: plan.id, today: new Date().toISOString().slice(0, 10), weekIndex: args.weekIndex,
+    });
+    return result.ok ? { ok: true } : actionFail(result.error);
+  } catch (err) { return failure(err); }
 }

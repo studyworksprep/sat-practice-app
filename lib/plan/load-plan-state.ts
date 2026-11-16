@@ -7,6 +7,7 @@
 // roster beats N single-student loads.)
 
 import { computeAdherence, type AdherenceSummary } from './adherence';
+import { taskScheduleOrder } from './customization';
 import type { TypedSupabaseClient } from '@/lib/supabase/server';
 
 export interface PlanTaskRow {
@@ -66,6 +67,10 @@ export async function loadStudentPlanState(
     for (const t of (taskRows ?? []) as PlanTaskRow[]) {
       if (!tasksByPlan.has(t.plan_id)) tasksByPlan.set(t.plan_id, []);
       tasksByPlan.get(t.plan_id)!.push(t);
+    }
+    for (const list of tasksByPlan.values()) {
+      list.sort((a, b) => (a.scheduled_date ?? '').localeCompare(b.scheduled_date ?? '')
+        || taskScheduleOrder(a.payload) - taskScheduleOrder(b.payload));
     }
   }
 

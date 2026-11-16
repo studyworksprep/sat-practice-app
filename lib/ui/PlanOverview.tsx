@@ -7,6 +7,7 @@
 
 import { formatDate } from '@/lib/formatters';
 import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
+import { taskScheduleOrder } from '@/lib/plan/customization';
 import type { PlanMode, PlanPhase, PlanPhaseType, PlanTaskType } from '@/lib/plan/generate-plan';
 import s from './PlanOverview.module.css';
 
@@ -111,7 +112,8 @@ export function PlanOverview({
     byWeek.get(t.weekIndex)!.push(t);
   }
   for (const list of byWeek.values()) {
-    list.sort((a, b) => (a.scheduledDate ?? '').localeCompare(b.scheduledDate ?? ''));
+    list.sort((a, b) => (a.scheduledDate ?? '').localeCompare(b.scheduledDate ?? '')
+      || taskScheduleOrder(a.payload) - taskScheduleOrder(b.payload));
   }
 
   return (

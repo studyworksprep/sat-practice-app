@@ -14,6 +14,7 @@ import { requireUser } from '@/lib/api/auth';
 import { PageHeader } from '@/lib/ui/PageHeader';
 import { formatDate } from '@/lib/formatters';
 import { buildTodayView } from '@/lib/plan/today';
+import { planStartDate } from '@/lib/plan/customization';
 import type { TodayTaskRow } from '@/lib/plan/today';
 import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
 import type { PlanMode, PlanPhaseType, PlanTaskType } from '@/lib/plan/generate-plan';
@@ -102,7 +103,8 @@ export default async function PlanPage() {
   }));
 
   const today = new Date().toISOString().slice(0, 10);
-  const view = buildTodayView(tasks, today, plan.test_date);
+  const view = buildTodayView(tasks, today, plan.test_date,
+    planStartDate(plan.config, plan.created_at, tasks.map((t) => t.scheduledDate)));
   const phases = normalizePhases(plan.phases);
   const currentWeek = view.week?.index ?? 0;
   const currentPhase = phases.find((p) => currentWeek >= p.startWeek && currentWeek <= p.endWeek) ?? null;

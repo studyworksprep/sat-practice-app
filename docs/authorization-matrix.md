@@ -97,7 +97,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/session/[studentId]/actions.ts` | `addTutorNote`, `deleteTutorNote` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/students/[studentId]/actions.js` | `importStudentPracticeHistory`, `addTestRegistration`, `removeTestRegistration`, `addOfficialScore`, `deleteStudentPracticeTest`, `removeOfficialScore` | requireUser + requireServiceRole |
 | `app/(tutor)/tutor/students/[studentId]/foundation-actions.ts` | `markLessonCovered`, `unmarkLessonCovered` | requireRole[admin|manager|teacher] + assertWriter |
-| `app/(tutor)/tutor/students/[studentId]/plan/actions.ts` | `generatePlanAction`, `activatePlanAction`, `moveTaskAction`, `removeTaskAction`, `swapSkillAction`, `addTaskAction`, `regenerateWeekAction` | requireUser |
+| `app/(tutor)/tutor/students/[studentId]/plan/actions.ts` | `generatePlanAction`, `activatePlanAction`, `moveTaskAction`, `removeTaskAction`, `swapSkillAction`, `addTaskAction`, `regenerateWeekAction`, `moveUnitAction`, `removeUnitAction` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/tagging/[unitId]/actions.ts` | `loadTaggingQuestion` | requireRole[admin|manager] |
 | `app/(tutor)/tutor/training/assignments/[id]/actions.js` | `startTrainingAssignment` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/practice/actions.js` | `createTrainingSession`, `countAvailable` | requireUser + rateLimit |
@@ -106,7 +106,7 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/bluebook/submission-actions.ts` | `crossCheckAttempt`, `loadAttemptEntryView`, `createHtmlUploadSubmission`, `createAttemptLinkedSubmission`, `createManualGridSubmission`, `reviewSubmission`, `artifactDownloadUrl`, `promoteSubmission` | requireRole[...CONTRIBUTOR_ROLES|...STAFF_ROLES] + requireServiceRole |
 | `lib/lesson/editor-question-actions.ts` | `searchLessonEditorQuestions`, `getLessonEditorQuestion` | requireRole[admin|manager|teacher] |
 | `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan`, `proposeRepace` | requireUser |
-| `lib/plan/plan-edit-actions.ts` | `movePlanTask`, `addManualPlanTask`, `addUnitSyllabusToWeek`, `removePlanTask`, `swapPlanTaskSkill`, `regeneratePlanWeek` | requireUser |
+| `lib/plan/plan-edit-actions.ts` | `movePlanTask`, `addManualPlanTask`, `addUnitSyllabusToWeek`, `removePlanTask`, `swapPlanTaskSkill`, `movePlanUnit`, `removePlanUnit`, `regeneratePlanWeek` | requireUser |
 | `lib/practice-test/load-test-question-action.ts` | `loadTestQuestionAction` | requireUser |
 | `lib/practice-test/score-actions.ts` | `recalculateScore` | requireServiceRole |
 | `lib/practice/broken-actions.js` | `loadBrokenDataAction`, `flagQuestionBroken`, `saveQuestionCorrections` | requireRole[admin|manager] |

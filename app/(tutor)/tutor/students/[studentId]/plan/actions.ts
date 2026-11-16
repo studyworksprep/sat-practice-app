@@ -10,13 +10,15 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { requireUser } from '@/lib/api/auth';
+import { requireRole } from '@/lib/api/auth';
 import { ApiError } from '@/lib/api/response';
 import { generateStudyPlan, activatePlan } from '@/lib/plan/plan-actions';
 import {
   addManualPlanTask,
   addUnitSyllabusToWeek,
   movePlanTask,
+  movePlanUnit,
+  removePlanUnit,
   regeneratePlanWeek,
   removePlanTask,
   swapPlanTaskSkill,
@@ -31,7 +33,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // on its own (and visible to the authorization-matrix scanner).
 async function ensureUser(): Promise<ActionResult | null> {
   try {
-    await requireUser();
+    await requireRole(['teacher', 'manager', 'admin']);
     return null;
   } catch (err) {
     return err instanceof ApiError ? err.toActionResult() : { ok: false, error: 'Unauthorized' };
@@ -50,11 +52,12 @@ export async function generatePlanAction(
 
   const res = await generateStudyPlan({
     studentId,
+    empty: fd.get('creationMode') === 'blank',
     goalScore: Number(fd.get('goalScore')),
     testDate: String(fd.get('testDate') ?? ''),
     weeklyHours: Number(fd.get('weeklyHours')),
   });
-  if (res.ok) revalidatePath(`/tutor/students/${studentId}/plan`);
+  if (res.ok) revalidateFor(fd);
   return res;
 }
 
@@ -69,7 +72,7 @@ export async function activatePlanAction(
   const studentId = String(fd.get('studentId') ?? '');
   const res = await activatePlan(planId);
   if (res.ok && UUID_RE.test(studentId)) {
-    revalidatePath(`/tutor/students/${studentId}/plan`);
+    revalidateFor(fd);
   }
   return res;
 }
@@ -82,6 +85,10 @@ export async function activatePlanAction(
 function revalidateFor(fd: FormData): void {
   const studentId = String(fd.get('studentId') ?? '');
   if (UUID_RE.test(studentId)) revalidatePath(`/tutor/students/${studentId}/plan`);
+  revalidatePath('/dashboard');
+  revalidatePath('/plan');
+  revalidatePath('/tutor/roster');
+  if (UUID_RE.test(studentId)) revalidatePath(`/tutor/session/${studentId}`);
 }
 
 export async function moveTaskAction(
@@ -159,6 +166,7 @@ export async function addTaskAction(
     skillCode: skillCode || undefined,
     title: String(fd.get('title') ?? ''),
     why: String(fd.get('why') ?? ''),
+    questionCount: Number(fd.get('questionCount') ?? 8),
   });
   if (res.ok) revalidateFor(fd);
   return res;
@@ -175,6 +183,24 @@ export async function regenerateWeekAction(
     planId: String(fd.get('planId') ?? ''),
     weekIndex: Number(fd.get('weekIndex')),
   });
+  if (res.ok) revalidateFor(fd);
+  return res;
+}
+
+export async function moveUnitAction(_prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const denied = await ensureUser();
+  if (denied) return denied;
+  const res = await movePlanUnit({
+    planId: String(fd.get('planId') ?? ''), unitKey: String(fd.get('unitKey') ?? ''), weekIndex: Number(fd.get('weekIndex')),
+  });
+  if (res.ok) revalidateFor(fd);
+  return res;
+}
+
+export async function removeUnitAction(_prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const denied = await ensureUser();
+  if (denied) return denied;
+  const res = await removePlanUnit({ planId: String(fd.get('planId') ?? ''), unitKey: String(fd.get('unitKey') ?? '') });
   if (res.ok) revalidateFor(fd);
   return res;
 }

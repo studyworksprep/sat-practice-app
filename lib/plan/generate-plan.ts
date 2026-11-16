@@ -25,6 +25,7 @@
 import { domainDisplayName, skillDisplayName, renderDrillWhy, isSilentWhyCode } from './task-labels.ts';
 import type { DrillWhyCode } from './task-labels.ts';
 import { VOLUME_CURVE } from '../mastery.ts';
+import { filterCustomizedTasks, stampGeneratedTasks } from './customization.ts';
 
 export type PlanTaskType =
   | 'lesson'
@@ -668,6 +669,19 @@ export function defaultUnitSteps(s: SkillState): UnitStep[] {
   return steps;
 }
 
+/** Even a lesson-only authored outline needs an opportunity to apply
+ *  each lesson before introducing more material. */
+export function teachingSteps(steps: readonly UnitStep[]): UnitStep[] {
+  const out: UnitStep[] = [];
+  steps.forEach((step, i) => {
+    out.push(step);
+    if (step.kind === 'lesson' && steps[i + 1]?.kind !== 'drill') {
+      out.push({ position: step.position, kind: 'drill', role: 'practice' });
+    }
+  });
+  return out;
+}
+
 // ── Phase composition (§5.2) ──────────────────────────────────────
 
 const PHASE_SUMMARY: Record<PlanPhaseType, string> = {
@@ -799,6 +813,8 @@ export function generatePlan(input: PlanInput): PlanDraft {
   );
 
   const lessonsScheduled = new Set<string>();
+  const initialDrills = new Set<string>();
+  const visitedSteps = new Set<string>();
   const tasks: PlanTaskDraft[] = [];
   const cursors: Record<PlanPhaseType, number> = { coverage: 0, focus: 0, rehearsal: 0, targets: 0 };
 
@@ -806,14 +822,16 @@ export function generatePlan(input: PlanInput): PlanDraft {
     weekIndex: w,
     taskType: 'lesson',
     source: 'generated',
-    payload: buildLessonPayload(s, why),
+    payload: { ...buildLessonPayload(s, why), plan_unit_key: `skill:${s.skillCode}:learn` },
   });
-  const drillTask = (w: number, s: SkillState, why: string | DrillWhy): SlotTask => ({
-    weekIndex: w,
-    taskType: 'drill',
-    source: 'generated',
-    payload: buildDrillPayload(s, why),
-  });
+  const drillTask = (w: number, s: SkillState, why: string | DrillWhy): SlotTask => {
+    const initial = !initialDrills.has(s.skillCode);
+    initialDrills.add(s.skillCode);
+    return {
+      weekIndex: w, taskType: 'drill', source: 'generated',
+      payload: { ...buildDrillPayload(s, why), plan_unit_key: `skill:${s.skillCode}:${initial ? 'learn' : `practice:${w + elapsed}`}` },
+    };
+  };
 
   // ── Syllabus walk (unitSteps present) ─────────────────────────────
   const syllabi = input.unitSteps ?? null;
@@ -830,7 +848,10 @@ export function generatePlan(input: PlanInput): PlanDraft {
   /** Section foundations: where each section's front-load stands. A
    *  section's syllabus is walked to exhaustion before the first task
    *  of that section in any phase (docs §8.1 decision 6). */
-  const sectionSyllabi = input.sectionSteps ?? null;
+  const sectionSyllabi: SectionSyllabi | null = input.sectionSteps ? {
+    math: teachingSteps(input.sectionSteps.math ?? []),
+    reading_writing: teachingSteps(input.sectionSteps.reading_writing ?? []),
+  } : null;
   const sectionWalks: Record<PlanSection, number> = { math: 0, reading_writing: 0 };
   const foundationLessonBefore = (steps: readonly UnitStep[], index: number): UnitStep | null => {
     for (let i = index - 1; i >= 0; i--) if (steps[i].kind === 'lesson') return steps[i];
@@ -886,8 +907,15 @@ export function generatePlan(input: PlanInput): PlanDraft {
     const codes = list.includes(s.skillCode) ? list : [...list, s.skillCode];
     return codes.slice(-MIXED_SET_MAX_SKILLS);
   };
-  const stepsFor = (s: SkillState): readonly UnitStep[] =>
-    syllabi?.[s.skillCode] ?? defaultUnitSteps(s);
+  const normalizedSyllabi = new Map<string, readonly UnitStep[]>();
+  const stepsFor = (s: SkillState): readonly UnitStep[] => {
+    let steps = normalizedSyllabi.get(s.skillCode);
+    if (!steps) {
+      steps = teachingSteps(syllabi?.[s.skillCode] ?? defaultUnitSteps(s));
+      normalizedSyllabi.set(s.skillCode, steps);
+    }
+    return steps;
+  };
   /** A later pass over a pool revisits only the unit's mixed sets (else
    *  its last drill) — the lessons were taught on the first pass. */
   const stepsForPass = (s: SkillState, pass: number): readonly UnitStep[] => {
@@ -906,7 +934,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
     weekIndex: w,
     taskType: 'lesson',
     source: 'generated',
-    payload: buildLessonStepPayload(s, step, why),
+    payload: { ...buildLessonStepPayload(s, step, why), plan_unit_key: `skill:${s.skillCode}:learn` },
   });
   const drillStepTask = (
     w: number,
@@ -919,11 +947,15 @@ export function generatePlan(input: PlanInput): PlanDraft {
     // A practice drill exercises the lesson before it; a mixed set is
     // homework across the unit and links to no single lesson.
     const lesson = step.role !== 'mixed' && idx >= 0 ? lessonBefore(steps, idx) : null;
+    const stepKey = `${s.skillCode}:${step.id ?? `${step.position}:${step.role}`}`;
+    const initial = !visitedSteps.has(stepKey);
+    visitedSteps.add(stepKey);
     return {
       weekIndex: w,
       taskType: 'drill',
       source: 'generated',
-      payload: buildDrillStepPayload(s, step, why, { lesson, mixedSkills: mixedSkillsFor(s) }),
+      payload: { ...buildDrillStepPayload(s, step, why, { lesson, mixedSkills: mixedSkillsFor(s) }),
+        plan_unit_key: `skill:${s.skillCode}:${initial ? 'learn' : `practice:${w + elapsed}`}` },
     };
   };
   /** Claim a lesson step: false when the lesson is already completed or
@@ -977,22 +1009,28 @@ export function generatePlan(input: PlanInput): PlanDraft {
     }
     return null;
   };
-  /** Focus/rehearsal pick with a syllabus: the first unclaimed lesson
-   *  while the skill is weak, else cycle the unit's drills. */
+  const focusSteps = new Map<string, number>();
+  let pendingLessonPhase: PlanPhaseType | null = null;
+  let pickedPhase: PlanPhaseType = 'focus';
+  /** Finish a unit's first lesson/practice sequence before advancing to
+   *  another skill. Advancing on every lesson produced weeks of lessons
+   *  followed by weeks of drills. Later passes cycle its drills. */
   const focusPickFromSyllabus = (w: number, s: SkillState): SlotTask => {
     const steps = stepsFor(s);
-    if (isWeak(s)) {
-      const lessonStep = steps.find(
-        (st) =>
-          st.kind === 'lesson' &&
-          (st.lessonId
-            ? !completedLessons.has(st.lessonId) && !lessonsEmitted.has(st.lessonId)
-            : !lessonsScheduled.has(s.skillCode)),
-      );
-      if (lessonStep && takeLessonStep(s, lessonStep)) {
-        return lessonStepTask(w, s, lessonStep, 'Learn it first — weak but improvable');
+    let index = focusSteps.get(s.skillCode) ?? 0;
+    while (index < steps.length) {
+      const step = steps[index++];
+      focusSteps.set(s.skillCode, index);
+      if (step.kind === 'lesson') {
+        if (!isWeak(s) || isStrong(s) || !takeLessonStep(s, step)) continue;
+        noteWalked(s);
+        return lessonStepTask(w, s, step, 'Learn it, then apply it in the next practice set');
       }
+      noteWalked(s);
+      if (index === steps.length) cursors.focus++;
+      return drillStepTask(w, s, steps, step, whyForDrill(s));
     }
+    cursors.focus++;
     const drills = steps.filter((st) => st.kind === 'drill');
     if (drills.length === 0) return drillTask(w, s, whyForDrill(s));
     const idx = focusDrillCursor.get(s.skillCode) ?? 0;
@@ -1038,7 +1076,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
       });
     }
 
-    let slots = Math.max(1, tasksPerWeek - weekTasks.length);
+    let slots = Math.max(1, tasksPerWeek - weekTasks.length - 1); // reserve mixed review
     // Rehearsal weeks are lighter on new skill work — the test is the work.
     if (inRehearsal) slots = Math.max(1, Math.floor(slots / 2));
 
@@ -1046,7 +1084,10 @@ export function generatePlan(input: PlanInput): PlanDraft {
     // walk that runs dry falls through to the next source; the built-in
     // paths never run dry (they cycle).
     const pickSlot = (): SlotTask | null => {
-      if (phase.type === 'coverage' && curriculum.length > 0) {
+      const slotPhase: PlanPhaseType = pendingLessonPhase ?? phase.type;
+      pendingLessonPhase = null;
+      pickedPhase = slotPhase;
+      if (slotPhase === 'coverage' && curriculum.length > 0) {
         if (syllabi) {
           const t = nextFromWalk(curriculum, 'coverage', w, (s) => ({
             code: 'coverage',
@@ -1055,6 +1096,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
           if (t) return t;
         } else {
           const s = curriculum[cursors.coverage % curriculum.length];
+          noteWalked(s);
           if (s.hasLesson && !isStrong(s) && !lessonsScheduled.has(s.skillCode)) {
             // Lesson, then the drill for the same skill in the very next
             // slot — the cursor advances on the drill.
@@ -1065,7 +1107,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
           return drillTask(w, s, { code: 'coverage', attempts: s.attemptsCount });
         }
       }
-      if ((phase.type === 'targets' || mode === 'self_directed') && targetPool.length > 0) {
+      if ((slotPhase === 'targets' || mode === 'self_directed') && targetPool.length > 0) {
         // Self-directed plans draw from the chosen skills in every phase,
         // rehearsal included.
         if (syllabi) {
@@ -1076,11 +1118,12 @@ export function generatePlan(input: PlanInput): PlanDraft {
           if (t) return t;
         } else {
           const s = targetPool[cursors.targets % targetPool.length];
-          cursors.targets++;
+          noteWalked(s);
           if (s.hasLesson && isWeak(s) && !isStrong(s) && !lessonsScheduled.has(s.skillCode)) {
             lessonsScheduled.add(s.skillCode);
             return lessonTask(w, s, '');
           }
+          cursors.targets++;
           return drillTask(w, s, { code: 'targets', attempts: s.attemptsCount });
         }
       }
@@ -1091,12 +1134,13 @@ export function generatePlan(input: PlanInput): PlanDraft {
         // plans start in focus), without spending the skill's turn.
         const foundation = nextFoundation(w, s.section);
         if (foundation) return foundation;
-        cursors.focus++;
         if (syllabi) return focusPickFromSyllabus(w, s);
+        noteWalked(s);
         if (s.hasLesson && isWeak(s) && !isStrong(s) && !lessonsScheduled.has(s.skillCode)) {
           lessonsScheduled.add(s.skillCode);
           return lessonTask(w, s, 'Learn it first — weak but improvable');
         }
+        cursors.focus++;
         return drillTask(w, s, whyForDrill(s));
       }
       return null;
@@ -1105,7 +1149,26 @@ export function generatePlan(input: PlanInput): PlanDraft {
     for (let i = 0; i < slots; i++) {
       const t = pickSlot();
       if (!t) break;
+      if (t.taskType === 'lesson') pendingLessonPhase = pickedPhase;
       weekTasks.push(t);
+    }
+
+    // Cumulative practice is part of every learning week, including week
+    // one. Only draw from skills encountered so far (or already practiced).
+    const seenCodes = new Set([...walkedByDomain.values()].flat());
+    const reviewPool = mode === 'self_directed' && targetPool.length > 0 ? targetPool : practicable;
+    const seen = reviewPool.filter((s) => seenCodes.has(s.skillCode) || s.coverageStatus === 'practiced');
+    if (seen.length > 0) {
+      const start = (w * MIXED_SET_MAX_SKILLS) % seen.length;
+      const mixed = Array.from({ length: Math.min(MIXED_SET_MAX_SKILLS, seen.length) }, (_, i) => seen[(start + i) % seen.length]);
+      weekTasks.push({
+        weekIndex: w, taskType: 'practice_set', source: 'generated',
+        payload: {
+          title: 'Mixed review', drill_role: 'mixed', minutes: REVIEW_MINUTES,
+          filter_criteria: { skill_codes: mixed.map((s) => s.skillCode), count: MIXED_SET_QUESTION_COUNT },
+          why: 'Mix topics already introduced to keep earlier learning active',
+        },
+      });
     }
 
     // Spread the week's tasks across its allowed study days. The horizon
@@ -1153,7 +1216,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
     },
   });
 
-  return { weeks, tasks, rationale, mode, phases };
+  return { weeks, tasks: stampGeneratedTasks(tasks, elapsed), rationale, mode, phases };
 }
 
 function weekRange(p: PlanPhase, elapsed: number): string {
@@ -1256,6 +1319,7 @@ export interface ExistingTask {
 }
 
 export interface RepaceInput {
+  config?: unknown;
   today: string;                 // ISO yyyy-mm-dd (as-of)
   planStart: string;             // ISO — the plan's week-0 anchor
   testDate: string;              // ISO
@@ -1302,18 +1366,9 @@ function skillCodeOf(payload: Record<string, unknown>): string | null {
   return typeof v === 'string' ? v : null;
 }
 
-/** A tutor task worth carrying into the regenerated plan: hand-authored,
- *  still open, and not already past (a stale overdue tutor task is dropped
- *  rather than resurrected into week 0). Undated tutor tasks are kept. */
-function isPreservableTutorTask(t: ExistingTask, today: string): boolean {
-  if (t.source !== 'tutor') return false;
-  if (t.status !== 'pending') return false;
-  // A task mirrored from an assignment is owed until the assignment is
-  // done or closed, overdue or not — dropping it would hide the
-  // assignment from the plan while it stays open.
-  if (typeof t.payload?.assignment_id === 'string') return true;
-  if (t.scheduledDate && t.scheduledDate < today) return false;
-  return true;
+/** Human work stays owed until it is finished or explicitly removed. */
+function isPreservableTutorTask(t: ExistingTask): boolean {
+  return t.source !== 'generated' && t.status === 'pending';
 }
 
 export function repacePlan(input: RepaceInput): RepaceResult {
@@ -1346,13 +1401,10 @@ export function repacePlan(input: RepaceInput): RepaceResult {
     return noRepace('On track — actual score is within tolerance of plan.', driftPoints);
   }
 
-  // Re-pace warranted. Preserve the tutor's open, future edits and keep the
-  // generator from re-scheduling any skill a tutor task already owns.
-  const preserved = input.existingTasks.filter((t) => isPreservableTutorTask(t, input.today));
-  const tutorOwnedSkills = new Set(
-    preserved.map((t) => skillCodeOf(t.payload)).filter((c): c is string => Boolean(c)),
-  );
-  const skillsForGenerator = input.skills.filter((s) => !tutorOwnedSkills.has(s.skillCode));
+  // Re-pace warranted. Keep human work and reconcile specific task/unit
+  // identities, so moving one practice block does not suppress all later
+  // reinforcement for that skill.
+  const preserved = input.existingTasks.filter(isPreservableTutorTask);
 
   const regen = generatePlan({
     goalScore: input.goalScore,
@@ -1361,7 +1413,7 @@ export function repacePlan(input: RepaceInput): RepaceResult {
     today: input.today,
     weeklyHours: input.weeklyHours,
     testType: input.testType,
-    skills: skillsForGenerator,
+    skills: input.skills,
     practiceTestCadenceWeeks: input.practiceTestCadenceWeeks,
     mode: input.mode,
     studyDays: input.studyDays,
@@ -1385,7 +1437,7 @@ export function repacePlan(input: RepaceInput): RepaceResult {
       scheduledDate: t.scheduledDate ?? addDays(input.today, weekIndex * 7),
       taskType: t.taskType,
       payload: t.payload,
-      source: 'tutor',
+      source: t.source,
     };
   });
 
@@ -1398,7 +1450,7 @@ export function repacePlan(input: RepaceInput): RepaceResult {
       `Regenerated the remaining ${regen.weeks} weeks` +
       (preservedTasks.length ? `, keeping ${preservedTasks.length} tutor task(s).` : '.'),
     driftPoints,
-    tasks: [...regen.tasks, ...preservedTasks],
+    tasks: [...filterCustomizedTasks(regen.tasks, input.config, input.existingTasks), ...preservedTasks],
     weeks: regen.weeks,
     phases: regen.phases,
     rationale: regen.rationale,
