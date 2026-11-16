@@ -38,6 +38,13 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
     studentId = created.data.user.id;
     await checked(db.from('profiles').update({ role: 'student', first_name: 'Plan Editor Check', subscription_exempt: true }).eq('id', studentId));
     await checked(db.from('teacher_student_assignments').insert({ teacher_id: teacher, student_id: studentId }));
+    // Roster membership alone does not grant paid access. The isolated
+    // development fixture receives a short-lived manual entitlement.
+    await checked(db.from('entitlements').insert({
+      user_id: studentId, plan: 'full', source: 'manual', status: 'active',
+      expires_at: new Date(Date.now() + 86_400_000).toISOString(),
+      note: 'Disposable study-plan browser-test fixture',
+    }));
     await checked(db.from('student_intake').upsert({ student_id: studentId, skipped_at: new Date().toISOString() }));
     const route = `/tutor/students/${studentId}/plan`;
     await page.goto(route);
@@ -130,7 +137,7 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
       await studentPage.getByRole('button', { name: /^log in$/i }).click();
       await studentPage.waitForURL((u) => !u.pathname.includes('/login'));
       await studentPage.goto('/plan');
-      await expect(studentPage.getByText('1 tasks', { exact: false }).first()).toBeVisible();
+      await expect(studentPage.getByText(String((await blankTasks())[0].payload.title), { exact: true }).first()).toBeVisible({ timeout: 30_000 });
       await studentPage.getByRole('button', { name: 'Rebuild from my latest practice', exact: true }).click();
       await expect(studentPage.getByText(/Plan rebuilt/)).toBeVisible();
       expect(await blankTasks()).toHaveLength(1);
