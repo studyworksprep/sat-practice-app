@@ -13,11 +13,12 @@
 import { composePhases, daysBetween, generatePlan, repacePlan } from './generate-plan';
 import { applyEvidencePriors, mapSkillRow, planCompositionFromRow } from './plan-inputs';
 import { loadSyllabusInputs } from './unit-steps';
+import { asExistingTask, editorConfig, filterCustomizedTasks, planStartDate, stampGeneratedTasks } from './customization';
+import { applyPlanEdit, loadEditablePlan, loadEditableTasks, taskWrite } from './editor-state';
 import type {
   ExistingTask,
   PlanMode,
   PlanPhase,
-  PlanTaskDraft,
   PlanTaskSource,
   PlanTaskType,
   SkillState,
@@ -39,8 +40,8 @@ export interface DraftTaskWrite {
 }
 
 /**
- * Replace any prior draft for (student, test_type) and write a new one
- * plus its tasks. Shared by generateStudyPlan (§2.2) and the re-pace
+ * Rebuild a draft in place, or copy the active plan into a review draft,
+ * preserving human edits and history. Shared by generation and re-pace
  * paths (§2.5). The active plan (if any) is untouched — a draft is
  * reviewed and activated separately. With the RLS client, policies gate
  * every write; the cron's service client is the sanctioned system
@@ -67,66 +68,35 @@ export async function writeDraftPlan(
     rationale?: string | null;
     phases?: PlanPhase[] | null;
     composition?: Partial<Omit<PlanComposition, 'mode'>> | null;
+    sourcePlanId?: string | null;
+    expectedUpdatedAt?: string | null;
+    empty?: boolean;
+    editor?: Json;
   },
   tasks: DraftTaskWrite[],
 ): Promise<{ ok: true; planId: string } | { ok: false; error: string }> {
-  await supabase
-    .from('study_plans')
-    .delete()
-    .eq('student_id', meta.studentId)
-    .eq('test_type', meta.testType)
-    .eq('status', 'draft');
-
-  const { data: plan, error: planErr } = await supabase
-    .from('study_plans')
-    .insert({
-      student_id: meta.studentId,
-      created_by: meta.createdBy,
-      test_type: meta.testType,
-      goal_score: meta.goalScore,
-      starting_score: meta.startingScore,
-      test_date: meta.testDate,
-      status: 'draft',
-      mode: meta.mode ?? null,
-      prep_level: meta.prepLevel ?? null,
-      intent: meta.intent ?? null,
+  const { data, error } = await supabase.rpc('write_study_plan_draft', {
+    p_meta: {
+      student_id: meta.studentId, created_by: meta.createdBy, test_type: meta.testType,
+      goal_score: meta.goalScore, starting_score: meta.startingScore, test_date: meta.testDate,
+      mode: meta.mode ?? null, prep_level: meta.prepLevel ?? null, intent: meta.intent ?? null,
       rationale: meta.rationale ?? null,
-      phases: (meta.phases ?? []).map((p) => ({
-        type: p.type,
-        start_week: p.startWeek,
-        end_week: p.endWeek,
-        summary: p.summary,
-      })),
+      phases: (meta.phases ?? []).map((p) => ({ type: p.type, start_week: p.startWeek, end_week: p.endWeek, summary: p.summary })),
+      today: new Date().toISOString().slice(0, 10),
       config: {
-        weekly_hours: meta.weeklyHours,
-        study_days: meta.composition?.studyDays ?? null,
-        targets: meta.composition?.targets ?? null,
-        full_tests: meta.composition?.fullTests ?? true,
+        ...(meta.editor ? { editor: meta.editor } : {}),
+        weekly_hours: meta.weeklyHours, study_days: meta.composition?.studyDays ?? null,
+        targets: meta.composition?.targets ?? null, full_tests: meta.composition?.fullTests ?? true,
         evidence: { self_rating: meta.composition?.selfRating ?? null },
-      } as unknown as Json,
-    })
-    .select('id')
-    .single();
-  if (planErr || !plan) {
-    return { ok: false, error: planErr?.message ?? 'unknown error' };
-  }
-
-  const taskRows = tasks.map((t) => ({
-    plan_id: plan.id,
-    week_index: t.weekIndex,
-    scheduled_date: t.scheduledDate,
-    task_type: t.taskType,
-    payload: t.payload as unknown as Json,
-    status: 'pending',
-    source: t.source,
-  }));
-  const { error: taskErr } = await supabase.from('plan_tasks').insert(taskRows);
-  if (taskErr) {
-    // Don't leave an empty draft behind if the tasks fail to write.
-    await supabase.from('study_plans').delete().eq('id', plan.id);
-    return { ok: false, error: taskErr.message };
-  }
-  return { ok: true, planId: plan.id };
+      },
+    } as unknown as Json,
+    p_tasks: tasks.map(taskWrite) as unknown as Json,
+    p_source_plan_id: meta.sourcePlanId ?? undefined,
+    p_empty: meta.empty ?? false,
+    p_expected_updated_at: meta.expectedUpdatedAt ?? undefined,
+  });
+  if (error || !data) return { ok: false, error: error?.message ?? 'Could not save the draft.' };
+  return { ok: true, planId: data };
 }
 
 function numFromJson(obj: unknown, key: string): number | null {
@@ -185,22 +155,28 @@ export async function runRepaceForStudent(
   // The active plan is what we re-pace against.
   const { data: active, error: activeErr } = await supabase
     .from('study_plans')
-    .select('id, goal_score, starting_score, test_date, config, created_at, mode, prep_level, intent')
+    .select('id, goal_score, starting_score, test_date, config, created_at, updated_at, mode, prep_level, intent')
     .eq('student_id', args.studentId)
     .eq('test_type', args.testType)
     .eq('status', 'active')
     .maybeSingle();
   if (activeErr) return fail(`Could not load the active plan: ${activeErr.message}`);
   if (!active) return noop('No active plan to re-pace.');
+  if (editorConfig(active.config).manual) return noop('This plan is built by the tutor.');
+  const { data: waiting, error: draftError } = await supabase.from('study_plans').select('id')
+    .eq('student_id', args.studentId).eq('test_type', args.testType).eq('status', 'draft').limit(1);
+  if (waiting?.length) return noop('A draft is already waiting for review.');
+  if (draftError) return fail(`Could not check for a review draft: ${draftError.message}`);
   if (!active.test_date || active.goal_score == null) {
     return noop('The active plan is missing a goal or test date.');
   }
 
   // Its tasks — needed to preserve the tutor's manual edits.
-  const { data: taskRows } = await supabase
+  const { data: taskRows, error: taskError } = await supabase
     .from('plan_tasks')
     .select('week_index, scheduled_date, task_type, payload, source, status')
     .eq('plan_id', active.id);
+  if (taskError) return fail(`Could not load the existing schedule: ${taskError.message}`);
   const existingTasks: ExistingTask[] = (taskRows ?? []).map((t) => ({
     weekIndex: t.week_index,
     scheduledDate: t.scheduled_date,
@@ -237,10 +213,11 @@ export async function runRepaceForStudent(
     .map((t) => t.scheduledDate)
     .filter((d): d is string => Boolean(d))
     .sort();
-  const planStart = scheduledDates[0] ?? String(active.created_at).slice(0, 10);
+  const planStart = planStartDate(active.config, active.created_at, scheduledDates);
   const weeklyHours = numFromJson(active.config, 'weekly_hours') ?? 5;
 
   const result = repacePlan({
+    config: active.config,
     today: args.today,
     planStart,
     testDate: active.test_date,
@@ -280,10 +257,14 @@ export async function runRepaceForStudent(
       prepLevel: active.prep_level,
       intent: active.intent,
       rationale: result.rationale,
-      phases: result.phases,
+      phases: composePhases(result.mode ?? composition.mode ?? 'targeted',
+        Math.max(0, Math.floor(daysBetween(planStart, args.today) / 7)) + (result.weeks ?? 0), composition.fullTests),
       composition,
+      sourcePlanId: active.id,
+      expectedUpdatedAt: active.updated_at,
     },
-    result.tasks as PlanTaskDraft[],
+    filterCustomizedTasks(stampGeneratedTasks(result.tasks.filter((t) => t.source === 'generated')
+      .map((t) => ({ ...t, weekIndex: Math.max(0, Math.floor(daysBetween(planStart, t.scheduledDate) / 7)) }))), active.config, existingTasks),
   );
   if (!written.ok) return fail(`Could not write the re-paced plan: ${written.error}`);
 
@@ -327,110 +308,57 @@ export interface RegenerateRemainingArgs {
   planId: string;
   /** ISO yyyy-mm-dd — injected for reproducibility. */
   today: string;
+  weekIndex?: number;
 }
 
 export async function regenerateRemainingTasks(
   supabase: PlanDbClient,
   args: RegenerateRemainingArgs,
 ): Promise<{ ok: true; taskCount: number; weeks: number } | { ok: false; error: string }> {
-  const { data: plan, error: planErr } = await supabase
-    .from('study_plans')
-    .select('id, student_id, test_type, status, goal_score, starting_score, test_date, config, created_at, mode')
-    .eq('id', args.planId)
-    .maybeSingle();
-  if (planErr || !plan) return { ok: false, error: planErr?.message ?? 'Plan not found.' };
-  if (plan.status !== 'active') return { ok: false, error: 'Only an active plan can be regenerated.' };
-  if (!plan.test_date || plan.goal_score == null) {
-    return { ok: false, error: 'The plan is missing a goal or test date.' };
-  }
-  const testType = (plan.test_type ?? 'sat') as 'sat' | 'act';
-  if (daysBetween(args.today, plan.test_date) <= 0) {
-    return { ok: false, error: 'The test date has passed — set a new date first.' };
-  }
-
-  const { data: taskRows } = await supabase
-    .from('plan_tasks')
-    .select('id, week_index, scheduled_date, source, status')
-    .eq('plan_id', plan.id);
-  const tasks = taskRows ?? [];
-
-  // Week-0 anchor: the earliest scheduled task, else the plan's creation date.
-  const dates = tasks.map((t) => t.scheduled_date).filter((d): d is string => Boolean(d)).sort();
-  const planStart = dates[0] ?? String(plan.created_at).slice(0, 10);
-  const elapsed = Math.max(0, Math.floor(daysBetween(planStart, args.today) / 7));
-
-  const { data: inputRows, error: inErr } = await supabase.rpc('get_plan_inputs', {
-    p_student: plan.student_id,
-    p_test_type: testType,
-  });
-  if (inErr) return { ok: false, error: `Could not load skill data: ${inErr.message}` };
-  const composition = planCompositionFromRow(plan);
-  const skills: SkillState[] = applyEvidencePriors(
-    ((inputRows ?? []) as PlanInputRow[]).map(mapSkillRow),
-    composition,
-  );
-  const weeklyHours = numFromJson(plan.config, 'weekly_hours') ?? 5;
-  const syllabus = await loadSyllabusInputs(supabase, plan.student_id, testType);
-
-  const draft = generatePlan({
-    goalScore: plan.goal_score,
-    startingScore: plan.starting_score,
-    testDate: plan.test_date,
-    today: args.today,
-    weeklyHours,
-    testType,
-    skills,
-    mode: composition.mode ?? undefined,
-    studyDays: composition.studyDays,
-    targets: composition.targets,
-    fullTests: composition.fullTests,
-    unitSteps: syllabus?.unitSteps ?? null,
-    sectionSteps: syllabus?.sectionSteps ?? null,
-    completedLessonIds: syllabus?.completedLessonIds ?? null,
-    elapsedWeeks: elapsed,
-  });
-
-  // Replace only pending, generated, from-today-onward tasks. Delete
-  // first, then insert; a failure between the two leaves a thinner
-  // remainder (recoverable by regenerating again), never duplicates.
-  const replaceIds = tasks
-    .filter(
-      (t) =>
-        (t.status ?? 'pending') === 'pending' &&
-        (t.source ?? 'generated') === 'generated' &&
-        (t.scheduled_date == null || t.scheduled_date >= args.today),
-    )
-    .map((t) => t.id);
-  if (replaceIds.length > 0) {
-    const { error: delErr } = await supabase.from('plan_tasks').delete().in('id', replaceIds);
-    if (delErr) return { ok: false, error: `Could not clear the old schedule: ${delErr.message}` };
-  }
-  const rows = draft.tasks.map((t) => ({
-    plan_id: plan.id,
-    week_index: t.weekIndex + elapsed,
-    scheduled_date: t.scheduledDate,
-    task_type: t.taskType,
-    payload: t.payload as unknown as Json,
-    status: 'pending',
-    source: t.source,
-  }));
-  if (rows.length > 0) {
-    const { error: insErr } = await supabase.from('plan_tasks').insert(rows);
-    if (insErr) return { ok: false, error: `Could not write the new schedule: ${insErr.message}` };
-  }
-
-  // Phases over the ORIGINAL grid (past phases keep their place on the
-  // hub); rationale from the regenerated remainder.
-  const fullPhases = composePhases(
-    draft.mode,
-    elapsed + draft.weeks,
-    composition.fullTests,
-  ).map((p) => ({ type: p.type, start_week: p.startWeek, end_week: p.endWeek, summary: p.summary }));
-  const { error: updErr } = await supabase
-    .from('study_plans')
-    .update({ rationale: draft.rationale, phases: fullPhases as unknown as Json, mode: draft.mode })
-    .eq('id', plan.id);
-  if (updErr) return { ok: false, error: `Schedule written, but the plan summary failed: ${updErr.message}` };
-
-  return { ok: true, taskCount: rows.length, weeks: draft.weeks };
+  try {
+    const plan = await loadEditablePlan(supabase, args.planId);
+    if (!plan) return { ok: false, error: 'Plan not found or not accessible.' };
+    if (!plan.test_date || plan.goal_score == null) return { ok: false, error: 'Set a goal and test date first.' };
+    const tasks = await loadEditableTasks(supabase, plan.id);
+    const anchor = planStartDate(plan.config, plan.created_at, tasks.map((t) => t.scheduled_date));
+    const isWeek = args.weekIndex != null;
+    const generationStart = isWeek ? anchor : args.today;
+    if (daysBetween(generationStart, plan.test_date) <= 0) return { ok: false, error: 'The test date has passed — set a new date first.' };
+    const elapsed = isWeek ? 0 : Math.max(0, Math.floor(daysBetween(anchor, args.today) / 7));
+    if (editorConfig(plan.config).manual) return { ok: true, taskCount: tasks.length, weeks: Math.max(1, Math.ceil(daysBetween(anchor, plan.test_date) / 7)) };
+    const [{ data: rows, error }, syllabus] = await Promise.all([
+      supabase.rpc('get_plan_inputs', { p_student: plan.student_id, p_test_type: plan.test_type }),
+      loadSyllabusInputs(supabase, plan.student_id, plan.test_type as 'sat' | 'act'),
+    ]);
+    if (error) return { ok: false, error: `Could not load skill data: ${error.message}` };
+    const composition = planCompositionFromRow(plan);
+    const excluded = new Set(editorConfig(plan.config).excludedSkills);
+    const skills = applyEvidencePriors((rows ?? []).map(mapSkillRow), composition).filter((s) => !excluded.has(s.skillCode));
+    const draft = generatePlan({
+      goalScore: plan.goal_score, startingScore: plan.starting_score, testDate: plan.test_date,
+      today: generationStart, weeklyHours: numFromJson(plan.config, 'weekly_hours') ?? 5,
+      testType: plan.test_type as 'sat' | 'act', skills,
+      mode: composition.mode ?? undefined, studyDays: composition.studyDays,
+      targets: composition.targets, fullTests: composition.fullTests,
+      unitSteps: syllabus?.unitSteps, sectionSteps: syllabus?.sectionSteps,
+      completedLessonIds: syllabus?.completedLessonIds, elapsedWeeks: elapsed,
+    });
+    const mapped = stampGeneratedTasks(draft.tasks.map((t) => ({ ...t, weekIndex: t.weekIndex + elapsed })));
+    const fresh = filterCustomizedTasks(mapped, plan.config, tasks.map(asExistingTask))
+      .filter((t) => !isWeek || t.weekIndex === args.weekIndex);
+    const count = await applyPlanEdit(supabase, plan.id, {
+      operation: 'replace', expected_updated_at: plan.updated_at,
+      ...(isWeek ? { week_index: args.weekIndex } : { from_date: args.today }),
+      tasks: fresh.map(taskWrite),
+    });
+    if (!isWeek) {
+      const { error: summaryError } = await supabase.from('study_plans').update({
+        phases: composePhases(draft.mode, elapsed + draft.weeks, composition.fullTests)
+          .map((p) => ({ type: p.type, start_week: p.startWeek, end_week: p.endWeek, summary: p.summary })),
+        rationale: draft.rationale,
+      }).eq('id', plan.id);
+      if (summaryError) return { ok: false, error: 'The schedule was updated, but its summary could not be saved. Please rebuild again.' };
+    }
+    return { ok: true, taskCount: count, weeks: draft.weeks };
+  } catch (err) { return { ok: false, error: err instanceof Error ? err.message : 'Could not rebuild the plan.' }; }
 }

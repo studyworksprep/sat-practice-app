@@ -179,7 +179,7 @@ export default async function StudentDashboardPage({ searchParams }) {
     // has both.
     supabase
       .from('study_plans')
-      .select('id, test_type, goal_score, test_date, phases, created_by, created_at')
+      .select('id, test_type, goal_score, test_date, phases, created_by, created_at, config')
       .eq('student_id', user.id)
       .eq('status', 'active')
       .order('test_type', { ascending: false }) // 'sat' > 'act'
@@ -226,7 +226,7 @@ export default async function StudentDashboardPage({ searchParams }) {
       completedAt: t.completed_at,
       source: t.source ?? 'generated',
     }));
-    view = buildTodayView(tasks, today, activePlanRow.test_date);
+    view = buildTodayView(tasks, today, activePlanRow.test_date, activePlanRow.config?.plan_start ?? null);
 
     // §2.5: the weekly job auto-applies re-paced plans for self-serve
     // students, marked by created_by = null. Tell the student their

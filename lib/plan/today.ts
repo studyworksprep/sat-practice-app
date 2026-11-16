@@ -20,6 +20,7 @@
 // against this module directly, no bundler) can resolve the import;
 // tsconfig's allowImportingTsExtensions sanctions it for tsc.
 import { daysBetween } from './generate-plan.ts';
+import { taskScheduleOrder } from './customization.ts';
 import type { PlanTaskType } from './generate-plan.ts';
 import { planTaskTitle, planTaskWhy } from './task-labels.ts';
 
@@ -79,13 +80,14 @@ function dueOrder(a: TodayTaskRow, b: TodayTaskRow): number {
   const da = a.scheduledDate ?? '';
   const db = b.scheduledDate ?? '';
   if (da !== db) return da < db ? -1 : 1;
-  return a.weekIndex - b.weekIndex;
+  return a.weekIndex - b.weekIndex || taskScheduleOrder(a.payload) - taskScheduleOrder(b.payload);
 }
 
 export function buildTodayView(
   tasks: readonly TodayTaskRow[],
   today: string,
   testDate: string | null,
+  planStart: string | null = null,
 ): TodayView {
   const pending = tasks.filter((t) => t.status === 'pending');
 
@@ -117,11 +119,11 @@ export function buildTodayView(
       .filter((d): d is string => Boolean(d))
       .sort();
     const maxIndex = Math.max(...tasks.map((t) => t.weekIndex));
-    const total = maxIndex + 1;
+    const total = planStart && testDate ? Math.max(maxIndex + 1, Math.ceil(daysBetween(planStart, testDate) / 7)) : maxIndex + 1;
     let index = 0;
     if (dates.length > 0) {
-      const offset = daysBetween(dates[0], today);
-      index = Math.max(0, Math.min(Math.floor(offset / 7), maxIndex));
+      const offset = daysBetween(planStart ?? dates[0], today);
+      index = Math.max(0, Math.min(Math.floor(offset / 7), total - 1));
     }
     const inWeek = tasks.filter((t) => t.weekIndex === index);
     week = {

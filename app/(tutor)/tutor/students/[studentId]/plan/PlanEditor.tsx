@@ -70,7 +70,7 @@ export function TaskControls({
           className={styles.editSelect}
           value={weekIndex}
           disabled={pending}
-          aria-label="Move to week"
+          aria-label="Move task to week"
           onChange={(e) => e.currentTarget.form?.requestSubmit()}
         >
           {Array.from({ length: weekCount }, (_, w) => (
@@ -117,7 +117,7 @@ export function TaskControls({
         </button>
       </form>
 
-      <ErrorNote state={moveState ?? swapState ?? removeState} />
+      <ErrorNote state={moveState} /><ErrorNote state={swapState} /><ErrorNote state={removeState} />
     </span>
   );
 }
@@ -161,7 +161,7 @@ const ADDABLE_TYPES: Array<{ value: string; label: string; needsUnit: boolean }>
   { value: 'drill', label: 'Drill', needsUnit: true },
   { value: 'lesson', label: 'Lesson', needsUnit: true },
   { value: 'review', label: 'Review', needsUnit: false },
-  { value: 'practice_set', label: 'Practice set', needsUnit: false },
+  { value: 'practice_set', label: 'Practice set', needsUnit: true },
   { value: 'full_test', label: 'Full test', needsUnit: false },
   { value: 'vocab', label: 'Vocabulary', needsUnit: false },
   { value: 'flashcards', label: 'Flashcards', needsUnit: false },
@@ -219,7 +219,10 @@ export function AddTaskForm({ planId, studentId, weekCount, units, action }: Add
         />
       )}
 
-      <select name="weekIndex" className={styles.editSelect} defaultValue={0} aria-label="Week">
+      {taskType === 'drill' || taskType === 'practice_set' ? (
+        <label className={styles.questionCount}>Questions <input name="questionCount" type="number" min={1} max={50} defaultValue={8} className={styles.editInput} /></label>
+      ) : null}
+      <select name="weekIndex" className={styles.editSelect} defaultValue={0} aria-label="Add to week">
         {Array.from({ length: weekCount }, (_, w) => (
           <option key={w} value={w}>Week {w + 1}</option>
         ))}
@@ -238,5 +241,36 @@ export function AddTaskForm({ planId, studentId, weekCount, units, action }: Add
       </button>
       <ErrorNote state={state} />
     </form>
+  );
+}
+
+
+interface UnitControlsProps {
+  planId: string; studentId: string; unitKey: string; weekIndex: number; weekCount: number;
+  openCount: number; moveAction: PlanAction; removeAction: PlanAction;
+}
+
+export function UnitControls({ planId, studentId, unitKey, weekIndex, weekCount, openCount, moveAction, removeAction }: UnitControlsProps) {
+  const [moveState, move, moving] = useActionState<ActionResult | null, FormData>(moveAction, null);
+  const [removeState, remove, removing] = useActionState<ActionResult | null, FormData>(removeAction, null);
+  return (
+    <div className={styles.unitControls}>
+      <form action={move} className={styles.inlineForm}>
+        <input type="hidden" name="planId" value={planId} />
+        <input type="hidden" name="studentId" value={studentId} />
+        <input type="hidden" name="unitKey" value={unitKey} />
+        <select key={weekIndex} name="weekIndex" defaultValue={weekIndex} className={styles.editSelect} disabled={moving || removing} aria-label="Move unit to week">
+          {Array.from({ length: weekCount }, (_, w) => <option key={w} value={w}>Week {w + 1}</option>)}
+        </select>
+        <button className={styles.weekBtn} type="submit" disabled={moving || removing}>Move unit</button>
+      </form>
+      <form action={remove} className={styles.inlineForm}>
+        <input type="hidden" name="planId" value={planId} />
+        <input type="hidden" name="studentId" value={studentId} />
+        <input type="hidden" name="unitKey" value={unitKey} />
+        <button className={styles.weekBtn} type="submit" disabled={moving || removing} title={`Remove all ${openCount} open tasks in this unit. Completed work stays.`}>Remove unit</button>
+      </form>
+      <ErrorNote state={moveState} /><ErrorNote state={removeState} />
+    </div>
   );
 }

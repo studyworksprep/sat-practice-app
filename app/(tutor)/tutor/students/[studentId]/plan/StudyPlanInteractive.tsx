@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import type { ActionResult } from '@/lib/types';
 import styles from './StudyPlan.module.css';
 
@@ -29,11 +29,22 @@ interface GenerateFormProps {
 
 export function GeneratePlanForm({ studentId, action, defaults, hasActive }: GenerateFormProps) {
   const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(action, null);
+  const [creationMode, setCreationMode] = useState('automatic');
 
   return (
     <form action={formAction} className={styles.form}>
       <input type="hidden" name="studentId" value={studentId} />
 
+      <fieldset className={styles.creationModes} disabled={pending}>
+        <legend className={styles.label}>How would you like to build the plan?</legend>
+        <label><input type="radio" name="creationMode" value="automatic" checked={creationMode === 'automatic'} onChange={() => setCreationMode('automatic')} /> Generate a starting plan</label>
+        <label><input type="radio" name="creationMode" value="blank" checked={creationMode === 'blank'} onChange={() => setCreationMode('blank')} /> Start from scratch</label>
+      </fieldset>
+      <p className={styles.cardSub}>
+        {creationMode === 'blank'
+          ? 'Create an empty draft, then add units and tasks. Any previous draft is saved in history.'
+          : 'Build from current skills. Tutor additions, moves, and removals are kept when regenerating.'}
+      </p>
       <div className={styles.fieldRow}>
         <label className={styles.field}>
           <span className={styles.label}>Target score</span>
@@ -78,12 +89,12 @@ export function GeneratePlanForm({ studentId, action, defaults, hasActive }: Gen
 
       <div className={styles.actionsRow}>
         <button className={styles.primaryBtn} type="submit" disabled={pending}>
-          {pending ? 'Generating…' : hasActive ? 'Regenerate draft' : 'Generate plan'}
+          {pending ? 'Preparing draft…' : creationMode === 'blank' ? 'Create blank draft' : hasActive ? 'Regenerate draft' : 'Generate plan'}
         </button>
         {state && !state.ok ? (
           <p className={styles.error} role="alert">{state.error}</p>
         ) : state && state.ok ? (
-          <p className={styles.success}>Draft ready — review it below.</p>
+          <p className={styles.success}>Draft ready — add or edit work below, then activate it.</p>
         ) : null}
       </div>
     </form>

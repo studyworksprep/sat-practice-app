@@ -239,3 +239,34 @@
 .adherence_ahead { background: var(--tile-violet-bg, #ede9fe); color: var(--tile-violet-fg, #5e3fbf); }
 .adherence_not_started { background: var(--color-slate-100); color: var(--fg3); }
 .adherenceDetail { color: var(--fg3); font-size: 0.85rem; }
+
+.creationModes { display: flex; flex-wrap: wrap; gap: var(--s3); border: 0; padding: 0; margin: 0; }
+.creationModes legend { margin-bottom: var(--s2); }
+.creationModes label { display: flex; align-items: center; gap: var(--s1); font-size: 0.9rem; }
+.weekSummary { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); cursor: pointer; padding: var(--s2) 0; font-weight: 600; color: var(--fg1); }
+.weekSummary span { font-size: 0.78rem; font-weight: 400; color: var(--fg3); }
+.unitCard { padding: var(--s3); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-white); }
+.unitHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2); margin-bottom: var(--s2); }
+.unitTitle { font-size: 0.95rem; color: var(--fg1); margin: 0 0 var(--s1); }
+.unitControls { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
+.questionCount { display: flex; align-items: center; gap: var(--s1); color: var(--fg2); font-size: 0.78rem; }
+.questionCount input { max-width: 56px; }
+.addForm { margin-top: 0; margin-bottom: var(--s4); padding-bottom: var(--s3); border-bottom: 1px solid var(--border); border-top: 0; }
+@media (max-width: 700px) {
+  .task { flex-wrap: wrap; gap: var(--s2); }
+  .taskControls { flex-wrap: wrap; }
+  .taskBody { flex-basis: 65%; }
+  .taskDate { margin-left: auto; }
+  .weekSummary { align-items: flex-start; flex-direction: column; }
+  .editSelect { max-width: 130px; }
+}
+.weekBtn { white-space: nowrap; }
+.weekSummary::before { content: '▸'; color: var(--fg3); }
+details[open] > .weekSummary::before { content: '▾'; }
+.weekSummary { justify-content: flex-start; }
+.weekSummary span { margin-left: auto; }
+.weekSummary { display: grid; grid-template-columns: auto max-content 1fr; }
+@media (max-width: 700px) {
+  .weekSummary { grid-template-columns: auto 1fr; }
+  .weekSummary span { grid-column: 2; margin-left: 0; }
+}

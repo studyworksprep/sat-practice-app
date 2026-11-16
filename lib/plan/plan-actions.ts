@@ -3,7 +3,7 @@
 //   rpc(get_plan_inputs) → generatePlan() → write study_plan + plan_tasks
 //
 // The plan is written as a DRAFT (the tutor/student reviews before it
-// goes active, §2.4). Regenerating replaces the prior draft for the same
+// goes active, §2.4). Regenerating updates the prior draft for the same
 // (student, test_type). Authorization rides on RLS: the study_plans /
 // plan_tasks policies gate on can_view(student_id), so a student can
 // generate for themselves and a tutor for a visible student — anyone
@@ -13,14 +13,17 @@
 
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
-import { generatePlan, LOW_EVIDENCE_ATTEMPTS } from './generate-plan';
+import { composePhases, daysBetween, generatePlan, LOW_EVIDENCE_ATTEMPTS } from './generate-plan';
 import { applyEvidencePriors, mapSkillRow } from './plan-inputs';
 import { loadSyllabusInputs } from './unit-steps';
+import { editorConfig, filterCustomizedTasks, planStartDate, record, stampGeneratedTasks } from './customization';
+import { loadPlanForGeneration } from './editor-state';
 import { deriveMode, parseIntakeRow } from './intake';
 import { runRepaceForStudent, writeDraftPlan } from './repace-runner';
 import type { PlanMode, PlanPhase, SkillState } from './generate-plan';
 import type { PlanComposition } from './plan-inputs';
 import type { ActionResult } from '@/lib/types';
+import type { Json } from '@/lib/types/database';
 
 type GenerateStudyPlanResult = ActionResult<{
   planId: string;
@@ -32,6 +35,8 @@ type GenerateStudyPlanResult = ActionResult<{
 }>;
 
 export interface GenerateStudyPlanArgs {
+  /** Start a new empty draft; existing drafts are archived for history. */
+  empty?: boolean;
   /** Defaults to the caller (self-serve); a tutor passes a visible student's id. */
   studentId?: string;
   goalScore: number;
@@ -80,6 +85,27 @@ export async function generateStudyPlan(
   if (!Number.isFinite(args.weeklyHours) || args.weeklyHours < 1 || args.weeklyHours > 40) {
     return actionFail('Weekly hours must be between 1 and 40.');
   }
+  const today = new Date().toISOString().slice(0, 10);
+  if (args.testDate <= today) return actionFail('Choose a future test date.');
+  if (args.empty) {
+    const result = await writeDraftPlan(supabase, {
+      studentId, createdBy: user.id, testType, goalScore: args.goalScore,
+      startingScore: null, testDate: args.testDate, weeklyHours: args.weeklyHours,
+      empty: true, rationale: 'Built by your tutor, one unit or task at a time.',
+    }, []);
+    return result.ok
+      ? { ok: true, planId: result.planId, weeks: Math.ceil(daysBetween(today, args.testDate) / 7), taskCount: 0, rationale: 'Built by your tutor.', mode: 'self_directed', phases: [] }
+      : actionFail(result.error);
+  }
+  let previous: Awaited<ReturnType<typeof loadPlanForGeneration>>;
+  try {
+    previous = await loadPlanForGeneration(supabase, studentId, testType);
+  } catch (err) {
+    return actionFail(err instanceof Error ? err.message : 'Could not load the current plan.');
+  }
+  // Choosing the automatic builder is an explicit switch from a blank
+  // plan. Student rebuilds and cron re-pacing never make that switch.
+  const generationConfig = { ...record(previous.plan?.config), editor: { ...record(record(previous.plan?.config).editor), manual: false } };
 
   // Assemble per-skill inputs (coverage + curriculum + learnability + lessons).
   const { data: rows, error: inErr } = await supabase.rpc('get_plan_inputs', {
@@ -126,7 +152,8 @@ export async function generateStudyPlan(
         : 'foundations';
     }
   }
-  const skills = applyEvidencePriors(rawSkills, composition);
+  const excluded = new Set(editorConfig(previous.plan?.config).excludedSkills);
+  const skills = applyEvidencePriors(rawSkills, composition).filter((s) => !excluded.has(s.skillCode));
   // Unit syllabi (flag `unit_syllabus`): null → pre-syllabus generator.
   const syllabus = await loadSyllabusInputs(supabase, studentId, testType);
 
@@ -140,7 +167,8 @@ export async function generateStudyPlan(
     startingScore = band?.[0]?.total_scaled ?? null;
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const anchor = previous.plan ? planStartDate(previous.plan.config, previous.plan.created_at, previous.tasks.map((t) => t.scheduled_date)) : today;
+  const elapsed = Math.max(0, Math.floor(daysBetween(anchor, today) / 7));
   const draft = generatePlan({
     goalScore: args.goalScore,
     startingScore,
@@ -156,6 +184,7 @@ export async function generateStudyPlan(
     unitSteps: syllabus?.unitSteps ?? null,
     sectionSteps: syllabus?.sectionSteps ?? null,
     completedLessonIds: syllabus?.completedLessonIds ?? null,
+    elapsedWeeks: elapsed,
   });
 
   const written = await writeDraftPlan(
@@ -172,10 +201,13 @@ export async function generateStudyPlan(
       prepLevel,
       intent,
       rationale: draft.rationale,
-      phases: draft.phases,
+      phases: composePhases(draft.mode, elapsed + draft.weeks, composition.fullTests),
       composition,
+      sourcePlanId: previous.plan?.id,
+      expectedUpdatedAt: previous.plan?.updated_at,
+      editor: generationConfig.editor as Json,
     },
-    draft.tasks,
+    filterCustomizedTasks(stampGeneratedTasks(draft.tasks.map((t) => ({ ...t, weekIndex: t.weekIndex + elapsed }))), generationConfig, previous.existing),
   );
   if (!written.ok) return actionFail(`Could not create the plan: ${written.error}`);
 
