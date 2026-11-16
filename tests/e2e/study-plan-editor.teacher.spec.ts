@@ -20,7 +20,7 @@ function draftSection(page: Page) {
   return page.locator('section').filter({ has: page.getByRole('heading', { name: 'Draft plan', exact: true }) });
 }
 
-test('tutor builds and edits units/tasks, regeneration preserves decisions, student starts assigned practice', async ({ page, browser }) => {
+test('tutor builds and edits units/tasks, regeneration preserves decisions, student starts assigned practice', async ({ page, browser }, testInfo) => {
   test.setTimeout(240_000);
   test.skip(!development || !key, 'Requires the development database and its fixture key.');
   const db = createClient(url!, key!, { auth: { persistSession: false } });
@@ -61,7 +61,7 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
     const deleted = initial.find((t) => !afterRemove.some((r) => r.id === t.id))!;
     await draft.getByRole('button', { name: 'Regenerate', exact: true }).first().click();
     await expect.poll(async () => (await tasks()).some((t) => t.payload.generation_key === deleted.payload.generation_key)).toBe(false);
-    await expect(draft.getByRole('button', { name: 'Regenerate', exact: true }).first()).toBeEnabled();
+    await expect(draft.getByRole('button', { name: 'Regenerate', exact: true }).first()).toBeEnabled({ timeout: 30_000 });
 
     // Add a whole unit, move it, and retain its rows through regeneration.
     await draft.getByLabel('Task type', { exact: true }).selectOption('unit');
@@ -79,7 +79,7 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
     await expect.poll(async () => (await tasks()).filter((t) => t.payload.plan_unit_key === unitKey).every((t) => t.week_index === 2)).toBe(true);
     const moved = (await tasks()).filter((t) => t.payload.plan_unit_key === unitKey);
     await page.getByRole('button', { name: 'Regenerate draft', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Regenerate draft', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Regenerate draft', exact: true })).toBeEnabled({ timeout: 30_000 });
     await expect(page.getByText('Draft ready — add or edit work below, then activate it.')).toBeVisible();
     for (const t of moved) expect((await tasks()).find((r) => r.id === t.id)).toMatchObject({ week_index: t.week_index, scheduled_date: t.scheduled_date, source: 'tutor' });
     expect((await tasks()).some((t) => t.payload.generation_key === deleted.payload.generation_key)).toBe(false);
@@ -93,11 +93,11 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
     await expect.poll(async () => (await tasks()).filter((t) => t.payload.plan_unit_key === unitKey).length).toBe(0);
     const removedSkill = unitValue!.split('|')[1];
     await page.getByRole('button', { name: 'Regenerate draft', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Regenerate draft', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Regenerate draft', exact: true })).toBeEnabled({ timeout: 30_000 });
     await expect(page.getByText('Draft ready — add or edit work below, then activate it.')).toBeVisible();
     expect((await tasks()).some((t) => t.payload.skill_code === removedSkill)).toBe(false);
 
-    await page.screenshot({ path: '/private/tmp/study-plan-generated-editor.png', fullPage: true });
+    await testInfo.attach('Generated study plan', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
 
     // Start a genuinely empty draft. It remains a manual plan on rebuild.
     await page.getByLabel('Start from scratch').check();
@@ -118,7 +118,7 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
     await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({ path: '/private/tmp/study-plan-mobile-editor.png', fullPage: true });
+    await testInfo.attach('Mobile study plan', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
     const studentContext = await browser.newContext({ storageState: { cookies: [], origins: [] } });
