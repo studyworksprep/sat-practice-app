@@ -672,6 +672,20 @@
   font-size: 13px;
 }
 
+/* A row the student entered themselves (lib/practice/official-tests.ts). */
+.selfReported {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tile-amber-fg);
+  background: var(--tile-amber-bg);
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
 .regDate { color: var(--fg2); }
 .regDateUpcoming { color: var(--fg1); font-weight: 600; }
 

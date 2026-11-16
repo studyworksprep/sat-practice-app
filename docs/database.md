@@ -5,7 +5,9 @@
 > 2026-09-01; attempt-stat read paths re-verified 2026-09-06; ACT union of
 > those paths verified against production 2026-10-13;
 > September 2024 H11 student readiness verified 2026-10-28; ACT
-> branch of `get_question_stats` verified against production 2026-11-15).
+> branch of `get_question_stats` verified against production 2026-11-15;
+student-entered test dates and scores applied and verified against
+production 2026-11-15).
 
 Short runbook for anything that touches the Supabase database.
 
@@ -286,7 +288,7 @@ every tutor's question notes. Migration `20261114115428` scoped them:
 
 | Table | Rule now |
 | --- | --- |
-| `sat_official_scores`, `sat_test_registrations` (INSERT/DELETE) | `is_teacher() and can_view(student_id)` |
+| `sat_official_scores`, `sat_test_registrations` (INSERT/DELETE) | `is_teacher() and can_view(student_id)` (students: own rows, see "Official test dates and scores") |
 | `assignment_students_v2` (INSERT) | assignment's teacher **and** `can_view(student_id)`, or admin |
 | `bluebook_submissions` (staff SELECT/review), `bluebook_calibration_responses` (SELECT) | `is_studyworks_staff()` |
 | `question_notes` (SELECT) | own notes, or `is_studyworks_staff()` |
@@ -309,6 +311,47 @@ author hierarchy). Still `is_teacher()` and deliberately left: concept
 tags, saved Desmos states, and draft/generated question pools (content,
 not student data). New policies should not use bare `is_teacher()` for
 anything student- or Studyworks-internal.
+
+## Official test dates and scores
+
+`sat_test_registrations` (one row per SAT sitting a student is
+registered for) and `sat_official_scores` (one row per SAT/PSAT score
+report) are written by tutors from the student page and, since
+migration `20261115210000`, by students themselves from Performance →
+Test dates & scores (`app/(student)/performance`).
+
+| Who | INSERT | DELETE |
+| --- | --- | --- |
+| Tutor | `is_teacher() and can_view(student_id)` | same |
+| Student | `student_id = auth.uid() and created_by = auth.uid()` | same: only rows they entered |
+
+Nobody has UPDATE, so a row's author is fixed at insert. A row with
+`created_by = student_id` is **self-reported**. The rules live in
+`lib/practice/official-tests.ts`:
+
+- Self-reported scores are shown everywhere (tutors see a
+  "Self-reported" badge) but are **left out** of the starting/final
+  score, impact and target-reach numbers (`buildArchiveSummary`, used
+  by the roster's archived view, `/tutor/performance` and the student
+  page) and of the LessonWorks sync. Any new reader that judges a
+  tutor or sends scores out must select `student_id, created_by` and
+  apply `countedOfficialScores()`.
+- To count a self-reported score, a tutor removes it and adds it again
+  from the score report.
+- One row per sitting: `unique (student_id, test_date)` on
+  registrations and `unique (student_id, test_date, test_type)` on
+  scores. Scores are checked in the database too (sections 160–800 in
+  steps of 10, total = R&W + Math, type SAT or PSAT); the app applies
+  the per-test ranges (SAT 200–800, PSAT 160–760).
+
+**Which test date counts.** `profiles.sat_test_date` is the date the
+student is *studying for*. The welcome wizard builds the first plan
+from it. The Performance tab sets it, and so does the plan hub's
+Adjust; choosing a date there also moves an active SAT plan and
+re-paces its remaining weeks. `/account` shows it but no longer edits
+it. Countdowns (dashboard, sidebar, Performance) use
+`resolveTestDate()`: the active plan's date, then the chosen date if
+still ahead, then the soonest upcoming registration.
 
 ## Who may write the question bank
 

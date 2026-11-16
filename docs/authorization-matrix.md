@@ -76,6 +76,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(student)/dashboard/task-actions.ts` | `startPlanTask`, `markTaskDone` | requireUser + rateLimit |
 | `app/(student)/learn/[lessonId]/actions.js` | `markBlockComplete`, `submitCheckAnswer`, `submitDesmosResult`, `markLessonComplete`, `createLessonPracticeDrill` | requireUser + rateLimit |
 | `app/(student)/notes/actions.ts` | `createNote`, `updateNote`, `deleteNote`, `upsertNoteForQuestion` | requireUser |
+| `app/(student)/performance/actions.ts` | `addTestDateAction`, `studyForDateAction`, `removeTestDateAction`, `addOfficialScoreAction`, `removeOfficialScoreAction` | requireRole[practice|student] + assertWriter |
 | `app/(student)/plan/actions.ts` | `adjustPlanAction`, `rebuildPlanAction` | requireUser |
 | `app/(student)/practice/start/actions.js` | `countAvailable`, `createSession`, `countAvailableAct`, `createActSession` | requireUser + rateLimit |
 | `app/(student)/practice/test/actions.js` | `startTestAttempt`, `recordItemAnswer`, `toggleMarkForReview`, `pauseTestModule`, `resumeTestModule`, `finishModule` | requireUser + rateLimit |
@@ -131,4 +132,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_22 route handlers, 78 server-action modules enumerated._
+_22 route handlers, 79 server-action modules enumerated._

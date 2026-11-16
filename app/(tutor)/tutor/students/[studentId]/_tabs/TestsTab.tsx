@@ -38,7 +38,10 @@ export function TestsTab({ d }: { d: StudentDetail }) {
               />
             )}
           </dl>
-          <p className={s.cardFoot}>Official scores first, then full SAT practice tests. Edit the target under Settings.</p>
+          <p className={s.cardFoot}>
+            Official scores first, then full SAT practice tests. Self-reported scores aren&apos;t counted.
+            Edit the target under Settings.
+          </p>
         </section>
 
         <section className={s.card}>

@@ -27,6 +27,7 @@ import {
 } from '@/lib/plan/intake';
 import type { WizardStep } from '@/lib/plan/intake';
 import { SAT_TAXONOMY, findDomain } from '@/lib/practice/sat-taxonomy';
+import { soonestUpcoming } from '@/lib/practice/official-tests';
 import type { PlanMode } from '@/lib/plan/generate-plan';
 import {
   startIntakeAction,
@@ -89,7 +90,15 @@ export default async function WelcomePage({ searchParams }: PageProps) {
     .maybeSingle();
   if (activePlan) redirect('/dashboard');
 
-  const [{ data: fullProfile }, { data: intakeRow }, { data: draft }, practiced, hasTutor] = await Promise.all([
+  const today = new Date().toISOString().slice(0, 10);
+  const [
+    { data: fullProfile },
+    { data: intakeRow },
+    { data: draft },
+    practiced,
+    hasTutor,
+    { data: registrationRows },
+  ] = await Promise.all([
     supabase
       .from('profiles')
       .select('target_sat_score, sat_test_date')
@@ -110,6 +119,13 @@ export default async function WelcomePage({ searchParams }: PageProps) {
       .maybeSingle(),
     hasPracticeHistory(supabase, user.id),
     hasAssignedTutor(supabase, user.id),
+    // Upcoming registrations (a tutor's, or the student's own) pre-fill
+    // the test-date question. Only a suggestion: the step still asks.
+    supabase
+      .from('sat_test_registrations')
+      .select('test_date')
+      .eq('student_id', user.id)
+      .gte('test_date', today),
   ]);
 
   const goal = fullProfile?.target_sat_score ?? null;
@@ -236,7 +252,16 @@ export default async function WelcomePage({ searchParams }: PageProps) {
             </div>
             <div className={s.questionBody}>
             {step === 'target' && <TargetForm action={saveAnswerAction} defaultValue={goal ?? ''} />}
-            {step === 'test_date' && <TestDateForm action={saveAnswerAction} defaultValue={testDate ?? ''} />}
+            {step === 'test_date' && (
+              <TestDateForm
+                action={saveAnswerAction}
+                defaultValue={
+                  testDate
+                  ?? soonestUpcoming((registrationRows ?? []).map((r) => r.test_date), today)
+                  ?? ''
+                }
+              />
+            )}
             {step === 'prep' && <PrepForm action={saveAnswerAction} defaultValue={intake.prepLevel} />}
             {step === 'intent' && <IntentForm action={saveAnswerAction} defaultValue={intake.intent} />}
             {step === 'targets' && (

@@ -1,7 +1,8 @@
 // Server Actions for the Account page. Three concerns live here:
 //
 //   1. Profile edits — name, high school, graduation year, target
-//      SAT score, personal SAT test date. Writes to profiles via
+//      SAT score (the test date lives on Performance → Test dates &
+//      scores, which also moves an active plan). Writes to profiles via
 //      the user-scoped (RLS) client. Each user can only update
 //      their own row by RLS policy, so no extra gate is needed.
 //
@@ -88,10 +89,9 @@ export async function updateProfile(_prev, formData) {
       updates.target_sat_score = target;
     }
   }
-  if (formData.has('sat_test_date')) {
-    const raw = formData.get('sat_test_date');
-    updates.sat_test_date = trimOrNull(raw);
-  }
+  // sat_test_date is not editable here: Performance → Test dates &
+  // scores sets it (app/(student)/performance/actions.ts), moving an
+  // active plan along with it.
 
   if (Object.keys(updates).length === 0) {
     return actionFail('Nothing to update');

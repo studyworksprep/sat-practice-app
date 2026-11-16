@@ -15,6 +15,7 @@ import { Toggle } from '@/lib/ui/Toggle';
 import { ManagePortalButton } from './billing/ManagePortalButton';
 import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import s from './Account.module.css';
 
 function formatDate(iso) {
@@ -55,6 +56,7 @@ export function AccountClient({
       <ProfileSection
         profile={profile}
         user={user}
+        isStudent={isStudent}
         updateProfileAction={updateProfileAction}
         updateEmailAction={updateEmailAction}
       />
@@ -87,7 +89,7 @@ export function AccountClient({
 // Profile
 // ─────────────────────────────────────────────────────────────
 
-function ProfileSection({ profile, user, updateProfileAction, updateEmailAction }) {
+function ProfileSection({ profile, user, isStudent, updateProfileAction, updateEmailAction }) {
   const [profileState, submitProfile, profilePending] = useActionState(
     updateProfileAction,
     null,
@@ -135,13 +137,7 @@ function ProfileSection({ profile, user, updateProfileAction, updateEmailAction 
           />
         </div>
 
-        <Field
-          label="SAT test date"
-          name="sat_test_date"
-          type="date"
-          defaultValue={profile.sat_test_date?.slice(0, 10) ?? ''}
-          help="Your personal target test date. Tutor-added registrations override this on the dashboard."
-        />
+        {isStudent && <TestDateSummary isoDate={profile.sat_test_date} />}
 
         <div className={s.formActions}>
           <Button type="submit" variant="primary" size="sm" disabled={profilePending}>
@@ -512,6 +508,26 @@ function SectionHeader({ title, subtitle }) {
     <div className={s.sectionHead}>
       <h2 className={s.h2}>{title}</h2>
       {subtitle && <p className={s.sectionSub}>{subtitle}</p>}
+    </div>
+  );
+}
+
+// The test date a student studies for is set on Performance → Test
+// dates & scores, where choosing it also re-paces an active plan. A
+// date field here would change the profile without moving the plan.
+function TestDateSummary({ isoDate }) {
+  const day = isoDate ? String(isoDate).slice(0, 10) : null;
+  return (
+    <div className={s.field}>
+      <span className={s.label}>SAT test date</span>
+      <span className={s.staticValue}>
+        {day ? formatDate(`${day}T12:00:00`) : 'Not set'}
+      </span>
+      <span className={s.help}>
+        <Link className={s.inlineLink} href="/performance?test=sat&tab=tests">
+          Manage test dates &amp; scores →
+        </Link>
+      </span>
     </div>
   );
 }

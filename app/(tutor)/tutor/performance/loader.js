@@ -106,7 +106,8 @@ export async function loadRosterPerformance(supabase) {
     profileIds.length > 0
       ? supabase
           .from('sat_official_scores')
-          .select('student_id, test_date, rw_score, math_score, composite_score')
+          // created_by lets buildArchiveSummary drop self-reported scores.
+          .select('student_id, test_date, rw_score, math_score, composite_score, created_by')
           .in('student_id', profileIds)
       : Promise.resolve({ data: [] }),
     profileIds.length > 0

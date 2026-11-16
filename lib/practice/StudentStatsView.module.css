@@ -49,6 +49,18 @@
   min-width: 0;
 }
 
+/* The Test date tile links to the student's Test dates & scores tab. */
+.statLink {
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 120ms ease;
+}
+.statLink:hover { border-color: var(--color-app-accent); }
+.statLink:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+}
+
 .statValue {
   font-size: 26px;
   font-weight: 750;

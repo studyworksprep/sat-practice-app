@@ -31,6 +31,7 @@ import { AppShell } from '@/lib/ui/AppSidebar';
 import { SidebarFooterStrip } from '@/lib/ui/SidebarFooterStrip';
 import { SidebarTestSwitch, SidebarTestSwitchFallback } from '@/lib/ui/SidebarTestSwitch';
 import { storedTestType } from '@/lib/practice/test-type-server';
+import { resolveTestDate } from '@/lib/practice/official-tests';
 import {
   STUDENT_LINKS,
   studentSections,
@@ -128,8 +129,16 @@ export default async function StudentTreeLayout({ children }) {
               .is('assignment.archived_at', null)
               .is('assignment.deleted_at', null),
             storedTestType(),
+            // Soonest upcoming registration, for the countdown when the
+            // student hasn't chosen a date (same order as the dashboard).
+            supabase.from('sat_test_registrations').select('test_date')
+              .eq('student_id', user.id)
+              .gte('test_date', new Date().toISOString().slice(0, 10))
+              .order('test_date', { ascending: true })
+              .limit(1)
+              .maybeSingle(),
           ])
-        : [{ data: null }, { data: [] }, { count: 0 }, { count: 0 }, 'sat']),
+        : [{ data: null }, { data: [] }, { count: 0 }, { count: 0 }, 'sat', { data: null }]),
     ]);
   if (!hasTutor) links = links.filter((l) => l.href !== '/assignments');
   const activePlan = (activePlans ?? [])[0] ?? null;
@@ -174,12 +183,18 @@ export default async function StudentTreeLayout({ children }) {
         { count: reviewDue },
         { count: lateAssignments },
         testType,
+        { data: nextRegistration },
       ] = footerData;
       sections = studentSections({ hasTutor, hasPlan: Boolean(activePlan) });
       // Phone bottom tabs (<768px); "More" opens the drawer for the rest.
       tabs = studentTabs({ hasPlan: Boolean(activePlan) });
 
-      const testDateIso = activePlan?.test_date ?? profileDates?.sat_test_date ?? null;
+      const testDateIso = resolveTestDate({
+        planDate: activePlan?.test_date,
+        profileDate: profileDates?.sat_test_date,
+        nextRegistration: nextRegistration?.test_date ?? null,
+        today: new Date().toISOString().slice(0, 10),
+      });
       let daysToTest = null;
       let testDateLabel = null;
       if (testDateIso) {

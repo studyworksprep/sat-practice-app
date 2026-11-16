@@ -15,6 +15,7 @@ import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggrega
 import { resolveDetoursEnabled } from '@/lib/practice/detour-preference.mjs';
 import { parseTimeAccommodation } from '@/lib/practice/time-accommodation';
 import { buildArchiveSummary } from '@/lib/practice/superscore';
+import { isSelfReported } from '@/lib/practice/official-tests';
 import { loadActFormNamer } from '@/lib/practice/act-form-names';
 import {
   buildFoundationRows,
@@ -61,6 +62,9 @@ export type TestRow =
 export type OfficialScore = {
   id: string; test_date: string; rw_score: number; math_score: number;
   composite_score: number; test_type: string | null;
+  /** The student entered it (lib/practice/official-tests.ts): shown with
+   *  a badge, left out of the impact numbers. */
+  self_reported: boolean;
   domain_ini: number | null; domain_cas: number | null;
   domain_eoi: number | null; domain_sec: number | null;
   domain_alg: number | null; domain_atm: number | null;
@@ -141,12 +145,12 @@ export async function loadStudentDetail(supabase: TypedSupabaseClient, studentId
       .order('created_at', { ascending: false })
       .limit(RECENT_SESSIONS_LIMIT),
     supabase.from('sat_test_registrations')
-      .select('id, test_date, created_at')
+      .select('id, student_id, test_date, created_at, created_by')
       .eq('student_id', studentId)
       .order('test_date', { ascending: true }),
     supabase.from('sat_official_scores')
       .select(`
-        id, test_date, rw_score, math_score, composite_score, created_at, test_type,
+        id, student_id, test_date, rw_score, math_score, composite_score, created_at, created_by, test_type,
         domain_ini, domain_cas, domain_eoi, domain_sec,
         domain_alg, domain_atm, domain_pam, domain_geo
       `)
@@ -374,8 +378,15 @@ export async function loadStudentDetail(supabase: TypedSupabaseClient, studentId
     sessions,
     assignments,
     reportSessionByAssignment,
-    registrations: (registrations ?? []).map((r) => ({ id: r.id as string, test_date: r.test_date as string })),
-    officialScores: (officialScores ?? []) as unknown as OfficialScore[],
+    registrations: (registrations ?? []).map((r) => ({
+      id: r.id as string,
+      test_date: r.test_date as string,
+      self_reported: isSelfReported(r),
+    })),
+    officialScores: (officialScores ?? []).map((r) => ({
+      ...r,
+      self_reported: isSelfReported(r),
+    })) as unknown as OfficialScore[],
     publishedTests: (publishedTests ?? []) as Array<{ id: string; name: string; code: string | null }>,
     aggregate,
     aggregateAct,

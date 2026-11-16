@@ -28,6 +28,7 @@ import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggrega
 import { loadDashboardRecentAccuracy } from '@/lib/practice/load-dashboard-recent-accuracy';
 import { accuracyKey, dashboardAccuracyMetric } from '@/lib/practice/dashboard-summary';
 import { DashboardView } from './DashboardView';
+import { resolveTestDate } from '@/lib/practice/official-tests';
 import { defaultActFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
@@ -151,8 +152,8 @@ export default async function StudentDashboardPage({ searchParams }) {
       .order('last_activity_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
-    // Soonest upcoming SAT registration — a tutor-added row is a real
-    // registered exam, so it beats the profile's personal target date.
+    // Soonest upcoming SAT registration — fills in the countdown when
+    // the student hasn't chosen a date to study for (resolveTestDate).
     supabase
       .from('sat_test_registrations')
       .select('test_date')
@@ -253,11 +254,14 @@ export default async function StudentDashboardPage({ searchParams }) {
     : null;
 
   // ---------- Header + Up next ----------
-  const testDateIso =
-    activePlanRow?.test_date
-    ?? (typeof nextRegistrationRow?.test_date === 'string' ? nextRegistrationRow.test_date : null)
-    ?? fullProfile?.sat_test_date
-    ?? null;
+  // Plan, then the date they chose, then a registration — the same
+  // order as the sidebar and Performance (lib/practice/official-tests.ts).
+  const testDateIso = resolveTestDate({
+    planDate: activePlanRow?.test_date,
+    profileDate: fullProfile?.sat_test_date,
+    nextRegistration: typeof nextRegistrationRow?.test_date === 'string' ? nextRegistrationRow.test_date : null,
+    today,
+  });
   const daysToTest = daysUntil(testDateIso, nowMs);
   const targetScore = activePlanRow?.goal_score ?? fullProfile?.target_sat_score ?? null;
 

@@ -6,6 +6,9 @@ import { revalidatePath } from 'next/cache';
 import { requireUser, requireServiceRole } from '@/lib/api/auth';
 import { actionOk, actionFail, ApiError } from '@/lib/api/response';
 import { recomputeAttemptScores } from '@/lib/practice-test/recompute-scores';
+import { isDuplicateError, parseTestType, validateSectionScores, withArticle } from '@/lib/practice/official-tests';
+
+const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 
 /**
  * Per-student practice history v1 → v2 import. The button calls this
@@ -132,7 +135,9 @@ export async function addTestRegistration(_prev, formData) {
     .insert({ student_id: studentId, test_date: testDate, created_by: auth.ctx.user.id })
     .select('id, test_date, created_at')
     .single();
-  if (error) return actionFail(error.message);
+  if (error) {
+    return actionFail(isDuplicateError(error) ? 'That date is already on the list.' : error.message);
+  }
 
   revalidatePath(`/tutor/students/${studentId}`);
   return actionOk({ registration: data });
@@ -164,20 +169,15 @@ export async function addOfficialScore(_prev, formData) {
   const testDate = String(formData.get('test_date') ?? '');
   const rwScoreStr = String(formData.get('rw_score') ?? '');
   const mathScoreStr = String(formData.get('math_score') ?? '');
-  const testTypeRaw = String(formData.get('test_type') ?? 'SAT');
-  const testType = ['SAT', 'PSAT'].includes(testTypeRaw) ? testTypeRaw : 'SAT';
+  const testType = parseTestType(formData.get('test_type'));
 
   if (!testDate || !rwScoreStr || !mathScoreStr) {
     return actionFail('test_date, rw_score, and math_score are required');
   }
   const rw = Number(rwScoreStr);
   const math = Number(mathScoreStr);
-  if (!Number.isFinite(rw) || !Number.isFinite(math)) {
-    return actionFail('Scores must be numbers');
-  }
-  if (rw < 200 || rw > 800 || math < 200 || math > 800) {
-    return actionFail('Scores must be between 200 and 800');
-  }
+  const invalid = validateSectionScores(testType, rw, math);
+  if (invalid) return actionFail(invalid);
 
   const auth = await authorizeStudentEdit(studentId);
   if (!auth.ok) return auth.result;
@@ -205,7 +205,15 @@ export async function addOfficialScore(_prev, formData) {
     .insert(row)
     .select(`id, test_date, rw_score, math_score, composite_score, created_at, test_type, ${SAT_DOMAIN_FIELDS.join(', ')}`)
     .single();
-  if (error) return actionFail(error.message);
+  if (error) {
+    // One row per sitting. When the student already self-reported this
+    // test, the tutor removes theirs and re-adds it to make it count.
+    return actionFail(
+      isDuplicateError(error)
+        ? `${capitalize(withArticle(testType))} score for that date is already recorded. Remove it first to replace it.`
+        : error.message,
+    );
+  }
 
   revalidatePath(`/tutor/students/${studentId}`);
   return actionOk({ score: data });

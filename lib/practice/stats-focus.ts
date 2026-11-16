@@ -14,11 +14,16 @@ export const STATS_TABS = [
   { id: 'difficulty', label: 'By difficulty' },
 ] as const;
 
-export type StatsTab = (typeof STATS_TABS)[number]['id'];
+/** Student-only tab: their official test dates and scores. Shown only
+ *  when the page hands StudentStatsView a panel for it. */
+export const TESTS_TAB = { id: 'tests', label: 'Test dates & scores' } as const;
+
+export type StatsTab = (typeof STATS_TABS)[number]['id'] | typeof TESTS_TAB.id;
 
 /** Unknown or missing → the overview. */
 export function parseStatsTab(value: unknown): StatsTab {
   const v = Array.isArray(value) ? value[0] : value;
+  if (v === TESTS_TAB.id) return TESTS_TAB.id;
   return STATS_TABS.some((t) => t.id === v) ? (v as StatsTab) : 'overview';
 }
 
