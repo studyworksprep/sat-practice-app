@@ -1,10 +1,19 @@
 # Study Plan editor
 
-**Living — last verified November 16, 2026.**
+**Living — last verified November 17, 2026.**
 
-The modular editor and balanced scheduler ship with two November 16
-database migrations. Apply those migrations before deploying the editor.
-They add editor operations and task metadata without rewriting schedules.
+The modular editor and balanced scheduler were released to production on
+November 16, 2026, in [PR #497](https://github.com/studyworksprep/sat-practice-app/pull/497).
+Both November 16 database migrations are applied to development and production.
+The live tutor editor was verified after deployment; existing schedules were
+left intact, and regeneration applies the revised scheduling balance.
+
+**Profile targets.** The tutor builder and student
+Adjust form show the saved profile target with a profile-edit link instead
+of requiring another score input. Submission reads the current profile
+target, including changes made after opening the form. If no profile target
+is saved, the score input remains required. The student setup wizard
+already skips its target question when the profile has a score.
 
 Tutors open **Student profile → Study plan**. They can generate a starting
 schedule or choose **Start from scratch**. Starting from scratch archives a

@@ -71,7 +71,7 @@ export default async function StudentPlanPage({ params }: PageProps) {
 
   const name = studentName(student);
   const defaults = {
-    goalScore: (draft?.goal_score ?? active?.goal_score ?? student.target_sat_score ?? '') as number | '',
+    goalScore: (student.target_sat_score ?? draft?.goal_score ?? active?.goal_score ?? '') as number | '',
     testDate: (draft?.test_date ?? active?.test_date ?? student.sat_test_date ?? '') as string,
     weeklyHours: num(draft?.config, 'weekly_hours') ?? num(active?.config, 'weekly_hours') ?? 5,
   };
@@ -94,6 +94,7 @@ export default async function StudentPlanPage({ params }: PageProps) {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>{active || draft ? 'Build or regenerate a draft' : 'Create a plan'}</h2>
         <GeneratePlanForm
+          profileTarget={student.target_sat_score}
           studentId={studentId}
           action={generatePlanAction}
           defaults={defaults}

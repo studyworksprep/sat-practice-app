@@ -39,7 +39,8 @@ export interface GenerateStudyPlanArgs {
   empty?: boolean;
   /** Defaults to the caller (self-serve); a tutor passes a visible student's id. */
   studentId?: string;
-  goalScore: number;
+  /** Omit to use the student's current profile target. */
+  goalScore?: number;
   testDate: string; // ISO yyyy-mm-dd
   weeklyHours: number;
   /** Baseline scaled score; if omitted, the current predicted band total is used. */
@@ -75,8 +76,15 @@ export async function generateStudyPlan(
   const studentId = args.studentId ?? user.id;
   const testType = args.testType ?? 'sat';
 
+  let goalScore = args.goalScore;
+  if (goalScore == null && testType === 'sat') {
+    const { data: student, error } = await supabase.from('profiles')
+      .select('target_sat_score').eq('id', studentId).maybeSingle();
+    if (error) return actionFail('Could not load the student target score.');
+    goalScore = student?.target_sat_score ?? undefined;
+  }
   // Validate the intake fields.
-  if (!Number.isFinite(args.goalScore) || args.goalScore < 400 || args.goalScore > 1600) {
+  if (goalScore == null || !Number.isFinite(goalScore) || goalScore < 400 || goalScore > 1600) {
     return actionFail('Enter a target score between 400 and 1600.');
   }
   if (!args.testDate || !/^\d{4}-\d{2}-\d{2}$/.test(args.testDate)) {
@@ -89,7 +97,7 @@ export async function generateStudyPlan(
   if (args.testDate <= today) return actionFail('Choose a future test date.');
   if (args.empty) {
     const result = await writeDraftPlan(supabase, {
-      studentId, createdBy: user.id, testType, goalScore: args.goalScore,
+      studentId, createdBy: user.id, testType, goalScore,
       startingScore: null, testDate: args.testDate, weeklyHours: args.weeklyHours,
       empty: true, rationale: 'Built by your tutor, one unit or task at a time.',
     }, []);
@@ -170,7 +178,7 @@ export async function generateStudyPlan(
   const anchor = previous.plan ? planStartDate(previous.plan.config, previous.plan.created_at, previous.tasks.map((t) => t.scheduled_date)) : today;
   const elapsed = Math.max(0, Math.floor(daysBetween(anchor, today) / 7));
   const draft = generatePlan({
-    goalScore: args.goalScore,
+    goalScore,
     startingScore,
     testDate: args.testDate,
     today,
@@ -193,7 +201,7 @@ export async function generateStudyPlan(
       studentId,
       createdBy: user.id,
       testType,
-      goalScore: args.goalScore,
+      goalScore,
       startingScore,
       testDate: args.testDate,
       weeklyHours: args.weeklyHours,

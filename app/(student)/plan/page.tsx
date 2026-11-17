@@ -54,14 +54,17 @@ export default async function PlanPage() {
   const { user, profile, supabase } = await requireUser();
   const firstName = profile.first_name ?? null;
 
-  const { data: plan } = await supabase
-    .from('study_plans')
-    .select('id, test_type, goal_score, test_date, mode, rationale, phases, config, created_by, created_at')
-    .eq('student_id', user.id)
-    .eq('status', 'active')
-    .order('test_type', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const [{ data: fullProfile }, { data: plan }] = await Promise.all([
+    supabase.from('profiles').select('target_sat_score').eq('id', user.id).maybeSingle(),
+    supabase
+      .from('study_plans')
+      .select('id, test_type, goal_score, test_date, mode, rationale, phases, config, created_by, created_at')
+      .eq('student_id', user.id)
+      .eq('status', 'active')
+      .order('test_type', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   if (!plan) {
     return (
@@ -287,8 +290,9 @@ export default async function PlanPage() {
         <h2 className={s.h2}>Adjust</h2>
         <AdjustPlanForm
           action={adjustPlanAction}
+          profileTarget={fullProfile?.target_sat_score ?? null}
           defaults={{
-            target: plan.goal_score ?? 1200,
+            target: fullProfile?.target_sat_score ?? plan.goal_score ?? '',
             testDate: plan.test_date ? String(plan.test_date).slice(0, 10) : today,
             weeklyHours,
             studyDays,

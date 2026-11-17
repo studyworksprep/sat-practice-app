@@ -60,7 +60,10 @@ export async function adjustPlanAction(
   }
   const { user, supabase } = ctx;
 
-  const target = Number(fd.get('target'));
+  const { data: fullProfile, error: profileError } = await supabase
+    .from('profiles').select('target_sat_score').eq('id', user.id).maybeSingle();
+  if (profileError) return actionFail('Could not load your target score.');
+  const target = fd.has('target') ? Number(fd.get('target')) : fullProfile?.target_sat_score;
   const testDate = String(fd.get('testDate') ?? '');
   const weeklyHours = Number(fd.get('weeklyHours'));
   const days = [
@@ -73,7 +76,7 @@ export async function adjustPlanAction(
   ].sort((a, b) => a - b);
   const today = new Date().toISOString().slice(0, 10);
 
-  if (!Number.isFinite(target) || target < 400 || target > 1600 || target % 10 !== 0) {
+  if (target == null || !Number.isFinite(target) || target < 400 || target > 1600 || target % 10 !== 0) {
     return actionFail('Pick a score between 400 and 1600, in steps of 10.');
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(testDate)) return actionFail('Pick your test date.');
@@ -89,7 +92,7 @@ export async function adjustPlanAction(
   // Profile mirrors (the dashboard tiles and sidebar footer read these).
   const { error: profErr } = await supabase
     .from('profiles')
-    .update({ target_sat_score: target, sat_test_date: testDate })
+    .update({ ...(fd.has('target') ? { target_sat_score: target } : {}), sat_test_date: testDate })
     .eq('id', user.id);
   if (profErr) return actionFail(profErr.message);
 

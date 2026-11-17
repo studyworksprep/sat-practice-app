@@ -55,6 +55,14 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
     let draft = draftSection(page);
     await expect(draft.getByRole('heading', { name: 'Draft plan', exact: true })).toBeVisible({ timeout: 45_000 });
     const plan = (await checked(db.from('study_plans').select('id').eq('student_id', studentId).eq('status', 'draft').single()))!;
+    // Missing profile targets still have an input. Once a target is saved,
+    // the builder uses it instead of the older score on the draft.
+    await checked(db.from('profiles').update({ target_sat_score: 1450 }).eq('id', studentId));
+    await page.reload();
+    await expect(page.getByLabel('Target score', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('1450 · From student profile')).toBeVisible();
+    // A profile edit made after rendering must also be picked up on submit.
+    await checked(db.from('profiles').update({ target_sat_score: 1500 }).eq('id', studentId));
     const tasks = async () => (await checked(db.from('plan_tasks').select('id, week_index, scheduled_date, payload, source, status').eq('plan_id', plan.id)))!;
     const initial = await tasks();
     expect(initial.some((t) => t.payload.drill_role === 'mixed')).toBe(true);
@@ -88,6 +96,7 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
     await page.getByRole('button', { name: 'Regenerate draft', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Regenerate draft', exact: true })).toBeEnabled({ timeout: 30_000 });
     await expect(page.getByText('Draft ready — add or edit work below, then activate it.')).toBeVisible();
+    expect((await checked(db.from('study_plans').select('goal_score').eq('id', plan.id).single()))!.goal_score).toBe(1500);
     for (const t of moved) expect((await tasks()).find((r) => r.id === t.id)).toMatchObject({ week_index: t.week_index, scheduled_date: t.scheduled_date, source: 'tutor' });
     expect((await tasks()).some((t) => t.payload.generation_key === deleted.payload.generation_key)).toBe(false);
 
@@ -138,6 +147,23 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
       await studentPage.waitForURL((u) => !u.pathname.includes('/login'));
       await studentPage.goto('/plan');
       await expect(studentPage.getByText(String((await blankTasks())[0].payload.title), { exact: true }).first()).toBeVisible({ timeout: 30_000 });
+      await studentPage.getByRole('button', { name: 'Change date, hours, or days', exact: true }).click();
+      await expect(studentPage.getByLabel('Target score', { exact: true })).toHaveCount(0);
+      await expect(studentPage.getByText('1500 · From your profile')).toBeVisible();
+      await checked(db.from('profiles').update({ target_sat_score: 1520 }).eq('id', studentId));
+      await studentPage.getByRole('button', { name: 'Save and update my plan', exact: true }).click();
+      await expect(studentPage.getByText(/Plan updated —/)).toBeVisible();
+      expect((await checked(db.from('study_plans').select('goal_score').eq('id', blank.id).single()))!.goal_score).toBe(1520);
+      expect((await checked(db.from('profiles').select('target_sat_score').eq('id', studentId).single()))!.target_sat_score).toBe(1520);
+
+      // Students without a saved target can supply one during adjustment.
+      await checked(db.from('profiles').update({ target_sat_score: null }).eq('id', studentId));
+      await studentPage.reload();
+      await studentPage.getByRole('button', { name: 'Change target, date, hours, or days', exact: true }).click();
+      await studentPage.getByLabel('Target score', { exact: true }).fill('1480');
+      await studentPage.getByRole('button', { name: 'Save and update my plan', exact: true }).click();
+      await expect(studentPage.getByText(/Plan updated —/)).toBeVisible();
+      expect((await checked(db.from('profiles').select('target_sat_score').eq('id', studentId).single()))!.target_sat_score).toBe(1480);
       await studentPage.getByRole('button', { name: 'Rebuild from my latest practice', exact: true }).click();
       await expect(studentPage.getByText(/Plan rebuilt/)).toBeVisible();
       expect(await blankTasks()).toHaveLength(1);
