@@ -147,10 +147,25 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
       await studentPage.waitForURL((u) => !u.pathname.includes('/login'));
       await studentPage.goto('/plan');
       await expect(studentPage.getByText(String((await blankTasks())[0].payload.title), { exact: true }).first()).toBeVisible({ timeout: 30_000 });
+      const savedTasks = await checked(db.from('plan_tasks').select('*').eq('plan_id', blank.id).order('id'));
+      const beforeProfile = (await checked(db.from('study_plans').select('*').eq('id', blank.id).single()))!;
+      // Profile saving updates the existing plan immediately: no Adjust,
+      // Rebuild, new draft, or activation is needed, even for a manual plan.
+      await studentPage.goto('/account');
+      await studentPage.getByLabel('Target SAT score', { exact: true }).fill('1530');
+      await studentPage.getByRole('button', { name: 'Save profile', exact: true }).click();
+      await expect(studentPage.getByText('Saved.', { exact: true }).first()).toBeVisible();
+      const afterProfile = (await checked(db.from('study_plans').select('*').eq('id', blank.id).single()))!;
+      expect(afterProfile.goal_score).toBe(1530);
+      expect({ ...afterProfile, goal_score: beforeProfile.goal_score, updated_at: beforeProfile.updated_at }).toEqual(beforeProfile);
+      expect(await checked(db.from('plan_tasks').select('*').eq('plan_id', blank.id).order('id'))).toEqual(savedTasks);
+      await studentPage.goto('/plan');
+      await expect(studentPage.getByText('Target 1530', { exact: true })).toBeVisible();
       await studentPage.getByRole('button', { name: 'Change date, hours, or days', exact: true }).click();
       await expect(studentPage.getByLabel('Target score', { exact: true })).toHaveCount(0);
-      await expect(studentPage.getByText('1500 · From your profile')).toBeVisible();
+      await expect(studentPage.getByText('1530 · From your profile')).toBeVisible();
       await checked(db.from('profiles').update({ target_sat_score: 1520 }).eq('id', studentId));
+      expect((await checked(db.from('study_plans').select('goal_score').eq('id', blank.id).single()))!.goal_score).toBe(1520);
       await studentPage.getByRole('button', { name: 'Save and update my plan', exact: true }).click();
       await expect(studentPage.getByText(/Plan updated —/)).toBeVisible();
       expect((await checked(db.from('study_plans').select('goal_score').eq('id', blank.id).single()))!.goal_score).toBe(1520);

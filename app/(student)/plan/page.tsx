@@ -15,6 +15,7 @@ import { PageHeader } from '@/lib/ui/PageHeader';
 import { formatDate } from '@/lib/formatters';
 import { buildTodayView } from '@/lib/plan/today';
 import { planStartDate } from '@/lib/plan/customization';
+import { currentPlanRationale } from '@/lib/plan/rationale';
 import type { TodayTaskRow } from '@/lib/plan/today';
 import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
 import type { PlanMode, PlanPhaseType, PlanTaskType } from '@/lib/plan/generate-plan';
@@ -184,7 +185,7 @@ export default async function PlanPage() {
         {plan.rationale && (
           <details className={s.why}>
             <summary className={s.whySummary}>Why this plan</summary>
-            <p className={s.rationale}>{plan.rationale}</p>
+            <p className={s.rationale}>{currentPlanRationale(plan.rationale, plan.goal_score)}</p>
           </details>
         )}
       </section>
@@ -273,7 +274,7 @@ export default async function PlanPage() {
       <section className={s.card}>
         <h2 className={s.h2}>Week by week</h2>
         <PlanOverview
-          goalScore={plan.goal_score ?? 0}
+          goalScore={plan.goal_score}
           testDate={plan.test_date ?? today}
           mode={(plan.mode as PlanMode | null) ?? null}
           rationale={null}

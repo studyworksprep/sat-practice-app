@@ -285,7 +285,7 @@ export default async function WelcomePage({ searchParams }: PageProps) {
             <h1 className={s.question}>Here&rsquo;s your plan</h1>
             <p className={s.questionSub}>Open any week to see what&rsquo;s in it, then start whenever you&rsquo;re ready.</p>
             <PlanOverview
-              goalScore={draft.goal_score ?? goal ?? 0}
+              goalScore={draft.goal_score ?? goal}
               testDate={draft.test_date ?? testDate ?? ''}
               mode={(draft.mode as PlanMode | null) ?? null}
               rationale={draft.rationale ?? null}

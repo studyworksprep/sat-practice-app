@@ -8,12 +8,24 @@ Both November 16 database migrations are applied to development and production.
 The live tutor editor was verified after deployment; existing schedules were
 left intact, and regeneration applies the revised scheduling balance.
 
-**Profile targets.** The tutor builder and student
+**Profile targets — released November 17, 2026 in [PR #498](https://github.com/studyworksprep/sat-practice-app/pull/498).** The tutor builder and student
 Adjust form show the saved profile target with a profile-edit link instead
 of requiring another score input. Submission reads the current profile
 target, including changes made after opening the form. If no profile target
 is saved, the score input remains required. The student setup wizard
 already skips its target question when the profile has a score.
+
+**Automatic target synchronization.**
+Saving a profile target updates the goal on that student's active SAT plan
+and SAT drafts in the same transaction. Clearing the target clears those
+live goals. Tasks, dates, unit membership, completion history, editor
+preferences, and custom tutor notes are untouched; no regeneration or
+activation is needed. Archived/completed plans and ACT plans retain their
+goals. The migration also aligns live SAT plans with existing non-null
+profile targets. Unchanged targets do not rewrite plan rows. Existing
+revision checks reject a regeneration that started before a target change.
+The standard generated explanation displays the current score, while its
+stored text and custom tutor wording are preserved.
 
 Tutors open **Student profile → Study plan**. They can generate a starting
 schedule or choose **Start from scratch**. Starting from scratch archives a
@@ -102,7 +114,11 @@ rewritten by deploying the scheduler changes; regeneration applies them.
 - `supabase/tests/modular_study_plan_editor.sql`: development transaction
   that rolls back all fixtures; validates atomic edits, exclusion retention,
   history copying, stale revisions, manual plans, and cross-roster denial.
+- `supabase/tests/profile_study_plan_target.sql`: rollback-only target-sync
+  checks for student/service writes, unchanged tasks and plan settings,
+  historical/ACT isolation, cleared targets, stale revisions, and permissions.
 - `tests/e2e/study-plan-editor.teacher.spec.ts`: development-only temporary
   student; tutor generation/editing, whole-unit and task movement/removal,
   regeneration, blank construction, activation, mobile overflow, student
-  rebuild, and launching a practice set. Fixture cleanup removes the account.
+  profile target synchronization without rebuilding, student rebuild, and
+  launching a practice set. Fixture cleanup removes the account.

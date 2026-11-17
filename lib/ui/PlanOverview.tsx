@@ -8,6 +8,7 @@
 import { formatDate } from '@/lib/formatters';
 import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
 import { taskScheduleOrder } from '@/lib/plan/customization';
+import { currentPlanRationale } from '@/lib/plan/rationale';
 import type { PlanMode, PlanPhase, PlanPhaseType, PlanTaskType } from '@/lib/plan/generate-plan';
 import s from './PlanOverview.module.css';
 
@@ -21,7 +22,7 @@ export interface OverviewTask {
 }
 
 export interface PlanOverviewProps {
-  goalScore: number;
+  goalScore: number | null;
   testDate: string;
   mode: PlanMode | null;
   rationale: string | null;
@@ -104,6 +105,7 @@ export function PlanOverview({
   rationaleCollapsed = false,
   startAction,
 }: PlanOverviewProps) {
+  const explanation = currentPlanRationale(rationale, goalScore);
   const weekCount = tasks.reduce((m, t) => Math.max(m, t.weekIndex + 1), 0);
   const totalWeeks = Math.max(weekCount, ...phases.map((p) => p.endWeek + 1), 0);
   const byWeek = new Map<number, OverviewTask[]>();
@@ -121,12 +123,13 @@ export function PlanOverview({
       <div className={s.summaryRow}>
         <span className={s.modePill}>{mode ? MODE_LABEL[mode] : 'Study plan'}</span>
         <span className={s.summaryMeta}>
-          {totalWeeks} week{totalWeeks === 1 ? '' : 's'} · {tasks.length} tasks · target{' '}
-          <strong>{goalScore}</strong> by <strong>{formatDate(testDate) ?? testDate}</strong>
+          {totalWeeks} week{totalWeeks === 1 ? '' : 's'} · {tasks.length} tasks ·{' '}
+          {goalScore != null ? <>target <strong>{goalScore}</strong> by </> : 'test date '}
+          <strong>{formatDate(testDate) ?? testDate}</strong>
         </span>
       </div>
 
-      {rationale && !rationaleCollapsed && <p className={s.rationale}>{rationale}</p>}
+      {explanation && !rationaleCollapsed && <p className={s.rationale}>{explanation}</p>}
 
       {phases.length > 0 && (
         <ol className={s.phaseStrip} aria-label="Plan phases">
@@ -155,10 +158,10 @@ export function PlanOverview({
         </ol>
       )}
 
-      {rationale && rationaleCollapsed && (
+      {explanation && rationaleCollapsed && (
         <details className={s.why}>
           <summary className={s.whySummary}>Why this plan</summary>
-          <p className={s.rationale}>{rationale}</p>
+          <p className={s.rationale}>{explanation}</p>
         </details>
       )}
 

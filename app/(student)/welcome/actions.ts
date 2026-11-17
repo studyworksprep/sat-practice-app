@@ -163,8 +163,11 @@ export async function saveAnswerAction(
   }
   if (err) return actionFail(err);
 
-  await dropDraft(ctx);
+  // Target changes sync plan metadata in the profile transaction. Keep the
+  // existing draft, including any tutor edits, instead of rebuilding it.
+  if (question !== 'target') await dropDraft(ctx);
   revalidatePath('/welcome');
+  revalidatePath('/plan');
   return { ok: true };
 }
 
