@@ -9,6 +9,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import Link from 'next/link';
 import type { ActionResult } from '@/lib/types';
 import styles from './StudyPlan.module.css';
 
@@ -21,13 +22,14 @@ interface GenerateFormProps {
   studentId: string;
   action: PlanAction;
   defaults: { goalScore: number | ''; testDate: string; weeklyHours: number };
+  profileTarget: number | null;
   /** True when an active plan already exists — regeneration produces a
    *  fresh draft to review; the active plan is left untouched until the
    *  draft is activated. */
   hasActive: boolean;
 }
 
-export function GeneratePlanForm({ studentId, action, defaults, hasActive }: GenerateFormProps) {
+export function GeneratePlanForm({ studentId, action, defaults, profileTarget, hasActive }: GenerateFormProps) {
   const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(action, null);
   const [creationMode, setCreationMode] = useState('automatic');
 
@@ -46,7 +48,11 @@ export function GeneratePlanForm({ studentId, action, defaults, hasActive }: Gen
           : 'Build from current skills. Tutor additions, moves, and removals are kept when regenerating.'}
       </p>
       <div className={styles.fieldRow}>
-        <label className={styles.field}>
+        {profileTarget != null ? <div className={styles.field}>
+          <span className={styles.label}>Target score</span>
+          <span>{profileTarget} · From student profile</span>
+          <Link href={`/tutor/students/${studentId}`} className={styles.cardSub}>Edit student profile</Link>
+        </div> : <label className={styles.field}>
           <span className={styles.label}>Target score</span>
           <input
             className={styles.input}
@@ -59,7 +65,7 @@ export function GeneratePlanForm({ studentId, action, defaults, hasActive }: Gen
             defaultValue={defaults.goalScore}
             placeholder="1400"
           />
-        </label>
+        </label>}
 
         <label className={styles.field}>
           <span className={styles.label}>Test date</span>

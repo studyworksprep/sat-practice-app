@@ -53,7 +53,7 @@ export async function generatePlanAction(
   const res = await generateStudyPlan({
     studentId,
     empty: fd.get('creationMode') === 'blank',
-    goalScore: Number(fd.get('goalScore')),
+    goalScore: fd.has('goalScore') ? Number(fd.get('goalScore')) : undefined,
     testDate: String(fd.get('testDate') ?? ''),
     weeklyHours: Number(fd.get('weeklyHours')),
   });

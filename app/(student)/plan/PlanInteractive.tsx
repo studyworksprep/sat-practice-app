@@ -7,6 +7,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import Link from 'next/link';
 import type { AdjustResult } from './actions';
 import s from './Plan.module.css';
 
@@ -29,9 +30,11 @@ function Result({ state, verb }: { state: AdjustResult | null; verb: string }) {
 export function AdjustPlanForm({
   action,
   defaults,
+  profileTarget,
 }: {
   action: Action;
-  defaults: { target: number; testDate: string; weeklyHours: number; studyDays: number[] };
+  defaults: { target: number | ''; testDate: string; weeklyHours: number; studyDays: number[] };
+  profileTarget: number | null;
 }) {
   const [state, formAction, pending] = useActionState<AdjustResult | null, FormData>(action, null);
   const [open, setOpen] = useState(false);
@@ -42,7 +45,7 @@ export function AdjustPlanForm({
     return (
       <div className={s.adjustRow}>
         <button type="button" className={s.secondaryBtn} onClick={() => setOpen(true)}>
-          Change target, date, hours, or days
+          {profileTarget != null ? 'Change date, hours, or days' : 'Change target, date, hours, or days'}
         </button>
         <Result state={state} verb="Plan updated" />
       </div>
@@ -52,10 +55,14 @@ export function AdjustPlanForm({
   return (
     <form action={formAction} className={s.form}>
       <div className={s.fieldRow}>
-        <label className={s.field}>
+        {profileTarget != null ? <div className={s.field}>
+          <span className={s.label}>Target score</span>
+          <span>{profileTarget} · From your profile</span>
+          <Link href="/account" className={s.inlineLink}>Edit target in your profile</Link>
+        </div> : <label className={s.field}>
           <span className={s.label}>Target score</span>
           <input className={s.input} name="target" type="number" min={400} max={1600} step={10} required defaultValue={defaults.target} />
-        </label>
+        </label>}
         <label className={s.field}>
           <span className={s.label}>Test date</span>
           <input className={s.input} name="testDate" type="date" required defaultValue={defaults.testDate} />
