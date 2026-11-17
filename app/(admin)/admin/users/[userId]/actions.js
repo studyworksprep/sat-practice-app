@@ -76,6 +76,10 @@ export async function updateProfileFields(_prev, formData) {
   if (error) return actionFail(`Failed to save: ${error.message}`);
 
   revalidatePath(`/admin/users/${userId}`);
+  revalidatePath(`/tutor/students/${userId}/plan`);
+  revalidatePath('/plan');
+  revalidatePath('/dashboard');
+  revalidatePath('/welcome');
   return actionOk({ saved: true });
 }
 

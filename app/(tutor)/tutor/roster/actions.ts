@@ -143,5 +143,9 @@ export async function updateStudentProfile(
 
   revalidatePath('/tutor/roster');
   revalidatePath(`/tutor/students/${studentId}`);
+  revalidatePath(`/tutor/students/${studentId}/plan`);
+  revalidatePath('/plan');
+  revalidatePath('/dashboard');
+  revalidatePath('/welcome');
   return actionOk({ studentId });
 }

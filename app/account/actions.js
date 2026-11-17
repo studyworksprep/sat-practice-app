@@ -106,6 +106,9 @@ export async function updateProfile(_prev, formData) {
 
   revalidatePath('/account');
   revalidatePath('/dashboard');
+  revalidatePath('/plan');
+  revalidatePath('/welcome');
+  revalidatePath(`/tutor/students/${ctx.user.id}/plan`);
   return actionOk(updates);
 }
 
