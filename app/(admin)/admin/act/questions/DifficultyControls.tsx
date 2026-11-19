@@ -9,17 +9,21 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
+import { actFormName } from '@/lib/practice/act-form-names';
 import { estimateActDifficultyBatch, type DifficultyBatchDetail } from './difficulty-actions';
 import s from './ActQuestions.module.css';
 
 export function DifficultyControls({
   missing,
   forms,
+  formNames,
 }: {
   /** Live questions with no difficulty, per section. */
   missing: Record<string, number>;
   forms: string[];
+  formNames: Record<string, string>;
 }) {
+  const nameOf = (key: string) => actFormName(key, formNames[key]);
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [section, setSection] = useState('');
@@ -84,7 +88,7 @@ export function DifficultyControls({
         </select>
         <select value={form} onChange={(e) => setForm(e.target.value)} className={s.select} aria-label="Form">
           <option value="">All forms</option>
-          {forms.map((f) => <option key={f} value={f}>{f}</option>)}
+          {forms.map((f) => <option key={f} value={f}>{nameOf(f)}</option>)}
         </select>
         <label className={s.toggle}>
           Passage groups
@@ -130,7 +134,7 @@ export function DifficultyControls({
                 <tr key={d.questionId}>
                   <td className={`${s.td} ${s.mono}`}>
                     <Link href={`/admin/act/questions/${d.questionId}`} className={s.rowLink}>
-                      {d.sourceTest ?? d.questionId.slice(0, 8)}
+                      {d.sourceTest ? nameOf(d.sourceTest) : d.questionId.slice(0, 8)}
                     </Link>
                   </td>
                   <td className={s.td}>{sectionLabel(d.section)}</td>

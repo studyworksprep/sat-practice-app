@@ -22,7 +22,7 @@ import s from './ScoreConversion.module.css';
 
 const NEW_ROW = { raw_score: '', scaled_score: '' };
 
-export function ConversionEditor({ sourceTest, section, sectionLabel, initialRows }) {
+export function ConversionEditor({ sourceTest, formName, section, sectionLabel, initialRows }) {
   // Working copy of the table. Each entry is the string form of
   // both fields so partial input ("12.") renders without trying
   // to coerce until save time.
@@ -145,7 +145,7 @@ export function ConversionEditor({ sourceTest, section, sectionLabel, initialRow
 
   async function clearTable() {
     const ok = await confirm({
-      title: `Delete every ${sectionLabel} row for ${sourceTest}?`,
+      title: `Delete every ${sectionLabel} row for ${formName}?`,
       body: "This can't be undone.",
       confirmLabel: 'Delete',
       tone: 'danger',
@@ -171,7 +171,7 @@ export function ConversionEditor({ sourceTest, section, sectionLabel, initialRow
     <section className={s.editor}>
       <div className={s.editorHeader}>
         <div>
-          <div className={s.editorTitle}>{sectionLabel} · {sourceTest}</div>
+          <div className={s.editorTitle}>{sectionLabel} · {formName}</div>
           <div className={s.editorHint}>
             {validation.ok
               ? `${validation.rows.length} valid row${validation.rows.length === 1 ? '' : 's'} ready to save.`

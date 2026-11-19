@@ -15,7 +15,7 @@ import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggrega
 import { resolveDetoursEnabled } from '@/lib/practice/detour-preference.mjs';
 import { parseTimeAccommodation } from '@/lib/practice/time-accommodation';
 import { buildArchiveSummary } from '@/lib/practice/superscore';
-import { loadActFormNamer } from '@/lib/practice/act-form-names';
+import { actTestAssignmentTitle, loadActFormNamer } from '@/lib/practice/act-form-names';
 import {
   buildFoundationRows,
   foundationSyllabusTitle,
@@ -37,6 +37,7 @@ export type StudentAssignment = {
   created_at: string | null;
   question_ids: unknown;
   test_type: string | null;
+  act_source_test: string | null;
   lesson: { title: string | null } | null;
   practice_test: { name: string | null } | null;
   completed_at: string | null;
@@ -100,7 +101,7 @@ export async function loadStudentDetail(supabase: TypedSupabaseClient, studentId
         completed_at, reviewed_at, reviewed_by,
         assignment:assignments_v2 (
           id, assignment_type, title, due_date, archived_at, deleted_at, created_at,
-          question_ids, test_type,
+          question_ids, test_type, act_source_test,
           lesson:lessons (title),
           practice_test:practice_tests_v2 (name)
         )
@@ -285,6 +286,9 @@ export async function loadStudentDetail(supabase: TypedSupabaseClient, studentId
   const assignments: StudentAssignment[] = ((assignmentJunctions ?? []) as unknown as Junction[])
     .map((j) => ({
       ...j.assignment,
+      title: j.assignment?.assignment_type === 'practice_test' && j.assignment.act_source_test
+        ? actTestAssignmentTitle(j.assignment.act_source_test, j.assignment.title)
+        : j.assignment?.title,
       completed_at: j.completed_at,
       reviewed_at: j.reviewed_at,
       reviewed_by: j.reviewed_by,

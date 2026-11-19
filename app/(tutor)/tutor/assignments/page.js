@@ -36,7 +36,7 @@ import { AssignmentsToolbar } from './AssignmentsToolbar';
 import { filterAndSort, paginate } from './helpers';
 import { PageHeader } from '@/lib/ui/PageHeader';
 import s from './AssignmentsList.module.css';
-import { defaultActFormName } from '@/lib/practice/act-form-names';
+import { actTestAssignmentTitle, defaultActFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -457,7 +457,9 @@ function EmptyCard({ title, body }) {
 }
 
 function AssignmentRow({ row, nowMs, archived = false }) {
-  const title = row.title
+  const title = (row.assignment_type === 'practice_test' && row.act_source_test
+    ? actTestAssignmentTitle(row.act_source_test, row.title)
+    : row.title)
     ?? (row.assignment_type === 'lesson' ? row.lesson?.title : null)
     ?? (row.assignment_type === 'practice_test' ? row.practice_test?.name : null)
     ?? (row.assignment_type === 'practice_test' && row.act_source_test

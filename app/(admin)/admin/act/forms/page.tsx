@@ -28,7 +28,7 @@ import {
 import { FormatSelect } from './FormatSelect';
 import { KindSelect } from './KindSelect';
 import { NameInput } from './NameInput';
-import { compareActForms, defaultActFormName } from '@/lib/practice/act-form-names';
+import { actFormNamer, compareActForms, defaultActFormName, parseActSourceTest } from '@/lib/practice/act-form-names';
 import s from '../questions/ActQuestions.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -61,6 +61,7 @@ export default async function AdminActFormsPage() {
 
   if (formError) throw new Error('Could not load ACT form settings', { cause: formError });
 
+  const nameOf = actFormNamer(formRows);
   const formatByForm = new Map<string, ActFormat>();
   const kindByForm = new Map<string, ActFormKind>();
   const nameByForm = new Map<string, string>();
@@ -157,14 +158,15 @@ export default async function AdminActFormsPage() {
                   <tr key={row.sourceTest}>
                     <td className={`${s.td} ${s.mono}`}>
                       <Link href={`/admin/act/questions?form=${encodeURIComponent(row.sourceTest)}`} className={s.rowLink}>
-                        {row.sourceTest}
+                        {nameOf(row.sourceTest)}
                       </Link>
                     </td>
                     <td className={s.td}>
                       <NameInput
                         sourceTest={row.sourceTest}
-                        displayName={row.displayName}
+                        displayName={parseActSourceTest(row.sourceTest).kind === 'dated' ? nameOf(row.sourceTest) : row.displayName}
                         defaultName={defaultActFormName(row.sourceTest)}
+                        fixed={parseActSourceTest(row.sourceTest).kind === 'dated'}
                       />
                     </td>
                     <td className={s.td}>

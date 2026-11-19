@@ -24,6 +24,7 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireRole } from '@/lib/api/auth';
+import { loadActFormNamer } from '@/lib/practice/act-form-names';
 import { sectionLabel, ACT_SECTIONS } from '@/lib/practice/act-taxonomy';
 import { ConversionEditor } from './ConversionEditor';
 import { CreateFormButton } from './CreateFormButton';
@@ -53,6 +54,7 @@ export default async function AdminActScoreConversionPage({ searchParams }) {
   const [
     { data: conversionRows },
     { data: questionRows },
+    nameOf,
   ] = await Promise.all([
     supabase
       .from('act_score_conversion')
@@ -64,6 +66,7 @@ export default async function AdminActScoreConversionPage({ searchParams }) {
       .from('act_questions')
       .select('source_test')
       .not('source_test', 'is', null),
+    loadActFormNamer(supabase),
   ]);
 
   const formsWithRows = new Set();
@@ -129,7 +132,7 @@ export default async function AdminActScoreConversionPage({ searchParams }) {
                       href={`/admin/act/score-conversion?form=${encodeURIComponent(form)}&section=${section}`}
                       className={`${s.formChip} ${active ? s.formChipActive : ''}`}
                     >
-                      {form}
+                      {nameOf(form)}
                       {!hasTable && <span className={s.formChipNoTable}>no table</span>}
                     </Link>
                   </li>
@@ -163,6 +166,7 @@ export default async function AdminActScoreConversionPage({ searchParams }) {
 
           <ConversionEditor
             sourceTest={currentForm}
+            formName={nameOf(currentForm)}
             section={section}
             sectionLabel={sectionLabel(section)}
             initialRows={rows}

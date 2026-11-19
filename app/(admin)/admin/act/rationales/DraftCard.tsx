@@ -51,7 +51,7 @@ export interface DraftView {
 
 type Action = (prev: ActionResult | null, fd: FormData) => Promise<ActionResult>;
 
-export function DraftCard({ draft }: { draft: DraftView }) {
+export function DraftCard({ draft, formName }: { draft: DraftView; formName: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirm, confirmDialog] = useConfirm();
@@ -64,7 +64,7 @@ export function DraftCard({ draft }: { draft: DraftView }) {
   const hasError = warnings.some((w) => w.startsWith('ERROR:'));
   const q = draft.question;
   const correct = draft.options.find((o) => o.is_correct)?.label ?? '—';
-  const title = [q.source_test ?? 'Unfiled', sectionLabel(q.section), q.source_ordinal != null ? `Q${q.source_ordinal}` : null]
+  const title = [formName, sectionLabel(q.section), q.source_ordinal != null ? `Q${q.source_ordinal}` : null]
     .filter(Boolean).join(' · ');
 
   function run(action: Action, extra: Record<string, string> = {}) {

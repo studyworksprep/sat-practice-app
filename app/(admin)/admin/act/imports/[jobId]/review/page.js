@@ -15,6 +15,7 @@ import { fetchAll } from '@/lib/supabase/fetchAll';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
+import { loadActFormNamer } from '@/lib/practice/act-form-names';
 import { sectionLabel, ACT_SECTIONS } from '@/lib/practice/act-taxonomy';
 import { loadReview } from '@/lib/act-import/load-review.mjs';
 import { DraftCard } from './DraftCard';
@@ -49,12 +50,14 @@ export default async function ReviewPage({ params, searchParams }) {
     redirect('/');
   }
 
-  const { data: job, error: jobError } = await supabase
+  const [{ data: job, error: jobError }, nameOf] = await Promise.all([supabase
     .from('act_import_jobs')
     .select('id, source_test, status')
     .eq('id', jobId)
     .maybeSingle()
-    .abortSignal(AbortSignal.timeout(15000));
+    .abortSignal(AbortSignal.timeout(15000)),
+    loadActFormNamer(supabase),
+  ]);
   if (jobError) throw new Error('Could not load import job', { cause: jobError });
   if (!job) notFound();
 
@@ -104,7 +107,7 @@ export default async function ReviewPage({ params, searchParams }) {
         </Link>
         <div className={s.titleRow}>
           <div>
-            <h1 className={s.h1}>{job.source_test}</h1>
+            <h1 className={s.h1}>{nameOf(job.source_test)}</h1>
             <p className={s.sub}>
               {counts.all} draft{counts.all === 1 ? '' : 's'} ·{' '}
               {counts.approved} approved · {counts.ready_for_review} pending ·{' '}

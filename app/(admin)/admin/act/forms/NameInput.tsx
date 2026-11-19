@@ -1,4 +1,4 @@
-// Inline student-facing name for one ACT form row. The placeholder is
+// Dated forms keep the standard Month Year name. For other forms, the placeholder is
 // the default derived from the key (lib/practice/act-form-names.ts);
 // typing something else saves an override on blur or Enter, and
 // clearing the field goes back to the default.
@@ -14,11 +14,13 @@ export function NameInput({
   sourceTest,
   displayName,
   defaultName,
+  fixed = false,
 }: {
   sourceTest: string;
   /** The saved override, or null when the form follows the default. */
   displayName: string | null;
   defaultName: string;
+  fixed?: boolean;
 }) {
   const router = useRouter();
   const [value, setValue] = useState(displayName ?? '');
@@ -27,6 +29,7 @@ export function NameInput({
   const [error, setError] = useState<string | null>(null);
 
   function save() {
+    if (fixed) return;
     const next = value.trim();
     if (next === (saved ?? '')) return;
     setError(null);
@@ -58,11 +61,12 @@ export function NameInput({
         onBlur={save}
         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
         disabled={pending}
-        aria-label={`Student-facing name for ${sourceTest}`}
+        readOnly={fixed}
+        aria-label={`Student-facing name for ${defaultName}`}
         style={{ minWidth: 220 }}
       />
       <div className={s.fieldHint}>
-        {pending ? 'Saving…' : value.trim() ? 'custom name' : 'default from the key'}
+        {fixed ? 'Month Year' : pending ? 'Saving…' : value.trim() ? 'custom name' : 'default from the key'}
       </div>
       {error && <div className={s.error} role="alert">{error}</div>}
     </div>

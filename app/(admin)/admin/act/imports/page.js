@@ -10,6 +10,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
+import { loadActFormNamer } from '@/lib/practice/act-form-names';
 import { formatDate } from '@/lib/formatters';
 import { DeleteJobButton } from './DeleteJobButton';
 import { deleteImportJob } from './actions';
@@ -33,12 +34,14 @@ export default async function ImportsListingPage() {
     redirect('/');
   }
 
-  const { data: jobs } = await supabase
+  const [{ data: jobs }, nameOf] = await Promise.all([supabase
     .from('act_import_jobs')
     .select(
       'id, source_test, status, english_status, math_status, reading_status, science_status, scale_status, created_at',
     )
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false }),
+    loadActFormNamer(supabase),
+  ]);
 
   return (
     <main className={s.container}>
@@ -84,7 +87,7 @@ export default async function ImportsListingPage() {
                 <tr key={j.id}>
                   <td className={s.td}>
                     <Link href={`/admin/act/imports/${j.id}`} className={s.sourceTestLink}>
-                      {j.source_test}
+                      {nameOf(j.source_test)}
                     </Link>
                   </td>
                   <td className={s.td}>
@@ -102,7 +105,7 @@ export default async function ImportsListingPage() {
                     </Link>
                     <DeleteJobButton
                       jobId={j.id}
-                      sourceTest={j.source_test}
+                      sourceTest={nameOf(j.source_test)}
                       deleteAction={deleteImportJob}
                     />
                   </td>

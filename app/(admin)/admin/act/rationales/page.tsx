@@ -16,6 +16,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
+import { loadActFormNamer } from '@/lib/practice/act-form-names';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import { RationaleControls } from './RationaleControls';
 import { DraftCard, type DraftView } from './DraftCard';
@@ -65,7 +66,7 @@ export default async function AdminActRationalesPage({
 
   // Coverage: live questions and how many carry a rationale, per
   // section; pending / held drafts per section.
-  const [{ data: liveRows }, { data: draftRows }, { data: formRows }] = await Promise.all([
+  const [{ data: liveRows }, { data: draftRows }, { data: formRows }, nameOf] = await Promise.all([
     supabase
       .from('act_questions')
       .select('section, rationale_html')
@@ -80,6 +81,7 @@ export default async function AdminActRationalesPage({
       .select('source_test')
       .is('deleted_at', null)
       .not('source_test', 'is', null),
+    loadActFormNamer(supabase),
   ]);
 
   const stats = new Map<string, SectionStat>(
@@ -205,7 +207,7 @@ export default async function AdminActRationalesPage({
         </select>
         <select name="form" defaultValue={form} className={s.select} aria-label="Form">
           <option value="">All forms</option>
-          {forms.map((f) => <option key={f} value={f}>{f}</option>)}
+          {forms.map((f) => <option key={f} value={f}>{nameOf(f)}</option>)}
         </select>
         <label className={s.toggle}>
           <input type="checkbox" name="review" value="1" defaultChecked={reviewOnly} />
@@ -224,7 +226,7 @@ export default async function AdminActRationalesPage({
             : `No ${status} drafts in this scope.`}
         </div>
       ) : (
-        draftList.map((d) => <DraftCard key={d.id} draft={d} />)
+        draftList.map((d) => <DraftCard key={d.id} draft={d} formName={d.question.source_test ? nameOf(d.question.source_test) : 'Unfiled'} />)
       )}
 
       {lastPage > 1 && (

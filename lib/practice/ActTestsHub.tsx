@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation';
 import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import { PageHeader } from '@/lib/ui/PageHeader';
 import { HelpButton } from '@/app/(student)/help/HelpButton';
+import { actFormName } from '@/lib/practice/act-form-names';
 import { sectionLabel, type ActSection } from '@/lib/practice/act-taxonomy';
 import {
   ACT_FORMAT_LABELS,
@@ -283,7 +284,7 @@ function ActTestLauncher({
             {forms.map((f) => (
               <option key={f.sourceTest} value={f.sourceTest}>
                 {completedTests.has(f.sourceTest) ? '✓ ' : ''}
-                {f.name}
+                {actFormName(f.sourceTest, f.name)}
                 {!isReady(f) ? ' · not ready yet' : completedTests.has(f.sourceTest) ? ' · completed' : ''}
               </option>
             ))}
@@ -385,7 +386,7 @@ function ResumeCard({ info }: { info: HubResumeInfo }) {
 
   async function onAbandon() {
     const ok = await confirm({
-      title: `Abandon ${info.name}?`,
+      title: `Abandon ${actFormName(info.sourceTest, info.name)}?`,
       body: 'Sections you finished stay on your record, but this attempt will not get a score and cannot be resumed.',
       confirmLabel: 'Abandon test',
       tone: 'danger',
@@ -409,7 +410,7 @@ function ResumeCard({ info }: { info: HubResumeInfo }) {
     <div className={p.resumeCard} role="status">
       <div>
         <strong>You have a test in progress:</strong>{' '}
-        {info.name}{' · '}{where}
+        {actFormName(info.sourceTest, info.name)}{' · '}{where}
         {error && <div className={s.error} role="alert">{error}</div>}
       </div>
       <div className={s.resumeActions}>
@@ -451,7 +452,7 @@ function ActHistoryTable({ attempts }: { attempts: HubAttempt[] }) {
             return (
               <tr key={a.id}>
                 <td className={p.td}>
-                  <div className={p.testName}>{a.name ?? a.source_test}</div>
+                  <div className={p.testName}>{actFormName(a.source_test, a.name)}</div>
                   {meta && <div className={p.testMeta}>{meta}</div>}
                 </td>
                 <td className={p.td}>{formatDate(a.finished_at)}</td>

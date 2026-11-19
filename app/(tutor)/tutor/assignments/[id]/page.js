@@ -25,7 +25,7 @@ import { LessonChecksRollupSection } from './LessonProgressSections';
 import { ReassignPanel } from './ReassignPanel';
 import { SubmitOnBehalfButton } from './SubmitOnBehalfButton';
 import s from './AssignmentDetail.module.css';
-import { actFormNamer, defaultActFormName } from '@/lib/practice/act-form-names';
+import { actFormNamer, actTestAssignmentTitle, defaultActFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -363,7 +363,9 @@ export default async function TutorAssignmentDetailPage({ params }) {
     .filter((p) => p.id)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const title = assignment.title
+  const title = (assignment.assignment_type === 'practice_test' && assignment.act_source_test
+    ? actTestAssignmentTitle(assignment.act_source_test, assignment.title)
+    : assignment.title)
     ?? (assignment.assignment_type === 'lesson' ? assignment.lesson?.title : null)
     ?? (assignment.assignment_type === 'practice_test' ? assignment.practice_test?.name : null)
     ?? (assignment.assignment_type === 'practice_test' && assignment.act_source_test

@@ -2,9 +2,9 @@
 //
 // act_questions.source_test is an import key ("ACT-2026-April-FormJ01",
 // "ACT-25MC1") and stays the stable identifier in every table and
-// URL. Students and tutors see a name instead: act_forms.display_name
-// when an admin has set one, otherwise a default derived from the key
-// here. Pure module (unit-tested); the one DB helper at the bottom
+// URL. Dated exams display Month Year; other forms use a saved
+// act_forms.display_name or a default derived from the key here.
+// Pure module (unit-tested); the one DB helper at the bottom
 // turns act_forms rows into a namer.
 //
 // Key shapes in the bank:
@@ -92,10 +92,29 @@ export function compareActForms(a: string, b: string): number {
   return ga - gb || na - nb || ka.localeCompare(kb);
 }
 
-/** The name to show: the admin's display_name when set, else the default. */
+/** Dated exams always use Month Year; other forms retain saved names. */
 export function actFormName(sourceTest: string, displayName?: string | null): string {
+  if (parseActSourceTest(sourceTest).kind === 'dated') return defaultActFormName(sourceTest);
   const custom = (displayName ?? '').trim();
   return custom || defaultActFormName(sourceTest);
+}
+
+/** Refresh automatically generated assignment titles without changing tutor copy. */
+export function actTestAssignmentTitle(sourceTest: string, title?: string | null): string {
+  const saved = (title ?? '').trim();
+  if (!saved) return actFormName(sourceTest);
+  const parsed = parseActSourceTest(sourceTest);
+  if (parsed.kind !== 'dated') return saved;
+  const scoped = /^(.*?)( — (?:English|Math|Reading|Science)(?:, (?:English|Math|Reading|Science))*(?: only)?)$/i.exec(saved);
+  const candidate = scoped?.[1] ?? saved;
+  const compact = (value: string) => value.replace(/[^a-z0-9]/gi, '').toLowerCase();
+  const base = `${parsed.month} ${parsed.year}`;
+  const suffixes = parsed.formCode ? ['', parsed.formCode, `Form ${parsed.formCode}`] : [''];
+  const generated = [sourceTest, ...[base, `${base} ACT`, `ACT ${base}`]
+    .flatMap(name => suffixes.map(suffix => `${name} ${suffix}`))];
+  return generated.some(name => compact(name) === compact(candidate))
+    ? `${base}${scoped?.[2] ?? ''}`
+    : saved;
 }
 
 export type ActFormNameRow = { source_test: string; display_name?: string | null };
@@ -108,7 +127,7 @@ export function actFormNamer(rows: readonly ActFormNameRow[] | null | undefined)
     const name = (r.display_name ?? '').trim();
     if (r.source_test && name) custom.set(r.source_test, name);
   }
-  return (sourceTest: string) => custom.get(sourceTest) ?? defaultActFormName(sourceTest);
+  return (sourceTest: string) => actFormName(sourceTest, custom.get(sourceTest));
 }
 
 /** Fetches every act_forms name (the table is a few dozen rows at most)
