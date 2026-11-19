@@ -27,6 +27,7 @@ import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentReport } from '@/lib/practice/AssignmentReport';
+import { actTestAssignmentTitle } from '@/lib/practice/act-form-names';
 import { ReviewedCheckbox } from '@/lib/tutor/ReviewedCheckbox';
 import { loadReviewState } from '@/lib/tutor/assignment-review-state';
 import { buildLessonCheckRows, resolveLessonProgress } from '@/lib/lesson/progress-report.mjs';
@@ -58,7 +59,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
   ] = await Promise.all([
     supabase
       .from('assignments_v2')
-      .select('id, title, description, assignment_type, test_type, question_ids, lesson_id, due_date, created_at, deleted_at, lesson:lessons (id, title)')
+      .select('id, title, description, assignment_type, test_type, act_source_test, question_ids, lesson_id, due_date, created_at, deleted_at, lesson:lessons (id, title)')
       .eq('id', assignmentId)
       .maybeSingle(),
     supabase
@@ -89,6 +90,9 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
 
   if (!assignment || assignment.deleted_at) notFound();
   if (!junction) notFound();
+  const assignmentTitle = assignment.assignment_type === 'practice_test' && assignment.act_source_test
+    ? actTestAssignmentTitle(assignment.act_source_test, assignment.title)
+    : assignment.title ?? 'Assignment';
 
   const ownerRole = ownerProfile?.role ?? null;
   const ownerName =
@@ -160,7 +164,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
     return (
       <EmptyReport
         ownerName={ownerName}
-        title={assignment.title ?? 'Assignment'}
+        title={assignmentTitle}
         backHref={`/tutor/assignments/${assignmentId}`}
         body="This assignment has no question pool, so there's no report to render."
       />
@@ -220,7 +224,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
         timing={view.timing}
         assignment={view.assignment ?? {
           id: assignmentId,
-          title: assignment.title ?? 'Assignment',
+          title: assignmentTitle,
           assignedAt: assignment.created_at,
           startedAt: view.items.find((item) => item.studentAnswer)?.studentAnswer?.submittedAt ?? null,
           completedAt: junction.completed_at,
@@ -276,7 +280,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       timing={view.timing}
       assignment={view.assignment ?? {
           id: assignmentId,
-          title: assignment.title ?? 'Assignment',
+          title: assignmentTitle,
           assignedAt: assignment.created_at,
           startedAt: view.items.find((item) => item.studentAnswer)?.studentAnswer?.submittedAt ?? null,
           completedAt: junction.completed_at,

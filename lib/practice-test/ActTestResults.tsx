@@ -14,6 +14,7 @@ import { formatDate } from '@/lib/formatters';
 import { ActScoreSummary } from './ActScoreSummary';
 import { ActBreakdownCards } from '@/lib/practice/ActBreakdownCards';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
+import { actFormName } from '@/lib/practice/act-form-names';
 import {
   ACT_FORMAT_LABELS,
   compositeDescription,
@@ -78,7 +79,7 @@ export function ActTestResults({
           <Link href={backHref} className={s.reviewLink}>{backLabel}</Link>
         )}
         <div className={s.eyebrow}>ACT score report</div>
-        <h1 className={s.h1}>{attempt.formName}</h1>
+        <h1 className={s.h1}>{actFormName(attempt.sourceTest, attempt.formName)}</h1>
         <p className={s.sub}>
           {ACT_FORMAT_LABELS[attempt.format]}
           {' · '}Finished {formatDate(attempt.finishedAt)}

@@ -22,7 +22,7 @@ import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { formatDate, isPastDueDate } from '@/lib/formatters';
 import s from './AssignmentsPage.module.css';
-import { defaultActFormName } from '@/lib/practice/act-form-names';
+import { actTestAssignmentTitle, defaultActFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -564,6 +564,9 @@ async function loadAssignmentsData(supabase, userId) {
 // ──────────────────────────────────────────────────────────────
 
 function displayTitle(row) {
+  if (row.assignment_type === 'practice_test' && row.act_source_test) {
+    return actTestAssignmentTitle(row.act_source_test, row.title);
+  }
   if (row.title) return row.title;
   if (row.assignment_type === 'lesson') return row.lesson?.title ?? 'Lesson';
   if (row.assignment_type === 'practice_test') {

@@ -27,6 +27,7 @@ import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
 import { loadQuestionNotesByQuestion } from '@/lib/practice/load-question-notes';
 import { GroupAssignmentReport } from '@/lib/practice/GroupAssignmentReport';
+import { actTestAssignmentTitle } from '@/lib/practice/act-form-names';
 import { loadTechniqueCatalog, loadQuestionTechniqueIds, canTagTechniques } from '@/lib/practice/load-question-techniques';
 
 // Mirrors the constants in build-session-review.js. The cohort
@@ -54,7 +55,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
       .from('assignments_v2')
       .select(`
         id, assignment_type, title, description, due_date, archived_at, deleted_at,
-        created_at, question_ids, test_type
+        created_at, question_ids, test_type, act_source_test
       `)
       .eq('id', assignmentId)
       .maybeSingle(),
@@ -68,6 +69,9 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
   ]);
 
   if (!assignment || assignment.deleted_at) notFound();
+  const assignmentTitle = assignment.assignment_type === 'practice_test' && assignment.act_source_test
+    ? actTestAssignmentTitle(assignment.act_source_test, assignment.title)
+    : assignment.title ?? 'Assignment';
 
   // Group reports run on the per-question attempt grain. Both
   // 'questions' assignments and 'lesson_pack' assignments
@@ -77,7 +81,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
       && assignment.assignment_type !== 'lesson_pack') {
     return (
       <EmptyReport
-        title={assignment.title ?? 'Assignment'}
+        title={assignmentTitle}
         backHref={`/tutor/assignments/${assignmentId}`}
         body="Group reports are only available for question-pool assignments."
       />
@@ -90,7 +94,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
   if (assignment.test_type === 'act') {
     return (
       <EmptyReport
-        title={assignment.title ?? 'Assignment'}
+        title={assignmentTitle}
         backHref={`/tutor/assignments/${assignmentId}`}
         body="Group reports cover SAT question sets today. Open a student's row on the assignment page for their ACT report."
       />
@@ -103,7 +107,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
   if (questionIds.length === 0) {
     return (
       <EmptyReport
-        title={assignment.title ?? 'Assignment'}
+        title={assignmentTitle}
         backHref={`/tutor/assignments/${assignmentId}`}
         body="This assignment has no question pool, so there's no report to render."
       />
@@ -126,7 +130,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
   if (students.length === 0) {
     return (
       <EmptyReport
-        title={assignment.title ?? 'Assignment'}
+        title={assignmentTitle}
         backHref={`/tutor/assignments/${assignmentId}`}
         body="No students are enrolled on this assignment yet."
       />
@@ -435,7 +439,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
       techniquesCanTag={techniquesCanTag}
       assignment={{
         id: assignment.id,
-        title: assignment.title ?? 'Assignment',
+        title: assignmentTitle,
         description: assignment.description ?? null,
         dueDate: assignment.due_date ?? null,
         createdAt: assignment.created_at,

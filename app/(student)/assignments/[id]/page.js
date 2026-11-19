@@ -41,7 +41,7 @@ import { Button } from '@/lib/ui/Button';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import { startAssignmentActTest, startAssignmentPractice } from './actions';
 import { StartAssignmentButton } from './AssignmentInteractive';
-import { defaultActFormName } from '@/lib/practice/act-form-names';
+import { actTestAssignmentTitle, defaultActFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -380,7 +380,7 @@ function PracticeTestView({ assignment, actResultsHref = null, defaultTimeMultip
         display: 'flex', flexDirection: 'column', gap: '0.75rem',
       }}>
         <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>
-          {assignment.title ?? (assignment.act_source_test ? defaultActFormName(assignment.act_source_test) : 'ACT practice test')}
+          {assignment.act_source_test ? actTestAssignmentTitle(assignment.act_source_test, assignment.title) : assignment.title ?? 'ACT practice test'}
         </h2>
         <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
           ACT practice test · {actAssignmentScopeLabel(assignment.filter_criteria?.sections)} · official time limits.
@@ -471,6 +471,9 @@ function Stat({ label, value }) {
 }
 
 function displayTitle(a) {
+  if (a.assignment_type === 'practice_test' && a.act_source_test) {
+    return actTestAssignmentTitle(a.act_source_test, a.title);
+  }
   if (a.title) return a.title;
   if (a.assignment_type === 'lesson') return a.lesson?.title ?? 'Lesson';
   if (a.assignment_type === 'practice_test') {

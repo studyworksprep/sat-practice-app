@@ -13,6 +13,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
+import { loadActFormNamer } from '@/lib/practice/act-form-names';
 import { formatDate } from '@/lib/formatters';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import { ParseButton } from './ParseButton';
@@ -78,7 +79,7 @@ export default async function ImportJobStatusPage({ params }) {
     redirect('/');
   }
 
-  const { data: job } = await supabase
+  const [{ data: job }, nameOf] = await Promise.all([supabase
     .from('act_import_jobs')
     .select(
       'id, source_test, status, test_pdf_url, math_html_url, science_html_url, answer_key_url, scale_url, ' +
@@ -86,7 +87,9 @@ export default async function ImportJobStatusPage({ params }) {
       'log_json, created_at, updated_at',
     )
     .eq('id', jobId)
-    .maybeSingle();
+    .maybeSingle(),
+    loadActFormNamer(supabase),
+  ]);
   if (!job) notFound();
 
   // How many drafts has the job produced so far? Lets the page
@@ -129,7 +132,7 @@ export default async function ImportJobStatusPage({ params }) {
         </Link>
         <div className={s.titleRow}>
           <div>
-            <h1 className={s.h1}>{job.source_test}</h1>
+            <h1 className={s.h1}>{nameOf(job.source_test)}</h1>
             <p className={s.sub}>
               Created {formatDate(job.created_at)} ·{' '}
               <span className={`${s.statusPill} ${s[`statusPill_${job.status}`] ?? ''}`}>

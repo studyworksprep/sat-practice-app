@@ -6,6 +6,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
+import { loadActFormNamer } from '@/lib/practice/act-form-names';
 import { formatDateTime } from '@/lib/formatters';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import { ActQuestionEditor } from './ActQuestionEditor';
@@ -27,7 +28,7 @@ export default async function AdminActQuestionPage({
     redirect('/');
   }
 
-  const [{ data: question }, { data: options }, { data: attemptStats }] = await Promise.all([
+  const [{ data: question }, { data: options }, { data: attemptStats }, nameOf] = await Promise.all([
     supabase
       .from('act_questions')
       .select(`
@@ -49,6 +50,7 @@ export default async function AdminActQuestionPage({
       .from('act_attempts')
       .select('is_correct', { count: 'exact', head: false })
       .eq('question_id', questionId),
+    loadActFormNamer(supabase),
   ]);
   if (!question) notFound();
 
@@ -58,7 +60,7 @@ export default async function AdminActQuestionPage({
 
   const q = question as ActQuestionRow;
   const heading = [
-    q.source_test ?? 'Unfiled',
+    q.source_test ? nameOf(q.source_test) : 'Unfiled',
     sectionLabel(q.section),
     q.source_ordinal != null ? `Q${q.source_ordinal}` : null,
   ].filter(Boolean).join(' · ');

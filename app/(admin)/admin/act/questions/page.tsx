@@ -19,6 +19,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
+import { loadActFormNamer } from '@/lib/practice/act-form-names';
 import { formatDate } from '@/lib/formatters';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import { DifficultyControls } from './DifficultyControls';
@@ -108,7 +109,7 @@ export default async function AdminActQuestionsPage({
   if (filters.difficulty === 'missing') query = query.is('difficulty', null);
   if (filters.q) query = query.ilike('stem_html', `%${filters.q.replace(/[%_]/g, '')}%`);
 
-  const [{ data: rows, count, error }, forms, { data: missingRows }] = await Promise.all([
+  const [{ data: rows, count, error }, forms, { data: missingRows }, nameOf] = await Promise.all([
     query
       .order('source_test', { ascending: true, nullsFirst: false })
       .order('section', { ascending: true })
@@ -122,6 +123,7 @@ export default async function AdminActQuestionsPage({
       .select('section')
       .is('deleted_at', null)
       .is('difficulty', null),
+    loadActFormNamer(supabase),
   ]);
 
   const missingBySection: Record<string, number> = {};
@@ -154,9 +156,9 @@ export default async function AdminActQuestionsPage({
         </p>
       </header>
 
-      {missingTotal > 0 && <DifficultyControls missing={missingBySection} forms={forms} />}
+      {missingTotal > 0 && <DifficultyControls missing={missingBySection} forms={forms} formNames={Object.fromEntries(forms.map(f => [f, nameOf(f)]))} />}
 
-      <FilterBar filters={filters} forms={forms} />
+      <FilterBar filters={filters} forms={forms} nameOf={nameOf} />
 
       {list.length === 0 ? (
         <div className={s.empty}>No questions match these filters.</div>
@@ -181,7 +183,7 @@ export default async function AdminActQuestionsPage({
                 <tr key={r.id}>
                   <td className={`${s.td} ${s.mono}`}>
                     <Link href={`/admin/act/questions/${r.id}`} className={s.rowLink}>
-                      {r.source_test ?? r.id.slice(0, 8)}
+                      {r.source_test ? nameOf(r.source_test) : r.id.slice(0, 8)}
                     </Link>
                   </td>
                   <td className={s.td}>{sectionLabel(r.section)}</td>
@@ -221,7 +223,7 @@ export default async function AdminActQuestionsPage({
 
 // ──────────────────────────────────────────────────────────────
 
-function FilterBar({ filters, forms }: { filters: Filters; forms: string[] }) {
+function FilterBar({ filters, forms, nameOf }: { filters: Filters; forms: string[]; nameOf: (key: string) => string }) {
   return (
     <form action="/admin/act/questions" method="get" className={s.filterBar}>
       <input
@@ -233,7 +235,7 @@ function FilterBar({ filters, forms }: { filters: Filters; forms: string[] }) {
       />
       <select name="form" defaultValue={filters.form} className={s.select} aria-label="Form">
         <option value="">All forms</option>
-        {forms.map((f) => <option key={f} value={f}>{f}</option>)}
+        {forms.map((f) => <option key={f} value={f}>{nameOf(f)}</option>)}
       </select>
       <select name="section" defaultValue={filters.section} className={s.select} aria-label="Section">
         <option value="">All sections</option>

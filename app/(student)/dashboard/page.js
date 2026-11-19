@@ -28,7 +28,7 @@ import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggrega
 import { loadDashboardRecentAccuracy } from '@/lib/practice/load-dashboard-recent-accuracy';
 import { accuracyKey, dashboardAccuracyMetric } from '@/lib/practice/dashboard-summary';
 import { DashboardView } from './DashboardView';
-import { defaultActFormName } from '@/lib/practice/act-form-names';
+import { actTestAssignmentTitle, defaultActFormName } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -469,6 +469,9 @@ function accuracyTone(pct) {
 }
 
 function assignmentTitle(a) {
+  if (a.assignment_type === 'practice_test' && a.act_source_test) {
+    return actTestAssignmentTitle(a.act_source_test, a.title);
+  }
   return a.title
     ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
     ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
