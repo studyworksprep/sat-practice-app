@@ -129,6 +129,8 @@ export function LessonSlideshow({
   const progressWriteQueueRef = useRef(Promise.resolve());
   const [checkAnswers, setCheckAnswers] = useState(initialCheckAnswers);
   const [isComplete, setIsComplete] = useState(initialIsComplete);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [completionError, setCompletionError] = useState(false);
   const [forceUnlockedBlockIds, setForceUnlockedBlockIds] = useState([]);
   const [debugByBlock, setDebugByBlock] = useState({});
   const [workflowDesmosContext, setWorkflowDesmosContext] = useState({});
@@ -240,6 +242,7 @@ export function LessonSlideshow({
     progressWriteQueueRef.current = progressWriteQueueRef.current
       .catch(() => undefined)
       .then(write);
+    return progressWriteQueueRef.current;
   }, []);
 
   const recordBlocksComplete = useCallback((blockIds) => {
@@ -396,14 +399,20 @@ export function LessonSlideshow({
     }));
   }
 
-  function handleMarkComplete() {
-    if (reviewMode) return;
+  async function handleMarkComplete() {
+    if (reviewMode || isCompleting || isComplete) return;
     if (currentBlock?.block_type === 'lesson_complete') {
       recordBlockComplete(currentBlock.id);
     }
-    setIsComplete(true);
-    if (onMarkComplete) {
-      enqueueProgressWrite(() => onMarkComplete());
+    setIsCompleting(true);
+    setCompletionError(false);
+    try {
+      if (onMarkComplete) await enqueueProgressWrite(onMarkComplete);
+      setIsComplete(true);
+    } catch {
+      setCompletionError(true);
+    } finally {
+      setIsCompleting(false);
     }
   }
 
@@ -600,6 +609,7 @@ export function LessonSlideshow({
               block={currentBlock}
               reviewMode={reviewMode}
               isComplete={isComplete}
+              isCompleting={isCompleting}
               onComplete={handleMarkComplete}
             />
           )}
@@ -700,13 +710,15 @@ export function LessonSlideshow({
             <button
               type="button"
               onClick={handleMarkComplete}
-              disabled={isLessonCompletionLocked(blocks, [...completedBlockIds])}
+              disabled={isCompleting || isLessonCompletionLocked(blocks, [...completedBlockIds])}
               className={s.completeBtn}
             >
-              Mark Lesson Complete
+              {isCompleting ? 'Saving…' : 'Mark Lesson Complete'}
             </button>
           </div>
         )}
+
+      {completionError && <p role="alert">Couldn’t save lesson completion. Try again.</p>}
 
       {!reviewMode && isComplete && (
         <div className={s.completeBanner} role="status">
@@ -862,7 +874,7 @@ function TextBlock({ block, isRead, onRead }) {
 
 // Terminal block: closing content plus a single "Complete Lesson" button
 // that finishes the lesson. No Continue button and no dead-end.
-function LessonCompleteBlock({ block, isComplete, onComplete, reviewMode = false }) {
+function LessonCompleteBlock({ block, isComplete, isCompleting, onComplete, reviewMode = false }) {
   const label = block.content?.button_label || 'Complete Lesson';
   return (
     <div className={s.card}>
@@ -875,10 +887,10 @@ function LessonCompleteBlock({ block, isComplete, onComplete, reviewMode = false
           <button
             type="button"
             onClick={onComplete}
-            disabled={isComplete}
+            disabled={isComplete || isCompleting}
             className={s.completeBtn}
           >
-            {isComplete ? 'Lesson Complete' : label}
+            {isComplete ? 'Lesson Complete' : isCompleting ? 'Saving…' : label}
           </button>
         </div>
       )}

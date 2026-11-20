@@ -18,6 +18,7 @@
 'use server';
 
 import { after } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
@@ -472,7 +473,7 @@ export async function submitPracticeSession(
 
   const { data: session } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, status, filter_criteria, test_type')
+    .select('id, user_id, status, filter_criteria, test_type, plan_task_id')
     .eq('id', sessionId)
     .maybeSingle();
   if (!session) return actionFail('Session not found');
@@ -493,6 +494,10 @@ export async function submitPracticeSession(
       .eq('id', sessionId)
       .eq('status', 'in_progress');
     if (error) return actionFail(`Could not submit session: ${error.message}`);
+    if (session.plan_task_id) {
+      revalidatePath('/dashboard');
+      revalidatePath('/plan');
+    }
   }
 
   // Assignment completion. Submit Set is the explicit "I'm done"
@@ -548,6 +553,46 @@ export async function submitPracticeSession(
   }
 
   return { ok: true, sessionId, actAttemptId, redirectTo };
+}
+
+/** Save the question the student is viewing before leaving a plan session. */
+export async function savePlanPracticePosition(
+  sessionId: string,
+  position: number,
+): Promise<ActionResult> {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Could not save your place. Try again.');
+  }
+  const { user, supabase } = ctx;
+  const now = new Date().toISOString();
+  const { data: session } = await supabase.from('practice_sessions')
+    .select('question_ids')
+    .eq('id', sessionId)
+    .eq('user_id', user.id)
+    .eq('status', 'in_progress')
+    .gt('expires_at', now)
+    .maybeSingle();
+  if (!Array.isArray(session?.question_ids) || !Number.isInteger(position)
+    || position < 0 || position >= session.question_ids.length) {
+    return actionFail('Could not save your place. This session may have ended.');
+  }
+
+  const { data: saved, error } = await supabase.from('practice_sessions')
+    .update({ current_position: position, last_activity_at: now })
+    .eq('id', sessionId)
+    .eq('user_id', user.id)
+    .eq('status', 'in_progress')
+    .gt('expires_at', now)
+    .select('id')
+    .maybeSingle();
+  if (error || !saved) return actionFail('Could not save your place. Try again.');
+  revalidatePath('/dashboard');
+  revalidatePath('/plan');
+  return { ok: true };
 }
 
 /**

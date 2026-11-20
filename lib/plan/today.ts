@@ -40,6 +40,7 @@ export interface TodayTaskRow {
   status: PlanTaskStatus;
   completedAt: string | null;   // ISO timestamp
   source: string;
+  resumeHref?: string;
 }
 
 export interface TodayWeek {
@@ -53,8 +54,10 @@ export interface TodayWeek {
 }
 
 export interface TodayView {
-  /** What to do now: pending tasks due today or overdue, oldest first. */
+  /** The suggested daily tasks, within the daily limit. */
   due: TodayTaskRow[];
+  /** Pending work beyond the daily limit, oldest first. */
+  remainingDue: TodayTaskRow[];
   /** Tasks completed today — rendered as checked-off wins. */
   doneToday: TodayTaskRow[];
   /** The next pending task scheduled after today (a "what's coming" hint,
@@ -97,10 +100,9 @@ export function buildTodayView(
 
   // Today's slots: 3 total, minus what's already done today.
   const slots = Math.max(0, MAX_TODAY_TASKS - doneToday.length);
-  const due = pending
+  const allDue = pending
     .filter((t) => t.scheduledDate == null || t.scheduledDate <= today)
-    .sort(dueOrder)
-    .slice(0, slots);
+    .sort(dueOrder);
 
   const futurePending = pending
     .filter((t) => t.scheduledDate != null && t.scheduledDate > today)
@@ -135,7 +137,8 @@ export function buildTodayView(
   }
 
   return {
-    due,
+    due: allDue.slice(0, slots),
+    remainingDue: allDue.slice(slots),
     doneToday,
     upNext,
     ahead,
@@ -145,12 +148,8 @@ export function buildTodayView(
   };
 }
 
-/** Task types that keep a manual "Mark done" on the Today card: lessons
- *  don't spawn sessions, vocab/flashcards have no completion event, and
- *  review — though it normally spawns an auto-completing SRS session
- *  (§3.1) — still needs the escape hatch for the dry-queue fallback.
- *  Drills and full tests complete themselves via the plan_task
- *  triggers. */
+/** Manual completion remains available for already-known lessons,
+ *  review with an empty queue, vocab, and flashcards. */
 export const MANUAL_COMPLETE_TYPES: readonly PlanTaskType[] = [
   'lesson',
   'review',

@@ -5,6 +5,7 @@
 // with the first `expandWeeks` weeks open and the rest behind native
 // <details> — no client state anywhere on the surface.
 
+import Link from 'next/link';
 import { formatDate } from '@/lib/formatters';
 import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
 import { taskScheduleOrder } from '@/lib/plan/customization';
@@ -19,6 +20,7 @@ export interface OverviewTask {
   taskType: PlanTaskType | string;
   payload: Record<string, unknown>;
   status?: 'pending' | 'completed' | 'skipped';
+  resumeHref?: string;
 }
 
 export interface PlanOverviewProps {
@@ -215,10 +217,14 @@ export function PlanOverview({
                         {minutes != null ? ` · ~${minutes} min` : ''}
                         {completed ? ' · done' : t.status === 'skipped' ? ' · skipped' : ''}
                         {startAction && t.id && (t.status ?? 'pending') === 'pending' && (
-                          <form action={startAction} className={s.startForm}>
-                            <input type="hidden" name="task_id" value={t.id} />
-                            <button type="submit" className={s.startBtn}>Start</button>
-                          </form>
+                          t.resumeHref ? (
+                            <Link href={t.resumeHref} className={s.startBtn}>Resume</Link>
+                          ) : (
+                            <form action={startAction} className={s.startForm}>
+                              <input type="hidden" name="task_id" value={t.id} />
+                              <button type="submit" className={s.startBtn}>Start</button>
+                            </form>
+                          )
                         )}
                       </span>
                     </li>

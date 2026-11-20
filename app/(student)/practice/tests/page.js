@@ -30,6 +30,7 @@ import s from './PracticeTestsPage.module.css';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import { isActFormat, isActFormKind, isUntimedPlan, parsePlan, parseTimeMultiplier } from '@/lib/practice/act-test-plan';
 import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
+import { loadPlanTestTask, parsePlanTaskId } from '@/lib/plan/student-task';
 import { actFormNamer, compareActForms } from '@/lib/practice/act-form-names';
 
 export const dynamic = 'force-dynamic';
@@ -43,7 +44,13 @@ export default async function PracticeTestsPage({ searchParams }) {
 
   const sp = (await searchParams) ?? {};
   // ?test= wins; otherwise the sidebar SAT/ACT switch's stored choice.
-  const testType = await resolveTestType(sp.test);
+  const planTaskId = parsePlanTaskId(sp.planTask);
+  if (sp.planTask != null) {
+    const task = planTaskId && await loadPlanTestTask(supabase, user.id, planTaskId);
+    if (!task) redirect('/plan');
+    if (task.practiceTestId) redirect(`/practice/test/${task.practiceTestId}?planTask=${planTaskId}`);
+  }
+  const testType = planTaskId ? 'sat' : await resolveTestType(sp.test);
 
   // Standing extended-time accommodation (Account page). Pre-selects
   // the SAT launcher's accommodation controls and the ACT hub's
@@ -53,10 +60,10 @@ export default async function PracticeTestsPage({ searchParams }) {
   if (testType === 'act') {
     return <ActPracticeTestsPage user={user} supabase={supabase} timeAccommodation={timeAccommodation} />;
   }
-  return <SatPracticeTestsPage user={user} supabase={supabase} timeAccommodation={timeAccommodation} />;
+  return <SatPracticeTestsPage user={user} supabase={supabase} timeAccommodation={timeAccommodation} planTaskId={planTaskId} />;
 }
 
-async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
+async function SatPracticeTestsPage({ user, supabase, timeAccommodation, planTaskId }) {
 
   const [
     { data: completedRows },
@@ -77,7 +84,7 @@ async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
     supabase
       .from('practice_test_attempts_v2')
       .select(`
-        id, practice_test_id, started_at,
+        id, practice_test_id, started_at, plan_task_id,
         practice_test:practice_tests_v2 (name, code)
       `)
       .eq('user_id', user.id)
@@ -92,6 +99,10 @@ async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
       .is('deleted_at', null)
       .order('code', { ascending: true }),
   ]);
+
+  if (planTaskId && inProgress?.plan_task_id === planTaskId) {
+    redirect(`/practice/test/attempt/${inProgress.id}`);
+  }
 
   const completedAttempts = completedRows ?? [];
   const completedTestIds = new Set(
@@ -121,6 +132,7 @@ async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
         actions={<HelpButton slug="practice-tests" />}
       />
 
+      {planTaskId && <Link href="/plan">← Back to Study Plan</Link>}
       <StatsStrip stats={stats} />
 
       {inProgress && (
@@ -146,14 +158,15 @@ async function SatPracticeTestsPage({ user, supabase, timeAccommodation }) {
           <div>
             <div className={s.h2}>Launch a test</div>
             <div className={s.cardHint}>
-              Pick a test, choose your sections, and jump in. Your extended-time
+              {planTaskId ? 'Pick a full-length test for this Study Plan checkpoint. ' : 'Pick a test, choose your sections, and jump in. '}
+              Your extended-time
               setting from the Account page is pre-selected; change it here for a
               single test. You&apos;ll see the module summary before the
               timer starts.
             </div>
           </div>
         </div>
-        <TestLauncher tests={testOptions} basePath="/practice" defaultMultiplier={timeAccommodation} />
+        <TestLauncher tests={testOptions} basePath="/practice" defaultMultiplier={timeAccommodation} planTaskId={planTaskId} />
       </section>
 
       {recentForChart.length >= 2 && (

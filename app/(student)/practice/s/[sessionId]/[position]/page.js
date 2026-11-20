@@ -27,7 +27,7 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
-import { submitAnswer } from '@/lib/practice/session-actions';
+import { savePlanPracticePosition, submitAnswer } from '@/lib/practice/session-actions';
 import { loadDetourPreference } from '@/lib/practice/detour-preference.mjs';
 import { loadQuestion } from '@/lib/practice/load-question';
 import { loadQuestionAction } from '@/lib/practice/load-question-action';
@@ -117,6 +117,7 @@ export default async function PracticeQuestionPage({ params }) {
       initialMarked={payload.marked}
       practiceTest={payload.practiceTest}
       submitAnswerAction={submitAnswer}
+      saveExitAction={payload.planTaskId ? savePlanPracticePosition : null}
       loadQuestionAction={loadQuestionAction}
       basePath="/practice"
       sessionCompleteHref={

@@ -157,6 +157,7 @@ export interface QuestionPayload {
   position: number;
   total: number;
   sessionMode: SessionMode;
+  planTaskId: string | null;
   question: QuestionVM;
   initialAttempt: InitialAttempt | null;
   desmos: DesmosPayload;
@@ -229,7 +230,7 @@ export async function loadQuestion(
 
   let q = supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, current_position, test_type, mode, expires_at, status, marked_positions, created_at, filter_criteria')
+    .select('id, user_id, question_ids, current_position, test_type, mode, expires_at, status, marked_positions, created_at, filter_criteria, plan_task_id')
     .eq('id', sessionId);
   if (expectedMode) q = q.eq('mode', expectedMode);
   const { data: session, error: sessionErr } = await q.maybeSingle();
@@ -296,7 +297,9 @@ export async function loadQuestion(
   // every cursor write lands. submitAnswer still updates last_activity_at
   // synchronously, so the cursor never drifts more than one click
   // behind a real interaction.
-  if (position !== session.current_position) {
+  // Plan sessions save the actual question on exit. A prefetched
+  // neighbor must not overwrite that resume position.
+  if (!session.plan_task_id && position !== session.current_position) {
     void supabase
       .from('practice_sessions')
       .update({
@@ -637,6 +640,7 @@ export async function loadQuestion(
       position,
       total: questionIds.length,
       sessionMode,
+      planTaskId: session.plan_task_id ?? null,
       question: questionVM,
       initialAttempt,
       desmos,

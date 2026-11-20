@@ -19,6 +19,7 @@ import {
 
 export function LessonViewerInteractive({
   lessonId,
+  planTaskId = null,
   blocks,
   initialCompletedBlockIds,
   initialCheckAnswers,
@@ -47,12 +48,12 @@ export function LessonViewerInteractive({
       onSubmitDesmos={(blockId, correct, options) =>
         submitDesmosResult(lessonId, blockId, correct, options)
       }
-      onMarkComplete={() => markLessonComplete(lessonId)}
+      onMarkComplete={() => markLessonComplete(lessonId, planTaskId)}
       questionLinkHref={(qid) => `/practice/${qid}`}
       debugMode={debug}
       calculatorStoragePrefix={`lesson-desmos:${lessonId}`}
-      completionHref="/learn"
-      completionLabel="Back to Learn"
+      completionHref={planTaskId ? '/plan' : '/learn'}
+      completionLabel={planTaskId ? 'Back to Study Plan' : 'Back to Learn'}
       completionPrimary={practiceCta}
     />
   );

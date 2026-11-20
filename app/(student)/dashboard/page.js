@@ -23,6 +23,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
 import { buildTodayView } from '@/lib/plan/today';
+import { loadPlanTaskResumes } from '@/lib/plan/student-task';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
 import { loadDashboardRecentAccuracy } from '@/lib/practice/load-dashboard-recent-accuracy';
@@ -202,7 +203,7 @@ export default async function StudentDashboardPage({ searchParams }) {
   const accuracyAssignmentIds = completedAssignments.slice(0, RECENT_FINISHED_PER_TYPE)
     .filter(a => ['questions', 'lesson_pack'].includes(a.assignment_type) && Array.isArray(a.question_ids))
     .map(a => a.id);
-  const [recentAccuracy, { data: taskRows }] = await Promise.all([
+  const [recentAccuracy, { data: taskRows }, resumes] = await Promise.all([
     loadDashboardRecentAccuracy(supabase, user.id, accuracySessionIds, accuracyAssignmentIds),
     activePlanRow ? supabase
       .from('plan_tasks')
@@ -210,6 +211,7 @@ export default async function StudentDashboardPage({ searchParams }) {
       .eq('plan_id', activePlanRow.id)
       .order('scheduled_date', { ascending: true, nullsFirst: true })
       .order('created_at', { ascending: true }) : Promise.resolve({ data: [] }),
+    activePlanRow ? loadPlanTaskResumes(supabase, user.id, nowIso) : new Map(),
   ]);
 
   // ---------- Tasks box: the plan's daily view ----------
@@ -225,6 +227,7 @@ export default async function StudentDashboardPage({ searchParams }) {
       status: t.status ?? 'pending',
       completedAt: t.completed_at,
       source: t.source ?? 'generated',
+      resumeHref: resumes.get(t.id),
     }));
     view = buildTodayView(tasks, today, activePlanRow.test_date, activePlanRow.config?.plan_start ?? null);
 
@@ -275,7 +278,7 @@ export default async function StudentDashboardPage({ searchParams }) {
     : null;
 
   // Up next: the oldest due task, else the next one scheduled ahead.
-  const heroTask = view ? (view.due[0] ?? view.upNext ?? null) : null;
+  const heroTask = view ? (view.due[0] ?? view.remainingDue[0] ?? view.upNext ?? null) : null;
 
   // ---------- Assignments: pending (no-plan Tasks box) + completed (Recently finished) ----------
   const openAssignments = allAssignments
@@ -400,7 +403,7 @@ export default async function StudentDashboardPage({ searchParams }) {
       }}
       nextUp={view ? {
         task: heroTask,
-        ahead: heroTask != null && view.due[0] == null,
+        ahead: heroTask?.scheduledDate != null && heroTask.scheduledDate > today,
         today,
         week: view.week,
         planFinished: view.planFinished,

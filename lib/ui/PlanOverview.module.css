@@ -151,6 +151,7 @@
   padding: 3px 10px;
   border-radius: 999px;
   cursor: pointer;
+  text-decoration: none;
 }
 .startBtn:hover { background: var(--color-app-accent); color: #fff; }
 

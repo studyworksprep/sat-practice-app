@@ -119,7 +119,7 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/practice/question-search-actions.ts` | `searchQuestions`, `listConceptTagsForSearch` | requireUser |
 | `lib/practice/question-stats-actions.ts` | `loadQuestionStatsAction` | requireRole[admin|manager|teacher] |
 | `lib/practice/question-technique-actions.ts` | `setQuestionTechniques` | requireRole[admin|manager] |
-| `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `abandonPracticeSession`, `togglePracticeMark`, `getDetourOptions`, `injectEasierQuestion` | requireUser + rateLimit |
+| `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `savePlanPracticePosition`, `abandonPracticeSession`, `togglePracticeMark`, `getDetourOptions`, `injectEasierQuestion` | requireUser + rateLimit |
 | `lib/practice/test-type-actions.ts` | `switchTestType` | requireUser |
 | `lib/tutor/review-actions.ts` | `setAssignmentReviewed` | requireRole[admin|manager|teacher] + assertWriter |
 

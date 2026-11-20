@@ -16,6 +16,7 @@ export function LaunchInteractive({
   summary,
   inProgress,
   initialSections = 'both',
+  planTaskId = null,
   defaultMultiplier = 1,
   startTestAttemptAction,
 }) {
@@ -44,16 +45,16 @@ export function LaunchInteractive({
   // Sections picker. 'both' = full test; 'rw' / 'math' = single-
   // section attempt. Pre-filled from the page's ?sections= param
   // (assignment-driven default) but always overridable.
-  const [sections, setSections] = useState(
+  const [selectedSections, setSections] = useState(
     initialSections === 'rw' || initialSections === 'math' ? initialSections : 'both',
   );
+  const sections = planTaskId ? 'both' : selectedSections;
 
   const activeMultiplier = accommodationOn ? multiplier : 1;
 
-  // If the student already has an in-progress test attempt, make
-  // them confirm before starting — our Server Action will abandon
-  // the old one, and we'd rather surface that explicitly.
-  const needsConfirm = inProgress != null && !confirmed;
+  // Plan starts keep the student's existing test progress. Free practice
+  // keeps its existing option to replace an attempt with confirmation.
+  const blockedByAttempt = inProgress != null && (Boolean(planTaskId) || !confirmed);
 
   // Filter the module summary by the chosen section so the student
   // sees the actual modules they'll sit (and the total time reflects
@@ -73,11 +74,12 @@ export function LaunchInteractive({
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (needsConfirm) return;
+    if (blockedByAttempt) return;
     setSubmitting(true);
     setError(null);
     const fd = new FormData();
     fd.set('testId', test.id);
+    if (planTaskId) fd.set('planTaskId', planTaskId);
     if (sections !== 'both') fd.set('sections', sections);
     // Always explicit: a 1 here overrides the standing accommodation
     // the action would otherwise fall back to.
@@ -134,7 +136,7 @@ export function LaunchInteractive({
 
       <section className={s.card}>
         <div className={s.sectionLabel}>Sections</div>
-        <div className={s.accomOptions}>
+        {planTaskId ? <p>Full test · Reading &amp; Writing and Math</p> : <div className={s.accomOptions}>
           <label className={s.radioRow}>
             <input
               type="radio"
@@ -168,7 +170,7 @@ export function LaunchInteractive({
               <strong>Math only</strong> — Math modules
             </span>
           </label>
-        </div>
+        </div>}
       </section>
 
       <section className={s.card}>
@@ -248,18 +250,16 @@ export function LaunchInteractive({
               : 'You have a different test in progress.'}
           </div>
           <div className={s.warnBody}>
-            Starting now will abandon that attempt — its answers
-            will stay on your record but you won&apos;t be able to
-            resume it. Or{' '}
-            <Link
-              href={`/practice/test/attempt/${inProgress.attemptId}`}
-              className={s.warnLink}
-            >
-              resume the existing attempt
+            {planTaskId ? 'Finish your current test before starting this checkpoint. ' : (
+              <>Starting now will abandon that attempt — its answers
+                will stay on your record but you won&apos;t be able to
+                resume it. Or{' '}</>
+            )}
+            <Link href={`/practice/test/attempt/${inProgress.attemptId}`} className={s.warnLink}>
+              Resume the existing attempt
             </Link>
-            .
           </div>
-          {!confirmed && (
+          {!planTaskId && !confirmed && (
             <label className={s.confirmRow}>
               <input
                 type="checkbox"
@@ -272,13 +272,13 @@ export function LaunchInteractive({
       )}
 
       <form onSubmit={handleSubmit} className={s.actions}>
-        <Link href="/practice/start" className={s.backLink}>
+        <Link href={planTaskId ? '/plan' : '/practice/start'} className={s.backLink}>
           ← Cancel
         </Link>
         <button
           type="submit"
           className={s.beginBtn}
-          disabled={submitting || needsConfirm}
+          disabled={submitting || blockedByAttempt}
         >
           {submitting
             ? 'Starting…'

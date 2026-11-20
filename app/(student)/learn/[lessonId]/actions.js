@@ -14,6 +14,7 @@
 'use server';
 
 import { after } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { requireUser } from '@/lib/api/auth';
@@ -23,6 +24,7 @@ import { applyCheckAttempt } from '@/lib/lesson/runtime-progress.mjs';
 import { selectLessonPracticeQuestionIds } from '@/lib/lesson/practice-drill';
 import { markLessonAssignmentsComplete } from '@/lib/lesson/assignment-completion';
 import { enqueueLessonRetrieval } from '@/lib/review/queue';
+import { parsePlanTaskId } from '@/lib/plan/student-task';
 
 async function loadOrCreateProgress(supabase, lessonId, userId) {
   const { data: existing } = await supabase
@@ -124,13 +126,22 @@ export async function submitDesmosResult(lessonId, blockId, correct, options = {
   return loadProgress(supabase, lessonId, user.id);
 }
 
-export async function markLessonComplete(lessonId) {
+export async function markLessonComplete(lessonId, planTaskId = null) {
   const { user, supabase } = await requireUser();
-  await loadOrCreateProgress(supabase, lessonId, user.id);
   const completedAt = new Date().toISOString();
-  await applyUpdates(supabase, lessonId, user.id, {
-    completed_at: completedAt,
-  });
+  const taskId = parsePlanTaskId(planTaskId);
+  if (taskId) {
+    const { error } = await supabase.rpc('complete_study_plan_lesson', {
+      p_task_id: taskId,
+      p_lesson_id: lessonId,
+    });
+    if (error) throw new Error(error.message);
+    revalidatePath('/dashboard');
+    revalidatePath('/plan');
+  } else {
+    await loadOrCreateProgress(supabase, lessonId, user.id);
+    await applyUpdates(supabase, lessonId, user.id, { completed_at: completedAt });
+  }
   // Any open assignment of this lesson is now complete too. Awaited
   // rather than deferred so the student's assignments page reflects it
   // on their very next navigation; wrapped so a stamping failure can

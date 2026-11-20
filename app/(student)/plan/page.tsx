@@ -15,6 +15,7 @@ import { PageHeader } from '@/lib/ui/PageHeader';
 import { formatDate } from '@/lib/formatters';
 import { buildTodayView } from '@/lib/plan/today';
 import { planStartDate } from '@/lib/plan/customization';
+import { loadPlanTaskResumes } from '@/lib/plan/student-task';
 import { currentPlanRationale } from '@/lib/plan/rationale';
 import type { TodayTaskRow } from '@/lib/plan/today';
 import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
@@ -85,7 +86,8 @@ export default async function PlanPage() {
   }
 
   const testType = (plan.test_type ?? 'sat') as 'sat' | 'act';
-  const [{ data: taskRows }, { data: coverageRows }] = await Promise.all([
+  const now = new Date().toISOString();
+  const [{ data: taskRows }, { data: coverageRows }, resumes] = await Promise.all([
     supabase
       .from('plan_tasks')
       .select('id, week_index, scheduled_date, task_type, payload, status, completed_at, source')
@@ -93,6 +95,7 @@ export default async function PlanPage() {
       .order('scheduled_date', { ascending: true, nullsFirst: true })
       .order('created_at', { ascending: true }),
     supabase.rpc('get_student_coverage', { p_student: user.id, p_test_type: testType }),
+    loadPlanTaskResumes(supabase, user.id, now),
   ]);
 
   const tasks: TodayTaskRow[] = (taskRows ?? []).map((t) => ({
@@ -104,16 +107,19 @@ export default async function PlanPage() {
     status: (t.status ?? 'pending') as TodayTaskRow['status'],
     completedAt: t.completed_at,
     source: t.source ?? 'generated',
+    resumeHref: t.payload && typeof t.payload === 'object' && 'assignment_id' in t.payload
+      ? undefined : resumes.get(t.id),
   }));
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = now.slice(0, 10);
   const view = buildTodayView(tasks, today, plan.test_date,
     planStartDate(plan.config, plan.created_at, tasks.map((t) => t.scheduledDate)));
   const phases = normalizePhases(plan.phases);
   const currentWeek = view.week?.index ?? 0;
   const currentPhase = phases.find((p) => currentWeek >= p.startWeek && currentWeek <= p.endWeek) ?? null;
   const doneCount = tasks.filter((t) => t.status === 'completed').length;
-  const upcoming = [...view.due, ...view.ahead].slice(0, 3);
+  const dueCount = view.due.length + view.remainingDue.length;
+  const upcoming = [...view.due, ...view.remainingDue, ...view.ahead].slice(0, 3);
 
   // Progress by section from the coverage rows (design doc §6.2 item 3).
   const sections: Record<'math' | 'rw', SectionProgress> = {
@@ -192,14 +198,14 @@ export default async function PlanPage() {
 
       {/* ---------- Coming up (startable now) ---------- */}
       <section className={s.card}>
-        <h2 className={s.h2}>{view.due.length > 0 ? 'Up next' : 'Want to get ahead?'}</h2>
+        <h2 className={s.h2}>{view.planFinished ? 'Plan complete' : dueCount > 0 ? 'Up next' : 'Want to get ahead?'}</h2>
         {upcoming.length === 0 ? (
           <p className={s.body}>
             {view.planFinished ? 'Every task on the plan is done.' : 'Nothing left to schedule.'}
           </p>
         ) : (
           <>
-            {view.due.length === 0 && (
+            {dueCount === 0 && (
               <p className={s.body}>Today is clear — start one of these to get ahead.</p>
             )}
             <ul className={s.upList}>
@@ -214,10 +220,14 @@ export default async function PlanPage() {
                         {why ? ` · ${why}` : ''}
                       </div>
                     </div>
-                    <form action={startPlanTask}>
-                      <input type="hidden" name="task_id" value={t.id} />
-                      <button type="submit" className={s.startBtn}>Start</button>
-                    </form>
+                    {t.resumeHref ? (
+                      <Link href={t.resumeHref} className={s.startBtn}>Resume</Link>
+                    ) : (
+                      <form action={startPlanTask}>
+                        <input type="hidden" name="task_id" value={t.id} />
+                        <button type="submit" className={s.startBtn}>Start</button>
+                      </form>
+                    )}
                   </li>
                 );
               })}
