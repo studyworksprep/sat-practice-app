@@ -9,9 +9,11 @@
 // which raced with the first markBlockComplete on fast clickers.
 
 import { notFound, redirect } from 'next/navigation';
+import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { estimateLessonMinutes, formatLessonDuration } from '@/lib/lesson/duration.mjs';
 import { resolveLessonProgress } from '@/lib/lesson/progress-report.mjs';
+import { parsePlanTaskId } from '@/lib/plan/student-task';
 import { LessonViewerInteractive } from './LessonViewerInteractive';
 import s from '../Learn.module.css';
 
@@ -117,7 +119,7 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
   return (
     <main className={s.viewerPage}>
       <nav className={s.breadcrumb}>
-        <a href="/learn">← Back to Learn</a>
+        <Link href="/learn">← Back to Learn</Link>
       </nav>
 
       <header className={s.viewerHeader}>
@@ -151,6 +153,7 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
 
       <LessonViewerInteractive
         lessonId={lessonId}
+        planTaskId={parsePlanTaskId(sp.planTask)}
         blocks={blocks}
         initialCompletedBlockIds={resolvedProgress.completedBlockIds}
         initialCheckAnswers={resolvedProgress.checkAnswers}

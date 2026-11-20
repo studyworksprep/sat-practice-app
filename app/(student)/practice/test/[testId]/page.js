@@ -12,6 +12,7 @@ import { redirect, notFound } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { startTestAttempt } from '../actions';
 import { LaunchInteractive } from './LaunchInteractive';
+import { loadPlanTestTask, parsePlanTaskId } from '@/lib/plan/student-task';
 import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
 
 export const dynamic = 'force-dynamic';
@@ -35,6 +36,12 @@ export default async function PracticeTestLaunchPage({ params, searchParams }) {
   // be taking a test here.
   if (profile.role === 'admin') redirect('/admin');
   if (profile.role === 'practice') redirect('/subscribe');
+
+  const planTaskId = parsePlanTaskId(resolvedSearch?.planTask);
+  if (resolvedSearch?.planTask != null) {
+    const task = planTaskId && await loadPlanTestTask(supabase, user.id, planTaskId);
+    if (!task || (task.practiceTestId && task.practiceTestId !== testId)) redirect('/plan');
+  }
 
   // Standing extended-time accommodation pre-selects the launch
   // page's controls (a ?ext/?mult hint from the compact launcher wins).
@@ -75,10 +82,16 @@ export default async function PracticeTestLaunchPage({ params, searchParams }) {
   // can warn the student that starting a new one abandons the old.
   const { data: inProgress } = await supabase
     .from('practice_test_attempts_v2')
-    .select('id, practice_test_id')
+    .select('id, practice_test_id, plan_task_id')
     .eq('user_id', user.id)
     .eq('status', 'in_progress')
+    .order('started_at', { ascending: false })
+    .limit(1)
     .maybeSingle();
+
+  if (planTaskId && inProgress?.plan_task_id === planTaskId) {
+    redirect(`/practice/test/attempt/${inProgress.id}`);
+  }
 
   return (
     <LaunchInteractive
@@ -93,6 +106,7 @@ export default async function PracticeTestLaunchPage({ params, searchParams }) {
         ? { attemptId: inProgress.id, sameTest: inProgress.practice_test_id === test.id }
         : null}
       initialSections={initialSections}
+      planTaskId={planTaskId}
       defaultMultiplier={timeAccommodation}
       startTestAttemptAction={startTestAttempt}
     />

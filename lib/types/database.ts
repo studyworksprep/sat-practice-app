@@ -5240,6 +5240,29 @@ export type Database = {
         }
         Returns: number
       }
+      complete_study_plan_lesson: {
+        Args: { p_lesson_id: string; p_task_id: string }
+        Returns: undefined
+      }
+      start_study_plan_practice: {
+        Args: {
+          p_filter_criteria: Json
+          p_question_ids: string[]
+          p_task_id: string
+        }
+        Returns: {
+          current_position: number
+          session_id: string
+        }[]
+      }
+      start_study_plan_test: {
+        Args: {
+          p_task_id: string
+          p_test_id: string
+          p_time_multiplier: number
+        }
+        Returns: string
+      }
       create_lesson_revision: {
         Args: { p_base_lesson_id?: string; p_title?: string }
         Returns: string

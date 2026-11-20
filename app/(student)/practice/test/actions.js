@@ -38,6 +38,7 @@
 
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
@@ -50,6 +51,7 @@ import {
 import { recomputeAttemptScores } from '@/lib/practice-test/recompute-scores';
 import { claimItemAttempt } from '@/lib/practice-test/claim-item-attempt';
 import { loadTimeAccommodation } from '@/lib/practice/time-accommodation';
+import { parsePlanTaskId } from '@/lib/plan/student-task';
 
 const GRACE_SECONDS = 15;
 
@@ -68,6 +70,8 @@ export async function startTestAttempt(_prev, formData) {
 
   const testId = String(formData.get('testId') ?? '');
   if (!testId) return actionFail('testId required');
+  const planTaskId = parsePlanTaskId(formData.get('planTaskId'));
+  if (formData.has('planTaskId') && !planTaskId) return actionFail('This test checkpoint is unavailable.');
 
   // Sections restriction. URL/legacy shape uses lowercase
   // 'rw' | 'math' | 'both'; we normalize to the uppercase subject_code
@@ -97,6 +101,19 @@ export async function startTestAttempt(_prev, formData) {
   // any legitimate pattern.
   const rl = await rateLimit(`test-start:${user.id}`, { limit: 10, windowMs: 60 * 60_000 });
   if (!rl.ok) return actionFail('Too many test starts. Wait a few minutes.');
+
+  if (planTaskId) {
+    if (sectionsOnly) return actionFail('This checkpoint requires both SAT sections.');
+    const { data: attemptId, error } = await supabase.rpc('start_study_plan_test', {
+      p_task_id: planTaskId,
+      p_test_id: testId,
+      p_time_multiplier: timeMultiplier,
+    });
+    if (error || !attemptId) return actionFail(error?.message ?? 'Could not start your test.');
+    revalidatePath('/dashboard');
+    revalidatePath('/plan');
+    return { ok: true, attemptId };
+  }
 
   // Validate the test exists and is published.
   const { data: test } = await supabase
@@ -720,7 +737,7 @@ async function closeTestAttempt(supabase, attemptId) {
     .update({ finished_at: new Date().toISOString() })
     .eq('id', attemptId)
     .is('finished_at', null)
-    .select('user_id, practice_test_id');
+    .select('user_id, practice_test_id, plan_task_id');
 
   await recomputeAttemptScores(supabase, attemptId);
 
@@ -734,6 +751,10 @@ async function closeTestAttempt(supabase, attemptId) {
   // double calls (e.g. deriveFinishReturn's idempotent re-route).
   const closed = updatedRows?.[0];
   if (closed) {
+    if (closed.plan_task_id) {
+      revalidatePath('/dashboard');
+      revalidatePath('/plan');
+    }
     await markPracticeTestAssignmentsCompletedIfDone(
       supabase,
       closed.user_id,

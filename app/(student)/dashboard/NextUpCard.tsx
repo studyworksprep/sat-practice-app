@@ -141,12 +141,16 @@ function TaskHero({ task, ahead, today }: { task: TodayTaskRow; ahead: boolean; 
       {why && <p className={s.nextUpBody}>{why}</p>}
       {minutes != null && <p className={s.nextUpMeta}>About {minutes} min</p>}
       <div className={s.nextUpActions}>
-        <form action={startPlanTask}>
-          <input type="hidden" name="task_id" value={task.id} />
-          <button type="submit" className={s.nextUpPrimary}>
-            {START_LABEL[task.taskType] ?? 'Start'}
-          </button>
-        </form>
+        {task.resumeHref && !assigned ? (
+          <Link href={task.resumeHref} className={s.nextUpPrimary}>Resume {task.taskType === 'full_test' ? 'test' : 'practice'}</Link>
+        ) : (
+          <form action={startPlanTask}>
+            <input type="hidden" name="task_id" value={task.id} />
+            <button type="submit" className={s.nextUpPrimary}>
+              {START_LABEL[task.taskType] ?? 'Start'}
+            </button>
+          </form>
+        )}
         {manual && (
           <form action={markTaskDone}>
             <input type="hidden" name="task_id" value={task.id} />

@@ -146,6 +146,7 @@ function PlanTasks({
 }) {
   const dueIds = new Set(view.due.map((t) => t.id));
   const rest = view.due.filter((t) => t.id !== heroTaskId);
+  const remainingDue = view.remainingDue.filter((t) => t.id !== heroTaskId);
   const ahead = view.ahead.filter((t) => t.id !== heroTaskId && !dueIds.has(t.id));
 
   return (
@@ -170,16 +171,25 @@ function PlanTasks({
         </ul>
       )}
 
-      {rest.length + ahead.length > 0 ? (
+      {rest.length > 0 && (
         <ul className={s.taskList}>
-          {rest.map((t) => (
-            <TaskRow key={t.id} task={t} today={today} />
-          ))}
-          {ahead.map((t) => (
-            <TaskRow key={t.id} task={t} today={today} upNext />
-          ))}
+          {rest.map((t) => <TaskRow key={t.id} task={t} today={today} />)}
         </ul>
-      ) : (
+      )}
+      {remainingDue.length > 0 && (
+        <details className={s.remainingDue} open={view.due.length === 0}>
+          <summary>{remainingDue.length} {remainingDue.length === 1 ? 'task' : 'tasks'} still due</summary>
+          <ul className={s.taskList}>
+            {remainingDue.map((t) => <TaskRow key={t.id} task={t} today={today} />)}
+          </ul>
+        </details>
+      )}
+      {ahead.length > 0 && (
+        <ul className={s.taskList}>
+          {ahead.map((t) => <TaskRow key={t.id} task={t} today={today} upNext />)}
+        </ul>
+      )}
+      {rest.length + remainingDue.length + ahead.length === 0 && (
         <p className={s.caughtUpSub}>
           {view.planFinished
             ? 'Every task in your plan is done.'
@@ -231,10 +241,14 @@ function TaskRow({
         )}
       </div>
       <div className={s.taskActions}>
-        <form action={startPlanTask}>
-          <input type="hidden" name="task_id" value={task.id} />
-          <button type="submit" className={s.startBtn}>Start</button>
-        </form>
+        {task.resumeHref && !assigned ? (
+          <Link href={task.resumeHref} className={s.startBtn}>Resume</Link>
+        ) : (
+          <form action={startPlanTask}>
+            <input type="hidden" name="task_id" value={task.id} />
+            <button type="submit" className={s.startBtn}>Start</button>
+          </form>
+        )}
         {manual && (
           <form action={markTaskDone}>
             <input type="hidden" name="task_id" value={task.id} />

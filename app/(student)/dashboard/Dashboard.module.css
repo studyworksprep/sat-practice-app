@@ -369,6 +369,16 @@
   color: var(--fg2);
 }
 
+.remainingDue > summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-navy-900);
+}
+
+.remainingDue[open] > summary {
+  margin-bottom: var(--s3);
+}
+
 .caughtUpSub {
   margin: 0;
   font-size: 13px;
