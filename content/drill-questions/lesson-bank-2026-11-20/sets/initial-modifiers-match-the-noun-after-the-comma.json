@@ -1,0 +1,566 @@
+{
+  "id": "7040ee67-9287-4aaa-9ef0-89de44f5a597",
+  "title": "Initial Modifiers: Match the Noun After the Comma",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Identify an opening modifier, predict the noun phrase it describes or compares, and choose the answer that places that noun phrase immediately after the comma.",
+  "cards": 36,
+  "spec": "docs/lesson-template-specs/initial-modifiers-match-the-noun-after-the-comma.json",
+  "source_spec_sha256": "866fbfc549ca5b44cdfbf52907dacf0fea580c97123e43bc6240848eb8495509",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Place the doer of an opening action after the comma": [
+      8,
+      11,
+      12
+    ],
+    "Place the noun in the stated condition after the comma": [
+      14,
+      15
+    ],
+    "Match a noun to an opening description without a verb": [
+      17,
+      18
+    ],
+    "Compare the same property rather than the things that have it": [
+      20,
+      21,
+      23
+    ],
+    "Use the first noun position even when the rest of each choice is plausible": [
+      11,
+      25,
+      27
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Mechanic Asha inspected a bicycle immediately after its rider reported a clicking noise. Checking the wheel for cracks, ______</p>",
+      "explanation_html": "<p>Asha checks the wheel. Her name must come immediately after the opening action.</p>",
+      "variation": "Place the doer of an opening action after the comma",
+      "source_cards": [
+        8,
+        11,
+        12
+      ],
+      "difficulty": 1,
+      "id": "L21-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_1",
+        "repeatable_process",
+        "worked_action_example"
+      ],
+      "choices": [
+        "a split near the hub drew Asha’s attention.",
+        "the clicking noise prompted Asha to inspect the bike.",
+        "Asha noticed a split near the hub.",
+        "the rider’s bicycle was found to have a split."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>After collecting the seed sample, the botanists sealed it inside an airtight container. Sealed inside an airtight container, ______</p>",
+      "explanation_html": "<p>The seed sample is sealed inside the container. It belongs directly after the comma.</p>",
+      "variation": "Place the noun in the stated condition after the comma",
+      "source_cards": [
+        14,
+        15
+      ],
+      "difficulty": 1,
+      "id": "L21-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_2",
+        "past_and_state_modifiers"
+      ],
+      "choices": [
+        "the botanists took the seed sample to a second lab.",
+        "the seed sample remained dry during transport.",
+        "the container kept the sample dry.",
+        "transport between the two labs took a day."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>A yellow buoy floats near the inlet. Bright against the gray water, ______</p>",
+      "explanation_html": "<p>The buoy is the bright object. Put it after the comma.</p>",
+      "variation": "Match a noun to an opening description without a verb",
+      "source_cards": [
+        17,
+        18
+      ],
+      "difficulty": 1,
+      "id": "L21-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_3",
+        "modifier_without_verb"
+      ],
+      "choices": [
+        "the buoy marks the edge of the channel.",
+        "the inlet has a buoy marking the channel.",
+        "the channel is marked by a yellow buoy.",
+        "the harbor crew installed a yellow buoy."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>A lab compared the water absorption of a cloth and a foam. The cloth absorbed twice as much water as the foam. Unlike that of the foam, ______</p>",
+      "explanation_html": "<p>“That” refers to water absorption. The comparison needs the cloth’s water absorption immediately after the comma.</p>",
+      "variation": "Compare the same property rather than the things that have it",
+      "source_cards": [
+        20,
+        21,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L21-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_4",
+        "property_comparison",
+        "property_prediction_tip"
+      ],
+      "choices": [
+        "the cloth’s water absorption was relatively high.",
+        "the cloth took up a large amount of water.",
+        "the lab measured a large amount of water absorbed by the cloth.",
+        "the water was taken up more readily by the cloth."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Artist Leo made the decision to finish the mural that day. His assistants brought paint but did not work on the wall. Determined to finish the mural before sunset, ______</p>",
+      "explanation_html": "<p>Leo is determined. A passive version that names the mural first makes the modifier attach to the wrong noun.</p>",
+      "variation": "Use the first noun position even when the rest of each choice is plausible",
+      "source_cards": [
+        11,
+        25,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L21-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "repeatable_process",
+        "one_position_tip",
+        "guided_mixed_example"
+      ],
+      "choices": [
+        "the mural was painted without a break by Leo.",
+        "sunset approached as Leo painted.",
+        "his assistants brought Leo an extra can of paint.",
+        "Leo painted without taking a break."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Javier received a letter from his great-aunt. He used a desk lamp to read it. Reading the faded paper under a lamp, ______</p>",
+      "explanation_html": "<p>Javier reads the letter. The opening phrase modifies him, not the objects in the scene.</p>",
+      "variation": "Place the doer of an opening action after the comma",
+      "source_cards": [
+        8,
+        11,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L21-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_1",
+        "repeatable_process",
+        "worked_action_example"
+      ],
+      "choices": [
+        "a list of names caught Javier’s attention.",
+        "the faded letter contained a list of names.",
+        "Javier found a list of names.",
+        "a desk lamp helped Javier find a name."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Hikers Maya and Leif completed a steep ascent. The park ranger met them at the summit after taking a service road. Exhausted by the climb, ______</p>",
+      "explanation_html": "<p>The hikers who completed the climb are the ones described as exhausted.</p>",
+      "variation": "Place the noun in the stated condition after the comma",
+      "source_cards": [
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L21-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_2",
+        "past_and_state_modifiers"
+      ],
+      "choices": [
+        "the park ranger met the pair at the summit.",
+        "Maya and Leif took a long rest.",
+        "a long rest appealed to the two hikers.",
+        "the steep ascent ended near a shelter."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>A wren, a dove, and two finches live in the aviary. The wren is smaller than all the others. The smallest bird in the aviary, ______</p>",
+      "explanation_html": "<p>The description names the wren, so the sentence must begin its main clause with the wren.</p>",
+      "variation": "Match a noun to an opening description without a verb",
+      "source_cards": [
+        17,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L21-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_3",
+        "modifier_without_verb"
+      ],
+      "choices": [
+        "the aviary houses a wren.",
+        "the wren often perches beside the door.",
+        "the door has a perch used by the wren.",
+        "a keeper sometimes sees the wren at the door."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The experiment compared the thermal expansion of an aluminum rod and a brass rod. The aluminum rod lengthened more. Compared with that of the brass rod, ______</p>",
+      "explanation_html": "<p>Compare thermal expansion to thermal expansion. The correct choice names the aluminum rod’s property first.</p>",
+      "variation": "Compare the same property rather than the things that have it",
+      "source_cards": [
+        20,
+        21,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L21-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_4",
+        "property_comparison",
+        "property_prediction_tip"
+      ],
+      "choices": [
+        "the thermal expansion of the aluminum rod was greater.",
+        "the aluminum rod lengthened more.",
+        "the experiment found that aluminum lengthened more.",
+        "a greater change in length was recorded for aluminum."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Dana searched the room but could not see into the far corners. Unable to locate the key in the dark, ______</p>",
+      "explanation_html": "<p>Dana is unable to locate the key. The flashlight, corners, and key are objects rather than the searcher.</p>",
+      "variation": "Use the first noun position even when the rest of each choice is plausible",
+      "source_cards": [
+        11,
+        25,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L21-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "repeatable_process",
+        "one_position_tip",
+        "guided_mixed_example"
+      ],
+      "choices": [
+        "a flashlight helped Dana see the corners.",
+        "the corners were lit by Dana’s flashlight.",
+        "the key became visible when Dana used a light.",
+        "Dana turned on a flashlight."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Tuner Nia installed and played each string while the violin’s owner listened. Testing the sound of each replacement string, ______</p>",
+      "explanation_html": "<p>Nia is the person doing the testing, so only the sentence beginning with her name attaches the action to its doer.</p>",
+      "variation": "Place the doer of an opening action after the comma",
+      "source_cards": [
+        8,
+        11,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L21-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_1",
+        "repeatable_process",
+        "worked_action_example"
+      ],
+      "choices": [
+        "one string sounded lower to Nia.",
+        "the violin’s owner heard an unexpectedly deep note.",
+        "Nia discovered that one string was a little too thick.",
+        "the sound of the thickest string surprised the owner."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The builder mounted two braces below the floor of the loft. Mounted below the loft floor, ______</p>",
+      "explanation_html": "<p>The braces are mounted below the floor. Only the correct construction puts them right after the modifier.</p>",
+      "variation": "Place the noun in the stated condition after the comma",
+      "source_cards": [
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L21-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_2",
+        "past_and_state_modifiers"
+      ],
+      "choices": [
+        "the wooden boards rested on braces.",
+        "the builder reinforced the wooden boards.",
+        "the braces supported its wooden boards.",
+        "the loft floor felt more stable."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>A dark reef is submerged at high tide, and swimmers can almost never see it from the shore. Barely visible from shore, ______</p>",
+      "explanation_html": "<p>The reef is barely visible. Only the correct answer puts the reef right after the modifier.</p>",
+      "variation": "Match a noun to an opening description without a verb",
+      "source_cards": [
+        17,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L21-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_3",
+        "modifier_without_verb"
+      ],
+      "choices": [
+        "the mouth of the bay contains a reef.",
+        "the dark reef extends across the mouth of the bay.",
+        "swimmers rarely see the dark reef.",
+        "the shoreline curves around a submerged reef."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The needle lengths of a spruce and a fir were measured. The fir’s needles were longer on average. Unlike those of the spruce, ______</p>",
+      "explanation_html": "<p>“Those” refers to needle lengths. The first noun phrase must name the other group of needle lengths.</p>",
+      "variation": "Compare the same property rather than the things that have it",
+      "source_cards": [
+        20,
+        21,
+        23
+      ],
+      "difficulty": 3,
+      "id": "L21-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_21_4",
+        "property_comparison",
+        "property_prediction_tip"
+      ],
+      "choices": [
+        "the needle lengths of the fir were greater on average.",
+        "the fir was found to have longer needles.",
+        "the two species differed in their needle lengths.",
+        "the researchers found that the fir had longer needles."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "D": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Acoustics researcher Sol compared the tones personally while an assistant recorded the readings. Comparing the tones at several volumes, ______</p>",
+      "explanation_html": "<p>Sol made the comparison. Only the active phrasing makes Sol the immediate noun following the opening modifier.</p>",
+      "variation": "Use the first noun position even when the rest of each choice is plausible",
+      "source_cards": [
+        11,
+        25,
+        27
+      ],
+      "difficulty": 3,
+      "id": "L21-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "repeatable_process",
+        "one_position_tip",
+        "guided_mixed_example"
+      ],
+      "choices": [
+        "a faint ringing sound was identified by Sol.",
+        "the readings were recorded by Sol’s assistant.",
+        "a louder tone made a faint ring audible to Sol.",
+        "Sol identified a faint ringing sound at the higher settings."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "B": "The noun immediately after the comma does not match what the opening phrase describes.",
+        "C": "The noun immediately after the comma does not match what the opening phrase describes."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.00096+00",
+  "lesson_number": 21,
+  "difficulty_counts": {
+    "1": 3,
+    "2": 10,
+    "3": 2
+  }
+}

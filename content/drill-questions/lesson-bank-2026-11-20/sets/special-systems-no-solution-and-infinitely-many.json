@@ -1,0 +1,496 @@
+{
+  "id": "95a74105-c958-461d-954e-477437c5de5f",
+  "title": "Special Systems: No Solution and Infinitely Many Solutions",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Recognize parallel and overlapping lines, then use sliders, slope-intercept form, and proportions to find constants that create no solution or infinitely many solutions.",
+  "cards": 38,
+  "spec": "docs/lesson-template-specs/special-systems-no-solution-and-infinitely-many.json",
+  "source_spec_sha256": "ed05834633bf7e027e2469d6f434c847977bf086c60bef0c5d010a96da572339",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Equal slopes and different intercepts for a parameterized line": [
+      3,
+      5,
+      12,
+      15
+    ],
+    "Make one equation a complete multiple of the other": [
+      9,
+      12,
+      25,
+      26
+    ],
+    "Determine two constants for overlapping lines": [
+      19,
+      20,
+      23
+    ],
+    "Read a constant ratio without solving each constant first": [
+      25,
+      29,
+      30
+    ],
+    "Make coefficients proportional while retaining different constants": [
+      19,
+      21,
+      27,
+      28
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(y=4x+3\\) and \\(y=mx+5\\) has no solution. What is m?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "4"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The intercepts differ, so the lines must be parallel. Equal slopes require m = 4.</p>",
+      "variation": "Equal slopes and different intercepts for a parameterized line",
+      "source_cards": [
+        3,
+        5,
+        12,
+        15
+      ],
+      "difficulty": 1,
+      "id": "L42-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_slope_intercept",
+        "no_solution_explanation",
+        "method_outline",
+        "slider_no_solution_explanation"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(2x+y=11\\) and \\(6x+3y=c\\) has infinitely many solutions. What is c?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "33"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The second left side is exactly 3 times the first. Multiply the right side by the same factor to make the lines coincide, giving c = 33.</p>",
+      "variation": "Make one equation a complete multiple of the other",
+      "source_cards": [
+        9,
+        12,
+        25,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L42-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "infinite_solution_explanation",
+        "method_outline",
+        "proportions_transition",
+        "proportion_scale_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(4x+y=9\\) and \\(ux+4y=v\\) has infinitely many solutions. What is \\(u+v\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "52"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Multiply the entire first equation by 4. The second equation then has u = 16 and v = 36, so u + v = 52.</p>",
+      "variation": "Determine two constants for overlapping lines",
+      "source_cards": [
+        19,
+        20,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L42-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_two_constants",
+        "mx_plus_b_setup",
+        "multiple_constants_infinite_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(3x+by=c\\) and \\(6x+7y=10\\) has infinitely many solutions. What is \\(c/b\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "10/7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The equations describe the same line. The ratio of right side to the y coefficient is preserved, so c/b = \\(\\frac{10}{7}\\).</p>",
+      "variation": "Read a constant ratio without solving each constant first",
+      "source_cards": [
+        25,
+        29,
+        30
+      ],
+      "difficulty": 2,
+      "id": "L42-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "proportions_transition",
+        "format_42_2",
+        "within_equation_ratio"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(5x+y=11\\) and \\(px+4y=48\\) has no solution. What is p?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "20"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Match the slopes by making the second left side 4 times the first. That requires p = 20. The constant on the right is 48 rather than 44, so the lines are distinct.</p>",
+      "variation": "Make coefficients proportional while retaining different constants",
+      "source_cards": [
+        19,
+        21,
+        27,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L42-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_two_constants",
+        "multiple_constants_no_solution_model",
+        "format_42_1",
+        "proportion_no_solution_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(y=-3x+6\\) and \\(y=mx+8\\) has no solution. What is m?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-3"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The intercepts differ, so the lines must be parallel. Equal slopes require m = -3.</p>",
+      "variation": "Equal slopes and different intercepts for a parameterized line",
+      "source_cards": [
+        3,
+        5,
+        12,
+        15
+      ],
+      "difficulty": 1,
+      "id": "L42-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_slope_intercept",
+        "no_solution_explanation",
+        "method_outline",
+        "slider_no_solution_explanation"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(7x+y=15\\) and \\(28x+4y=c\\) has infinitely many solutions. What is c?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "60"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The second left side is exactly 4 times the first. Multiply the right side by the same factor to make the lines coincide, giving c = 60.</p>",
+      "variation": "Make one equation a complete multiple of the other",
+      "source_cards": [
+        9,
+        12,
+        25,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L42-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "infinite_solution_explanation",
+        "method_outline",
+        "proportions_transition",
+        "proportion_scale_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(5x+y=12\\) and \\(ux+3y=v\\) has infinitely many solutions. What is \\(u+v\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "51"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Multiply the entire first equation by 3. The second equation then has u = 15 and v = 36, so u + v = 51.</p>",
+      "variation": "Determine two constants for overlapping lines",
+      "source_cards": [
+        19,
+        20,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L42-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_two_constants",
+        "mx_plus_b_setup",
+        "multiple_constants_infinite_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(7x+by=c\\) and \\(21x+22y=27\\) has infinitely many solutions. What is \\(c/b\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "27/22"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The equations describe the same line. The ratio of right side to the y coefficient is preserved, so c/b = \\(\\frac{27}{22}\\).</p>",
+      "variation": "Read a constant ratio without solving each constant first",
+      "source_cards": [
+        25,
+        29,
+        30
+      ],
+      "difficulty": 3,
+      "id": "L42-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "proportions_transition",
+        "format_42_2",
+        "within_equation_ratio"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(8x+y=25\\) and \\(px+5y=130\\) has no solution. What is p?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "40"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Match the slopes by making the second left side 5 times the first. That requires p = 40. The constant on the right is 130 rather than 125, so the lines are distinct.</p>",
+      "variation": "Make coefficients proportional while retaining different constants",
+      "source_cards": [
+        19,
+        21,
+        27,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L42-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_two_constants",
+        "multiple_constants_no_solution_model",
+        "format_42_1",
+        "proportion_no_solution_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(y=7x-4\\) and \\(y=mx-2\\) has no solution. What is m?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The intercepts differ, so the lines must be parallel. Equal slopes require m = 7.</p>",
+      "variation": "Equal slopes and different intercepts for a parameterized line",
+      "source_cards": [
+        3,
+        5,
+        12,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L42-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_slope_intercept",
+        "no_solution_explanation",
+        "method_outline",
+        "slider_no_solution_explanation"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(5x+y=-14\\) and \\(10x+2y=c\\) has infinitely many solutions. What is c?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-28"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The second left side is exactly 2 times the first. Multiply the right side by the same factor to make the lines coincide, giving c = -28.</p>",
+      "variation": "Make one equation a complete multiple of the other",
+      "source_cards": [
+        9,
+        12,
+        25,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L42-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "infinite_solution_explanation",
+        "method_outline",
+        "proportions_transition",
+        "proportion_scale_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(7x+y=-11\\) and \\(ux+5y=v\\) has infinitely many solutions. What is \\(u+v\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-20"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Multiply the entire first equation by 5. The second equation then has u = 35 and v = -55, so u + v = -20.</p>",
+      "variation": "Determine two constants for overlapping lines",
+      "source_cards": [
+        19,
+        20,
+        23
+      ],
+      "difficulty": 3,
+      "id": "L42-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_two_constants",
+        "mx_plus_b_setup",
+        "multiple_constants_infinite_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(4x+by=c\\) and \\(24x+25y=36\\) has infinitely many solutions. What is \\(c/b\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "36/25"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The equations describe the same line. The ratio of right side to the y coefficient is preserved, so c/b = \\(\\frac{36}{25}\\).</p>",
+      "variation": "Read a constant ratio without solving each constant first",
+      "source_cards": [
+        25,
+        29,
+        30
+      ],
+      "difficulty": 3,
+      "id": "L42-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "proportions_transition",
+        "format_42_2",
+        "within_equation_ratio"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system \\(3x+y=-11\\) and \\(px+7y=-70\\) has no solution. What is p?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "21"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Match the slopes by making the second left side 7 times the first. That requires p = 21. The constant on the right is -70 rather than -77, so the lines are distinct.</p>",
+      "variation": "Make coefficients proportional while retaining different constants",
+      "source_cards": [
+        19,
+        21,
+        27,
+        28
+      ],
+      "difficulty": 3,
+      "id": "L42-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_two_constants",
+        "multiple_constants_no_solution_model",
+        "format_42_1",
+        "proportion_no_solution_model"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.208477+00",
+  "lesson_number": 42,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 9,
+    "3": 4
+  }
+}

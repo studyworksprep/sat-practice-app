@@ -807,7 +807,7 @@ async function loadDetourSession(
   };
 }
 
-/** Current question's taxonomy, for the easier-candidate query. */
+/** Current question's scope, for the easier-candidate query. */
 async function loadDetourAnchor(
   supabase: Awaited<ReturnType<typeof requireUser>>['supabase'],
   questionIds: string[],
@@ -818,36 +818,38 @@ async function loadDetourAnchor(
   }
   const { data: q } = await supabase
     .from('questions_v2')
-    .select('id, skill_code, difficulty')
+    .select('skill_code, difficulty, drill_lesson_id')
     .eq('id', questionIds[position])
     .maybeSingle();
-  if (!q?.skill_code) return null;
-  return { skillCode: q.skill_code, difficulty: q.difficulty ?? DETOUR_UNRATED_DIFFICULTY };
+  if (!q || (!q.skill_code && !q.drill_lesson_id)) return null;
+  return {
+    skillCode: q.skill_code,
+    lessonId: q.drill_lesson_id,
+    difficulty: q.difficulty ?? DETOUR_UNRATED_DIFFICULTY,
+  };
 }
 
-/** Easier same-skill candidates, easiest first, excluding the walk. */
+/** Easier questions from the same lesson or standard-bank skill. */
 async function findEasierCandidates(
   supabase: Awaited<ReturnType<typeof requireUser>>['supabase'],
-  anchor: { skillCode: string; difficulty: number },
+  anchor: { skillCode: string | null; lessonId: string | null; difficulty: number },
   excludeIds: string[],
   limit: number,
 ) {
-  const { data } = await supabase
+  const query = supabase
     .from('questions_v2')
     .select('id, difficulty, display_code')
-    .eq('skill_code', anchor.skillCode)
     .eq('is_published', true)
     .eq('is_broken', false)
     .is('deleted_at', null)
-    // Opt-in import batches are excluded from every auto-selector —
-    // a detour must not pull in questions the student never opted
-    // into.
-    .eq('pool', 'standard')
     .not('difficulty', 'is', null)
     .lt('difficulty', anchor.difficulty)
     .order('difficulty', { ascending: true })
     .order('display_code', { ascending: true })
     .limit(limit + excludeIds.length);
+  const { data } = await (anchor.lessonId
+    ? query.eq('pool', 'lesson_drill').eq('drill_lesson_id', anchor.lessonId)
+    : query.eq('pool', 'standard').eq('skill_code', anchor.skillCode!));
   const excluded = new Set(excludeIds);
   return (data ?? []).filter((q) => !excluded.has(q.id)).slice(0, limit);
 }
@@ -882,9 +884,9 @@ export async function getDetourOptions(
 
   const [candidates, lessonRecs] = await Promise.all([
     findEasierCandidates(supabase, anchor, loaded.session.question_ids, 1),
-    recommendLessonsForSkills(supabase, [anchor.skillCode]),
+    recommendLessonsForSkills(supabase, [anchor.lessonId ? null : anchor.skillCode]),
   ]);
-  const lesson = lessonRecs.get(anchor.skillCode)?.[0] ?? null;
+  const lesson = anchor.skillCode ? lessonRecs.get(anchor.skillCode)?.[0] : null;
 
   return {
     ok: true,

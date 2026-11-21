@@ -3530,6 +3530,9 @@ export type Database = {
           display_code: string | null
           domain_code: string | null
           domain_name: string | null
+          drill_lesson_id: string | null
+          drill_phase: string | null
+          drill_sequence: number | null
           hints: Json
           id: string
           is_broken: boolean
@@ -3571,6 +3574,9 @@ export type Database = {
           display_code?: string | null
           domain_code?: string | null
           domain_name?: string | null
+          drill_lesson_id?: string | null
+          drill_phase?: string | null
+          drill_sequence?: number | null
           hints?: Json
           id?: string
           is_broken?: boolean
@@ -3612,6 +3618,9 @@ export type Database = {
           display_code?: string | null
           domain_code?: string | null
           domain_name?: string | null
+          drill_lesson_id?: string | null
+          drill_phase?: string | null
+          drill_sequence?: number | null
           hints?: Json
           id?: string
           is_broken?: boolean
@@ -3640,6 +3649,13 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "questions_v2_drill_lesson_id_fkey"
+            columns: ["drill_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "questions_v2_batch_id_fkey"
             columns: ["batch_id"]

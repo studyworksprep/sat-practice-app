@@ -1,0 +1,538 @@
+{
+  "id": "098be371-5059-4dbb-a744-744a88c23586",
+  "title": "Rates in Two-Variable Equations: Read the Units",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use unit labels to interpret coefficients, variables, terms, and totals in contextual linear equations with two variables.",
+  "cards": 32,
+  "spec": "docs/lesson-template-specs/rates-and-units-in-two-variable-equations.json",
+  "source_spec_sha256": "82bad3999fad0ae17e7814ece715ccd44d5e956eba74e34889bb79120879a85e",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Interpret a coefficient as a per-item rate": [
+      3,
+      4,
+      7,
+      8
+    ],
+    "Interpret a full term as a same-unit subtotal": [
+      7,
+      8,
+      13,
+      14
+    ],
+    "Use subtotals and compatible units to solve for a count": [
+      13,
+      14,
+      17,
+      21
+    ],
+    "Solve when the unknown itself is a rate": [
+      10,
+      11,
+      13
+    ],
+    "Convert the time unit before combining amounts": [
+      21,
+      23,
+      24
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A shop sells two sizes of candle. The equation \\(7x+11y=129\\) gives the total in dollars, where x and y are the counts of small and large, respectively. What does 7 represent?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The term 7x is a subtotal in dollars. Since x is a count from the small group, 7 is the amount per item.</p>",
+      "variation": "Interpret a coefficient as a per-item rate",
+      "source_cards": [
+        3,
+        4,
+        7,
+        8
+      ],
+      "difficulty": 1,
+      "id": "L26-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "00415477-7043-4863-98ec-05a09f1c5b4e",
+        "cd5a2da6-01d6-4c9a-b2f4-84f651cdedda",
+        "2f6dba7b-e799-5bd3-9ab5-cd95f077d030",
+        "54fff350-85c3-4e78-b44a-253157631b6e"
+      ],
+      "choices": [
+        "The number of items in the small group",
+        "The number of dollars per item in the small group",
+        "The total dollars for the small group",
+        "The number of dollars per item in the large group"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Confuses the rate with the count.",
+        "C": "Omits multiplication by the count.",
+        "D": "Reads the other group’s coefficient."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A lab buys two varieties of sensor. The equation \\(16x+24y=208\\) gives the total in dollars, where x and y are the counts of basic and advanced, respectively. What does \\(24y\\) represent?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Multiplying the rate 24 by the count y gives the subtotal for the advanced group. Adding the two subtotals gives the total.</p>",
+      "variation": "Interpret a full term as a same-unit subtotal",
+      "source_cards": [
+        7,
+        8,
+        13,
+        14
+      ],
+      "difficulty": 1,
+      "id": "L26-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "2f6dba7b-e799-5bd3-9ab5-cd95f077d030",
+        "54fff350-85c3-4e78-b44a-253157631b6e",
+        "236ae09c-baff-5217-8651-45f1bbaf6bb7",
+        "47f6dc0e-3f14-4524-bc84-c0f9843d7223"
+      ],
+      "choices": [
+        "Total dollars for items in the advanced group",
+        "Total dollars for items in the basic group",
+        "Dollars per item in the advanced group",
+        "Total dollars for both groups"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Uses the other count.",
+        "C": "Reads the coefficient only.",
+        "D": "Ignores the other subtotal."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A booth sells two kinds of pencils. The equation \\(2x+5y=67\\) gives the total in dollars, where x and y are the counts of wooden and mechanical, respectively. If x = 16, how many items are in the mechanical group?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The wooden group contributes 32 dollars. Subtract from the total, then divide the remaining 35 dollars by 5, giving 7 items.</p>",
+      "variation": "Use subtotals and compatible units to solve for a count",
+      "source_cards": [
+        13,
+        14,
+        17,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L26-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "236ae09c-baff-5217-8651-45f1bbaf6bb7",
+        "47f6dc0e-3f14-4524-bc84-c0f9843d7223",
+        "9db4bdda-344a-4061-9cf7-a1238bf92866",
+        "5fc3b9da-8c16-595d-abee-c2dc781aa0dc"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>One machine produces 9 labels per minute for 4 minutes. A second machine runs for 7 minutes. Together they produce 113 labels. What is the second machine’s rate in labels per minute?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "11"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The first subtotal is 9 × 4 = 36 labels. The second provides the remaining 77 labels. Dividing by its 7 minutes gives 11 labels per minute.</p>",
+      "variation": "Solve when the unknown itself is a rate",
+      "source_cards": [
+        10,
+        11,
+        13
+      ],
+      "difficulty": 2,
+      "id": "L26-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "0b4bbcaa-cb91-5a0d-89a1-f544b6e5bad3",
+        "d3679eb2-878d-4dbd-8698-43273c264f93",
+        "236ae09c-baff-5217-8651-45f1bbaf6bb7"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A shop rents kayaks for 14 dollars per hour and paddles for 4 dollars per half hour. One customer rents kayaks for 3 hours and paddles for 2 hours. What is the combined cost in dollars?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "58"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>There are 4 half hours in 2 hours. Multiply the kayak rate by 3 and the paddle rate by 4, then add 42 + 16.</p>",
+      "variation": "Convert the time unit before combining amounts",
+      "source_cards": [
+        21,
+        23,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L26-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "5fc3b9da-8c16-595d-abee-c2dc781aa0dc",
+        "95eaf34b-5019-5b9d-943d-a627580b0d46",
+        "6a41d064-4180-4580-8d5e-d495167d83e8"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Two lines pack cartons of different sizes. The equation \\(8x+12y=132\\) gives the total in bottles, where x and y are the counts of short and tall, respectively. What does 8 represent?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The term 8x is a subtotal in bottles. Since x is a count from the short group, 8 is the amount per item.</p>",
+      "variation": "Interpret a coefficient as a per-item rate",
+      "source_cards": [
+        3,
+        4,
+        7,
+        8
+      ],
+      "difficulty": 1,
+      "id": "L26-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "00415477-7043-4863-98ec-05a09f1c5b4e",
+        "cd5a2da6-01d6-4c9a-b2f4-84f651cdedda",
+        "2f6dba7b-e799-5bd3-9ab5-cd95f077d030",
+        "54fff350-85c3-4e78-b44a-253157631b6e"
+      ],
+      "choices": [
+        "The number of items in the short group",
+        "The number of bottles per item in the short group",
+        "The total bottles for the short group",
+        "The number of bottles per item in the tall group"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Confuses the rate with the count.",
+        "C": "Omits multiplication by the count.",
+        "D": "Reads the other group’s coefficient."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A bakery loads two sizes of box. The equation \\(6x+18y=138\\) gives the total in cookies, where x and y are the counts of small and large, respectively. What does \\(18y\\) represent?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Multiplying the rate 18 by the count y gives the subtotal for the large group. Adding the two subtotals gives the total.</p>",
+      "variation": "Interpret a full term as a same-unit subtotal",
+      "source_cards": [
+        7,
+        8,
+        13,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L26-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "2f6dba7b-e799-5bd3-9ab5-cd95f077d030",
+        "54fff350-85c3-4e78-b44a-253157631b6e",
+        "236ae09c-baff-5217-8651-45f1bbaf6bb7",
+        "47f6dc0e-3f14-4524-bc84-c0f9843d7223"
+      ],
+      "choices": [
+        "Total cookies for items in the large group",
+        "Total cookies for items in the small group",
+        "Cookies per item in the large group",
+        "Total cookies for both groups"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Uses the other count.",
+        "C": "Reads the coefficient only.",
+        "D": "Ignores the other subtotal."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A printer alternates two kinds of folders. The equation \\(8x+20y=192\\) gives the total in sheets, where x and y are the counts of thin and thick, respectively. If x = 9, how many items are in the thick group?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "6"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The thin group contributes 72 sheets. Subtract from the total, then divide the remaining 120 sheets by 20, giving 6 items.</p>",
+      "variation": "Use subtotals and compatible units to solve for a count",
+      "source_cards": [
+        13,
+        14,
+        17,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L26-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "236ae09c-baff-5217-8651-45f1bbaf6bb7",
+        "47f6dc0e-3f14-4524-bc84-c0f9843d7223",
+        "9db4bdda-344a-4061-9cf7-a1238bf92866",
+        "5fc3b9da-8c16-595d-abee-c2dc781aa0dc"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>One machine produces 12 cards per minute for 8 minutes. A second machine runs for 5 minutes. Together they produce 166 cards. What is the second machine’s rate in cards per minute?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "14"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The first subtotal is 12 × 8 = 96 cards. The second provides the remaining 70 cards. Dividing by its 5 minutes gives 14 cards per minute.</p>",
+      "variation": "Solve when the unknown itself is a rate",
+      "source_cards": [
+        10,
+        11,
+        13
+      ],
+      "difficulty": 2,
+      "id": "L26-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "0b4bbcaa-cb91-5a0d-89a1-f544b6e5bad3",
+        "d3679eb2-878d-4dbd-8698-43273c264f93",
+        "236ae09c-baff-5217-8651-45f1bbaf6bb7"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A shop rents kayaks for 17 dollars per hour and paddles for 6 dollars per half hour. One customer rents kayaks for 2 hours and paddles for 5 hours. What is the combined cost in dollars?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "94"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>There are 10 half hours in 5 hours. Multiply the kayak rate by 2 and the paddle rate by 10, then add 34 + 60.</p>",
+      "variation": "Convert the time unit before combining amounts",
+      "source_cards": [
+        21,
+        23,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L26-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "5fc3b9da-8c16-595d-abee-c2dc781aa0dc",
+        "95eaf34b-5019-5b9d-943d-a627580b0d46",
+        "6a41d064-4180-4580-8d5e-d495167d83e8"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Two groups of guests pay different admission prices. The equation \\(15x+9y=219\\) gives the total in dollars, where x and y are the counts of adult and child, respectively. What does 15 represent?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The term 15x is a subtotal in dollars. Since x is a count from the adult group, 15 is the amount per item.</p>",
+      "variation": "Interpret a coefficient as a per-item rate",
+      "source_cards": [
+        3,
+        4,
+        7,
+        8
+      ],
+      "difficulty": 2,
+      "id": "L26-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "00415477-7043-4863-98ec-05a09f1c5b4e",
+        "cd5a2da6-01d6-4c9a-b2f4-84f651cdedda",
+        "2f6dba7b-e799-5bd3-9ab5-cd95f077d030",
+        "54fff350-85c3-4e78-b44a-253157631b6e"
+      ],
+      "choices": [
+        "The number of items in the adult group",
+        "The number of dollars per item in the adult group",
+        "The total dollars for the adult group",
+        "The number of dollars per item in the child group"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Confuses the rate with the count.",
+        "C": "Omits multiplication by the count.",
+        "D": "Reads the other group’s coefficient."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A camp buys supply packs of two sizes. The equation \\(9x+13y=162\\) gives the total in markers, where x and y are the counts of small and large, respectively. What does \\(13y\\) represent?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Multiplying the rate 13 by the count y gives the subtotal for the large group. Adding the two subtotals gives the total.</p>",
+      "variation": "Interpret a full term as a same-unit subtotal",
+      "source_cards": [
+        7,
+        8,
+        13,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L26-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "2f6dba7b-e799-5bd3-9ab5-cd95f077d030",
+        "54fff350-85c3-4e78-b44a-253157631b6e",
+        "236ae09c-baff-5217-8651-45f1bbaf6bb7",
+        "47f6dc0e-3f14-4524-bc84-c0f9843d7223"
+      ],
+      "choices": [
+        "Total markers for items in the small group",
+        "Total markers for items in the large group",
+        "Markers per item in the large group",
+        "Total markers for both groups"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Uses the other count.",
+        "C": "Reads the coefficient only.",
+        "D": "Ignores the other subtotal."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A club sells two levels of membership. The equation \\(14x+23y=338\\) gives the total in dollars, where x and y are the counts of regular and supporter, respectively. If x = 11, how many items are in the supporter group?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "8"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The regular group contributes 154 dollars. Subtract from the total, then divide the remaining 184 dollars by 23, giving 8 items.</p>",
+      "variation": "Use subtotals and compatible units to solve for a count",
+      "source_cards": [
+        13,
+        14,
+        17,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L26-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "236ae09c-baff-5217-8651-45f1bbaf6bb7",
+        "47f6dc0e-3f14-4524-bc84-c0f9843d7223",
+        "9db4bdda-344a-4061-9cf7-a1238bf92866",
+        "5fc3b9da-8c16-595d-abee-c2dc781aa0dc"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>One machine produces 18 envelopes per minute for 7 minutes. A second machine runs for 9 minutes. Together they produce 306 envelopes. What is the second machine’s rate in envelopes per minute?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "20"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The first subtotal is 18 × 7 = 126 envelopes. The second provides the remaining 180 envelopes. Dividing by its 9 minutes gives 20 envelopes per minute.</p>",
+      "variation": "Solve when the unknown itself is a rate",
+      "source_cards": [
+        10,
+        11,
+        13
+      ],
+      "difficulty": 2,
+      "id": "L26-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "0b4bbcaa-cb91-5a0d-89a1-f544b6e5bad3",
+        "d3679eb2-878d-4dbd-8698-43273c264f93",
+        "236ae09c-baff-5217-8651-45f1bbaf6bb7"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A shop rents kayaks for 23 dollars per hour and paddles for 8 dollars per half hour. One customer rents kayaks for 7 hours and paddles for 4 hours. What is the combined cost in dollars?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "225"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>There are 8 half hours in 4 hours. Multiply the kayak rate by 7 and the paddle rate by 8, then add 161 + 64.</p>",
+      "variation": "Convert the time unit before combining amounts",
+      "source_cards": [
+        21,
+        23,
+        24
+      ],
+      "difficulty": 3,
+      "id": "L26-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "5fc3b9da-8c16-595d-abee-c2dc781aa0dc",
+        "95eaf34b-5019-5b9d-943d-a627580b0d46",
+        "6a41d064-4180-4580-8d5e-d495167d83e8"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-16 18:49:55.122892+00",
+  "lesson_number": 26,
+  "difficulty_counts": {
+    "1": 3,
+    "2": 11,
+    "3": 1
+  }
+}

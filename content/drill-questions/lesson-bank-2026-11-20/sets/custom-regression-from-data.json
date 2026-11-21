@@ -1,0 +1,461 @@
+{
+  "id": "fc183eea-36c4-4a33-8eaf-3fede3806eaa",
+  "title": "Find Missing Constants with Custom Regression",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Turn data into a custom Desmos regression using table variables, incorporate relationships and supplied functions as definitions, and read missing constants in the required equation form.",
+  "cards": 31,
+  "spec": "docs/lesson-template-specs/custom-regression-from-data.json",
+  "source_spec_sha256": "5dee62ba5dc12202bfddd60e05979bfe03d524a458c073d8f8d8eb0cd2eabc2c",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Fit coefficients in the supplied shifted-quadratic form": [
+      4,
+      6,
+      8,
+      11
+    ],
+    "Include an extra constant relationship as a definition": [
+      13,
+      14
+    ],
+    "Use a supplied function as part of the model": [
+      16,
+      17
+    ],
+    "Fit a growth factor and report the rate as a percent": [
+      19,
+      20
+    ],
+    "Preserve a custom cubic form and solve for its constants": [
+      4,
+      8,
+      11
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The function has form \\(f(x)=a(x-3)^2+k\\). Using the table, find k.</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>f(x)</th></tr></thead><tbody><tr><td>2</td><td>9</td></tr><tr><td>5</td><td>15</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit the given form, using the table columns as inputs and outputs. The squared offsets are 1 and 4; subtracting the output equations gives a = 2, then k = 7.</p>",
+      "variation": "Fit coefficients in the supplied shifted-quadratic form",
+      "source_cards": [
+        4,
+        6,
+        8,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L14-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_purpose",
+        "custom_table",
+        "custom_form",
+        "custom_fit_check"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The linear function \\(f(x)=ax+b\\) satisfies \\(b=2a\\) and \\(f(3)=20\\). What is b?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "8"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use \\(b=2a\\) as a definition in the fit. Then \\(20=5a\\), giving a = 4 and b = 8.</p>",
+      "variation": "Include an extra constant relationship as a definition",
+      "source_cards": [
+        13,
+        14
+      ],
+      "difficulty": 1,
+      "id": "L14-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_extra",
+        "custom_extra_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Let \\(g(x)=x^{2}+3x+2\\). The function \\(f(x)=g(x-1)+k\\) satisfies \\(f(5)=34\\). What is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "4"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Keep g as a definition and fit the one remaining constant. Since \\(g(4)=30\\), subtract it from 34 to get k = 4.</p>",
+      "variation": "Use a supplied function as part of the model",
+      "source_cards": [
+        16,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L14-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_function",
+        "custom_function_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table is modeled by f(t) = a(1+r)^t, with r written as a decimal. What is the growth rate as a percent? Enter the number without the percent sign.</p>",
+      "stimulus_html": "<table><thead><tr><th>t</th><th>f(t)</th></tr></thead><tbody><tr><td>0</td><td>200</td></tr><tr><td>1</td><td>210</td></tr><tr><td>2</td><td>220.5</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "5"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit the supplied form. Each step multiplies the output by 1.05, so r = 0.05. Multiplying by 100 gives 5%.</p>",
+      "variation": "Fit a growth factor and report the rate as a percent",
+      "source_cards": [
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L14-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_growth",
+        "custom_growth_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The function \\(f(x)=ax^3+b\\) satisfies \\(f(0)=7\\) and \\(f(2)=39\\). What is a?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "4"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use the two (x, f(x)) pairs to fit the cubic form with the two unknown coefficients. The zero input gives b = 7; the second input gives a = 4.</p>",
+      "variation": "Preserve a custom cubic form and solve for its constants",
+      "source_cards": [
+        4,
+        8,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L14-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_purpose",
+        "custom_form",
+        "custom_fit_check"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The function has form \\(f(x)=a(x-5)^2+k\\). Using the table, find k.</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>f(x)</th></tr></thead><tbody><tr><td>3</td><td>8</td></tr><tr><td>6</td><td>-1</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "-4"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit the given form, using the table columns as inputs and outputs. The squared offsets are 4 and 1; subtracting the output equations gives a = 3, then k = -4.</p>",
+      "variation": "Fit coefficients in the supplied shifted-quadratic form",
+      "source_cards": [
+        4,
+        6,
+        8,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L14-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_purpose",
+        "custom_table",
+        "custom_form",
+        "custom_fit_check"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The linear function \\(f(x)=ax+b\\) satisfies \\(b=4a\\) and \\(f(2)=42\\). What is b?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "28"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use \\(b=4a\\) as a definition in the fit. Then \\(42=6a\\), giving a = 7 and b = 28.</p>",
+      "variation": "Include an extra constant relationship as a definition",
+      "source_cards": [
+        13,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L14-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_extra",
+        "custom_extra_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Let \\(g(x)=x^{2}+2x-3\\). The function \\(f(x)=g(x-4)+k\\) satisfies \\(f(6)=12\\). What is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Keep g as a definition and fit the one remaining constant. Since \\(g(2)=5\\), subtract it from 12 to get k = 7.</p>",
+      "variation": "Use a supplied function as part of the model",
+      "source_cards": [
+        16,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L14-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_function",
+        "custom_function_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table is modeled by f(t) = a(1+r)^t, with r written as a decimal. What is the growth rate as a percent? Enter the number without the percent sign.</p>",
+      "stimulus_html": "<table><thead><tr><th>t</th><th>f(t)</th></tr></thead><tbody><tr><td>0</td><td>100</td></tr><tr><td>1</td><td>112</td></tr><tr><td>2</td><td>125.44</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "12"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit the supplied form. Each step multiplies the output by 1.12, so r = 0.12. Multiplying by 100 gives 12%.</p>",
+      "variation": "Fit a growth factor and report the rate as a percent",
+      "source_cards": [
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L14-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_growth",
+        "custom_growth_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The function \\(f(x)=ax^3+b\\) satisfies \\(f(0)=-2\\) and \\(f(3)=187\\). What is a?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use the two (x, f(x)) pairs to fit the cubic form with the two unknown coefficients. The zero input gives b = -2; the second input gives a = 7.</p>",
+      "variation": "Preserve a custom cubic form and solve for its constants",
+      "source_cards": [
+        4,
+        8,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L14-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_purpose",
+        "custom_form",
+        "custom_fit_check"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The function has form \\(f(x)=a(x-2)^2+k\\). Using the table, find k.</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>f(x)</th></tr></thead><tbody><tr><td>3</td><td>13</td></tr><tr><td>5</td><td>45</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "9"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit the given form, using the table columns as inputs and outputs. The squared offsets are 1 and 9; subtracting the output equations gives a = 4, then k = 9.</p>",
+      "variation": "Fit coefficients in the supplied shifted-quadratic form",
+      "source_cards": [
+        4,
+        6,
+        8,
+        11
+      ],
+      "difficulty": 3,
+      "id": "L14-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_purpose",
+        "custom_table",
+        "custom_form",
+        "custom_fit_check"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The linear function \\(f(x)=ax+b\\) satisfies \\(b=3a\\) and \\(f(5)=72\\). What is b?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "27"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use \\(b=3a\\) as a definition in the fit. Then \\(72=8a\\), giving a = 9 and b = 27.</p>",
+      "variation": "Include an extra constant relationship as a definition",
+      "source_cards": [
+        13,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L14-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_extra",
+        "custom_extra_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Let \\(g(x)=x^{2}-2x+6\\). The function \\(f(x)=g(x-5)+k\\) satisfies \\(f(8)=20\\). What is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "11"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Keep g as a definition and fit the one remaining constant. Since \\(g(3)=9\\), subtract it from 20 to get k = 11.</p>",
+      "variation": "Use a supplied function as part of the model",
+      "source_cards": [
+        16,
+        17
+      ],
+      "difficulty": 3,
+      "id": "L14-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_function",
+        "custom_function_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table is modeled by f(t) = a(1+r)^t, with r written as a decimal. What is the growth rate as a percent? Enter the number without the percent sign.</p>",
+      "stimulus_html": "<table><thead><tr><th>t</th><th>f(t)</th></tr></thead><tbody><tr><td>0</td><td>160</td></tr><tr><td>1</td><td>136</td></tr><tr><td>2</td><td>115.6</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "-15"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit the supplied form. Each step multiplies the output by 0.85, so r = -0.15. Multiplying by 100 gives -15%.</p>",
+      "variation": "Fit a growth factor and report the rate as a percent",
+      "source_cards": [
+        19,
+        20
+      ],
+      "difficulty": 3,
+      "id": "L14-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_growth",
+        "custom_growth_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The function \\(f(x)=ax^3+b\\) satisfies \\(f(0)=11\\) and \\(f(4)=-181\\). What is a?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-3"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use the two (x, f(x)) pairs to fit the cubic form with the two unknown coefficients. The zero input gives b = 11; the second input gives a = -3.</p>",
+      "variation": "Preserve a custom cubic form and solve for its constants",
+      "source_cards": [
+        4,
+        8,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L14-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "custom_purpose",
+        "custom_form",
+        "custom_fit_check"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.921433+00",
+  "lesson_number": 14,
+  "difficulty_counts": {
+    "1": 1,
+    "2": 11,
+    "3": 3
+  }
+}

@@ -1,0 +1,580 @@
+{
+  "id": "88fe2546-2906-4bb4-8652-8877a62ef49f",
+  "title": "Advanced Factoring: Non-Monic Trinomials and Cubes",
+  "status": "review_only_unpublished",
+  "visibility": "private",
+  "description": "Factor non-monic trinomials with organized factor-pair trials, then apply sum- and difference-of-cubes patterns, including GCF and sign variations.",
+  "cards": 44,
+  "spec": "docs/lesson-template-specs/advanced-factoring-non-monic-trinomials-and-cubes.json",
+  "source_spec_sha256": "5e5377b883f5b35064a24574b7ee30969cd74cf108da9150f45aef0e451d4711",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Choose, Arrange, Match for a non-monic trinomial": [
+      7,
+      9,
+      12
+    ],
+    "Factor a difference of cubes": [
+      21,
+      24,
+      25
+    ],
+    "Factor a sum of cubes": [
+      21,
+      28,
+      29
+    ],
+    "Take out the GCF before a cube identity": [
+      30,
+      32,
+      33
+    ],
+    "Take out the GCF and choose factor placements and signs": [
+      12,
+      15,
+      16
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(6x^{2}+13x+6\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 1, choose leading factors 2 and 3. The cross-products add to 13 and the constants multiply to 6. Expanding \\((2x+3)(3x+2)\\) checks the result.</p>",
+      "variation": "Choose, Arrange, Match for a non-monic trinomial",
+      "source_cards": [
+        7,
+        9,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L01-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "structured_trial_process",
+        "format_0_1",
+        "format_0_2"
+      ],
+      "choices": [
+        "\\((2x+2)(3x+3)\\)",
+        "\\((2x-3)(3x-2)\\)",
+        "\\((2x+3)(3x+2)\\)",
+        "\\((2x+3)(3x+3)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Swaps the constant placements and changes the middle products.",
+        "B": "Flips both signs, changing the middle coefficient.",
+        "D": "Changes a constant so the product no longer matches."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^3-27\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove any common factor first. The cube roots are \\(x\\) and \\(3\\). Keep the original sign in the linear factor, reverse it in the middle term, and keep the final square positive. The complete factorization is \\((x-3)(x^2+3x+9)\\).</p>",
+      "variation": "Factor a difference of cubes",
+      "source_cards": [
+        21,
+        24,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L01-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cube_transition",
+        "derive_sum_of_cubes",
+        "difference_of_cubes_model"
+      ],
+      "choices": [
+        "\\((x-3)(x^2-3x+9)\\)",
+        "\\((x-3)(x^2+3x+9)\\)",
+        "\\((x+3)(x^2-3x+9)\\)",
+        "\\((x-3)(x^2+3x-9)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Keeps the same sign in the middle of the quadratic.",
+        "C": "Factors the opposite cube sign.",
+        "D": "Makes the final square negative."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^3+64\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove any common factor first. The cube roots are \\(x\\) and \\(4\\). Keep the original sign in the linear factor, reverse it in the middle term, and keep the final square positive. The complete factorization is \\((x+4)(x^2-4x+16)\\).</p>",
+      "variation": "Factor a sum of cubes",
+      "source_cards": [
+        21,
+        28,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L01-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cube_transition",
+        "format_0_7",
+        "sum_of_cubes_model"
+      ],
+      "choices": [
+        "\\((x+4)(x^2-4x+16)\\)",
+        "\\((x+4)(x^2+4x+16)\\)",
+        "\\((x-4)(x^2+4x+16)\\)",
+        "\\((x+4)(x^2-4x-16)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Keeps the same sign in the middle of the quadratic.",
+        "C": "Factors the opposite cube sign.",
+        "D": "Makes the final square negative."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(4x^3+500\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove any common factor first. The cube roots are \\(x\\) and \\(5\\). Keep the original sign in the linear factor, reverse it in the middle term, and keep the final square positive. The complete factorization is \\(4(x+5)(x^2-5x+25)\\).</p>",
+      "variation": "Take out the GCF before a cube identity",
+      "source_cards": [
+        30,
+        32,
+        33
+      ],
+      "difficulty": 3,
+      "id": "L01-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_0_5",
+        "format_0_6",
+        "gcf_before_cubes"
+      ],
+      "choices": [
+        "\\(4(x+5)(x^2-5x+25)\\)",
+        "\\(4(x+5)(x^2+5x+25)\\)",
+        "\\(4(x-5)(x^2+5x+25)\\)",
+        "\\(4(x+5)(x^2-5x-25)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Keeps the same sign in the middle of the quadratic.",
+        "C": "Factors the opposite cube sign.",
+        "D": "Makes the final square negative."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(45z^{2}-39z+6\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 3, choose leading factors 3 and 5. The cross-products add to -13 and the constants multiply to 2. Expanding \\(3(3z-2)(5z-1)\\) checks the result.</p>",
+      "variation": "Take out the GCF and choose factor placements and signs",
+      "source_cards": [
+        12,
+        15,
+        16
+      ],
+      "difficulty": 3,
+      "id": "L01-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_0_2",
+        "format_0_3",
+        "gcf_before_non_monic"
+      ],
+      "choices": [
+        "\\(3(3z-1)(5z-2)\\)",
+        "\\(3(3z+2)(5z+1)\\)",
+        "\\(3(3z-2)(5z)\\)",
+        "\\(3(3z-2)(5z-1)\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Swaps the constant placements and changes the middle products.",
+        "B": "Flips both signs, changing the middle coefficient.",
+        "C": "Changes a constant so the product no longer matches."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(12x^{2}+x-6\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 1, choose leading factors 3 and 4. The cross-products add to 1 and the constants multiply to -6. Expanding \\((3x-2)(4x+3)\\) checks the result.</p>",
+      "variation": "Choose, Arrange, Match for a non-monic trinomial",
+      "source_cards": [
+        7,
+        9,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L01-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "structured_trial_process",
+        "format_0_1",
+        "format_0_2"
+      ],
+      "choices": [
+        "\\((3x+3)(4x-2)\\)",
+        "\\((3x+2)(4x-3)\\)",
+        "\\((3x-2)(4x+3)\\)",
+        "\\((3x-2)(4x+4)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Swaps the constant placements and changes the middle products.",
+        "B": "Flips both signs, changing the middle coefficient.",
+        "D": "Changes a constant so the product no longer matches."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(8x^3-125\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove any common factor first. The cube roots are \\(2x\\) and \\(5\\). Keep the original sign in the linear factor, reverse it in the middle term, and keep the final square positive. The complete factorization is \\((2x-5)(4x^2+10x+25)\\).</p>",
+      "variation": "Factor a difference of cubes",
+      "source_cards": [
+        21,
+        24,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L01-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cube_transition",
+        "derive_sum_of_cubes",
+        "difference_of_cubes_model"
+      ],
+      "choices": [
+        "\\((2x-5)(4x^2-10x+25)\\)",
+        "\\((2x-5)(4x^2+10x+25)\\)",
+        "\\((2x+5)(4x^2-10x+25)\\)",
+        "\\((2x-5)(4x^2+10x-25)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Keeps the same sign in the middle of the quadratic.",
+        "C": "Factors the opposite cube sign.",
+        "D": "Makes the final square negative."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(8x^3+343\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove any common factor first. The cube roots are \\(2x\\) and \\(7\\). Keep the original sign in the linear factor, reverse it in the middle term, and keep the final square positive. The complete factorization is \\((2x+7)(4x^2-14x+49)\\).</p>",
+      "variation": "Factor a sum of cubes",
+      "source_cards": [
+        21,
+        28,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L01-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cube_transition",
+        "format_0_7",
+        "sum_of_cubes_model"
+      ],
+      "choices": [
+        "\\((2x+7)(4x^2+14x+49)\\)",
+        "\\((2x+7)(4x^2-14x+49)\\)",
+        "\\((2x-7)(4x^2+14x+49)\\)",
+        "\\((2x+7)(4x^2-14x-49)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Keeps the same sign in the middle of the quadratic.",
+        "C": "Factors the opposite cube sign.",
+        "D": "Makes the final square negative."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(5x^3-1080\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove any common factor first. The cube roots are \\(x\\) and \\(6\\). Keep the original sign in the linear factor, reverse it in the middle term, and keep the final square positive. The complete factorization is \\(5(x-6)(x^2+6x+36)\\).</p>",
+      "variation": "Take out the GCF before a cube identity",
+      "source_cards": [
+        30,
+        32,
+        33
+      ],
+      "difficulty": 3,
+      "id": "L01-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_0_5",
+        "format_0_6",
+        "gcf_before_cubes"
+      ],
+      "choices": [
+        "\\(5(x-6)(x^2+6x+36)\\)",
+        "\\(5(x-6)(x^2-6x+36)\\)",
+        "\\(5(x+6)(x^2-6x+36)\\)",
+        "\\(5(x-6)(x^2+6x-36)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Keeps the same sign in the middle of the quadratic.",
+        "C": "Factors the opposite cube sign.",
+        "D": "Makes the final square negative."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(24z^{2}-2z-12\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 2, choose leading factors 4 and 3. The cross-products add to -1 and the constants multiply to -6. Expanding \\(2(4z-3)(3z+2)\\) checks the result.</p>",
+      "variation": "Take out the GCF and choose factor placements and signs",
+      "source_cards": [
+        12,
+        15,
+        16
+      ],
+      "difficulty": 3,
+      "id": "L01-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_0_2",
+        "format_0_3",
+        "gcf_before_non_monic"
+      ],
+      "choices": [
+        "\\(2(4z+2)(3z-3)\\)",
+        "\\(2(4z+3)(3z-2)\\)",
+        "\\(2(4z-3)(3z+3)\\)",
+        "\\(2(4z-3)(3z+2)\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Swaps the constant placements and changes the middle products.",
+        "B": "Flips both signs, changing the middle coefficient.",
+        "C": "Changes a constant so the product no longer matches."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(20z^{2}+14z-24\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 2, choose leading factors 2 and 5. The cross-products add to 7 and the constants multiply to -12. Expanding \\(2(2z+3)(5z-4)\\) checks the result.</p>",
+      "variation": "Choose, Arrange, Match for a non-monic trinomial",
+      "source_cards": [
+        7,
+        9,
+        12
+      ],
+      "difficulty": 3,
+      "id": "L01-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "structured_trial_process",
+        "format_0_1",
+        "format_0_2"
+      ],
+      "choices": [
+        "\\(2(2z-4)(5z+3)\\)",
+        "\\(2(2z-3)(5z+4)\\)",
+        "\\(2(2z+3)(5z-4)\\)",
+        "\\(2(2z+3)(5z-3)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Swaps the constant placements and changes the middle products.",
+        "B": "Flips both signs, changing the middle coefficient.",
+        "D": "Changes a constant so the product no longer matches."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(27x^3-8y^3\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove any common factor first. The cube roots are \\(3x\\) and \\(2y\\). Keep the original sign in the linear factor, reverse it in the middle term, and keep the final square positive. The complete factorization is \\((3x-2y)(9x^2+6xy+4y^2)\\).</p>",
+      "variation": "Factor a difference of cubes",
+      "source_cards": [
+        21,
+        24,
+        25
+      ],
+      "difficulty": 3,
+      "id": "L01-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cube_transition",
+        "derive_sum_of_cubes",
+        "difference_of_cubes_model"
+      ],
+      "choices": [
+        "\\((3x-2y)(9x^2-6xy+4y^2)\\)",
+        "\\((3x+2y)(9x^2-6xy+4y^2)\\)",
+        "\\((3x-2y)(9x^2+6xy+4y^2)\\)",
+        "\\((3x-2y)(9x^2+6xy-4y^2)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Keeps the same sign in the middle of the quadratic.",
+        "B": "Factors the opposite cube sign.",
+        "D": "Makes the final square negative."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(8x^3+27y^3\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove any common factor first. The cube roots are \\(2x\\) and \\(3y\\). Keep the original sign in the linear factor, reverse it in the middle term, and keep the final square positive. The complete factorization is \\((2x+3y)(4x^2-6xy+9y^2)\\).</p>",
+      "variation": "Factor a sum of cubes",
+      "source_cards": [
+        21,
+        28,
+        29
+      ],
+      "difficulty": 3,
+      "id": "L01-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cube_transition",
+        "format_0_7",
+        "sum_of_cubes_model"
+      ],
+      "choices": [
+        "\\((2x+3y)(4x^2+6xy+9y^2)\\)",
+        "\\((2x+3y)(4x^2-6xy+9y^2)\\)",
+        "\\((2x-3y)(4x^2+6xy+9y^2)\\)",
+        "\\((2x+3y)(4x^2-6xy-9y^2)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Keeps the same sign in the middle of the quadratic.",
+        "C": "Factors the opposite cube sign.",
+        "D": "Makes the final square negative."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(54x^3+128y^3\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove any common factor first. The cube roots are \\(3x\\) and \\(4y\\). Keep the original sign in the linear factor, reverse it in the middle term, and keep the final square positive. The complete factorization is \\(2(3x+4y)(9x^2-12xy+16y^2)\\).</p>",
+      "variation": "Take out the GCF before a cube identity",
+      "source_cards": [
+        30,
+        32,
+        33
+      ],
+      "difficulty": 3,
+      "id": "L01-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_0_5",
+        "format_0_6",
+        "gcf_before_cubes"
+      ],
+      "choices": [
+        "\\(2(3x+4y)(9x^2-12xy+16y^2)\\)",
+        "\\(2(3x+4y)(9x^2+12xy+16y^2)\\)",
+        "\\(2(3x-4y)(9x^2+12xy+16y^2)\\)",
+        "\\(2(3x+4y)(9x^2-12xy-16y^2)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Keeps the same sign in the middle of the quadratic.",
+        "C": "Factors the opposite cube sign.",
+        "D": "Makes the final square negative."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(40z^{2}-44z-24\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 4, choose leading factors 5 and 2. The cross-products add to -11 and the constants multiply to -6. Expanding \\(4(5z+2)(2z-3)\\) checks the result.</p>",
+      "variation": "Take out the GCF and choose factor placements and signs",
+      "source_cards": [
+        12,
+        15,
+        16
+      ],
+      "difficulty": 3,
+      "id": "L01-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_0_2",
+        "format_0_3",
+        "gcf_before_non_monic"
+      ],
+      "choices": [
+        "\\(4(5z-3)(2z+2)\\)",
+        "\\(4(5z-2)(2z+3)\\)",
+        "\\(4(5z+2)(2z-2)\\)",
+        "\\(4(5z+2)(2z-3)\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Swaps the constant placements and changes the middle products.",
+        "B": "Flips both signs, changing the middle coefficient.",
+        "C": "Changes a constant so the product no longer matches."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.766869+00",
+  "lesson_number": 1,
+  "difficulty_counts": {
+    "1": 0,
+    "2": 6,
+    "3": 9
+  }
+}

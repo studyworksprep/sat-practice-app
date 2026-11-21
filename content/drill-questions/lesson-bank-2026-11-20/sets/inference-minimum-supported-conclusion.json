@@ -1,0 +1,580 @@
+{
+  "id": "8a5f65d1-5107-4e82-81e8-5180ab62201a",
+  "title": "Inference Questions: Make the Smallest Supported Leap",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Recognize SAT Inference questions, combine sentence-level soundbites, predict the smallest conclusion supported by the whole text, and reject answers that infer too much.",
+  "cards": 36,
+  "spec": "docs/lesson-template-specs/inference-minimum-supported-conclusion.json",
+  "source_spec_sha256": "095c45c2e081bd4fa9956109b4474ef810424807a3fd852db6b1708eb1ca18e9",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Combine facts to make the smallest supported inference": [
+      6,
+      8,
+      11,
+      13
+    ],
+    "Distinguish an association from evidence of causation": [
+      13,
+      19,
+      20
+    ],
+    "Use a controlled change to support a limited causal inference": [
+      22,
+      23
+    ],
+    "Connect a research goal to the appropriate next action": [
+      25,
+      26
+    ],
+    "Reject conclusions with a plausible but unsupported extra claim": [
+      13,
+      17,
+      28,
+      29
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>During spring repairs, the only bridge on the post van’s usual route was closed. The van then followed a road that crossed farther upstream. Before the bridge reopened, drivers recorded higher mileage per delivery round than in the previous month.</p>",
+      "explanation_html": "<p>The detour farther upstream and the higher mileage make a limited conclusion about this route during repairs.</p>",
+      "variation": "Combine facts to make the smallest supported inference",
+      "source_cards": [
+        6,
+        8,
+        11,
+        13
+      ],
+      "difficulty": 2,
+      "id": "L20-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "format_20_2",
+        "combine_facts",
+        "minimum_inference_rule"
+      ],
+      "choices": [
+        "The closed bridge was the only possible reason mileage rose.",
+        "Mail routes throughout the region became longer that spring.",
+        "The van recorded less mileage after the bridge reopened.",
+        "The temporary route likely contributed to longer delivery rounds."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "B": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>At several school gardens, raised beds attracted more afternoon visitors than ground-level beds. The raised beds also tended to lie near the main doors. The researchers did not control which beds were built where.</p>",
+      "explanation_html": "<p>Bed height and location varied together, so the observation does not distinguish their effects.</p>",
+      "variation": "Distinguish an association from evidence of causation",
+      "source_cards": [
+        13,
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L20-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "minimum_inference_rule",
+        "format_20_3",
+        "association_caution"
+      ],
+      "choices": [
+        "Raising any bed will increase its number of visitors.",
+        "Ground-level beds attracted more visitors when near doors.",
+        "Raised beds were associated with more visits, and the results do not isolate bed height as the cause.",
+        "Visitors specifically said bed height motivated their visits."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>Students randomly assigned identical sheets to two groups. They brushed only the first group with a clear coating, dried both groups for the same time, and exposed both to equal moisture. The coated sheets curled less.</p>",
+      "explanation_html": "<p>Because the treatment was the controlled difference, it can support a causal inference about curling under the stated conditions.</p>",
+      "variation": "Use a controlled change to support a limited causal inference",
+      "source_cards": [
+        22,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L20-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_experiment",
+        "changed_condition_model"
+      ],
+      "choices": [
+        "The coating will prevent all paper damage in every climate.",
+        "Under the test conditions, applying the coating reduced curling.",
+        "Students exposed both groups to equal moisture.",
+        "Uncoated paper curled less under identical conditions."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "C": "Captures only one detail or part of the relevant idea.",
+        "D": "Misstates or contradicts part of the passage."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which next action is best supported by the findings?</p>",
+      "stimulus_html": "<p>A town wants to reduce water loss from its ponds. Flow measurements found that several shallow ponds lose most water through cracks in their beds, whereas two deep ponds lose most during surface evaporation.</p>",
+      "explanation_html": "<p>The stated goal and the measured source of water loss justify first testing a remedy targeting cracks in the shallow ponds.</p>",
+      "variation": "Connect a research goal to the appropriate next action",
+      "source_cards": [
+        25,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L20-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_20_4",
+        "research_action_model"
+      ],
+      "choices": [
+        "Install evaporation covers on every shallow pond before addressing its cracks.",
+        "Test methods of sealing cracks in the shallow ponds first.",
+        "Seal the deep ponds first because the study found they lose most water through cracks.",
+        "Drain all ponds because vegetation caused the water loss."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>Tagged fish were still observed in a protected reach late in autumn. None of the tagged fish appeared in the surveys downstream during the same period. The downstream surveys were made only on three afternoons.</p>",
+      "explanation_html": "<p>Detection in the reach establishes presence there. The limited downstream observations cannot establish permanent absence.</p>",
+      "variation": "Reject conclusions with a plausible but unsupported extra claim",
+      "source_cards": [
+        13,
+        17,
+        28,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L20-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "minimum_inference_rule",
+        "distractor_patterns",
+        "prove_and_disprove",
+        "format_20_5"
+      ],
+      "choices": [
+        "Some tagged fish were still in the protected reach during late autumn.",
+        "Some tagged fish stayed in the reach and no tagged fish ever went downstream.",
+        "The three afternoon surveys detected tagged fish downstream.",
+        "Protection prevented the fish from moving downstream."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Misstates or contradicts part of the passage.",
+        "D": "Claims a cause or certainty the evidence does not establish."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>A field station checks all incoming equipment for moisture damage. When its old storeroom flooded, the instruments from the lower shelves needed repairs. Instruments moved to a new elevated rack just before the flood did not.</p>",
+      "explanation_html": "<p>Keeping the instrument groups separate supports the storage-height inference without extending it to every cause or setting.</p>",
+      "variation": "Combine facts to make the smallest supported inference",
+      "source_cards": [
+        6,
+        8,
+        11,
+        13
+      ],
+      "difficulty": 2,
+      "id": "L20-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "format_20_2",
+        "combine_facts",
+        "minimum_inference_rule"
+      ],
+      "choices": [
+        "Height was definitely the only factor affecting the instruments.",
+        "The flood permanently ended equipment checks.",
+        "All equipment on elevated shelves is immune to every kind of moisture damage.",
+        "The height of the storage location may have helped the instruments on the new rack avoid damage."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>Neighborhoods with community workbenches had more bicycle repairs recorded than neighborhoods without them. The researchers noted that the neighborhoods with benches already had more cyclists when benches were first installed.</p>",
+      "explanation_html": "<p>The earlier difference gives another possible explanation for the association.</p>",
+      "variation": "Distinguish an association from evidence of causation",
+      "source_cards": [
+        13,
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L20-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "minimum_inference_rule",
+        "format_20_3",
+        "association_caution"
+      ],
+      "choices": [
+        "The benches caused the difference in repair rates by themselves.",
+        "The neighborhoods without benches initially had more cyclists.",
+        "Workbenches and recorded repairs were associated, while preexisting differences in cycling could contribute to the pattern.",
+        "Cyclists repaired bicycles less often after benches opened."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>Researchers randomly assigned identical storage jars to two groups. They changed only the thickness of the lids. In the test, jars with thicker lids changed internal temperature more slowly after a sudden rise in room temperature.</p>",
+      "explanation_html": "<p>The randomized, controlled change in lid thickness supports the stated effect within the test.</p>",
+      "variation": "Use a controlled change to support a limited causal inference",
+      "source_cards": [
+        22,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L20-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_experiment",
+        "changed_condition_model"
+      ],
+      "choices": [
+        "Heavier jars caused the room temperature to rise.",
+        "Thicker lids keep food fresh in all storage locations.",
+        "Thicker lids slowed internal temperature changes in the test.",
+        "Thin lids slowed temperature changes more than thick ones."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "B": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which next action is best supported by the findings?</p>",
+      "stimulus_html": "<p>An engineer wants to reduce the number of blurred photos from an outdoor sensor. Comparisons show blur rises during high wind but stays roughly constant as brightness changes. Testing found the support shakes at the same times as the blur.</p>",
+      "explanation_html": "<p>The findings motivate addressing shaking under high wind. They do not provide comparable evidence for a lighting intervention.</p>",
+      "variation": "Connect a research goal to the appropriate next action",
+      "source_cards": [
+        25,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L20-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_20_4",
+        "research_action_model"
+      ],
+      "choices": [
+        "Change the color of images taken in bright daylight.",
+        "Test a way of stabilizing the support under windy conditions.",
+        "Replace the brightness meter because bright conditions produced most blurred photos.",
+        "Move the sensor indoors permanently without testing wind effects."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Misstates or contradicts part of the passage.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>The workshop tried two new ways of attaching labels. Labels tied to the objects were more likely to stay attached than labels clipped to storage sleeves. The workshop did not test either method under outdoor conditions.</p>",
+      "explanation_html": "<p>The observed comparison is limited to the two methods and the environments tested.</p>",
+      "variation": "Reject conclusions with a plausible but unsupported extra claim",
+      "source_cards": [
+        13,
+        17,
+        28,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L20-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "minimum_inference_rule",
+        "distractor_patterns",
+        "prove_and_disprove",
+        "format_20_5"
+      ],
+      "choices": [
+        "The tied labels stayed attached more often under the tested conditions.",
+        "The tied labels stayed attached more often indoors and would perform worse outdoors.",
+        "Clips never work for labeling any object.",
+        "The results show that labels on shelves were most reliable."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>Records show that a coastal workshop shipped jars to inland villages. Excavations at one inland village found jars with the workshop mark mixed among jars labeled with other marks. No shipping records survive for those other sources.</p>",
+      "explanation_html": "<p>The shipping records and mark jointly support participation by the coastal workshop at this site. Other marks and missing records limit a broader claim.</p>",
+      "variation": "Combine facts to make the smallest supported inference",
+      "source_cards": [
+        6,
+        8,
+        11,
+        13
+      ],
+      "difficulty": 3,
+      "id": "L20-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "format_20_2",
+        "combine_facts",
+        "minimum_inference_rule"
+      ],
+      "choices": [
+        "All jars at the village came from the coastal workshop.",
+        "The village used each mark to identify a customer rather than a maker.",
+        "Every inland village imported jars from the same workshop.",
+        "At least some jars in the inland village likely came from the coastal workshop, alongside jars of other origins."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "B": "Adds a claim or detail the passage does not support.",
+        "C": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>The authors found more insects in ponds where new shade screens were installed. Installation was prioritized in ponds that already had vegetation known to shelter insects. The authors did not measure insect counts before installation.</p>",
+      "explanation_html": "<p>Both features distinguish the sets of ponds. The design cannot establish how much of the result either feature explains.</p>",
+      "variation": "Distinguish an association from evidence of causation",
+      "source_cards": [
+        13,
+        19,
+        20
+      ],
+      "difficulty": 3,
+      "id": "L20-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "minimum_inference_rule",
+        "format_20_3",
+        "association_caution"
+      ],
+      "choices": [
+        "Screens necessarily attracted insects to the ponds.",
+        "Existing vegetation was the sole cause of the difference.",
+        "Screens change insect counts in every pond studied elsewhere.",
+        "The data cannot separate the effect of the screens from the difference in existing vegetation."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "B": "Claims a cause or certainty the evidence does not establish.",
+        "C": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>In a controlled experiment, equal sets of panels received either a matte or glossy coating. Each panel was tested under both bright and dim light. Matte panels caused less reflected glare in bright light, while the two groups differed little under dim light.</p>",
+      "explanation_html": "<p>The conclusion needs both lighting conditions, and it should remain about measured glare.</p>",
+      "variation": "Use a controlled change to support a limited causal inference",
+      "source_cards": [
+        22,
+        23
+      ],
+      "difficulty": 3,
+      "id": "L20-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_experiment",
+        "changed_condition_model"
+      ],
+      "choices": [
+        "The matte finish reduced glare under bright light and will improve reading speed everywhere.",
+        "Matte finish is always the better option for indoor displays.",
+        "In this test, the matte finish reduced reflected glare chiefly under bright light.",
+        "The experiment tested both finishes in dim light."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Includes a supported detail but joins it to an unsupported claim.",
+        "B": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "D": "Captures only one detail or part of the relevant idea."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which next action is best supported by the findings?</p>",
+      "stimulus_html": "<p>Staff want visitors to understand which parts of a historic stair are original. In a small trial, labels naming the year of the latest repair increased correct identification on the landing. On the steps themselves, visitors often missed the tiny labels altogether.</p>",
+      "explanation_html": "<p>The content helped where people saw it. The next step targets visibility on the steps while preserving that content.</p>",
+      "variation": "Connect a research goal to the appropriate next action",
+      "source_cards": [
+        25,
+        26
+      ],
+      "difficulty": 3,
+      "id": "L20-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_20_4",
+        "research_action_model"
+      ],
+      "choices": [
+        "Keep the dates and remove all labels from the steps because content alone has no value.",
+        "Keep the repair date on the labels and test larger or more visible labels on the steps.",
+        "Replace repair-date labels with labels describing current visitor numbers.",
+        "Adopt the tiny labels at every historic site based on the landing results."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which conclusion is best supported by the text?</p>",
+      "stimulus_html": "<p>A night survey recorded more owl calls in the valley than on the ridge. The researchers noted that wind carried sound away from ridge microphones more often. They could not directly count the birds at either site.</p>",
+      "explanation_html": "<p>The evidence is about a sound record affected by conditions, so the counts alone do not establish population size.</p>",
+      "variation": "Reject conclusions with a plausible but unsupported extra claim",
+      "source_cards": [
+        13,
+        17,
+        28,
+        29
+      ],
+      "difficulty": 3,
+      "id": "L20-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "minimum_inference_rule",
+        "distractor_patterns",
+        "prove_and_disprove",
+        "format_20_5"
+      ],
+      "choices": [
+        "The larger number of recorded calls in the valley does not by itself establish that more owls were present there.",
+        "Wind was conclusively responsible for every difference in the recordings.",
+        "The ridge wind affected recordings and frightened the owls away permanently.",
+        "More calls were recorded on the ridge."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Claims a cause or certainty the evidence does not establish.",
+        "C": "Includes a supported detail but joins it to an unsupported claim.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.990395+00",
+  "lesson_number": 20,
+  "difficulty_counts": {
+    "1": 0,
+    "2": 10,
+    "3": 5
+  }
+}

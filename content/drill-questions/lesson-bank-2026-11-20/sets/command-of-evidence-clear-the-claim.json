@@ -1,0 +1,594 @@
+{
+  "id": "02f35c92-e075-4e4a-86b4-eee7a3681f5d",
+  "title": "CLEAR the Claim: Command of Evidence",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use CLEAR to predict what would support or weaken a claim, evaluate hypothetical findings by their effect, and check supplied textual or quantitative evidence for accuracy and relevance.",
+  "cards": 44,
+  "spec": "docs/lesson-template-specs/command-of-evidence-clear-the-claim.json",
+  "source_spec_sha256": "ff7570b4ea9bef71ecce8153ad3469acda11b54b695c9d5a4833dab4d84ae0bb",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Predict a finding that would directly support the proposed mechanism": [
+      6,
+      8,
+      12,
+      13
+    ],
+    "Predict evidence that would weaken the proposed cause": [
+      10,
+      12,
+      15
+    ],
+    "Choose the quotation that directly illustrates the claim": [
+      17,
+      18,
+      20
+    ],
+    "Check reported numbers for accuracy and relevance to both parts of a claim": [
+      21,
+      22,
+      29,
+      30
+    ],
+    "Recognize when separate counts cannot support a claim about paired outcomes": [
+      29,
+      32,
+      33
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly support the explanation?</p>",
+      "stimulus_html": "<p>Old paper wrinkled less in display cases with felt strips wedged around the doors. A conservator proposes that the strips worked by reducing day-to-day swings in humidity inside the cases.</p>",
+      "explanation_html": "<p>The explanation depends on a reduction in humidity swings. Direct measurements under comparable conditions test that link.</p>",
+      "variation": "Predict a finding that would directly support the proposed mechanism",
+      "source_cards": [
+        6,
+        8,
+        12,
+        13
+      ],
+      "difficulty": 2,
+      "id": "L08-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "clear_process",
+        "lock_claim",
+        "format_7_1",
+        "hypothetical_support_model"
+      ],
+      "choices": [
+        "The felt was available in several colors.",
+        "The old paper wrinkled less in cases with felt strips.",
+        "Cases built without felt usually cost less to assemble.",
+        "Cases with the felt strips showed smaller daily humidity swings than the other cases under the same conditions."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "B": "Restates information from the text without addressing the requested relationship.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly weaken the explanation?</p>",
+      "stimulus_html": "<p>Two models of office chair were placed in the same room. Users chose the new model more often. The designer proposes that people preferred it because its taller back supported their shoulders.</p>",
+      "explanation_html": "<p>The same preference persists when the proposed cause is removed, which weakens the explanation.</p>",
+      "variation": "Predict evidence that would weaken the proposed cause",
+      "source_cards": [
+        10,
+        12,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L08-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "direction_switch",
+        "format_7_1",
+        "hypothetical_weaken_model"
+      ],
+      "choices": [
+        "The new model had a taller back than the old model.",
+        "The new chair was photographed for an instruction manual.",
+        "When the two chairs were fitted with backs of equal height, users continued to choose the new model at the same rate.",
+        "Several users found the room easy to locate."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Restates information from the text without addressing the requested relationship.",
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which quotation from the fictional letter best illustrates the stated claim?</p>",
+      "stimulus_html": "<p>A student claims that the letter’s writer values an imperfect object because it records a family memory. The writer is discussing a dented metal pitcher received from an aunt.</p>",
+      "explanation_html": "<p>The dent matters because it calls up an event involving the aunt. The alternatives do not connect the flaw to a memory.</p>",
+      "variation": "Choose the quotation that directly illustrates the claim",
+      "source_cards": [
+        17,
+        18,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L08-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_7_2",
+        "literature_variant",
+        "audit_three_tests"
+      ],
+      "choices": [
+        "“The handle is wide enough to hold with a thick glove.”",
+        "“The dent brings back the night Aunt Inez used the pitcher to catch rain under the broken roof.”",
+        "“A smooth new pitcher would look better on the table.”",
+        "“The glass bowl has stood untouched since last summer.”"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "C": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice most directly supports the student’s claim?</p>",
+      "stimulus_html": "<p>The table shows average water collected in milliliters measured in two groups of containers. A student claims that the treatment improved the outcome for small containers, whereas it did little for large ones.</p><table><thead><tr><th>Group</th><th>Comparison</th><th>Treatment</th></tr></thead><tbody><tr><td>Small</td><td>12</td><td>18</td></tr><tr><td>Large</td><td>17</td><td>17</td></tr></tbody></table>",
+      "explanation_html": "<p>Compare the two columns within each group. The small group increased and the large group stayed the same, which matches both parts of the claim.</p>",
+      "variation": "Check reported numbers for accuracy and relevance to both parts of a claim",
+      "source_cards": [
+        21,
+        22,
+        29,
+        30
+      ],
+      "difficulty": 2,
+      "id": "L08-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "data_passage_first",
+        "outside_in",
+        "format_7_3",
+        "accurate_not_enough"
+      ],
+      "choices": [
+        "Large containers changed from 12 to 18.",
+        "Small containers changed from 12 to 18, while large containers remained at 17.",
+        "Small treated containers registered 18.",
+        "Large containers changed from 17 to 18."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Assigns the small group’s values to the large group.",
+        "C": "This accurate value alone does not establish a change or contrast.",
+        "D": "Combines values from two different groups."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Can the researcher determine from the table how many people did both things?</p>",
+      "stimulus_html": "<p>A researcher collected the following two counts from the same group of 45 people. The results were reported separately.</p><table><thead><tr><th>Activity or result</th><th>Count</th></tr></thead><tbody><tr><td>Attended a planning session</td><td>32</td></tr><tr><td>Completed a survey</td><td>27</td></tr></tbody></table>",
+      "explanation_html": "<p>The totals restrict possible overlap, but several arrangements of the same individuals would yield the stated totals. The exact overlap needs paired observations.</p>",
+      "variation": "Recognize when separate counts cannot support a claim about paired outcomes",
+      "source_cards": [
+        29,
+        32,
+        33
+      ],
+      "difficulty": 2,
+      "id": "L08-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_7_3",
+        "format_7_4",
+        "scope_and_aggregation"
+      ],
+      "choices": [
+        "No. The table gives separate counts and does not say which people are in both groups.",
+        "Yes. Exactly 27 people are in both groups.",
+        "Yes. No one is in both groups.",
+        "Yes. Exactly 14 people are in both groups."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Assumes the smaller group is entirely inside the larger one.",
+        "C": "The separate counts allow overlap.",
+        "D": "The number found by subtracting the full group is only a minimum when the counts overlap."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly support the explanation?</p>",
+      "stimulus_html": "<p>Plots planted between rows of low shrubs had fewer broken stems during strong winds. A researcher proposes that the shrubs protect the stems by reducing wind speed at plant height.</p>",
+      "explanation_html": "<p>The proposed cause is lower wind speed at stem height. The matched wind measurements support that mechanism.</p>",
+      "variation": "Predict a finding that would directly support the proposed mechanism",
+      "source_cards": [
+        6,
+        8,
+        12,
+        13
+      ],
+      "difficulty": 2,
+      "id": "L08-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "clear_process",
+        "lock_claim",
+        "format_7_1",
+        "hypothetical_support_model"
+      ],
+      "choices": [
+        "The shrub plots had fewer broken stems after the storms.",
+        "The shrubs produced more flowers the following spring.",
+        "Several shrubs were planted a year before the other plants.",
+        "Wind measured at plant height was slower behind rows of low shrubs than in exposed plots during the same storms."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Restates information from the text without addressing the requested relationship.",
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly weaken the explanation?</p>",
+      "stimulus_html": "<p>Rates of chipped dishes fell after a restaurant switched to cloth shelf liners. A manager proposes that the liners prevented chips by stopping dishes from sliding as the shelves were opened.</p>",
+      "explanation_html": "<p>If sliding was unaffected, the manager’s proposed mechanism is less convincing.</p>",
+      "variation": "Predict evidence that would weaken the proposed cause",
+      "source_cards": [
+        10,
+        12,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L08-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "direction_switch",
+        "format_7_1",
+        "hypothetical_weaken_model"
+      ],
+      "choices": [
+        "New staff took less time to learn where the dishes belonged.",
+        "The restaurant counted chips after the switch.",
+        "In matching tests on the same shelves, dishes slid just as far on the cloth liners as on bare shelves.",
+        "Dishes on bare shelves moved farther than those on lined shelves."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "B": "Restates information from the text without addressing the requested relationship.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which quotation from the fictional letter best illustrates the stated claim?</p>",
+      "stimulus_html": "<p>A student claims that the narrator respects a coworker’s judgment even when it differs from her own. The narrator and coworker disagree over whether a raft is safe.</p>",
+      "explanation_html": "<p>The narrator states her different preference and acts on Tali’s judgment anyway.</p>",
+      "variation": "Choose the quotation that directly illustrates the claim",
+      "source_cards": [
+        17,
+        18,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L08-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_7_2",
+        "literature_variant",
+        "audit_three_tests"
+      ],
+      "choices": [
+        "“Tali and I carried the raft down together.”",
+        "“I told Tali his warning meant nothing to me.”",
+        "“I would have launched at dawn, but I waited because Tali had read these currents for years.”",
+        "“Dawn came later on this side of the river.”"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice most directly supports the student’s claim?</p>",
+      "stimulus_html": "<p>The table shows average shoot height in centimeters measured in two groups of planters. A student claims that the treatment improved the outcome for small containers, whereas it did little for large ones.</p><table><thead><tr><th>Group</th><th>Comparison</th><th>Treatment</th></tr></thead><tbody><tr><td>Small</td><td>8</td><td>13</td></tr><tr><td>Large</td><td>19</td><td>19</td></tr></tbody></table>",
+      "explanation_html": "<p>Compare the two columns within each group. The small group increased and the large group stayed the same, which matches both parts of the claim.</p>",
+      "variation": "Check reported numbers for accuracy and relevance to both parts of a claim",
+      "source_cards": [
+        21,
+        22,
+        29,
+        30
+      ],
+      "difficulty": 2,
+      "id": "L08-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "data_passage_first",
+        "outside_in",
+        "format_7_3",
+        "accurate_not_enough"
+      ],
+      "choices": [
+        "Large containers changed from 8 to 13.",
+        "Small containers changed from 8 to 13, while large containers remained at 19.",
+        "Small treated containers registered 13.",
+        "Large containers changed from 19 to 13."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Assigns the small group’s values to the large group.",
+        "C": "This accurate value alone does not establish a change or contrast.",
+        "D": "Combines values from two different groups."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Can the researcher determine from the table how many people did both things?</p>",
+      "stimulus_html": "<p>A researcher collected the following two counts from the same group of 120 people. The results were reported separately.</p><table><thead><tr><th>Activity or result</th><th>Count</th></tr></thead><tbody><tr><td>Tried the vocabulary guide</td><td>76</td></tr><tr><td>Improved on the next quiz</td><td>58</td></tr></tbody></table>",
+      "explanation_html": "<p>The totals restrict possible overlap, but several arrangements of the same individuals would yield the stated totals. The exact overlap needs paired observations.</p>",
+      "variation": "Recognize when separate counts cannot support a claim about paired outcomes",
+      "source_cards": [
+        29,
+        32,
+        33
+      ],
+      "difficulty": 3,
+      "id": "L08-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_7_3",
+        "format_7_4",
+        "scope_and_aggregation"
+      ],
+      "choices": [
+        "No. The table gives separate counts and does not say which people are in both groups.",
+        "Yes. Exactly 58 people are in both groups.",
+        "Yes. No one is in both groups.",
+        "Yes. Exactly 14 people are in both groups."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Assumes the smaller group is entirely inside the larger one.",
+        "C": "The separate counts allow overlap.",
+        "D": "The number found by subtracting the full group is only a minimum when the counts overlap."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly support the explanation?</p>",
+      "stimulus_html": "<p>Patches of a pavement test dried more quickly after small holes were added. Engineers suggest that the holes let more water flow below the surface, rather than merely changing how quickly it evaporated.</p>",
+      "explanation_html": "<p>Measuring the water beneath the surface directly distinguishes drainage from evaporation. Surface dryness alone is consistent with either process.</p>",
+      "variation": "Predict a finding that would directly support the proposed mechanism",
+      "source_cards": [
+        6,
+        8,
+        12,
+        13
+      ],
+      "difficulty": 3,
+      "id": "L08-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "clear_process",
+        "lock_claim",
+        "format_7_1",
+        "hypothetical_support_model"
+      ],
+      "choices": [
+        "The holes were easier to see in bright light than in shade.",
+        "Holes can be made in pavement with several different kinds of tool.",
+        "On sunny days, drilled patches warmed faster and had less visible surface water.",
+        "In equal shaded conditions, more water collected below patches with holes than below intact patches after the same amount was poured on each."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "B": "Restates information from the text without addressing the requested relationship.",
+        "C": "Includes a supported detail but joins it to an unsupported claim."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly weaken the explanation?</p>",
+      "stimulus_html": "<p>The birds at a city pond began nesting earlier after heat from a nearby maintenance building raised the water temperature. A researcher attributes the change to warmer water bringing insect prey earlier in spring.</p>",
+      "explanation_html": "<p>The explanation needs warmer water to move the insect supply earlier. Similar prey dates undermine that link while preserving the nesting observation.</p>",
+      "variation": "Predict evidence that would weaken the proposed cause",
+      "source_cards": [
+        10,
+        12,
+        15
+      ],
+      "difficulty": 3,
+      "id": "L08-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "direction_switch",
+        "format_7_1",
+        "hypothetical_weaken_model"
+      ],
+      "choices": [
+        "The warm pond reached a higher temperature in spring.",
+        "The maintenance building housed a new repair shop.",
+        "Insects appeared earlier at the warm pond than at the unheated pond.",
+        "In the warm and unheated ponds, the insect prey first appeared on similar dates, although birds at the warm pond still nested earlier."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Restates information from the text without addressing the requested relationship.",
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which quotation from the fictional letter best illustrates the stated claim?</p>",
+      "stimulus_html": "<p>A student claims that a character regards a quiet routine as an active way of caring for neighbors. The character tends a lamp at the top of a shared stair.</p>",
+      "explanation_html": "<p>The nightly task is linked to helping an unnamed neighbor find safe footing.</p>",
+      "variation": "Choose the quotation that directly illustrates the claim",
+      "source_cards": [
+        17,
+        18,
+        20
+      ],
+      "difficulty": 3,
+      "id": "L08-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_7_2",
+        "literature_variant",
+        "audit_three_tests"
+      ],
+      "choices": [
+        "“The lamp is made from a dull green metal.”",
+        "“I wish they would all carry their own lamps instead.”",
+        "“I trim its wick each evening so the last person home can see the worn place on the step.”",
+        "“Next door there is a much wider staircase.”"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice most directly supports the student’s claim?</p>",
+      "stimulus_html": "<p>The table shows average drying rate in grams per hour measured in two groups of storage bins. A student claims that the treatment improved the outcome for small containers, whereas it did little for large ones.</p><table><thead><tr><th>Group</th><th>Comparison</th><th>Treatment</th></tr></thead><tbody><tr><td>Small</td><td>11</td><td>16</td></tr><tr><td>Large</td><td>21</td><td>21</td></tr></tbody></table>",
+      "explanation_html": "<p>Compare the two columns within each group. The small group increased and the large group stayed the same, which matches both parts of the claim.</p>",
+      "variation": "Check reported numbers for accuracy and relevance to both parts of a claim",
+      "source_cards": [
+        21,
+        22,
+        29,
+        30
+      ],
+      "difficulty": 3,
+      "id": "L08-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "data_passage_first",
+        "outside_in",
+        "format_7_3",
+        "accurate_not_enough"
+      ],
+      "choices": [
+        "Large containers changed from 11 to 16.",
+        "Small containers changed from 11 to 16, while large containers remained at 21.",
+        "Small treated containers registered 16.",
+        "Large containers changed from 21 to 16."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Assigns the small group’s values to the large group.",
+        "C": "This accurate value alone does not establish a change or contrast.",
+        "D": "Combines values from two different groups."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Can the researcher determine from the table how many people did both things?</p>",
+      "stimulus_html": "<p>A researcher collected the following two counts from the same group of 68 people. The results were reported separately.</p><table><thead><tr><th>Activity or result</th><th>Count</th></tr></thead><tbody><tr><td>Borrowed a rain gauge</td><td>43</td></tr><tr><td>Submitted a weather record</td><td>36</td></tr></tbody></table>",
+      "explanation_html": "<p>The totals restrict possible overlap, but several arrangements of the same individuals would yield the stated totals. The exact overlap needs paired observations.</p>",
+      "variation": "Recognize when separate counts cannot support a claim about paired outcomes",
+      "source_cards": [
+        29,
+        32,
+        33
+      ],
+      "difficulty": 3,
+      "id": "L08-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_7_3",
+        "format_7_4",
+        "scope_and_aggregation"
+      ],
+      "choices": [
+        "No. The table gives separate counts and does not say which people are in both groups.",
+        "Yes. Exactly 36 people are in both groups.",
+        "Yes. No one is in both groups.",
+        "Yes. Exactly 11 people are in both groups."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Assumes the smaller group is entirely inside the larger one.",
+        "C": "The separate counts allow overlap.",
+        "D": "The number found by subtracting the full group is only a minimum when the counts overlap."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-20 15:06:37.251063+00",
+  "lesson_number": 8,
+  "difficulty_counts": {
+    "1": 0,
+    "2": 9,
+    "3": 6
+  }
+}

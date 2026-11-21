@@ -1,0 +1,629 @@
+{
+  "id": "21d20a69-dbbd-4aac-bafb-ae7a459c0da7",
+  "title": "Solve Subject–Verb Agreement with the Odd-One-Out Trick",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use he and they to classify complete verb phrases, treat a three-to-one split as a clue, and confirm the answer with the sentence’s actual subject and time relationships.",
+  "cards": 39,
+  "spec": "docs/lesson-template-specs/subject-verb-agreement-odd-one-out.json",
+  "source_spec_sha256": "9146d6771596df652ea54901c45e991b387e42eb25098d5945b348d019d66f8b",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Read the true subject through an intervening phrase": [
+      2,
+      4,
+      10,
+      11,
+      12
+    ],
+    "Classify the full verb phrase using its helping verb": [
+      4,
+      5,
+      7,
+      8
+    ],
+    "Use the time clue when agreement alone cannot settle the choice": [
+      14,
+      17,
+      27,
+      28
+    ],
+    "Resolve agreement in past forms and when no answer-count shortcut works": [
+      14,
+      23,
+      24,
+      25,
+      26
+    ],
+    "Use an ongoing past action to frame a later event": [
+      7,
+      27,
+      29,
+      30
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Under the current rules, the box of spare keys ______ in a locked drawer.</p>",
+      "explanation_html": "<p>The subject is the singular box. “Of spare keys” modifies it. The box belongs.</p>",
+      "variation": "Read the true subject through an intervening phrase",
+      "source_cards": [
+        2,
+        4,
+        10,
+        11,
+        12
+      ],
+      "difficulty": 1,
+      "id": "L36-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_agreement",
+        "verbs_frames",
+        "verbs_interruptions",
+        "verbs_interruptions_example",
+        "verbs_pattern"
+      ],
+      "choices": [
+        "belong",
+        "have belonged",
+        "are belonging",
+        "belongs"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Agrees with the nearby plural keys.",
+        "B": "Uses a plural helper.",
+        "C": "Uses a plural helper and an unsuitable form."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Several recordings that the archive received last month ______ currently being restored.</p>",
+      "explanation_html": "<p>Several recordings is plural, and “currently” calls for the ongoing present action. “Are being restored” is the full verb phrase.</p>",
+      "variation": "Classify the full verb phrase using its helping verb",
+      "source_cards": [
+        4,
+        5,
+        7,
+        8
+      ],
+      "difficulty": 2,
+      "id": "L36-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_frames",
+        "verbs_frames_example",
+        "verbs_phrase",
+        "verbs_phrase_example"
+      ],
+      "choices": [
+        "is",
+        "was",
+        "are",
+        "has"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Uses a singular present helper.",
+        "B": "Uses a singular past helper.",
+        "D": "Does not form a complete progressive construction here."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Last night, after the audience went home, the stage crew ______ all the equipment into storage.</p>",
+      "explanation_html": "<p>The crew completed the action last night. “Moved” is a complete past-tense verb.</p>",
+      "variation": "Use the time clue when agreement alone cannot settle the choice",
+      "source_cards": [
+        14,
+        17,
+        27,
+        28
+      ],
+      "difficulty": 1,
+      "id": "L36-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_counterexample",
+        "verbs_both",
+        "verbs_time",
+        "verbs_time_example"
+      ],
+      "choices": [
+        "moves",
+        "moved",
+        "will move",
+        "moving"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Expresses a present action.",
+        "C": "Places the event in the future.",
+        "D": "Leaves the sentence without a finite verb."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>During the restoration, the stone steps near the gate ______ unsafe for visitors until builders replaced them.</p>",
+      "explanation_html": "<p>The steps are plural, and the restoration is a completed past period. Choose the plural past form “were.”</p>",
+      "variation": "Resolve agreement in past forms and when no answer-count shortcut works",
+      "source_cards": [
+        14,
+        23,
+        24,
+        25,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L36-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_counterexample",
+        "verbs_past",
+        "verbs_past_example",
+        "verbs_split",
+        "verbs_split_example"
+      ],
+      "choices": [
+        "was",
+        "were",
+        "is",
+        "are"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Agrees with singular gate rather than plural steps.",
+        "C": "Uses singular agreement and present tense.",
+        "D": "Uses present tense for a finished past period."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The workers ______ the old coating when a second crew arrived to help them finish.</p>",
+      "explanation_html": "<p>The plural workers were already engaged in an action that was still ongoing when the second crew arrived.</p>",
+      "variation": "Use an ongoing past action to frame a later event",
+      "source_cards": [
+        7,
+        27,
+        29,
+        30
+      ],
+      "difficulty": 2,
+      "id": "L36-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_phrase",
+        "verbs_time",
+        "verbs_ongoing",
+        "verbs_ongoing_example"
+      ],
+      "choices": [
+        "were removing",
+        "was removing",
+        "removes",
+        "will remove"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Uses singular agreement.",
+        "C": "Uses singular present agreement.",
+        "D": "Places the work after the past event."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The set of pumps installed near the southern ramps ______ only one room at a time when it operates.</p>",
+      "explanation_html": "<p>The set is a singular subject, and the sentence describes what it does under normal operation. “Serves” supplies the matching verb.</p>",
+      "variation": "Read the true subject through an intervening phrase",
+      "source_cards": [
+        2,
+        4,
+        10,
+        11,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L36-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_agreement",
+        "verbs_frames",
+        "verbs_interruptions",
+        "verbs_interruptions_example",
+        "verbs_pattern"
+      ],
+      "choices": [
+        "serve",
+        "have served",
+        "were serving",
+        "serves"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Agrees with the plural noun pumps.",
+        "B": "Uses a plural helper.",
+        "C": "Uses a plural past helper."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Since the new sign was installed, the visitor count ______ steadily increasing.</p>",
+      "explanation_html": "<p>The subject count is singular. “Since” gives the time span, and “has been increasing” expresses the continuing change.</p>",
+      "variation": "Classify the full verb phrase using its helping verb",
+      "source_cards": [
+        4,
+        5,
+        7,
+        8
+      ],
+      "difficulty": 2,
+      "id": "L36-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_frames",
+        "verbs_frames_example",
+        "verbs_phrase",
+        "verbs_phrase_example"
+      ],
+      "choices": [
+        "have been",
+        "are",
+        "has been",
+        "were"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Agrees with plural visitors rather than singular count.",
+        "B": "Uses a plural helper.",
+        "D": "Uses a plural past helper."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Next month, before the new tanks arrive, the technicians ______ the rooms for the first time.</p>",
+      "explanation_html": "<p>The preparation is planned for a future time and has not happened yet. “Will prepare” fits that timing.</p>",
+      "variation": "Use the time clue when agreement alone cannot settle the choice",
+      "source_cards": [
+        14,
+        17,
+        27,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L36-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_counterexample",
+        "verbs_both",
+        "verbs_time",
+        "verbs_time_example"
+      ],
+      "choices": [
+        "prepared",
+        "has prepared",
+        "will prepare",
+        "preparing"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Places the first event in the past.",
+        "B": "Uses singular agreement and the wrong time.",
+        "D": "Leaves the sentence without a complete verb."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>At last night’s preview, the row of spotlights ______ too bright until the crew dimmed it.</p>",
+      "explanation_html": "<p>The row is the singular subject. The event took place last night, so the sentence requires “was.”</p>",
+      "variation": "Resolve agreement in past forms and when no answer-count shortcut works",
+      "source_cards": [
+        14,
+        23,
+        24,
+        25,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L36-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_counterexample",
+        "verbs_past",
+        "verbs_past_example",
+        "verbs_split",
+        "verbs_split_example"
+      ],
+      "choices": [
+        "were",
+        "was",
+        "is",
+        "are"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Agrees with the plural spotlights.",
+        "C": "Uses present tense.",
+        "D": "Uses plural agreement and present tense."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The sculptor ______ a fresh mold when the power went out, interrupting her work.</p>",
+      "explanation_html": "<p>The sculptor is singular. The outage interrupted an action already underway, which calls for “was preparing.”</p>",
+      "variation": "Use an ongoing past action to frame a later event",
+      "source_cards": [
+        7,
+        27,
+        29,
+        30
+      ],
+      "difficulty": 2,
+      "id": "L36-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_phrase",
+        "verbs_time",
+        "verbs_ongoing",
+        "verbs_ongoing_example"
+      ],
+      "choices": [
+        "was preparing",
+        "were preparing",
+        "has prepared",
+        "will prepare"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Uses a plural helper.",
+        "C": "Treats the preparation as completed and uses the wrong time frame.",
+        "D": "Makes the preparation future."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The sleeves of the protective jacket ______ heat from reaching the wearer’s arms.</p>",
+      "explanation_html": "<p>The sleeves are the plural subject. The singular jacket belongs to an intervening prepositional phrase.</p>",
+      "variation": "Read the true subject through an intervening phrase",
+      "source_cards": [
+        2,
+        4,
+        10,
+        11,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L36-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_agreement",
+        "verbs_frames",
+        "verbs_interruptions",
+        "verbs_interruptions_example",
+        "verbs_pattern"
+      ],
+      "choices": [
+        "prevents",
+        "has prevented",
+        "is preventing",
+        "prevent"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Agrees with the singular jacket.",
+        "B": "Uses a singular helper.",
+        "C": "Uses a singular helper."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Today, the devices in the cabinet ______ already stopped transmitting.</p>",
+      "explanation_html": "<p>The devices are plural. “Have stopped” is the complete verb phrase that agrees and fits the completed event.</p>",
+      "variation": "Classify the full verb phrase using its helping verb",
+      "source_cards": [
+        4,
+        5,
+        7,
+        8
+      ],
+      "difficulty": 2,
+      "id": "L36-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_frames",
+        "verbs_frames_example",
+        "verbs_phrase",
+        "verbs_phrase_example"
+      ],
+      "choices": [
+        "has",
+        "is",
+        "was",
+        "have"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Agrees with singular cabinet.",
+        "B": "Cannot complete the perfect form.",
+        "C": "Cannot complete the perfect form and is singular."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The fans ______ in 1987, the same year the hall opened, and were removed decades later.</p>",
+      "explanation_html": "<p>The fans are plural and received the action in a specified past year. “Were installed” fits both constraints.</p>",
+      "variation": "Use the time clue when agreement alone cannot settle the choice",
+      "source_cards": [
+        14,
+        17,
+        27,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L36-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_counterexample",
+        "verbs_both",
+        "verbs_time",
+        "verbs_time_example"
+      ],
+      "choices": [
+        "are installed",
+        "was installed",
+        "were installed",
+        "have installed"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Places the installation in the present.",
+        "B": "Uses singular agreement.",
+        "D": "Makes the fans the actors and uses the wrong time."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>When the survey ended last year, the balance of the funds ______ still available, so the director transferred it that day.</p>",
+      "explanation_html": "<p>The pronoun “it” also points to the singular balance. It was available in a specified past period.</p>",
+      "variation": "Resolve agreement in past forms and when no answer-count shortcut works",
+      "source_cards": [
+        14,
+        23,
+        24,
+        25,
+        26
+      ],
+      "difficulty": 3,
+      "id": "L36-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_counterexample",
+        "verbs_past",
+        "verbs_past_example",
+        "verbs_split",
+        "verbs_split_example"
+      ],
+      "choices": [
+        "were",
+        "was",
+        "is",
+        "are"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Agrees with plural funds.",
+        "C": "Ignores the completed past context.",
+        "D": "Uses present tense and plural agreement."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The crews responsible for the north wing ______ replacement panels in the rain when a loose cable brought the installation to a temporary stop.</p>",
+      "explanation_html": "<p>The plural crews were in the middle of positioning the panels when the interruption occurred.</p>",
+      "variation": "Use an ongoing past action to frame a later event",
+      "source_cards": [
+        7,
+        27,
+        29,
+        30
+      ],
+      "difficulty": 3,
+      "id": "L36-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "verbs_phrase",
+        "verbs_time",
+        "verbs_ongoing",
+        "verbs_ongoing_example"
+      ],
+      "choices": [
+        "were positioning",
+        "was positioning",
+        "have positioned",
+        "will position"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Uses an incorrect singular helper.",
+        "C": "Does not fit the unfinished action interrupted by the cable.",
+        "D": "Places the action after the already stated interruption."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.133996+00",
+  "lesson_number": 36,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 11,
+    "3": 2
+  }
+}

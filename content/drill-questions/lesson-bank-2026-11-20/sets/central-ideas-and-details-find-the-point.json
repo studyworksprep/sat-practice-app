@@ -1,0 +1,587 @@
+{
+  "id": "bfc5f881-d4e5-4001-b07e-d3f9b91fdc28",
+  "title": "Find the Point: Main Topics, Central Ideas, and Details",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use Find the Point to identify the main topic, state the central idea, or locate a requested detail, matching the question’s job while preserving the text’s meaning and limits.",
+  "cards": 35,
+  "spec": "docs/lesson-template-specs/central-ideas-and-details-find-the-point.json",
+  "source_spec_sha256": "74f62ae102be1691a650d3f73e2fcc5149c7542e123e0221a5b9b0562c7e9b17",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Name the main topic at the right level of detail": [
+      5,
+      6,
+      10
+    ],
+    "State the overall point using both the method and its result": [
+      2,
+      10,
+      15
+    ],
+    "Find the specific detail the question asks about": [
+      8,
+      9,
+      17,
+      26
+    ],
+    "Preserve both sides of the contrast that carries the point": [
+      19,
+      20,
+      22
+    ],
+    "Use a character’s reaction to identify the point of a scene": [
+      22,
+      24,
+      26
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best identifies the main topic of the text?</p>",
+      "stimulus_html": "<p>The Morrow Library cut the late return rate for its tool collection by adding an outdoor return locker. Borrowers could then return drills and spades even when the library was closed. The branch plans to keep the locker after its trial year.</p>",
+      "explanation_html": "<p>The passage centers on the new return option and what it does for the tool collection.</p>",
+      "variation": "Name the main topic at the right level of detail",
+      "source_cards": [
+        5,
+        6,
+        10
+      ],
+      "difficulty": 1,
+      "id": "L17-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "dd3ce622-3c3f-5427-87ba-5a10aed4534a",
+        "3af8af43-becf-40db-b546-96cc90b8179b",
+        "43781c7b-b2cb-49dd-ae50-5d6af09dac63"
+      ],
+      "choices": [
+        "The locker’s trial year alone",
+        "The history of borrowing tools from libraries",
+        "The library’s way of making tool returns easier",
+        "The kinds of spades kept by the library"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "B": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>A school compared two ways of labeling its lost-property shelves. Under the old system, items were grouped by color. A new system grouped them by the date they were found. During the new system’s trial, students located their belongings more quickly.</p>",
+      "explanation_html": "<p>The point combines the change in grouping with the measured result.</p>",
+      "variation": "State the overall point using both the method and its result",
+      "source_cards": [
+        2,
+        10,
+        15
+      ],
+      "difficulty": 1,
+      "id": "L17-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cd9f26ce-8da4-41c8-b67c-4c6476cfba97",
+        "43781c7b-b2cb-49dd-ae50-5d6af09dac63",
+        "bd8919f4-adf4-41fb-ad2d-d3875c271f51"
+      ],
+      "choices": [
+        "The old shelves grouped items by color.",
+        "Grouping lost items by date helped students find their belongings more quickly.",
+        "Students found objects fastest when shelves had no labels.",
+        "The new labels prevented students from losing their belongings."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "C": "Adds a claim or detail the passage does not support.",
+        "D": "Claims a cause or certainty the evidence does not establish."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>According to the text, how were suppliers’ bills filed?</p>",
+      "stimulus_html": "<p>Archivists cataloged the letters of a watchmaker. Letters from apprentices were filed by date, while bills from suppliers were filed by company name. Envelopes with unreadable addresses went into a separate folder.</p>",
+      "explanation_html": "<p>The passage distinguishes letters from bills. It says the suppliers’ bills were filed by company name.</p>",
+      "variation": "Find the specific detail the question asks about",
+      "source_cards": [
+        8,
+        9,
+        17,
+        26
+      ],
+      "difficulty": 1,
+      "id": "L17-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ce914f50-b204-5334-978c-067446d7d81d",
+        "52fa6cf0-522c-5070-beba-fa1dc60e5558",
+        "13ae927b-883f-458d-b538-3f718c8f6265",
+        "9c7bee1e-5d60-4fc1-b5da-d2030b61c940"
+      ],
+      "choices": [
+        "By company name",
+        "By date",
+        "By address",
+        "By the cost of the materials"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>For many years, the town mailed one annual schedule for its buses. Those schedules were simple to keep, but when a construction project changed a route, the printed copy went out of date. The town kept the annual schedule and added weekly notices about temporary changes.</p>",
+      "explanation_html": "<p>The point is the compromise between a durable printed guide and changing information.</p>",
+      "variation": "Preserve both sides of the contrast that carries the point",
+      "source_cards": [
+        19,
+        20,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L17-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "24fc7cb9-a095-556c-a6e0-ca4e3d466378",
+        "c3a9b66f-354f-428f-b091-27497c16749c",
+        "041e9993-4988-4284-b93e-ccdc6b20709a"
+      ],
+      "choices": [
+        "The town kept the useful printed schedule and added a way to communicate temporary route changes.",
+        "The town replaced its complete bus schedule with weekly bus timetables.",
+        "Construction changed one bus route.",
+        "Printed schedules cost less after notices were added."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Misstates or contradicts part of the passage.",
+        "C": "Captures only one detail or part of the relevant idea.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>When Noa opened the tool shed, her grandfather’s name was still scratched into the bench. She ran her finger over the letters before putting the new equipment down. For months she had planned to replace the bench, but that afternoon she decided to sand and oil it.</p>",
+      "explanation_html": "<p>The scene turns on her change of decision after seeing the name.</p>",
+      "variation": "Use a character’s reaction to identify the point of a scene",
+      "source_cards": [
+        22,
+        24,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L17-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "041e9993-4988-4284-b93e-ccdc6b20709a",
+        "8c823f12-8edb-4656-9ce4-b865c53985c9",
+        "9c7bee1e-5d60-4fc1-b5da-d2030b61c940"
+      ],
+      "choices": [
+        "Noa uses a shed to keep equipment dry.",
+        "Noa decides the old bench is no longer worth keeping.",
+        "Noa regrets buying equipment her grandfather refused to use.",
+        "Seeing her grandfather’s name leads Noa to preserve the old bench."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best identifies the main topic of the text?</p>",
+      "stimulus_html": "<p>Some street trees in Norake have shallow roots that lift pavement. The city began testing porous rubber panels around the trees. After one year, the panels flexed without opening the wide gaps found in older concrete surfaces.</p>",
+      "explanation_html": "<p>The roots motivate a test of a new surface. The trial and its result belong in the topic.</p>",
+      "variation": "Name the main topic at the right level of detail",
+      "source_cards": [
+        5,
+        6,
+        10
+      ],
+      "difficulty": 1,
+      "id": "L17-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "dd3ce622-3c3f-5427-87ba-5a10aed4534a",
+        "3af8af43-becf-40db-b546-96cc90b8179b",
+        "43781c7b-b2cb-49dd-ae50-5d6af09dac63"
+      ],
+      "choices": [
+        "Gaps in concrete pavement",
+        "A plan to remove shallow-rooted trees",
+        "A test of flexible pavement around street trees",
+        "The history of paving city streets"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "B": "Adds a claim or detail the passage does not support.",
+        "D": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>Researchers expected an insulating wrap to work equally well on all pipes. In a trial, the wrap slowed heat loss substantially on narrow pipes but had little effect on wide pipes. The researchers recommended testing pipe size before purchasing the wrap.</p>",
+      "explanation_html": "<p>The prediction sets up the finding that the benefit depends on width. The recommendation is based on that difference.</p>",
+      "variation": "State the overall point using both the method and its result",
+      "source_cards": [
+        2,
+        10,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L17-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cd9f26ce-8da4-41c8-b67c-4c6476cfba97",
+        "43781c7b-b2cb-49dd-ae50-5d6af09dac63",
+        "bd8919f4-adf4-41fb-ad2d-d3875c271f51"
+      ],
+      "choices": [
+        "The wrap worked equally well on the two kinds of pipes.",
+        "The wrap’s benefit varied with pipe size, making size important to consider before buying it.",
+        "The trial included narrow pipes.",
+        "Insulating wraps generally work best on all uncovered pipes."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Misstates or contradicts part of the passage.",
+        "C": "Captures only one detail or part of the relevant idea.",
+        "D": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which lamp lasted the longest at high power?</p>",
+      "stimulus_html": "<p>Engineers measured how long three lamps stayed lit at two settings. Lamp J lasted eight hours at low power and five at high power. Lamp K lasted seven and six hours, respectively. Lamp L lasted nine and four.</p>",
+      "explanation_html": "<p>The question asks about high power. The high-power values are five, six, and four hours, and six is the largest.</p>",
+      "variation": "Find the specific detail the question asks about",
+      "source_cards": [
+        8,
+        9,
+        17,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L17-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ce914f50-b204-5334-978c-067446d7d81d",
+        "52fa6cf0-522c-5070-beba-fa1dc60e5558",
+        "13ae927b-883f-458d-b538-3f718c8f6265",
+        "9c7bee1e-5d60-4fc1-b5da-d2030b61c940"
+      ],
+      "choices": [
+        "Lamp J",
+        "Lamp K",
+        "Lamp L",
+        "All three tied"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Misstates or contradicts part of the passage."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>Handwritten rehearsal logs showed which parts of a song gave a choir trouble, but they rarely captured how the passages actually sounded. Recordings preserved the sound, while the logs explained what the director wanted changed. The archive kept both.</p>",
+      "explanation_html": "<p>Both records contribute distinct information, which explains why the archive retained both.</p>",
+      "variation": "Preserve both sides of the contrast that carries the point",
+      "source_cards": [
+        19,
+        20,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L17-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "24fc7cb9-a095-556c-a6e0-ca4e3d466378",
+        "c3a9b66f-354f-428f-b091-27497c16749c",
+        "041e9993-4988-4284-b93e-ccdc6b20709a"
+      ],
+      "choices": [
+        "The recordings and logs preserved different, complementary information about rehearsals.",
+        "Handwritten logs explained how the archive stored its recordings.",
+        "Recordings explained the director’s intentions better than the logs.",
+        "Recording is the only reliable way to document a rehearsal."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>Ben had assumed that the first rehearsal would be run by the director. Instead, the most experienced players took turns guiding small groups. By the break, Ben had asked one of them a question he had been too embarrassed to raise at a full rehearsal.</p>",
+      "explanation_html": "<p>The second half shows the effect of the unusual format on Ben.</p>",
+      "variation": "Use a character’s reaction to identify the point of a scene",
+      "source_cards": [
+        22,
+        24,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L17-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "041e9993-4988-4284-b93e-ccdc6b20709a",
+        "8c823f12-8edb-4656-9ce4-b865c53985c9",
+        "9c7bee1e-5d60-4fc1-b5da-d2030b61c940"
+      ],
+      "choices": [
+        "Ben wants the director to stop rehearsals.",
+        "Experienced players took turns leading groups.",
+        "The groups gave Ben a chance to ask a question, so he decided to become a director.",
+        "The rehearsal’s unexpected format makes it easier for Ben to ask for help."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Adds a claim or detail the passage does not support.",
+        "B": "Captures only one detail or part of the relevant idea.",
+        "C": "Includes a supported detail but joins it to an unsupported claim."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best identifies the main topic of the text?</p>",
+      "stimulus_html": "<p>Conservators repairing a paper screen used thin strips of dyed tissue to join its torn sections. When the screen was lit from behind, the repairs became visible. The team adjusted the tint of the tissue so the strips blended more evenly with the older paper.</p>",
+      "explanation_html": "<p>Both the tearing and the lighting give context for the conservators’ task of making their repair blend in.</p>",
+      "variation": "Name the main topic at the right level of detail",
+      "source_cards": [
+        5,
+        6,
+        10
+      ],
+      "difficulty": 2,
+      "id": "L17-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "dd3ce622-3c3f-5427-87ba-5a10aed4534a",
+        "3af8af43-becf-40db-b546-96cc90b8179b",
+        "43781c7b-b2cb-49dd-ae50-5d6af09dac63"
+      ],
+      "choices": [
+        "The act of lighting a paper screen from behind",
+        "Why dyed tissue was unsuitable for any repair",
+        "The conservators’ method for making paper-screen repairs less visible",
+        "How the original screen was made"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "B": "Misstates or contradicts part of the passage.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>A town switched part of its waterfront lighting to downward-facing fixtures to reduce glare on the water. Photographs from a designated viewpoint showed fewer bright reflections after the switch. The study did not examine whether fish populations changed.</p>",
+      "explanation_html": "<p>The passage has evidence about reflections in the specified photographs, while its last sentence sets an explicit limit.</p>",
+      "variation": "State the overall point using both the method and its result",
+      "source_cards": [
+        2,
+        10,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L17-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cd9f26ce-8da4-41c8-b67c-4c6476cfba97",
+        "43781c7b-b2cb-49dd-ae50-5d6af09dac63",
+        "bd8919f4-adf4-41fb-ad2d-d3875c271f51"
+      ],
+      "choices": [
+        "The town determined how lighting affects the number of fish.",
+        "Reflections fell and fish populations recovered.",
+        "The lighting change reduced reflections at the viewpoint examined.",
+        "Downward-facing lights eliminate glare across the whole waterfront."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "D": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Why did the volunteers put off scanning the posters?</p>",
+      "stimulus_html": "<p>The Cedar Theatre’s volunteers first scanned the programs from its opening season. They planned to scan posters next, but some posters were too wide for the equipment. Instead, they created an index of ticket stubs while waiting for a wider scanner.</p>",
+      "explanation_html": "<p>The passage gives the scanner’s width as the reason the posters were postponed.</p>",
+      "variation": "Find the specific detail the question asks about",
+      "source_cards": [
+        8,
+        9,
+        17,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L17-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ce914f50-b204-5334-978c-067446d7d81d",
+        "52fa6cf0-522c-5070-beba-fa1dc60e5558",
+        "13ae927b-883f-458d-b538-3f718c8f6265",
+        "9c7bee1e-5d60-4fc1-b5da-d2030b61c940"
+      ],
+      "choices": [
+        "The programs had not been scanned yet.",
+        "The posters were too wide for the scanner.",
+        "Volunteers had decided to index the posters instead.",
+        "The posters were too damaged to handle."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Misstates or contradicts part of the passage.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>A light-colored coating kept test benches cooler in the afternoon sun. In the shade, however, benches with and without the coating registered similar temperatures. The team advised coating benches in open plazas and leaving shaded benches untreated.</p>",
+      "explanation_html": "<p>The conclusion needs the effect in both conditions. The recommendation follows from that difference.</p>",
+      "variation": "Preserve both sides of the contrast that carries the point",
+      "source_cards": [
+        19,
+        20,
+        22
+      ],
+      "difficulty": 3,
+      "id": "L17-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "24fc7cb9-a095-556c-a6e0-ca4e3d466378",
+        "c3a9b66f-354f-428f-b091-27497c16749c",
+        "041e9993-4988-4284-b93e-ccdc6b20709a"
+      ],
+      "choices": [
+        "The coating lowered temperatures in sunlight but offered little cooling in the shade.",
+        "The coating cooled sunny benches, so shade must make untreated benches warmer.",
+        "The team reported similar temperatures for shaded benches.",
+        "The coating reduces temperature wherever it is applied."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Captures only one detail or part of the relevant idea.",
+        "D": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>When Lin returned to the river landing, she expected the repaired stairs to look different. The new steps were cut to match the old ones, down to the shallow groove where boaters dragged their ropes. She paused at the top longer than she had intended, pleased that the carpenter had kept that small feature.</p>",
+      "explanation_html": "<p>Her surprise, pause, and pleasure all concern continuity with a familiar feature.</p>",
+      "variation": "Use a character’s reaction to identify the point of a scene",
+      "source_cards": [
+        22,
+        24,
+        26
+      ],
+      "difficulty": 3,
+      "id": "L17-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "041e9993-4988-4284-b93e-ccdc6b20709a",
+        "8c823f12-8edb-4656-9ce4-b865c53985c9",
+        "9c7bee1e-5d60-4fc1-b5da-d2030b61c940"
+      ],
+      "choices": [
+        "Lin thinks the carpenter should have built a new landing elsewhere.",
+        "The steps have a shallow groove where ropes drag.",
+        "The carpenter restored the groove because Lin had insisted on it.",
+        "Lin appreciates that the repair retains a familiar detail of the old landing."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Adds a claim or detail the passage does not support.",
+        "B": "Captures only one detail or part of the relevant idea.",
+        "C": "Claims a cause or certainty the evidence does not establish."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-16 18:49:55.221935+00",
+  "lesson_number": 17,
+  "difficulty_counts": {
+    "1": 4,
+    "2": 9,
+    "3": 2
+  }
+}

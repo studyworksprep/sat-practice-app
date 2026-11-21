@@ -6,10 +6,9 @@
 // the right next screen, stamping plan_task_id onto anything it spawns so
 // the §2.1 completion triggers can mark the task done automatically:
 //
-//   drill / practice_set → build a practice_session from the task's
-//        filter_criteria (skill/domain codes straight off questions_v2's
-//        inline taxonomy), plan_task_id set → session runner. Completion
-//        is automatic (trg_plan_task_from_session).
+//   drill / practice_set → open the linked lesson's original drills or
+//        draw from the SAT bank for mixed and standalone skill practice.
+//        plan_task_id links the session runner to automatic completion.
 //   full_test → the test hub (or a pinned test), keeping the checkpoint
 //        linked from launch through completion.
 //   lesson → the specific lesson when payload/lesson_topics resolve one,
@@ -47,6 +46,7 @@ import {
 // scoring is the same intake policy the queue itself grew out of.
 import { buildWeakQueue, selectDrillQuestionIds } from '@/lib/practice/weak-queue';
 import { recommendLessonsForSkills } from '@/lib/lesson/recommend';
+import { selectLessonPracticeQuestionIds } from '@/lib/lesson/practice-drill';
 import { partitionByTechnique } from '@/lib/practice/technique-match';
 import type { PlanTaskType } from '@/lib/plan/generate-plan';
 import type { Json } from '@/lib/types/database';
@@ -138,6 +138,42 @@ async function openLesson(
   redirect(`/learn/${lessonId}?planTask=${taskId}`);
 }
 
+async function resolveDrillLesson(
+  supabase: TypedSupabaseClient,
+  planId: string,
+  taskType: 'drill' | 'practice_set',
+  payload: Record<string, unknown>,
+): Promise<string | null> {
+  if (payload.drill_role === 'mixed') return null;
+  if (payload.lesson_id != null) {
+    return parsePlanTaskId(payload.lesson_id) ?? fail('This drill’s lesson is unavailable.');
+  }
+
+  // Older skills-based plans group the initial lesson and its drill.
+  // Resolve only an unambiguous pair from this plan.
+  const unitKey = str(payload, 'plan_unit_key');
+  const skillCode = str(payload, 'skill_code');
+  if (taskType !== 'drill' || !unitKey || !skillCode) return null;
+  const { data: lessons, error } = await supabase.from('plan_tasks')
+    .select('payload, completed_via')
+    .eq('plan_id', planId)
+    .eq('task_type', 'lesson')
+    .eq('payload->>plan_unit_key', unitKey)
+    .eq('payload->>skill_code', skillCode)
+    .limit(2);
+  if (error) fail('Could not look up the lesson for this drill.');
+  if (lessons?.length !== 1) return null;
+
+  const lesson = lessons[0];
+  const lessonPayload = (lesson.payload ?? {}) as Record<string, unknown>;
+  if (lessonPayload.assignment_id) return null;
+  const completedLesson = lesson.completed_via?.match(/^lesson:(.+)$/)?.[1];
+  const lessonId = parsePlanTaskId(lessonPayload.lesson_id) ?? parsePlanTaskId(completedLesson);
+  if (lessonId) return lessonId;
+  const recommendations = await recommendLessonsForSkills(supabase, [skillCode]);
+  return recommendations.get(skillCode)?.[0]?.lessonId ?? null;
+}
+
 export async function startPlanTask(formData: FormData): Promise<void> {
   let ctx;
   try {
@@ -181,6 +217,24 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       if (!rl.ok) fail('Too many session starts. Please wait a moment and try again.');
 
       const fc = (payload.filter_criteria ?? {}) as Record<string, unknown>;
+      const count = Math.min(
+        Math.max(Math.floor(num(fc, 'count') ?? DEFAULT_DRILL_COUNT), 1),
+        MAX_DRILL_COUNT,
+      );
+      const lessonId = await resolveDrillLesson(supabase, plan.id, task.taskType, payload);
+      if (lessonId) {
+        const questionIds = await selectLessonPracticeQuestionIds(supabase, user.id, lessonId, count)
+          .catch(() => fail('Could not load the lesson’s drill questions. Please try again.'));
+        if (questionIds.length === 0) fail('No drill questions are available for this lesson yet.');
+        return startPractice(supabase, task.id, questionIds, {
+          kind: 'lesson_practice',
+          lesson_id: lessonId,
+          drill_role: 'practice',
+          count,
+          actual_size: questionIds.length,
+        });
+      }
+
       const skillCode = str(fc, 'skill_code') ?? str(payload, 'skill_code');
       const domainCode = str(fc, 'domain_code') ?? str(payload, 'domain_code');
       // Syllabus drills (curriculum_unit_steps) may span several skills
@@ -200,11 +254,6 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       if (!skillCodes && !domainCode) {
         fail('This drill has no skill attached — ask your tutor to fix it.');
       }
-      const count = Math.min(
-        Math.max(num(fc, 'count') ?? DEFAULT_DRILL_COUNT, 1),
-        MAX_DRILL_COUNT,
-      );
-
       // Candidates from the inline v2 taxonomy, easy→hard (§3.2
       // difficulty ramping — the drill warms up before it bites;
       // unknown difficulty sorts last), display_code as the

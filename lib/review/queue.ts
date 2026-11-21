@@ -32,6 +32,7 @@ import type { QuestionItemType, ReviewItemType, ReviewScheduleState } from './sc
 import type { TypedSupabaseClient } from '@/lib/supabase/server';
 import { rankLeastRecentlyAttempted } from '@/lib/practice/rank-by-attempt.mjs';
 import { visibleActQuestions } from '@/lib/practice/act-visibility';
+import { selectLessonPracticeQuestionIds } from '@/lib/lesson/practice-drill';
 
 /** Which review_queue question type a session's test_type feeds. */
 export function questionItemTypeFor(testType: 'sat' | 'act'): QuestionItemType {
@@ -382,34 +383,21 @@ export async function buildReviewSessionQuestionIds(
     );
   }
 
-  // Lesson retrieval (plan 5.3): a due lesson resolves to a micro-drill
-  // over the skill it teaches, so the two-days-later pass is real SAT
-  // questions rather than a re-read of the lesson. A lesson with no
-  // lesson_topics skill_code contributes nothing and simply waits — it
-  // stays queued rather than being dropped, so tagging it later makes
-  // the item live without re-completing the lesson.
+  // A scheduled lesson review draws from that lesson's later-review
+  // questions first. Lessons awaiting a drill set stay queued.
   const lessonIds = dueItems
     .filter((i) => i.itemType === 'lesson_check')
     .slice(0, MAX_LESSONS_PER_SESSION)
     .map((i) => i.itemRef);
-  if (lessonIds.length > 0 && chosen.length < size) {
-    const { data: topics } = await supabase
-      .from('lesson_topics')
-      .select('lesson_id, skill_code')
-      .in('lesson_id', lessonIds);
-    const skillByLesson = new Map<string, string>();
-    for (const t of topics ?? []) {
-      if (t.skill_code && !skillByLesson.has(t.lesson_id)) {
-        skillByLesson.set(t.lesson_id, t.skill_code);
-      }
-    }
-    for (const lessonId of lessonIds) {
-      if (chosen.length >= size) break;
-      const skillCode = skillByLesson.get(lessonId);
-      if (!skillCode) continue;
-      await appendSkillMicroDrill(
-        supabase, userId, skillCode, LESSON_MICRO_DRILL_COUNT, size, chosen, seen,
-      );
+  for (const lessonId of lessonIds) {
+    if (chosen.length >= size) break;
+    const ids = await selectLessonPracticeQuestionIds(
+      supabase, userId, lessonId, Math.min(LESSON_MICRO_DRILL_COUNT, size - chosen.length),
+      'later_review', seen,
+    ).catch(() => []);
+    for (const id of ids) {
+      chosen.push(id);
+      seen.add(id);
     }
   }
 
@@ -419,9 +407,7 @@ export async function buildReviewSessionQuestionIds(
 /**
  * Append up to `count` least-recently-attempted questions from one
  * skill onto `chosen`, skipping anything already `seen` and stopping
- * at the session `size`. Shared by the skill and lesson_check legs —
- * a lesson's retrieval drill and a decayed skill's refresher want the
- * same selection, only a different reason for running.
+ * at the session `size`.
  */
 async function appendSkillMicroDrill(
   supabase: TypedSupabaseClient,
@@ -451,8 +437,6 @@ async function appendSkillMicroDrill(
   if (candidateIds.length === 0) return;
 
   // Least-recently-attempted first (never-attempted counts as oldest).
-  // Shared with the end-of-lesson drill (plan 5.2) so both surfaces
-  // order the same way.
   const { data: attempts } = await supabase
     .from('attempts')
     .select('question_id, created_at')

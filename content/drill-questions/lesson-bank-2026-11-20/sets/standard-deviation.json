@@ -1,0 +1,566 @@
+{
+  "id": "b548155a-d5f5-4659-9a86-742727ff6104",
+  "title": "Understand and Use Standard Deviation",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Interpret standard deviation as spread, compare data sets conceptually, predict how changing values affects spread, and calculate standard deviation with Desmos.",
+  "cards": 40,
+  "spec": "docs/lesson-template-specs/standard-deviation.json",
+  "source_spec_sha256": "cb99c845e88da3dbbb4324d23ffc1c56354b6195076ecd9081f977b50634620a",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Compare sets with the same mean and different spread": [
+      3,
+      6,
+      9
+    ],
+    "Recognize that shifting every value preserves spread": [
+      6,
+      7,
+      9
+    ],
+    "Compare spread before and after adding or removing an outlier": [
+      11,
+      12,
+      14
+    ],
+    "Evaluate the effect of replacing an outlier": [
+      16,
+      17,
+      29
+    ],
+    "Calculate sample or population standard deviation as specified": [
+      22,
+      23,
+      24,
+      25
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which set has a greater standard deviation? Set A is [13, 16, 19]. Set B is [10, 16, 22].</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Both means are 16. The outer values in B are twice as far from the mean as the outer values in A.</p>",
+      "variation": "Compare sets with the same mean and different spread",
+      "source_cards": [
+        3,
+        6,
+        9
+      ],
+      "difficulty": 1,
+      "id": "L44-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "standard_deviation_meaning",
+        "format_44_1",
+        "conceptual_comparison_process"
+      ],
+      "choices": [
+        "Set A",
+        "They are equal",
+        "The data are insufficient",
+        "Set B"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "This choice does not match the distances of the observations from their own mean.",
+        "B": "This choice does not match the distances of the observations from their own mean.",
+        "C": "This choice does not match the distances of the observations from their own mean."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which set has a greater standard deviation? Set A is [6, 8, 10]. Set B is [21, 23, 25].</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Each value moves by 15, and so does the mean. The distances from each mean are identical.</p>",
+      "variation": "Recognize that shifting every value preserves spread",
+      "source_cards": [
+        6,
+        7,
+        9
+      ],
+      "difficulty": 1,
+      "id": "L44-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_1",
+        "center_and_spread",
+        "conceptual_comparison_process"
+      ],
+      "choices": [
+        "Set A",
+        "Set B",
+        "They are equal",
+        "The data are insufficient"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "This choice does not match the distances of the observations from their own mean.",
+        "B": "This choice does not match the distances of the observations from their own mean.",
+        "D": "This choice does not match the distances of the observations from their own mean."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A data set is [18, 20, 22]. The value 34 is added. What happens to the population standard deviation?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The new value is far from all three originals and increases their average squared distance from the mean.</p>",
+      "variation": "Compare spread before and after adding or removing an outlier",
+      "source_cards": [
+        11,
+        12,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L44-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_2",
+        "adding_one_value",
+        "removing_one_value"
+      ],
+      "choices": [
+        "Decreases",
+        "Increases",
+        "Stays the same",
+        "Becomes exactly zero"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "This outcome does not agree with the spread of the resulting set.",
+        "C": "This outcome does not agree with the spread of the resulting set.",
+        "D": "This outcome does not agree with the spread of the resulting set."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A data set is [11, 13, 15, 25]. Its largest value is replaced by 13. What happens to the population standard deviation?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The replacement turns the distant value into a central value, reducing the spread.</p>",
+      "variation": "Evaluate the effect of replacing an outlier",
+      "source_cards": [
+        16,
+        17,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L44-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_3",
+        "replacing_one_value",
+        "desmos_test_outlier"
+      ],
+      "choices": [
+        "Increases",
+        "Decreases",
+        "Stays the same",
+        "Becomes exactly zero"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "This outcome does not agree with the spread of the resulting set.",
+        "C": "This outcome does not agree with the spread of the resulting set.",
+        "D": "This outcome does not agree with the spread of the resulting set."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The sample consists of 14, 18, and 22. What is its sample standard deviation?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "4"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The mean is 18 and the squared deviations sum to 32. For a sample divide by 3 − 1, then take the positive square root.</p>",
+      "variation": "Calculate sample or population standard deviation as specified",
+      "source_cards": [
+        22,
+        23,
+        24,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L44-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_5",
+        "desmos_direct_entry",
+        "format_44_7",
+        "format_44_8"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which set has a greater standard deviation? Set A is [24, 29, 34]. Set B is [19, 29, 39].</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Both means are 29. The outer values in B are twice as far from the mean as the outer values in A.</p>",
+      "variation": "Compare sets with the same mean and different spread",
+      "source_cards": [
+        3,
+        6,
+        9
+      ],
+      "difficulty": 1,
+      "id": "L44-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "standard_deviation_meaning",
+        "format_44_1",
+        "conceptual_comparison_process"
+      ],
+      "choices": [
+        "Set A",
+        "They are equal",
+        "The data are insufficient",
+        "Set B"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "This choice does not match the distances of the observations from their own mean.",
+        "B": "This choice does not match the distances of the observations from their own mean.",
+        "C": "This choice does not match the distances of the observations from their own mean."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which set has a greater standard deviation? Set A is [14, 18, 22]. Set B is [37, 41, 45].</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Each value moves by 23, and so does the mean. The distances from each mean are identical.</p>",
+      "variation": "Recognize that shifting every value preserves spread",
+      "source_cards": [
+        6,
+        7,
+        9
+      ],
+      "difficulty": 2,
+      "id": "L44-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_1",
+        "center_and_spread",
+        "conceptual_comparison_process"
+      ],
+      "choices": [
+        "Set A",
+        "Set B",
+        "They are equal",
+        "The data are insufficient"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "This choice does not match the distances of the observations from their own mean.",
+        "B": "This choice does not match the distances of the observations from their own mean.",
+        "D": "This choice does not match the distances of the observations from their own mean."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A data set is [37, 40, 43, 58]. Its largest value is removed. What happens to the population standard deviation?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Removing the distant point leaves three clustered values and lowers the standard deviation.</p>",
+      "variation": "Compare spread before and after adding or removing an outlier",
+      "source_cards": [
+        11,
+        12,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L44-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_2",
+        "adding_one_value",
+        "removing_one_value"
+      ],
+      "choices": [
+        "Increases",
+        "Stays the same",
+        "Decreases",
+        "Becomes exactly zero"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "This outcome does not agree with the spread of the resulting set.",
+        "B": "This outcome does not agree with the spread of the resulting set.",
+        "D": "This outcome does not agree with the spread of the resulting set."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A data set is [32, 36, 40, 64]. Its largest value is replaced by 36. What happens to the population standard deviation?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The replacement turns the distant value into a central value, reducing the spread.</p>",
+      "variation": "Evaluate the effect of replacing an outlier",
+      "source_cards": [
+        16,
+        17,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L44-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_3",
+        "replacing_one_value",
+        "desmos_test_outlier"
+      ],
+      "choices": [
+        "Increases",
+        "Decreases",
+        "Stays the same",
+        "Becomes exactly zero"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "This outcome does not agree with the spread of the resulting set.",
+        "C": "This outcome does not agree with the spread of the resulting set.",
+        "D": "This outcome does not agree with the spread of the resulting set."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The entire population consists of 21, 21, 35, and 35. What is its population standard deviation?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The mean is 28. All four observations are 7 away from it. Divide the sum of squared deviations by 4 and take the square root.</p>",
+      "variation": "Calculate sample or population standard deviation as specified",
+      "source_cards": [
+        22,
+        23,
+        24,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L44-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_5",
+        "desmos_direct_entry",
+        "format_44_7",
+        "format_44_8"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which set has a greater standard deviation? Set A is [34, 42, 50]. Set B is [26, 42, 58].</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Both means are 42. The outer values in B are twice as far from the mean as the outer values in A.</p>",
+      "variation": "Compare sets with the same mean and different spread",
+      "source_cards": [
+        3,
+        6,
+        9
+      ],
+      "difficulty": 2,
+      "id": "L44-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "standard_deviation_meaning",
+        "format_44_1",
+        "conceptual_comparison_process"
+      ],
+      "choices": [
+        "Set A",
+        "They are equal",
+        "The data are insufficient",
+        "Set B"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "This choice does not match the distances of the observations from their own mean.",
+        "B": "This choice does not match the distances of the observations from their own mean.",
+        "C": "This choice does not match the distances of the observations from their own mean."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which set has a greater standard deviation? Set A is [28, 33, 38]. Set B is [49, 54, 59].</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Each value moves by 21, and so does the mean. The distances from each mean are identical.</p>",
+      "variation": "Recognize that shifting every value preserves spread",
+      "source_cards": [
+        6,
+        7,
+        9
+      ],
+      "difficulty": 2,
+      "id": "L44-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_1",
+        "center_and_spread",
+        "conceptual_comparison_process"
+      ],
+      "choices": [
+        "Set A",
+        "Set B",
+        "The data are insufficient",
+        "They are equal"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "This choice does not match the distances of the observations from their own mean.",
+        "B": "This choice does not match the distances of the observations from their own mean.",
+        "C": "This choice does not match the distances of the observations from their own mean."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A data set is [13, 15, 17]. The value 31 is added. What happens to the population standard deviation?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The new value is far from all three originals and increases their average squared distance from the mean.</p>",
+      "variation": "Compare spread before and after adding or removing an outlier",
+      "source_cards": [
+        11,
+        12,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L44-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_2",
+        "adding_one_value",
+        "removing_one_value"
+      ],
+      "choices": [
+        "Decreases",
+        "Stays the same",
+        "Increases",
+        "Becomes exactly zero"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "This outcome does not agree with the spread of the resulting set.",
+        "B": "This outcome does not agree with the spread of the resulting set.",
+        "D": "This outcome does not agree with the spread of the resulting set."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A data set is [50, 55, 60, 85]. Its largest value is replaced by 55. What happens to the population standard deviation?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The replacement turns the distant value into a central value, reducing the spread.</p>",
+      "variation": "Evaluate the effect of replacing an outlier",
+      "source_cards": [
+        16,
+        17,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L44-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_3",
+        "replacing_one_value",
+        "desmos_test_outlier"
+      ],
+      "choices": [
+        "Increases",
+        "Decreases",
+        "Stays the same",
+        "Becomes exactly zero"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "This outcome does not agree with the spread of the resulting set.",
+        "C": "This outcome does not agree with the spread of the resulting set.",
+        "D": "This outcome does not agree with the spread of the resulting set."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The sample consists of 31, 40, and 49. What is its sample standard deviation?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "9"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The mean is 40 and the squared deviations sum to 162. For a sample divide by 3 − 1, then take the positive square root.</p>",
+      "variation": "Calculate sample or population standard deviation as specified",
+      "source_cards": [
+        22,
+        23,
+        24,
+        25
+      ],
+      "difficulty": 3,
+      "id": "L44-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_44_5",
+        "desmos_direct_entry",
+        "format_44_7",
+        "format_44_8"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-20 15:06:37.288032+00",
+  "lesson_number": 44,
+  "difficulty_counts": {
+    "1": 3,
+    "2": 11,
+    "3": 1
+  }
+}

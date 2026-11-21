@@ -165,8 +165,8 @@ export async function markLessonComplete(lessonId, planTaskId = null) {
   return loadProgress(supabase, lessonId, user.id);
 }
 
-// Practice at the end (plan 5.2). Starts a practice session over the
-// lesson's own pattern/skill and redirects into the runner — the same
+// Practice at the end (plan 5.2). Starts a session over the lesson's
+// authored drill questions and redirects into the runner — the same
 // practice_sessions shape the Review page's drills create, so the
 // runner and its completion flow need no special case.
 //
@@ -193,9 +193,12 @@ export async function createLessonPracticeDrill(lessonId) {
     return actionFail('Too many practice sessions started. Please wait a moment.');
   }
 
-  const questionIds = await selectLessonPracticeQuestionIds(
-    supabase, user.id, lessonId,
-  );
+  let questionIds;
+  try {
+    questionIds = await selectLessonPracticeQuestionIds(supabase, user.id, lessonId);
+  } catch {
+    return actionFail('Could not load the lesson’s drill questions. Please try again.');
+  }
   if (questionIds.length === 0) {
     return actionFail('No practice questions are available for this lesson yet.');
   }

@@ -369,8 +369,7 @@ audit-greppable.
 
 ## Question pools and import batches
 
-Since 2026-08-23 (`20260823140000_question_batches_and_pool.sql`) the
-question bank has two visibility pools:
+The SAT question bank has three visibility pools:
 
 - `questions_v2.pool = 'standard'` — the default bank. All
   pre-existing rows.
@@ -379,6 +378,12 @@ question bank has two visibility pools:
   when they have a per-set access grant and select the batch in the practice launcher's "Extra
   practice sets" section, or through explicit by-id selection
   (quick-find click-through, lesson packs, admin surfaces).
+- `pool = 'lesson_drill'` — original drills linked by `drill_lesson_id`.
+  Lesson practice in the Study Plan and on the lesson completion screen
+  draws from this pool. Scheduled lesson retrieval gives priority to the
+  later-review phase. Practice sessions prefer fresh questions and show
+  the selected questions in difficulty order. Drill visibility follows
+  the linked published lesson, with administrator access for review.
 
 `questions_v2.batch_id` → `question_batches`, which carries the
 batch's provenance (`source`, `label`, `administration_date`) for
@@ -389,13 +394,19 @@ the standard pool only.
 **Invariant for new code: every filter-driven `questions_v2`
 selector (anything that picks questions by taxonomy/difficulty
 rather than by explicit id list) must gate on `pool = 'standard'`
-unless it deliberately implements batch opt-in.** Current gated
+unless it deliberately implements batch opt-in or selects by exact
+lesson ID for a drill.** Current gated
 sites: the practice launcher, quick-find search, the welcome
 diagnostic, Today drills, the review-queue skill leg, the
 mid-session difficulty detour, tutor assignment generation, and
 tutor training practice. Attempt-driven surfaces (weak-questions
 drill, review-queue question leg) are deliberately unfiltered — they
 only resurface questions the student already answered.
+
+The approved lesson catalog is under `content/drill-questions/lesson-bank-2026-11-20/`.
+Run `node scripts/build-lesson-drill-import.ts` to generate the seed SQL
+after applying `20261120204732_lesson_drill_pool.sql`. The seed matches
+the existing published lesson IDs and skips questions already imported.
 
 Supplemental importer access migrations (development and production verified 2026-09-15) add `question_batch_access` and restrictive read policies. Admins grant/revoke individual student access; staff retain review access. Student access requires published, active questions, even for direct ID queries. Anonymous supplemental reads are denied. See `sat-import-comparison.md` for migration order and verification.
 

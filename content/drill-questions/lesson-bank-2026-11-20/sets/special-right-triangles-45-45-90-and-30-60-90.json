@@ -1,0 +1,503 @@
+{
+  "id": "b62b7ce7-e3cf-499f-9cbf-5edbac932eee",
+  "title": "Special Right Triangles: Recognize, Scale, Solve",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Recognize 45-45-90 and 30-60-90 triangles from ratios, keywords, and common geometry setups, then find every side from any numeric or variable side.",
+  "cards": 37,
+  "spec": "docs/lesson-template-specs/special-right-triangles-45-45-90-and-30-60-90.json",
+  "source_spec_sha256": "0630d8e734d65f8b4c6774d94004437f7956c68dda6a4ad4f36ea2a12e8e8f17",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Recover the side of a square using its diagonal": [
+      3,
+      4,
+      8,
+      9
+    ],
+    "Recover an equilateral triangle’s side and perimeter from its altitude": [
+      13,
+      14,
+      28
+    ],
+    "Recover the hypotenuse from the longer leg": [
+      13,
+      18,
+      19
+    ],
+    "Find a radius using a special triangle inside a circle": [
+      3,
+      6,
+      26
+    ],
+    "Apply the same ratio to a variable side length": [
+      13,
+      16,
+      21
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A square’s diagonal is \\(8\\sqrt2\\). What is its side length?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "8"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The diagonal forms a 45–45–90 triangle with two square sides. Its length is the side times √2, so the side is 8.</p>",
+      "variation": "Recover the side of a square using its diagonal",
+      "source_cards": [
+        3,
+        4,
+        8,
+        9
+      ],
+      "difficulty": 1,
+      "id": "L41-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "forty_five_ratio",
+        "square_exploration",
+        "forty_five_variables",
+        "coherence_hypotenuse_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>An equilateral triangle has altitude \\(6\\sqrt3\\). What is its perimeter?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "36"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The altitude splits the equilateral triangle into two 30–60–90 triangles. The long leg is 6√3, so the short leg is 6. The original side is 12 and the perimeter is 36.</p>",
+      "variation": "Recover an equilateral triangle’s side and perimeter from its altitude",
+      "source_cards": [
+        13,
+        14,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L41-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "thirty_sixty_ratio",
+        "equilateral_exploration",
+        "equilateral_altitude_scenario"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>In a 30°–60°–90° triangle the side opposite the 60° angle has length \\(9\\sqrt3\\). What is the hypotenuse length?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "18"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The long leg is the short leg multiplied by √3, making the short leg 9. The hypotenuse is twice that length.</p>",
+      "variation": "Recover the hypotenuse from the longer leg",
+      "source_cards": [
+        13,
+        18,
+        19
+      ],
+      "difficulty": 1,
+      "id": "L41-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "thirty_sixty_ratio",
+        "format_41_1",
+        "thirty_sixty_from_long_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two radii of a circle meet at a right angle. The distance between the two endpoints on the circle is \\(7\\sqrt2\\). What is the radius?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The radii form equal perpendicular legs. The chord connecting their endpoints is the hypotenuse and equals the radius times √2.</p>",
+      "variation": "Find a radius using a special triangle inside a circle",
+      "source_cards": [
+        3,
+        6,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L41-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "forty_five_ratio",
+        "shared_process",
+        "perpendicular_radii_scenario"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A right triangle has a 30° angle and a short leg of length \\(4t\\), where t is positive. Which expression gives the side opposite the 60° angle?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The 30–60–90 side ratio is 1:√3:2. The long leg equals the short leg multiplied by √3.</p>",
+      "variation": "Apply the same ratio to a variable side length",
+      "source_cards": [
+        13,
+        16,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L41-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "thirty_sixty_ratio",
+        "thirty_sixty_from_short_model",
+        "thirty_sixty_variables"
+      ],
+      "choices": [
+        "\\(8t\\)",
+        "\\(4t\\sqrt2\\)",
+        "\\(12t\\)",
+        "\\(4t\\sqrt3\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Uses the hypotenuse ratio.",
+        "B": "Applies the equal-leg right-triangle ratio.",
+        "C": "Multiplies by 3 instead of √3."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A square’s diagonal is \\(13\\sqrt2\\). What is its side length?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "13"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The diagonal forms a 45–45–90 triangle with two square sides. Its length is the side times √2, so the side is 13.</p>",
+      "variation": "Recover the side of a square using its diagonal",
+      "source_cards": [
+        3,
+        4,
+        8,
+        9
+      ],
+      "difficulty": 1,
+      "id": "L41-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "forty_five_ratio",
+        "square_exploration",
+        "forty_five_variables",
+        "coherence_hypotenuse_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>An equilateral triangle has altitude \\(11\\sqrt3\\). What is its perimeter?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "66"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The altitude splits the equilateral triangle into two 30–60–90 triangles. The long leg is 11√3, so the short leg is 11. The original side is 22 and the perimeter is 66.</p>",
+      "variation": "Recover an equilateral triangle’s side and perimeter from its altitude",
+      "source_cards": [
+        13,
+        14,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L41-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "thirty_sixty_ratio",
+        "equilateral_exploration",
+        "equilateral_altitude_scenario"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>In a 30°–60°–90° triangle the side opposite the 60° angle has length \\(16\\sqrt3\\). What is the hypotenuse length?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "32"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The long leg is the short leg multiplied by √3, making the short leg 16. The hypotenuse is twice that length.</p>",
+      "variation": "Recover the hypotenuse from the longer leg",
+      "source_cards": [
+        13,
+        18,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L41-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "thirty_sixty_ratio",
+        "format_41_1",
+        "thirty_sixty_from_long_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two radii of a circle meet at a right angle. The distance between the two endpoints on the circle is \\(12\\sqrt2\\). What is the radius?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "12"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The radii form equal perpendicular legs. The chord connecting their endpoints is the hypotenuse and equals the radius times √2.</p>",
+      "variation": "Find a radius using a special triangle inside a circle",
+      "source_cards": [
+        3,
+        6,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L41-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "forty_five_ratio",
+        "shared_process",
+        "perpendicular_radii_scenario"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A right triangle has a 30° angle and a short leg of length \\(10t\\), where t is positive. Which expression gives the side opposite the 60° angle?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The 30–60–90 side ratio is 1:√3:2. The long leg equals the short leg multiplied by √3.</p>",
+      "variation": "Apply the same ratio to a variable side length",
+      "source_cards": [
+        13,
+        16,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L41-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "thirty_sixty_ratio",
+        "thirty_sixty_from_short_model",
+        "thirty_sixty_variables"
+      ],
+      "choices": [
+        "\\(20t\\)",
+        "\\(10t\\sqrt2\\)",
+        "\\(30t\\)",
+        "\\(10t\\sqrt3\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Uses the hypotenuse ratio.",
+        "B": "Applies the equal-leg right-triangle ratio.",
+        "C": "Multiplies by 3 instead of √3."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A square’s diagonal is \\(21\\sqrt2\\). What is its side length?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "21"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The diagonal forms a 45–45–90 triangle with two square sides. Its length is the side times √2, so the side is 21.</p>",
+      "variation": "Recover the side of a square using its diagonal",
+      "source_cards": [
+        3,
+        4,
+        8,
+        9
+      ],
+      "difficulty": 2,
+      "id": "L41-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "forty_five_ratio",
+        "square_exploration",
+        "forty_five_variables",
+        "coherence_hypotenuse_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>An equilateral triangle has altitude \\(17\\sqrt3\\). What is its perimeter?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "102"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The altitude splits the equilateral triangle into two 30–60–90 triangles. The long leg is 17√3, so the short leg is 17. The original side is 34 and the perimeter is 102.</p>",
+      "variation": "Recover an equilateral triangle’s side and perimeter from its altitude",
+      "source_cards": [
+        13,
+        14,
+        28
+      ],
+      "difficulty": 3,
+      "id": "L41-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "thirty_sixty_ratio",
+        "equilateral_exploration",
+        "equilateral_altitude_scenario"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>In a 30°–60°–90° triangle the side opposite the 60° angle has length \\(23\\sqrt3\\). What is the hypotenuse length?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "46"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The long leg is the short leg multiplied by √3, making the short leg 23. The hypotenuse is twice that length.</p>",
+      "variation": "Recover the hypotenuse from the longer leg",
+      "source_cards": [
+        13,
+        18,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L41-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "thirty_sixty_ratio",
+        "format_41_1",
+        "thirty_sixty_from_long_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two radii of a circle meet at a right angle. The distance between the two endpoints on the circle is \\(19\\sqrt2\\). What is the radius?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "19"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The radii form equal perpendicular legs. The chord connecting their endpoints is the hypotenuse and equals the radius times √2.</p>",
+      "variation": "Find a radius using a special triangle inside a circle",
+      "source_cards": [
+        3,
+        6,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L41-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "forty_five_ratio",
+        "shared_process",
+        "perpendicular_radii_scenario"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A right triangle has a 30° angle and a short leg of length \\(15t\\), where t is positive. Which expression gives the side opposite the 60° angle?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The 30–60–90 side ratio is 1:√3:2. The long leg equals the short leg multiplied by √3.</p>",
+      "variation": "Apply the same ratio to a variable side length",
+      "source_cards": [
+        13,
+        16,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L41-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "thirty_sixty_ratio",
+        "thirty_sixty_from_short_model",
+        "thirty_sixty_variables"
+      ],
+      "choices": [
+        "\\(30t\\)",
+        "\\(15t\\sqrt2\\)",
+        "\\(45t\\)",
+        "\\(15t\\sqrt3\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Uses the hypotenuse ratio.",
+        "B": "Applies the equal-leg right-triangle ratio.",
+        "C": "Multiplies by 3 instead of √3."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.196908+00",
+  "lesson_number": 41,
+  "difficulty_counts": {
+    "1": 3,
+    "2": 11,
+    "3": 1
+  }
+}

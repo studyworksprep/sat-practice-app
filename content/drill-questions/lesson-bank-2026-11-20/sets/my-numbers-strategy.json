@@ -1,0 +1,608 @@
+{
+  "id": "7459378d-1581-4e4b-afaa-a96a130c6ebb",
+  "title": "Use My Numbers to Make Abstract SAT Problems Concrete",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Recognize when variables can take many valid values, choose easy numbers that obey every condition, solve the concrete version, and test the answer choices with the same values.",
+  "cards": 39,
+  "spec": "docs/lesson-template-specs/my-numbers-strategy.json",
+  "source_spec_sha256": "3da94d968cc3642a7af0a752f0798cd770c0666bc0cf3cc30b8c36b3358039f0",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Choose legal lengths and test an expression for area": [
+      14,
+      15,
+      21,
+      26
+    ],
+    "Build consistent counts and test a total expression": [
+      14,
+      21,
+      24
+    ],
+    "Choose values that satisfy a ratio before comparing formulas": [
+      16,
+      18,
+      19,
+      21
+    ],
+    "Use a base that makes percentages easy and verify both operations": [
+      14,
+      18,
+      19,
+      21
+    ],
+    "Test a product relationship with two legal values": [
+      14,
+      26,
+      28,
+      29
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A rectangle has width w and length 2 times its width plus 5 feet. Which expression gives its area in square feet?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Choose w = 2. Then the length is 9 and the area is 18. Multiplying width times the stated length gives \\(2w^{2}+5w\\). Retest another legal width if any choices tie.</p>",
+      "variation": "Choose legal lengths and test an expression for area",
+      "source_cards": [
+        14,
+        15,
+        21,
+        26
+      ],
+      "difficulty": 1,
+      "id": "L46-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "format_46_4",
+        "ratio_worked_example",
+        "relative_geometry_example"
+      ],
+      "choices": [
+        "\\(2w^{2}+5\\)",
+        "\\(2w^{2}+5w\\)",
+        "\\(6w+10\\)",
+        "\\(5w^{2}+2w\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Omits the width on the added length term.",
+        "C": "Gives perimeter instead of area.",
+        "D": "Swaps the roles of the scale and added length."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A club has x new members and 7 more returning members than new members. Which expression gives the total membership?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>If x = 9, returning members number 16 and the total is 25. In general the total is x + (x + 7) = \\(2x+7\\).</p>",
+      "variation": "Build consistent counts and test a total expression",
+      "source_cards": [
+        14,
+        21,
+        24
+      ],
+      "difficulty": 1,
+      "id": "L46-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "ratio_worked_example",
+        "word_problem_example"
+      ],
+      "choices": [
+        "\\(2x+7\\)",
+        "\\(x+7\\)",
+        "\\(2x-7\\)",
+        "\\(2x+14\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Counts only returning members.",
+        "C": "Reverses the increase.",
+        "D": "Adds the extra members twice."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The ratio of red tiles to blue tiles is 3 to 5. Which expression gives the number of blue tiles when there are r red tiles?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Choose 3 red tiles. There must be 5 blue tiles, giving 5/3 blue tiles per red tile. Scaling by r gives the expression.</p>",
+      "variation": "Choose values that satisfy a ratio before comparing formulas",
+      "source_cards": [
+        16,
+        18,
+        19,
+        21
+      ],
+      "difficulty": 1,
+      "id": "L46-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "legal_numbers",
+        "format_46_5",
+        "helpful_numbers",
+        "ratio_worked_example"
+      ],
+      "choices": [
+        "\\(\\frac{3}{5}r\\)",
+        "\\(\\frac{5}{8}r\\)",
+        "\\(r+5\\)",
+        "\\(\\frac{5}{3}r\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Reverses the ratio.",
+        "B": "Uses the whole group as the reference.",
+        "C": "Uses a constant difference for a ratio."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A shop takes 15% off a price p and then adds a fixed 6-dollar delivery fee. Which expression gives the final price?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>A convenient starting price is 100. The discounted price is 85, then the total is 91. The discount multiplies p by 85/100, and the fee is added afterward.</p>",
+      "variation": "Use a base that makes percentages easy and verify both operations",
+      "source_cards": [
+        14,
+        18,
+        19,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L46-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "format_46_5",
+        "helpful_numbers",
+        "ratio_worked_example"
+      ],
+      "choices": [
+        "\\(\\frac{3}{20}p+6\\)",
+        "\\(\\frac{23}{20}p+6\\)",
+        "\\(\\frac{17}{20}p+\\frac{51}{10}\\)",
+        "\\(\\frac{17}{20}p+6\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Adds the discount amount instead of the remaining amount.",
+        "B": "Increases the price.",
+        "C": "Discounts the delivery fee too."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A rectangle’s original length is l and its original width is w. The length is multiplied by 3 and the width by 5. Which expression gives the new area?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>For l = 3 and w = 2, the new area is 9 × 10 = 90. For any allowed l and w, (new length) × (new width) is \\(15lw\\).</p>",
+      "variation": "Test a product relationship with two legal values",
+      "source_cards": [
+        14,
+        26,
+        28,
+        29
+      ],
+      "difficulty": 1,
+      "id": "L46-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "relative_geometry_example",
+        "format_46_6",
+        "zero_one_warning"
+      ],
+      "choices": [
+        "\\(8lw\\)",
+        "\\(3lw\\)",
+        "\\(15lw\\)",
+        "\\(5lw\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Adds the two multipliers.",
+        "B": "Changes only the length.",
+        "D": "Changes only the width."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A rectangle has width w and length 3 times its width plus 4 feet. Which expression gives its area in square feet?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Choose w = 2. Then the length is 10 and the area is 20. Multiplying width times the stated length gives \\(3w^{2}+4w\\). Retest another legal width if any choices tie.</p>",
+      "variation": "Choose legal lengths and test an expression for area",
+      "source_cards": [
+        14,
+        15,
+        21,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L46-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "format_46_4",
+        "ratio_worked_example",
+        "relative_geometry_example"
+      ],
+      "choices": [
+        "\\(3w^{2}+4\\)",
+        "\\(3w^{2}+4w\\)",
+        "\\(8w+8\\)",
+        "\\(4w^{2}+3w\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Omits the width on the added length term.",
+        "C": "Gives perimeter instead of area.",
+        "D": "Swaps the roles of the scale and added length."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A club has x new members and 4 more returning members than new members. Which expression gives the total membership?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>If x = 8, returning members number 12 and the total is 20. In general the total is x + (x + 4) = \\(2x+4\\).</p>",
+      "variation": "Build consistent counts and test a total expression",
+      "source_cards": [
+        14,
+        21,
+        24
+      ],
+      "difficulty": 1,
+      "id": "L46-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "ratio_worked_example",
+        "word_problem_example"
+      ],
+      "choices": [
+        "\\(2x+4\\)",
+        "\\(x+4\\)",
+        "\\(2x-4\\)",
+        "\\(2x+8\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Counts only returning members.",
+        "C": "Reverses the increase.",
+        "D": "Adds the extra members twice."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The ratio of red tiles to blue tiles is 7 to 4. Which expression gives the number of blue tiles when there are r red tiles?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Choose 7 red tiles. There must be 4 blue tiles, giving 4/7 blue tiles per red tile. Scaling by r gives the expression.</p>",
+      "variation": "Choose values that satisfy a ratio before comparing formulas",
+      "source_cards": [
+        16,
+        18,
+        19,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L46-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "legal_numbers",
+        "format_46_5",
+        "helpful_numbers",
+        "ratio_worked_example"
+      ],
+      "choices": [
+        "\\(\\frac{4}{7}r\\)",
+        "\\(\\frac{7}{4}r\\)",
+        "\\(\\frac{4}{11}r\\)",
+        "\\(r+4\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Reverses the ratio.",
+        "C": "Uses the whole group as the reference.",
+        "D": "Uses a constant difference for a ratio."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A shop takes 32% off a price p and then adds a fixed 9-dollar delivery fee. Which expression gives the final price?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>A convenient starting price is 100. The discounted price is 68, then the total is 77. The discount multiplies p by 68/100, and the fee is added afterward.</p>",
+      "variation": "Use a base that makes percentages easy and verify both operations",
+      "source_cards": [
+        14,
+        18,
+        19,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L46-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "format_46_5",
+        "helpful_numbers",
+        "ratio_worked_example"
+      ],
+      "choices": [
+        "\\(\\frac{8}{25}p+9\\)",
+        "\\(\\frac{33}{25}p+9\\)",
+        "\\(\\frac{17}{25}p+\\frac{153}{25}\\)",
+        "\\(\\frac{17}{25}p+9\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Adds the discount amount instead of the remaining amount.",
+        "B": "Increases the price.",
+        "C": "Discounts the delivery fee too."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A rectangle’s original length is l and its original width is w. The length is multiplied by 4 and the width by 7. Which expression gives the new area?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>For l = 3 and w = 2, the new area is 12 × 14 = 168. For any allowed l and w, (new length) × (new width) is \\(28lw\\).</p>",
+      "variation": "Test a product relationship with two legal values",
+      "source_cards": [
+        14,
+        26,
+        28,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L46-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "relative_geometry_example",
+        "format_46_6",
+        "zero_one_warning"
+      ],
+      "choices": [
+        "\\(11lw\\)",
+        "\\(4lw\\)",
+        "\\(28lw\\)",
+        "\\(7lw\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Adds the two multipliers.",
+        "B": "Changes only the length.",
+        "D": "Changes only the width."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A rectangle has width w and length 4 times its width plus 9 feet. Which expression gives its area in square feet?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Choose w = 2. Then the length is 17 and the area is 34. Multiplying width times the stated length gives \\(4w^{2}+9w\\). Retest another legal width if any choices tie.</p>",
+      "variation": "Choose legal lengths and test an expression for area",
+      "source_cards": [
+        14,
+        15,
+        21,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L46-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "format_46_4",
+        "ratio_worked_example",
+        "relative_geometry_example"
+      ],
+      "choices": [
+        "\\(4w^{2}+9\\)",
+        "\\(4w^{2}+9w\\)",
+        "\\(10w+18\\)",
+        "\\(9w^{2}+4w\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Omits the width on the added length term.",
+        "C": "Gives perimeter instead of area.",
+        "D": "Swaps the roles of the scale and added length."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A club has x new members and 11 more returning members than new members. Which expression gives the total membership?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>If x = 6, returning members number 17 and the total is 23. In general the total is x + (x + 11) = \\(2x+11\\).</p>",
+      "variation": "Build consistent counts and test a total expression",
+      "source_cards": [
+        14,
+        21,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L46-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "ratio_worked_example",
+        "word_problem_example"
+      ],
+      "choices": [
+        "\\(x+11\\)",
+        "\\(2x+11\\)",
+        "\\(2x-11\\)",
+        "\\(2x+22\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Counts only returning members.",
+        "C": "Reverses the increase.",
+        "D": "Adds the extra members twice."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The ratio of red tiles to blue tiles is 8 to 3. Which expression gives the number of blue tiles when there are r red tiles?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Choose 8 red tiles. There must be 3 blue tiles, giving 3/8 blue tiles per red tile. Scaling by r gives the expression.</p>",
+      "variation": "Choose values that satisfy a ratio before comparing formulas",
+      "source_cards": [
+        16,
+        18,
+        19,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L46-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "legal_numbers",
+        "format_46_5",
+        "helpful_numbers",
+        "ratio_worked_example"
+      ],
+      "choices": [
+        "\\(\\frac{3}{8}r\\)",
+        "\\(\\frac{8}{3}r\\)",
+        "\\(\\frac{3}{11}r\\)",
+        "\\(r+3\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Reverses the ratio.",
+        "C": "Uses the whole group as the reference.",
+        "D": "Uses a constant difference for a ratio."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A shop takes 24% off a price p and then adds a fixed 11-dollar delivery fee. Which expression gives the final price?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>A convenient starting price is 100. The discounted price is 76, then the total is 87. The discount multiplies p by 76/100, and the fee is added afterward.</p>",
+      "variation": "Use a base that makes percentages easy and verify both operations",
+      "source_cards": [
+        14,
+        18,
+        19,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L46-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "format_46_5",
+        "helpful_numbers",
+        "ratio_worked_example"
+      ],
+      "choices": [
+        "\\(\\frac{6}{25}p+11\\)",
+        "\\(\\frac{31}{25}p+11\\)",
+        "\\(\\frac{19}{25}p+\\frac{209}{25}\\)",
+        "\\(\\frac{19}{25}p+11\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Adds the discount amount instead of the remaining amount.",
+        "B": "Increases the price.",
+        "C": "Discounts the delivery fee too."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A rectangle’s original length is l and its original width is w. The length is multiplied by 5 and the width by 9. Which expression gives the new area?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>For l = 3 and w = 2, the new area is 15 × 18 = 270. For any allowed l and w, (new length) × (new width) is \\(45lw\\).</p>",
+      "variation": "Test a product relationship with two legal values",
+      "source_cards": [
+        14,
+        26,
+        28,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L46-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "relative_geometry_example",
+        "format_46_6",
+        "zero_one_warning"
+      ],
+      "choices": [
+        "\\(14lw\\)",
+        "\\(5lw\\)",
+        "\\(45lw\\)",
+        "\\(9lw\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Adds the two multipliers.",
+        "B": "Changes only the length.",
+        "D": "Changes only the width."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.25778+00",
+  "lesson_number": 46,
+  "difficulty_counts": {
+    "1": 5,
+    "2": 10,
+    "3": 0
+  }
+}

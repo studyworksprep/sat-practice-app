@@ -145,6 +145,8 @@ export function isSilentWhyCode(code: DrillWhyCode): boolean {
   return SILENT_WHY_CODES.has(code);
 }
 
+export const LESSON_DRILL_WHY = 'Practice the strategies taught in this lesson, starting with easier questions.';
+
 /** Why-this line for a plan task, or null when it carries none.
  *
  *  Precedence: the stored reason code (copy owned here) → a stored
@@ -159,6 +161,9 @@ export function planTaskWhy(payload: unknown): string | null {
   }
   const stored = str(payload, 'why');
   if (!stored) return null;
+  if (str(payload, 'drill_role') === 'practice' && str(payload, 'lesson_id')) {
+    return stored.replace(/Questions (?:solved by |for the lesson's techniques).* come first, (?:then the rest of |across the skills they apply to).*\.$/, LESSON_DRILL_WHY);
+  }
   return legacyHeadroomWhy(stored) ?? stored;
 }
 

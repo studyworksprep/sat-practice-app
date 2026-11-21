@@ -1,0 +1,482 @@
+{
+  "id": "a87137e2-aa5c-4907-9b84-7727b33b11d4",
+  "title": "Use Scale Factors with Similar Shapes",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Connect linear scale factors with perimeter, area, surface-area, and volume ratios, then move flexibly between those measurements for similar two- and three-dimensional shapes.",
+  "cards": 50,
+  "spec": "docs/lesson-template-specs/scale-factor-and-similar-shapes.json",
+  "source_spec_sha256": "f3f95ddd628b68d32a82744a2fc22844b356a35eb131bdb5165ff6507c242c1f",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Scale perimeter linearly in the required direction": [
+      6,
+      8,
+      11,
+      12
+    ],
+    "Square the linear multiplier for area": [
+      3,
+      4,
+      14
+    ],
+    "Recover a length multiplier from an area ratio": [
+      21,
+      22
+    ],
+    "Cube the multiplier for volume": [
+      17,
+      18,
+      19
+    ],
+    "Convert a volume ratio to a surface-area result": [
+      24,
+      25,
+      30,
+      31
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar polygons have corresponding sides of length 4 and 7. The polygon with the side of length 4 has perimeter 40. What is the other perimeter?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "70"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The multiplier from the first shape to the second is 7/4. Perimeter is a length, so multiply 40 by that factor once.</p>",
+      "variation": "Scale perimeter linearly in the required direction",
+      "source_cards": [
+        6,
+        8,
+        11,
+        12
+      ],
+      "difficulty": 1,
+      "id": "L47-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_direction",
+        "format_47_1",
+        "dimension_rule",
+        "format_47_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar triangles have corresponding sides of lengths 3 and 5. The triangle with the side of length 3 has area 45. What is the other area?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "125"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Square the linear multiplier 5/3. Applying that squared factor to area 45 gives \\(125\\).</p>",
+      "variation": "Square the linear multiplier for area",
+      "source_cards": [
+        3,
+        4,
+        14
+      ],
+      "difficulty": 1,
+      "id": "L47-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "why_area_squares",
+        "area_visual_exploration",
+        "forward_area_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar figures have areas in the ratio 9 to 49. A side of the first figure has length 24. What is the corresponding side length of the second?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "56"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Take square roots of the area ratio to recover the linear ratio 3 to 7. Apply the multiplier 7/3 to 24.</p>",
+      "variation": "Recover a length multiplier from an area ratio",
+      "source_cards": [
+        21,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L47-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_47_3",
+        "reverse_area_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar solids have corresponding edges of lengths 3 and 5. The solid with the edge of length 3 has volume 54. What is the volume of the other solid?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "250"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Cube the linear multiplier 5/3, then multiply the original volume 54 by it.</p>",
+      "variation": "Cube the multiplier for volume",
+      "source_cards": [
+        17,
+        18,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L47-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "why_volume_cubes",
+        "volume_visual_exploration",
+        "forward_volume_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar solids have volumes in the ratio 27 to 125. The first has surface area 81. What is the surface area of the second?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "225"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Take cube roots to recover the linear ratio 3 to 5. Then square the multiplier 5/3 and multiply the first surface area by it.</p>",
+      "variation": "Convert a volume ratio to a surface-area result",
+      "source_cards": [
+        24,
+        25,
+        30,
+        31
+      ],
+      "difficulty": 3,
+      "id": "L47-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_47_4",
+        "reverse_volume_process",
+        "format_47_6",
+        "volume_to_area_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar polygons have corresponding sides of length 9 and 5. The polygon with the side of length 9 has perimeter 81. What is the other perimeter?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "45"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The multiplier from the first shape to the second is 5/9. Perimeter is a length, so multiply 81 by that factor once.</p>",
+      "variation": "Scale perimeter linearly in the required direction",
+      "source_cards": [
+        6,
+        8,
+        11,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L47-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_direction",
+        "format_47_1",
+        "dimension_rule",
+        "format_47_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar triangles have corresponding sides of lengths 7 and 4. The triangle with the side of length 7 has area 245. What is the other area?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "80"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Square the linear multiplier 4/7. Applying that squared factor to area 245 gives \\(80\\).</p>",
+      "variation": "Square the linear multiplier for area",
+      "source_cards": [
+        3,
+        4,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L47-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "why_area_squares",
+        "area_visual_exploration",
+        "forward_area_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar figures have areas in the ratio 64 to 25. A side of the first figure has length 32. What is the corresponding side length of the second?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "20"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Take square roots of the area ratio to recover the linear ratio 8 to 5. Apply the multiplier 5/8 to 32.</p>",
+      "variation": "Recover a length multiplier from an area ratio",
+      "source_cards": [
+        21,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L47-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_47_3",
+        "reverse_area_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar solids have corresponding edges of lengths 6 and 4. The solid with the edge of length 6 has volume 432. What is the volume of the other solid?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "128"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Cube the linear multiplier 4/6, then multiply the original volume 432 by it.</p>",
+      "variation": "Cube the multiplier for volume",
+      "source_cards": [
+        17,
+        18,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L47-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "why_volume_cubes",
+        "volume_visual_exploration",
+        "forward_volume_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar solids have volumes in the ratio 343 to 8. The first has surface area 245. What is the surface area of the second?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "20"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Take cube roots to recover the linear ratio 7 to 2. Then square the multiplier 2/7 and multiply the first surface area by it.</p>",
+      "variation": "Convert a volume ratio to a surface-area result",
+      "source_cards": [
+        24,
+        25,
+        30,
+        31
+      ],
+      "difficulty": 3,
+      "id": "L47-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_47_4",
+        "reverse_volume_process",
+        "format_47_6",
+        "volume_to_area_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar polygons have corresponding sides of length 6 and 11. The polygon with the side of length 6 has perimeter 54. What is the other perimeter?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "99"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The multiplier from the first shape to the second is 11/6. Perimeter is a length, so multiply 54 by that factor once.</p>",
+      "variation": "Scale perimeter linearly in the required direction",
+      "source_cards": [
+        6,
+        8,
+        11,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L47-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_direction",
+        "format_47_1",
+        "dimension_rule",
+        "format_47_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar triangles have corresponding sides of lengths 5 and 8. The triangle with the side of length 5 has area 175. What is the other area?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "448"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Square the linear multiplier 8/5. Applying that squared factor to area 175 gives \\(448\\).</p>",
+      "variation": "Square the linear multiplier for area",
+      "source_cards": [
+        3,
+        4,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L47-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "why_area_squares",
+        "area_visual_exploration",
+        "forward_area_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar figures have areas in the ratio 25 to 81. A side of the first figure has length 35. What is the corresponding side length of the second?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "63"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Take square roots of the area ratio to recover the linear ratio 5 to 9. Apply the multiplier 9/5 to 35.</p>",
+      "variation": "Recover a length multiplier from an area ratio",
+      "source_cards": [
+        21,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L47-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_47_3",
+        "reverse_area_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar solids have corresponding edges of lengths 4 and 7. The solid with the edge of length 4 has volume 320. What is the volume of the other solid?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "1715"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Cube the linear multiplier 7/4, then multiply the original volume 320 by it.</p>",
+      "variation": "Cube the multiplier for volume",
+      "source_cards": [
+        17,
+        18,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L47-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "why_volume_cubes",
+        "volume_visual_exploration",
+        "forward_volume_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two similar solids have volumes in the ratio 125 to 512. The first has surface area 150. What is the surface area of the second?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "384"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Take cube roots to recover the linear ratio 5 to 8. Then square the multiplier 8/5 and multiply the first surface area by it.</p>",
+      "variation": "Convert a volume ratio to a surface-area result",
+      "source_cards": [
+        24,
+        25,
+        30,
+        31
+      ],
+      "difficulty": 3,
+      "id": "L47-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_47_4",
+        "reverse_volume_process",
+        "format_47_6",
+        "volume_to_area_process"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.275656+00",
+  "lesson_number": 47,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 10,
+    "3": 3
+  }
+}

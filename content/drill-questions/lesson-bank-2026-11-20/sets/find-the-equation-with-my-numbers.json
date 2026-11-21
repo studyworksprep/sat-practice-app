@@ -1,0 +1,594 @@
+{
+  "id": "b99bae72-d30c-4138-ad8c-4e7d957c2e71",
+  "title": "Find the Equation with My Numbers",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Build one realistic set of values from a word problem, then test every answer choice to identify the equation that always matches the context.",
+  "cards": 44,
+  "spec": "docs/lesson-template-specs/find-the-equation-with-my-numbers.json",
+  "source_spec_sha256": "47084b3852a652e938aca39ee246d980293694df8c2b131e0618c716c323826c",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Build all counts from a single starting quantity": [
+      6,
+      8,
+      12,
+      14
+    ],
+    "Use complete-job rates to test an equation": [
+      16,
+      18,
+      19
+    ],
+    "Include only the work that remains": [
+      20,
+      21,
+      23
+    ],
+    "Check a rearranged equation against an example that includes all fees": [
+      33,
+      35,
+      36,
+      37
+    ],
+    "Keep the percentage attached to its correct base": [
+      23,
+      24,
+      26
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A zoo sold x adult passes and 6 fewer child passes than adult passes. It sold N passes in total. Which equation always relates N and x?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Build a valid example x = 15. The child count is 9, so N = 24. In general N = x + (x − 6).</p>",
+      "variation": "Build all counts from a single starting quantity",
+      "source_cards": [
+        6,
+        8,
+        12,
+        14
+      ],
+      "difficulty": 1,
+      "id": "L16-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "coherence_driver",
+        "museum_example",
+        "direction_language"
+      ],
+      "choices": [
+        "\\(N=2x+6\\)",
+        "\\(N=x-6\\)",
+        "\\(N=2x-12\\)",
+        "\\(N=2x-6\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Adds instead of subtracting.",
+        "B": "Counts only the child passes.",
+        "C": "Subtracts the difference twice."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>One printer completes an order in 12 minutes. A second completes the same order in 18 minutes. At constant rates, together they need t minutes. Which equation determines t?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>In one minute, the printers complete 1/12 and 1/18 of the order. After t minutes the fractions add to one complete order.</p>",
+      "variation": "Use complete-job rates to test an equation",
+      "source_cards": [
+        16,
+        18,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L16-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "rate_context",
+        "combined_rate_idea",
+        "format_16_2"
+      ],
+      "choices": [
+        "\\(12t+18t=1\\)",
+        "\\(\\frac{12}{t}+\\frac{18}{t}=1\\)",
+        "\\(\\frac{t}{12}+\\frac{t}{18}=1\\)",
+        "\\(\\frac{t}{30}=1\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Uses minutes per order as orders per minute.",
+        "B": "Reverses the rates and time.",
+        "D": "Adds completion times instead of production rates."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A painter has finished 35% of a job. At a constant rate, the remaining work will take t hours. If the full job at that rate would take h hours, which equation determines h?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Test a full duration of 100 hours. The remaining time is 65. For any full duration h, t is 65% of h.</p>",
+      "variation": "Include only the work that remains",
+      "source_cards": [
+        20,
+        21,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L16-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_16_3",
+        "combined_rate_model",
+        "format_16_4"
+      ],
+      "choices": [
+        "\\(t=\\frac{7}{20}h\\)",
+        "\\(t=\\frac{13}{20}h\\)",
+        "\\(t=\\frac{27}{20}h\\)",
+        "\\(h=\\frac{13}{20}t\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Uses the completed fraction.",
+        "C": "Adds work beyond the whole job.",
+        "D": "Reverses the roles of whole and remaining time."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A bike rental charges 8 dollars to unlock a bike and 5 dollars per hour. A renter pays C dollars for h hours. Which equation gives h in terms of C?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Try h = 2. Total cost is 18. The expression that reverses the charges subtracts the fixed 8 first and then divides by the hourly rate 5.</p>",
+      "variation": "Check a rearranged equation against an example that includes all fees",
+      "source_cards": [
+        33,
+        35,
+        36,
+        37
+      ],
+      "difficulty": 2,
+      "id": "L16-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "supplied_values",
+        "multi_step_context",
+        "format_16_7",
+        "rearranged_equations"
+      ],
+      "choices": [
+        "\\(h=\\frac{C+8}{5}\\)",
+        "\\(h=\\frac{C-8}{5}\\)",
+        "\\(h=\\frac{C}{5}-8\\)",
+        "\\(h=\\frac{C-5}{8}\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Adds the fixed fee when undoing it.",
+        "C": "Subtracts the fixed fee after dividing.",
+        "D": "Swaps the fixed and hourly charges."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A venue charges 25 dollars per ticket before fees, and adds a fee equal to 8% of the ticket subtotal. For n tickets the final cost is C dollars. Which equation relates n and C?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Test n = 10. Then the base is 250 dollars and the fee is \\(20\\) dollars. For any n, the subtotal is multiplied by 108/100.</p>",
+      "variation": "Keep the percentage attached to its correct base",
+      "source_cards": [
+        23,
+        24,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L16-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_16_4",
+        "percent_context",
+        "format_16_5"
+      ],
+      "choices": [
+        "\\(C=27n\\)",
+        "\\(C=25n+8\\)",
+        "\\(C=2n\\)",
+        "\\(C=23n\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Treats the percent fee as a fixed amount.",
+        "C": "Computes only the fee.",
+        "D": "Applies a discount instead of a fee."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A zoo sold x adult passes and 14 fewer child passes than adult passes. It sold N passes in total. Which equation always relates N and x?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Build a valid example x = 35. The child count is 21, so N = 56. In general N = x + (x − 14).</p>",
+      "variation": "Build all counts from a single starting quantity",
+      "source_cards": [
+        6,
+        8,
+        12,
+        14
+      ],
+      "difficulty": 1,
+      "id": "L16-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "coherence_driver",
+        "museum_example",
+        "direction_language"
+      ],
+      "choices": [
+        "\\(N=2x+14\\)",
+        "\\(N=x-14\\)",
+        "\\(N=2x-28\\)",
+        "\\(N=2x-14\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Adds instead of subtracting.",
+        "B": "Counts only the child passes.",
+        "C": "Subtracts the difference twice."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>One printer completes an order in 25 minutes. A second completes the same order in 40 minutes. At constant rates, together they need t minutes. Which equation determines t?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>In one minute, the printers complete 1/25 and 1/40 of the order. After t minutes the fractions add to one complete order.</p>",
+      "variation": "Use complete-job rates to test an equation",
+      "source_cards": [
+        16,
+        18,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L16-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "rate_context",
+        "combined_rate_idea",
+        "format_16_2"
+      ],
+      "choices": [
+        "\\(25t+40t=1\\)",
+        "\\(\\frac{25}{t}+\\frac{40}{t}=1\\)",
+        "\\(\\frac{t}{25}+\\frac{t}{40}=1\\)",
+        "\\(\\frac{t}{65}=1\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Uses minutes per order as orders per minute.",
+        "B": "Reverses the rates and time.",
+        "D": "Adds completion times instead of production rates."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A painter has finished 24% of a job. At a constant rate, the remaining work will take t hours. If the full job at that rate would take h hours, which equation determines h?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Test a full duration of 100 hours. The remaining time is 76. For any full duration h, t is 76% of h.</p>",
+      "variation": "Include only the work that remains",
+      "source_cards": [
+        20,
+        21,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L16-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_16_3",
+        "combined_rate_model",
+        "format_16_4"
+      ],
+      "choices": [
+        "\\(t=\\frac{6}{25}h\\)",
+        "\\(t=\\frac{31}{25}h\\)",
+        "\\(t=\\frac{19}{25}h\\)",
+        "\\(h=\\frac{19}{25}t\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Uses the completed fraction.",
+        "B": "Adds work beyond the whole job.",
+        "D": "Reverses the roles of whole and remaining time."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A bike rental charges 12 dollars to unlock a bike and 7 dollars per hour. A renter pays C dollars for h hours. Which equation gives h in terms of C?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Try h = 2. Total cost is 26. The expression that reverses the charges subtracts the fixed 12 first and then divides by the hourly rate 7.</p>",
+      "variation": "Check a rearranged equation against an example that includes all fees",
+      "source_cards": [
+        33,
+        35,
+        36,
+        37
+      ],
+      "difficulty": 2,
+      "id": "L16-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "supplied_values",
+        "multi_step_context",
+        "format_16_7",
+        "rearranged_equations"
+      ],
+      "choices": [
+        "\\(h=\\frac{C+12}{7}\\)",
+        "\\(h=\\frac{C-12}{7}\\)",
+        "\\(h=\\frac{C}{7}-12\\)",
+        "\\(h=\\frac{C-7}{12}\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Adds the fixed fee when undoing it.",
+        "C": "Subtracts the fixed fee after dividing.",
+        "D": "Swaps the fixed and hourly charges."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A venue charges 45 dollars per ticket before fees, and adds a fee equal to 12% of the ticket subtotal. For n tickets the final cost is C dollars. Which equation relates n and C?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Test n = 10. Then the base is 450 dollars and the fee is \\(54\\) dollars. For any n, the subtotal is multiplied by 112/100.</p>",
+      "variation": "Keep the percentage attached to its correct base",
+      "source_cards": [
+        23,
+        24,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L16-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_16_4",
+        "percent_context",
+        "format_16_5"
+      ],
+      "choices": [
+        "\\(C=\\frac{252}{5}n\\)",
+        "\\(C=45n+12\\)",
+        "\\(C=\\frac{27}{5}n\\)",
+        "\\(C=\\frac{198}{5}n\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Treats the percent fee as a fixed amount.",
+        "C": "Computes only the fee.",
+        "D": "Applies a discount instead of a fee."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A zoo sold x adult passes and 9 fewer child passes than adult passes. It sold N passes in total. Which equation always relates N and x?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Build a valid example x = 22. The child count is 13, so N = 35. In general N = x + (x − 9).</p>",
+      "variation": "Build all counts from a single starting quantity",
+      "source_cards": [
+        6,
+        8,
+        12,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L16-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "five_step_process",
+        "coherence_driver",
+        "museum_example",
+        "direction_language"
+      ],
+      "choices": [
+        "\\(N=2x+9\\)",
+        "\\(N=x-9\\)",
+        "\\(N=2x-18\\)",
+        "\\(N=2x-9\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Adds instead of subtracting.",
+        "B": "Counts only the child passes.",
+        "C": "Subtracts the difference twice."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>One printer completes an order in 36 minutes. A second completes the same order in 48 minutes. At constant rates, together they need t minutes. Which equation determines t?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>In one minute, the printers complete 1/36 and 1/48 of the order. After t minutes the fractions add to one complete order.</p>",
+      "variation": "Use complete-job rates to test an equation",
+      "source_cards": [
+        16,
+        18,
+        19
+      ],
+      "difficulty": 3,
+      "id": "L16-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "rate_context",
+        "combined_rate_idea",
+        "format_16_2"
+      ],
+      "choices": [
+        "\\(36t+48t=1\\)",
+        "\\(\\frac{36}{t}+\\frac{48}{t}=1\\)",
+        "\\(\\frac{t}{84}=1\\)",
+        "\\(\\frac{t}{36}+\\frac{t}{48}=1\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Uses minutes per order as orders per minute.",
+        "B": "Reverses the rates and time.",
+        "C": "Adds completion times instead of production rates."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A painter has finished 64% of a job. At a constant rate, the remaining work will take t hours. If the full job at that rate would take h hours, which equation determines h?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Test a full duration of 100 hours. The remaining time is 36. For any full duration h, t is 36% of h.</p>",
+      "variation": "Include only the work that remains",
+      "source_cards": [
+        20,
+        21,
+        23
+      ],
+      "difficulty": 3,
+      "id": "L16-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_16_3",
+        "combined_rate_model",
+        "format_16_4"
+      ],
+      "choices": [
+        "\\(t=\\frac{16}{25}h\\)",
+        "\\(t=\\frac{41}{25}h\\)",
+        "\\(t=\\frac{9}{25}h\\)",
+        "\\(h=\\frac{9}{25}t\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Uses the completed fraction.",
+        "B": "Adds work beyond the whole job.",
+        "D": "Reverses the roles of whole and remaining time."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A bike rental charges 15 dollars to unlock a bike and 4 dollars per hour. A renter pays C dollars for h hours. Which equation gives h in terms of C?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Try h = 2. Total cost is 23. The expression that reverses the charges subtracts the fixed 15 first and then divides by the hourly rate 4.</p>",
+      "variation": "Check a rearranged equation against an example that includes all fees",
+      "source_cards": [
+        33,
+        35,
+        36,
+        37
+      ],
+      "difficulty": 3,
+      "id": "L16-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "supplied_values",
+        "multi_step_context",
+        "format_16_7",
+        "rearranged_equations"
+      ],
+      "choices": [
+        "\\(h=\\frac{C+15}{4}\\)",
+        "\\(h=\\frac{C-15}{4}\\)",
+        "\\(h=\\frac{C}{4}-15\\)",
+        "\\(h=\\frac{C-4}{15}\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Adds the fixed fee when undoing it.",
+        "C": "Subtracts the fixed fee after dividing.",
+        "D": "Swaps the fixed and hourly charges."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A venue charges 36 dollars per ticket before fees, and adds a fee equal to 15% of the ticket subtotal. For n tickets the final cost is C dollars. Which equation relates n and C?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Test n = 10. Then the base is 360 dollars and the fee is \\(54\\) dollars. For any n, the subtotal is multiplied by 115/100.</p>",
+      "variation": "Keep the percentage attached to its correct base",
+      "source_cards": [
+        23,
+        24,
+        26
+      ],
+      "difficulty": 3,
+      "id": "L16-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_16_4",
+        "percent_context",
+        "format_16_5"
+      ],
+      "choices": [
+        "\\(C=\\frac{207}{5}n\\)",
+        "\\(C=36n+15\\)",
+        "\\(C=\\frac{27}{5}n\\)",
+        "\\(C=\\frac{153}{5}n\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Treats the percent fee as a fixed amount.",
+        "C": "Computes only the fee.",
+        "D": "Applies a discount instead of a fee."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-20 15:06:37.295211+00",
+  "lesson_number": 16,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 9,
+    "3": 4
+  }
+}

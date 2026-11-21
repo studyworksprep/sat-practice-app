@@ -1,0 +1,965 @@
+{
+  "batch_id": "lesson-bank-2026-11-20",
+  "as_of": "2026-11-20",
+  "status": "ready_for_review",
+  "scope": "Published SAT lessons in the lesson bank, including the private published lessons.",
+  "lesson_count": 47,
+  "new_question_count": 660,
+  "pilot_question_count": 54,
+  "total_question_count": 714,
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "difficulty_calibration": "Author estimates on the SAT bank scale. Student attempt data can refine the estimates.",
+  "difficulty_counts": {
+    "1": 120,
+    "2": 439,
+    "3": 155
+  },
+  "selection": "Staff-curated lesson links by lesson ID. For a session, select eligible questions from that lesson and order them by difficulty. Practice and later review are timing groups.",
+  "publication": "Review files in the workspace. Import and the lesson drill selector are a separate integration step.",
+  "lessons": [
+    {
+      "number": 1,
+      "id": "88fe2546-2906-4bb4-8652-8877a62ef49f",
+      "title": "Advanced Factoring: Non-Monic Trinomials and Cubes",
+      "visibility": "private",
+      "spec": "docs/lesson-template-specs/advanced-factoring-non-monic-trinomials-and-cubes.json",
+      "file": "sets/advanced-factoring-non-monic-trinomials-and-cubes.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 0,
+        "2": 6,
+        "3": 9
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "eab1868eba7b27bf84135b1bbb2e097f77155d8c6634dd9f948edd3d9f809cca"
+    },
+    {
+      "number": 2,
+      "id": "e6698e97-f6df-44d1-aab5-b10b17432ca4",
+      "title": "Boundaries 1: Find and Test Full Stops",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/boundaries-1-find-and-test-full-stops.json",
+      "file": "sets/boundaries-1-find-and-test-full-stops.json",
+      "question_count": 18,
+      "difficulty_counts": {
+        "1": 10,
+        "2": 7,
+        "3": 1
+      },
+      "practice_count": 12,
+      "later_review_count": 6,
+      "variation_count": 6,
+      "pilot": true,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "78e0c992a98a78e256c20b102a386ccf65d797fcc802d9f4742c0f0311c8318c"
+    },
+    {
+      "number": 3,
+      "id": "c93903eb-e92e-4b92-9ccd-65677fe6d742",
+      "title": "Boundaries 2: Test Colons and Dashes",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/boundaries-2-test-colons-and-dashes.json",
+      "file": "sets/boundaries-2-test-colons-and-dashes.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 10,
+        "3": 2
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "89fd45e977b97d8deb23fe5c4917791a3386ef205ea9b8178b59b60af48a6be6"
+    },
+    {
+      "number": 4,
+      "id": "dd1b2388-8a7b-434c-b599-bd1afa340822",
+      "title": "Boundaries 3: Check Commas and Finish the Routine",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/boundaries-3-check-commas-and-finish-the-routine.json",
+      "file": "sets/boundaries-3-check-commas-and-finish-the-routine.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 5,
+        "2": 9,
+        "3": 1
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "c3c8a40b36fe42876ab1a5059c6754d7f411924861cd6c0fa785123a140b9a75"
+    },
+    {
+      "number": 5,
+      "id": "fdacb924-9111-47d6-8ed7-9f0ae3a5d888",
+      "title": "Bracket the Pivot: Choose Precise SAT Transitions",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/transitions-bracket-the-pivot.json",
+      "file": "sets/transitions-bracket-the-pivot.json",
+      "question_count": 18,
+      "difficulty_counts": {
+        "1": 9,
+        "2": 9,
+        "3": 0
+      },
+      "practice_count": 12,
+      "later_review_count": 6,
+      "variation_count": 9,
+      "pilot": true,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "09e145ae7ea64e0a0c1dfd2c8ca5da6efb61ad6f83e6d4d5a332f4a0ee19a78c"
+    },
+    {
+      "number": 6,
+      "id": "f86de617-9c6a-46b9-8c41-9c5e59f3447b",
+      "title": "Circle Geometric Relationships",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/circle-geometric-relationships.json",
+      "file": "sets/circle-geometric-relationships.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 5,
+        "2": 9,
+        "3": 1
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "edb4859bc0b088824bb230713ed9aed820c692e5fb81069347f6b6755cd5f167"
+    },
+    {
+      "number": 7,
+      "id": "d7db163b-4d7a-479d-858b-ae3fe84eb210",
+      "title": "Circle Graphs",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/circle-graphs.json",
+      "file": "sets/circle-graphs.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 10,
+        "3": 3
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "a520b271f696adc27b7fdc7f77be72fbac2b1f44f3b6af2d5d8bb7408ebcb74e"
+    },
+    {
+      "number": 8,
+      "id": "02f35c92-e075-4e4a-86b4-eee7a3681f5d",
+      "title": "CLEAR the Claim: Command of Evidence",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/command-of-evidence-clear-the-claim.json",
+      "file": "sets/command-of-evidence-clear-the-claim.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 0,
+        "2": 9,
+        "3": 6
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "9e6f67c18fd66fb31719f129cd92835a221cf71c861ab590e48721c4e08bc20b"
+    },
+    {
+      "number": 9,
+      "id": "74c3531d-e650-4d06-9646-c532b67430be",
+      "title": "Equivalent Expressions by Graphing: Graph Match",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/equivalent-expressions-by-graphing.json",
+      "file": "sets/equivalent-expressions-by-graphing.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 0,
+        "2": 10,
+        "3": 5
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Referenced teaching cards checked against their published text and IDs",
+      "sha256": "8b8a4d2e00b28905eea734fd9e1f91d8a96c9229ec4748a4b66aac3cac954649"
+    },
+    {
+      "number": 10,
+      "id": "39fbed52-8efc-4bd3-b347-fb3b1613464d",
+      "title": "Factor Out the Greatest Common Factor",
+      "visibility": "private",
+      "spec": "docs/lesson-template-specs/factor-out-greatest-common-factor.json",
+      "file": "sets/factor-out-greatest-common-factor.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 9,
+        "3": 3
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "380de86a8ee56d7279f4753e043433323b3ec6f880f4c503d7764a22b5458404"
+    },
+    {
+      "number": 11,
+      "id": "2f44495f-d0b8-45d3-af87-112f8aa5e97b",
+      "title": "Factor Polynomials: Trinomials and Difference of Squares",
+      "visibility": "private",
+      "spec": "docs/lesson-template-specs/factoring-polynomials-gcf-trinomials-difference-of-squares.json",
+      "file": "sets/factoring-polynomials-gcf-trinomials-difference-of-squares.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 4,
+        "2": 8,
+        "3": 3
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "c614f02286217ee916f51dc053d9c8f348b69c60f409d3912013b6e0a2af2ac1"
+    },
+    {
+      "number": 12,
+      "id": "a07bf329-93df-4179-a4b0-1f6248bc2be0",
+      "title": "Find a Standard Regression Equation from Data",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/standard-regression-from-data.json",
+      "file": "sets/standard-regression-from-data.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 9,
+        "3": 4
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "caefd2ab896d1d10c87750fa17dfcc25d9f08d5c1f378f10dfc019f9b4788a47"
+    },
+    {
+      "number": 13,
+      "id": "2b5e2ff5-8425-4967-9d65-9648a7a0fa5a",
+      "title": "Find Missing Constants by Fitting Equivalent Expressions",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/find-missing-constants-by-fitting-equivalent-expressions.json",
+      "file": "sets/find-missing-constants-by-fitting-equivalent-expressions.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 1,
+        "2": 8,
+        "3": 6
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Referenced teaching cards checked against their published text and IDs",
+      "sha256": "632b6463f8050fbaa897e8d7976440440c571a28d343940db284fb02586b1608"
+    },
+    {
+      "number": 14,
+      "id": "fc183eea-36c4-4a33-8eaf-3fede3806eaa",
+      "title": "Find Missing Constants with Custom Regression",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/custom-regression-from-data.json",
+      "file": "sets/custom-regression-from-data.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 1,
+        "2": 11,
+        "3": 3
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "d9bd4e8e21841a3e1e0c85a1d35be621ce816d924035281f849a141f0dd3d24e"
+    },
+    {
+      "number": 15,
+      "id": "06c4cda7-4226-412b-b229-8c59b9356a6e",
+      "title": "Find Probability from Tables: Favorable over Total",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/probability-from-tables-favorable-over-total.json",
+      "file": "sets/probability-from-tables-favorable-over-total.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 9,
+        "3": 3
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "02c094c864fd119f8c1153533a93ace3b3a7c335c5f0e4ee66425b745f189076"
+    },
+    {
+      "number": 16,
+      "id": "b99bae72-d30c-4138-ad8c-4e7d957c2e71",
+      "title": "Find the Equation with My Numbers",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/find-the-equation-with-my-numbers.json",
+      "file": "sets/find-the-equation-with-my-numbers.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 9,
+        "3": 4
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "3b4dc2d710e6a9b236655e8c9c4ccea2871090f88f84d7fe3879b4e059c65690"
+    },
+    {
+      "number": 17,
+      "id": "bfc5f881-d4e5-4001-b07e-d3f9b91fdc28",
+      "title": "Find the Point: Main Topics, Central Ideas, and Details",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/central-ideas-and-details-find-the-point.json",
+      "file": "sets/central-ideas-and-details-find-the-point.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 4,
+        "2": 9,
+        "3": 2
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "cbe5db844c81ebfe3730a4c661fd492d2eabcfb5d7f69bcacee9730b1baf57e4"
+    },
+    {
+      "number": 18,
+      "id": "19488dc3-65b0-40f6-b3f8-e8f4300b34fb",
+      "title": "Functions and Function Notation on the SAT",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/functions-and-function-notation.json",
+      "file": "sets/functions-and-function-notation.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 6,
+        "2": 9,
+        "3": 0
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "ad63af0876f57087c04c24330b22a71f700d4b4ed858d8105ff0bcd766d1e479"
+    },
+    {
+      "number": 19,
+      "id": "ff731099-ecf9-4b4d-b2f7-4a42d9ad5021",
+      "title": "Good Cop / Bad Cop: Check Every Reading Answer",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/good-cop-bad-cop-reading-answers.json",
+      "file": "sets/good-cop-bad-cop-reading-answers.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 0,
+        "2": 10,
+        "3": 5
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "035432047c0b19070ea645c757d0bcbfb4b29514835b6841c82b23308c3ac870"
+    },
+    {
+      "number": 20,
+      "id": "8a5f65d1-5107-4e82-81e8-5180ab62201a",
+      "title": "Inference Questions: Make the Smallest Supported Leap",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/inference-minimum-supported-conclusion.json",
+      "file": "sets/inference-minimum-supported-conclusion.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 0,
+        "2": 10,
+        "3": 5
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "0a9bb027ca2c26d80db7d050db8d55aa69b2295072b48ce4032d0c6a3343642a"
+    },
+    {
+      "number": 21,
+      "id": "7040ee67-9287-4aaa-9ef0-89de44f5a597",
+      "title": "Initial Modifiers: Match the Noun After the Comma",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/initial-modifiers-match-the-noun-after-the-comma.json",
+      "file": "sets/initial-modifiers-match-the-noun-after-the-comma.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 10,
+        "3": 2
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "c35cf7582d2e1afaf3d1b77de48c116cadd80cf80d5cabdb56d9c8b5f700e05a"
+    },
+    {
+      "number": 22,
+      "id": "ee744a57-5926-4b1a-b32c-6358e2fe9ce4",
+      "title": "Keep the Voices Straight: Cross-Text Connections",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/cross-text-connections-keep-the-voices-straight.json",
+      "file": "sets/cross-text-connections-keep-the-voices-straight.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 1,
+        "2": 8,
+        "3": 6
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "90769a2d7ac18d09c4d48a3b3c25d525b2f5ddf16fe56880517986883dfeeea3"
+    },
+    {
+      "number": 23,
+      "id": "c29f6421-47f1-4b83-866e-9c3beb944e8d",
+      "title": "Name the Job: Text Structure and Purpose",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/text-structure-and-purpose-name-the-job.json",
+      "file": "sets/text-structure-and-purpose-name-the-job.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 8,
+        "3": 5
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "70f4a4398736e0c69412ae845e3e4b41874cfd330ae2132923eea2565e4f7081"
+    },
+    {
+      "number": 24,
+      "id": "b7c75cf1-1b02-4de9-99bc-3447929518f5",
+      "title": "Place Transition Words by Logic",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/boundaries-transition-word-placement-and-logic.json",
+      "file": "sets/boundaries-transition-word-placement-and-logic.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 1,
+        "2": 9,
+        "3": 5
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "75771ddb15400107dfaa76091864d4f91eb6f34a56ea431c8dbca92c48709772"
+    },
+    {
+      "number": 25,
+      "id": "f6eaf523-ee2f-4bf6-a4f2-7eac2d28dd76",
+      "title": "Process and Pre-Answer Reading Comprehension Questions",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/reading-comprehension-process-and-pre-answer.json",
+      "file": "sets/reading-comprehension-process-and-pre-answer.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 1,
+        "2": 10,
+        "3": 4
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "d7ea54e3328d8fb24b04a4be5444a5d33f4d2c58fd72c6ce485d82296ab61652"
+    },
+    {
+      "number": 26,
+      "id": "098be371-5059-4dbb-a744-744a88c23586",
+      "title": "Rates in Two-Variable Equations: Read the Units",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/rates-and-units-in-two-variable-equations.json",
+      "file": "sets/rates-and-units-in-two-variable-equations.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 11,
+        "3": 1
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "c380553cfc7eba65359353723c63ddba0e1ce2049437654f7947850e3112160d"
+    },
+    {
+      "number": 27,
+      "id": "bbbc1579-78b1-46f1-bd1d-6a8f530af635",
+      "title": "Reason Through SAT Survey Questions",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/surveys-sampling-and-margin-of-error.json",
+      "file": "sets/surveys-sampling-and-margin-of-error.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 11,
+        "3": 1
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 6,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "c3207afbbc4e51954376b58c719e7f49c0e1c9ecc4a5aee197d9282d2409a4f5"
+    },
+    {
+      "number": 28,
+      "id": "6035f3f8-c3e3-4b2a-8068-088f252e9e24",
+      "title": "Recognize and Use Similar Triangles",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/similar-triangles.json",
+      "file": "sets/similar-triangles.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 6,
+        "3": 7
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "b0da24d67d3ff9d69c310bd2175f229d96e7ee5018125ed7469290ca7441b815"
+    },
+    {
+      "number": 29,
+      "id": "1ba468c9-9ddf-4c95-8ff3-df731e88788f",
+      "title": "Rhetorical Synthesis: Let the Goal Lead",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/rhetorical-synthesis-goal-first.json",
+      "file": "sets/rhetorical-synthesis-goal-first.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 8,
+        "3": 4
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "5bfc4ab7f0bea6861872bd7c1741aa8d279ba14571a1bf09644f6214c316476e"
+    },
+    {
+      "number": 30,
+      "id": "cd9e2655-3adc-4b36-9d75-a31bbd0aaaba",
+      "title": "Right Triangle Trigonometry with SOHCAHTOA",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/right-triangle-trigonometry-sohcahtoa.json",
+      "file": "sets/right-triangle-trigonometry-sohcahtoa.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 12,
+        "3": 1
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 6,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "b3bf98c64e4ea911e39617a3dd16719ec5702f391db29f98e078c86bb9021057"
+    },
+    {
+      "number": 31,
+      "id": "aa64f806-99af-4a33-998d-330adda42f69",
+      "title": "Solve Linear Inequalities: Boundary and Test",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/solving-linear-inequalities-boundary-and-test.json",
+      "file": "sets/solving-linear-inequalities-boundary-and-test.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 4,
+        "2": 10,
+        "3": 1
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "566096a3806fd1990f4400d29f49d0cc24230d4433d6edeb96d294652055e53f"
+    },
+    {
+      "number": 32,
+      "id": "1647bc61-1c4e-42ae-9e03-bee2031f8cf3",
+      "title": "Solve Multiple Equations With List Regression",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/solve-multiple-equations-with-list-regression.json",
+      "file": "sets/solve-multiple-equations-with-list-regression.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 0,
+        "2": 7,
+        "3": 8
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "ba1916cb3e1e29e7dc1ecd25ed7a5d5fbae3ee7803c3fba28637128eff1cfb04"
+    },
+    {
+      "number": 33,
+      "id": "f0f36231-57d1-4be1-a013-1a19974137b5",
+      "title": "Solve Multiple Percent Equations with List Regression",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/solve-multiple-percent-equations-with-list-regression.json",
+      "file": "sets/solve-multiple-percent-equations-with-list-regression.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 0,
+        "2": 7,
+        "3": 8
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "f381b3e4a03457ba5698d3fb0a88fe140d9dbd4cb5c6cdba3cdb56387562cc08"
+    },
+    {
+      "number": 34,
+      "id": "87964e64-d44c-48b1-98c6-85924ea0ccf2",
+      "title": "Solve Percent and Percent Change Problems with Desmos",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/percentages-and-percent-change.json",
+      "file": "sets/percentages-and-percent-change.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 10,
+        "3": 2
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "d4bf1dbdd7ab7c7a5c7ee5dd545c9c5424084ddd6b7e4e0f024720a9c342dfe1"
+    },
+    {
+      "number": 35,
+      "id": "7a3b5e9e-9fc5-4425-8f47-ed8021a4d98c",
+      "title": "Solve SAT Boundaries Questions in the Fastest Order",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/boundaries-punctuation-order.json",
+      "file": "sets/boundaries-punctuation-order.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 11,
+        "3": 2
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "99b581c71fcffe6f246cafb1a8d5d33592682d83d4799c12071dafcfddb3dc34"
+    },
+    {
+      "number": 36,
+      "id": "21d20a69-dbbd-4aac-bafb-ae7a459c0da7",
+      "title": "Solve Subject–Verb Agreement with the Odd-One-Out Trick",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/subject-verb-agreement-odd-one-out.json",
+      "file": "sets/subject-verb-agreement-odd-one-out.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 11,
+        "3": 2
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "f04cb3479d2c5d608b6a0b5dd7e0e24ad2ccf6b7c526627a6373c794e2d62dc1"
+    },
+    {
+      "number": 37,
+      "id": "44b8a858-d657-4b6d-b780-c5850e266b37",
+      "title": "Solve Systems of Equations by Graphing in Desmos",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/solving-systems-of-equations-by-graphing.json",
+      "file": "sets/solving-systems-of-equations-by-graphing.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 9,
+        "3": 4
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 6,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "3f420588bd3ce6052f505ed58eda69cda69d88029b8310fbadb7fe60db87b343"
+    },
+    {
+      "number": 38,
+      "id": "698d4a71-afac-4bf8-97c4-9dac213600d6",
+      "title": "Solve Words in Context with Read, Predict, Match",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/words-in-context-read-predict-match.json",
+      "file": "sets/words-in-context-read-predict-match.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 4,
+        "2": 8,
+        "3": 3
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "3992bf0cad86b5d59d0e78e5fe2cb019d0105754ee19e0b55da49db740adfd30"
+    },
+    {
+      "number": 39,
+      "id": "cd9f51ac-becc-499a-b132-07d31a566798",
+      "title": "Solving Equations by Graphing",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/solving-equations-by-graphing-x-intercepts.json",
+      "file": "sets/solving-equations-by-graphing-x-intercepts.json",
+      "question_count": 18,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 13,
+        "3": 2
+      },
+      "practice_count": 12,
+      "later_review_count": 6,
+      "variation_count": 9,
+      "pilot": true,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "829049f6740ae7ac591e1e7a4632f654b7e419becf3c02c0613e2f7988393163"
+    },
+    {
+      "number": 40,
+      "id": "128a9229-75b6-4aa8-b47d-792e478f4d2d",
+      "title": "Solving Equations with Regression",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/solving-equations-with-regression.json",
+      "file": "sets/solving-equations-with-regression.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 9,
+        "3": 4
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "6aeb1a012b4823b4c264c144ab3d021590d6b0dadd56093592d396a39c2ddc29"
+    },
+    {
+      "number": 41,
+      "id": "b62b7ce7-e3cf-499f-9cbf-5edbac932eee",
+      "title": "Special Right Triangles: Recognize, Scale, Solve",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/special-right-triangles-45-45-90-and-30-60-90.json",
+      "file": "sets/special-right-triangles-45-45-90-and-30-60-90.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 11,
+        "3": 1
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "2109478ccd8622cf0aaa1bccfc85c125966f44144a1a1e846ca603a61fd822b7"
+    },
+    {
+      "number": 42,
+      "id": "95a74105-c958-461d-954e-477437c5de5f",
+      "title": "Special Systems: No Solution and Infinitely Many Solutions",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/special-systems-no-solution-and-infinitely-many.json",
+      "file": "sets/special-systems-no-solution-and-infinitely-many.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 9,
+        "3": 4
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "a648f6157db5bf6ead55bdc54f28bd1feb8c0030d29502a319469e0620fbfe94"
+    },
+    {
+      "number": 43,
+      "id": "32188826-a78c-448d-86c9-808113b23e58",
+      "title": "Testing Equivalent Expressions with Desmos Sliders",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/testing-equivalent-expressions-with-desmos-sliders.json",
+      "file": "sets/testing-equivalent-expressions-with-desmos-sliders.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 0,
+        "2": 9,
+        "3": 6
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "bdd62eebdf370a63db2d996596cae03666275caea6166f17d222356ea84fad76"
+    },
+    {
+      "number": 44,
+      "id": "b548155a-d5f5-4659-9a86-742727ff6104",
+      "title": "Understand and Use Standard Deviation",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/standard-deviation.json",
+      "file": "sets/standard-deviation.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 3,
+        "2": 11,
+        "3": 1
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "276cff93823dce6fba35f98033b8016cb91ad15638e26ef4ef31417359a84b10"
+    },
+    {
+      "number": 45,
+      "id": "0ae583f2-825c-498a-9d91-31ec0de156f0",
+      "title": "Use Desmos Lists and List Tools",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/desmos-list-tools.json",
+      "file": "sets/desmos-list-tools.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 11,
+        "3": 2
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "a8d9cfbaa37609f3d11199f0f01859f1b9aaee92fcdb7125ed382ec372473eb1"
+    },
+    {
+      "number": 46,
+      "id": "7459378d-1581-4e4b-afaa-a96a130c6ebb",
+      "title": "Use My Numbers to Make Abstract SAT Problems Concrete",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/my-numbers-strategy.json",
+      "file": "sets/my-numbers-strategy.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 5,
+        "2": 10,
+        "3": 0
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "ff0209c8ee04fde8711fad2bfcf0886f65de9a8b6ff86621573370be7362c712"
+    },
+    {
+      "number": 47,
+      "id": "a87137e2-aa5c-4907-9b84-7727b33b11d4",
+      "title": "Use Scale Factors with Similar Shapes",
+      "visibility": "shared",
+      "spec": "docs/lesson-template-specs/scale-factor-and-similar-shapes.json",
+      "file": "sets/scale-factor-and-similar-shapes.json",
+      "question_count": 15,
+      "difficulty_counts": {
+        "1": 2,
+        "2": 10,
+        "3": 3
+      },
+      "practice_count": 10,
+      "later_review_count": 5,
+      "variation_count": 5,
+      "pilot": false,
+      "source_verification": "Exact ordered match to published student-facing lesson blocks",
+      "sha256": "bb846d85192f8f22f4d19d000cc1579aa5daf86e9e99d8a32800834ea5d32bf8"
+    }
+  ]
+}

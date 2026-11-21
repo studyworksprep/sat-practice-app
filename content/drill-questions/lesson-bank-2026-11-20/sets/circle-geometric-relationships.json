@@ -1,0 +1,496 @@
+{
+  "id": "f86de617-9c6a-46b9-8c41-9c5e59f3447b",
+  "title": "Circle Geometric Relationships",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use circle measurements, arcs, equal radii, and tangent relationships to find missing lengths and angles with Mark, relate, solve.",
+  "cards": 42,
+  "spec": "docs/lesson-template-specs/circle-geometric-relationships.json",
+  "source_spec_sha256": "8d98c6b3fca6dc84430518159b6bfc6bc2c13e898139397e3c62ca982458a169",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Connect circumference, diameter, radius, and area": [
+      6,
+      8,
+      10,
+      11
+    ],
+    "Use a central angle to find arc length or its complementary arc": [
+      13,
+      19,
+      22,
+      23
+    ],
+    "Read the intercepted arc from the angle’s vertex": [
+      16,
+      17,
+      19,
+      20
+    ],
+    "Use the equal radii of an isosceles triangle": [
+      25,
+      26
+    ],
+    "Apply perpendicular radii and equal tangent segments": [
+      28,
+      29,
+      31,
+      34
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle has circumference \\(18\\pi\\). Its area is \\(k\\pi\\). What is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "81"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The circumference is π times the diameter, so the diameter is 18. The radius is 9. Squaring the radius gives k = 81.</p>",
+      "variation": "Connect circumference, diameter, radius, and area",
+      "source_cards": [
+        6,
+        8,
+        10,
+        11
+      ],
+      "difficulty": 1,
+      "id": "L06-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "1e2699b6-efa5-4e56-891e-769e17c3b7fe",
+        "3e2322a6-4c33-4e1f-bc9f-e6cc0955926e",
+        "42812b83-8034-420b-b368-80930b7f3849",
+        "0b84ed66-8e87-410f-9593-7a9f493bf662"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle has radius 12. The shorter arc from A to B has central angle 90°. The longer arc has length \\(k\\pi\\). What is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "18"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The longer arc spans 270° of 360°. Use that fraction of circumference \\(24\\pi\\), giving k = \\(18\\).</p>",
+      "variation": "Use a central angle to find arc length or its complementary arc",
+      "source_cards": [
+        13,
+        19,
+        22,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L06-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "8cef1c48-54a0-5156-9151-f6ef0292ff6a",
+        "0225565f-3aac-56c7-b068-8789521d4b21",
+        "7edeca1e-d328-55ce-9a95-45f972125b28",
+        "22ccbcee-3d65-4b73-a769-d958deebb285"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Angle ACB is inscribed in a circle and intercepts an arc AB of measure 118°. What is the measure of angle ACB in degrees?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "59"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The vertex is on the circle, so the angle is half the intercepted arc: 118/2.</p>",
+      "variation": "Read the intercepted arc from the angle’s vertex",
+      "source_cards": [
+        16,
+        17,
+        19,
+        20
+      ],
+      "difficulty": 1,
+      "id": "L06-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "b02dc351-2718-5591-9680-f0177baee498",
+        "c11ef2e7-c5a3-4d0b-82c5-110165abf524",
+        "0225565f-3aac-56c7-b068-8789521d4b21",
+        "2a9acf23-fb61-4a2d-bf66-3fe696cd8939"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Points A and B are on a circle with center O. In triangle AOB, angle OAB measures 27°. What is the measure of angle AOB in degrees?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "126"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>OA and OB are equal radii, so both base angles are 27°. Subtract their sum from 180°.</p>",
+      "variation": "Use the equal radii of an isosceles triangle",
+      "source_cards": [
+        25,
+        26
+      ],
+      "difficulty": 1,
+      "id": "L06-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ea49f0b3-bce5-5058-b7ab-09186fb99b8a",
+        "339f4da4-c329-42f5-9d76-04a73ba882a6"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A line through point P touches a circle with center O at T. The radius OT is 9 and OP is 15. What is the length of PT?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "12"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>OT is perpendicular to PT. Use OP as the hypotenuse in the right triangle. The square root of 15² − 9² is 12.</p>",
+      "variation": "Apply perpendicular radii and equal tangent segments",
+      "source_cards": [
+        28,
+        29,
+        31,
+        34
+      ],
+      "difficulty": 2,
+      "id": "L06-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "62f2a133-f205-5868-8c71-49fb3c90e818",
+        "76ae5e0e-db5c-41d5-812e-4e69cc0a5ac3",
+        "7f786d43-92b5-5655-bc92-4264d4905b51",
+        "f4520b59-7808-5822-abc3-8aad25bb5a2d"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle has circumference \\(26\\pi\\). Its area is \\(k\\pi\\). What is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "169"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The circumference is π times the diameter, so the diameter is 26. The radius is 13. Squaring the radius gives k = 169.</p>",
+      "variation": "Connect circumference, diameter, radius, and area",
+      "source_cards": [
+        6,
+        8,
+        10,
+        11
+      ],
+      "difficulty": 1,
+      "id": "L06-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "1e2699b6-efa5-4e56-891e-769e17c3b7fe",
+        "3e2322a6-4c33-4e1f-bc9f-e6cc0955926e",
+        "42812b83-8034-420b-b368-80930b7f3849",
+        "0b84ed66-8e87-410f-9593-7a9f493bf662"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle has radius 18. The shorter arc from A to B has central angle 140°. The longer arc has length \\(k\\pi\\). What is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "22"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The longer arc spans 220° of 360°. Use that fraction of circumference \\(36\\pi\\), giving k = \\(22\\).</p>",
+      "variation": "Use a central angle to find arc length or its complementary arc",
+      "source_cards": [
+        13,
+        19,
+        22,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L06-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "8cef1c48-54a0-5156-9151-f6ef0292ff6a",
+        "0225565f-3aac-56c7-b068-8789521d4b21",
+        "7edeca1e-d328-55ce-9a95-45f972125b28",
+        "22ccbcee-3d65-4b73-a769-d958deebb285"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The minor arc AB of a circle measures 134°. Point C is on that minor arc, distinct from A and B. What is the measure of angle ACB in degrees?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "113"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Angle ACB intercepts the arc that does not contain C, which is the major arc of measure 226°. An inscribed angle measures half its intercepted arc.</p>",
+      "variation": "Read the intercepted arc from the angle’s vertex",
+      "source_cards": [
+        16,
+        17,
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L06-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "b02dc351-2718-5591-9680-f0177baee498",
+        "c11ef2e7-c5a3-4d0b-82c5-110165abf524",
+        "0225565f-3aac-56c7-b068-8789521d4b21",
+        "2a9acf23-fb61-4a2d-bf66-3fe696cd8939"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Points A and B are on a circle with center O. In triangle AOB, angle OAB measures 41°. What is the measure of angle AOB in degrees?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "98"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>OA and OB are equal radii, so both base angles are 41°. Subtract their sum from 180°.</p>",
+      "variation": "Use the equal radii of an isosceles triangle",
+      "source_cards": [
+        25,
+        26
+      ],
+      "difficulty": 1,
+      "id": "L06-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ea49f0b3-bce5-5058-b7ab-09186fb99b8a",
+        "339f4da4-c329-42f5-9d76-04a73ba882a6"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>PA and PB are tangent segments from P to a circle centered at O. Radius OA is 15 and OP is 25. What is PA + PB?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "40"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Triangle OAP is right at A, so PA = 20. Both tangents from P have that length, giving 40.</p>",
+      "variation": "Apply perpendicular radii and equal tangent segments",
+      "source_cards": [
+        28,
+        29,
+        31,
+        34
+      ],
+      "difficulty": 2,
+      "id": "L06-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "62f2a133-f205-5868-8c71-49fb3c90e818",
+        "76ae5e0e-db5c-41d5-812e-4e69cc0a5ac3",
+        "7f786d43-92b5-5655-bc92-4264d4905b51",
+        "f4520b59-7808-5822-abc3-8aad25bb5a2d"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle has circumference \\(42\\pi\\). Its area is \\(k\\pi\\). What is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "441"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The circumference is π times the diameter, so the diameter is 42. The radius is 21. Squaring the radius gives k = 441.</p>",
+      "variation": "Connect circumference, diameter, radius, and area",
+      "source_cards": [
+        6,
+        8,
+        10,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L06-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "1e2699b6-efa5-4e56-891e-769e17c3b7fe",
+        "3e2322a6-4c33-4e1f-bc9f-e6cc0955926e",
+        "42812b83-8034-420b-b368-80930b7f3849",
+        "0b84ed66-8e87-410f-9593-7a9f493bf662"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle has radius 9. A central angle measures \\(\\frac{5}{6}\\pi\\) radians. The intercepted arc has length \\(k\\pi\\). What is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "15/2"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Arc length equals radius times the angle in radians. Multiplying 9 by \\(\\frac{5}{6}\\) gives k = \\(\\frac{15}{2}\\).</p>",
+      "variation": "Use a central angle to find arc length or its complementary arc",
+      "source_cards": [
+        13,
+        19,
+        22,
+        23
+      ],
+      "difficulty": 2,
+      "id": "L06-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "8cef1c48-54a0-5156-9151-f6ef0292ff6a",
+        "0225565f-3aac-56c7-b068-8789521d4b21",
+        "7edeca1e-d328-55ce-9a95-45f972125b28",
+        "22ccbcee-3d65-4b73-a769-d958deebb285"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The minor arc AB of a circle measures 86°. Point C is on that minor arc, distinct from A and B. What is the measure of angle ACB in degrees?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "137"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Angle ACB intercepts the arc that does not contain C, which is the major arc of measure 274°. An inscribed angle measures half its intercepted arc.</p>",
+      "variation": "Read the intercepted arc from the angle’s vertex",
+      "source_cards": [
+        16,
+        17,
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L06-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "b02dc351-2718-5591-9680-f0177baee498",
+        "c11ef2e7-c5a3-4d0b-82c5-110165abf524",
+        "0225565f-3aac-56c7-b068-8789521d4b21",
+        "2a9acf23-fb61-4a2d-bf66-3fe696cd8939"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Points A and B are on a circle with center O. In triangle AOB, angle OAB measures 54°. What is the measure of angle AOB in degrees?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "72"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>OA and OB are equal radii, so both base angles are 54°. Subtract their sum from 180°.</p>",
+      "variation": "Use the equal radii of an isosceles triangle",
+      "source_cards": [
+        25,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L06-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ea49f0b3-bce5-5058-b7ab-09186fb99b8a",
+        "339f4da4-c329-42f5-9d76-04a73ba882a6"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>PA and PB are tangent segments from P to a circle centered at O. The radius is 12 and OP is 20. What is the area of quadrilateral OAPB?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "192"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The diagonal OP splits the quadrilateral into two right triangles. Each has legs 12 and 16, because the radius meets the tangent at a right angle. Their areas sum to 192.</p>",
+      "variation": "Apply perpendicular radii and equal tangent segments",
+      "source_cards": [
+        28,
+        29,
+        31,
+        34
+      ],
+      "difficulty": 3,
+      "id": "L06-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "62f2a133-f205-5868-8c71-49fb3c90e818",
+        "76ae5e0e-db5c-41d5-812e-4e69cc0a5ac3",
+        "7f786d43-92b5-5655-bc92-4264d4905b51",
+        "f4520b59-7808-5822-abc3-8aad25bb5a2d"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-16 18:49:55.248634+00",
+  "lesson_number": 6,
+  "difficulty_counts": {
+    "1": 5,
+    "2": 9,
+    "3": 1
+  }
+}

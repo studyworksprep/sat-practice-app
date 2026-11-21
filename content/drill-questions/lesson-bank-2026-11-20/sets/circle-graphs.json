@@ -1,0 +1,503 @@
+{
+  "id": "d7db163b-4d7a-479d-858b-ae3fe84eb210",
+  "title": "Circle Graphs",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Graph circle equations, read the center and radius from extreme points, and use them to answer coordinate, transformation, point-location, and tangency questions.",
+  "cards": 40,
+  "spec": "docs/lesson-template-specs/circle-graphs.json",
+  "source_spec_sha256": "399a80784233ae61ff7dec455668e8b5a9e4de3d96564ca43a83f76d48e82ae2",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Read the center and radius to find a coordinate limit": [
+      2,
+      5,
+      9,
+      10
+    ],
+    "Translate the center and scale the radius": [
+      17,
+      18,
+      19,
+      20
+    ],
+    "Use a point or diameter endpoints to find the radius": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "Graph an expanded equation and locate a point or read its radius": [
+      22,
+      24,
+      26
+    ],
+    "Use axis tangency to find a circle’s size or extent": [
+      2,
+      28
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle is given by \\((x-3)^2+(y+4)^2=81\\). What is the greatest possible x-coordinate on the circle?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "12"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The center is \\((3,-4)\\) and the radius is 9. Move 9 units right of the center to the extreme x-coordinate 12.</p>",
+      "variation": "Read the center and radius to find a coordinate limit",
+      "source_cards": [
+        2,
+        5,
+        9,
+        10
+      ],
+      "difficulty": 1,
+      "id": "L07-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_1",
+        "format_6_2",
+        "format_6_3",
+        "extremes_ranges"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle is given by \\((x+4)^2+(y-3)^2=64\\). Translate it 3 units right and double its radius. What is the greatest possible x-coordinate on the resulting circle?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "15"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The translated center has x-coordinate -1, and the scaled radius is 16. The rightmost point has x = 15.</p>",
+      "variation": "Translate the center and scale the radius",
+      "source_cards": [
+        17,
+        18,
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L07-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_6",
+        "translation_model",
+        "format_6_7",
+        "radius_scale_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The center of a circle is \\((7,5)\\) and the circle passes through \\((13, 13)\\). What is its radius?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "10"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The radius is the distance from the center to that point. Use horizontal change 6 and vertical change 8 to find 10.</p>",
+      "variation": "Use a point or diameter endpoints to find the radius",
+      "source_cards": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L07-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_4",
+        "center_point_model",
+        "format_6_5",
+        "diameter_midpoint"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What is the radius of the circle \\(x^2+y^2+8x-6y=24\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Graph the expanded equation as written. Its center is (-4, 3) and the distance to any extremum along one axis is 7. Completing the squares gives \\((x+4)^2+(y-3)^2=49\\).</p>",
+      "variation": "Graph an expanded equation and locate a point or read its radius",
+      "source_cards": [
+        22,
+        24,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L07-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "expanded_fraction_model",
+        "format_6_8",
+        "point_location"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle centered at \\((6,2)\\) is tangent to the y-axis. What is the area of the circle divided by \\(\\pi\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "36"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The tangent point is 6 units horizontally from the center, so the radius is 6. Dividing the area by \\(\\pi\\) leaves the radius squared, 36.</p>",
+      "variation": "Use axis tangency to find a circle’s size or extent",
+      "source_cards": [
+        2,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L07-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_1",
+        "axis_tangency"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle is given by \\((x+6)^2+(y-2)^2=49\\). What is the greatest possible x-coordinate on the circle?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "1"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The center is \\((-6,2)\\) and the radius is 7. Move 7 units right of the center to the extreme x-coordinate 1.</p>",
+      "variation": "Read the center and radius to find a coordinate limit",
+      "source_cards": [
+        2,
+        5,
+        9,
+        10
+      ],
+      "difficulty": 1,
+      "id": "L07-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_1",
+        "format_6_2",
+        "format_6_3",
+        "extremes_ranges"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle is given by \\((x-5)^2+(y+6)^2=49\\). Translate it 6 units right and double its radius. What is the greatest possible x-coordinate on the resulting circle?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "25"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The translated center has x-coordinate 11, and the scaled radius is 14. The rightmost point has x = 25.</p>",
+      "variation": "Translate the center and scale the radius",
+      "source_cards": [
+        17,
+        18,
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L07-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_6",
+        "translation_model",
+        "format_6_7",
+        "radius_scale_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The endpoints of a circle’s diameter are \\((-14, -9)\\) and \\((4, 15)\\). What is the radius?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "15"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The center is the midpoint \\((-5,3)\\). The distances along each axis to an endpoint are 9 and 12; the distance to that endpoint is 15.</p>",
+      "variation": "Use a point or diameter endpoints to find the radius",
+      "source_cards": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L07-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_4",
+        "center_point_model",
+        "format_6_5",
+        "diameter_midpoint"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Where is \\((9,-4)\\) relative to the circle \\(x^2+y^2-12x+16y=-84\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Graph the circle or complete the squares to find center (6, -8) and radius 4. The point is 5 units from the center, so it is outside the circle.</p>",
+      "variation": "Graph an expanded equation and locate a point or read its radius",
+      "source_cards": [
+        22,
+        24,
+        26
+      ],
+      "difficulty": 3,
+      "id": "L07-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "expanded_fraction_model",
+        "format_6_8",
+        "point_location"
+      ],
+      "choices": [
+        "Inside",
+        "On",
+        "Outside",
+        "The information is insufficient"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "The squared distance from the center is 25, which does not support this classification.",
+        "B": "The squared distance from the center is 25, which does not support this classification.",
+        "D": "The squared distance from the center is 25, which does not support this classification."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle centered at \\((-11,3)\\) is tangent to the y-axis. What is the area of the circle divided by \\(\\pi\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "121"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The tangent point is 11 units horizontally from the center, so the radius is 11. Dividing the area by \\(\\pi\\) leaves the radius squared, 121.</p>",
+      "variation": "Use axis tangency to find a circle’s size or extent",
+      "source_cards": [
+        2,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L07-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_1",
+        "axis_tangency"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle is given by \\((x-8)^2+(y-3)^2=144\\). What is the greatest possible x-coordinate on the circle?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "20"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The center is \\((8,3)\\) and the radius is 12. Move 12 units right of the center to the extreme x-coordinate 20.</p>",
+      "variation": "Read the center and radius to find a coordinate limit",
+      "source_cards": [
+        2,
+        5,
+        9,
+        10
+      ],
+      "difficulty": 2,
+      "id": "L07-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_1",
+        "format_6_2",
+        "format_6_3",
+        "extremes_ranges"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle is given by \\((x+9)^2+(y+11)^2=169\\). Translate it 11 units right and double its radius. What is the greatest possible x-coordinate on the resulting circle?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "28"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The translated center has x-coordinate 2, and the scaled radius is 26. The rightmost point has x = 28.</p>",
+      "variation": "Translate the center and scale the radius",
+      "source_cards": [
+        17,
+        18,
+        19,
+        20
+      ],
+      "difficulty": 3,
+      "id": "L07-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_6",
+        "translation_model",
+        "format_6_7",
+        "radius_scale_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The endpoints of a circle’s diameter are \\((-8, -23)\\) and \\((16, 9)\\). What is the radius?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "20"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The center is the midpoint \\((4,-7)\\). The distances along each axis to an endpoint are 12 and 16; the distance to that endpoint is 20.</p>",
+      "variation": "Use a point or diameter endpoints to find the radius",
+      "source_cards": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L07-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_4",
+        "center_point_model",
+        "format_6_5",
+        "diameter_midpoint"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Where is \\((8,6)\\) relative to the circle \\(x^2+y^2-10x-4y=7\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Graph the circle or complete the squares to find center (5, 2) and radius 6. The point is 5 units from the center, so it is inside the circle.</p>",
+      "variation": "Graph an expanded equation and locate a point or read its radius",
+      "source_cards": [
+        22,
+        24,
+        26
+      ],
+      "difficulty": 3,
+      "id": "L07-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "expanded_fraction_model",
+        "format_6_8",
+        "point_location"
+      ],
+      "choices": [
+        "On",
+        "Outside",
+        "Inside",
+        "The information is insufficient"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "The squared distance from the center is 25, which does not support this classification.",
+        "B": "The squared distance from the center is 25, which does not support this classification.",
+        "D": "The squared distance from the center is 25, which does not support this classification."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A circle centered at \\((-8,9)\\) is tangent to the x-axis. What is the greatest possible y-coordinate on the circle?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "18"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The distance from the center to the x-axis is 9, which equals the radius. Move 9 units up from the center to reach y = 18.</p>",
+      "variation": "Use axis tangency to find a circle’s size or extent",
+      "source_cards": [
+        2,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L07-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_6_1",
+        "axis_tangency"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.839907+00",
+  "lesson_number": 7,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 10,
+    "3": 3
+  }
+}

@@ -1,0 +1,559 @@
+{
+  "id": "c93903eb-e92e-4b92-9ccd-65677fe6d742",
+  "title": "Boundaries 2: Test Colons and Dashes",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "After full-stop choices fail, test colons and then single or paired dashes. Use a clear yes/no test for each job, choose a passing answer, and stop.",
+  "cards": 30,
+  "spec": "docs/lesson-template-specs/boundaries-2-test-colons-and-dashes.json",
+  "source_spec_sha256": "5e3102c6b34ed0b60f48b9f69cf46726e76cc17cb672159c311aaf511a4ebe96",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "After a complete lead-in, use a colon to specify what follows": [
+      4,
+      5
+    ],
+    "Keep a verb attached to its required object": [
+      7,
+      8
+    ],
+    "Use a colon to introduce an explanatory independent clause": [
+      4,
+      10,
+      11
+    ],
+    "Use a single dash before an explanatory ending": [
+      13,
+      14
+    ],
+    "Close a removable interruption with the matching dash": [
+      16,
+      18,
+      19
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>At dawn the staff packed three ______ rope, tarps, and lanterns.</p>",
+      "explanation_html": "<p>The text before the blank is a complete statement. The ending specifies what that statement anticipates, so a colon introduces the explanation.</p>",
+      "variation": "After a complete lead-in, use a colon to specify what follows",
+      "source_cards": [
+        4,
+        5
+      ],
+      "difficulty": 1,
+      "id": "L03-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_2_1",
+        "cd_colon"
+      ],
+      "choices": [
+        "supplies:",
+        "supplies;",
+        "supplies, and",
+        "supplies"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Requires a complete independent clause on the right.",
+        "C": "Adds a conjunction where the ending does not contain a full clause.",
+        "D": "Leaves the explanation without a boundary."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The volunteer counted ______ six damaged chairs before requesting replacements.</p>",
+      "explanation_html": "<p>The verb needs the object that follows it. The portion ending at the blank does not make a complete statement on its own, so keep the verb attached to its object.</p>",
+      "variation": "Keep a verb attached to its required object",
+      "source_cards": [
+        7,
+        8
+      ],
+      "difficulty": 1,
+      "id": "L03-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_colon_incomplete",
+        "cd_colon_incomplete"
+      ],
+      "choices": [
+        "exactly:",
+        "exactly—",
+        "exactly;",
+        "exactly"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Separates text that needs to stay in one clause.",
+        "B": "Separates text that needs to stay in one clause.",
+        "C": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The staff offered one ______ the first batch had cured at a lower temperature.</p>",
+      "explanation_html": "<p>The text before the blank is a complete statement. The ending specifies what that statement anticipates, so a colon introduces the explanation.</p>",
+      "variation": "Use a colon to introduce an explanatory independent clause",
+      "source_cards": [
+        4,
+        10,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L03-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_2_1",
+        "coherence_colon_complete_ending",
+        "cd_colon_sentence"
+      ],
+      "choices": [
+        "explanation,",
+        "explanation",
+        "explanation:",
+        "explanation, however,"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Uses only a comma to join independent clauses.",
+        "B": "Runs the clauses together.",
+        "D": "Cannot join two independent clauses with commas."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The interviewer requested one last ______ a copy of the original timetable.</p>",
+      "explanation_html": "<p>The statement before the blank is complete. The final phrase explains the noun just named. A single dash can introduce that explanation.</p>",
+      "variation": "Use a single dash before an explanatory ending",
+      "source_cards": [
+        13,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L03-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_2_2",
+        "cd_single_dash"
+      ],
+      "choices": [
+        "document;",
+        "document. ",
+        "document—",
+        "document, and"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The seed press—a loan from the cooperative’s training ______ stood on a workbench near the door.</p>",
+      "explanation_html": "<p>The first dash opens a removable description. The second dash closes that description, letting the subject and main verb form the original complete clause.</p>",
+      "variation": "Close a removable interruption with the matching dash",
+      "source_cards": [
+        16,
+        18,
+        19
+      ],
+      "difficulty": 1,
+      "id": "L03-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cd_dash_pair",
+        "cd_matching",
+        "coherence_dash_matching_example"
+      ],
+      "choices": [
+        "farm,",
+        "farm—",
+        "farm;",
+        "farm:"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Does not match the mark that opened the interruption.",
+        "C": "Does not match the mark that opened the interruption.",
+        "D": "Does not match the mark that opened the interruption."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The repairs addressed a single ______ a crack in the bottom of each basin.</p>",
+      "explanation_html": "<p>The text before the blank is a complete statement. The ending specifies what that statement anticipates, so a colon introduces the explanation.</p>",
+      "variation": "After a complete lead-in, use a colon to specify what follows",
+      "source_cards": [
+        4,
+        5
+      ],
+      "difficulty": 2,
+      "id": "L03-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_2_1",
+        "cd_colon"
+      ],
+      "choices": [
+        "problem:",
+        "problem;",
+        "problem, and",
+        "problem"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Requires a complete independent clause on the right.",
+        "C": "Adds a conjunction where the ending does not contain a full clause.",
+        "D": "Leaves the explanation without a boundary."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>For the last experiment, the student selected ______ circuits with undamaged switches.</p>",
+      "explanation_html": "<p>The verb needs the object that follows it. The portion ending at the blank does not make a complete statement on its own, so keep the verb attached to its object.</p>",
+      "variation": "Keep a verb attached to its required object",
+      "source_cards": [
+        7,
+        8
+      ],
+      "difficulty": 2,
+      "id": "L03-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_colon_incomplete",
+        "cd_colon_incomplete"
+      ],
+      "choices": [
+        "only:",
+        "only—",
+        "only;",
+        "only"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Separates text that needs to stay in one clause.",
+        "B": "Separates text that needs to stay in one clause.",
+        "C": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The survey revealed one unexpected ______ older trees produced fewer seeds during the wet season.</p>",
+      "explanation_html": "<p>The text before the blank is a complete statement. The ending specifies what that statement anticipates, so a colon introduces the explanation.</p>",
+      "variation": "Use a colon to introduce an explanatory independent clause",
+      "source_cards": [
+        4,
+        10,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L03-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_2_1",
+        "coherence_colon_complete_ending",
+        "cd_colon_sentence"
+      ],
+      "choices": [
+        "pattern,",
+        "pattern",
+        "pattern, however,",
+        "pattern:"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Uses only a comma to join independent clauses.",
+        "B": "Runs the clauses together.",
+        "C": "Cannot join two independent clauses with commas."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The hikers still lacked one ______ a map showing winter trail closures.</p>",
+      "explanation_html": "<p>The statement before the blank is complete. The final phrase explains the noun just named. A single dash can introduce that explanation.</p>",
+      "variation": "Use a single dash before an explanatory ending",
+      "source_cards": [
+        13,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L03-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_2_2",
+        "cd_single_dash"
+      ],
+      "choices": [
+        "item;",
+        "item. ",
+        "item—",
+        "item, and"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The terrace—originally used to dry lengths of ______ now holds a community garden.</p>",
+      "explanation_html": "<p>The first dash opens a removable description. The second dash closes that description, letting the subject and main verb form the original complete clause.</p>",
+      "variation": "Close a removable interruption with the matching dash",
+      "source_cards": [
+        16,
+        18,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L03-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cd_dash_pair",
+        "cd_matching",
+        "coherence_dash_matching_example"
+      ],
+      "choices": [
+        "cloth,",
+        "cloth—",
+        "cloth;",
+        "cloth:"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Does not match the mark that opened the interruption.",
+        "C": "Does not match the mark that opened the interruption.",
+        "D": "Does not match the mark that opened the interruption."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The competition gave each team two ______ a timed race or a distance trial.</p>",
+      "explanation_html": "<p>The text before the blank is a complete statement. The ending specifies what that statement anticipates, so a colon introduces the explanation.</p>",
+      "variation": "After a complete lead-in, use a colon to specify what follows",
+      "source_cards": [
+        4,
+        5
+      ],
+      "difficulty": 2,
+      "id": "L03-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_2_1",
+        "cd_colon"
+      ],
+      "choices": [
+        "options:",
+        "options;",
+        "options, and",
+        "options"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Requires a complete independent clause on the right.",
+        "C": "Adds a conjunction where the ending does not contain a full clause.",
+        "D": "Leaves the explanation without a boundary."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The technician replaced ______ all of the brittle connectors at the rear of the instrument.</p>",
+      "explanation_html": "<p>The verb needs the object that follows it. The portion ending at the blank does not make a complete statement on its own, so keep the verb attached to its object.</p>",
+      "variation": "Keep a verb attached to its required object",
+      "source_cards": [
+        7,
+        8
+      ],
+      "difficulty": 2,
+      "id": "L03-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_colon_incomplete",
+        "cd_colon_incomplete"
+      ],
+      "choices": [
+        "nearly",
+        "nearly:",
+        "nearly—",
+        "nearly;"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Separates text that needs to stay in one clause.",
+        "C": "Separates text that needs to stay in one clause.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The exhibit records an unexpected ______ younger artists adopted the detailed style their teachers had abandoned.</p>",
+      "explanation_html": "<p>The text before the blank is a complete statement. The ending specifies what that statement anticipates, so a colon introduces the explanation.</p>",
+      "variation": "Use a colon to introduce an explanatory independent clause",
+      "source_cards": [
+        4,
+        10,
+        11
+      ],
+      "difficulty": 3,
+      "id": "L03-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_2_1",
+        "coherence_colon_complete_ending",
+        "cd_colon_sentence"
+      ],
+      "choices": [
+        "reversal,",
+        "reversal",
+        "reversal, however,",
+        "reversal:"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Uses only a comma to join independent clauses.",
+        "B": "Runs the clauses together.",
+        "C": "Cannot join two independent clauses with commas."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>There was one obstacle to moving the cabinet ______ the narrow width of the landing.</p>",
+      "explanation_html": "<p>The statement before the blank is complete. The final phrase explains the noun just named. A single dash can introduce that explanation.</p>",
+      "variation": "Use a single dash before an explanatory ending",
+      "source_cards": [
+        13,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L03-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_2_2",
+        "cd_single_dash"
+      ],
+      "choices": [
+        "upstairs;",
+        "upstairs. ",
+        "upstairs—",
+        "upstairs, and"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The small tunnel—a ventilation passage omitted from several early building ______ remained open behind the restored wall.</p>",
+      "explanation_html": "<p>The first dash opens a removable description. The second dash closes that description, letting the subject and main verb form the original complete clause.</p>",
+      "variation": "Close a removable interruption with the matching dash",
+      "source_cards": [
+        16,
+        18,
+        19
+      ],
+      "difficulty": 3,
+      "id": "L03-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cd_dash_pair",
+        "cd_matching",
+        "coherence_dash_matching_example"
+      ],
+      "choices": [
+        "plans,",
+        "plans—",
+        "plans;",
+        "plans:"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Does not match the mark that opened the interruption.",
+        "C": "Does not match the mark that opened the interruption.",
+        "D": "Does not match the mark that opened the interruption."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.796603+00",
+  "lesson_number": 3,
+  "difficulty_counts": {
+    "1": 3,
+    "2": 10,
+    "3": 2
+  }
+}

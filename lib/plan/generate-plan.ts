@@ -22,7 +22,7 @@
 // or targets (the student's own picks) — and the MODE decides which
 // phases a plan gets and how long each runs.
 
-import { domainDisplayName, skillDisplayName, renderDrillWhy, isSilentWhyCode } from './task-labels.ts';
+import { domainDisplayName, skillDisplayName, renderDrillWhy, isSilentWhyCode, LESSON_DRILL_WHY } from './task-labels.ts';
 import type { DrillWhyCode } from './task-labels.ts';
 import { VOLUME_CURVE } from '../mastery.ts';
 import { filterCustomizedTasks, stampGeneratedTasks } from './customization.ts';
@@ -458,13 +458,14 @@ export function buildFoundationDrillPayload(
   const count = step.questionCount ?? MIXED_SET_QUESTION_COUNT;
   const narrowing = resolveTechniqueNarrowing(step, opts.lesson);
   const narrowed = narrowing.ids.length > 0;
+  const lessonId = role === 'practice' ? opts.lesson?.lessonId : null;
   const title =
     role === 'mixed'
       ? `Mixed practice: ${label}`
       : opts.lesson?.lessonTitle
         ? `Practice: ${opts.lesson.lessonTitle}`
         : `Practice: ${label} foundations`;
-  const techniqueWhy = narrowed
+  const techniqueWhy = lessonId ? LESSON_DRILL_WHY : narrowed
     ? narrowing.names.length > 0
       ? `Questions solved by ${joinNames(narrowing.names)} come first, across the skills they apply to.`
       : "Questions for the lesson's techniques come first, across the skills they apply to."
@@ -485,7 +486,7 @@ export function buildFoundationDrillPayload(
     why: techniqueWhy ? `${why} ${techniqueWhy}` : why,
     drill_role: role,
     ...(step.id ? { unit_step_id: step.id } : {}),
-    ...(opts.lesson?.lessonId ? { lesson_id: opts.lesson.lessonId } : {}),
+    ...(lessonId ? { lesson_id: lessonId } : {}),
   };
 }
 
@@ -584,12 +585,13 @@ export function buildDrillStepPayload(
         : `Drill: ${label}`;
   const narrowing = resolveTechniqueNarrowing(step, opts.lesson);
   const narrowed = narrowing.ids.length > 0;
+  const lessonId = role === 'practice' ? opts.lesson?.lessonId : null;
   const reasonText = reason ? renderDrillWhy(reason.code, reason.attempts) : why;
   // A narrowed drill says so in its why-line. A silent phase code
   // (coverage / targets) yields to the technique note; a real reason
   // precedes it. The code itself is dropped then — the rendered line
   // would otherwise take precedence and hide the note.
-  const techniqueWhy = narrowed ? techniqueWhyLine(narrowing.names, label) : null;
+  const practiceWhy = lessonId ? LESSON_DRILL_WHY : narrowed ? techniqueWhyLine(narrowing.names, label) : null;
   const leadIn = reason ? (isSilentWhyCode(reason.code) ? '' : reasonText) : why;
   return {
     domain_code: s.domainCode,
@@ -605,11 +607,11 @@ export function buildDrillStepPayload(
     ...(narrowed && narrowing.names.length > 0 ? { technique_names: narrowing.names } : {}),
     title,
     minutes: step.minutes ?? Math.min(s.expectedMinutes ?? AVG_TASK_MINUTES, AVG_TASK_MINUTES),
-    why: techniqueWhy ? [leadIn, techniqueWhy].filter(Boolean).join(' ') : reasonText,
-    ...(reason && !techniqueWhy ? { why_code: reason.code, why_attempts: reason.attempts } : {}),
+    why: practiceWhy ? [leadIn, practiceWhy].filter(Boolean).join(' ') : reasonText,
+    ...(reason && !practiceWhy ? { why_code: reason.code, why_attempts: reason.attempts } : {}),
     drill_role: role,
     ...(step.id ? { unit_step_id: step.id } : {}),
-    ...(opts.lesson?.lessonId ? { lesson_id: opts.lesson.lessonId } : {}),
+    ...(lessonId ? { lesson_id: lessonId } : {}),
   };
 }
 

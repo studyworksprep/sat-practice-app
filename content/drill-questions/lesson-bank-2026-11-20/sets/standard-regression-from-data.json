@@ -1,0 +1,489 @@
+{
+  "id": "a07bf329-93df-4179-a4b0-1f6248bc2be0",
+  "title": "Find a Standard Regression Equation from Data",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Turn information from a table, graph, or word problem into points, enter the points in a Desmos table, and use the Regression button to fit a linear, quadratic, or exponential equation.",
+  "cards": 50,
+  "spec": "docs/lesson-template-specs/standard-regression-from-data.json",
+  "source_spec_sha256": "291fb97161ed5d210d09ee33b8dcec72952391f55ede2a5b26a8153cd598e4f8",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Recover a linear model from table points": [
+      5,
+      14,
+      16,
+      22
+    ],
+    "Fit a quadratic and report its coefficient or prediction": [
+      16,
+      35,
+      37
+    ],
+    "Recover an exponential model and make a prediction": [
+      14,
+      16,
+      25
+    ],
+    "Use vertex symmetry to form enough points for a quadratic fit": [
+      37,
+      38,
+      39
+    ],
+    "Turn conditions in words into ordered pairs and a linear prediction": [
+      5,
+      16,
+      25,
+      29
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives values of a linear function. What is the slope of this function?</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>y</th></tr></thead><tbody><tr><td>1</td><td>12</td></tr><tr><td>3</td><td>20</td></tr><tr><td>6</td><td>32</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "4"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit a line to the (x, y) pairs. The change in y divided by the change in x is 4. The model is \\(y=4x+8\\).</p>",
+      "variation": "Recover a linear model from table points",
+      "source_cards": [
+        5,
+        14,
+        16,
+        22
+      ],
+      "difficulty": 1,
+      "id": "L12-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_11_1",
+        "standard_model_forms",
+        "four_step_process",
+        "format_11_5"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table follows a quadratic model. What is the coefficient of x² in the model?</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>y</th></tr></thead><tbody><tr><td>-1</td><td>6</td></tr><tr><td>1</td><td>8</td></tr><tr><td>3</td><td>26</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "2"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit a quadratic to all the table points. The model is \\(y=2x^{2}+x+5\\), giving the requested value 2.</p>",
+      "variation": "Fit a quadratic and report its coefficient or prediction",
+      "source_cards": [
+        16,
+        35,
+        37
+      ],
+      "difficulty": 2,
+      "id": "L12-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "standard_vs_custom_boundary",
+        "coherence_quadratic"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table follows an exponential model. What is the output at x = 4?</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>y</th></tr></thead><tbody><tr><td>0</td><td>7</td></tr><tr><td>1</td><td>14</td></tr><tr><td>2</td><td>28</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "112"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The output is multiplied by 2 each time x increases by 1 and starts at 7. The exponential fit is \\(y=7(2)^x\\); evaluating it gives 112.</p>",
+      "variation": "Recover an exponential model and make a prediction",
+      "source_cards": [
+        14,
+        16,
+        25
+      ],
+      "difficulty": 1,
+      "id": "L12-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "standard_model_forms",
+        "four_step_process",
+        "format_11_6"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A quadratic function f has vertex \\((4,6)\\) and \\(f(2)=18\\). What is \\(f(7)\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "33"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The point opposite x = 2 across the axis x = 4 is x = 6, with the same output. Fit a quadratic to those two points and the vertex to obtain \\(f(x)=3(x-4)^2+6\\). Its output at 7 is 33.</p>",
+      "variation": "Use vertex symmetry to form enough points for a quadratic fit",
+      "source_cards": [
+        37,
+        38,
+        39
+      ],
+      "difficulty": 3,
+      "id": "L12-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_quadratic",
+        "quadratic_two_point_problem",
+        "quadratic_symmetry_visual"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A pump fills a tank at a steady rate. A linear model gives an output of 33 at time 2 and 61 at time 6. What output does the model predict at time 8?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "75"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Enter (2, 33) and (6, 61) as table points. The linear fit is \\(y=7x+19\\). At time 8, it predicts 75.</p>",
+      "variation": "Turn conditions in words into ordered pairs and a linear prediction",
+      "source_cards": [
+        5,
+        16,
+        25,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L12-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_11_1",
+        "four_step_process",
+        "format_11_6",
+        "function_notation_inputs_outputs"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Use the linear model represented by the table to predict y when x is 10.</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>y</th></tr></thead><tbody><tr><td>2</td><td>31</td></tr><tr><td>5</td><td>22</td></tr><tr><td>7</td><td>16</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The linear fit is \\(y=-3x+37\\). Evaluating it at x = 10 gives 7.</p>",
+      "variation": "Recover a linear model from table points",
+      "source_cards": [
+        5,
+        14,
+        16,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L12-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_11_1",
+        "standard_model_forms",
+        "four_step_process",
+        "format_11_5"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table follows a quadratic model. What is the model’s output at x = 6?</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>y</th></tr></thead><tbody><tr><td>0</td><td>8</td></tr><tr><td>1</td><td>5</td></tr><tr><td>3</td><td>5</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "20"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit a quadratic to all the table points. The model is \\(y=x^{2}-4x+8\\), giving the requested value 20.</p>",
+      "variation": "Fit a quadratic and report its coefficient or prediction",
+      "source_cards": [
+        16,
+        35,
+        37
+      ],
+      "difficulty": 2,
+      "id": "L12-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "standard_vs_custom_boundary",
+        "coherence_quadratic"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table follows an exponential model. What is the output at x = 5?</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>y</th></tr></thead><tbody><tr><td>0</td><td>3</td></tr><tr><td>1</td><td>9</td></tr><tr><td>2</td><td>27</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "729"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The output is multiplied by 3 each time x increases by 1 and starts at 3. The exponential fit is \\(y=3(3)^x\\); evaluating it gives 729.</p>",
+      "variation": "Recover an exponential model and make a prediction",
+      "source_cards": [
+        14,
+        16,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L12-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "standard_model_forms",
+        "four_step_process",
+        "format_11_6"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A quadratic function f has vertex \\((5,8)\\) and \\(f(3)=16\\). What is \\(f(9)\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "40"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The point opposite x = 3 across the axis x = 5 is x = 7, with the same output. Fit a quadratic to those two points and the vertex to obtain \\(f(x)=2(x-5)^2+8\\). Its output at 9 is 40.</p>",
+      "variation": "Use vertex symmetry to form enough points for a quadratic fit",
+      "source_cards": [
+        37,
+        38,
+        39
+      ],
+      "difficulty": 3,
+      "id": "L12-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_quadratic",
+        "quadratic_two_point_problem",
+        "quadratic_symmetry_visual"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A training log models the total minutes linearly. A linear model gives an output of 41 at time 3 and 89 at time 7. What output does the model predict at time 11?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "137"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Enter (3, 41) and (7, 89) as table points. The linear fit is \\(y=12x+5\\). At time 11, it predicts 137.</p>",
+      "variation": "Turn conditions in words into ordered pairs and a linear prediction",
+      "source_cards": [
+        5,
+        16,
+        25,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L12-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_11_1",
+        "four_step_process",
+        "format_11_6",
+        "function_notation_inputs_outputs"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Use the linear model represented by the table to predict y when x is 12.</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>y</th></tr></thead><tbody><tr><td>-2</td><td>-14</td></tr><tr><td>1</td><td>1</td></tr><tr><td>5</td><td>21</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "56"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The linear fit is \\(y=5x-4\\). Evaluating it at x = 12 gives 56.</p>",
+      "variation": "Recover a linear model from table points",
+      "source_cards": [
+        5,
+        14,
+        16,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L12-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_11_1",
+        "standard_model_forms",
+        "four_step_process",
+        "format_11_5"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table follows a quadratic model. What is the model’s output at x = 2?</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>y</th></tr></thead><tbody><tr><td>1</td><td>12</td></tr><tr><td>4</td><td>12</td></tr><tr><td>6</td><td>-8</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "16"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit a quadratic to all the table points. The model is \\(y=-2x^{2}+10x+4\\), giving the requested value 16.</p>",
+      "variation": "Fit a quadratic and report its coefficient or prediction",
+      "source_cards": [
+        16,
+        35,
+        37
+      ],
+      "difficulty": 3,
+      "id": "L12-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "standard_vs_custom_boundary",
+        "coherence_quadratic"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table follows an exponential model. What is the output at x = 4?</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>y</th></tr></thead><tbody><tr><td>0</td><td>5</td></tr><tr><td>1</td><td>20</td></tr><tr><td>2</td><td>80</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "1280"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The output is multiplied by 4 each time x increases by 1 and starts at 5. The exponential fit is \\(y=5(4)^x\\); evaluating it gives 1280.</p>",
+      "variation": "Recover an exponential model and make a prediction",
+      "source_cards": [
+        14,
+        16,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L12-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "standard_model_forms",
+        "four_step_process",
+        "format_11_6"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A quadratic function f has vertex \\((7,3)\\) and \\(f(5)=19\\). What is \\(f(10)\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "39"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The point opposite x = 5 across the axis x = 7 is x = 9, with the same output. Fit a quadratic to those two points and the vertex to obtain \\(f(x)=4(x-7)^2+3\\). Its output at 10 is 39.</p>",
+      "variation": "Use vertex symmetry to form enough points for a quadratic fit",
+      "source_cards": [
+        37,
+        38,
+        39
+      ],
+      "difficulty": 3,
+      "id": "L12-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_quadratic",
+        "quadratic_two_point_problem",
+        "quadratic_symmetry_visual"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A download meter models the total megabytes linearly. A linear model gives an output of 98 at time 4 and 174 at time 8. What output does the model predict at time 10?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "212"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Enter (4, 98) and (8, 174) as table points. The linear fit is \\(y=19x+22\\). At time 10, it predicts 212.</p>",
+      "variation": "Turn conditions in words into ordered pairs and a linear prediction",
+      "source_cards": [
+        5,
+        16,
+        25,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L12-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_11_1",
+        "four_step_process",
+        "format_11_6",
+        "function_notation_inputs_outputs"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.900396+00",
+  "lesson_number": 12,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 9,
+    "3": 4
+  }
+}

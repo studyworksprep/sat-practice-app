@@ -1,0 +1,566 @@
+{
+  "id": "2f44495f-d0b8-45d3-af87-112f8aa5e97b",
+  "title": "Factor Polynomials: Trinomials and Difference of Squares",
+  "status": "review_only_unpublished",
+  "visibility": "private",
+  "description": "Factor as reverse multiplication: remove the greatest common factor, then use sum-product pairs and difference-of-squares patterns to factor completely.",
+  "cards": 42,
+  "spec": "docs/lesson-template-specs/factoring-polynomials-gcf-trinomials-difference-of-squares.json",
+  "source_spec_sha256": "412b0202b5465b0c96aac581757742ced570cbcdbab95abf54519d1187f3b38f",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Choose a sum-product pair with positive factors": [
+      4,
+      8
+    ],
+    "Choose matching negative signs or opposite signs": [
+      11,
+      14,
+      15
+    ],
+    "Factor a difference of two squares": [
+      20,
+      22
+    ],
+    "Continue from a common factor to a trinomial pattern": [
+      30,
+      31
+    ],
+    "Factor a difference of squares with several variables or a GCF": [
+      24,
+      25,
+      32,
+      33
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^{2}+10x+21\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove the common factor 1 if needed. The constants 3 and 7 add to 10 and multiply to 21, so the result is \\((x+3)(x+7)\\).</p>",
+      "variation": "Choose a sum-product pair with positive factors",
+      "source_cards": [
+        4,
+        8
+      ],
+      "difficulty": 1,
+      "id": "L11-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "reverse_relationship",
+        "pair_to_factors"
+      ],
+      "choices": [
+        "\\((x+3)(x+7)\\)",
+        "\\((x-3)(x-7)\\)",
+        "\\((x+4)(x+7)\\)",
+        "\\((x+3)(x+8)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Changes the sign of the middle term.",
+        "C": "Uses a pair with the wrong sum and product.",
+        "D": "Changes one factor and no longer reproduces the polynomial."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^{2}-11x+24\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove the common factor 1 if needed. The constants -3 and -8 add to -11 and multiply to 24, so the result is \\((x-3)(x-8)\\).</p>",
+      "variation": "Choose matching negative signs or opposite signs",
+      "source_cards": [
+        11,
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L11-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_10_1",
+        "format_10_2",
+        "negative_constant_signs"
+      ],
+      "choices": [
+        "\\((x+3)(x+8)\\)",
+        "\\((x-2)(x-8)\\)",
+        "\\((x-3)(x-7)\\)",
+        "\\((x-3)(x-8)\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Changes the sign of the middle term.",
+        "B": "Uses a pair with the wrong sum and product.",
+        "C": "Changes one factor and no longer reproduces the polynomial."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^2-81\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 1, the inner expression is a difference of two squares with square roots \\(x\\) and \\(9\\). The opposite signs cancel the two middle products, giving \\((x-9)(x+9)\\).</p>",
+      "variation": "Factor a difference of two squares",
+      "source_cards": [
+        20,
+        22
+      ],
+      "difficulty": 1,
+      "id": "L11-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "difference_pattern",
+        "difference_model"
+      ],
+      "choices": [
+        "\\((x-9)^2\\)",
+        "\\((x+9)^2\\)",
+        "\\((x-9)(x+9)\\)",
+        "\\((x-9)(x+9+1)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Introduces a middle term that is not in the original.",
+        "B": "Uses equal signs and introduces a middle term.",
+        "D": "Changes one factor and no longer expands back."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(4x^{2}+44x+96\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove the common factor 4 if needed. The constants 3 and 8 add to 11 and multiply to 24, so the result is \\(4(x+3)(x+8)\\).</p>",
+      "variation": "Continue from a common factor to a trinomial pattern",
+      "source_cards": [
+        30,
+        31
+      ],
+      "difficulty": 2,
+      "id": "L11-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_combine_trinomial",
+        "complete_gcf_trinomial"
+      ],
+      "choices": [
+        "\\(4(x-3)(x-8)\\)",
+        "\\(4(x+4)(x+8)\\)",
+        "\\(4(x+3)(x+8)\\)",
+        "\\(4(x+3)(x+9)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Changes the sign of the middle term.",
+        "B": "Uses a pair with the wrong sum and product.",
+        "D": "Changes one factor and no longer reproduces the polynomial."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(4x^2-25y^2\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 1, the inner expression is a difference of two squares with square roots \\(2x\\) and \\(5y\\). The opposite signs cancel the two middle products, giving \\((2x-5y)(2x+5y)\\).</p>",
+      "variation": "Factor a difference of squares with several variables or a GCF",
+      "source_cards": [
+        24,
+        25,
+        32,
+        33
+      ],
+      "difficulty": 2,
+      "id": "L11-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_10_4",
+        "multiple_variables",
+        "coherence_combine_squares",
+        "complete_gcf_difference"
+      ],
+      "choices": [
+        "\\((2x-5y)^2\\)",
+        "\\((2x-5y)(2x+5y)\\)",
+        "\\((2x+5y)^2\\)",
+        "\\((2x-5y)(2x+5y+1)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Introduces a middle term that is not in the original.",
+        "C": "Uses equal signs and introduces a middle term.",
+        "D": "Changes one factor and no longer expands back."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^{2}+11x+18\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove the common factor 1 if needed. The constants 2 and 9 add to 11 and multiply to 18, so the result is \\((x+2)(x+9)\\).</p>",
+      "variation": "Choose a sum-product pair with positive factors",
+      "source_cards": [
+        4,
+        8
+      ],
+      "difficulty": 1,
+      "id": "L11-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "reverse_relationship",
+        "pair_to_factors"
+      ],
+      "choices": [
+        "\\((x+2)(x+9)\\)",
+        "\\((x-2)(x-9)\\)",
+        "\\((x+3)(x+9)\\)",
+        "\\((x+2)(x+10)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Changes the sign of the middle term.",
+        "C": "Uses a pair with the wrong sum and product.",
+        "D": "Changes one factor and no longer reproduces the polynomial."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^{2}-3x-28\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove the common factor 1 if needed. The constants 4 and -7 add to -3 and multiply to -28, so the result is \\((x+4)(x-7)\\).</p>",
+      "variation": "Choose matching negative signs or opposite signs",
+      "source_cards": [
+        11,
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L11-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_10_1",
+        "format_10_2",
+        "negative_constant_signs"
+      ],
+      "choices": [
+        "\\((x-4)(x+7)\\)",
+        "\\((x+5)(x-7)\\)",
+        "\\((x+4)(x-6)\\)",
+        "\\((x+4)(x-7)\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Changes the sign of the middle term.",
+        "B": "Uses a pair with the wrong sum and product.",
+        "C": "Changes one factor and no longer reproduces the polynomial."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^2-121\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 1, the inner expression is a difference of two squares with square roots \\(x\\) and \\(11\\). The opposite signs cancel the two middle products, giving \\((x-11)(x+11)\\).</p>",
+      "variation": "Factor a difference of two squares",
+      "source_cards": [
+        20,
+        22
+      ],
+      "difficulty": 1,
+      "id": "L11-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "difference_pattern",
+        "difference_model"
+      ],
+      "choices": [
+        "\\((x-11)^2\\)",
+        "\\((x+11)^2\\)",
+        "\\((x-11)(x+11+1)\\)",
+        "\\((x-11)(x+11)\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Introduces a middle term that is not in the original.",
+        "B": "Uses equal signs and introduces a middle term.",
+        "C": "Changes one factor and no longer expands back."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(6x^{2}+18x-168\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove the common factor 6 if needed. The constants -4 and 7 add to 3 and multiply to -28, so the result is \\(6(x-4)(x+7)\\).</p>",
+      "variation": "Continue from a common factor to a trinomial pattern",
+      "source_cards": [
+        30,
+        31
+      ],
+      "difficulty": 3,
+      "id": "L11-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_combine_trinomial",
+        "complete_gcf_trinomial"
+      ],
+      "choices": [
+        "\\(6(x+4)(x-7)\\)",
+        "\\(6(x-3)(x+7)\\)",
+        "\\(6(x-4)(x+7)\\)",
+        "\\(6(x-4)(x+8)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Changes the sign of the middle term.",
+        "B": "Uses a pair with the wrong sum and product.",
+        "D": "Changes one factor and no longer reproduces the polynomial."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(9x^2-64y^2\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 1, the inner expression is a difference of two squares with square roots \\(3x\\) and \\(8y\\). The opposite signs cancel the two middle products, giving \\((3x-8y)(3x+8y)\\).</p>",
+      "variation": "Factor a difference of squares with several variables or a GCF",
+      "source_cards": [
+        24,
+        25,
+        32,
+        33
+      ],
+      "difficulty": 2,
+      "id": "L11-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_10_4",
+        "multiple_variables",
+        "coherence_combine_squares",
+        "complete_gcf_difference"
+      ],
+      "choices": [
+        "\\((3x-8y)^2\\)",
+        "\\((3x-8y)(3x+8y)\\)",
+        "\\((3x+8y)^2\\)",
+        "\\((3x-8y)(3x+8y+1)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Introduces a middle term that is not in the original.",
+        "C": "Uses equal signs and introduces a middle term.",
+        "D": "Changes one factor and no longer expands back."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^{2}+10x+24\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove the common factor 1 if needed. The constants 4 and 6 add to 10 and multiply to 24, so the result is \\((x+4)(x+6)\\).</p>",
+      "variation": "Choose a sum-product pair with positive factors",
+      "source_cards": [
+        4,
+        8
+      ],
+      "difficulty": 2,
+      "id": "L11-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "reverse_relationship",
+        "pair_to_factors"
+      ],
+      "choices": [
+        "\\((x+4)(x+6)\\)",
+        "\\((x-4)(x-6)\\)",
+        "\\((x+5)(x+6)\\)",
+        "\\((x+4)(x+7)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Changes the sign of the middle term.",
+        "C": "Uses a pair with the wrong sum and product.",
+        "D": "Changes one factor and no longer reproduces the polynomial."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^{2}+4x-45\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove the common factor 1 if needed. The constants -5 and 9 add to 4 and multiply to -45, so the result is \\((x-5)(x+9)\\).</p>",
+      "variation": "Choose matching negative signs or opposite signs",
+      "source_cards": [
+        11,
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L11-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_10_1",
+        "format_10_2",
+        "negative_constant_signs"
+      ],
+      "choices": [
+        "\\((x-5)(x+9)\\)",
+        "\\((x+5)(x-9)\\)",
+        "\\((x-4)(x+9)\\)",
+        "\\((x-5)(x+10)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Changes the sign of the middle term.",
+        "C": "Uses a pair with the wrong sum and product.",
+        "D": "Changes one factor and no longer reproduces the polynomial."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(x^2-169\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 1, the inner expression is a difference of two squares with square roots \\(x\\) and \\(13\\). The opposite signs cancel the two middle products, giving \\((x-13)(x+13)\\).</p>",
+      "variation": "Factor a difference of two squares",
+      "source_cards": [
+        20,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L11-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "difference_pattern",
+        "difference_model"
+      ],
+      "choices": [
+        "\\((x-13)^2\\)",
+        "\\((x+13)^2\\)",
+        "\\((x-13)(x+13+1)\\)",
+        "\\((x-13)(x+13)\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Introduces a middle term that is not in the original.",
+        "B": "Uses equal signs and introduces a middle term.",
+        "C": "Changes one factor and no longer expands back."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(5x^{2}-85x+330\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Remove the common factor 5 if needed. The constants -6 and -11 add to -17 and multiply to 66, so the result is \\(5(x-6)(x-11)\\).</p>",
+      "variation": "Continue from a common factor to a trinomial pattern",
+      "source_cards": [
+        30,
+        31
+      ],
+      "difficulty": 3,
+      "id": "L11-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_combine_trinomial",
+        "complete_gcf_trinomial"
+      ],
+      "choices": [
+        "\\(5(x+6)(x+11)\\)",
+        "\\(5(x-5)(x-11)\\)",
+        "\\(5(x-6)(x-11)\\)",
+        "\\(5(x-6)(x-10)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Changes the sign of the middle term.",
+        "B": "Uses a pair with the wrong sum and product.",
+        "D": "Changes one factor and no longer reproduces the polynomial."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice gives the complete factorization of \\(100x^2-36y^2\\) over the integers?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>After the GCF 4, the inner expression is a difference of two squares with square roots \\(5x\\) and \\(3y\\). The opposite signs cancel the two middle products, giving \\(4(5x-3y)(5x+3y)\\).</p>",
+      "variation": "Factor a difference of squares with several variables or a GCF",
+      "source_cards": [
+        24,
+        25,
+        32,
+        33
+      ],
+      "difficulty": 3,
+      "id": "L11-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_10_4",
+        "multiple_variables",
+        "coherence_combine_squares",
+        "complete_gcf_difference"
+      ],
+      "choices": [
+        "\\(4(5x-3y)^2\\)",
+        "\\(4(5x-3y)(5x+3y)\\)",
+        "\\(4(5x+3y)^2\\)",
+        "\\(4(5x-3y)(5x+3y+1)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Introduces a middle term that is not in the original.",
+        "C": "Uses equal signs and introduces a middle term.",
+        "D": "Changes one factor and no longer expands back."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.873065+00",
+  "lesson_number": 11,
+  "difficulty_counts": {
+    "1": 4,
+    "2": 8,
+    "3": 3
+  }
+}
