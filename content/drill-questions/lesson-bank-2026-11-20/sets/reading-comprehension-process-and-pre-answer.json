@@ -1,0 +1,615 @@
+{
+  "id": "f6eaf523-ee2f-4bf6-a4f2-7eac2d28dd76",
+  "title": "Process and Pre-Answer Reading Comprehension Questions",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use a five-step routine to identify the question's job, build a usable understanding of a short SAT passage, form a flexible answer target, and prove the matching choice from the text.",
+  "cards": 42,
+  "spec": "docs/lesson-template-specs/reading-comprehension-process-and-pre-answer.json",
+  "source_spec_sha256": "1ab856e9d66c5de2d4bc848f5d34c3e2c9153560f656a2b0efadb62d2f6aa613",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Read an unfamiliar informational passage and preserve the central comparison": [
+      3,
+      19,
+      22,
+      23,
+      26
+    ],
+    "Use the introductory context to read a character’s reaction": [
+      7,
+      21,
+      26,
+      28
+    ],
+    "Answer the narrow question using the relevant detail": [
+      21,
+      25,
+      30,
+      32
+    ],
+    "Predict what a sentence contributes to the surrounding passage": [
+      21,
+      26,
+      34,
+      35
+    ],
+    "Map the progression from a stated idea to evidence and a conclusion": [
+      26,
+      34,
+      35
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>Researchers compared two ways of drying animal-feed pellets. Warm air dried the outer layer quickly, but many pellets stayed damp inside. A slower flow of room-temperature air took longer overall and made the moisture more even. The trial measured moisture, not storage life.</p>",
+      "explanation_html": "<p>The central comparison is the evenness of drying. The experiment gives no result about storage life.</p>",
+      "variation": "Read an unfamiliar informational passage and preserve the central comparison",
+      "source_cards": [
+        3,
+        19,
+        22,
+        23,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L25-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "name_the_process",
+        "background_knowledge",
+        "preanswer_quality",
+        "coherence_preanswer_example",
+        "choices_step"
+      ],
+      "choices": [
+        "Room-temperature air dried pellets evenly and extended their storage life.",
+        "Warm air produced more uniform pellets.",
+        "Slower drying produced more evenly dry pellets than warm air in the trial.",
+        "Warm air dried the outside first."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Includes a supported detail but joins it to an unsupported claim.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Captures only one detail or part of the relevant idea."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the character’s reaction?</p>",
+      "stimulus_html": "<p>In this original scene, Eli has volunteered to reopen a community workshop where he apprenticed years ago.</p><p>Eli pushed on the workshop door and found it stuck as usual. He lifted the handle just as his old instructor had shown him, and the door swung wide. He laughed, then went inside to check whether the light still flickered.</p>",
+      "explanation_html": "<p>The introduction explains why he knows the place. His laugh and his interest in the light show that he welcomes familiar details.</p>",
+      "variation": "Use the introductory context to read a character’s reaction",
+      "source_cards": [
+        7,
+        21,
+        26,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L25-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "introduction_step",
+        "preanswer_step",
+        "choices_step",
+        "fiction_intro_variation"
+      ],
+      "choices": [
+        "He is annoyed that someone has damaged a door that used to open easily.",
+        "He is amused and pleased to find familiar quirks in the workshop.",
+        "He is embarrassed that he has forgotten how to enter.",
+        "He is worried his instructor will arrive without a key."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Misstates or contradicts part of the passage.",
+        "C": "Adds a claim or detail the passage does not support.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Where did most of the late ferry’s riders buy tickets?</p>",
+      "stimulus_html": "<p>The council tested a morning ferry and a late ferry for two weeks. Morning riders mostly used passes, while late riders usually bought tickets at the dock. The council collected comments on service frequency from both groups.</p>",
+      "explanation_html": "<p>The detail asked about is where late riders bought tickets. The text explicitly names the dock.</p>",
+      "variation": "Answer the narrow question using the relevant detail",
+      "source_cards": [
+        21,
+        25,
+        30,
+        32
+      ],
+      "difficulty": 1,
+      "id": "L25-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "preanswer_step",
+        "worked_example_setup",
+        "detail_variation",
+        "keyword_trap"
+      ],
+      "choices": [
+        "At the dock",
+        "From a morning-pass vendor",
+        "On the ferry after departure",
+        "Through the feedback survey"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Adds a claim or detail the passage does not support.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>A designer argues that reusable shopping crates can serve functions beyond carrying food. The crates’ removable dividers, for instance, let customers use them to organize tools at home.</p>",
+      "explanation_html": "<p>Home tool organization illustrates the broad claim about uses beyond shopping.</p>",
+      "variation": "Predict what a sentence contributes to the surrounding passage",
+      "source_cards": [
+        21,
+        26,
+        34,
+        35
+      ],
+      "difficulty": 2,
+      "id": "L25-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "preanswer_step",
+        "choices_step",
+        "coherence_structure",
+        "coherence_structure_example"
+      ],
+      "choices": [
+        "It gives a concrete example of an additional use for the crates.",
+        "It corrects the designer’s description of the crates.",
+        "It explains why stores have stopped selling crates.",
+        "It compares two competing carrying capacities."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Assigns the sentence or passage a different rhetorical job.",
+        "C": "Adds a claim or detail the passage does not support.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the overall structure of the text?</p>",
+      "stimulus_html": "<p>Jars made from a coarse clay looked fragile. An apprentice fired identical jars from coarse and fine clay and tested them under the same load. The coarse jars held as much weight as the fine ones, prompting the workshop to keep both clay types.</p>",
+      "explanation_html": "<p>The expectation comes first, followed by a comparison that shows similar strength, followed by the workshop’s response.</p>",
+      "variation": "Map the progression from a stated idea to evidence and a conclusion",
+      "source_cards": [
+        26,
+        34,
+        35
+      ],
+      "difficulty": 2,
+      "id": "L25-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "choices_step",
+        "coherence_structure",
+        "coherence_structure_example"
+      ],
+      "choices": [
+        "A decision about clay is made, then shown to be impossible to carry out.",
+        "Two rival workshops give opposing explanations for an accident.",
+        "A trial is described, and the better-performing clay type replaces the other.",
+        "An initial impression is followed by a controlled comparison and a resulting decision."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Assigns the sentence or passage a different rhetorical job.",
+        "C": "Includes a supported detail but joins it to an unsupported claim."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>In a trial of two ink formulas, the same paper was printed and exposed to sunlight. Ink A faded less than ink B within the first month. By the sixth month both inks had faded by roughly the same amount. A printer suggested testing colors other than black before changing suppliers.</p>",
+      "explanation_html": "<p>The passage compares how the results change over time. The early lead for A and later convergence both matter.</p>",
+      "variation": "Read an unfamiliar informational passage and preserve the central comparison",
+      "source_cards": [
+        3,
+        19,
+        22,
+        23,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L25-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "name_the_process",
+        "background_knowledge",
+        "preanswer_quality",
+        "coherence_preanswer_example",
+        "choices_step"
+      ],
+      "choices": [
+        "The trial used the same paper for both inks.",
+        "The two formulas will perform identically in every color.",
+        "Ink A’s early advantage in the sunlight test had largely disappeared by month six.",
+        "Ink B faded more slowly in the first month."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "B": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the character’s reaction?</p>",
+      "stimulus_html": "<p>In this original scene, Mara is picking up a violin returned after a long repair.</p><p>The varnish looked brighter, but the worn place beside the bridge was still there. Mara released the breath she had been holding and ran a thumb over the spot. “Good,” she said, fastening the case.</p>",
+      "explanation_html": "<p>The response is to the preserved spot. Her release of breath and “Good” show relief.</p>",
+      "variation": "Use the introductory context to read a character’s reaction",
+      "source_cards": [
+        7,
+        21,
+        26,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L25-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "introduction_step",
+        "preanswer_step",
+        "choices_step",
+        "fiction_intro_variation"
+      ],
+      "choices": [
+        "She is disappointed that the repair left any familiar marks.",
+        "She is relieved that a recognizable feature of the violin survived the repair.",
+        "She is surprised that the case has a working clasp.",
+        "She is afraid the instrument now sounds too bright."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "C": "Captures only one detail or part of the relevant idea.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>What did the thermometers show during the test?</p>",
+      "stimulus_html": "<p>To track moisture loss, researchers weighed cloth bags before and after storage. Bags in the upper cabinet lost more mass than those in the lower cabinet. During the test, thermometers showed nearly identical temperatures in both cabinets.</p>",
+      "explanation_html": "<p>The thermometer detail concerns temperature. The relative mass loss is a separate measurement.</p>",
+      "variation": "Answer the narrow question using the relevant detail",
+      "source_cards": [
+        21,
+        25,
+        30,
+        32
+      ],
+      "difficulty": 2,
+      "id": "L25-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "preanswer_step",
+        "worked_example_setup",
+        "detail_variation",
+        "keyword_trap"
+      ],
+      "choices": [
+        "The upper bags lost more mass.",
+        "Temperatures were nearly identical in the two cabinets.",
+        "The upper cabinet was consistently warmer.",
+        "The cabinets stayed at the same humidity."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Misstates or contradicts part of the passage.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>A historian suggests that several shops at a market once cooperated to provide delivery service. Invoices from two of the shops name the same driver and list the same departure dates.</p>",
+      "explanation_html": "<p>The invoices support cooperation while leaving its scope open.</p>",
+      "variation": "Predict what a sentence contributes to the surrounding passage",
+      "source_cards": [
+        21,
+        26,
+        34,
+        35
+      ],
+      "difficulty": 2,
+      "id": "L25-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "preanswer_step",
+        "choices_step",
+        "coherence_structure",
+        "coherence_structure_example"
+      ],
+      "choices": [
+        "It supplies documentary evidence consistent with the historian’s claim.",
+        "It proves that every shop used one shared driver.",
+        "It presents a rival explanation that the historian rejects.",
+        "It shows how the driver was hired and paid."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Assigns the sentence or passage a different rhetorical job.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the overall structure of the text?</p>",
+      "stimulus_html": "<p>The parish used to store its records in a basement that admitted water in spring. A volunteer suggested borrowing dry space in a nearby building. The move protected the files during the next flood, so the parish rented room there for the following year.</p>",
+      "explanation_html": "<p>The sequence is problem, trial response, and continuation after the response works.</p>",
+      "variation": "Map the progression from a stated idea to evidence and a conclusion",
+      "source_cards": [
+        26,
+        34,
+        35
+      ],
+      "difficulty": 2,
+      "id": "L25-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "choices_step",
+        "coherence_structure",
+        "coherence_structure_example"
+      ],
+      "choices": [
+        "A facility is rented first, then shown to be unsuitable.",
+        "Two floods are described in chronological order.",
+        "A landlord proposes that old records be destroyed.",
+        "A problem is introduced, a response is tried, and its success leads to a longer arrangement."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Captures only one detail or part of the relevant idea.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>Some makers assumed textured handles reduced errors by keeping hands from slipping. In a trial, people wearing gloves dropped tools with smooth handles more often, while bare-handed users dropped both types about equally. The trial took place indoors with dry equipment.</p>",
+      "explanation_html": "<p>The target compares the two user groups and sticks to the measured outcome, dropped tools.</p>",
+      "variation": "Read an unfamiliar informational passage and preserve the central comparison",
+      "source_cards": [
+        3,
+        19,
+        22,
+        23,
+        26
+      ],
+      "difficulty": 3,
+      "id": "L25-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "name_the_process",
+        "background_knowledge",
+        "preanswer_quality",
+        "coherence_preanswer_example",
+        "choices_step"
+      ],
+      "choices": [
+        "Texture helped gloved users and alone explains how handles prevent injury.",
+        "The test took place indoors on dry equipment.",
+        "Texture was associated with fewer drops among gloved users in this trial, with little difference for bare hands.",
+        "Only bare-handed users benefited from the textured handles."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Includes a supported detail but joins it to an unsupported claim.",
+        "B": "Captures only one detail or part of the relevant idea.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the character’s reaction?</p>",
+      "stimulus_html": "<p>In this original scene, Omar is moving from a rural school to a larger one. He has been given a notebook signed by the other students.</p><p>At home he set the notebook beside the boxes. When his father offered to pack it, Omar slid it under his pillow. He said he might need somewhere to write on the train, though the two clean notebooks his father bought stayed in the top box.</p>",
+      "explanation_html": "<p>The practical reason does not explain why he ignores two clean alternatives. The introduction supplies the personal significance of the signed notebook.</p>",
+      "variation": "Use the introductory context to read a character’s reaction",
+      "source_cards": [
+        7,
+        21,
+        26,
+        28
+      ],
+      "difficulty": 3,
+      "id": "L25-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "introduction_step",
+        "preanswer_step",
+        "choices_step",
+        "fiction_intro_variation"
+      ],
+      "choices": [
+        "He suspects his father plans to discard the notebook without asking.",
+        "He prefers new notebooks because they have more space.",
+        "He values the signed notebook as more than a practical writing surface.",
+        "He is trying to ensure the signed notebook goes into a moving box."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Adds a claim or detail the passage does not support.",
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>What did the trial establish about Gate B?</p>",
+      "stimulus_html": "<p>An engineer compared three gate designs. Gate A was quietest with the strongest motor. Gate B was the only design that could close fully without power. Gate C closed fastest after a delay. The engineer’s report focuses on operation during power failures.</p>",
+      "explanation_html": "<p>Do not transfer a finding from another gate. The text identifies the relevant feature of B.</p>",
+      "variation": "Answer the narrow question using the relevant detail",
+      "source_cards": [
+        21,
+        25,
+        30,
+        32
+      ],
+      "difficulty": 2,
+      "id": "L25-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "preanswer_step",
+        "worked_example_setup",
+        "detail_variation",
+        "keyword_trap"
+      ],
+      "choices": [
+        "It was quietest with the strongest motor.",
+        "It could close fully without power.",
+        "It closed fastest after a delay.",
+        "It automatically replaced the motor when power failed."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>The river authority first considered moving its measurement station downstream. A new mapping project revealed that the downstream bank floods in ordinary spring rains. As a result, the authority kept the measurement station at its existing site.</p>",
+      "explanation_html": "<p>The final sentence describes what the authority did after it learned about routine flooding.</p>",
+      "variation": "Predict what a sentence contributes to the surrounding passage",
+      "source_cards": [
+        21,
+        26,
+        34,
+        35
+      ],
+      "difficulty": 3,
+      "id": "L25-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "preanswer_step",
+        "choices_step",
+        "coherence_structure",
+        "coherence_structure_example"
+      ],
+      "choices": [
+        "It reports the decision that followed from the new information.",
+        "It gives the original reason the authority considered relocating.",
+        "It gives the steps needed to move a measuring station.",
+        "It introduces a mapping project prompted by the decision to move."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Assigns the sentence or passage a different rhetorical job.",
+        "C": "Adds a claim or detail the passage does not support.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the overall structure of the text?</p>",
+      "stimulus_html": "<p>Biographers had assumed a set of drawings was a traveling artist’s private work. A conservator found repeated measurements exactly matching a theater’s stage partitions. She argued that the sheets were plans for theatrical scenery, an interpretation the archive now uses in its catalog.</p>",
+      "explanation_html": "<p>The old classification is followed by new measurements, a revised interpretation, and the catalog change.</p>",
+      "variation": "Map the progression from a stated idea to evidence and a conclusion",
+      "source_cards": [
+        26,
+        34,
+        35
+      ],
+      "difficulty": 3,
+      "id": "L25-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "choices_step",
+        "coherence_structure",
+        "coherence_structure_example"
+      ],
+      "choices": [
+        "A current view is stated and later rejected in favor of the original one.",
+        "Two artists are compared to determine which one made an unsigned drawing.",
+        "An archivist lists stage measurements without drawing a conclusion.",
+        "A previous understanding is revised in light of new evidence, and the revised view is put to use."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Adds a claim or detail the passage does not support.",
+        "C": "Captures only one detail or part of the relevant idea."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-20 15:06:37.304899+00",
+  "lesson_number": 25,
+  "difficulty_counts": {
+    "1": 1,
+    "2": 10,
+    "3": 4
+  }
+}

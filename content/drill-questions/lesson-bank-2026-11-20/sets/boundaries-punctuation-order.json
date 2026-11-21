@@ -1,0 +1,587 @@
+{
+  "id": "7a3b5e9e-9fc5-4425-8f47-ed8021a4d98c",
+  "title": "Solve SAT Boundaries Questions in the Fastest Order",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use a fixed full stop, colon, dash, and comma order to solve SAT Boundaries questions quickly and avoid punctuation traps.",
+  "cards": 60,
+  "spec": "docs/lesson-template-specs/boundaries-punctuation-order.json",
+  "source_spec_sha256": "18eb187d0ccef63450021817ca023655d5751a6bbd3daea544d766c107f87e30",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Choose a valid full-stop boundary between independent clauses": [
+      3,
+      8,
+      12,
+      18
+    ],
+    "Introduce an explanation after a complete thought": [
+      23,
+      24,
+      26,
+      28
+    ],
+    "Use an explanatory dash before an ending phrase": [
+      32,
+      33
+    ],
+    "Close an interruption with the matching dash": [
+      29,
+      30
+    ],
+    "Distinguish comma jobs and the serial semicolon exception": [
+      14,
+      35,
+      37,
+      39
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The lawn was covered in ______ grounds crew delayed the morning game.</p>",
+      "explanation_html": "<p>Both ideas can stand as complete sentences. The period is the only offered mark that separates them correctly.</p>",
+      "variation": "Choose a valid full-stop boundary between independent clauses",
+      "source_cards": [
+        3,
+        8,
+        12,
+        18
+      ],
+      "difficulty": 1,
+      "id": "L35-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_35_2",
+        "format_35_1",
+        "full_stop_intro",
+        "format_35_4"
+      ],
+      "choices": [
+        "frost. The",
+        "frost, the",
+        "frost the",
+        "frost, however, the"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Uses only a comma to join independent clauses.",
+        "C": "Omits the boundary between complete thoughts.",
+        "D": "Uses only a comma to join independent clauses."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The campsite faced one practical ______ a ban on open fires during the dry season.</p>",
+      "explanation_html": "<p>The text before the blank is a complete statement. The ending specifies what that statement anticipates, so a colon introduces the explanation.</p>",
+      "variation": "Introduce an explanation after a complete thought",
+      "source_cards": [
+        23,
+        24,
+        26,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L35-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "colon_transition",
+        "colon_gate",
+        "colon_cliffhanger",
+        "colon_model"
+      ],
+      "choices": [
+        "constraint;",
+        "constraint, and",
+        "constraint",
+        "constraint:"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Requires a complete independent clause on the right.",
+        "B": "Adds a conjunction where the ending does not contain a full clause.",
+        "C": "Leaves the explanation without a boundary."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The group could finally see the source of the ______ a loose cover rattling against its frame.</p>",
+      "explanation_html": "<p>The statement before the blank is complete. The final phrase explains the noun just named. A single dash can introduce that explanation.</p>",
+      "variation": "Use an explanatory dash before an ending phrase",
+      "source_cards": [
+        32,
+        33
+      ],
+      "difficulty": 2,
+      "id": "L35-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_35_7",
+        "single_dash"
+      ],
+      "choices": [
+        "noise;",
+        "noise. ",
+        "noise—",
+        "noise, and"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The aquarium’s first water pump—long considered too fragile for regular ______ was briefly returned to service.</p>",
+      "explanation_html": "<p>The first dash opens a removable description. The second dash closes that description, letting the subject and main verb form the original complete clause.</p>",
+      "variation": "Close an interruption with the matching dash",
+      "source_cards": [
+        29,
+        30
+      ],
+      "difficulty": 2,
+      "id": "L35-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "dash_transition",
+        "paired_dash"
+      ],
+      "choices": [
+        "use,",
+        "use;",
+        "use—",
+        "use:"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Does not match the mark that opened the interruption.",
+        "B": "Does not match the mark that opened the interruption.",
+        "D": "Does not match the mark that opened the interruption."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>When the last load of lumber reached the far side of the ______ the crew dismantled the temporary crossing.</p>",
+      "explanation_html": "<p>The opening clause is dependent. A comma attaches it to the complete main clause rather than separating it into a fragment.</p>",
+      "variation": "Distinguish comma jobs and the serial semicolon exception",
+      "source_cards": [
+        14,
+        35,
+        37,
+        39
+      ],
+      "difficulty": 1,
+      "id": "L35-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_35_3",
+        "comma_transition",
+        "format_35_14",
+        "format_35_16"
+      ],
+      "choices": [
+        "river;",
+        "river,",
+        "river.",
+        "river:"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "C": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>A late train disrupted the ______ the evening rehearsal still began on time.</p>",
+      "explanation_html": "<p>Both clauses are independent. The semicolon joins them without needing a coordinating conjunction.</p>",
+      "variation": "Choose a valid full-stop boundary between independent clauses",
+      "source_cards": [
+        3,
+        8,
+        12,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L35-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_35_2",
+        "format_35_1",
+        "full_stop_intro",
+        "format_35_4"
+      ],
+      "choices": [
+        "schedule;",
+        "schedule,",
+        "schedule",
+        "schedule, therefore,"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Uses only a comma to join independent clauses.",
+        "C": "Runs two complete thoughts together.",
+        "D": "Uses only a comma to join independent clauses."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The comparison produced one clear ______ the shorter spring compressed more under the same weight.</p>",
+      "explanation_html": "<p>The text before the blank is a complete statement. The ending specifies what that statement anticipates, so a colon introduces the explanation.</p>",
+      "variation": "Introduce an explanation after a complete thought",
+      "source_cards": [
+        23,
+        24,
+        26,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L35-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "colon_transition",
+        "colon_gate",
+        "colon_cliffhanger",
+        "colon_model"
+      ],
+      "choices": [
+        "result,",
+        "result",
+        "result, however,",
+        "result:"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Uses only a comma to join independent clauses.",
+        "B": "Runs the clauses together.",
+        "C": "Cannot join two independent clauses with commas."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The researchers had saved their most unusual finding for ______ an unmarked file from a separate experiment.</p>",
+      "explanation_html": "<p>The statement before the blank is complete. The final phrase explains the noun just named. A single dash can introduce that explanation.</p>",
+      "variation": "Use an explanatory dash before an ending phrase",
+      "source_cards": [
+        32,
+        33
+      ],
+      "difficulty": 2,
+      "id": "L35-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_35_7",
+        "single_dash"
+      ],
+      "choices": [
+        "last;",
+        "last. ",
+        "last, and",
+        "last—"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Makes an unfinished phrase stand on its own.",
+        "C": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The envelope—a copy of the one depicted in the only surviving ______ contained a set of handwritten instructions.</p>",
+      "explanation_html": "<p>The first dash opens a removable description. The second dash closes that description, letting the subject and main verb form the original complete clause.</p>",
+      "variation": "Close an interruption with the matching dash",
+      "source_cards": [
+        29,
+        30
+      ],
+      "difficulty": 2,
+      "id": "L35-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "dash_transition",
+        "paired_dash"
+      ],
+      "choices": [
+        "photograph,",
+        "photograph;",
+        "photograph—",
+        "photograph:"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Does not match the mark that opened the interruption.",
+        "B": "Does not match the mark that opened the interruption.",
+        "D": "Does not match the mark that opened the interruption."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The potter’s first kiln, which burned through nearly twice as much ______ was replaced before winter.</p>",
+      "explanation_html": "<p>Read the main clause with the inserted detail removed. It still works. The first comma opens the extra information, so use a second comma to close it.</p>",
+      "variation": "Distinguish comma jobs and the serial semicolon exception",
+      "source_cards": [
+        14,
+        35,
+        37,
+        39
+      ],
+      "difficulty": 2,
+      "id": "L35-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_35_3",
+        "comma_transition",
+        "format_35_14",
+        "format_35_16"
+      ],
+      "choices": [
+        "fuel;",
+        "fuel,",
+        "fuel—",
+        "fuel"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Does not match the mark that opened the interruption.",
+        "C": "Does not match the mark that opened the interruption.",
+        "D": "Leaves the opening comma without a matching closing mark."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The backups remained on the regional ______ office could recover its files after the outage.</p>",
+      "explanation_html": "<p>Both ideas can stand as complete sentences. The period is the only offered mark that separates them correctly.</p>",
+      "variation": "Choose a valid full-stop boundary between independent clauses",
+      "source_cards": [
+        3,
+        8,
+        12,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L35-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_35_2",
+        "format_35_1",
+        "full_stop_intro",
+        "format_35_4"
+      ],
+      "choices": [
+        "server. The",
+        "server, the",
+        "server the",
+        "server, however, the"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Uses only a comma to join independent clauses.",
+        "C": "Omits the boundary between complete thoughts.",
+        "D": "Uses only a comma to join independent clauses."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Only one part of the tripod needed ______ the hook used to attach a counterweight.</p>",
+      "explanation_html": "<p>The text before the blank is a complete statement. The ending specifies what that statement anticipates, so a colon introduces the explanation.</p>",
+      "variation": "Introduce an explanation after a complete thought",
+      "source_cards": [
+        23,
+        24,
+        26,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L35-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "colon_transition",
+        "colon_gate",
+        "colon_cliffhanger",
+        "colon_model"
+      ],
+      "choices": [
+        "replacement:",
+        "replacement;",
+        "replacement, and",
+        "replacement"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Requires a complete independent clause on the right.",
+        "C": "Adds a conjunction where the ending does not contain a full clause.",
+        "D": "Leaves the explanation without a boundary."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The team worked with one indispensable ______ a pressure sensor built into the bridge deck.</p>",
+      "explanation_html": "<p>The statement before the blank is complete. The final phrase explains the noun just named. A single dash can introduce that explanation.</p>",
+      "variation": "Use an explanatory dash before an ending phrase",
+      "source_cards": [
+        32,
+        33
+      ],
+      "difficulty": 2,
+      "id": "L35-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_35_7",
+        "single_dash"
+      ],
+      "choices": [
+        "instrument;",
+        "instrument. ",
+        "instrument, and",
+        "instrument—"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Makes an unfinished phrase stand on its own.",
+        "C": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The south arch—one of the few elements built with locally quarried ______ survived two subsequent renovations.</p>",
+      "explanation_html": "<p>The first dash opens a removable description. The second dash closes that description, letting the subject and main verb form the original complete clause.</p>",
+      "variation": "Close an interruption with the matching dash",
+      "source_cards": [
+        29,
+        30
+      ],
+      "difficulty": 3,
+      "id": "L35-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "dash_transition",
+        "paired_dash"
+      ],
+      "choices": [
+        "limestone,",
+        "limestone;",
+        "limestone—",
+        "limestone:"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Does not match the mark that opened the interruption.",
+        "B": "Does not match the mark that opened the interruption.",
+        "D": "Does not match the mark that opened the interruption."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The exhibition borrows from three collections: the Leto Archive, ______ the Morrow Library, Detroit; and the State Museum, Boise.</p>",
+      "explanation_html": "<p>The list names three groups. Because the individual items already contain commas, a semicolon separates the first complete item from the second.</p>",
+      "variation": "Distinguish comma jobs and the serial semicolon exception",
+      "source_cards": [
+        14,
+        35,
+        37,
+        39
+      ],
+      "difficulty": 3,
+      "id": "L35-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_35_3",
+        "comma_transition",
+        "format_35_14",
+        "format_35_16"
+      ],
+      "choices": [
+        "Boston.",
+        "Boston;",
+        "Boston:",
+        "Boston, and"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Splits the list before the remaining items.",
+        "C": "The last items do not explain the place or name before the blank.",
+        "D": "Adds the final-item conjunction too early."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.119105+00",
+  "lesson_number": 35,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 11,
+    "3": 2
+  }
+}

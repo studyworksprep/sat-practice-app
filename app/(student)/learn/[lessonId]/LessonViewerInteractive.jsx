@@ -27,9 +27,7 @@ export function LessonViewerInteractive({
   canPractice = false,
   debug,
 }) {
-  // Plan 5.2 — only offered when the lesson resolves to a pattern or
-  // skill with published questions; the page checks that server-side so
-  // a student is never shown a button that can only fail.
+  // The lesson page checks that this lesson has published drill questions.
   const practiceCta = canPractice ? (
     <LessonPracticeButton
       action={createLessonPracticeDrill.bind(null, lessonId)}

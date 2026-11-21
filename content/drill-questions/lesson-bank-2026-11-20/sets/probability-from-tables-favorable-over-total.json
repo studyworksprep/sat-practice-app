@@ -1,0 +1,468 @@
+{
+  "id": "06c4cda7-4226-412b-b229-8c59b9356a6e",
+  "title": "Find Probability from Tables: Favorable over Total",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use Total first, read SAT-style given conditions as restrictions, and find Favorable outcomes within the correct table group.",
+  "cards": 44,
+  "spec": "docs/lesson-template-specs/probability-from-tables-favorable-over-total.json",
+  "source_spec_sha256": "e21382a68c85d8664b9a276096995df6eab5bccae9f713cccb7f05e24f3652ce",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Use the entire group for an unconditional or joint probability": [
+      7,
+      9,
+      17
+    ],
+    "Restrict the denominator to a given row": [
+      11,
+      13,
+      15
+    ],
+    "Use a column as the selection group": [
+      13,
+      21
+    ],
+    "Combine several permitted categories before counting favorable cases": [
+      23,
+      24,
+      27
+    ],
+    "Use a conditional probability to recover a missing count": [
+      27,
+      29,
+      30
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. A student is selected at random from the whole table. What is the probability that the student bikes? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>12</td><td>18</td><td>5</td></tr><tr><td>Music</td><td>10</td><td>15</td><td>7</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "12/67"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 67 students in the allowed selection group. Of those, 12 meet the requested condition. The probability is \\(\\frac{12}{67}\\).</p>",
+      "variation": "Use the entire group for an unconditional or joint probability",
+      "source_cards": [
+        7,
+        9,
+        17
+      ],
+      "difficulty": 1,
+      "id": "L15-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "total_first_process",
+        "read_table_totals",
+        "without_given"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. An Art student is selected at random. What is the probability that this student takes the bus? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>18</td><td>14</td><td>12</td></tr><tr><td>Music</td><td>15</td><td>20</td><td>9</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "7/22"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 44 students in the allowed selection group. Of those, 14 meet the requested condition. The probability is \\(\\frac{7}{22}\\).</p>",
+      "variation": "Restrict the denominator to a given row",
+      "source_cards": [
+        11,
+        13,
+        15
+      ],
+      "difficulty": 1,
+      "id": "L15-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "given_restricts_total",
+        "favorable_within_total",
+        "grand_total_trap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. A student who walks is selected at random. What is the probability that this student is in Music? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>14</td><td>13</td><td>8</td></tr><tr><td>Music</td><td>21</td><td>11</td><td>6</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "3/5"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 35 students in the allowed selection group. Of those, 21 meet the requested condition. The probability is \\(\\frac{3}{5}\\).</p>",
+      "variation": "Use a column as the selection group",
+      "source_cards": [
+        13,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L15-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "favorable_within_total",
+        "reverse_table_direction"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. A student is selected at random from those who take the bus or bike. What is the probability that this student is in Art? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>7</td><td>11</td><td>8</td></tr><tr><td>Music</td><td>9</td><td>20</td><td>14</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "19/53"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 53 students in the allowed selection group. Of those, 19 meet the requested condition. The probability is \\(\\frac{19}{53}\\).</p>",
+      "variation": "Combine several permitted categories before counting favorable cases",
+      "source_cards": [
+        23,
+        24,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L15-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_15_1",
+        "combine_columns_model",
+        "missing_totals"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The entries count students, each in one club and one travel group. For a randomly selected Art student, the probability of biking is \\(\\frac{1}{3}\\). What is x?</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>14</td><td>10</td><td>x</td></tr><tr><td>Music</td><td>21</td><td>12</td><td>16</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "12"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The Art total is 24 + x. Set x divided by that total equal to \\(\\frac{1}{3}\\). Solving gives x = 12.</p>",
+      "variation": "Use a conditional probability to recover a missing count",
+      "source_cards": [
+        27,
+        29,
+        30
+      ],
+      "difficulty": 2,
+      "id": "L15-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "missing_totals",
+        "format_15_2",
+        "missing_count_equation_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. A student is selected at random from the whole table. What is the probability that the student is in Art and walks? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>8</td><td>15</td><td>11</td></tr><tr><td>Music</td><td>14</td><td>12</td><td>9</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "8/69"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 69 students in the allowed selection group. Of those, 8 meet the requested condition. The probability is \\(\\frac{8}{69}\\).</p>",
+      "variation": "Use the entire group for an unconditional or joint probability",
+      "source_cards": [
+        7,
+        9,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L15-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "total_first_process",
+        "read_table_totals",
+        "without_given"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. An Art student is selected at random. What is the probability that this student takes the bus? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>19</td><td>16</td><td>5</td></tr><tr><td>Music</td><td>22</td><td>13</td><td>8</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "2/5"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 40 students in the allowed selection group. Of those, 16 meet the requested condition. The probability is \\(\\frac{2}{5}\\).</p>",
+      "variation": "Restrict the denominator to a given row",
+      "source_cards": [
+        11,
+        13,
+        15
+      ],
+      "difficulty": 1,
+      "id": "L15-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "given_restricts_total",
+        "favorable_within_total",
+        "grand_total_trap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. A student who walks is selected at random. What is the probability that this student is in Music? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>8</td><td>12</td><td>16</td></tr><tr><td>Music</td><td>10</td><td>7</td><td>20</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "5/9"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 18 students in the allowed selection group. Of those, 10 meet the requested condition. The probability is \\(\\frac{5}{9}\\).</p>",
+      "variation": "Use a column as the selection group",
+      "source_cards": [
+        13,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L15-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "favorable_within_total",
+        "reverse_table_direction"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. A student is selected at random from those who take the bus or bike. What is the probability that this student is in Art? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>15</td><td>9</td><td>6</td></tr><tr><td>Music</td><td>13</td><td>21</td><td>4</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "3/8"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 40 students in the allowed selection group. Of those, 15 meet the requested condition. The probability is \\(\\frac{3}{8}\\).</p>",
+      "variation": "Combine several permitted categories before counting favorable cases",
+      "source_cards": [
+        23,
+        24,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L15-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_15_1",
+        "combine_columns_model",
+        "missing_totals"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The entries count students, each in one club and one travel group. For a randomly selected Art student, the probability of biking is \\(\\frac{1}{3}\\). What is x?</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>11</td><td>21</td><td>x</td></tr><tr><td>Music</td><td>18</td><td>23</td><td>20</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "16"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The Art total is 32 + x. Set x divided by that total equal to \\(\\frac{1}{3}\\). Solving gives x = 16.</p>",
+      "variation": "Use a conditional probability to recover a missing count",
+      "source_cards": [
+        27,
+        29,
+        30
+      ],
+      "difficulty": 3,
+      "id": "L15-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "missing_totals",
+        "format_15_2",
+        "missing_count_equation_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. A student is selected at random from the whole table. What is the probability that the student bikes? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>13</td><td>20</td><td>15</td></tr><tr><td>Music</td><td>11</td><td>17</td><td>18</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "33/94"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 94 students in the allowed selection group. Of those, 33 meet the requested condition. The probability is \\(\\frac{33}{94}\\).</p>",
+      "variation": "Use the entire group for an unconditional or joint probability",
+      "source_cards": [
+        7,
+        9,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L15-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "total_first_process",
+        "read_table_totals",
+        "without_given"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. An Art student is selected at random. What is the probability that this student takes the bus? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>10</td><td>9</td><td>17</td></tr><tr><td>Music</td><td>12</td><td>6</td><td>13</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "1/4"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 36 students in the allowed selection group. Of those, 9 meet the requested condition. The probability is \\(\\frac{1}{4}\\).</p>",
+      "variation": "Restrict the denominator to a given row",
+      "source_cards": [
+        11,
+        13,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L15-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "given_restricts_total",
+        "favorable_within_total",
+        "grand_total_trap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. A student who walks is selected at random. What is the probability that this student is in Music? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>27</td><td>11</td><td>12</td></tr><tr><td>Music</td><td>18</td><td>15</td><td>19</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "2/5"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 45 students in the allowed selection group. Of those, 18 meet the requested condition. The probability is \\(\\frac{2}{5}\\).</p>",
+      "variation": "Use a column as the selection group",
+      "source_cards": [
+        13,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L15-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "favorable_within_total",
+        "reverse_table_direction"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The table gives the number of students by club and primary way of getting to school. Each student appears once. A student is selected at random from those who take the bus or bike. What is the probability that this student is in Art? Give the exact value as a fraction or terminating decimal if possible.</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>15</td><td>17</td><td>9</td></tr><tr><td>Music</td><td>11</td><td>8</td><td>13</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "26/47"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>First count the 47 students in the allowed selection group. Of those, 26 meet the requested condition. The probability is \\(\\frac{26}{47}\\).</p>",
+      "variation": "Combine several permitted categories before counting favorable cases",
+      "source_cards": [
+        23,
+        24,
+        27
+      ],
+      "difficulty": 3,
+      "id": "L15-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_15_1",
+        "combine_columns_model",
+        "missing_totals"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The entries count students, each in one club and one travel group. For a randomly selected Art student, the probability of biking is \\(\\frac{3}{5}\\). What is x?</p>",
+      "stimulus_html": "<table><thead><tr><th>Club</th><th>Walk</th><th>Bus</th><th>Bike</th></tr></thead><tbody><tr><td>Art</td><td>7</td><td>15</td><td>x</td></tr><tr><td>Music</td><td>14</td><td>17</td><td>37</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "33"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The Art total is 22 + x. Set x divided by that total equal to \\(\\frac{3}{5}\\). Solving gives x = 33.</p>",
+      "variation": "Use a conditional probability to recover a missing count",
+      "source_cards": [
+        27,
+        29,
+        30
+      ],
+      "difficulty": 3,
+      "id": "L15-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "missing_totals",
+        "format_15_2",
+        "missing_count_equation_model"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.934899+00",
+  "lesson_number": 15,
+  "difficulty_counts": {
+    "1": 3,
+    "2": 9,
+    "3": 3
+  }
+}

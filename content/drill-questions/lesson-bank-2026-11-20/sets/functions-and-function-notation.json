@@ -1,0 +1,489 @@
+{
+  "id": "19488dc3-65b0-40f6-b3f8-e8f4300b34fb",
+  "title": "Functions and Function Notation on the SAT",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Interpret functions as input-output rules, translate function notation into points, graphs, and equations, and use Desmos regression to find a missing constant.",
+  "cards": 37,
+  "spec": "docs/lesson-template-specs/functions-and-function-notation.json",
+  "source_spec_sha256": "cd508e64021e5356e54bf40323140f36511c78bc0b72065c4481caba73da4088",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Evaluate a function at a given input": [
+      7,
+      8
+    ],
+    "Translate function notation into an ordered pair": [
+      10,
+      11
+    ],
+    "Find a requested input or output in paired data": [
+      3,
+      4,
+      10
+    ],
+    "Find the input that produces a given output": [
+      17,
+      18,
+      19,
+      22
+    ],
+    "Find a missing constant using a function condition": [
+      24,
+      25,
+      28
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>If \\(f(x)=2x^{2}+3x+4\\), what is \\(f(2)\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "18"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Substitute 2 for each x in the rule. The resulting output is 18.</p>",
+      "variation": "Evaluate a function at a given input",
+      "source_cards": [
+        7,
+        8
+      ],
+      "difficulty": 1,
+      "id": "L18-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_18_1",
+        "evaluate_function_model"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The graph of y = f(x) contains which point if \\(f(4)=27\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The first coordinate is the input 4 and the second is the output 27. The graph therefore contains \\((4,27)\\).</p>",
+      "variation": "Translate function notation into an ordered pair",
+      "source_cards": [
+        10,
+        11
+      ],
+      "difficulty": 1,
+      "id": "L18-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_18_2",
+        "notation_to_point"
+      ],
+      "choices": [
+        "\\((4,27)\\)",
+        "\\((27,4)\\)",
+        "\\((5,27)\\)",
+        "\\((4,0)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Reverses input and output.",
+        "C": "Changes the input.",
+        "D": "Treats the given output as zero."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What is \\(f(5)\\) according to the table?</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>f(x)</th></tr></thead><tbody><tr><td>2</td><td>9</td></tr><tr><td>3</td><td>12</td></tr><tr><td>5</td><td>18</td></tr><tr><td>7</td><td>24</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "18"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Locate the input 5 and read its corresponding output, 18.</p>",
+      "variation": "Find a requested input or output in paired data",
+      "source_cards": [
+        3,
+        4,
+        10
+      ],
+      "difficulty": 1,
+      "id": "L18-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "notation_definition",
+        "first_exploration",
+        "format_18_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>If \\(f(x)=x^{2}+4x+7\\), what is the positive value x for which \\(f(x)=28\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "3"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Set the entire function rule equal to 28. The positive intersection with the horizontal line at that output is at x = 3.</p>",
+      "variation": "Find the input that produces a given output",
+      "source_cards": [
+        17,
+        18,
+        19,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L18-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_18_4",
+        "solve_function_equation",
+        "solve_function_graph_exploration",
+        "notation_decision_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Let \\(f(t)=2t^2+kt+6\\). If \\(f(3)=45\\), what is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Translate the function condition to \\(2(3)^2+k(3)+6=45\\). Fitting or solving this equation gives k = 7.</p>",
+      "variation": "Find a missing constant using a function condition",
+      "source_cards": [
+        24,
+        25,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L18-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "missing_constant_transition",
+        "regression_process",
+        "fixed_input_variation"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>If \\(f(x)=x^{2}-5x+7\\), what is \\(f(-3)\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "31"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Substitute -3 for each x in the rule. The resulting output is 31.</p>",
+      "variation": "Evaluate a function at a given input",
+      "source_cards": [
+        7,
+        8
+      ],
+      "difficulty": 1,
+      "id": "L18-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_18_1",
+        "evaluate_function_model"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The graph of y = f(x) contains which point if \\(f(-2)=25\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The first coordinate is the input -2 and the second is the output 25. The graph therefore contains \\((-2,25)\\).</p>",
+      "variation": "Translate function notation into an ordered pair",
+      "source_cards": [
+        10,
+        11
+      ],
+      "difficulty": 1,
+      "id": "L18-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_18_2",
+        "notation_to_point"
+      ],
+      "choices": [
+        "\\((-2,25)\\)",
+        "\\((25,-2)\\)",
+        "\\((-1,25)\\)",
+        "\\((-2,0)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Reverses input and output.",
+        "C": "Changes the input.",
+        "D": "Treats the given output as zero."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What value of x satisfies \\(f(x)=13\\) according to the table?</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>f(x)</th></tr></thead><tbody><tr><td>-3</td><td>7</td></tr><tr><td>-2</td><td>9</td></tr><tr><td>0</td><td>13</td></tr><tr><td>2</td><td>17</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "0"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Locate the output 13 and read its corresponding input, 0.</p>",
+      "variation": "Find a requested input or output in paired data",
+      "source_cards": [
+        3,
+        4,
+        10
+      ],
+      "difficulty": 1,
+      "id": "L18-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "notation_definition",
+        "first_exploration",
+        "format_18_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>If \\(f(x)=2x^{2}+3x+9\\), what is the positive value x for which \\(f(x)=53\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "4"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Set the entire function rule equal to 53. The positive intersection with the horizontal line at that output is at x = 4.</p>",
+      "variation": "Find the input that produces a given output",
+      "source_cards": [
+        17,
+        18,
+        19,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L18-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_18_4",
+        "solve_function_equation",
+        "solve_function_graph_exploration",
+        "notation_decision_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Let \\(f(t)=3t^2+kt+11\\). If \\(f(5)=66\\), what is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-4"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Translate the function condition to \\(3(5)^2+k(5)+11=66\\). Fitting or solving this equation gives k = -4.</p>",
+      "variation": "Find a missing constant using a function condition",
+      "source_cards": [
+        24,
+        25,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L18-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "missing_constant_transition",
+        "regression_process",
+        "fixed_input_variation"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>If \\(f(x)=-2x^{2}+9x-3\\), what is \\(f(-2)\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-29"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Substitute -2 for each x in the rule. The resulting output is -29.</p>",
+      "variation": "Evaluate a function at a given input",
+      "source_cards": [
+        7,
+        8
+      ],
+      "difficulty": 2,
+      "id": "L18-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_18_1",
+        "evaluate_function_model"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The graph of y = f(x) contains which point if \\(f(5)=-7\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The first coordinate is the input 5 and the second is the output -7. The graph therefore contains \\((5,-7)\\).</p>",
+      "variation": "Translate function notation into an ordered pair",
+      "source_cards": [
+        10,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L18-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_18_2",
+        "notation_to_point"
+      ],
+      "choices": [
+        "\\((-7,5)\\)",
+        "\\((5,-7)\\)",
+        "\\((6,-7)\\)",
+        "\\((5,0)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Reverses input and output.",
+        "C": "Changes the input.",
+        "D": "Treats the given output as zero."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What value of x satisfies \\(f(x)=20\\) according to the table?</p>",
+      "stimulus_html": "<table><thead><tr><th>x</th><th>f(x)</th></tr></thead><tbody><tr><td>5</td><td>26</td></tr><tr><td>6</td><td>24</td></tr><tr><td>8</td><td>20</td></tr><tr><td>10</td><td>16</td></tr></tbody></table>",
+      "choices": [],
+      "accepted_answers": [
+        "8"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Locate the output 20 and read its corresponding input, 8.</p>",
+      "variation": "Find a requested input or output in paired data",
+      "source_cards": [
+        3,
+        4,
+        10
+      ],
+      "difficulty": 2,
+      "id": "L18-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "notation_definition",
+        "first_exploration",
+        "format_18_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>If \\(f(x)=3x^{2}+7x+2\\), what is the positive value x for which \\(f(x)=112\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "5"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Set the entire function rule equal to 112. The positive intersection with the horizontal line at that output is at x = 5.</p>",
+      "variation": "Find the input that produces a given output",
+      "source_cards": [
+        17,
+        18,
+        19,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L18-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_18_4",
+        "solve_function_equation",
+        "solve_function_graph_exploration",
+        "notation_decision_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Let \\(f(t)=2t^2+kt+7\\). If \\(f(-4)=3\\), what is k?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "9"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Translate the function condition to \\(2(-4)^2+k(-4)+7=3\\). Fitting or solving this equation gives k = 9.</p>",
+      "variation": "Find a missing constant using a function condition",
+      "source_cards": [
+        24,
+        25,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L18-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "missing_constant_transition",
+        "regression_process",
+        "fixed_input_variation"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-20 15:06:37.264234+00",
+  "lesson_number": 18,
+  "difficulty_counts": {
+    "1": 6,
+    "2": 9,
+    "3": 0
+  }
+}

@@ -1,0 +1,608 @@
+{
+  "id": "1ba468c9-9ddf-4c95-8ff3-df731e88788f",
+  "title": "Rhetorical Synthesis: Let the Goal Lead",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use the student's stated goal to identify the required answer, handle multi-part goals, and consult the notes only when goal-fit alone does not settle the choice.",
+  "cards": 32,
+  "spec": "docs/lesson-template-specs/rhetorical-synthesis-goal-first.json",
+  "source_spec_sha256": "cfebc166615ab50bd9a49c2a53a70672b4dd52917e566739fe5411e2b3941985",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Use the requested action to choose relevant information": [
+      3,
+      8,
+      10
+    ],
+    "Satisfy a two-part goal without dropping either requirement": [
+      8,
+      9,
+      12,
+      14,
+      15
+    ],
+    "Select accurate evidence when two choices appear to serve the goal": [
+      21,
+      22,
+      24
+    ],
+    "Choose facts that meet the goal’s requested contrast or emphasis": [
+      10,
+      12,
+      13,
+      19
+    ],
+    "Choose an example or explanation that answers the full requested goal": [
+      8,
+      10,
+      12,
+      21
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to explain how the seed exchange works. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>Bayside School started a seed exchange.</li><li>Students bring packets of seeds they saved.</li><li>Visitors can trade packets for seeds they want to grow.</li><li>The exchange meets on Saturdays.</li></ul>",
+      "explanation_html": "<p>The goal asks how it works, so the answer connects what people bring with what they receive.</p>",
+      "variation": "Use the requested action to choose relevant information",
+      "source_cards": [
+        3,
+        8,
+        10
+      ],
+      "difficulty": 1,
+      "id": "L29-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "name_the_principle",
+        "four_step_process",
+        "action_words"
+      ],
+      "choices": [
+        "The exchange meets on Saturdays.",
+        "Bayside School started a seed exchange.",
+        "Participants bring saved seeds and trade them for seeds they would like to grow.",
+        "Participants give away equipment for planting seeds."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Gives a schedule instead of explaining the exchange.",
+        "B": "Names the program without explaining its operation.",
+        "D": "Changes what is exchanged."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to identify what both artists make and contrast their materials. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>Nara creates ceramic vessels.</li><li>Nara uses a red clay found near her studio.</li><li>Milo creates ceramic vessels.</li><li>Milo uses clay made white by its high kaolin content.</li></ul>",
+      "explanation_html": "<p>The correct choice includes the shared product and accurately compares the materials.</p>",
+      "variation": "Satisfy a two-part goal without dropping either requirement",
+      "source_cards": [
+        8,
+        9,
+        12,
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L29-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "format_29_1",
+        "requirement_checklist",
+        "format_29_3",
+        "and_rule"
+      ],
+      "choices": [
+        "Both Nara and Milo create ceramic vessels.",
+        "Both Nara and Milo create ceramic vessels, but Nara uses local red clay while Milo uses a white, kaolin-rich clay.",
+        "Nara uses red clay, and Milo uses white clay.",
+        "Both artists use local red clay in their ceramic vessels."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "States the common product only.",
+        "C": "Contrasts the materials but omits the shared product.",
+        "D": "Misstates Milo’s material."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to support the claim that the new shade reduced glare in the trial. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>A 12-week study compared two lamp shades.</li><li>The original shade was used at six desks.</li><li>The new shade reduced glare readings by an average of 18% across six other desks.</li><li>The report did not measure reading speed.</li></ul>",
+      "explanation_html": "<p>The proposed evidence needs to preserve what was measured and the fact that the percent is an average.</p>",
+      "variation": "Select accurate evidence when two choices appear to serve the goal",
+      "source_cards": [
+        21,
+        22,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L29-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "notes_fallback",
+        "fact_check_example",
+        "bank_rw00372_goal_filter_model"
+      ],
+      "choices": [
+        "At the six desks using the new shade, the trial recorded an average 18% reduction in glare.",
+        "The new shade reduced glare by 18% at every individual desk.",
+        "The trial ran for 12 weeks.",
+        "Reading speed improved by 18% with the new shade."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Turns an average into a result at every desk.",
+        "C": "Gives a duration without the evidence requested.",
+        "D": "Reports an outcome the trial did not measure."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to emphasize a difference in the workshops’ services. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>Workshop A repairs umbrellas.</li><li>Workshop B repairs folding chairs.</li><li>Both are open on weekends.</li><li>Workshop A opened in May.</li></ul>",
+      "explanation_html": "<p>The goal is a service contrast. It needs one service for each workshop.</p>",
+      "variation": "Choose facts that meet the goal’s requested contrast or emphasis",
+      "source_cards": [
+        10,
+        12,
+        13,
+        19
+      ],
+      "difficulty": 1,
+      "id": "L29-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "action_words",
+        "requirement_checklist",
+        "format_29_2",
+        "distractor_patterns"
+      ],
+      "choices": [
+        "Workshop A repairs umbrellas, whereas Workshop B repairs folding chairs.",
+        "Both workshops are open on weekends.",
+        "Workshop A opened in May.",
+        "Workshop B repairs both chairs and umbrellas."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Emphasizes a similarity.",
+        "C": "Gives a date without a service comparison.",
+        "D": "Changes the stated services."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to give one example of how the collection helped identify a sound. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>The institute’s sound collection includes ferry horns, mill bells, and street calls.</li><li>Orla identified an unknown recording by matching it to the ferry horn archive.</li><li>The horn recording was labeled with its route.</li><li>The bells were recorded in August.</li></ul>",
+      "explanation_html": "<p>The example should name an unknown sound and show how the collection supplied a match.</p>",
+      "variation": "Choose an example or explanation that answers the full requested goal",
+      "source_cards": [
+        8,
+        10,
+        12,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L29-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "action_words",
+        "requirement_checklist",
+        "notes_fallback"
+      ],
+      "choices": [
+        "The archive includes calls, bells, and horns.",
+        "Mill bells were recorded in August.",
+        "Orla identified a mill bell from a street photograph.",
+        "Orla identified a sound by matching an unknown recording to a ferry horn in the archive."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Lists contents without explaining an identification.",
+        "B": "Gives a date without an example of using the collection.",
+        "C": "Changes the sound and method."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to identify the press’s first publication. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>The Finch Press opened in 1984.</li><li>Its first book was a collection of local poems.</li><li>Its logo shows a finch on a roof.</li><li>It now publishes essays as well as poems.</li></ul>",
+      "explanation_html": "<p>Only the correct answer directly names the initial publication.</p>",
+      "variation": "Use the requested action to choose relevant information",
+      "source_cards": [
+        3,
+        8,
+        10
+      ],
+      "difficulty": 1,
+      "id": "L29-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "name_the_principle",
+        "four_step_process",
+        "action_words"
+      ],
+      "choices": [
+        "Finch Press opened in 1984.",
+        "The logo features a finch on a roof.",
+        "Finch Press first published a collection of local poems.",
+        "The press’s first publication was an essay collection."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Provides the year alone.",
+        "B": "Describes the logo.",
+        "D": "Confuses a current category with the first book."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to identify the longer route and mention a closure the two routes share. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>Grove Park’s route is 1.2 miles.</li><li>Elm Park’s route is 1.8 miles.</li><li>Both routes are closed in winter.</li><li>Elm Park’s route has a drinking fountain.</li></ul>",
+      "explanation_html": "<p>The goal requires one comparative fact as well as the winter closure.</p>",
+      "variation": "Satisfy a two-part goal without dropping either requirement",
+      "source_cards": [
+        8,
+        9,
+        12,
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L29-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "format_29_1",
+        "requirement_checklist",
+        "format_29_3",
+        "and_rule"
+      ],
+      "choices": [
+        "Elm Park’s route is 1.8 miles and has a fountain.",
+        "Elm Park has the longer route at 1.8 miles, and both routes close in winter.",
+        "Both routes close in winter.",
+        "Grove Park has the longer route, and both routes close in winter."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Leaves out the shared closure.",
+        "C": "Leaves out the length comparison.",
+        "D": "Gets the comparison backward."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to use the results to compare how many visitors answered correctly with each style. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>At a small museum, visitors answered a question after reading one of two label styles.</li><li>Thirty of forty visitors answered correctly with the large label.</li><li>Twenty of forty answered correctly with the standard label.</li><li>The museum did not record visitors’ reading time.</li></ul>",
+      "explanation_html": "<p>Both compared counts are required, and each count must stay with the label style used.</p>",
+      "variation": "Select accurate evidence when two choices appear to serve the goal",
+      "source_cards": [
+        21,
+        22,
+        24
+      ],
+      "difficulty": 3,
+      "id": "L29-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "notes_fallback",
+        "fact_check_example",
+        "bank_rw00372_goal_filter_model"
+      ],
+      "choices": [
+        "Thirty answered correctly with the standard label, compared with twenty using the large label.",
+        "Thirty visitors answered correctly with the large label, compared with twenty using the standard label.",
+        "Both label styles were read by forty visitors each.",
+        "The large label helped thirty visitors answer faster."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Reverses which group achieved each count.",
+        "C": "Compares group sizes instead of correct answers.",
+        "D": "Confuses correctness with unmeasured speed."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to contrast how the two musicians learned the song. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>Mina learned a song by listening to a recording.</li><li>Tomas learned the song by reading notation.</li><li>Both performed it at the spring event.</li><li>The audience was invited from two schools.</li></ul>",
+      "explanation_html": "<p>The two learning methods provide the contrast asked for.</p>",
+      "variation": "Choose facts that meet the goal’s requested contrast or emphasis",
+      "source_cards": [
+        10,
+        12,
+        13,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L29-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "action_words",
+        "requirement_checklist",
+        "format_29_2",
+        "distractor_patterns"
+      ],
+      "choices": [
+        "Mina learned by listening to a recording, while Tomas learned by reading the notation.",
+        "Both musicians played at the spring event.",
+        "Tomas read the same notation Mina used.",
+        "The audience came from two schools."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Compares where they performed rather than how they learned.",
+        "C": "Misstates Mina’s learning method.",
+        "D": "Uses an irrelevant event detail."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to explain a benefit of the sign change and identify how it was achieved. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>A neighborhood changed its signs to show street names on both sides.</li><li>People walking in either direction could then read them.</li><li>Crews used the same posts.</li><li>Signs near the depot were installed first.</li></ul>",
+      "explanation_html": "<p>The goal asks for the change and its practical result in the same sentence.</p>",
+      "variation": "Choose an example or explanation that answers the full requested goal",
+      "source_cards": [
+        8,
+        10,
+        12,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L29-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "action_words",
+        "requirement_checklist",
+        "notes_fallback"
+      ],
+      "choices": [
+        "People walking in either direction could read the signs.",
+        "Street names appeared on both sides.",
+        "New posts helped people read the signs from farther away.",
+        "Printing street names on both sides made the signs readable by people walking in either direction."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Names the benefit but omits the design change that produced it.",
+        "B": "Names the change but not its benefit.",
+        "C": "Invents a change and effect."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to explain why the recorded information is useful. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>A watershed volunteer built a floating recorder.</li><li>It logs water temperature every hour.</li><li>A solar panel supplies electricity to the recorder.</li><li>The records are used to compare seasonal temperatures.</li></ul>",
+      "explanation_html": "<p>The correct response connects the collected data to the intended comparison.</p>",
+      "variation": "Use the requested action to choose relevant information",
+      "source_cards": [
+        3,
+        8,
+        10
+      ],
+      "difficulty": 2,
+      "id": "L29-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "name_the_principle",
+        "four_step_process",
+        "action_words"
+      ],
+      "choices": [
+        "A solar panel supplies electricity to the recorder.",
+        "A volunteer built the floating recorder.",
+        "Hourly temperature readings allow the project to compare the water’s temperature across seasons.",
+        "It records seasonal water levels as well as temperatures."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Explains power rather than usefulness of the records.",
+        "B": "Names the builder rather than the data use.",
+        "D": "Adds an unsupported measurement."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to mention the two designs’ shared function and distinguish their cleaning requirements. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>The Cedar Cup and the Tern Cup are reusable designs.</li><li>The Cedar Cup can be washed in a dishwasher.</li><li>The Tern Cup must be washed by hand.</li><li>The Tern Cup is made from recycled glass.</li></ul>",
+      "explanation_html": "<p>The selected sentence retains the shared function and both halves of the cleaning comparison.</p>",
+      "variation": "Satisfy a two-part goal without dropping either requirement",
+      "source_cards": [
+        8,
+        9,
+        12,
+        14,
+        15
+      ],
+      "difficulty": 3,
+      "id": "L29-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "format_29_1",
+        "requirement_checklist",
+        "format_29_3",
+        "and_rule"
+      ],
+      "choices": [
+        "The two designs are reusable, and the Tern Cup is made from recycled glass.",
+        "The Cedar Cup can go in the dishwasher while the Tern Cup must be hand-washed.",
+        "Both are reusable cups, but the Cedar Cup can go in the dishwasher while the Tern Cup must be hand-washed.",
+        "Both cups are reusable and can be washed in a dishwasher."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Gives a material detail instead of the cleaning comparison.",
+        "B": "Gives only the cleaning comparison.",
+        "D": "Incorrectly applies one cleaning requirement to both."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to compare the open plot’s yield with the average yield of the two raised beds. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>The first raised bed yielded 14 kilograms of tomatoes.</li><li>The second raised bed yielded 16 kilograms of tomatoes.</li><li>An open plot yielded 18 kilograms of tomatoes.</li><li>All were harvested in the same week.</li></ul>",
+      "explanation_html": "<p>Average 14 and 16 to get 15 kilograms, then compare 18 to 15.</p>",
+      "variation": "Select accurate evidence when two choices appear to serve the goal",
+      "source_cards": [
+        21,
+        22,
+        24
+      ],
+      "difficulty": 3,
+      "id": "L29-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "notes_fallback",
+        "fact_check_example",
+        "bank_rw00372_goal_filter_model"
+      ],
+      "choices": [
+        "The open plot yielded 3 kilograms less than the two raised beds averaged.",
+        "The open plot yielded 18 kilograms of tomatoes, 3 kilograms more than the two raised beds averaged.",
+        "The open plot yielded 18 kilograms, 12 fewer than the two raised beds yielded together.",
+        "The second raised bed yielded 2 kilograms more than the first."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Reverses the direction of the difference.",
+        "C": "Uses the sum rather than the average.",
+        "D": "Compares the wrong groups."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to emphasize a similarity in the clubs’ practice schedules. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>The Kett Club used a covered court for practices.</li><li>The Leven Club used an open court.</li><li>Both clubs trained on three evenings each week.</li><li>Their matches took place on Saturdays.</li></ul>",
+      "explanation_html": "<p>The common frequency directly serves the goal about practice schedules.</p>",
+      "variation": "Choose facts that meet the goal’s requested contrast or emphasis",
+      "source_cards": [
+        10,
+        12,
+        13,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L29-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "action_words",
+        "requirement_checklist",
+        "format_29_2",
+        "distractor_patterns"
+      ],
+      "choices": [
+        "Kett and Leven both practiced three evenings per week.",
+        "Both clubs played matches on Saturdays.",
+        "Kett practiced on a covered court while Leven used an open one.",
+        "Kett and Leven practiced together three times every week."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Gives the match schedule instead of practice frequency.",
+        "C": "Describes a difference in location.",
+        "D": "Adds a claim about training together."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>The student wants to describe a later repair while making clear that the original image was preserved. Which choice most effectively uses information from the notes to accomplish this goal?</p>",
+      "stimulus_html": "<p>A student took the following notes while researching a topic.</p><ul><li>A mural was first painted in 1965.</li><li>In 2001 a protective panel was added.</li><li>After a leak in 2022, part of the panel detached.</li><li>Conservators replaced it in 2023 without repainting the original image.</li></ul>",
+      "explanation_html": "<p>The goal demands both the replacement of the panel and accurate confirmation that the original painting was preserved.</p>",
+      "variation": "Choose an example or explanation that answers the full requested goal",
+      "source_cards": [
+        8,
+        10,
+        12,
+        21
+      ],
+      "difficulty": 3,
+      "id": "L29-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_step_process",
+        "action_words",
+        "requirement_checklist",
+        "notes_fallback"
+      ],
+      "choices": [
+        "The protective panel was added after the mural was painted.",
+        "Conservators replaced the panel and repainted the original mural in 2023.",
+        "The image painted in 1965 remained in place.",
+        "Conservators replaced the detached protective panel in 2023 and left the original image intact."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Describes the installation rather than the later repair.",
+        "B": "Contradicts the preservation requirement.",
+        "C": "Does not describe the repair."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.058395+00",
+  "lesson_number": 29,
+  "difficulty_counts": {
+    "1": 3,
+    "2": 8,
+    "3": 4
+  }
+}

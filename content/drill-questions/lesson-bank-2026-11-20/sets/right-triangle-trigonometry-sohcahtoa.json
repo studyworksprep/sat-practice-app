@@ -1,0 +1,483 @@
+{
+  "id": "cd9e2655-3adc-4b36-9d75-a31bbd0aaaba",
+  "title": "Right Triangle Trigonometry with SOHCAHTOA",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Sketch and label SAT right triangles, choose and solve exact sine, cosine, and tangent equations, manage degree and radian mode, and transfer trig ratios across similar triangles.",
+  "cards": 42,
+  "spec": "docs/lesson-template-specs/right-triangle-trigonometry-sohcahtoa.json",
+  "source_spec_sha256": "08b1b49116ad7d0776b137395b6460a2d24b1d4565abd13b75a5f70ebd09c7dd",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Find an opposite side using sine": [
+      7,
+      9,
+      16
+    ],
+    "Solve for the hypotenuse using cosine": [
+      7,
+      16,
+      19
+    ],
+    "Solve for the adjacent side using tangent": [
+      9,
+      10,
+      16
+    ],
+    "Solve for a length using a calculator in degree mode": [
+      9,
+      10,
+      11,
+      12
+    ],
+    "Convert a given radian angle to degrees": [
+      21,
+      25,
+      26,
+      27
+    ],
+    "Transfer a trig ratio across similar right triangles": [
+      30,
+      32
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangle ABC is right at C. AB = 30 and \\(\\sin A=\\frac{3}{5}\\). What is BC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "18"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>BC is opposite angle A and AB is the hypotenuse. Multiply the sine of A by 30.</p>",
+      "variation": "Find an opposite side using sine",
+      "source_cards": [
+        7,
+        9,
+        16
+      ],
+      "difficulty": 1,
+      "id": "L30-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "sohcahtoa_definition",
+        "sohcahtoa_process",
+        "format_30_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangle ABC is right at C. AC = 16 and \\(\\cos A=\\frac{4}{5}\\). What is AB?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "20"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>AC is adjacent to angle A and AB is the hypotenuse. Divide 16 by \\(\\frac{4}{5}\\).</p>",
+      "variation": "Solve for the hypotenuse using cosine",
+      "source_cards": [
+        7,
+        16,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L30-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "sohcahtoa_definition",
+        "format_30_2",
+        "cosine_guided_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangle ABC is right at C. BC = 20 and \\(\\tan A=\\frac{5}{12}\\). What is AC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "48"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>BC is opposite angle A and AC is adjacent. Divide 20 by the tangent \\(\\frac{5}{12}\\).</p>",
+      "variation": "Solve for the adjacent side using tangent",
+      "source_cards": [
+        9,
+        10,
+        16
+      ],
+      "difficulty": 2,
+      "id": "L30-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "sohcahtoa_process",
+        "tangent_model",
+        "format_30_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A ramp makes an angle of 17° with level ground and rises 8 feet. What is its horizontal run in feet? Round to the nearest tenth.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "131/5"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The run is adjacent to the angle and the rise is opposite. In degree mode, evaluate 8 ÷ tan(17°) to obtain about 26.2 feet.</p>",
+      "variation": "Solve for a length using a calculator in degree mode",
+      "source_cards": [
+        9,
+        10,
+        11,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L30-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "sohcahtoa_process",
+        "tangent_model",
+        "format_30_1",
+        "desmos_angle_mode"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>An acute angle measures \\(\\frac{1}{5}\\pi\\) radians. What is its measure in degrees?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "36"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Multiply the radian measure by 180/π. The angle measures \\(36\\)°.</p>",
+      "variation": "Convert a given radian angle to degrees",
+      "source_cards": [
+        21,
+        25,
+        26,
+        27
+      ],
+      "difficulty": 1,
+      "id": "L30-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "angle_units_transition",
+        "format_30_5",
+        "radians_to_degrees",
+        "format_30_6"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangles ABC and DEF are similar, with A matching D, B matching E, and C matching F. Both C and F are right angles. In ABC, BC = 3 and AB = 5. In DEF, DE = 35. What is EF?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "21"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The sine of angle A is 3/5 and equals the sine of D. EF is opposite D and DE is its hypotenuse, so EF = 3/5 × 35 = 21.</p>",
+      "variation": "Transfer a trig ratio across similar right triangles",
+      "source_cards": [
+        30,
+        32
+      ],
+      "difficulty": 2,
+      "id": "L30-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "similar_triangles_transition",
+        "combined_problem_shortcut"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangle ABC is right at C. AB = 39 and \\(\\sin A=\\frac{5}{13}\\). What is BC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "15"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>BC is opposite angle A and AB is the hypotenuse. Multiply the sine of A by 39.</p>",
+      "variation": "Find an opposite side using sine",
+      "source_cards": [
+        7,
+        9,
+        16
+      ],
+      "difficulty": 2,
+      "id": "L30-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "sohcahtoa_definition",
+        "sohcahtoa_process",
+        "format_30_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangle ABC is right at C. AC = 25 and \\(\\cos A=\\frac{5}{13}\\). What is AB?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "65"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>AC is adjacent to angle A and AB is the hypotenuse. Divide 25 by \\(\\frac{5}{13}\\).</p>",
+      "variation": "Solve for the hypotenuse using cosine",
+      "source_cards": [
+        7,
+        16,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L30-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "sohcahtoa_definition",
+        "format_30_2",
+        "cosine_guided_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangle ABC is right at C. BC = 45 and \\(\\tan A=\\frac{15}{8}\\). What is AC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "24"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>BC is opposite angle A and AC is adjacent. Divide 45 by the tangent \\(\\frac{15}{8}\\).</p>",
+      "variation": "Solve for the adjacent side using tangent",
+      "source_cards": [
+        9,
+        10,
+        16
+      ],
+      "difficulty": 2,
+      "id": "L30-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "sohcahtoa_process",
+        "tangent_model",
+        "format_30_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>An acute angle measures \\(\\frac{7}{20}\\pi\\) radians. What is its measure in degrees?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "63"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Multiply the radian measure by 180/π. The angle measures \\(63\\)°.</p>",
+      "variation": "Convert a given radian angle to degrees",
+      "source_cards": [
+        21,
+        25,
+        26,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L30-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "angle_units_transition",
+        "format_30_5",
+        "radians_to_degrees",
+        "format_30_6"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangles ABC and DEF are similar, with A matching D, B matching E, and C matching F. Both C and F are right angles. In ABC, BC = 8 and AB = 17. In DEF, DE = 68. What is EF?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "32"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The sine of angle A is 8/17 and equals the sine of D. EF is opposite D and DE is its hypotenuse, so EF = 8/17 × 68 = 32.</p>",
+      "variation": "Transfer a trig ratio across similar right triangles",
+      "source_cards": [
+        30,
+        32
+      ],
+      "difficulty": 2,
+      "id": "L30-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "similar_triangles_transition",
+        "combined_problem_shortcut"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangle ABC is right at C. AB = 34 and \\(\\sin A=\\frac{8}{17}\\). What is BC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "16"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>BC is opposite angle A and AB is the hypotenuse. Multiply the sine of A by 34.</p>",
+      "variation": "Find an opposite side using sine",
+      "source_cards": [
+        7,
+        9,
+        16
+      ],
+      "difficulty": 2,
+      "id": "L30-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "sohcahtoa_definition",
+        "sohcahtoa_process",
+        "format_30_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangle ABC is right at C. AC = 48 and \\(\\cos A=\\frac{24}{25}\\). What is AB?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "50"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>AC is adjacent to angle A and AB is the hypotenuse. Divide 48 by \\(\\frac{24}{25}\\).</p>",
+      "variation": "Solve for the hypotenuse using cosine",
+      "source_cards": [
+        7,
+        16,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L30-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "sohcahtoa_definition",
+        "format_30_2",
+        "cosine_guided_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>An acute angle measures \\(\\frac{11}{36}\\pi\\) radians. What is its measure in degrees?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "55"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Multiply the radian measure by 180/π. The angle measures \\(55\\)°.</p>",
+      "variation": "Convert a given radian angle to degrees",
+      "source_cards": [
+        21,
+        25,
+        26,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L30-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "angle_units_transition",
+        "format_30_5",
+        "radians_to_degrees",
+        "format_30_6"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangles ABC and DEF are similar, with A matching D, B matching E, and C matching F. Both C and F are right angles. In ABC, BC = 9 and AB = 41. In DEF, DE = 123. What is EF?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "27"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The sine of angle A is 9/41 and equals the sine of D. EF is opposite D and DE is its hypotenuse, so EF = 9/41 × 123 = 27.</p>",
+      "variation": "Transfer a trig ratio across similar right triangles",
+      "source_cards": [
+        30,
+        32
+      ],
+      "difficulty": 3,
+      "id": "L30-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "similar_triangles_transition",
+        "combined_problem_shortcut"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.071519+00",
+  "lesson_number": 30,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 12,
+    "3": 1
+  }
+}

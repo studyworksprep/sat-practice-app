@@ -1,0 +1,461 @@
+{
+  "id": "128a9229-75b6-4aa8-b47d-792e478f4d2d",
+  "title": "Solving Equations with Regression",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use the tilde in Desmos to solve equations, reuse the results, select a required solution, and connect two equations.",
+  "cards": 33,
+  "spec": "docs/lesson-template-specs/solving-equations-with-regression.json",
+  "source_spec_sha256": "64db2a27f09b41cb2cccc5308b22bd20dfd176ab74e399ce8afa7716bc4c5fc7",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Use a tilde to solve and verify a radical equation": [
+      3,
+      4,
+      7,
+      14
+    ],
+    "Solve an equation using a temporary regression variable": [
+      11,
+      14
+    ],
+    "Reuse a fitted value to compute the requested expression": [
+      9,
+      14
+    ],
+    "Use the stated sign to select one of several solutions": [
+      16,
+      18
+    ],
+    "Connect two equations with a separate definition": [
+      20,
+      21,
+      24
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What value of t solves \\(3+\\sqrt{t+13}=9\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "23"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit t in the original equation and check the result. At t = 23, the root is 6, and adding 3 gives 9.</p>",
+      "variation": "Use a tilde to solve and verify a radical equation",
+      "source_cards": [
+        3,
+        4,
+        7,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L40-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_40_1",
+        "introduce_tilde_swap",
+        "read_the_fit_error",
+        "state_the_tilde_swap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What value of x satisfies \\(5(x+3)=60\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "9"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use a temporary fitting variable in place of x if needed. At the fitted value 9, the parenthetical value is 12, and multiplying by 5 recovers 60.</p>",
+      "variation": "Solve an equation using a temporary regression variable",
+      "source_cards": [
+        11,
+        14
+      ],
+      "difficulty": 1,
+      "id": "L40-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "use_a_regression_variable",
+        "state_the_tilde_swap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>If \\(7t+3=45\\), what is the value of \\(t^{2}+5\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "41"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit t from \\(7t+3=45\\) and retain the fitted value 6. Then use it in the second expression: \\((6)^2+5=41\\).</p>",
+      "variation": "Reuse a fitted value to compute the requested expression",
+      "source_cards": [
+        9,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L40-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "reuse_the_fitted_value",
+        "state_the_tilde_swap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What is the positive solution to \\(x^{2}-24=5x\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "8"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit with the stated sign restriction. The zero-form factors as \\((x-8)(x+3)\\); both 8 and -3 satisfy the equation, and only 8 has the required sign.</p>",
+      "variation": "Use the stated sign to select one of several solutions",
+      "source_cards": [
+        16,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L40-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "what_one_result_tells_you",
+        "target_a_known_range"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system consists of \\(2r+3s=31\\) and \\(4r+1s=27\\). What is \\(rs\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "35"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Isolate s in one equation and keep it as a definition. Fit the other equation and find r = 5, s = 7. Both values satisfy the original equations, and the requested result is 35.</p>",
+      "variation": "Connect two equations with a separate definition",
+      "source_cards": [
+        20,
+        21,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L40-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_40_2",
+        "connect_two_equations",
+        "keep_one_regression"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What value of t solves \\(\\sqrt{t+27}+\\sqrt{t-6}=11\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "22"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit t by replacing equality with a tilde. At t = 22, the two radicals are 7 and 4, so their sum is 11. Both radicals increase on the common domain.</p>",
+      "variation": "Use a tilde to solve and verify a radical equation",
+      "source_cards": [
+        3,
+        4,
+        7,
+        14
+      ],
+      "difficulty": 3,
+      "id": "L40-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_40_1",
+        "introduce_tilde_swap",
+        "read_the_fit_error",
+        "state_the_tilde_swap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What value of x satisfies \\(7(x+2)=-28\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-6"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use a temporary fitting variable in place of x if needed. At the fitted value -6, the parenthetical value is -4, and multiplying by 7 recovers -28.</p>",
+      "variation": "Solve an equation using a temporary regression variable",
+      "source_cards": [
+        11,
+        14
+      ],
+      "difficulty": 1,
+      "id": "L40-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "use_a_regression_variable",
+        "state_the_tilde_swap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>If \\(4t+13=-7\\), what is the value of \\(t^{2}+2\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "27"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit t from \\(4t+13=-7\\) and retain the fitted value -5. Then use it in the second expression: \\((-5)^2+2=27\\).</p>",
+      "variation": "Reuse a fitted value to compute the requested expression",
+      "source_cards": [
+        9,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L40-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "reuse_the_fitted_value",
+        "state_the_tilde_swap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What is the negative solution to \\(x^{2}-36=5x\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-4"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit with the stated sign restriction. The zero-form factors as \\((x-9)(x+4)\\); both 9 and -4 satisfy the equation, and only -4 has the required sign.</p>",
+      "variation": "Use the stated sign to select one of several solutions",
+      "source_cards": [
+        16,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L40-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "what_one_result_tells_you",
+        "target_a_known_range"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system consists of \\(r+3s=28\\) and \\(3r+2s=28\\). What is \\(r+s\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "12"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Isolate s in one equation and keep it as a definition. Fit the other equation and find r = 4, s = 8. Both values satisfy the original equations, and the requested result is 12.</p>",
+      "variation": "Connect two equations with a separate definition",
+      "source_cards": [
+        20,
+        21,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L40-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_40_2",
+        "connect_two_equations",
+        "keep_one_regression"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What value of t solves \\(\\sqrt{t+35}+\\sqrt{t-20}=11\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "29"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit t by replacing equality with a tilde. At t = 29, the two radicals are 8 and 3, so their sum is 11. Both radicals increase on the common domain.</p>",
+      "variation": "Use a tilde to solve and verify a radical equation",
+      "source_cards": [
+        3,
+        4,
+        7,
+        14
+      ],
+      "difficulty": 3,
+      "id": "L40-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_40_1",
+        "introduce_tilde_swap",
+        "read_the_fit_error",
+        "state_the_tilde_swap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What value of x satisfies \\(9(x+5)=198\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "17"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use a temporary fitting variable in place of x if needed. At the fitted value 17, the parenthetical value is 22, and multiplying by 9 recovers 198.</p>",
+      "variation": "Solve an equation using a temporary regression variable",
+      "source_cards": [
+        11,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L40-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "use_a_regression_variable",
+        "state_the_tilde_swap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>If \\(6t+11=59\\), what is the value of \\(t^{2}+7\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "71"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit t from \\(6t+11=59\\) and retain the fitted value 8. Then use it in the second expression: \\((8)^2+7=71\\).</p>",
+      "variation": "Reuse a fitted value to compute the requested expression",
+      "source_cards": [
+        9,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L40-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "reuse_the_fitted_value",
+        "state_the_tilde_swap"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What is the negative solution to \\(x^{2}-78=7x\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-6"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Fit with the stated sign restriction. The zero-form factors as \\((x-13)(x+6)\\); both 13 and -6 satisfy the equation, and only -6 has the required sign.</p>",
+      "variation": "Use the stated sign to select one of several solutions",
+      "source_cards": [
+        16,
+        18
+      ],
+      "difficulty": 3,
+      "id": "L40-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "what_one_result_tells_you",
+        "target_a_known_range"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system consists of \\(4r+5s=18\\) and \\(2r+7s=36\\). What is \\(rs\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-18"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Isolate s in one equation and keep it as a definition. Fit the other equation and find r = -3, s = 6. Both values satisfy the original equations, and the requested result is -18.</p>",
+      "variation": "Connect two equations with a separate definition",
+      "source_cards": [
+        20,
+        21,
+        24
+      ],
+      "difficulty": 3,
+      "id": "L40-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_40_2",
+        "connect_two_equations",
+        "keep_one_regression"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.184626+00",
+  "lesson_number": 40,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 9,
+    "3": 4
+  }
+}

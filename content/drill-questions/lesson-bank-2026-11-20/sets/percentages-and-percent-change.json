@@ -1,0 +1,496 @@
+{
+  "id": "87964e64-d44c-48b1-98c6-85924ea0ccf2",
+  "title": "Solve Percent and Percent Change Problems with Desmos",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Translate percent statements into equations, use Desmos percent-of notation with regression, apply the percent-change template, and solve multi-step percent problems.",
+  "cards": 50,
+  "spec": "docs/lesson-template-specs/percentages-and-percent-change.json",
+  "source_spec_sha256": "bfcb6a6407cee01235d120ce2eb967b2aa34d3a5993afda9be05f23930571c9e",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Solve for a percent, a part, or a base": [
+      3,
+      6,
+      7,
+      13
+    ],
+    "Use the starting value to compute a percent increase or decrease": [
+      16,
+      18,
+      19,
+      20,
+      21
+    ],
+    "Recover an unknown original amount after a change": [
+      16,
+      20,
+      21
+    ],
+    "Identify the comparison base in percent-more or percent-fewer claims": [
+      27,
+      28
+    ],
+    "Use a definition to connect a discount and a fixed charge": [
+      32,
+      34,
+      36,
+      37
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What is 35% of 180?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "63"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use the equation amount = 35/100 × 180. Its value is \\(63\\).</p>",
+      "variation": "Solve for a percent, a part, or a base",
+      "source_cards": [
+        3,
+        6,
+        7,
+        13
+      ],
+      "difficulty": 1,
+      "id": "L34-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_symbol_meaning",
+        "format_34_1",
+        "regression_percent_overview",
+        "basic_percent_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A quantity of 250 units increased by 18%. What was the new quantity?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "295"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use the original 250 as the base of the change. The multiplier is 118/100, yielding \\(295\\).</p>",
+      "variation": "Use the starting value to compute a percent increase or decrease",
+      "source_cards": [
+        16,
+        18,
+        19,
+        20,
+        21
+      ],
+      "difficulty": 1,
+      "id": "L34-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_3",
+        "percent_change_template",
+        "format_34_7",
+        "percent_decrease_template",
+        "format_34_8"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>After a price decreased by 25%, the price was \\(210\\) dollars. What was the original price in dollars?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "280"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The known new price is the original price times 75/100. Fit the original price or divide by this factor to get 280.</p>",
+      "variation": "Recover an unknown original amount after a change",
+      "source_cards": [
+        16,
+        20,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L34-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_3",
+        "percent_decrease_template",
+        "format_34_8"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>One shelf has \\(68\\) books, which is 20% fewer than the number on a second shelf. How many books are on the second shelf?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "85"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The second shelf is the comparison base because it comes after “than.” Its count multiplied by 80/100 gives \\(68\\); the count is 85.</p>",
+      "variation": "Identify the comparison base in percent-more or percent-fewer claims",
+      "source_cards": [
+        27,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L34-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_4",
+        "than_basis_rule"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A ticket was discounted by 20% from its original price. A fixed 7-dollar fee was then added, for a final price of \\(43\\) dollars. What was the original ticket price in dollars?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "45"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Define discounted price as the original multiplied by 80/100. Fit discounted price + 7 = \\(43\\). The discounted price is \\(36\\) and the original is 45.</p>",
+      "variation": "Use a definition to connect a discount and a fixed charge",
+      "source_cards": [
+        32,
+        34,
+        36,
+        37
+      ],
+      "difficulty": 2,
+      "id": "L34-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_5",
+        "format_34_6",
+        "complex_section_overview",
+        "format_34_9"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>\\(56\\) is what percent of 350? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "16"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Solve \\(56=(p/100)(350)\\). The percent is 16.</p>",
+      "variation": "Solve for a percent, a part, or a base",
+      "source_cards": [
+        3,
+        6,
+        7,
+        13
+      ],
+      "difficulty": 2,
+      "id": "L34-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_symbol_meaning",
+        "format_34_1",
+        "regression_percent_overview",
+        "basic_percent_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A quantity of 450 units decreased by 12%. What was the new quantity?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "396"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use the original 450 as the base of the change. The multiplier is 88/100, yielding \\(396\\).</p>",
+      "variation": "Use the starting value to compute a percent increase or decrease",
+      "source_cards": [
+        16,
+        18,
+        19,
+        20,
+        21
+      ],
+      "difficulty": 1,
+      "id": "L34-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_3",
+        "percent_change_template",
+        "format_34_7",
+        "percent_decrease_template",
+        "format_34_8"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>After a price increased by 15%, the price was \\(414\\) dollars. What was the original price in dollars?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "360"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The known new price is the original price times 115/100. Fit the original price or divide by this factor to get 360.</p>",
+      "variation": "Recover an unknown original amount after a change",
+      "source_cards": [
+        16,
+        20,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L34-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_3",
+        "percent_decrease_template",
+        "format_34_8"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>One shelf has \\(70\\) books, which is 25% more than the number on a second shelf. How many books are on the second shelf?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "56"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The second shelf is the comparison base because it comes after “than.” Its count multiplied by 125/100 gives \\(70\\); the count is 56.</p>",
+      "variation": "Identify the comparison base in percent-more or percent-fewer claims",
+      "source_cards": [
+        27,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L34-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_4",
+        "than_basis_rule"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A ticket was discounted by 35% from its original price. A fixed 14-dollar fee was then added, for a final price of \\(66\\) dollars. What was the original ticket price in dollars?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "80"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Define discounted price as the original multiplied by 65/100. Fit discounted price + 14 = \\(66\\). The discounted price is \\(52\\) and the original is 80.</p>",
+      "variation": "Use a definition to connect a discount and a fixed charge",
+      "source_cards": [
+        32,
+        34,
+        36,
+        37
+      ],
+      "difficulty": 3,
+      "id": "L34-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_5",
+        "format_34_6",
+        "complex_section_overview",
+        "format_34_9"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>24% of a number is \\(36\\). What is the number?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "150"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Put the unknown on the base side, so \\(36=(24/100)b\\). Fitting or dividing yields 150.</p>",
+      "variation": "Solve for a percent, a part, or a base",
+      "source_cards": [
+        3,
+        6,
+        7,
+        13
+      ],
+      "difficulty": 2,
+      "id": "L34-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_symbol_meaning",
+        "format_34_1",
+        "regression_percent_overview",
+        "basic_percent_process"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A quantity of 360 units increased by 35%. What was the new quantity?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "486"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use the original 360 as the base of the change. The multiplier is 135/100, yielding \\(486\\).</p>",
+      "variation": "Use the starting value to compute a percent increase or decrease",
+      "source_cards": [
+        16,
+        18,
+        19,
+        20,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L34-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_3",
+        "percent_change_template",
+        "format_34_7",
+        "percent_decrease_template",
+        "format_34_8"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>After a price decreased by 22%, the price was \\(351\\) dollars. What was the original price in dollars?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "450"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The known new price is the original price times 78/100. Fit the original price or divide by this factor to get 450.</p>",
+      "variation": "Recover an unknown original amount after a change",
+      "source_cards": [
+        16,
+        20,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L34-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_3",
+        "percent_decrease_template",
+        "format_34_8"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>One shelf has \\(117\\) books, which is 35% fewer than the number on a second shelf. How many books are on the second shelf?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "180"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The second shelf is the comparison base because it comes after “than.” Its count multiplied by 65/100 gives \\(117\\); the count is 180.</p>",
+      "variation": "Identify the comparison base in percent-more or percent-fewer claims",
+      "source_cards": [
+        27,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L34-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_4",
+        "than_basis_rule"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A ticket was discounted by 15% from its original price. A fixed 9-dollar fee was then added, for a final price of \\(\\frac{137}{2}\\) dollars. What was the original ticket price in dollars?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "70"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Define discounted price as the original multiplied by 85/100. Fit discounted price + 9 = \\(\\frac{137}{2}\\). The discounted price is \\(\\frac{119}{2}\\) and the original is 70.</p>",
+      "variation": "Use a definition to connect a discount and a fixed charge",
+      "source_cards": [
+        32,
+        34,
+        36,
+        37
+      ],
+      "difficulty": 3,
+      "id": "L34-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_34_5",
+        "format_34_6",
+        "complex_section_overview",
+        "format_34_9"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.103525+00",
+  "lesson_number": 34,
+  "difficulty_counts": {
+    "1": 3,
+    "2": 10,
+    "3": 2
+  }
+}

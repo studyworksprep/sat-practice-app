@@ -12,6 +12,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { estimateLessonMinutes, formatLessonDuration } from '@/lib/lesson/duration.mjs';
+import { lessonHasPracticeQuestions } from '@/lib/lesson/practice-drill';
 import { resolveLessonProgress } from '@/lib/lesson/progress-report.mjs';
 import { parsePlanTaskId } from '@/lib/plan/student-task';
 import { LessonViewerInteractive } from './LessonViewerInteractive';
@@ -36,7 +37,7 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
   }
   if (profile.role === 'practice') redirect('/subscribe');
 
-  const [lessonResult, blocksResult, topicsResult, progressResult] = await Promise.all([
+  const [lessonResult, blocksResult, topicsResult, progressResult, canPractice] = await Promise.all([
     supabase
       .from('lessons')
       .select('id, title, description, author_id, status, visibility')
@@ -57,6 +58,7 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
       .eq('lesson_id', lessonId)
       .eq('student_id', user.id)
       .maybeSingle(),
+    lessonHasPracticeQuestions(supabase, lessonId),
   ]);
 
   const lesson = lessonResult.data;
@@ -66,12 +68,6 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
   const topics = topicsResult.data ?? [];
   const duration = formatLessonDuration(estimateLessonMinutes(blocks));
 
-  // Plan 5.2 — offer "Practice this now" only when the lesson resolves
-  // to a skill that actually has published questions. Checked
-  // here rather than in the client so a student never sees a button
-  // whose only possible outcome is an error. Cheap: one count query,
-  // and it is skipped entirely for an untagged lesson.
-  const canPractice = await lessonHasPracticeQuestions(supabase, topics);
   let progress = progressResult.data ?? null;
 
   // First visit — create the row server-side so the runtime has a
@@ -163,25 +159,4 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
       />
     </main>
   );
-}
-
-// Plan 5.2 — does this lesson's skill have anything to drill? Matches
-// the selection in lib/lesson/practice-drill.ts, which narrows to the
-// lesson's techniques but always fills from the skill. A head-count
-// query: we only need to know whether the pool is non-empty.
-async function lessonHasPracticeQuestions(supabase, topics) {
-  const skillCode = topics.find((t) => t.skill_code)?.skill_code ?? null;
-  if (!skillCode) return false;
-
-  const { count, error } = await supabase
-    .from('questions_v2')
-    .select('id', { count: 'exact', head: true })
-    .eq('is_published', true)
-    .eq('is_broken', false)
-    .is('deleted_at', null)
-    .eq('pool', 'standard')
-    .eq('skill_code', skillCode);
-  // A failed check hides the CTA rather than offering a drill that
-  // might not start.
-  return !error && (count ?? 0) > 0;
 }

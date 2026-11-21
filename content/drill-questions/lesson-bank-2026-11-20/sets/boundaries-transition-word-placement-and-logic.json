@@ -1,0 +1,608 @@
+{
+  "id": "b7c75cf1-1b02-4de9-99bc-3447929518f5",
+  "title": "Place Transition Words by Logic",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use transition-word punctuation and three-clause logic to decide whether a transition belongs before or after a full stop in SAT Boundaries questions.",
+  "cards": 44,
+  "spec": "docs/lesson-template-specs/boundaries-transition-word-placement-and-logic.json",
+  "source_spec_sha256": "bc384a51a8b315658c32954938a4c54a6f21c5a4d055336474ad3315341936ab",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Attach contrast to the middle clause when the final clause continues it": [
+      12,
+      15,
+      16,
+      19
+    ],
+    "Attach a contrast to the final clause when the earlier ideas agree": [
+      15,
+      19,
+      24,
+      28
+    ],
+    "Attach a result to the middle clause before an unrelated final clause": [
+      15,
+      17,
+      19,
+      20
+    ],
+    "Attach a result to the final clause when it follows the middle clause": [
+      15,
+      17,
+      19,
+      20
+    ],
+    "Treat initial Though as the start of a dependent clause": [
+      30,
+      33,
+      34
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The organizers expected a quiet evening. The gallery became ______ more visitors arrived after dinner.</p>",
+      "explanation_html": "<p>The word “however” belongs with the middle clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach contrast to the middle clause when the final clause continues it",
+      "source_cards": [
+        12,
+        15,
+        16,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L24-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_24_2",
+        "three_clause_question_type",
+        "format_24_5",
+        "four_step_process"
+      ],
+      "choices": [
+        "crowded; however,",
+        "crowded, however,",
+        "crowded however;",
+        "crowded, however;"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "B": "Leaves only commas between complete clauses.",
+        "C": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>At first the oven heated evenly. The first batch baked at a temperature that stayed ______ the temperature shifted after an hour.</p>",
+      "explanation_html": "<p>The word “however” belongs with the last clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach a contrast to the final clause when the earlier ideas agree",
+      "source_cards": [
+        15,
+        19,
+        24,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L24-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "three_clause_question_type",
+        "four_step_process",
+        "model_after_full_stop",
+        "move_end_transition"
+      ],
+      "choices": [
+        "stable, however;",
+        "stable, however,",
+        "stable; however,",
+        "stable however;"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "B": "Leaves only commas between complete clauses.",
+        "D": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>A branch snapped under the load. The hanging basket fell ______ a second basket on a sturdier branch remained overhead.</p>",
+      "explanation_html": "<p>The word “therefore” belongs with the middle clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach a result to the middle clause before an unrelated final clause",
+      "source_cards": [
+        15,
+        17,
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L24-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "three_clause_question_type",
+        "attachment_map",
+        "four_step_process",
+        "model_before_full_stop"
+      ],
+      "choices": [
+        "to the ground; therefore,",
+        "to the ground, therefore;",
+        "to the ground, therefore,",
+        "to the ground therefore;"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "C": "Leaves only commas between complete clauses.",
+        "D": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The center has two halls. The larger hall was closed ______ some events needed another location.</p>",
+      "explanation_html": "<p>The word “therefore” belongs with the last clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach a result to the final clause when it follows the middle clause",
+      "source_cards": [
+        15,
+        17,
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L24-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "three_clause_question_type",
+        "attachment_map",
+        "four_step_process",
+        "model_before_full_stop"
+      ],
+      "choices": [
+        "during repairs, therefore;",
+        "during repairs; therefore,",
+        "during repairs, therefore,",
+        "during repairs therefore;"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "C": "Leaves only commas between complete clauses.",
+        "D": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Though the paint had dried by the ______ the team waited a full day before packing the panels.</p>",
+      "explanation_html": "<p>Here “Though” introduces a dependent clause, so the opening does not stand alone. A comma separates the opening from its main clause.</p>",
+      "variation": "Treat initial Though as the start of a dependent clause",
+      "source_cards": [
+        30,
+        33,
+        34
+      ],
+      "difficulty": 1,
+      "id": "L24-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_24_3",
+        "format_24_4",
+        "though_initial_rules"
+      ],
+      "choices": [
+        "morning,",
+        "morning;",
+        "morning.",
+        "morning:"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Makes an unfinished phrase stand on its own.",
+        "C": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The first guide rejected the forest trail as impractical. The second group found it ______ they followed it to a spring.</p>",
+      "explanation_html": "<p>The word “however” belongs with the middle clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach contrast to the middle clause when the final clause continues it",
+      "source_cards": [
+        12,
+        15,
+        16,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L24-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_24_2",
+        "three_clause_question_type",
+        "format_24_5",
+        "four_step_process"
+      ],
+      "choices": [
+        "passable; however,",
+        "passable, however,",
+        "passable however;",
+        "passable, however;"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "B": "Leaves only commas between complete clauses.",
+        "C": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The first tank retained heat overnight. The insulated second tank stayed ______ the exposed third tank cooled quickly.</p>",
+      "explanation_html": "<p>The word “however” belongs with the last clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach a contrast to the final clause when the earlier ideas agree",
+      "source_cards": [
+        15,
+        19,
+        24,
+        28
+      ],
+      "difficulty": 2,
+      "id": "L24-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "three_clause_question_type",
+        "four_step_process",
+        "model_after_full_stop",
+        "move_end_transition"
+      ],
+      "choices": [
+        "warm, however;",
+        "warm, however,",
+        "warm; however,",
+        "warm however;"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "B": "Leaves only commas between complete clauses.",
+        "D": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The screen’s filter absorbed much of the incoming light. The image appeared ______ an identical screen without a filter remained bright.</p>",
+      "explanation_html": "<p>The word “consequently” belongs with the middle clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach a result to the middle clause before an unrelated final clause",
+      "source_cards": [
+        15,
+        17,
+        19,
+        20
+      ],
+      "difficulty": 3,
+      "id": "L24-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "three_clause_question_type",
+        "attachment_map",
+        "four_step_process",
+        "model_before_full_stop"
+      ],
+      "choices": [
+        "dim; consequently,",
+        "dim, consequently,",
+        "dim, consequently;",
+        "dim consequently;"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "B": "Leaves only commas between complete clauses.",
+        "D": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The team traveled by bus. A flat tire slowed the bus ______ the team arrived after the start of the tour.</p>",
+      "explanation_html": "<p>The word “consequently” belongs with the last clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach a result to the final clause when it follows the middle clause",
+      "source_cards": [
+        15,
+        17,
+        19,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L24-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "three_clause_question_type",
+        "attachment_map",
+        "four_step_process",
+        "model_before_full_stop"
+      ],
+      "choices": [
+        "for ten miles, consequently;",
+        "for ten miles; consequently,",
+        "for ten miles, consequently,",
+        "for ten miles consequently;"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "C": "Leaves only commas between complete clauses.",
+        "D": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Though two maps showed a trail across the ______ the guide chose to remain in the valley.</p>",
+      "explanation_html": "<p>Here “Though” introduces a dependent clause, so the opening does not stand alone. A comma separates the opening from its main clause.</p>",
+      "variation": "Treat initial Though as the start of a dependent clause",
+      "source_cards": [
+        30,
+        33,
+        34
+      ],
+      "difficulty": 2,
+      "id": "L24-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_24_3",
+        "format_24_4",
+        "though_initial_rules"
+      ],
+      "choices": [
+        "ridge,",
+        "ridge;",
+        "ridge.",
+        "ridge:"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Makes an unfinished phrase stand on its own.",
+        "C": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The original field report characterized the marsh as lifeless. Later observers found it ______ they logged eleven species in one afternoon.</p>",
+      "explanation_html": "<p>The word “however” belongs with the middle clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach contrast to the middle clause when the final clause continues it",
+      "source_cards": [
+        12,
+        15,
+        16,
+        19
+      ],
+      "difficulty": 3,
+      "id": "L24-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_24_2",
+        "three_clause_question_type",
+        "format_24_5",
+        "four_step_process"
+      ],
+      "choices": [
+        "rich in insects; however,",
+        "rich in insects, however,",
+        "rich in insects however;",
+        "rich in insects, however;"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "B": "Leaves only commas between complete clauses.",
+        "C": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Visitors could walk through the eastern court during repairs. The main gallery also stayed ______ the western stairwell was sealed for the season.</p>",
+      "explanation_html": "<p>The word “however” belongs with the last clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach a contrast to the final clause when the earlier ideas agree",
+      "source_cards": [
+        15,
+        19,
+        24,
+        28
+      ],
+      "difficulty": 3,
+      "id": "L24-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "three_clause_question_type",
+        "four_step_process",
+        "model_after_full_stop",
+        "move_end_transition"
+      ],
+      "choices": [
+        "open, however;",
+        "open, however,",
+        "open however;",
+        "open; however,"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "B": "Leaves only commas between complete clauses.",
+        "C": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The soil drained unusually quickly in the sandy plot. The roots received less water ______ another team measured the depth of the plots the next day.</p>",
+      "explanation_html": "<p>The word “therefore” belongs with the middle clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach a result to the middle clause before an unrelated final clause",
+      "source_cards": [
+        15,
+        17,
+        19,
+        20
+      ],
+      "difficulty": 3,
+      "id": "L24-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "three_clause_question_type",
+        "attachment_map",
+        "four_step_process",
+        "model_before_full_stop"
+      ],
+      "choices": [
+        "in the sandy plot; therefore,",
+        "in the sandy plot, therefore,",
+        "in the sandy plot, therefore;",
+        "in the sandy plot therefore;"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "B": "Leaves only commas between complete clauses.",
+        "D": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The mosaic contains thousands of tiles. Some of the inscription was hidden ______ it took the conservators longer than planned to read the lettering.</p>",
+      "explanation_html": "<p>The word “consequently” belongs with the last clause. That is where it connects the intended ideas. The semicolon separates the two full clauses and the comma sets off the transition.</p>",
+      "variation": "Attach a result to the final clause when it follows the middle clause",
+      "source_cards": [
+        15,
+        17,
+        19,
+        20
+      ],
+      "difficulty": 3,
+      "id": "L24-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "three_clause_question_type",
+        "attachment_map",
+        "four_step_process",
+        "model_before_full_stop"
+      ],
+      "choices": [
+        "behind an old repair, consequently;",
+        "behind an old repair; consequently,",
+        "behind an old repair, consequently,",
+        "behind an old repair consequently;"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Attaches the transition to the wrong pair of neighboring clauses.",
+        "C": "Leaves only commas between complete clauses.",
+        "D": "Fails to set off the sentence-ending transition with a comma."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Though the scores improved in three of the four ______ the researcher chose to examine the outlier separately.</p>",
+      "explanation_html": "<p>Here “Though” introduces a dependent clause, so the opening does not stand alone. A comma separates the opening from its main clause.</p>",
+      "variation": "Treat initial Though as the start of a dependent clause",
+      "source_cards": [
+        30,
+        33,
+        34
+      ],
+      "difficulty": 2,
+      "id": "L24-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_24_3",
+        "format_24_4",
+        "though_initial_rules"
+      ],
+      "choices": [
+        "groups,",
+        "groups;",
+        "groups.",
+        "groups:"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Makes an unfinished phrase stand on its own.",
+        "C": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.025087+00",
+  "lesson_number": 24,
+  "difficulty_counts": {
+    "1": 1,
+    "2": 9,
+    "3": 5
+  }
+}

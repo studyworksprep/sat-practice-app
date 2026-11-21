@@ -1,0 +1,573 @@
+{
+  "id": "dd1b2388-8a7b-434c-b599-bd1afa340822",
+  "title": "Boundaries 3: Check Commas and Finish the Routine",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Follow Full Stop → Colon → Dash → Comma, choosing and stopping when a candidate passes. Check serial semicolons within the first stage, then use specific yes/no tests for comma jobs and no punctuation.",
+  "cards": 37,
+  "spec": "docs/lesson-template-specs/boundaries-3-check-commas-and-finish-the-routine.json",
+  "source_spec_sha256": "5fd793662d81f6ded7f69499ff75972813b76f904546652e716a6b0a6f4da7e5",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Separate ordinary list items with a comma": [
+      4,
+      5
+    ],
+    "Separate complex list items with semicolons": [
+      7,
+      8,
+      10,
+      12
+    ],
+    "Close an introductory dependent clause with a comma": [
+      14,
+      15
+    ],
+    "Close a removable detail with the matching comma": [
+      17,
+      18
+    ],
+    "Keep necessary identifying or grammatical material attached": [
+      20,
+      21,
+      23,
+      26
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The baker packed ______ rolls, and cookies for the market.</p>",
+      "explanation_html": "<p>The words on both sides of the blank name separate items in a simple list. A comma separates those items.</p>",
+      "variation": "Separate ordinary list items with a comma",
+      "source_cards": [
+        4,
+        5
+      ],
+      "difficulty": 1,
+      "id": "L04-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_1",
+        "co_lists"
+      ],
+      "choices": [
+        "muffins;",
+        "muffins:",
+        "muffins",
+        "muffins,"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Uses a colon before words that do not explain or specify the introduction.",
+        "C": "Runs two list items together."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The three guests came from Lyon, ______ Turin, Italy; and Porto, Portugal.</p>",
+      "explanation_html": "<p>The list names three groups. Because the individual items already contain commas, a semicolon separates the first complete item from the second.</p>",
+      "variation": "Separate complex list items with semicolons",
+      "source_cards": [
+        7,
+        8,
+        10,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L04-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_2",
+        "co_serial_definition",
+        "co_whole_list_items",
+        "co_serial_update"
+      ],
+      "choices": [
+        "France.",
+        "France:",
+        "France;",
+        "France, and"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Splits the list before the remaining items.",
+        "B": "The last items do not explain the place or name before the blank.",
+        "D": "Adds the final-item conjunction too early."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>After the overnight clouds had moved away from the ______ workers could see the island.</p>",
+      "explanation_html": "<p>The opening clause is dependent. A comma attaches it to the complete main clause rather than separating it into a fragment.</p>",
+      "variation": "Close an introductory dependent clause with a comma",
+      "source_cards": [
+        14,
+        15
+      ],
+      "difficulty": 1,
+      "id": "L04-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_3",
+        "co_intro"
+      ],
+      "choices": [
+        "coast;",
+        "coast,",
+        "coast.",
+        "coast:"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "C": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The lighthouse, the oldest structure in the ______ now contains a small museum.</p>",
+      "explanation_html": "<p>Read the main clause with the inserted detail removed. It still works. The first comma opens the extra information, so use a second comma to close it.</p>",
+      "variation": "Close a removable detail with the matching comma",
+      "source_cards": [
+        17,
+        18
+      ],
+      "difficulty": 1,
+      "id": "L04-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_4",
+        "co_extra"
+      ],
+      "choices": [
+        "harbor;",
+        "harbor,",
+        "harbor—",
+        "harbor"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Does not match the mark that opened the interruption.",
+        "C": "Does not match the mark that opened the interruption.",
+        "D": "Leaves the opening comma without a matching closing mark."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The guide interviewed ______ captain of the rescue boat after the demonstration.</p>",
+      "explanation_html": "<p>The complete subject or verb phrase needs to stay intact. Any mark at this position interrupts the main construction.</p>",
+      "variation": "Keep necessary identifying or grammatical material attached",
+      "source_cards": [
+        20,
+        21,
+        23,
+        26
+      ],
+      "difficulty": 1,
+      "id": "L04-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_5",
+        "co_identifying",
+        "format_3_6",
+        "format_3_7"
+      ],
+      "choices": [
+        "the",
+        "the,",
+        "the;",
+        "the:"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Separates text that needs to stay in one clause.",
+        "C": "Makes an unfinished phrase stand on its own.",
+        "D": "Separates text that needs to stay in one clause."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The volunteers collected ______ blankets, and coats for the shelter.</p>",
+      "explanation_html": "<p>The words on both sides of the blank name separate items in a simple list. A comma separates those items.</p>",
+      "variation": "Separate ordinary list items with a comma",
+      "source_cards": [
+        4,
+        5
+      ],
+      "difficulty": 1,
+      "id": "L04-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_1",
+        "co_lists"
+      ],
+      "choices": [
+        "gloves;",
+        "gloves:",
+        "gloves",
+        "gloves,"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Uses a colon before words that do not explain or specify the introduction.",
+        "C": "Runs two list items together."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The three groups were led by Priya, the ______ Ian, the secretary; and Ana, the president.</p>",
+      "explanation_html": "<p>The list names three groups. Because the individual items already contain commas, a semicolon separates the first complete item from the second.</p>",
+      "variation": "Separate complex list items with semicolons",
+      "source_cards": [
+        7,
+        8,
+        10,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L04-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_2",
+        "co_serial_definition",
+        "co_whole_list_items",
+        "co_serial_update"
+      ],
+      "choices": [
+        "treasurer.",
+        "treasurer:",
+        "treasurer;",
+        "treasurer, and"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Splits the list before the remaining items.",
+        "B": "The last items do not explain the place or name before the blank.",
+        "D": "Adds the final-item conjunction too early."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Because the camera could not focus through the thick ______ the photographer went outdoors.</p>",
+      "explanation_html": "<p>The opening clause is dependent. A comma attaches it to the complete main clause rather than separating it into a fragment.</p>",
+      "variation": "Close an introductory dependent clause with a comma",
+      "source_cards": [
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L04-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_3",
+        "co_intro"
+      ],
+      "choices": [
+        "glass;",
+        "glass.",
+        "glass,",
+        "glass:"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The original hall, which had seats for only forty ______ was replaced by a larger one.</p>",
+      "explanation_html": "<p>Read the main clause with the inserted detail removed. It still works. The first comma opens the extra information, so use a second comma to close it.</p>",
+      "variation": "Close a removable detail with the matching comma",
+      "source_cards": [
+        17,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L04-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_4",
+        "co_extra"
+      ],
+      "choices": [
+        "people;",
+        "people,",
+        "people—",
+        "people"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Does not match the mark that opened the interruption.",
+        "C": "Does not match the mark that opened the interruption.",
+        "D": "Leaves the opening comma without a matching closing mark."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The notebooks containing drawings of the damaged ______ contain notes in three languages.</p>",
+      "explanation_html": "<p>The complete subject or verb phrase needs to stay intact. Any mark at this position interrupts the main construction.</p>",
+      "variation": "Keep necessary identifying or grammatical material attached",
+      "source_cards": [
+        20,
+        21,
+        23,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L04-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_5",
+        "co_identifying",
+        "format_3_6",
+        "format_3_7"
+      ],
+      "choices": [
+        "machinery",
+        "machinery,",
+        "machinery;",
+        "machinery:"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Separates text that needs to stay in one clause.",
+        "C": "Makes an unfinished phrase stand on its own.",
+        "D": "Separates text that needs to stay in one clause."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The curator recorded each object’s ______ material, and condition before moving it.</p>",
+      "explanation_html": "<p>The words on both sides of the blank name separate items in a simple list. A comma separates those items.</p>",
+      "variation": "Separate ordinary list items with a comma",
+      "source_cards": [
+        4,
+        5
+      ],
+      "difficulty": 2,
+      "id": "L04-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_1",
+        "co_lists"
+      ],
+      "choices": [
+        "size;",
+        "size:",
+        "size",
+        "size,"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Uses a colon before words that do not explain or specify the introduction.",
+        "C": "Runs two list items together."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Samples were cataloged from three sites: dune 4, east ______ dune 7, upper ridge; and dune 9, sheltered base.</p>",
+      "explanation_html": "<p>The list names three groups. Because the individual items already contain commas, a semicolon separates the first complete item from the second.</p>",
+      "variation": "Separate complex list items with semicolons",
+      "source_cards": [
+        7,
+        8,
+        10,
+        12
+      ],
+      "difficulty": 3,
+      "id": "L04-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_2",
+        "co_serial_definition",
+        "co_whole_list_items",
+        "co_serial_update"
+      ],
+      "choices": [
+        "slope.",
+        "slope:",
+        "slope, and",
+        "slope;"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Splits the list before the remaining items.",
+        "B": "The last items do not explain the place or name before the blank.",
+        "C": "Adds the final-item conjunction too early."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Although the members had read the proposal several ______ their opinions still differed.</p>",
+      "explanation_html": "<p>The opening clause is dependent. A comma attaches it to the complete main clause rather than separating it into a fragment.</p>",
+      "variation": "Close an introductory dependent clause with a comma",
+      "source_cards": [
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L04-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_3",
+        "co_intro"
+      ],
+      "choices": [
+        "times;",
+        "times.",
+        "times,",
+        "times:"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Makes an unfinished phrase stand on its own.",
+        "B": "Makes an unfinished phrase stand on its own.",
+        "D": "Makes an unfinished phrase stand on its own."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>The rain gauge, one of several instruments installed near the eastern ______ collected a record volume that month.</p>",
+      "explanation_html": "<p>Read the main clause with the inserted detail removed. It still works. The first comma opens the extra information, so use a second comma to close it.</p>",
+      "variation": "Close a removable detail with the matching comma",
+      "source_cards": [
+        17,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L04-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_4",
+        "co_extra"
+      ],
+      "choices": [
+        "gate;",
+        "gate,",
+        "gate—",
+        "gate"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Does not match the mark that opened the interruption.",
+        "C": "Does not match the mark that opened the interruption.",
+        "D": "Leaves the opening comma without a matching closing mark."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "stimulus_html": "<p>Only students ______ submitted a registration form by Tuesday could attend both workshops.</p>",
+      "explanation_html": "<p>The complete subject or verb phrase needs to stay intact. Any mark at this position interrupts the main construction.</p>",
+      "variation": "Keep necessary identifying or grammatical material attached",
+      "source_cards": [
+        20,
+        21,
+        23,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L04-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_3_5",
+        "co_identifying",
+        "format_3_6",
+        "format_3_7"
+      ],
+      "choices": [
+        "who",
+        "who,",
+        "who;",
+        "who:"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Separates text that needs to stay in one clause.",
+        "C": "Makes an unfinished phrase stand on its own.",
+        "D": "Separates text that needs to stay in one clause."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.812575+00",
+  "lesson_number": 4,
+  "difficulty_counts": {
+    "1": 5,
+    "2": 9,
+    "3": 1
+  }
+}

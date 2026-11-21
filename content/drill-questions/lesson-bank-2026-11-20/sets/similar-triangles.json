@@ -1,0 +1,489 @@
+{
+  "id": "6035f3f8-c3e3-4b2a-8068-088f252e9e24",
+  "title": "Recognize and Use Similar Triangles",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Identify similar triangles from matching angles, pair corresponding sides, set up proportions, and solve the right-triangle altitude configuration without mentally rotating the triangles.",
+  "cards": 35,
+  "spec": "docs/lesson-template-specs/similar-triangles.json",
+  "source_spec_sha256": "507adb9ea2081642f71df3f746d96e2b5958360a4183166a73440ebac3ad62ee",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Match corresponding sides in two named similar triangles": [
+      3,
+      6,
+      11,
+      13,
+      15
+    ],
+    "Use parallel lines to identify the inner triangle and its scale": [
+      8,
+      9,
+      17
+    ],
+    "Use the similar triangles to find the right-triangle altitude": [
+      19,
+      21,
+      24,
+      26
+    ],
+    "Recover a missing hypotenuse segment from the altitude": [
+      22,
+      24,
+      25
+    ],
+    "Find a leg by pairing the large and small right triangles": [
+      24,
+      28
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangles ABC and DEF are similar, with A matching D, B matching E, and C matching F. AB = 7, DE = 21, and BC = 10. What is EF?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "30"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>AB corresponds to DE and BC corresponds to EF. The multiplier from ABC to DEF is 3, so EF = 10 × 3.</p>",
+      "variation": "Match corresponding sides in two named similar triangles",
+      "source_cards": [
+        3,
+        6,
+        11,
+        13,
+        15
+      ],
+      "difficulty": 1,
+      "id": "L28-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "similar_definition",
+        "aa_similarity",
+        "correspondence_process",
+        "proportion_rule",
+        "ordinary_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>In triangle ABC, D lies on AB and E lies on AC. Segment DE is parallel to BC. AD = 6, DB = 12, and DE = 8. What is BC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "24"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Parallel lines give matching angles for ADE and ABC. The multiplier from AD to AB is (6 + 12)/6 = 3. Apply it from DE to BC.</p>",
+      "variation": "Use parallel lines to identify the inner triangle and its scale",
+      "source_cards": [
+        8,
+        9,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L28-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_28_1",
+        "parallel_exploration",
+        "parallel_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Right triangle ABC is right at C. The altitude from C meets hypotenuse AB at D. If AD = 9 and DB = 25, what is CD?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "15"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The two smaller triangles are similar. Their corresponding sides give CD² = AD × DB = 225, hence CD = 15.</p>",
+      "variation": "Use the similar triangles to find the right-triangle altitude",
+      "source_cards": [
+        19,
+        21,
+        24,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L28-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_altitude",
+        "right_altitude_similarity",
+        "right_altitude_process",
+        "altitude_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Right triangle ABC is right at C. Altitude CD meets AB at D. If CD = 35 and AD = 25, what is DB?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "49"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Match corresponding sides of the two smaller triangles. CD² = AD × DB, so dividing 1225 by 25 gives 49.</p>",
+      "variation": "Recover a missing hypotenuse segment from the altitude",
+      "source_cards": [
+        22,
+        24,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L28-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_28_3",
+        "right_altitude_process",
+        "projection_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Right triangle ABC is right at C. Altitude CD meets AB at D. If AD = 25 and DB = 144, what is AC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "65"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>AB = 169. Similar triangles ACD and ABC give AC² = AD × AB = 4225. The positive length is 65.</p>",
+      "variation": "Find a leg by pairing the large and small right triangles",
+      "source_cards": [
+        24,
+        28
+      ],
+      "difficulty": 3,
+      "id": "L28-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "right_altitude_process",
+        "leg_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangles ABC and DEF are similar, with A matching D, B matching E, and C matching F. AB = 9, DE = 18, and BC = 14. What is EF?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "28"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>AB corresponds to DE and BC corresponds to EF. The multiplier from ABC to DEF is 2, so EF = 14 × 2.</p>",
+      "variation": "Match corresponding sides in two named similar triangles",
+      "source_cards": [
+        3,
+        6,
+        11,
+        13,
+        15
+      ],
+      "difficulty": 1,
+      "id": "L28-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "similar_definition",
+        "aa_similarity",
+        "correspondence_process",
+        "proportion_rule",
+        "ordinary_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>In triangle ABC, D lies on AB and E lies on AC. Segment DE is parallel to BC. AD = 7, DB = 21, and DE = 11. What is BC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "44"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Parallel lines give matching angles for ADE and ABC. The multiplier from AD to AB is (7 + 21)/7 = 4. Apply it from DE to BC.</p>",
+      "variation": "Use parallel lines to identify the inner triangle and its scale",
+      "source_cards": [
+        8,
+        9,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L28-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_28_1",
+        "parallel_exploration",
+        "parallel_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Right triangle ABC is right at C. The altitude from C meets hypotenuse AB at D. If AD = 16 and DB = 49, what is CD?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "28"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The two smaller triangles are similar. Their corresponding sides give CD² = AD × DB = 784, hence CD = 28.</p>",
+      "variation": "Use the similar triangles to find the right-triangle altitude",
+      "source_cards": [
+        19,
+        21,
+        24,
+        26
+      ],
+      "difficulty": 2,
+      "id": "L28-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_altitude",
+        "right_altitude_similarity",
+        "right_altitude_process",
+        "altitude_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Right triangle ABC is right at C. Altitude CD meets AB at D. If CD = 56 and AD = 49, what is DB?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "64"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Match corresponding sides of the two smaller triangles. CD² = AD × DB, so dividing 3136 by 49 gives 64.</p>",
+      "variation": "Recover a missing hypotenuse segment from the altitude",
+      "source_cards": [
+        22,
+        24,
+        25
+      ],
+      "difficulty": 3,
+      "id": "L28-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_28_3",
+        "right_altitude_process",
+        "projection_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Right triangle ABC is right at C. Altitude CD meets AB at D. If AD = 64 and DB = 225, what is AC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "136"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>AB = 289. Similar triangles ACD and ABC give AC² = AD × AB = 18496. The positive length is 136.</p>",
+      "variation": "Find a leg by pairing the large and small right triangles",
+      "source_cards": [
+        24,
+        28
+      ],
+      "difficulty": 3,
+      "id": "L28-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "right_altitude_process",
+        "leg_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Triangles ABC and DEF are similar, with A matching D, B matching E, and C matching F. AB = 6, DE = 24, and BC = 11. What is EF?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "44"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>AB corresponds to DE and BC corresponds to EF. The multiplier from ABC to DEF is 4, so EF = 11 × 4.</p>",
+      "variation": "Match corresponding sides in two named similar triangles",
+      "source_cards": [
+        3,
+        6,
+        11,
+        13,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L28-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "similar_definition",
+        "aa_similarity",
+        "correspondence_process",
+        "proportion_rule",
+        "ordinary_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>In triangle ABC, D lies on AB and E lies on AC. Segment DE is parallel to BC. AD = 8, DB = 32, and DE = 13. What is BC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "65"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Parallel lines give matching angles for ADE and ABC. The multiplier from AD to AB is (8 + 32)/8 = 5. Apply it from DE to BC.</p>",
+      "variation": "Use parallel lines to identify the inner triangle and its scale",
+      "source_cards": [
+        8,
+        9,
+        17
+      ],
+      "difficulty": 3,
+      "id": "L28-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_28_1",
+        "parallel_exploration",
+        "parallel_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Right triangle ABC is right at C. The altitude from C meets hypotenuse AB at D. If AD = 36 and DB = 81, what is CD?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "54"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The two smaller triangles are similar. Their corresponding sides give CD² = AD × DB = 2916, hence CD = 54.</p>",
+      "variation": "Use the similar triangles to find the right-triangle altitude",
+      "source_cards": [
+        19,
+        21,
+        24,
+        26
+      ],
+      "difficulty": 3,
+      "id": "L28-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_altitude",
+        "right_altitude_similarity",
+        "right_altitude_process",
+        "altitude_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Right triangle ABC is right at C. Altitude CD meets AB at D. If CD = 108 and AD = 81, what is DB?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "144"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Match corresponding sides of the two smaller triangles. CD² = AD × DB, so dividing 11664 by 81 gives 144.</p>",
+      "variation": "Recover a missing hypotenuse segment from the altitude",
+      "source_cards": [
+        22,
+        24,
+        25
+      ],
+      "difficulty": 3,
+      "id": "L28-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_28_3",
+        "right_altitude_process",
+        "projection_model"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Right triangle ABC is right at C. Altitude CD meets AB at D. If AD = 49 and DB = 576, what is AC?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "175"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>AB = 625. Similar triangles ACD and ABC give AC² = AD × AB = 30625. The positive length is 175.</p>",
+      "variation": "Find a leg by pairing the large and small right triangles",
+      "source_cards": [
+        24,
+        28
+      ],
+      "difficulty": 3,
+      "id": "L28-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "right_altitude_process",
+        "leg_model"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-20 15:06:37.280999+00",
+  "lesson_number": 28,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 6,
+    "3": 7
+  }
+}

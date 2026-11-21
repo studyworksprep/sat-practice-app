@@ -1,0 +1,566 @@
+{
+  "id": "39fbed52-8efc-4bd3-b347-fb3b1613464d",
+  "title": "Factor Out the Greatest Common Factor",
+  "status": "review_only_unpublished",
+  "visibility": "private",
+  "description": "Factor a polynomial by finding the greatest numerical and variable factor shared by every term, dividing each term, and checking that no common factor remains inside.",
+  "cards": 43,
+  "spec": "docs/lesson-template-specs/factor-out-greatest-common-factor.json",
+  "source_spec_sha256": "d381c5f68b0a7eeccf93a6a9a0f092d95e323b247ca0a0c07343183bde5fe009",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Extract the numerical common factor": [
+      6,
+      7,
+      9
+    ],
+    "Use the smallest shared exponent and retain a constant quotient": [
+      13,
+      15,
+      18
+    ],
+    "Find the complete factor with more than one variable": [
+      21,
+      24,
+      25
+    ],
+    "Check every term of a longer polynomial": [
+      28,
+      29
+    ],
+    "Extract a negative greatest common factor": [
+      31,
+      32
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(18x+30\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(6\\). Divide every term by it to get \\(3x+5\\); multiplication recovers the original expression.</p>",
+      "variation": "Extract the numerical common factor",
+      "source_cards": [
+        6,
+        7,
+        9
+      ],
+      "difficulty": 1,
+      "id": "L10-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_9_1",
+        "numerical_gcf_model",
+        "format_9_2"
+      ],
+      "choices": [
+        "\\(6(3x-5)\\)",
+        "\\(6(3x+5)\\)",
+        "\\(6(3x+6)\\)",
+        "\\(12(3x+5)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "C": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(15x^{4}+10x^{2}\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(5x^{2}\\). Divide every term by it to get \\(3x^{2}+2\\); multiplication recovers the original expression.</p>",
+      "variation": "Use the smallest shared exponent and retain a constant quotient",
+      "source_cards": [
+        13,
+        15,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L10-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "variable_factors_meaning",
+        "format_9_3",
+        "format_9_4"
+      ],
+      "choices": [
+        "\\(5x^{2}(3x^{2}+2)\\)",
+        "\\(5x^{2}(3x^{2}-2)\\)",
+        "\\(5x^{2}(3x^{2}+3)\\)",
+        "\\(10x^{2}(3x^{2}+2)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Changes the last term’s sign during division.",
+        "C": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(16x^{4}y^{2}+24xy^{3}\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(8xy^{2}\\). Divide every term by it to get \\(2x^{3}+3y\\); multiplication recovers the original expression.</p>",
+      "variation": "Find the complete factor with more than one variable",
+      "source_cards": [
+        21,
+        24,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L10-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "mixed_gcf_process",
+        "format_9_5",
+        "multiple_variables"
+      ],
+      "choices": [
+        "\\(8xy^{2}(2x^{3}-3y)\\)",
+        "\\(8xy^{2}(2x^{3}+4y)\\)",
+        "\\(16xy^{2}(2x^{3}+3y)\\)",
+        "\\(8xy^{2}(2x^{3}+3y)\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "B": "Divides the last coefficient incorrectly.",
+        "C": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(12x^{4}y-18x^{2}y^{3}+30xy^{5}\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(6xy\\). Divide every term by it to get \\(2x^{3}-3xy^{2}+5y^{4}\\); multiplication recovers the original expression.</p>",
+      "variation": "Check every term of a longer polynomial",
+      "source_cards": [
+        28,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L10-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_9_6",
+        "three_terms"
+      ],
+      "choices": [
+        "\\(6xy(2x^{3}-3xy^{2}-5y^{4})\\)",
+        "\\(6xy(2x^{3}-3xy^{2}+6y^{4})\\)",
+        "\\(12xy(2x^{3}-3xy^{2}+5y^{4})\\)",
+        "\\(6xy(2x^{3}-3xy^{2}+5y^{4})\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "B": "Divides the last coefficient incorrectly.",
+        "C": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the negative greatest common factor out of \\(-28x^{3}+35x\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(-7x\\). Divide every term by it to get \\(4x^{2}-5\\); multiplication recovers the original expression.</p>",
+      "variation": "Extract a negative greatest common factor",
+      "source_cards": [
+        31,
+        32
+      ],
+      "difficulty": 2,
+      "id": "L10-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_9_7",
+        "negative_leading_term"
+      ],
+      "choices": [
+        "\\(-7x(4x^{2}+5)\\)",
+        "\\(-7x(4x^{2}-4)\\)",
+        "\\(-7x(4x^{2}-5)\\)",
+        "\\(-14x(4x^{2}-5)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "B": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(28x^{2}-42\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(14\\). Divide every term by it to get \\(2x^{2}-3\\); multiplication recovers the original expression.</p>",
+      "variation": "Extract the numerical common factor",
+      "source_cards": [
+        6,
+        7,
+        9
+      ],
+      "difficulty": 1,
+      "id": "L10-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_9_1",
+        "numerical_gcf_model",
+        "format_9_2"
+      ],
+      "choices": [
+        "\\(14(2x^{2}+3)\\)",
+        "\\(14(2x^{2}-3)\\)",
+        "\\(14(2x^{2}-2)\\)",
+        "\\(28(2x^{2}-3)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "C": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(x^{5}-x^{3}\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(x^{3}\\). Divide every term by it to get \\(x^{2}-1\\); multiplication recovers the original expression.</p>",
+      "variation": "Use the smallest shared exponent and retain a constant quotient",
+      "source_cards": [
+        13,
+        15,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L10-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "variable_factors_meaning",
+        "format_9_3",
+        "format_9_4"
+      ],
+      "choices": [
+        "\\(x^{3}(x^{2}-1)\\)",
+        "\\(x^{3}(x^{2}+1)\\)",
+        "\\(x^{3}(x^{2}-2)\\)",
+        "\\(2x^{3}(x^{2}-1)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Changes the last term’s sign during division.",
+        "C": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(25x^{3}y^{5}-35x^{4}y^{2}\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(5x^{3}y^{2}\\). Divide every term by it to get \\(5y^{3}-7x\\); multiplication recovers the original expression.</p>",
+      "variation": "Find the complete factor with more than one variable",
+      "source_cards": [
+        21,
+        24,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L10-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "mixed_gcf_process",
+        "format_9_5",
+        "multiple_variables"
+      ],
+      "choices": [
+        "\\(5x^{3}y^{2}(5y^{3}-7x)\\)",
+        "\\(5x^{3}y^{2}(5y^{3}+7x)\\)",
+        "\\(5x^{3}y^{2}(5y^{3}-6x)\\)",
+        "\\(10x^{3}y^{2}(5y^{3}-7x)\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Changes the last term’s sign during division.",
+        "C": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(30x^{5}+20x^{4}y-14x^{2}y^{2}\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(2x^{2}\\). Divide every term by it to get \\(15x^{3}+10x^{2}y-7y^{2}\\); multiplication recovers the original expression.</p>",
+      "variation": "Check every term of a longer polynomial",
+      "source_cards": [
+        28,
+        29
+      ],
+      "difficulty": 3,
+      "id": "L10-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_9_6",
+        "three_terms"
+      ],
+      "choices": [
+        "\\(2x^{2}(15x^{3}+10x^{2}y+7y^{2})\\)",
+        "\\(2x^{2}(15x^{3}+10x^{2}y-6y^{2})\\)",
+        "\\(4x^{2}(15x^{3}+10x^{2}y-7y^{2})\\)",
+        "\\(2x^{2}(15x^{3}+10x^{2}y-7y^{2})\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "B": "Divides the last coefficient incorrectly.",
+        "C": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the negative greatest common factor out of \\(-32x^{5}-24x^{2}\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(-8x^{2}\\). Divide every term by it to get \\(4x^{3}+3\\); multiplication recovers the original expression.</p>",
+      "variation": "Extract a negative greatest common factor",
+      "source_cards": [
+        31,
+        32
+      ],
+      "difficulty": 2,
+      "id": "L10-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_9_7",
+        "negative_leading_term"
+      ],
+      "choices": [
+        "\\(-8x^{2}(4x^{3}-3)\\)",
+        "\\(-8x^{2}(4x^{3}+4)\\)",
+        "\\(-8x^{2}(4x^{3}+3)\\)",
+        "\\(-16x^{2}(4x^{3}+3)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "B": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(36x+20\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(4\\). Divide every term by it to get \\(9x+5\\); multiplication recovers the original expression.</p>",
+      "variation": "Extract the numerical common factor",
+      "source_cards": [
+        6,
+        7,
+        9
+      ],
+      "difficulty": 1,
+      "id": "L10-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_9_1",
+        "numerical_gcf_model",
+        "format_9_2"
+      ],
+      "choices": [
+        "\\(4(9x-5)\\)",
+        "\\(4(9x+5)\\)",
+        "\\(4(9x+6)\\)",
+        "\\(8(9x+5)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "C": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(21x^{4}-7x\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(7x\\). Divide every term by it to get \\(3x^{3}-1\\); multiplication recovers the original expression.</p>",
+      "variation": "Use the smallest shared exponent and retain a constant quotient",
+      "source_cards": [
+        13,
+        15,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L10-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "variable_factors_meaning",
+        "format_9_3",
+        "format_9_4"
+      ],
+      "choices": [
+        "\\(7x(3x^{3}+1)\\)",
+        "\\(7x(3x^{3}-1)\\)",
+        "\\(7x(3x^{3}-2)\\)",
+        "\\(14x(3x^{3}-1)\\)"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "C": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(12x^{6}y^{2}+18x^{2}y^{6}\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(6x^{2}y^{2}\\). Divide every term by it to get \\(2x^{4}+3y^{4}\\); multiplication recovers the original expression.</p>",
+      "variation": "Find the complete factor with more than one variable",
+      "source_cards": [
+        21,
+        24,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L10-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "mixed_gcf_process",
+        "format_9_5",
+        "multiple_variables"
+      ],
+      "choices": [
+        "\\(6x^{2}y^{2}(2x^{4}+3y^{4})\\)",
+        "\\(6x^{2}y^{2}(2x^{4}-3y^{4})\\)",
+        "\\(6x^{2}y^{2}(2x^{4}+4y^{4})\\)",
+        "\\(12x^{2}y^{2}(2x^{4}+3y^{4})\\)"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Changes the last term’s sign during division.",
+        "C": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the greatest common factor out of \\(36x^{4}y^{2}+24x^{3}y^{4}+18x^{5}y\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(6x^{3}y\\). Divide every term by it to get \\(6xy+4y^{3}+3x^{2}\\); multiplication recovers the original expression.</p>",
+      "variation": "Check every term of a longer polynomial",
+      "source_cards": [
+        28,
+        29
+      ],
+      "difficulty": 3,
+      "id": "L10-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_9_6",
+        "three_terms"
+      ],
+      "choices": [
+        "\\(6x^{3}y(6xy+4y^{3}-3x^{2})\\)",
+        "\\(6x^{3}y(6xy+4y^{3}+4x^{2})\\)",
+        "\\(12x^{3}y(6xy+4y^{3}+3x^{2})\\)",
+        "\\(6x^{3}y(6xy+4y^{3}+3x^{2})\\)"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "B": "Divides the last coefficient incorrectly.",
+        "C": "Doubles the outside coefficient without changing the inside."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which expression results from factoring the negative greatest common factor out of \\(-18x^{4}y^{3}+30xy^{4}-42x^{2}y\\)?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The greatest common factor selected is \\(-6xy\\). Divide every term by it to get \\(3x^{3}y^{2}-5y^{3}+7x\\); multiplication recovers the original expression.</p>",
+      "variation": "Extract a negative greatest common factor",
+      "source_cards": [
+        31,
+        32
+      ],
+      "difficulty": 3,
+      "id": "L10-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_9_7",
+        "negative_leading_term"
+      ],
+      "choices": [
+        "\\(-6xy(3x^{3}y^{2}-5y^{3}-7x)\\)",
+        "\\(-6xy(3x^{3}y^{2}-5y^{3}+8x)\\)",
+        "\\(-6xy(3x^{3}y^{2}-5y^{3}+7x)\\)",
+        "\\(-12xy(3x^{3}y^{2}-5y^{3}+7x)\\)"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Changes the last term’s sign during division.",
+        "B": "Divides the last coefficient incorrectly.",
+        "D": "Doubles the outside coefficient without changing the inside."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.863951+00",
+  "lesson_number": 10,
+  "difficulty_counts": {
+    "1": 3,
+    "2": 9,
+    "3": 3
+  }
+}

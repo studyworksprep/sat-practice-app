@@ -1,0 +1,697 @@
+{
+  "id": "fdacb924-9111-47d6-8ed7-9f0ae3a5d888",
+  "title": "Bracket the Pivot: Choose Precise SAT Transitions",
+  "status": "pilot_previously_reviewed",
+  "visibility": "shared",
+  "description": "Bracket the exact ideas around a transition blank, reduce them to short logical statements, predict their relationship, and match that prediction to the precise job of a transition word or phrase.",
+  "cards": 38,
+  "spec": "docs/lesson-template-specs/transitions-bracket-the-pivot.json",
+  "questions": [
+    {
+      "id": "T01",
+      "objective_id": "T-RESULT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The gym floor was once uneven. Workers resurfaced it last summer, and a recent inspection confirmed that the repaired floor gives players safe footing. ______ the school has reopened the gym for indoor games.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "Therefore,",
+        "Nevertheless,",
+        "For instance,",
+        "In other words,"
+      ],
+      "correct_index": 0,
+      "explanation_html": "<p>The inspection established that the repaired floor is safe, which explains the decision to reopen the gym. Therefore connects that evidence to the resulting decision. The old uneven condition has been resolved.</p>",
+      "distractor_notes": {
+        "B": "Treats reopening as defying the inspection rather than following from it.",
+        "C": "Treats a decision as an example of safe footing.",
+        "D": "Treats reopening as merely rephrasing the inspection result."
+      },
+      "optional_hint": null,
+      "sequence": 1,
+      "phase": "practice",
+      "source_block_ids": [
+        "result_and_purpose_words",
+        "coherence_result_example",
+        "opening_brake_adoption_result",
+        "guided_transfer_result"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The earlier uneven floor makes concession tempting, so the student must link the inspection to the reopening.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T02",
+      "objective_id": "T-RESULT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>A neighborhood library added evening pickup lockers. ______ residents whose jobs end after closing time could collect reserved books.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "However,",
+        "In other words,",
+        "Consequently,",
+        "For example,"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>The pickup lockers make after-hours collection possible. Consequently introduces that result. Residents collecting reserved books is an effect of the new service, not a restatement or specific example of installing lockers.</p>",
+      "distractor_notes": {
+        "A": "Makes expanded access oppose the new service.",
+        "B": "Treats an effect as another wording of the installation.",
+        "D": "Treats the effect on residents as an example of the installation itself."
+      },
+      "optional_hint": null,
+      "sequence": 2,
+      "phase": "practice",
+      "source_block_ids": [
+        "result_and_purpose_words",
+        "coherence_result_example",
+        "opening_brake_adoption_result",
+        "guided_transfer_result"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "Installing pickup lockers directly explains the new ability to collect books after closing.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T03",
+      "objective_id": "T-RESULT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>A valve leaked air from a storage tank. ______ the pressure inside the tank fell.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "For example,",
+        "Nevertheless,",
+        "In other words,",
+        "Therefore,"
+      ],
+      "correct_index": 3,
+      "explanation_html": "<p>Air escaping through the valve explains the drop in tank pressure. Therefore connects the leak to its result. The second event is neither a restatement of the leak nor an outcome that occurs despite it.</p>",
+      "distractor_notes": {
+        "A": "Treats an outcome as an example of a category.",
+        "B": "Treats an expected consequence as an unexpected outcome.",
+        "C": "Treats two different events as the same statement."
+      },
+      "optional_hint": null,
+      "sequence": 3,
+      "phase": "practice",
+      "source_block_ids": [
+        "result_and_purpose_words",
+        "coherence_result_example",
+        "opening_brake_adoption_result",
+        "guided_transfer_result"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The short passage presents a familiar cause and its immediate effect.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T04",
+      "objective_id": "T-ADD",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The reusable containers stack neatly in small cupboards. ______ they can be washed in a standard dishwasher.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "For instance,",
+        "Consequently,",
+        "Moreover,",
+        "Nevertheless,"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>Shrink the ideas: the containers store compactly; they are also easy to wash. The second sentence adds another advantage, so Moreover fits. Compact storage does not cause dishwasher safety.</p>",
+      "distractor_notes": {
+        "A": "Treats washing as a specific example of compact storage.",
+        "B": "Invents a cause-and-result connection.",
+        "D": "Invents an obstacle to dishwasher use."
+      },
+      "optional_hint": null,
+      "sequence": 4,
+      "phase": "practice",
+      "source_block_ids": [
+        "same_direction_words",
+        "coherence_addition_example",
+        "format_4_2"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The student must distinguish a second advantage from an example or consequence of the first.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T05",
+      "objective_id": "T-RESTATE",
+      "response_type": "mcq",
+      "stimulus_html": "<p>Visitors may enter the exhibit only with a timed ticket. ______ every visitor needs a ticket for a specific entry time.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "Furthermore,",
+        "However,",
+        "For example,",
+        "In other words,"
+      ],
+      "correct_index": 3,
+      "explanation_html": "<p>The second sentence says the same entry requirement more plainly: each visitor needs a ticket for a specified time. It clarifies rather than adding a new reason or giving a particular case.</p>",
+      "distractor_notes": {
+        "A": "Treats a paraphrase as an additional point.",
+        "B": "Invents a contradiction.",
+        "C": "Treats a general paraphrase as a specific instance."
+      },
+      "optional_hint": null,
+      "sequence": 5,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_restatement",
+        "coherence_restatement_example"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The second sentence directly restates the timed-entry requirement.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T06",
+      "objective_id": "T-EXAMPLE",
+      "response_type": "mcq",
+      "stimulus_html": "<p>Household materials can be used to reduce unwanted sound. ______ a thick rug can soften footsteps on a wooden floor.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "For instance,",
+        "Nevertheless,",
+        "Therefore,",
+        "In other words,"
+      ],
+      "correct_index": 0,
+      "explanation_html": "<p>Household materials that reduce unwanted sound is the general category; a rug softening footsteps is one particular case. For instance names that job.</p>",
+      "distractor_notes": {
+        "B": "Invents an obstacle or surprise.",
+        "C": "Treats the example as an effect caused by the general claim.",
+        "D": "Treats one example as a complete paraphrase of the whole category."
+      },
+      "optional_hint": null,
+      "sequence": 6,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_example_relation",
+        "same_direction_check"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The rug and its effect clearly illustrate the general statement about household materials.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T07",
+      "objective_id": "T-RESULT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>Construction blocked the only road normally used by the morning buses. ______ the buses took a longer route around the work site.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "For example,",
+        "Consequently,",
+        "In other words,",
+        "Nevertheless,"
+      ],
+      "correct_index": 1,
+      "explanation_html": "<p>The construction blocks the usual route, so the buses take a detour. Consequently connects that cause to its result.</p>",
+      "distractor_notes": {
+        "A": "Treats a route change as an example of construction.",
+        "C": "Treats different events as the same statement.",
+        "D": "Suggests the detour happens despite the blockage instead of because of it."
+      },
+      "optional_hint": null,
+      "sequence": 7,
+      "phase": "practice",
+      "source_block_ids": [
+        "result_and_purpose_words",
+        "coherence_result_example",
+        "opening_brake_adoption_result",
+        "guided_transfer_result"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The road closure directly explains why the buses take a detour.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T08",
+      "objective_id": "T-PURPOSE",
+      "response_type": "mcq",
+      "stimulus_html": "<p>A community theater wanted to make rehearsals accessible to members who used wheelchairs. ______ it moved rehearsals to a ground-floor room with a step-free entrance.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "For example,",
+        "In other words,",
+        "To that end,",
+        "Nevertheless,"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>Bracket the goal and action: make rehearsals accessible; move to a step-free room. To that end means to achieve that goal.</p>",
+      "distractor_notes": {
+        "A": "Treats an intended action as a member of a general category.",
+        "B": "Treats the action as merely repeating the goal.",
+        "D": "Makes the action oppose the stated aim."
+      },
+      "optional_hint": null,
+      "sequence": 8,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_purpose",
+        "result_and_purpose_check"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The student must recognize the move as a deliberate way to achieve the stated accessibility goal.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T09",
+      "objective_id": "T-CONTRAST",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The northern path follows level ground for its entire length. ______ the southern path climbs a steep slope.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "However,",
+        "For instance,",
+        "Therefore,",
+        "In other words,"
+      ],
+      "correct_index": 0,
+      "explanation_html": "<p>The northern route is level; the southern route is steep. However signals the difference between the two conditions.</p>",
+      "distractor_notes": {
+        "B": "Treats the steep route as an example of level ground.",
+        "C": "Invents a causal connection between the routes.",
+        "D": "Treats opposite conditions as a paraphrase."
+      },
+      "optional_hint": null,
+      "sequence": 9,
+      "phase": "practice",
+      "source_block_ids": [
+        "turning_words",
+        "coherence_contrast_example",
+        "authentic_item"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The two paths are compared in parallel, and level ground clearly contrasts with a steep slope.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T10",
+      "objective_id": "T-REPLACE",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The crew decided against repainting the old sign. ______ it replaced the sign with a new one.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "Similarly,",
+        "In other words,",
+        "For example,",
+        "Instead,"
+      ],
+      "correct_index": 3,
+      "explanation_html": "<p>Replacing the sign is the action chosen in place of repainting it. Instead names this replacement, rather than a general similarity or a restatement.</p>",
+      "distractor_notes": {
+        "A": "Treats the rejected and chosen actions as parallel instances.",
+        "B": "Treats two different actions as equivalent wording.",
+        "C": "Treats replacing the sign as an example of deciding against repainting."
+      },
+      "optional_hint": null,
+      "sequence": 10,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_replacement",
+        "coherence_replacement_example"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "“Decided against” clearly signals that the second action replaces the first.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T11",
+      "objective_id": "T-CONCEDE",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The auditorium's heating system failed on the coldest day of the week. ______ the audience stayed for the entire performance, bundled in coats.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "Therefore,",
+        "Nevertheless,",
+        "In other words,",
+        "For example,"
+      ],
+      "correct_index": 1,
+      "explanation_html": "<p>The failed heating is an obstacle that might make people leave. The audience stays despite that obstacle, so Nevertheless fits.</p>",
+      "distractor_notes": {
+        "A": "Claims the heating failure explains why the audience stayed.",
+        "C": "Treats staying as a paraphrase of the heating failure.",
+        "D": "Treats staying as an example of a heating failure."
+      },
+      "optional_hint": null,
+      "sequence": 11,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_concession",
+        "turning_words_check"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The concession depends on inferring that the cold might have caused the audience to leave.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T12",
+      "objective_id": "T-LOCAL",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The repair shop rarely discards a bicycle wheel after a single bent spoke. ______ mechanics replace the damaged spoke and straighten the wheel.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "For instance,",
+        "Consequently,",
+        "More often,",
+        "In other words,"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>Keep the local signal rarely. The second sentence names what the shop usually does, so More often completes the frequency comparison.</p>",
+      "distractor_notes": {
+        "A": "Treats repairing a wheel as an example of discarding it.",
+        "B": "Makes the usual repair a consequence of its frequency description.",
+        "D": "Treats repairing and discarding as the same action."
+      },
+      "optional_hint": null,
+      "sequence": 12,
+      "phase": "practice",
+      "source_block_ids": [
+        "sequence_and_local_signals",
+        "local_signal_check"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "“Rarely” cues a direct comparison with the more common repair.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T13",
+      "objective_id": "T-LOCAL",
+      "response_type": "mcq",
+      "stimulus_html": "<p>To assemble the display, first attach the two side panels to the base. ______ fasten the top panel to the sides.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "Next,",
+        "For example,",
+        "Nevertheless,",
+        "In other words,"
+      ],
+      "correct_index": 0,
+      "explanation_html": "<p>First establishes a sequence. Fastening the top is the following assembly step, so Next preserves that order.</p>",
+      "distractor_notes": {
+        "B": "Treats a new step as an example of attaching the side panels.",
+        "C": "Invents an obstacle or exception.",
+        "D": "Treats two different assembly steps as a restatement."
+      },
+      "optional_hint": null,
+      "sequence": 13,
+      "phase": "later_review",
+      "source_block_ids": [
+        "sequence_and_local_signals",
+        "local_signal_check"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "“First” explicitly cues the next step in the assembly sequence.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T14",
+      "objective_id": "T-ADD",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The insulated bottle is light enough to carry on a long walk. ______ its lid can be opened with one hand.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "Consequently,",
+        "For instance,",
+        "However,",
+        "Moreover,"
+      ],
+      "correct_index": 3,
+      "explanation_html": "<p>The bottle is easy to carry, and its lid is also easy to open. These are separate convenient features. Moreover adds the second advantage; low weight does not cause one-handed opening.</p>",
+      "distractor_notes": {
+        "A": "Invents causation between independent features.",
+        "B": "Treats one different feature as a specific instance of the first.",
+        "C": "Treats two advantages as conflicting."
+      },
+      "optional_hint": null,
+      "sequence": 14,
+      "phase": "later_review",
+      "source_block_ids": [
+        "same_direction_words",
+        "coherence_addition_example",
+        "format_4_2"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The student must see one-handed opening as another benefit and rule out a causal link to weight.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T15",
+      "objective_id": "T-RESULT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>Gardeners once assumed that the time of day made no difference when watering the test beds. In a controlled comparison, however, the beds watered early in the morning lost less water to evaporation than those watered at noon. ______ the team now recommends morning watering for those beds.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "For instance,",
+        "Nevertheless,",
+        "Therefore,",
+        "In other words,"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>Shrink the relevant ideas: the comparison found less water loss in the morning; the team recommends morning watering. The evidence supports the recommendation, so Therefore fits.</p>",
+      "distractor_notes": {
+        "A": "Treats a recommendation as an example of the measured water loss.",
+        "B": "Makes the recommendation defy the evidence instead of follow it.",
+        "D": "Treats the recommendation as merely rephrasing the experiment's result."
+      },
+      "optional_hint": null,
+      "sequence": 15,
+      "phase": "later_review",
+      "source_block_ids": [
+        "result_and_purpose_words",
+        "coherence_result_example",
+        "opening_brake_adoption_result",
+        "guided_transfer_result"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "An earlier contrast competes for attention, while the trial results support the later recommendation.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T16",
+      "objective_id": "T-PURPOSE",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The town hoped to reduce litter in its riverside park. ______ it placed waste and recycling containers beside every picnic table.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "Nevertheless,",
+        "To that end,",
+        "For example,",
+        "In other words,"
+      ],
+      "correct_index": 1,
+      "explanation_html": "<p>Reduce litter is the stated goal; place containers by the picnic tables is the action taken to achieve it. To that end expresses this goal-to-action connection.</p>",
+      "distractor_notes": {
+        "A": "Suggests the action happens despite the goal.",
+        "C": "Treats a goal as a general category illustrated by the action.",
+        "D": "Treats installing containers as another wording of the goal itself."
+      },
+      "optional_hint": null,
+      "sequence": 16,
+      "phase": "later_review",
+      "source_block_ids": [
+        "coherence_purpose",
+        "result_and_purpose_check"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The student must connect the placement of containers to the stated goal and recognize the purpose transition.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T17",
+      "objective_id": "T-RESULT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The mountain trail was once too rough for strollers. Recent repairs removed the loose stones and leveled the surface. A safety inspection confirmed that the route is now suitable for families with young children. ______ the park has added it to its family-walk guide, citing the inspection's findings.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "Nevertheless,",
+        "For example,",
+        "Consequently,",
+        "In other words,"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>The repairs resolved the earlier problem. Bracket the current inspection finding and the park's resulting decision: suitable for families; included in the family-walk guide. Consequently fits that link.</p>",
+      "distractor_notes": {
+        "A": "Lets an obsolete obstacle control the transition despite the stated repairs.",
+        "B": "Treats a guide listing as an example of an inspection finding.",
+        "D": "Treats a decision as merely repeating the finding."
+      },
+      "optional_hint": null,
+      "sequence": 17,
+      "phase": "later_review",
+      "source_block_ids": [
+        "result_and_purpose_words",
+        "coherence_result_example",
+        "opening_brake_adoption_result",
+        "guided_transfer_result"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The past obstacle makes “Nevertheless” tempting, while the inspection and the cited findings establish the result.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "T18",
+      "objective_id": "T-CONCEDE",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The new schedule gave the musicians only two evenings to rehearse. ______ they delivered a polished performance, with no missed entrances.</p>",
+      "stem_html": "<p>Which choice completes the text with the most logical transition?</p>",
+      "choices": [
+        "As a result,",
+        "For instance,",
+        "In other words,",
+        "Nevertheless,"
+      ],
+      "correct_index": 3,
+      "explanation_html": "<p>Only two evenings to rehearse creates a reason to expect mistakes. The polished performance happens despite that limitation, so Nevertheless fits.</p>",
+      "distractor_notes": {
+        "A": "Makes the lack of rehearsal the cause of a polished performance.",
+        "B": "Treats the performance as a specific example of the schedule.",
+        "C": "Treats rehearsal time and performance quality as the same statement."
+      },
+      "optional_hint": null,
+      "sequence": 18,
+      "phase": "later_review",
+      "source_block_ids": [
+        "coherence_concession",
+        "turning_words_check"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The student must infer why limited rehearsal makes a polished performance unexpected.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    }
+  ],
+  "objectives": [
+    {
+      "id": "T-ADD",
+      "label": "Choose a transition that adds a separate supporting point.",
+      "source_block_ids": [
+        "same_direction_words",
+        "coherence_addition_example",
+        "format_4_2"
+      ]
+    },
+    {
+      "id": "T-RESTATE",
+      "label": "Choose a transition that restates an idea.",
+      "source_block_ids": [
+        "coherence_restatement",
+        "coherence_restatement_example"
+      ]
+    },
+    {
+      "id": "T-EXAMPLE",
+      "label": "Choose a transition introducing a specific example.",
+      "source_block_ids": [
+        "coherence_example_relation",
+        "same_direction_check"
+      ]
+    },
+    {
+      "id": "T-RESULT",
+      "label": "Choose a transition linking a cause or evidence to its result or conclusion.",
+      "source_block_ids": [
+        "result_and_purpose_words",
+        "coherence_result_example",
+        "opening_brake_adoption_result",
+        "guided_transfer_result"
+      ]
+    },
+    {
+      "id": "T-PURPOSE",
+      "label": "Choose a transition connecting a goal to an action taken to achieve it.",
+      "source_block_ids": [
+        "coherence_purpose",
+        "result_and_purpose_check"
+      ]
+    },
+    {
+      "id": "T-CONTRAST",
+      "label": "Choose a transition expressing a difference between conditions.",
+      "source_block_ids": [
+        "turning_words",
+        "coherence_contrast_example",
+        "authentic_item"
+      ]
+    },
+    {
+      "id": "T-REPLACE",
+      "label": "Choose a transition introducing a replacement for a rejected alternative.",
+      "source_block_ids": [
+        "coherence_replacement",
+        "coherence_replacement_example"
+      ]
+    },
+    {
+      "id": "T-CONCEDE",
+      "label": "Choose a transition expressing an outcome despite an obstacle.",
+      "source_block_ids": [
+        "coherence_concession",
+        "turning_words_check"
+      ]
+    },
+    {
+      "id": "T-LOCAL",
+      "label": "Choose a transition that completes a sequence or frequency comparison.",
+      "source_block_ids": [
+        "sequence_and_local_signals",
+        "local_signal_check"
+      ]
+    }
+  ],
+  "original_pilot_file": "content/drill-questions/pilot-2026-11-17/transitions.json",
+  "original_pilot_sha256": "5f5f8f9c0c55eb2d527109154e44cb7762875a94e2104fea9dc342a24ed29dd6",
+  "pilot_source_ids_absent_from_current_lesson": [],
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.824376+00",
+  "lesson_number": 5,
+  "difficulty_counts": {
+    "1": 9,
+    "2": 9,
+    "3": 0
+  }
+}

@@ -1,0 +1,594 @@
+{
+  "id": "c29f6421-47f1-4b83-866e-9c3beb944e8d",
+  "title": "Name the Job: Text Structure and Purpose",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use Name the Job to identify a text’s purpose, map its structure, and explain how a sentence or detail contributes to the whole.",
+  "cards": 29,
+  "spec": "docs/lesson-template-specs/text-structure-and-purpose-name-the-job.json",
+  "source_spec_sha256": "d1ca9d208a315df2825b593a27b79dad1c2e987c1053b121b451069ace50bbfe",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Match a text’s overall purpose to an action the whole passage performs": [
+      3,
+      7,
+      8,
+      12
+    ],
+    "Explain how a target sentence contributes to what comes before it": [
+      7,
+      10,
+      12
+    ],
+    "Preserve the order of problem, proposal, and result": [
+      7,
+      8,
+      14
+    ],
+    "Recognize when a reported view is introduced so it can be challenged": [
+      8,
+      12,
+      16
+    ],
+    "Explain how imagery or action reveals a character’s attitude": [
+      10,
+      18,
+      20,
+      21
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the main purpose of the text?</p>",
+      "stimulus_html": "<p>A canal lock is a chamber with gates at each end. When a boat enters at the lower level, the lower gate closes and water enters the chamber. Once the water rises to the upper level, the boat can leave through the upper gate.</p>",
+      "explanation_html": "<p>The passage names the pieces and then describes the process that raises a boat.</p>",
+      "variation": "Match a text’s overall purpose to an action the whole passage performs",
+      "source_cards": [
+        3,
+        7,
+        8,
+        12
+      ],
+      "difficulty": 1,
+      "id": "L23-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "c75f1c1d-3614-4ea6-9bd1-3f937e49c546",
+        "49d3ea03-89b0-4795-a5d8-fd869f6c8740",
+        "92631d8a-c58d-4218-8bcf-9bc02c712286",
+        "2a1cacff-6a26-4c56-ae4d-10c6df387ee0"
+      ],
+      "choices": [
+        "To explain how a canal lock raises a boat to a higher water level",
+        "To argue that every canal should be replaced with locks",
+        "To identify only the two gates of a lock",
+        "To describe how water leaves a chamber to raise a boat"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Adds a claim or detail the passage does not support.",
+        "C": "Captures only one detail or part of the relevant idea.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>A test of a low-cost humidity sensor found that its readings closely matched a reference instrument indoors. When both instruments were placed in cold outdoor air, however, the readings diverged.</p>",
+      "explanation_html": "<p>The second sentence changes the testing condition and shows that the earlier agreement had a limit.</p>",
+      "variation": "Explain how a target sentence contributes to what comes before it",
+      "source_cards": [
+        7,
+        10,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L23-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "49d3ea03-89b0-4795-a5d8-fd869f6c8740",
+        "ed0e15a6-f8a7-48e4-a487-73dd00f514b4",
+        "2a1cacff-6a26-4c56-ae4d-10c6df387ee0"
+      ],
+      "choices": [
+        "It confirms that the instruments matched in both environments.",
+        "It explains how the reference instrument was manufactured.",
+        "It introduces a different low-cost instrument to replace the first.",
+        "It limits the first sentence’s finding by identifying a condition in which it did not hold."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Assigns the sentence or passage a different rhetorical job.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the overall structure of the text?</p>",
+      "stimulus_html": "<p>The original trail signs could not be read in fog. Rangers painted larger lettering on several signs. Hikers then reported fewer wrong turns on the marked section.</p>",
+      "explanation_html": "<p>The first sentence presents low visibility, the second an intervention, and the third a reported result.</p>",
+      "variation": "Preserve the order of problem, proposal, and result",
+      "source_cards": [
+        7,
+        8,
+        14
+      ],
+      "difficulty": 1,
+      "id": "L23-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "49d3ea03-89b0-4795-a5d8-fd869f6c8740",
+        "92631d8a-c58d-4218-8bcf-9bc02c712286",
+        "8434f010-eeb3-47fc-9e37-08a98aaff343"
+      ],
+      "choices": [
+        "It reports an improvement and later describes a change that caused the opposite result.",
+        "It compares two theories about why fog forms.",
+        "It identifies a problem, describes a change, and reports an outcome.",
+        "It lists all the ways parks have prevented wrong turns."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Assigns the sentence or passage a different rhetorical job.",
+        "D": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the main purpose of the text?</p>",
+      "stimulus_html": "<p>The park guide describes the bent trees as evidence of one exceptionally destructive storm. A tree scientist notes that the bends occur in wood formed over many different years, making repeated exposure to prevailing winds a more likely explanation.</p>",
+      "explanation_html": "<p>The guide’s account sets up a challenge based on when the wood formed.</p>",
+      "variation": "Recognize when a reported view is introduced so it can be challenged",
+      "source_cards": [
+        8,
+        12,
+        16
+      ],
+      "difficulty": 2,
+      "id": "L23-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "92631d8a-c58d-4218-8bcf-9bc02c712286",
+        "2a1cacff-6a26-4c56-ae4d-10c6df387ee0",
+        "00e17386-b207-4d12-bc64-eae9e99b0a9b"
+      ],
+      "choices": [
+        "To summarize the guide’s view without evaluating it",
+        "To measure how long storms lasted in the region",
+        "To contrast a popular account with an alternative supported by the trees’ growth",
+        "To use evidence about the wood to confirm a single storm caused all the bends"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Assigns the sentence or passage a different rhetorical job.",
+        "B": "Adds a claim or detail the passage does not support.",
+        "D": "Includes a supported detail but joins it to an unsupported claim."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>The forge had been idle for months. A sign on the gate announced that it would reopen the following week. Suri slipped a folded apron into her satchel and counted the days aloud on the walk home.</p>",
+      "explanation_html": "<p>Packing the apron and counting the days convey her anticipation.</p>",
+      "variation": "Explain how imagery or action reveals a character’s attitude",
+      "source_cards": [
+        10,
+        18,
+        20,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L23-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ed0e15a6-f8a7-48e4-a487-73dd00f514b4",
+        "099ee5a9-1c62-4492-9572-f2c211734560",
+        "86596744-3bdf-40b3-a886-cf84a4be1fec",
+        "bf684f36-6141-5def-a898-485b5ee8f9f9"
+      ],
+      "choices": [
+        "It provides the historical reason the forge closed.",
+        "It shows Suri’s eagerness for the forge to reopen through her preparations and anticipation.",
+        "It shows that Suri plans to avoid the forge after reopening.",
+        "It reveals that Suri is in charge of announcing the date."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Assigns the sentence or passage a different rhetorical job.",
+        "C": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the main purpose of the text?</p>",
+      "stimulus_html": "<p>Before students used tracking tags, lost skates often stayed unclaimed because equipment looked alike. Tags linking each pair to an owner reduced claims of mistaken identity. The school recommends tagging skis next.</p>",
+      "explanation_html": "<p>The text presents a problem, a remedy that helped, and a recommendation to apply it elsewhere.</p>",
+      "variation": "Match a text’s overall purpose to an action the whole passage performs",
+      "source_cards": [
+        3,
+        7,
+        8,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L23-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "c75f1c1d-3614-4ea6-9bd1-3f937e49c546",
+        "49d3ea03-89b0-4795-a5d8-fd869f6c8740",
+        "92631d8a-c58d-4218-8bcf-9bc02c712286",
+        "2a1cacff-6a26-4c56-ae4d-10c6df387ee0"
+      ],
+      "choices": [
+        "To describe a successful remedy for identifying lost equipment and how it might be extended",
+        "To list characteristics of unclaimed skates",
+        "To prove labels will solve every kind of equipment loss",
+        "To challenge the school’s recommendation that tags be removed"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Captures only one detail or part of the relevant idea.",
+        "C": "Claims a cause or certainty the evidence does not establish.",
+        "D": "Assigns the sentence or passage a different rhetorical job."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>The county record office wanted to estimate how many photographs in a collection were duplicates. It first compared the date and location tags attached to every photograph.</p>",
+      "explanation_html": "<p>The sentence explains a step taken in service of the purpose from the preceding sentence.</p>",
+      "variation": "Explain how a target sentence contributes to what comes before it",
+      "source_cards": [
+        7,
+        10,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L23-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "49d3ea03-89b0-4795-a5d8-fd869f6c8740",
+        "ed0e15a6-f8a7-48e4-a487-73dd00f514b4",
+        "2a1cacff-6a26-4c56-ae4d-10c6df387ee0"
+      ],
+      "choices": [
+        "It reports the final result of the duplicate count.",
+        "It argues that date tags alone prove every duplicate.",
+        "It explains why the office chose to stop estimating duplicates.",
+        "It describes the first step the office took to carry out the stated goal."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Assigns the sentence or passage a different rhetorical job.",
+        "B": "Adds a claim or detail the passage does not support.",
+        "C": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the overall structure of the text?</p>",
+      "stimulus_html": "<p>An art department wanted students to handle clean pieces of broken pottery without touching original artifacts. Staff created durable replicas from molds. In the first workshop, students used the replicas to practice sorting fragments by shape.</p>",
+      "explanation_html": "<p>The passage proceeds from desired learning activity to replica construction to application.</p>",
+      "variation": "Preserve the order of problem, proposal, and result",
+      "source_cards": [
+        7,
+        8,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L23-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "49d3ea03-89b0-4795-a5d8-fd869f6c8740",
+        "92631d8a-c58d-4218-8bcf-9bc02c712286",
+        "8434f010-eeb3-47fc-9e37-08a98aaff343"
+      ],
+      "choices": [
+        "It reports how a workshop failed and then describes how staff discarded a solution.",
+        "It lists different materials used to build the artifacts.",
+        "It explains how students repaired the original artifacts.",
+        "It states a teaching goal, explains how staff addressed it, and describes how students used the solution."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Captures only one detail or part of the relevant idea.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the main purpose of the text?</p>",
+      "stimulus_html": "<p>A local chronicle claims a bell tower was built after the great flood. An invoice for the tower’s roof predates the flood by six years. The historian who found the invoice suggests the chronicle confused a major repair with original construction.</p>",
+      "explanation_html": "<p>The invoice challenges the chronology, and the repair explanation accounts for the discrepancy.</p>",
+      "variation": "Recognize when a reported view is introduced so it can be challenged",
+      "source_cards": [
+        8,
+        12,
+        16
+      ],
+      "difficulty": 3,
+      "id": "L23-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "92631d8a-c58d-4218-8bcf-9bc02c712286",
+        "2a1cacff-6a26-4c56-ae4d-10c6df387ee0",
+        "00e17386-b207-4d12-bc64-eae9e99b0a9b"
+      ],
+      "choices": [
+        "To establish that a roof older than the tower was reused after the flood",
+        "To advertise a recently recovered invoice",
+        "To question the tower’s usual construction date and suggest why it was misreported",
+        "To document flood damage to every roof in the town"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Captures only one detail or part of the relevant idea.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>The sea struck the shutters all evening. A lamp on the lowest step flickered in the wind, but Otto kept returning to shield it with one hand. He wanted his sister to see it the moment her boat cleared the point.</p>",
+      "explanation_html": "<p>The lamp can guide his sister home, which motivates his earlier action.</p>",
+      "variation": "Explain how imagery or action reveals a character’s attitude",
+      "source_cards": [
+        10,
+        18,
+        20,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L23-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ed0e15a6-f8a7-48e4-a487-73dd00f514b4",
+        "099ee5a9-1c62-4492-9572-f2c211734560",
+        "86596744-3bdf-40b3-a886-cf84a4be1fec",
+        "bf684f36-6141-5def-a898-485b5ee8f9f9"
+      ],
+      "choices": [
+        "It identifies which hand Otto uses to protect the lamp.",
+        "It explains why Otto protects the lamp despite the wind.",
+        "It shows that his sister intends to extinguish the lamp.",
+        "It starts an unrelated description of the weather."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Assigns the sentence or passage a different rhetorical job."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the main purpose of the text?</p>",
+      "stimulus_html": "<p>Market buildings often have tall side doors, but those in the Hill district are unusually low. A builder’s record indicates that the district’s doors were designed for hand carts instead of wagons. That design would account for the different proportions.</p>",
+      "explanation_html": "<p>The building feature is presented as a puzzle, and the record provides a proposed explanation.</p>",
+      "variation": "Match a text’s overall purpose to an action the whole passage performs",
+      "source_cards": [
+        3,
+        7,
+        8,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L23-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "c75f1c1d-3614-4ea6-9bd1-3f937e49c546",
+        "49d3ea03-89b0-4795-a5d8-fd869f6c8740",
+        "92631d8a-c58d-4218-8bcf-9bc02c712286",
+        "2a1cacff-6a26-4c56-ae4d-10c6df387ee0"
+      ],
+      "choices": [
+        "To propose an explanation for an unusual feature of one district’s market buildings",
+        "To compare the price of carts with the price of wagons",
+        "To describe how all market buildings must be constructed",
+        "To show that the doors were lowered after the original construction"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>The author suggests that the village’s steep streets affected the design of its delivery carts. Instead of standard tall wheels, the old carts had a low platform the drivers could steady by hand.</p>",
+      "explanation_html": "<p>The detail identifies a feature that helped steady carts, making the connection to steep streets more concrete.</p>",
+      "variation": "Explain how a target sentence contributes to what comes before it",
+      "source_cards": [
+        7,
+        10,
+        12
+      ],
+      "difficulty": 3,
+      "id": "L23-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "49d3ea03-89b0-4795-a5d8-fd869f6c8740",
+        "ed0e15a6-f8a7-48e4-a487-73dd00f514b4",
+        "2a1cacff-6a26-4c56-ae4d-10c6df387ee0"
+      ],
+      "choices": [
+        "It supplies a design detail that helps illustrate the author’s proposed connection.",
+        "It proves the carts were faster than every vehicle in neighboring villages.",
+        "It rejects the claim that the streets affected the design.",
+        "It shifts from delivery carts to the design of a village road."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Assigns the sentence or passage a different rhetorical job.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the overall structure of the text?</p>",
+      "stimulus_html": "<p>At first, the team documented street noise only at lunchtime. A reviewer noted that the busiest deliveries happened in the early morning. The researchers added a second time slot and found noise peaks their first protocol had missed.</p>",
+      "explanation_html": "<p>The reviewer identifies a gap. The second measurement time addresses that gap and reveals an additional result.</p>",
+      "variation": "Preserve the order of problem, proposal, and result",
+      "source_cards": [
+        7,
+        8,
+        14
+      ],
+      "difficulty": 3,
+      "id": "L23-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "49d3ea03-89b0-4795-a5d8-fd869f6c8740",
+        "92631d8a-c58d-4218-8bcf-9bc02c712286",
+        "8434f010-eeb3-47fc-9e37-08a98aaff343"
+      ],
+      "choices": [
+        "It reports a finding, then describes a method change that made it impossible to repeat.",
+        "It gives evidence that a reviewer’s objection was wrong.",
+        "It proposes a survey of shoppers to replace sound measurements.",
+        "It introduces a method, presents a limitation, and describes an adjustment and its finding."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Assigns the sentence or passage a different rhetorical job.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the main purpose of the text?</p>",
+      "stimulus_html": "<p>Some gardeners attributed a variety’s spread to its deep roots. A soil study found that its seedlings spread most where maintenance crews moved large amounts of surface soil. The researchers propose that the movement of seeds in that soil better explains the pattern.</p>",
+      "explanation_html": "<p>The original explanation is presented as the claim the following evidence challenges.</p>",
+      "variation": "Recognize when a reported view is introduced so it can be challenged",
+      "source_cards": [
+        8,
+        12,
+        16
+      ],
+      "difficulty": 3,
+      "id": "L23-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "92631d8a-c58d-4218-8bcf-9bc02c712286",
+        "2a1cacff-6a26-4c56-ae4d-10c6df387ee0",
+        "00e17386-b207-4d12-bc64-eae9e99b0a9b"
+      ],
+      "choices": [
+        "To explain how roots grow through newly moved soil",
+        "To confirm that both deep roots and soil movement are necessary causes",
+        "To reconsider one explanation for the variety’s spread and describe an alternative",
+        "To identify which crews move the most soil"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Assigns the sentence or passage a different rhetorical job.",
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "D": "Captures only one detail or part of the relevant idea."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>The studio door still bore a long scratch from the first time Isa had carried a board inside. Students offered to paint over it in spring. Isa handed them brushes for every part of the door except the strip that held the mark.</p>",
+      "explanation_html": "<p>Her choice to leave only that strip untouched reveals what the mark means to her.</p>",
+      "variation": "Explain how imagery or action reveals a character’s attitude",
+      "source_cards": [
+        10,
+        18,
+        20,
+        21
+      ],
+      "difficulty": 3,
+      "id": "L23-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ed0e15a6-f8a7-48e4-a487-73dd00f514b4",
+        "099ee5a9-1c62-4492-9572-f2c211734560",
+        "86596744-3bdf-40b3-a886-cf84a4be1fec",
+        "bf684f36-6141-5def-a898-485b5ee8f9f9"
+      ],
+      "choices": [
+        "It explains which student made the scratch.",
+        "It shows through Isa’s action that she wants to preserve a reminder of the studio’s past.",
+        "It shows Isa refusing to let the students paint any part of the door.",
+        "It shows that Isa finally agrees to remove the scratch."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Assigns the sentence or passage a different rhetorical job.",
+        "C": "Adds a claim or detail the passage does not support.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-16 18:49:55.224104+00",
+  "lesson_number": 23,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 8,
+    "3": 5
+  }
+}

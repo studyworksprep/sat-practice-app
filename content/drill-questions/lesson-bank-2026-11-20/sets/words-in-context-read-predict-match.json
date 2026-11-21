@@ -1,0 +1,629 @@
+{
+  "id": "698d4a71-afac-4bf8-97c4-9dac213600d6",
+  "title": "Solve Words in Context with Read, Predict, Match",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Read the complete text, use logic and context clues to predict the missing meaning, and match that prediction to the best-supported answer choice.",
+  "cards": 38,
+  "spec": "docs/lesson-template-specs/words-in-context-read-predict-match.json",
+  "source_spec_sha256": "a6dadf544e65ec688c794a6cde9f353df2f12a97adfaeb23f137741908b1bb4e",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Predict a word from a direct context clue": [
+      3,
+      4,
+      7,
+      11,
+      14
+    ],
+    "Use contrast or concession to predict the missing meaning": [
+      7,
+      9,
+      12,
+      17
+    ],
+    "Use an action’s result to predict the verb": [
+      11,
+      14,
+      15,
+      19
+    ],
+    "Reject a related word that changes the meaning of the passage": [
+      17,
+      19,
+      20,
+      24
+    ],
+    "Use multiple clues to choose the precise sense of an unfamiliar word": [
+      14,
+      19,
+      24,
+      27,
+      29
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>The labels printed on the outside of the jars looked alike at first, but the batch number on each label was ______: no two jars shared a number.</p>",
+      "explanation_html": "<p>“No two jars shared a number” tells us that each number was distinct.</p>",
+      "variation": "Predict a word from a direct context clue",
+      "source_cards": [
+        3,
+        4,
+        7,
+        11,
+        14
+      ],
+      "difficulty": 1,
+      "id": "L38-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cbc14279-4f3a-42e5-931b-5762e14ea40a",
+        "69348982-ff49-40b3-9781-42659283b67d",
+        "ca8e8fb1-2409-4dce-8878-421b737aa52d",
+        "a0176689-5a5c-5589-9189-43c7601b2e60",
+        "c65505d9-e66c-40b3-afc8-0032ebd63ab4"
+      ],
+      "choices": [
+        "repeated",
+        "unique",
+        "fragile",
+        "temporary"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Misstates or contradicts part of the passage.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>The earliest maps show nearly every bend in the river, but they are ______ about the paths far inland, giving only a few names without distances.</p>",
+      "explanation_html": "<p>The second half contrasts rivers mapped in detail with inland paths described imprecisely.</p>",
+      "variation": "Use contrast or concession to predict the missing meaning",
+      "source_cards": [
+        7,
+        9,
+        12,
+        17
+      ],
+      "difficulty": 1,
+      "id": "L38-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ca8e8fb1-2409-4dce-8878-421b737aa52d",
+        "ab78bab3-3693-4452-b15d-ed8580690d17",
+        "c8fd9519-d905-4e8f-b6bb-a92c20f420ca",
+        "b826821d-7de4-4810-911a-2eee0fe7702d"
+      ],
+      "choices": [
+        "vague",
+        "precise",
+        "critical",
+        "optimistic"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Misstates or contradicts part of the passage.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>When the sun reached the last patch of shade, the remaining beads of dew began to ______, leaving the leaves dry within minutes.</p>",
+      "explanation_html": "<p>The beads disappear as the leaves dry, which indicates evaporation.</p>",
+      "variation": "Use an action’s result to predict the verb",
+      "source_cards": [
+        11,
+        14,
+        15,
+        19
+      ],
+      "difficulty": 1,
+      "id": "L38-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "a0176689-5a5c-5589-9189-43c7601b2e60",
+        "c65505d9-e66c-40b3-afc8-0032ebd63ab4",
+        "bd421b06-bb83-4740-9ad8-572e31917ab8",
+        "92f70b50-c760-5323-95cf-5ff88b0c6ebe"
+      ],
+      "choices": [
+        "accumulate",
+        "reflect",
+        "freeze",
+        "evaporate"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Misstates or contradicts part of the passage.",
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>Rather than discarding the cabinet’s original finish, the restorer took off only the layer of modern paint above it. This approach allowed the restorer to ______ the original finish.</p>",
+      "explanation_html": "<p>The choice must mean keeping the original finish in place, rather than making a record or a copy.</p>",
+      "variation": "Reject a related word that changes the meaning of the passage",
+      "source_cards": [
+        17,
+        19,
+        20,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L38-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "b826821d-7de4-4810-911a-2eee0fe7702d",
+        "92f70b50-c760-5323-95cf-5ff88b0c6ebe",
+        "5332f421-c929-473e-945b-02f8b1eb41eb",
+        "cab1f4ee-7047-453e-891f-49ec51a2d368"
+      ],
+      "choices": [
+        "document",
+        "replace",
+        "duplicate",
+        "preserve"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>A short buffer strip of plants can slow a muddy flow without stopping it completely. In plots with the strip, channels still filled after a storm, but the water carried less sediment. The strip helped ______ erosion.</p>",
+      "explanation_html": "<p>Because the flow still exists but carries less sediment, the strip lessens the problem. “Mitigate” fits that limited effect.</p>",
+      "variation": "Use multiple clues to choose the precise sense of an unfamiliar word",
+      "source_cards": [
+        14,
+        19,
+        24,
+        27,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L38-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "c65505d9-e66c-40b3-afc8-0032ebd63ab4",
+        "92f70b50-c760-5323-95cf-5ff88b0c6ebe",
+        "cab1f4ee-7047-453e-891f-49ec51a2d368",
+        "b70a3693-bc09-44a5-856a-eaa52d04988e",
+        "bcf5493f-4a8d-48ea-abc6-9cd5da91bbc7"
+      ],
+      "choices": [
+        "promote",
+        "eliminate",
+        "mitigate",
+        "quantify"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>The repair team needed a staircase that could be taken apart and moved to another wing. The team chose a ______ design with sections that could easily be separated.</p>",
+      "explanation_html": "<p>The separable sections point to a design made of individual units.</p>",
+      "variation": "Predict a word from a direct context clue",
+      "source_cards": [
+        3,
+        4,
+        7,
+        11,
+        14
+      ],
+      "difficulty": 1,
+      "id": "L38-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cbc14279-4f3a-42e5-931b-5762e14ea40a",
+        "69348982-ff49-40b3-9781-42659283b67d",
+        "ca8e8fb1-2409-4dce-8878-421b737aa52d",
+        "a0176689-5a5c-5589-9189-43c7601b2e60",
+        "c65505d9-e66c-40b3-afc8-0032ebd63ab4"
+      ],
+      "choices": [
+        "permanent",
+        "modular",
+        "ornate",
+        "invisible"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Misstates or contradicts part of the passage.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>Though the library’s temporary home was ______, there was just enough room for the stacks and the service desk.</p>",
+      "explanation_html": "<p>The room has barely enough space. “Cramped” captures that constraint.</p>",
+      "variation": "Use contrast or concession to predict the missing meaning",
+      "source_cards": [
+        7,
+        9,
+        12,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L38-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ca8e8fb1-2409-4dce-8878-421b737aa52d",
+        "ab78bab3-3693-4452-b15d-ed8580690d17",
+        "c8fd9519-d905-4e8f-b6bb-a92c20f420ca",
+        "b826821d-7de4-4810-911a-2eee0fe7702d"
+      ],
+      "choices": [
+        "cramped",
+        "spacious",
+        "colorful",
+        "remote"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Misstates or contradicts part of the passage.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>The conservator inserted soft pads beneath the shelves to ______ their movement. Afterward, vibrations from passing trucks no longer shook the objects.</p>",
+      "explanation_html": "<p>The result is reduced vibration, so “dampen” has the required meaning.</p>",
+      "variation": "Use an action’s result to predict the verb",
+      "source_cards": [
+        11,
+        14,
+        15,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L38-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "a0176689-5a5c-5589-9189-43c7601b2e60",
+        "c65505d9-e66c-40b3-afc8-0032ebd63ab4",
+        "bd421b06-bb83-4740-9ad8-572e31917ab8",
+        "92f70b50-c760-5323-95cf-5ff88b0c6ebe"
+      ],
+      "choices": [
+        "dampen",
+        "amplify",
+        "document",
+        "predict"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>The researcher’s report gives a possible interpretation of the marks but calls for further testing. Its conclusion is therefore ______.</p>",
+      "explanation_html": "<p>A possible explanation subject to further testing is tentative.</p>",
+      "variation": "Reject a related word that changes the meaning of the passage",
+      "source_cards": [
+        17,
+        19,
+        20,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L38-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "b826821d-7de4-4810-911a-2eee0fe7702d",
+        "92f70b50-c760-5323-95cf-5ff88b0c6ebe",
+        "5332f421-c929-473e-945b-02f8b1eb41eb",
+        "cab1f4ee-7047-453e-891f-49ec51a2d368"
+      ],
+      "choices": [
+        "definitive",
+        "unrelated",
+        "unanimous",
+        "tentative"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Misstates or contradicts part of the passage.",
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>Both sketches show the same gate, but the second adds the latch and hinge that the first omits. Rather than changing the design, the later drawing ______ it.</p>",
+      "explanation_html": "<p>The gate is preserved and more detail is added. “Elaborates on” is the precise meaning.</p>",
+      "variation": "Use multiple clues to choose the precise sense of an unfamiliar word",
+      "source_cards": [
+        14,
+        19,
+        24,
+        27,
+        29
+      ],
+      "difficulty": 3,
+      "id": "L38-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "c65505d9-e66c-40b3-afc8-0032ebd63ab4",
+        "92f70b50-c760-5323-95cf-5ff88b0c6ebe",
+        "cab1f4ee-7047-453e-891f-49ec51a2d368",
+        "b70a3693-bc09-44a5-856a-eaa52d04988e",
+        "bcf5493f-4a8d-48ea-abc6-9cd5da91bbc7"
+      ],
+      "choices": [
+        "contradicts",
+        "abandons",
+        "elaborates on",
+        "predicts"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Misstates or contradicts part of the passage.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>The composer left no written score, but four players who knew the piece made a recording together. For a later performance, that recording was the only complete ______ musicians could consult.</p>",
+      "explanation_html": "<p>A complete recording can serve as a source of information for later musicians.</p>",
+      "variation": "Predict a word from a direct context clue",
+      "source_cards": [
+        3,
+        4,
+        7,
+        11,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L38-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "cbc14279-4f3a-42e5-931b-5762e14ea40a",
+        "69348982-ff49-40b3-9781-42659283b67d",
+        "ca8e8fb1-2409-4dce-8878-421b737aa52d",
+        "a0176689-5a5c-5589-9189-43c7601b2e60",
+        "c65505d9-e66c-40b3-afc8-0032ebd63ab4"
+      ],
+      "choices": [
+        "audience",
+        "reference",
+        "obstacle",
+        "rival"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Misstates or contradicts part of the passage.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>The first testing procedure was ______ and required staff members to reset six separate controls; the revised procedure uses just one switch.</p>",
+      "explanation_html": "<p>The contrast is about how much work the procedures require. Resetting six controls makes the first one cumbersome.</p>",
+      "variation": "Use contrast or concession to predict the missing meaning",
+      "source_cards": [
+        7,
+        9,
+        12,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L38-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "ca8e8fb1-2409-4dce-8878-421b737aa52d",
+        "ab78bab3-3693-4452-b15d-ed8580690d17",
+        "c8fd9519-d905-4e8f-b6bb-a92c20f420ca",
+        "b826821d-7de4-4810-911a-2eee0fe7702d"
+      ],
+      "choices": [
+        "effortless",
+        "cumbersome",
+        "silent",
+        "unreliable"
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>The audio crew added curtains along the walls to ______ the echoes. On the next test, the repeated sounds were barely audible.</p>",
+      "explanation_html": "<p>The curtains reduce the echoes, so the intended effect is to suppress them.</p>",
+      "variation": "Use an action’s result to predict the verb",
+      "source_cards": [
+        11,
+        14,
+        15,
+        19
+      ],
+      "difficulty": 2,
+      "id": "L38-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "a0176689-5a5c-5589-9189-43c7601b2e60",
+        "c65505d9-e66c-40b3-afc8-0032ebd63ab4",
+        "bd421b06-bb83-4740-9ad8-572e31917ab8",
+        "92f70b50-c760-5323-95cf-5ff88b0c6ebe"
+      ],
+      "choices": [
+        "suppress",
+        "accentuate",
+        "measure",
+        "anticipate"
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>The two firms independently submitted nearly identical delivery estimates. The second estimate therefore ______ the first, giving the buyer more reason to trust the projected date.</p>",
+      "explanation_html": "<p>It is independent confirmation that adds credibility. “Corroborated” expresses that job more precisely than simple repetition.</p>",
+      "variation": "Reject a related word that changes the meaning of the passage",
+      "source_cards": [
+        17,
+        19,
+        20,
+        24
+      ],
+      "difficulty": 3,
+      "id": "L38-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "b826821d-7de4-4810-911a-2eee0fe7702d",
+        "92f70b50-c760-5323-95cf-5ff88b0c6ebe",
+        "5332f421-c929-473e-945b-02f8b1eb41eb",
+        "cab1f4ee-7047-453e-891f-49ec51a2d368"
+      ],
+      "choices": [
+        "duplicated",
+        "undermined",
+        "superseded",
+        "corroborated"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice completes the text with the most logical and precise word?</p>",
+      "stimulus_html": "<p>The city did not prohibit residents from adding large paving stones, but the permit rule required small gaps for drainage. The rule was designed to ______ the installation of solid surfaces across entire yards.</p>",
+      "explanation_html": "<p>The rule restricts how widespread an unbroken surface can be. It permits paving with gaps, so the appropriate meaning is to limit it.</p>",
+      "variation": "Use multiple clues to choose the precise sense of an unfamiliar word",
+      "source_cards": [
+        14,
+        19,
+        24,
+        27,
+        29
+      ],
+      "difficulty": 3,
+      "id": "L38-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "c65505d9-e66c-40b3-afc8-0032ebd63ab4",
+        "92f70b50-c760-5323-95cf-5ff88b0c6ebe",
+        "cab1f4ee-7047-453e-891f-49ec51a2d368",
+        "b70a3693-bc09-44a5-856a-eaa52d04988e",
+        "bcf5493f-4a8d-48ea-abc6-9cd5da91bbc7"
+      ],
+      "choices": [
+        "encourage",
+        "eradicate",
+        "curtail",
+        "record"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-16 18:49:55.171945+00",
+  "lesson_number": 38,
+  "difficulty_counts": {
+    "1": 4,
+    "2": 8,
+    "3": 3
+  }
+}

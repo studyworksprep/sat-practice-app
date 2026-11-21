@@ -1,0 +1,601 @@
+{
+  "id": "ee744a57-5926-4b1a-b32c-6358e2fe9ce4",
+  "title": "Keep the Voices Straight: Cross-Text Connections",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Separate two texts’ claims, identify the exact relationship the question asks about, and prove agreement, difference, or a likely response using both texts.",
+  "cards": 28,
+  "spec": "docs/lesson-template-specs/cross-text-connections-keep-the-voices-straight.json",
+  "source_spec_sha256": "1c05cb4928489bc733b2dd922f006df8b8bfe635e8a403daf511a90da89151d3",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Identify a point of agreement explicitly supported by both texts": [
+      3,
+      7,
+      17
+    ],
+    "Explain a difference without switching the authors’ emphases": [
+      7,
+      19,
+      20,
+      21
+    ],
+    "Infer a likely response to an explanation, rather than to the shared result": [
+      7,
+      8,
+      10,
+      12
+    ],
+    "Accept a shared observation and qualify the causal explanation": [
+      12,
+      14,
+      15
+    ],
+    "Find the comparison or precise claim that both writers actually address": [
+      12,
+      17,
+      19,
+      21
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, which statement would both authors most likely agree with?</p>",
+      "stimulus_html": "<p>Text 1: Boards cut from fallen branches can be useful in small craft projects. Compared with new lumber, however, their irregular dimensions often require extra planning.</p><p>Text 2: Workshops should use storm-fallen wood for small objects where a standard board size is unnecessary. They should retain uniform lumber for parts that must match.</p>",
+      "explanation_html": "<p>Both authors explicitly identify small projects as a useful setting. They also recognize size as a constraint.</p>",
+      "variation": "Identify a point of agreement explicitly supported by both texts",
+      "source_cards": [
+        3,
+        7,
+        17
+      ],
+      "difficulty": 1,
+      "id": "L22-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "relationships",
+        "process",
+        "agreement"
+      ],
+      "choices": [
+        "Storm-fallen boards always match standard lumber sizes.",
+        "Storm-fallen wood can be useful in projects requiring only small pieces.",
+        "Storm-fallen wood should replace new boards for all projects.",
+        "The chief value of fallen wood lies in scaffolding for large buildings."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Misstates or contradicts part of the passage.",
+        "C": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "D": "Assigns the sentence or passage a different rhetorical job."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes a difference between the authors’ views?</p>",
+      "stimulus_html": "<p>Text 1: A reviewer praises a film for keeping the camera on a single street, where small changes across scenes are easy to notice.</p><p>Text 2: Another reviewer finds the single location useful at first but argues that it eventually prevents the film from showing enough of the surrounding city.</p>",
+      "explanation_html": "<p>Both discuss the single location. One values its focus, while the other identifies a cost.</p>",
+      "variation": "Explain a difference without switching the authors’ emphases",
+      "source_cards": [
+        7,
+        19,
+        20,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L22-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "process",
+        "difference",
+        "format_22_2",
+        "traps"
+      ],
+      "choices": [
+        "Text 1 emphasizes what the repeated location makes visible, while Text 2 emphasizes what that choice leaves out.",
+        "Text 1 says the repeated location hides the city, while Text 2 praises it throughout.",
+        "Text 1 objects to frequent changes in location, while Text 2 says the film has no fixed location.",
+        "The reviewers disagree about whether the street appears at all."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "C": "Misstates or contradicts part of the passage.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, how would the author of Text 2 most likely respond to the explanation in Text 1?</p>",
+      "stimulus_html": "<p>Text 1: Repairs to summer pavilions increased once copper fasteners became cheap. Lower material costs probably made the repairs affordable.</p><p>Text 2: A new rule required resort operators to repair pavilions before the season could open. Workshops along the shore took more repair orders that spring, even in towns where copper prices did not change.</p>",
+      "explanation_html": "<p>Text 2 preserves the rise in repairs and supplies a cause that works even in places without a price drop.</p>",
+      "variation": "Infer a likely response to an explanation, rather than to the shared result",
+      "source_cards": [
+        7,
+        8,
+        10,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L22-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "process",
+        "model",
+        "direction",
+        "target_claim"
+      ],
+      "choices": [
+        "By agreeing that a price drop was necessary in every town.",
+        "By denying that repair orders increased.",
+        "By maintaining that no one used copper fasteners before the rule.",
+        "By arguing that a new requirement could explain more repairs even without cheaper copper."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Misstates or contradicts part of the passage.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, how would the author of Text 2 most likely respond to the explanation in Text 1?</p>",
+      "stimulus_html": "<p>Text 1: More people visited a market after a canopy was added. The author attributes the growth to shade along the stalls.</p><p>Text 2: Visitor counts increased on overcast as well as sunny days after the canopy was built. A new path opened at the same time, creating a shorter walk from the station.</p>",
+      "explanation_html": "<p>The count increase is shared. Text 2 supplies a competing explanation and observations that limit the shade-only account.</p>",
+      "variation": "Accept a shared observation and qualify the causal explanation",
+      "source_cards": [
+        12,
+        14,
+        15
+      ],
+      "difficulty": 2,
+      "id": "L22-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "target_claim",
+        "format_22_1",
+        "evidence_conclusion"
+      ],
+      "choices": [
+        "By concluding that shade has no effect in any market.",
+        "By denying that attendance increased.",
+        "By agreeing attendance rose and proving that station passengers were the only new visitors.",
+        "By acknowledging the rise in visitors while pointing to a new path as another plausible explanation."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "B": "Misstates or contradicts part of the passage.",
+        "C": "Includes a supported detail but joins it to an unsupported claim."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, which statement would both authors most likely agree with?</p>",
+      "stimulus_html": "<p>Text 1: A sound engineer finds that adding soft wall panels reduces echo at the rear seats. At the front, the same change has little effect.</p><p>Text 2: A music teacher argues that the panels are useful mainly for listeners far from the stage. The teacher attributes the small improvement in the front seats to their proximity to the performers.</p>",
+      "explanation_html": "<p>The seat comparison is shared. The explanation about proximity belongs to Text 2 alone.</p>",
+      "variation": "Find the comparison or precise claim that both writers actually address",
+      "source_cards": [
+        12,
+        17,
+        19,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L22-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "target_claim",
+        "agreement",
+        "difference",
+        "traps"
+      ],
+      "choices": [
+        "The panels completely eliminate echo throughout the hall.",
+        "Listeners at the front gain more from the panels than listeners at the rear.",
+        "The wall panels help reduce echo more for listeners far from the stage than for those at the front.",
+        "Both authors establish the cause of the seat-to-seat difference."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Claims a cause or certainty the evidence does not establish."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, which statement would both authors most likely agree with?</p>",
+      "stimulus_html": "<p>Text 1: The municipality should preserve its printed flood maps because the printed copies remain readable during power outages.</p><p>Text 2: A searchable digital map can speed up planning. For an emergency, though, printed maps provide a dependable backup when many devices lose power.</p>",
+      "explanation_html": "<p>Text 1 highlights print when power fails. Text 2 also recommends print as a backup for that situation.</p>",
+      "variation": "Identify a point of agreement explicitly supported by both texts",
+      "source_cards": [
+        3,
+        7,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L22-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "relationships",
+        "process",
+        "agreement"
+      ],
+      "choices": [
+        "A searchable digital map has no value.",
+        "Printed maps remain useful during power outages.",
+        "Both authors recommend distributing more maps during routine maintenance.",
+        "Printed maps convey every possible kind of flood information."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Misstates or contradicts part of the passage.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Extends the conclusion beyond the people, time, or conditions in the text."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes a difference between the authors’ views?</p>",
+      "stimulus_html": "<p>Text 1: The new station should place benches next to signs because visitors waiting there can easily consult departure information.</p><p>Text 2: Travelers who stop to read signs can block crowded paths. Benches should instead be placed farther from the signs to prevent waiting groups from forming at entrances.</p>",
+      "explanation_html": "<p>The texts recommend different bench locations because they value different outcomes.</p>",
+      "variation": "Explain a difference without switching the authors’ emphases",
+      "source_cards": [
+        7,
+        19,
+        20,
+        21
+      ],
+      "difficulty": 2,
+      "id": "L22-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "process",
+        "difference",
+        "format_22_2",
+        "traps"
+      ],
+      "choices": [
+        "Text 1 prioritizes easy access to information from a seat, while Text 2 prioritizes keeping busy routes clear.",
+        "Text 1 wants to clear entrances by moving benches farther away, while Text 2 emphasizes seated access.",
+        "Text 1 wants the station to remove all seating, while Text 2 wants extra signs.",
+        "Text 2 opposes giving visitors written information."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "C": "Misstates or contradicts part of the passage.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, how would the author of Text 2 most likely respond to the explanation in Text 1?</p>",
+      "stimulus_html": "<p>Text 1: Several irrigation ditches remained in use for centuries. The first walls were probably made from durable stone, explaining that longevity.</p><p>Text 2: At many of the sites the surviving ditch walls consist of alternating layers of slightly different brick. Investigators found evidence that the older walls were replaced repeatedly.</p>",
+      "explanation_html": "<p>The finding of successive replacements challenges continuous survival of the original walls, without denying that the ditches remained in use.</p>",
+      "variation": "Infer a likely response to an explanation, rather than to the shared result",
+      "source_cards": [
+        7,
+        8,
+        10,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L22-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "process",
+        "model",
+        "direction",
+        "target_claim"
+      ],
+      "choices": [
+        "By suggesting that repeated rebuilding, rather than durable original walls, could account for the long use.",
+        "By insisting that the ditches were never in use for long.",
+        "By saying the bricks prove the original walls were stone.",
+        "By proposing that the ditches were all cut in a single year."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Misstates or contradicts part of the passage.",
+        "C": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, how would the author of Text 2 most likely respond to the explanation in Text 1?</p>",
+      "stimulus_html": "<p>Text 1: The manual credits a bridge’s narrow width with preventing damage during storms.</p><p>Text 2: Both narrow and wide bridges in the region stood through the same storms if they had open railings. Narrow bridges with solid railings were among the ones damaged.</p>",
+      "explanation_html": "<p>Text 2 compares width and railing type separately. Survival tracks railing design better than width in those observations.</p>",
+      "variation": "Accept a shared observation and qualify the causal explanation",
+      "source_cards": [
+        12,
+        14,
+        15
+      ],
+      "difficulty": 3,
+      "id": "L22-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "target_claim",
+        "format_22_1",
+        "evidence_conclusion"
+      ],
+      "choices": [
+        "By saying narrow bridges with solid railings performed best.",
+        "By agreeing that all narrow bridges survived.",
+        "By arguing that no bridges were tested by storms.",
+        "By proposing that the railing design is a better explanation than width alone."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Misstates or contradicts part of the passage.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, which statement would both authors most likely agree with?</p>",
+      "stimulus_html": "<p>Text 1: The yearly totals show that the park’s busiest season shifted from summer to autumn after two new fall events were added.</p><p>Text 2: Ticket records confirm that autumn overtook summer. The writer argues that the shift tracks cooler weather more closely than the dates of the events.</p>",
+      "explanation_html": "<p>Both texts accept the seasonal shift. Only their proposed causes differ.</p>",
+      "variation": "Find the comparison or precise claim that both writers actually address",
+      "source_cards": [
+        12,
+        17,
+        19,
+        21
+      ],
+      "difficulty": 3,
+      "id": "L22-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "target_claim",
+        "agreement",
+        "difference",
+        "traps"
+      ],
+      "choices": [
+        "The fall events caused the shift independently of weather.",
+        "Cooler weather caused all additional visits.",
+        "Autumn became the busiest season at the park during the period described.",
+        "Summer remained busier than autumn after the change."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "B": "Claims a cause or certainty the evidence does not establish.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, which statement would both authors most likely agree with?</p>",
+      "stimulus_html": "<p>Text 1: Newly sorted records show that repair crews often traded tools across workshops. The records probably reflect a formal agreement among the shops.</p><p>Text 2: Diaries from the same district describe frequent lending among workshop crews. The loans may have reflected personal favors rather than any official arrangement.</p>",
+      "explanation_html": "<p>The authors differ on how sharing was arranged, but both sources support frequent sharing.</p>",
+      "variation": "Identify a point of agreement explicitly supported by both texts",
+      "source_cards": [
+        3,
+        7,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L22-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "relationships",
+        "process",
+        "agreement"
+      ],
+      "choices": [
+        "The tool exchanges were definitely governed by a written agreement.",
+        "Repair crews in the district often shared tools across workshops.",
+        "The diaries and the business records were written by the same people.",
+        "The workshops rarely loaned tools to one another."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "C": "Adds a claim or detail the passage does not support.",
+        "D": "Misstates or contradicts part of the passage."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes a difference between the authors’ views?</p>",
+      "stimulus_html": "<p>Text 1: A handbook values community sound archives for making changes in pronunciation audible to future listeners.</p><p>Text 2: An oral historian values the same archives because speakers in the recordings describe work that official records rarely mention. The historian adds that these recordings are too scattered to establish a continuous pronunciation history.</p>",
+      "explanation_html": "<p>Each answer half has support from its assigned text. Text 2 explicitly limits the pronunciation use and names another benefit.</p>",
+      "variation": "Explain a difference without switching the authors’ emphases",
+      "source_cards": [
+        7,
+        19,
+        20,
+        21
+      ],
+      "difficulty": 3,
+      "id": "L22-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "process",
+        "difference",
+        "format_22_2",
+        "traps"
+      ],
+      "choices": [
+        "Text 1 emphasizes personal histories, while Text 2 claims it can trace a continuous pronunciation history.",
+        "Text 1 stresses changes in how people speak, while Text 2 stresses the experiences speakers recount.",
+        "Both see changes in pronunciation as the primary value.",
+        "They disagree about whether the archive is in the historian’s city."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "C": "Misstates or contradicts part of the passage.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, how would the author of Text 2 most likely respond to the explanation in Text 1?</p>",
+      "stimulus_html": "<p>Text 1: Differences in the timing of two coastal housing booms show that one town copied the other after seeing its success.</p><p>Text 2: Maps and dated permits indicate that both towns approved new projects independently before either completed its first development. One started building sooner because its access road had already been widened.</p>",
+      "explanation_html": "<p>Text 2 distinguishes planning from completion. Independent approvals and earlier road work weaken the proposed copying explanation.</p>",
+      "variation": "Infer a likely response to an explanation, rather than to the shared result",
+      "source_cards": [
+        7,
+        8,
+        10,
+        12
+      ],
+      "difficulty": 3,
+      "id": "L22-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "process",
+        "model",
+        "direction",
+        "target_claim"
+      ],
+      "choices": [
+        "By disputing the copying explanation and pointing to independently approved plans and a difference in readiness.",
+        "By accepting that the towns copied each other and claiming they built at the same time.",
+        "By arguing that both towns tried to stop construction.",
+        "By claiming that the slower town’s earlier housing completion encouraged the other to build."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, how would the author of Text 2 most likely respond to the explanation in Text 1?</p>",
+      "stimulus_html": "<p>Text 1: Papermakers reduced the number of torn sheets after swapping out their wooden racks. The author suggests that metal racks were smoother and snagged fewer sheets.</p><p>Text 2: The new racks were taller as well as metal. Photographs show workers lifting sheets straight up from the taller racks instead of pulling them across the edge.</p>",
+      "explanation_html": "<p>Text 2 supplies another difference that could affect tears, without contradicting the decline in torn sheets.</p>",
+      "variation": "Accept a shared observation and qualify the causal explanation",
+      "source_cards": [
+        12,
+        14,
+        15
+      ],
+      "difficulty": 3,
+      "id": "L22-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "target_claim",
+        "format_22_1",
+        "evidence_conclusion"
+      ],
+      "choices": [
+        "By treating the new racks as shorter than the wooden ones.",
+        "By establishing that surface texture can never affect paper.",
+        "By disputing the number of sheets the mill made altogether.",
+        "By recognizing the reduction in tears and suggesting that the change in how sheets were removed may also explain it."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Reverses the direction, order, or relationship the passage establishes.",
+        "B": "Claims a cause or certainty the evidence does not establish.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Based on the texts, which statement would both authors most likely agree with?</p>",
+      "stimulus_html": "<p>Text 1: Some reusable crates survive washing longer if they have rounded corners. The writer suggests that repeated washing weakens sharp joins.</p><p>Text 2: A lab trial likewise found that rounded crates lasted through more washing cycles than sharp-cornered ones. The authors observed breakage near fasteners and caution that fastener design might partly explain the difference.</p>",
+      "explanation_html": "<p>Both reported outcomes favor rounded crates. The mechanisms are different possibilities awaiting a stronger test.</p>",
+      "variation": "Find the comparison or precise claim that both writers actually address",
+      "source_cards": [
+        12,
+        17,
+        19,
+        21
+      ],
+      "difficulty": 3,
+      "id": "L22-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "target_claim",
+        "agreement",
+        "difference",
+        "traps"
+      ],
+      "choices": [
+        "Sharp joins were proven to be the sole cause of breakage.",
+        "Both texts determined that reusable crates are never damaged during washing.",
+        "Rounded crates tended to survive more washing cycles in the cases described.",
+        "The sharp-cornered crates lasted longer in the lab trial."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Claims a cause or certainty the evidence does not establish.",
+        "B": "Adds a claim or detail the passage does not support.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.010614+00",
+  "lesson_number": 22,
+  "difficulty_counts": {
+    "1": 1,
+    "2": 8,
+    "3": 6
+  }
+}

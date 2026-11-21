@@ -1,0 +1,690 @@
+{
+  "id": "e6698e97-f6df-44d1-aab5-b10b17432ca4",
+  "title": "Boundaries 1: Find and Test Full Stops",
+  "status": "pilot_previously_reviewed",
+  "visibility": "shared",
+  "description": "Find a full-stop answer choice first and test for two complete thoughts. If it passes, select it and stop; if it fails, continue in punctuation order. Use equivalent full-stop duplicates as a bonus elimination shortcut.",
+  "cards": 32,
+  "spec": "docs/lesson-template-specs/boundaries-1-find-and-test-full-stops.json",
+  "questions": [
+    {
+      "id": "B01",
+      "objective_id": "B-JOINING",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The shop closed ______ the owner had a family appointment.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "early, for",
+        "early, however,",
+        "early,",
+        "early, for example,"
+      ],
+      "correct_index": 0,
+      "explanation_html": "<p>The shop closed early and the owner had a family appointment are complete clauses. A joins them with a comma and the coordinating conjunction for, meaning because. Neither however nor for example can perform that joining job with only commas.</p>",
+      "distractor_notes": {
+        "B": "Uses a transition with commas to join independent clauses.",
+        "C": "Joins independent clauses with a comma alone.",
+        "D": "Treats the phrase for example as the coordinating conjunction for."
+      },
+      "optional_hint": null,
+      "sequence": 1,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_joining_phrase",
+        "fe_for_instance_phrase",
+        "fe_joining_word_or_phrase"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The student distinguishes the less common coordinating use of “for” from transition phrases with similar punctuation.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B02",
+      "objective_id": "B-SUBJECT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The files stored in the locked ______ several handwritten maps of the valley.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "cabinet. Include",
+        "cabinet include",
+        "cabinet; include",
+        "cabinet, include"
+      ],
+      "correct_index": 1,
+      "explanation_html": "<p>The subject is The files stored in the locked cabinet, and its main verb is include. B keeps them in one complete sentence. Stored in the locked cabinet describes the files; it does not complete a separate statement.</p>",
+      "distractor_notes": {
+        "A": "Separates the subject from its main verb with a period.",
+        "C": "Separates the subject from its main verb with a semicolon.",
+        "D": "Places a comma between the subject and its main verb."
+      },
+      "optional_hint": null,
+      "sequence": 2,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_clause",
+        "coherence_clause_example",
+        "fe_pair_model",
+        "fe_independent_group"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "A short modifier sits between the subject and its main verb, and the other choices all split them.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B03",
+      "objective_id": "B-DEPENDENT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>Although the road had ______ the delivery truck reached the village.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "flooded;",
+        "flooded.",
+        "flooded,",
+        "flooded, but"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>Although the road had flooded is dependent: it needs the main statement the delivery truck reached the village. C connects the opening dependent clause to that statement. A period or semicolon leaves the opening unfinished, and adding but does not supply a main clause outside the Although construction.</p>",
+      "distractor_notes": {
+        "A": "Places a semicolon after a dependent clause.",
+        "B": "Makes the opening dependent clause a sentence fragment.",
+        "D": "Adds but after an Although clause instead of connecting it directly to its main statement."
+      },
+      "optional_hint": null,
+      "sequence": 3,
+      "phase": "practice",
+      "source_block_ids": [
+        "format_1_1",
+        "fe_unfinished",
+        "fe_unfinished_check"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The opening “Although” clearly signals a dependent clause that needs its main clause.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B04",
+      "objective_id": "B-SUBJECT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The narrow wooden shelf installed above the kitchen ______ several jars of dried herbs.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "window. Holds",
+        "window; holds",
+        "window holds",
+        "window, holds"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>The narrow wooden shelf installed above the kitchen window is the subject; holds is its main verb. C preserves that connection. The description installed above the kitchen window does not turn the subject into a complete first sentence.</p>",
+      "distractor_notes": {
+        "A": "Ends the sentence before the subject receives its main verb.",
+        "B": "Uses a semicolon between a subject and its main verb.",
+        "D": "Separates a subject from its main verb with a comma."
+      },
+      "optional_hint": null,
+      "sequence": 4,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_clause",
+        "coherence_clause_example",
+        "fe_pair_model",
+        "fe_independent_group"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "A singular subject contains a participial modifier and a prepositional phrase before its main verb.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B05",
+      "objective_id": "B-INDEPENDENT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The footbridge was closed for ______ engineers found a crack in one of its supports.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "repairs, the",
+        "repairs the",
+        "repairs, however, the",
+        "repairs. The"
+      ],
+      "correct_index": 3,
+      "explanation_html": "<p>D gives two complete sentences: The footbridge was closed for repairs. The engineers found a crack in one of its supports. Each has its own subject, main verb, and complete thought.</p>",
+      "distractor_notes": {
+        "A": "Joins two complete clauses with only a comma.",
+        "B": "Leaves two complete clauses without a boundary.",
+        "C": "Uses comma + however as if it could join independent clauses."
+      },
+      "optional_hint": null,
+      "sequence": 5,
+      "phase": "practice",
+      "source_block_ids": [
+        "fe_group",
+        "fe_one_model",
+        "fe_conjunction_model",
+        "fe_independent_single"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "Two complete thoughts have clear subjects and verbs, and the period is the only valid boundary offered.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B06",
+      "objective_id": "B-INDEPENDENT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The first battery powered the lamp for only an ______ the replacement kept it running all evening.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "hour, but",
+        "hour,",
+        "hour",
+        "hour, however,"
+      ],
+      "correct_index": 0,
+      "explanation_html": "<p>The first battery powered the lamp for only an hour and the replacement kept it running all evening are complete clauses. A joins them with a comma and the coordinating conjunction but, which also expresses their contrast.</p>",
+      "distractor_notes": {
+        "B": "Uses a comma alone between complete clauses.",
+        "C": "Omits the boundary between complete clauses.",
+        "D": "Treats however as a coordinating conjunction."
+      },
+      "optional_hint": null,
+      "sequence": 6,
+      "phase": "practice",
+      "source_block_ids": [
+        "fe_group",
+        "fe_one_model",
+        "fe_conjunction_model",
+        "fe_independent_single"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The clauses are short and their contrast makes the coordinating “but” a clear fit.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B07",
+      "objective_id": "B-INDEPENDENT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The seeds collected along the eastern ridge remained dry in ______ samples taken near the stream began to sprout.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "storage the",
+        "storage, the",
+        "storage; the",
+        "storage, however, the"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>C separates two complete clauses: the seeds remained dry, and the samples began to sprout. The descriptions of where the seeds and samples were collected do not change their completeness. A semicolon can join these independent clauses.</p>",
+      "distractor_notes": {
+        "A": "Runs two complete clauses together.",
+        "B": "Uses only a comma between clauses.",
+        "D": "Uses however with commas as the clause boundary."
+      },
+      "optional_hint": null,
+      "sequence": 7,
+      "phase": "practice",
+      "source_block_ids": [
+        "fe_group",
+        "fe_one_model",
+        "fe_conjunction_model",
+        "fe_independent_single"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "Modifiers on both sides make the two main verbs less immediate to spot before choosing the semicolon.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B08",
+      "objective_id": "B-DEPENDENT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The team packed the cameras ______ the rain was approaching.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "because",
+        "; because",
+        ". Because",
+        ", and because"
+      ],
+      "correct_index": 0,
+      "explanation_html": "<p>Because the rain was approaching is a dependent clause explaining why the team packed the cameras. A attaches that reason to the complete main clause. The other choices separate or coordinate the reason as though it could stand alone.</p>",
+      "distractor_notes": {
+        "B": "Places a dependent clause after a clause-joining semicolon.",
+        "C": "Makes the because-clause a separate sentence fragment.",
+        "D": "Coordinates a dependent reason-clause as though it were an independent second statement."
+      },
+      "optional_hint": null,
+      "sequence": 8,
+      "phase": "practice",
+      "source_block_ids": [
+        "format_1_1",
+        "fe_unfinished",
+        "fe_unfinished_check"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "“Because” directly signals that the reason clause belongs with the preceding statement.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B09",
+      "objective_id": "B-COMPOUND",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The chef checked the oven ______ its temperature, which was too high for the bread.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "and lowered",
+        ". Lowering",
+        "; lowering",
+        ". Lowered"
+      ],
+      "correct_index": 0,
+      "explanation_html": "<p>The chef is the subject of both checked and lowered. A connects those two actions in one sentence. In B, C, and D, the words after the proposed sentence boundary have no subject and cannot stand alone.</p>",
+      "distractor_notes": {
+        "B": "Makes an unfinished Lowering phrase a separate sentence.",
+        "C": "Places an unfinished lowering phrase after a clause-joining semicolon.",
+        "D": "Makes Lowered its temperature a separate sentence without a subject."
+      },
+      "optional_hint": null,
+      "sequence": 9,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_both_sides",
+        "fe_one_model",
+        "fe_same_boundary_rule"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The shared subject is clear and the boundary alternatives leave an obvious fragment.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B10",
+      "objective_id": "B-JOINING",
+      "response_type": "mcq",
+      "stimulus_html": "<p>Members of the team took extra ______ the route had no reliable water sources.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "water, however,",
+        "water, for instance,",
+        "water, for",
+        "water,"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>Members of the team took extra water and the route had no reliable water sources are independent clauses. C joins them with comma + for, which introduces the reason. For instance is a transition phrase, not the coordinating conjunction for.</p>",
+      "distractor_notes": {
+        "A": "Uses however with commas to join independent clauses.",
+        "B": "Uses for instance as though it were a coordinating conjunction.",
+        "D": "Joins independent clauses with a comma alone."
+      },
+      "optional_hint": null,
+      "sequence": 10,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_joining_phrase",
+        "fe_for_instance_phrase",
+        "fe_joining_word_or_phrase"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The choice turns on whether “for” is a conjunction or part of “for instance.”",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B11",
+      "objective_id": "B-SUBJECT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The collection of tools donated by the retired ______ several instruments still used in local workshops.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "carpenter. Includes",
+        "carpenter; includes",
+        "carpenter includes",
+        "carpenter, includes"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>The subject is The collection of tools donated by the retired carpenter, and the main verb is includes. C keeps them together. The period and semicolon choices both break the sentence before its main verb; neither side of that split is a complete independent clause.</p>",
+      "distractor_notes": {
+        "A": "Splits the subject from its main verb with a period.",
+        "B": "Splits the same subject and verb with a semicolon.",
+        "D": "Separates the subject from includes with a comma."
+      },
+      "optional_hint": null,
+      "sequence": 11,
+      "phase": "practice",
+      "source_block_ids": [
+        "coherence_clause",
+        "coherence_clause_example",
+        "fe_pair_model",
+        "fe_independent_group"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "A prepositional phrase and a modifier separate the main noun of the subject from its verb.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B12",
+      "objective_id": "B-WORDING",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The team reduced the weight of the ______ a hollow frame preserved the strength of the design.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "chair; by using",
+        "chair. Using",
+        "chair, using",
+        "chair using"
+      ],
+      "correct_index": 1,
+      "explanation_html": "<p>B forms two complete sentences. In the second, Using a hollow frame is the subject and preserved is the main verb. In A, by using a hollow frame is a description, leaving preserved without a subject. The changed word by therefore changes which construction is complete.</p>",
+      "distractor_notes": {
+        "A": "Treats by using a hollow frame as a subject for preserved.",
+        "C": "Joins two independent statements with a comma alone.",
+        "D": "Leaves the two statements without a boundary."
+      },
+      "optional_hint": null,
+      "sequence": 12,
+      "phase": "practice",
+      "source_block_ids": [
+        "format_1_2",
+        "fe_wording_and_placement_handoff",
+        "fe_independent_changed_wording"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 3,
+      "difficulty_rationale": "Adding “by” changes the opening phrase from the subject of a full clause to a modifier that leaves the main verb without a subject.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B13",
+      "objective_id": "B-SUBJECT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The collection of short recordings made during the winter ______ voices that were absent from the official broadcasts.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "festival. Preserves",
+        "festival; preserves",
+        "festival, and preserves",
+        "festival preserves"
+      ],
+      "correct_index": 3,
+      "explanation_html": "<p>D forms one complete sentence: The collection of short recordings made during the winter festival preserves voices. The description of the recordings is part of the subject. None of the other choices gives that first subject a main verb before the proposed clause boundary.</p>",
+      "distractor_notes": {
+        "A": "Cuts the subject off before its main verb.",
+        "B": "Makes the same incorrect split with a semicolon.",
+        "C": "Leaves the first side without its main verb and the second without its own subject."
+      },
+      "optional_hint": null,
+      "sequence": 13,
+      "phase": "later_review",
+      "source_block_ids": [
+        "coherence_clause",
+        "coherence_clause_example",
+        "fe_pair_model",
+        "fe_independent_group"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "A long subject delays the main verb, and the comma-plus-conjunction choice can look like a plausible boundary.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B14",
+      "objective_id": "B-DEPENDENT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>When the last guest had ______ the staff turned off the lights.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "left, and",
+        "left.",
+        "left,",
+        "left;"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>When the last guest had left is a dependent opening. The staff turned off the lights supplies its main statement. C joins them in one complete sentence. The other choices leave the When construction without an independent main statement.</p>",
+      "distractor_notes": {
+        "A": "Adds and where the dependent opening needs to connect directly to its main clause.",
+        "B": "Ends a dependent clause as a sentence fragment.",
+        "D": "Uses a semicolon after a dependent clause."
+      },
+      "optional_hint": null,
+      "sequence": 14,
+      "phase": "later_review",
+      "source_block_ids": [
+        "format_1_1",
+        "fe_unfinished",
+        "fe_unfinished_check"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The opening “When” and the short, complete main clause make the relationship clear.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B15",
+      "objective_id": "B-INDEPENDENT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>A school compared two ways of storing classroom art supplies. The shelves beside the windows received direct sunlight throughout the ______ materials in the closed cabinet remained cool.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "afternoon, however, the",
+        "afternoon the",
+        "afternoon. The",
+        "afternoon, the"
+      ],
+      "correct_index": 2,
+      "explanation_html": "<p>The shelves beside the windows received direct sunlight throughout the afternoon and The materials in the closed cabinet remained cool are complete independent statements. C separates them with a period.</p>",
+      "distractor_notes": {
+        "A": "Uses however with commas to join independent clauses.",
+        "B": "Leaves the clauses without a boundary.",
+        "D": "Uses a comma alone between independent clauses."
+      },
+      "optional_hint": null,
+      "sequence": 15,
+      "phase": "later_review",
+      "source_block_ids": [
+        "fe_group",
+        "fe_one_model",
+        "fe_conjunction_model",
+        "fe_independent_single"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The background adds reading, while the two clauses at the blank each have a clear subject and main verb.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B16",
+      "objective_id": "B-INDEPENDENT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The final bus had already ______ the visitors walked back to the hotel.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "departed, so",
+        "departed, therefore,",
+        "departed,",
+        "departed"
+      ],
+      "correct_index": 0,
+      "explanation_html": "<p>The final bus had already departed and the visitors walked back to the hotel are complete clauses. A joins them with comma + the coordinating conjunction so. Therefore is a transition and cannot join the same clauses with commas alone.</p>",
+      "distractor_notes": {
+        "B": "Treats therefore as a coordinating conjunction.",
+        "C": "Uses a comma alone between complete clauses.",
+        "D": "Omits the clause boundary."
+      },
+      "optional_hint": null,
+      "sequence": 16,
+      "phase": "later_review",
+      "source_block_ids": [
+        "fe_group",
+        "fe_one_model",
+        "fe_conjunction_model",
+        "fe_independent_single"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "The short clauses make the result clear and the coordinating “so” is the only valid connector offered.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B17",
+      "objective_id": "B-WORDING",
+      "response_type": "mcq",
+      "stimulus_html": "<p>The crew closed the ______ bridge needed urgent repairs.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "road; because the",
+        "road. The",
+        "road, the",
+        "road the"
+      ],
+      "correct_index": 1,
+      "explanation_html": "<p>B makes two complete sentences: The crew closed the road. The bridge needed urgent repairs. In A, because the bridge needed urgent repairs is dependent, so it cannot follow a semicolon as an independent clause. The added because changes the construction.</p>",
+      "distractor_notes": {
+        "A": "Places a dependent because-clause after a clause-joining semicolon.",
+        "C": "Joins independent clauses with a comma alone.",
+        "D": "Runs the independent clauses together."
+      },
+      "optional_hint": null,
+      "sequence": 17,
+      "phase": "later_review",
+      "source_block_ids": [
+        "format_1_2",
+        "fe_wording_and_placement_handoff",
+        "fe_independent_changed_wording"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 2,
+      "difficulty_rationale": "The student must compare the full wording because inserting “because” makes the second clause dependent.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    },
+    {
+      "id": "B18",
+      "objective_id": "B-INDEPENDENT",
+      "response_type": "mcq",
+      "stimulus_html": "<p>A receiver on the roof lost power during the ______ recording stopped before the final signal arrived.</p>",
+      "stem_html": "<p>Which choice completes the text so that it conforms to the conventions of Standard English?</p>",
+      "choices": [
+        "storm, the",
+        "storm. The",
+        "storm the",
+        "storm, however, the"
+      ],
+      "correct_index": 1,
+      "explanation_html": "<p>B separates two complete statements: a receiver lost power during the storm; the recording stopped before the final signal arrived. A comma alone, no boundary, or commas around however cannot join these independent clauses.</p>",
+      "distractor_notes": {
+        "A": "Uses a comma alone between independent clauses.",
+        "C": "Runs the independent clauses together.",
+        "D": "Uses however with commas as the clause boundary."
+      },
+      "optional_hint": null,
+      "sequence": 18,
+      "phase": "later_review",
+      "source_block_ids": [
+        "fe_group",
+        "fe_one_model",
+        "fe_conjunction_model",
+        "fe_independent_single"
+      ],
+      "approval_status": "pending_user_review",
+      "difficulty": 1,
+      "difficulty_rationale": "Two readily identifiable complete clauses need a period among the available choices.",
+      "task_scope": "complete_skill_application",
+      "standalone_review": "All givens and the requested outcome are stated in this question; no prior lesson card or partial student work is assumed."
+    }
+  ],
+  "objectives": [
+    {
+      "id": "B-INDEPENDENT",
+      "label": "Complete a text with a boundary between independent clauses.",
+      "source_block_ids": [
+        "fe_group",
+        "fe_one_model",
+        "fe_conjunction_model",
+        "fe_independent_single"
+      ]
+    },
+    {
+      "id": "B-DEPENDENT",
+      "label": "Complete sentences containing dependent clauses.",
+      "source_block_ids": [
+        "format_1_1",
+        "fe_unfinished",
+        "fe_unfinished_check"
+      ]
+    },
+    {
+      "id": "B-SUBJECT",
+      "label": "Keep a described subject attached to its main verb.",
+      "source_block_ids": [
+        "coherence_clause",
+        "coherence_clause_example",
+        "fe_pair_model",
+        "fe_independent_group"
+      ]
+    },
+    {
+      "id": "B-COMPOUND",
+      "label": "Complete a sentence whose subject performs two actions.",
+      "source_block_ids": [
+        "coherence_both_sides",
+        "fe_one_model",
+        "fe_same_boundary_rule"
+      ]
+    },
+    {
+      "id": "B-WORDING",
+      "label": "Choose a complete construction when options change both words and punctuation.",
+      "source_block_ids": [
+        "format_1_2",
+        "fe_wording_and_placement_handoff",
+        "fe_independent_changed_wording"
+      ]
+    },
+    {
+      "id": "B-JOINING",
+      "label": "Join clauses with a coordinating conjunction rather than a transition phrase.",
+      "source_block_ids": [
+        "coherence_joining_phrase",
+        "fe_for_instance_phrase",
+        "fe_joining_word_or_phrase"
+      ]
+    }
+  ],
+  "original_pilot_file": "content/drill-questions/pilot-2026-11-17/full-stops.json",
+  "original_pilot_sha256": "57191e2793edf2006b4ad4d81968d3c94d274665a98684df0ad33587bae57c25",
+  "pilot_source_ids_absent_from_current_lesson": [],
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.785089+00",
+  "lesson_number": 2,
+  "difficulty_counts": {
+    "1": 10,
+    "2": 7,
+    "3": 1
+  }
+}

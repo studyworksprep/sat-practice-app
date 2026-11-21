@@ -1,0 +1,477 @@
+{
+  "id": "44b8a858-d657-4b6d-b780-c5850e266b37",
+  "title": "Solve Systems of Equations by Graphing in Desmos",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Graph both complete equations, adjust both axis ranges to find hidden intersections, and use every relevant solution to answer the requested quantity.",
+  "cards": 36,
+  "spec": "docs/lesson-template-specs/solving-systems-of-equations-by-graphing.json",
+  "source_spec_sha256": "1ded18a60162978fab1e32c0121ea9d4cc61896bc2478df257ff286f5b4c77af",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Find the shared point of two lines and report the requested coordinate or sum": [
+      3,
+      6,
+      17
+    ],
+    "Expand both axes to locate a distant intersection": [
+      8,
+      10,
+      11
+    ],
+    "Graph a system in other variables and restore their roles": [
+      13,
+      15,
+      17
+    ],
+    "Find both intersections of a line and a parabola": [
+      20,
+      21,
+      24
+    ],
+    "Find the intersection of a vertical line and a nonlinear graph": [
+      3,
+      6,
+      20
+    ],
+    "Determine the number of solutions when the graphs are parallel": [
+      26,
+      27
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system consists of \\(y=3x+1\\) and \\(y=-2x+11\\). What is the x-coordinate of the solution?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "2"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Graph both equations and read the x-coordinate of their common point \\((2,7)\\). The horizontal coordinate is 2.</p>",
+      "variation": "Find the shared point of two lines and report the requested coordinate or sum",
+      "source_cards": [
+        3,
+        6,
+        17
+      ],
+      "difficulty": 1,
+      "id": "L37-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "equation_graph_meaning",
+        "process_outline",
+        "requested_quantity_rule"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system consists of \\(y=2x-18\\) and \\(y=x+13\\). What is x + y for its solution?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "75"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Graph both full equations. They meet only at \\((31,44)\\), where the sum is 75.</p>",
+      "variation": "Expand both axes to locate a distant intersection",
+      "source_cards": [
+        8,
+        10,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L37-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "gw_sys_window",
+        "format_37_1",
+        "gw_sys_both_axes"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The pair (u, v) solves \\(2u+3v=29\\) and \\(2u-v=1\\). What is the value of \\(u-v\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-3"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use x in place of u and y in place of v to graph both equations. Their intersection has coordinates \\((4,7)\\). Restore the original roles to compute u − v = -3.</p>",
+      "variation": "Graph a system in other variables and restore their roles",
+      "source_cards": [
+        13,
+        15,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L37-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "different_variables_rule",
+        "different_variables_graph",
+        "requested_quantity_rule"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What is the larger x-coordinate of an intersection of \\(y=x^{2}+26\\) and \\(y=2x+2\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "6"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Graph both equations and find both intersections. Equating them yields \\((x+4)(x-6)=0\\), so the x-coordinates are -4 and 6. The larger is 6.</p>",
+      "variation": "Find both intersections of a line and a parabola",
+      "source_cards": [
+        20,
+        21,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L37-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_37_2",
+        "nonlinear_transition",
+        "gw_sys_search_for_another"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A system is given by \\(y=\\sqrt{x-4}+4\\) and \\(x-13=0\\). What is the y-coordinate of the solution?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "7"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The second equation graphs as a vertical line at x = 13. It meets the square-root curve at y = 3 + 4 = 7, which also checks by substitution.</p>",
+      "variation": "Find the intersection of a vertical line and a nonlinear graph",
+      "source_cards": [
+        3,
+        6,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L37-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "equation_graph_meaning",
+        "process_outline",
+        "format_37_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>How many solutions does the system \\(y=4x-3\\) and \\(y=4x+9\\) have?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "0"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The slopes are both 4, but the intercepts are -3 and 9. The graphs are distinct parallel lines and never share a point.</p>",
+      "variation": "Determine the number of solutions when the graphs are parallel",
+      "source_cards": [
+        26,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L37-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_37_3",
+        "format_37_4"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system consists of \\(y=4x-4\\) and \\(y=x+5\\). What is x + y for its solution?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "11"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Graph both full equations. They meet only at \\((3,8)\\), where the sum is 11.</p>",
+      "variation": "Find the shared point of two lines and report the requested coordinate or sum",
+      "source_cards": [
+        3,
+        6,
+        17
+      ],
+      "difficulty": 1,
+      "id": "L37-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "equation_graph_meaning",
+        "process_outline",
+        "requested_quantity_rule"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system consists of \\(y=-3x-27\\) and \\(y=x+61\\). What is the x-coordinate of the solution?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-22"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Graph both equations and read the x-coordinate of their common point \\((-22,39)\\). The horizontal coordinate is -22.</p>",
+      "variation": "Expand both axes to locate a distant intersection",
+      "source_cards": [
+        8,
+        10,
+        11
+      ],
+      "difficulty": 2,
+      "id": "L37-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "gw_sys_window",
+        "format_37_1",
+        "gw_sys_both_axes"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The pair (u, v) solves \\(3u+1v=0\\) and \\(2u-v=-10\\). What is the value of \\(u-v\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-8"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use x in place of u and y in place of v to graph both equations. Their intersection has coordinates \\((-2,6)\\). Restore the original roles to compute u − v = -8.</p>",
+      "variation": "Graph a system in other variables and restore their roles",
+      "source_cards": [
+        13,
+        15,
+        17
+      ],
+      "difficulty": 2,
+      "id": "L37-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "different_variables_rule",
+        "different_variables_graph",
+        "requested_quantity_rule"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What is the larger x-coordinate of an intersection of \\(y=x^{2}+39\\) and \\(y=-2x+4\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "5"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Graph both equations and find both intersections. Equating them yields \\((x+7)(x-5)=0\\), so the x-coordinates are -7 and 5. The larger is 5.</p>",
+      "variation": "Find both intersections of a line and a parabola",
+      "source_cards": [
+        20,
+        21,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L37-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_37_2",
+        "nonlinear_transition",
+        "gw_sys_search_for_another"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A system is given by \\(y=\\sqrt{x-6}+2\\) and \\(x-22=0\\). What is the y-coordinate of the solution?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "6"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The second equation graphs as a vertical line at x = 22. It meets the square-root curve at y = 4 + 2 = 6, which also checks by substitution.</p>",
+      "variation": "Find the intersection of a vertical line and a nonlinear graph",
+      "source_cards": [
+        3,
+        6,
+        20
+      ],
+      "difficulty": 2,
+      "id": "L37-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "equation_graph_meaning",
+        "process_outline",
+        "format_37_2"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The system consists of \\(y=4x-166\\) and \\(y=2x-112\\). What is x + y for its solution?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "-31"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Graph both full equations. They meet only at \\((27,-58)\\), where the sum is -31.</p>",
+      "variation": "Expand both axes to locate a distant intersection",
+      "source_cards": [
+        8,
+        10,
+        11
+      ],
+      "difficulty": 3,
+      "id": "L37-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "gw_sys_window",
+        "format_37_1",
+        "gw_sys_both_axes"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>The pair (u, v) solves \\(5u+4v=57\\) and \\(2u-v=15\\). What is the value of \\(u-v\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "6"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Use x in place of u and y in place of v to graph both equations. Their intersection has coordinates \\((9,3)\\). Restore the original roles to compute u − v = 6.</p>",
+      "variation": "Graph a system in other variables and restore their roles",
+      "source_cards": [
+        13,
+        15,
+        17
+      ],
+      "difficulty": 3,
+      "id": "L37-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "different_variables_rule",
+        "different_variables_graph",
+        "requested_quantity_rule"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>What is the larger x-coordinate of an intersection of \\(y=x^{2}-9\\) and \\(y=26x+60\\)?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "23"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Graph both equations and find both intersections. Equating them yields \\((x-3)(x-23)=0\\), so the x-coordinates are 3 and 23. The larger is 23.</p>",
+      "variation": "Find both intersections of a line and a parabola",
+      "source_cards": [
+        20,
+        21,
+        24
+      ],
+      "difficulty": 3,
+      "id": "L37-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_37_2",
+        "nonlinear_transition",
+        "gw_sys_search_for_another"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A system is given by \\(y=\\sqrt{x-9}+7\\) and \\(x-34=0\\). What is the y-coordinate of the solution?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "12"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The second equation graphs as a vertical line at x = 34. It meets the square-root curve at y = 5 + 7 = 12, which also checks by substitution.</p>",
+      "variation": "Find the intersection of a vertical line and a nonlinear graph",
+      "source_cards": [
+        3,
+        6,
+        20
+      ],
+      "difficulty": 3,
+      "id": "L37-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "equation_graph_meaning",
+        "process_outline",
+        "format_37_2"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-20 15:06:37.274898+00",
+  "lesson_number": 37,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 9,
+    "3": 4
+  }
+}

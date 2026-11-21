@@ -1,0 +1,615 @@
+{
+  "id": "ff731099-ecf9-4b4d-b2f7-4a42d9ad5021",
+  "title": "Good Cop / Bad Cop: Check Every Reading Answer",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Use your answer target to test each choice for what fits and what fails. Check passage-based answers against the text; assume “if true” findings are true and judge their effect on the claim.",
+  "cards": 49,
+  "spec": "docs/lesson-template-specs/good-cop-bad-cop-reading-answers.json",
+  "source_spec_sha256": "653423c68d8ca050c32a71f72223cf837f8460217b34d8defe78019f0bb5d3f3",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Verify every part of an answer on a two-condition passage": [
+      6,
+      9,
+      12,
+      13,
+      28,
+      29
+    ],
+    "Reject the unsupported half of a character inference": [
+      9,
+      15,
+      28,
+      37
+    ],
+    "Judge whether a hypothetical finding supports the specific explanation": [
+      19,
+      20,
+      24,
+      25
+    ],
+    "Judge how a hypothetical finding weakens the specific explanation": [
+      19,
+      21,
+      22
+    ],
+    "Evaluate the full wording of answers about the role of a sentence": [
+      13,
+      17,
+      40
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>The east side of a hill had cooling winds in the afternoon, and people working there completed slightly more rows of planting than workers on the west side. During an early-morning trial, when winds were light across the hill, the crews completed about the same number of rows.</p>",
+      "explanation_html": "<p>The answer must keep both halves of the result. It reports the comparison without claiming that wind was the only cause.</p>",
+      "variation": "Verify every part of an answer on a two-condition passage",
+      "source_cards": [
+        6,
+        9,
+        12,
+        13,
+        28,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L19-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "one_choice_two_questions",
+        "four_questions",
+        "city_maps_choice_a",
+        "city_maps_remaining_choices",
+        "two_possible_choices",
+        "roof_coating_question"
+      ],
+      "choices": [
+        "The east side’s productivity advantage appeared in the afternoon trial but not in the morning trial.",
+        "The east had cooling winds and the west crews worked faster in both trials.",
+        "Afternoon wind was the only possible cause of the productivity difference.",
+        "The morning workers completed the same number of rows."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Claims a cause or certainty the evidence does not establish.",
+        "D": "Captures only one detail or part of the relevant idea."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the character’s reaction?</p>",
+      "stimulus_html": "<p>After the first audience left, Pri put her playbill in her coat. She was gratified to see her name in print, but when a visitor asked who designed the scenery, she simply pointed toward the stage.</p>",
+      "explanation_html": "<p>Check both ideas independently. Her printed name pleases her, and the evasive gesture shows reluctance to identify herself.</p>",
+      "variation": "Reject the unsupported half of a character inference",
+      "source_cards": [
+        9,
+        15,
+        28,
+        37
+      ],
+      "difficulty": 2,
+      "id": "L19-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_questions",
+        "strong_words",
+        "two_possible_choices",
+        "devon_poem_question"
+      ],
+      "choices": [
+        "She is pleased by her printed name but regrets how the scenery looked.",
+        "She hopes the visitor will replace her as designer.",
+        "She is disappointed that the program mentions her.",
+        "She is pleased by the recognition and reluctant to claim it aloud."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Includes a supported detail but joins it to an unsupported claim.",
+        "B": "Adds a claim or detail the passage does not support.",
+        "C": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly support the explanation?</p>",
+      "stimulus_html": "<p>A volunteer noticed fewer wet book covers in boxes lined with a waxy sheet. She suggests the sheet protects the covers by preventing drops from soaking through from the box’s base.</p>",
+      "explanation_html": "<p>Less water passing through the lined base directly connects the liner to lower seepage under comparable conditions.</p>",
+      "variation": "Judge whether a hypothetical finding supports the specific explanation",
+      "source_cards": [
+        19,
+        20,
+        24,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L19-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_hypothetical_support",
+        "hypothetical_choice_model",
+        "inference_support",
+        "island_lizards_question"
+      ],
+      "choices": [
+        "Wet covers were counted at the end of the day.",
+        "The waxy sheet was sold in larger pieces than plain paper.",
+        "In equivalent wet boxes, much less water passed through the base to the covers when the waxy sheet was present.",
+        "The covers dried quickly after the boxes were opened."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Restates information from the text without addressing the requested relationship.",
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Includes a supported detail but joins it to an unsupported claim."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly weaken the explanation?</p>",
+      "stimulus_html": "<p>A saw cut boards more evenly after a shop sharpened its blade. The manager credits the improvement to lower vibration during cuts.</p>",
+      "explanation_html": "<p>The explanation depends on a change in vibration. The same vibration under both conditions challenges it.</p>",
+      "variation": "Judge how a hypothetical finding weakens the specific explanation",
+      "source_cards": [
+        19,
+        21,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L19-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_hypothetical_support",
+        "coherence_hypothetical_weaken",
+        "coherence_hypothetical_weaken_example"
+      ],
+      "choices": [
+        "Freshly sharpened blades were used on the next shift.",
+        "An instrument showed a large fall in vibration after sharpening.",
+        "The same saw vibrated just as much with the sharpened blade as with the old blade during matched cuts.",
+        "The shop bought a new carrying case for the saw."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Restates information from the text without addressing the requested relationship.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>A researcher argues that past storm reports can help locate places where seawalls failed. For instance, an April report describes two breaks in a wall that later official maps show as continuous.</p>",
+      "explanation_html": "<p>The first sentence makes the claim. The text’s final sentence supplies a particular report that illustrates it.</p>",
+      "variation": "Evaluate the full wording of answers about the role of a sentence",
+      "source_cards": [
+        13,
+        17,
+        40
+      ],
+      "difficulty": 2,
+      "id": "L19-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "city_maps_remaining_choices",
+        "function_question",
+        "transportation_question"
+      ],
+      "choices": [
+        "It provides an example and proves that all later maps are unreliable.",
+        "It provides a case in which a storm report contains information missing from later maps.",
+        "It explains why no seawall ever failed in April.",
+        "It presents an official map that confirms the report’s two breaks."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Assigns the sentence or passage a different rhetorical job.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>A library’s larger typeface did not change reading speed among adults who already read the smaller print easily. Adults who had struggled with the old print finished the same notice more quickly in the larger typeface.</p>",
+      "explanation_html": "<p>Both groups are needed in the answer, and the text reports little change in the second group.</p>",
+      "variation": "Verify every part of an answer on a two-condition passage",
+      "source_cards": [
+        6,
+        9,
+        12,
+        13,
+        28,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L19-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "one_choice_two_questions",
+        "four_questions",
+        "city_maps_choice_a",
+        "city_maps_remaining_choices",
+        "two_possible_choices",
+        "roof_coating_question"
+      ],
+      "choices": [
+        "Larger type helped readers who had difficulty with the old print, with little change for readers who already read it easily.",
+        "Struggling readers improved, and all other readers slowed down.",
+        "Larger print always improves speed for all adults.",
+        "Some readers found the old print difficult."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Extends the conclusion beyond the people, time, or conditions in the text.",
+        "D": "Captures only one detail or part of the relevant idea."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the character’s reaction?</p>",
+      "stimulus_html": "<p>The neighbor delivered the repaired clock wrapped in newspaper. Sami thanked him, then listened with his ear very close to the ticking before returning it to the mantle. “I was afraid it would sound different,” he said.</p>",
+      "explanation_html": "<p>His gratitude is explicit, and close listening plus his remark show that the familiar sound matters.</p>",
+      "variation": "Reject the unsupported half of a character inference",
+      "source_cards": [
+        9,
+        15,
+        28,
+        37
+      ],
+      "difficulty": 2,
+      "id": "L19-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_questions",
+        "strong_words",
+        "two_possible_choices",
+        "devon_poem_question"
+      ],
+      "choices": [
+        "He appreciates the repair but is annoyed that the clock no longer works.",
+        "He tests the clock because he distrusts all the neighbor’s work.",
+        "He plans to replace the clock with a quieter one.",
+        "He is grateful for the repair and attentive to whether the familiar sound has changed."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Includes a supported detail but joins it to an unsupported claim.",
+        "B": "Claims a cause or certainty the evidence does not establish.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly support the explanation?</p>",
+      "stimulus_html": "<p>A team’s sketches became easier for visitors to read after thin outlines were added. A curator proposes that the outlines made nearby shapes easier to distinguish.</p>",
+      "explanation_html": "<p>The targeted task measures the proposed benefit, rather than mere preference for the altered drawings.</p>",
+      "variation": "Judge whether a hypothetical finding supports the specific explanation",
+      "source_cards": [
+        19,
+        20,
+        24,
+        25
+      ],
+      "difficulty": 2,
+      "id": "L19-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_hypothetical_support",
+        "hypothetical_choice_model",
+        "inference_support",
+        "island_lizards_question"
+      ],
+      "choices": [
+        "Visitors stood at the same distance from both kinds of sketches.",
+        "Several outlines were drawn in a different room.",
+        "Some visitors liked the room’s paint color.",
+        "On tasks requiring visitors to distinguish two adjacent shapes, the outlined sketches produced fewer mistakes."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "B": "Describes a different task, detail, or entity from the one the question asks about.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly weaken the explanation?</p>",
+      "stimulus_html": "<p>A city division saw fewer missed appointments after moving its office. Staff suggested that the new office was easier to reach by bus.</p>",
+      "explanation_html": "<p>The proposed bus mechanism predicts improvement among bus riders. An improvement confined to drivers weakens it.</p>",
+      "variation": "Judge how a hypothetical finding weakens the specific explanation",
+      "source_cards": [
+        19,
+        21,
+        22
+      ],
+      "difficulty": 2,
+      "id": "L19-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_hypothetical_support",
+        "coherence_hypothetical_weaken",
+        "coherence_hypothetical_weaken_example"
+      ],
+      "choices": [
+        "The new office occupied a larger room.",
+        "Travel times fell for bus riders and their missed appointments declined.",
+        "With bus riders examined separately, their missed-appointment rate stayed the same; the drop occurred among people who drove.",
+        "There were more parking sensors near the old office."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Restates information from the text without addressing the requested relationship.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>The old instruction sheet told operators to wait until a green light appeared. After reports that the light was hard to see in sunshine, the manufacturer added an audible signal to the revised model.</p>",
+      "explanation_html": "<p>The second sentence ties the changed design to difficulty seeing the earlier cue.</p>",
+      "variation": "Evaluate the full wording of answers about the role of a sentence",
+      "source_cards": [
+        13,
+        17,
+        40
+      ],
+      "difficulty": 2,
+      "id": "L19-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "city_maps_remaining_choices",
+        "function_question",
+        "transportation_question"
+      ],
+      "choices": [
+        "It states that an audible signal exists, without any connection to the earlier instruction.",
+        "It explains a design response to a problem with the original visual signal.",
+        "It explains the response and proves that no operator ever missed it.",
+        "It contrasts the new model with an old model that had only an audible signal."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Captures only one detail or part of the relevant idea.",
+        "C": "Includes a supported detail but joins it to an unsupported claim.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best states the central idea of the text?</p>",
+      "stimulus_html": "<p>A firm tested a light cart on two surfaces. On flat floors, it rolled as far as a heavier cart after one push. On carpet, it stopped sooner than the heavy one. Both were loaded with the same weight.</p>",
+      "explanation_html": "<p>Verify each condition and the direction of the comparison. The bearings are not identified as a cause.</p>",
+      "variation": "Verify every part of an answer on a two-condition passage",
+      "source_cards": [
+        6,
+        9,
+        12,
+        13,
+        28,
+        29
+      ],
+      "difficulty": 3,
+      "id": "L19-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "one_choice_two_questions",
+        "four_questions",
+        "city_maps_choice_a",
+        "city_maps_remaining_choices",
+        "two_possible_choices",
+        "roof_coating_question"
+      ],
+      "choices": [
+        "The lighter cart matched the heavier cart on flat floors but traveled less far on carpet in the test.",
+        "The carts matched on flat floors because the light cart had better bearings.",
+        "The carts carried the same weight during the test.",
+        "The light cart rolled farther than the heavy cart on carpet."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Captures only one detail or part of the relevant idea.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the character’s reaction?</p>",
+      "stimulus_html": "<p>The new captain offered Mina a seat on the committee. She began to decline, then heard that every crew would send its newest member. She took a pencil from her pocket and asked when the meetings started.</p>",
+      "explanation_html": "<p>Her initial hesitation changes after hearing who the committee is for. The text gives no evidence of an expected reward.</p>",
+      "variation": "Reject the unsupported half of a character inference",
+      "source_cards": [
+        9,
+        15,
+        28,
+        37
+      ],
+      "difficulty": 3,
+      "id": "L19-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "four_questions",
+        "strong_words",
+        "two_possible_choices",
+        "devon_poem_question"
+      ],
+      "choices": [
+        "She changes her mind when she realizes the role is meant for someone with her level of experience.",
+        "She changes her mind because she expects the committee to give her a promotion.",
+        "She refuses when she learns that newer members will take part.",
+        "She agrees because she thinks the captain has removed all other members."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly support the explanation?</p>",
+      "stimulus_html": "<p>A site’s maps started loading faster after small preview images replaced large files on the first screen. The designer proposes that less data must arrive before a visitor can interact.</p>",
+      "explanation_html": "<p>The relevant improvement is fewer bytes before interactivity. General reports of speed do not show the proposed reason.</p>",
+      "variation": "Judge whether a hypothetical finding supports the specific explanation",
+      "source_cards": [
+        19,
+        20,
+        24,
+        25
+      ],
+      "difficulty": 3,
+      "id": "L19-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_hypothetical_support",
+        "hypothetical_choice_model",
+        "inference_support",
+        "island_lizards_question"
+      ],
+      "choices": [
+        "The previews use the same colors as the larger files.",
+        "Visitors reported that loading felt faster.",
+        "Several full images were photographed at the same location.",
+        "Tests with equal connection speeds show that many fewer bytes arrived before the first screen became interactive with previews."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Describes a different task, detail, or entity from the one the question asks about.",
+        "B": "Restates information from the text without addressing the requested relationship.",
+        "C": "Adds a claim or detail the passage does not support."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which finding, if true, would most directly weaken the explanation?</p>",
+      "stimulus_html": "<p>The baker concluded that a new tray made the crust crisp by drawing moisture from its underside. Pies baked on the tray were indeed crisper.</p>",
+      "explanation_html": "<p>The finding preserves the crispness result but removes the moisture difference needed by the proposed explanation.</p>",
+      "variation": "Judge how a hypothetical finding weakens the specific explanation",
+      "source_cards": [
+        19,
+        21,
+        22
+      ],
+      "difficulty": 3,
+      "id": "L19-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "coherence_hypothetical_support",
+        "coherence_hypothetical_weaken",
+        "coherence_hypothetical_weaken_example"
+      ],
+      "choices": [
+        "The new tray was supplied by a company in another region.",
+        "Pies on the old tray retained more moisture on the underside.",
+        "In controlled tests, the underside lost no more moisture on the new tray than on the old tray, although it still became crisper.",
+        "The recipe used the same amount of salt on both trays."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Restates information from the text without addressing the requested relationship.",
+        "B": "Reverses the direction, order, or relationship the passage establishes.",
+        "D": "Describes a different task, detail, or entity from the one the question asks about."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Which choice best describes the function of the final sentence in the text?</p>",
+      "stimulus_html": "<p>A team compared a narrow and a wide seed tray. The wide tray held more seeds, but less air circulated below its center. The study’s authors suggest that adding vents might preserve capacity while improving circulation.</p>",
+      "explanation_html": "<p>The proposal addresses the observed trade-off. It is a suggestion, with no stated test of vents.</p>",
+      "variation": "Evaluate the full wording of answers about the role of a sentence",
+      "source_cards": [
+        13,
+        17,
+        40
+      ],
+      "difficulty": 3,
+      "id": "L19-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "city_maps_remaining_choices",
+        "function_question",
+        "transportation_question"
+      ],
+      "choices": [
+        "It proposes vents and reports that vents have already solved the problem.",
+        "It proposes a way to address the trade-off established by the comparison.",
+        "It explains how the authors counted seeds.",
+        "It recommends reducing capacity so that less air circulates."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Includes a supported detail but joins it to an unsupported claim.",
+        "C": "Describes a different task, detail, or entity from the one the question asks about.",
+        "D": "Reverses the direction, order, or relationship the passage establishes."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:53.975675+00",
+  "lesson_number": 19,
+  "difficulty_counts": {
+    "1": 0,
+    "2": 10,
+    "3": 5
+  }
+}

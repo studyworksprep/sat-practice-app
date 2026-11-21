@@ -1,0 +1,503 @@
+{
+  "id": "0ae583f2-825c-498a-9d91-31ec0de156f0",
+  "title": "Use Desmos Lists and List Tools",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Create named lists, transform every value with list arithmetic, combine lists with join, and calculate mean, median, and total efficiently in Desmos.",
+  "cards": 45,
+  "spec": "docs/lesson-template-specs/desmos-list-tools.json",
+  "source_spec_sha256": "f8b1fa31770c54e370f0436504e70cb928d27e3a8289c10ebf9b58f7d5c2f189",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Transform an entire list and find its mean": [
+      6,
+      7,
+      24
+    ],
+    "Reverse an entire list transformation and read a statistic": [
+      12,
+      13,
+      14,
+      24
+    ],
+    "Apply list arithmetic and total the results": [
+      6,
+      10,
+      29,
+      34
+    ],
+    "Combine matching list positions and calculate their median": [
+      16,
+      17,
+      27
+    ],
+    "Join whole groups before calculating a statistic": [
+      19,
+      20,
+      24,
+      27,
+      34
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A list contains [5, 8, 11]. Each value is multiplied by 2 and then increased by 4. What is the mean of the resulting values?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "20"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Apply both operations to each entry, then take the mean. The resulting list is [14, 20, 26].</p>",
+      "variation": "Transform an entire list and find its mean",
+      "source_cards": [
+        6,
+        7,
+        24
+      ],
+      "difficulty": 1,
+      "id": "L45-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_1",
+        "add_to_list",
+        "statistics_functions"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Each value in a list was multiplied by 5 and then increased by 7. The resulting values are [17, 37, 57]. What was the mean of the original list?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "6"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Undo the last change first: subtract 7 from every value, then divide the whole list by 5. The original list is [2, 6, 10]. Its mean is \\(6\\).</p>",
+      "variation": "Reverse an entire list transformation and read a statistic",
+      "source_cards": [
+        12,
+        13,
+        14,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L45-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_2",
+        "reverse_list_transformation",
+        "reverse_list_model",
+        "statistics_functions"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A list contains [12, 15, 17]. Add 4 to each value, then multiply each result by 3. What is the total of the transformed list?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "168"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The transformed values are [48, 57, 63]. Their sum is 168.</p>",
+      "variation": "Apply list arithmetic and total the results",
+      "source_cards": [
+        6,
+        10,
+        29,
+        34
+      ],
+      "difficulty": 1,
+      "id": "L45-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_1",
+        "practice_scalar_operations",
+        "format_45_6",
+        "format_45_9"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two lists give Monday and Tuesday counts for the same stations in the same order. The lists are [5, 7, 11] and [9, 2, 3]. What is the median of the stations’ two-day totals?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "14"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Add matching positions to get [14, 9, 14]. Their middle value in sorted order is 14.</p>",
+      "variation": "Combine matching list positions and calculate their median",
+      "source_cards": [
+        16,
+        17,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L45-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_3",
+        "two_list_arithmetic",
+        "format_45_5"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>An experiment recorded [4, 8, 12] in its first group and [1, 15] in its second group. What is the median across all individual observations?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "8"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Join the two full lists and sort their values: [1, 4, 8, 12, 15]. The middle entry is 8.</p>",
+      "variation": "Join whole groups before calculating a statistic",
+      "source_cards": [
+        19,
+        20,
+        24,
+        27,
+        34
+      ],
+      "difficulty": 2,
+      "id": "L45-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_4",
+        "join_lists",
+        "statistics_functions",
+        "format_45_5",
+        "format_45_9"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A list contains [3, 7, 10, 12]. Each value is multiplied by 3 and then increased by 6. What is the mean of the resulting values?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "30"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Apply both operations to each entry, then take the mean. The resulting list is [15, 27, 36, 42].</p>",
+      "variation": "Transform an entire list and find its mean",
+      "source_cards": [
+        6,
+        7,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L45-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_1",
+        "add_to_list",
+        "statistics_functions"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Each value in a list was multiplied by 3 and then increased by 8. The resulting values are [29, 35, 50, 62]. What was the mean of the original list?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "12"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Undo the last change first: subtract 8 from every value, then divide the whole list by 3. The original list is [7, 9, 14, 18]. Its mean is \\(12\\).</p>",
+      "variation": "Reverse an entire list transformation and read a statistic",
+      "source_cards": [
+        12,
+        13,
+        14,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L45-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_2",
+        "reverse_list_transformation",
+        "reverse_list_model",
+        "statistics_functions"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A list contains [6, 13, 22]. Add 6 to each value, then multiply each result by 5. What is the total of the transformed list?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "295"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The transformed values are [60, 95, 140]. Their sum is 295.</p>",
+      "variation": "Apply list arithmetic and total the results",
+      "source_cards": [
+        6,
+        10,
+        29,
+        34
+      ],
+      "difficulty": 2,
+      "id": "L45-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_1",
+        "practice_scalar_operations",
+        "format_45_6",
+        "format_45_9"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two lists give Monday and Tuesday counts for the same stations in the same order. The lists are [8, 12, 15] and [5, 11, 9]. What is the median of the stations’ two-day totals?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "23"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Add matching positions to get [13, 23, 24]. Their middle value in sorted order is 23.</p>",
+      "variation": "Combine matching list positions and calculate their median",
+      "source_cards": [
+        16,
+        17,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L45-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_3",
+        "two_list_arithmetic",
+        "format_45_5"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>An experiment recorded [3, 9] in its first group and [11, 12, 17] in its second group. What is the median across all individual observations?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "11"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Join the two full lists and sort their values: [3, 9, 11, 12, 17]. The middle entry is 11.</p>",
+      "variation": "Join whole groups before calculating a statistic",
+      "source_cards": [
+        19,
+        20,
+        24,
+        27,
+        34
+      ],
+      "difficulty": 2,
+      "id": "L45-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_4",
+        "join_lists",
+        "statistics_functions",
+        "format_45_5",
+        "format_45_9"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A list contains [8, 14, 16, 22]. Each value is multiplied by 4 and then increased by 9. What is the mean of the resulting values?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "69"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Apply both operations to each entry, then take the mean. The resulting list is [41, 65, 73, 97].</p>",
+      "variation": "Transform an entire list and find its mean",
+      "source_cards": [
+        6,
+        7,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L45-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_1",
+        "add_to_list",
+        "statistics_functions"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Each value in a list was multiplied by 4 and then increased by 13. The resulting values are [57, 61, 73, 93]. What was the mean of the original list?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "29/2"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Undo the last change first: subtract 13 from every value, then divide the whole list by 4. The original list is [11, 12, 15, 20]. Its mean is \\(\\frac{29}{2}\\).</p>",
+      "variation": "Reverse an entire list transformation and read a statistic",
+      "source_cards": [
+        12,
+        13,
+        14,
+        24
+      ],
+      "difficulty": 3,
+      "id": "L45-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_2",
+        "reverse_list_transformation",
+        "reverse_list_model",
+        "statistics_functions"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A list contains [2, 5, 9, 14]. Add 8 to each value, then multiply each result by 6. What is the total of the transformed list?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "372"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The transformed values are [60, 78, 102, 132]. Their sum is 372.</p>",
+      "variation": "Apply list arithmetic and total the results",
+      "source_cards": [
+        6,
+        10,
+        29,
+        34
+      ],
+      "difficulty": 2,
+      "id": "L45-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_1",
+        "practice_scalar_operations",
+        "format_45_6",
+        "format_45_9"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Two lists give Monday and Tuesday counts for the same stations in the same order. The lists are [10, 16, 18] and [7, 13, 6]. What is the median of the stations’ two-day totals?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "24"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Add matching positions to get [17, 29, 24]. Their middle value in sorted order is 24.</p>",
+      "variation": "Combine matching list positions and calculate their median",
+      "source_cards": [
+        16,
+        17,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L45-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_3",
+        "two_list_arithmetic",
+        "format_45_5"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>One group recorded [5, 15], and a second group recorded [18, 20, 22, 28]. What is the mean across all individual observations?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "18"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Join the lists before taking the mean. The observations total 108, and there are 6 of them, so the mean is \\(18\\).</p>",
+      "variation": "Join whole groups before calculating a statistic",
+      "source_cards": [
+        19,
+        20,
+        24,
+        27,
+        34
+      ],
+      "difficulty": 3,
+      "id": "L45-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "format_45_4",
+        "join_lists",
+        "statistics_functions",
+        "format_45_5",
+        "format_45_9"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-20 15:06:37.258886+00",
+  "lesson_number": 45,
+  "difficulty_counts": {
+    "1": 2,
+    "2": 11,
+    "3": 2
+  }
+}

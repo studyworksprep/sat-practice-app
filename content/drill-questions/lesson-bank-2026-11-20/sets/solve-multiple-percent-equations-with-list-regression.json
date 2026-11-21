@@ -1,0 +1,517 @@
+{
+  "id": "f0f36231-57d1-4be1-a013-1a19974137b5",
+  "title": "Solve Multiple Percent Equations with List Regression",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Translate connected percent statements, pair them in one list regression, use supplied measurements or a positive free reference, and verify the ratios before reporting the requested percent.",
+  "cards": 34,
+  "spec": "docs/lesson-template-specs/solve-multiple-percent-equations-with-list-regression.json",
+  "source_spec_sha256": "0c1acd2ce8df37e4633ea06f34c217a6160686e7508820137c389c855928b2f1",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Pair two percent-of conditions and a requested percent": [
+      4,
+      6,
+      10,
+      14
+    ],
+    "Pair a percent increase with a percent-of relation": [
+      14,
+      20,
+      21,
+      24
+    ],
+    "Keep the supplied amount fixed across an increase and a decrease": [
+      8,
+      18,
+      20,
+      22,
+      24
+    ],
+    "Include a combined base in the paired equations": [
+      14,
+      26,
+      27
+    ],
+    "Fit connected changes to recover the supplied final amount": [
+      18,
+      20,
+      22,
+      24,
+      25
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Amount A is 60% of amount B. Amount B is 50% of amount C. Amount A is what percent of amount C? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "30"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Set a positive reference C = 100. Then B = \\(50\\) and A = \\(30\\). That makes A \\(30\\)% of C.</p>",
+      "variation": "Pair two percent-of conditions and a requested percent",
+      "source_cards": [
+        4,
+        6,
+        10,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L33-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_question",
+        "percent_system_lists",
+        "percent_system_process",
+        "percent_system_reference"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Amount A is 20% greater than amount B. Amount B is 75% of amount C. Amount A is what percent of amount C? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "90"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Set a positive reference C = 100. Then B = \\(75\\) and A = \\(90\\). That makes A \\(90\\)% of C.</p>",
+      "variation": "Pair a percent increase with a percent-of relation",
+      "source_cards": [
+        14,
+        20,
+        21,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L33-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_reference",
+        "percent_system_increase",
+        "percent_system_increase_example",
+        "percent_system_changes"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A tank initially held 320 liters. Its contents increased by 25% on Monday. On Tuesday, they decreased by 20% of Monday’s ending amount. How many liters were in the tank at the end of Tuesday?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "320"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Keep the measured base 320. Pair Monday = 320 × 125/100 = 400 and Tuesday = 400 × 80/100 = 320.</p>",
+      "variation": "Keep the supplied amount fixed across an increase and a decrease",
+      "source_cards": [
+        8,
+        18,
+        20,
+        22,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L33-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_given",
+        "percent_system_fixed",
+        "percent_system_increase",
+        "percent_system_decrease",
+        "percent_system_changes"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Amount B is 60% of amount C. Amount A is 25% of the sum of B and C. Amount A is what percent of C? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "40"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>With C = 100, B = \\(60\\). Apply 25% to the complete combined base, \\(160\\). The result is \\(40\\) per 100 of C.</p>",
+      "variation": "Include a combined base in the paired equations",
+      "source_cards": [
+        14,
+        26,
+        27
+      ],
+      "difficulty": 2,
+      "id": "L33-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_reference",
+        "percent_system_combined",
+        "percent_system_combined_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A batch’s mass increased by 50% and then decreased by 20% of the new mass. Its final mass was 360 grams. What was its original mass, in grams?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "300"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The two factors are 150/100 and 80/100. Fit both conditions with the final mass fixed at 360. Dividing by the product gives 300 grams.</p>",
+      "variation": "Fit connected changes to recover the supplied final amount",
+      "source_cards": [
+        18,
+        20,
+        22,
+        24,
+        25
+      ],
+      "difficulty": 3,
+      "id": "L33-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_fixed",
+        "percent_system_increase",
+        "percent_system_decrease",
+        "percent_system_changes",
+        "percent_system_changes_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Amount A is 25% of amount B. Amount B is 64% of amount C. Amount A is what percent of amount C? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "16"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Set a positive reference C = 100. Then B = \\(64\\) and A = \\(16\\). That makes A \\(16\\)% of C.</p>",
+      "variation": "Pair two percent-of conditions and a requested percent",
+      "source_cards": [
+        4,
+        6,
+        10,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L33-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_question",
+        "percent_system_lists",
+        "percent_system_process",
+        "percent_system_reference"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Amount A is 80% of amount B. Amount B is 25% greater than amount C. Amount A is what percent of amount C? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "100"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Set a positive reference C = 100. Then B = \\(125\\) and A = \\(100\\). That makes A \\(100\\)% of C.</p>",
+      "variation": "Pair a percent increase with a percent-of relation",
+      "source_cards": [
+        14,
+        20,
+        21,
+        24
+      ],
+      "difficulty": 3,
+      "id": "L33-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_reference",
+        "percent_system_increase",
+        "percent_system_increase_example",
+        "percent_system_changes"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A tank initially held 460 liters. Its contents increased by 50% on Monday. On Tuesday, they decreased by 30% of Monday’s ending amount. How many liters were in the tank at the end of Tuesday?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "483"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Keep the measured base 460. Pair Monday = 460 × 150/100 = 690 and Tuesday = 690 × 70/100 = 483.</p>",
+      "variation": "Keep the supplied amount fixed across an increase and a decrease",
+      "source_cards": [
+        8,
+        18,
+        20,
+        22,
+        24
+      ],
+      "difficulty": 2,
+      "id": "L33-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_given",
+        "percent_system_fixed",
+        "percent_system_increase",
+        "percent_system_decrease",
+        "percent_system_changes"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Amount B is 85% of amount C. Amount A is 40% of the sum of B and C. Amount A is what percent of C? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "74"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>With C = 100, B = \\(85\\). Apply 40% to the complete combined base, \\(185\\). The result is \\(74\\) per 100 of C.</p>",
+      "variation": "Include a combined base in the paired equations",
+      "source_cards": [
+        14,
+        26,
+        27
+      ],
+      "difficulty": 3,
+      "id": "L33-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_reference",
+        "percent_system_combined",
+        "percent_system_combined_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A batch’s mass increased by 25% and then decreased by 10% of the new mass. Its final mass was 405 grams. What was its original mass, in grams?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "360"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The two factors are 125/100 and 90/100. Fit both conditions with the final mass fixed at 405. Dividing by the product gives 360 grams.</p>",
+      "variation": "Fit connected changes to recover the supplied final amount",
+      "source_cards": [
+        18,
+        20,
+        22,
+        24,
+        25
+      ],
+      "difficulty": 3,
+      "id": "L33-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_fixed",
+        "percent_system_increase",
+        "percent_system_decrease",
+        "percent_system_changes",
+        "percent_system_changes_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Amount A is 75% of amount B. Amount B is 40% of amount C. Amount A is what percent of amount C? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "30"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Set a positive reference C = 100. Then B = \\(40\\) and A = \\(30\\). That makes A \\(30\\)% of C.</p>",
+      "variation": "Pair two percent-of conditions and a requested percent",
+      "source_cards": [
+        4,
+        6,
+        10,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L33-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_question",
+        "percent_system_lists",
+        "percent_system_process",
+        "percent_system_reference"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Amount A is 30% greater than amount B. Amount B is 50% greater than amount C. Amount A is what percent of amount C? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "195"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Set a positive reference C = 100. Then B = \\(150\\) and A = \\(195\\). That makes A \\(195\\)% of C.</p>",
+      "variation": "Pair a percent increase with a percent-of relation",
+      "source_cards": [
+        14,
+        20,
+        21,
+        24
+      ],
+      "difficulty": 3,
+      "id": "L33-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_reference",
+        "percent_system_increase",
+        "percent_system_increase_example",
+        "percent_system_changes"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A tank initially held 500 liters. Its contents increased by 40% on Monday. On Tuesday, they decreased by 15% of Monday’s ending amount. How many liters were in the tank at the end of Tuesday?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "595"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Keep the measured base 500. Pair Monday = 500 × 140/100 = 700 and Tuesday = 700 × 85/100 = 595.</p>",
+      "variation": "Keep the supplied amount fixed across an increase and a decrease",
+      "source_cards": [
+        8,
+        18,
+        20,
+        22,
+        24
+      ],
+      "difficulty": 3,
+      "id": "L33-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_given",
+        "percent_system_fixed",
+        "percent_system_increase",
+        "percent_system_decrease",
+        "percent_system_changes"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>Amount B is 44% of amount C. Amount A is 75% of the sum of B and C. Amount A is what percent of C? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "108"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>With C = 100, B = \\(44\\). Apply 75% to the complete combined base, \\(144\\). The result is \\(108\\) per 100 of C.</p>",
+      "variation": "Include a combined base in the paired equations",
+      "source_cards": [
+        14,
+        26,
+        27
+      ],
+      "difficulty": 3,
+      "id": "L33-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_reference",
+        "percent_system_combined",
+        "percent_system_combined_example"
+      ]
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A batch’s mass increased by 20% and then decreased by 15% of the new mass. Its final mass was 510 grams. What was its original mass, in grams?</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "500"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>The two factors are 120/100 and 85/100. Fit both conditions with the final mass fixed at 510. Dividing by the product gives 500 grams.</p>",
+      "variation": "Fit connected changes to recover the supplied final amount",
+      "source_cards": [
+        18,
+        20,
+        22,
+        24,
+        25
+      ],
+      "difficulty": 3,
+      "id": "L33-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "percent_system_fixed",
+        "percent_system_increase",
+        "percent_system_decrease",
+        "percent_system_changes",
+        "percent_system_changes_example"
+      ]
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-17 11:33:54.089232+00",
+  "lesson_number": 33,
+  "difficulty_counts": {
+    "1": 0,
+    "2": 7,
+    "3": 8
+  }
+}

@@ -1,0 +1,589 @@
+{
+  "id": "bbbc1579-78b1-46f1-bd1d-6a8f530af635",
+  "title": "Reason Through SAT Survey Questions",
+  "status": "review_only_unpublished",
+  "visibility": "shared",
+  "description": "Evaluate survey samples, limit conclusions to the correct population, and interpret margin of error as a plausible range.",
+  "cards": 41,
+  "spec": "docs/lesson-template-specs/surveys-sampling-and-margin-of-error.json",
+  "source_spec_sha256": "2390b172975ab73207208497b834fdfa87e20a46dd1f0cbbcb72234dde522583",
+  "revision": 1,
+  "batch_id": "lesson-bank-2026-11-20",
+  "difficulty_scale": {
+    "1": "Easy",
+    "2": "Medium",
+    "3": "Hard"
+  },
+  "objectives": {
+    "Choose a random sample from the intended population": [
+      3,
+      7,
+      8,
+      9
+    ],
+    "Keep every restriction of the sampled group": [
+      17,
+      18
+    ],
+    "Recognize systematic nonresponse after random selection": [
+      9,
+      11,
+      12
+    ],
+    "Choose neutral wording to estimate opinion": [
+      13,
+      14
+    ],
+    "Apply the margin and preserve the population scope": [
+      22,
+      23,
+      25,
+      31,
+      32
+    ],
+    "Distinguish precision from selection and certainty": [
+      25,
+      27,
+      29
+    ]
+  },
+  "questions": [
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A survey in Millbrook aims to estimate the views of all library card holders. Which sampling method best supports that goal?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The complete list covers the population, and random selection gives population members an opportunity to be included.</p>",
+      "variation": "Choose a random sample from the intended population",
+      "source_cards": [
+        3,
+        7,
+        8,
+        9
+      ],
+      "difficulty": 1,
+      "id": "L27-01",
+      "sequence": 1,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "3b7977dc-1675-45d7-9d66-27a9995465ff",
+        "63f0414d-6f8e-484a-b188-bddfca4fac7b",
+        "dc5dd1d2-b271-5b66-ba52-f4ad2159f60a",
+        "17889b3b-afd2-4f57-ae85-8e5cbe0a2cd8"
+      ],
+      "choices": [
+        "Randomly select 80 people from the complete list of library card holders.",
+        "Survey the first 80 after-school club members to volunteer.",
+        "Survey only after-school club members.",
+        "Survey every after-school club members met at one location."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Volunteer responses may differ from the population.",
+        "C": "This leaves out other members of the population.",
+        "D": "The location and group restrict who can be included."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A researcher in Brighton randomly selects 50 students enrolled in band from a complete list of that group. All selected people answer. To which population can the results most reasonably be generalized?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The randomly sampled population consists of students enrolled in band in Brighton. The results support generalization to that population.</p>",
+      "variation": "Keep every restriction of the sampled group",
+      "source_cards": [
+        17,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L27-02",
+      "sequence": 2,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "b4ec55ed-9628-5e91-8053-74ab56c81dd3",
+        "df36cf86-137f-4ae1-a5bd-c0fd351e1c66"
+      ],
+      "choices": [
+        "All students in Brighton",
+        "All students enrolled in band nationwide",
+        "Only the individuals who answered",
+        "All students enrolled in band in Brighton"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Extends beyond the sampling frame.",
+        "B": "Extends the geography beyond the sampling frame.",
+        "C": "A representative random sample can estimate its source population."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A study in Oak Crossing needs the views of all town employees. It randomly selects 60 from a complete list, but most selected people who cannot attend daytime meetings never respond. What concern matters most?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Random selection helps at the invitation stage. When response depends on availability, the group that answered can underrepresent people with different schedules.</p>",
+      "variation": "Recognize systematic nonresponse after random selection",
+      "source_cards": [
+        9,
+        11,
+        12
+      ],
+      "difficulty": 2,
+      "id": "L27-03",
+      "sequence": 3,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "17889b3b-afd2-4f57-ae85-8e5cbe0a2cd8",
+        "df99a5a0-d6a9-45ca-bbbd-46aa44ee5bc5",
+        "a722e44c-5a9e-567f-a9b1-7485d8dc4a38"
+      ],
+      "choices": [
+        "Random selection guarantees an unbiased response group.",
+        "Selecting more people guarantees the same view from everyone.",
+        "The people who answered may differ systematically from the people who did not answer.",
+        "Only opinions from outside the population are affected."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Initial selection does not fix systematic nonresponse.",
+        "B": "Sample size does not fix systematic missing responses.",
+        "D": "The missing voices belong to the population of interest."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A town wants to estimate resident support for adding a weekend bus route. Which survey question would best serve that purpose?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The neutral question asks about support without suggesting an answer or combining it with another topic.</p>",
+      "variation": "Choose neutral wording to estimate opinion",
+      "source_cards": [
+        13,
+        14
+      ],
+      "difficulty": 2,
+      "id": "L27-04",
+      "sequence": 4,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "7ddeb218-8dc2-5320-8da1-2b58281336a0",
+        "3665cc42-8788-54b8-b685-d7734ff40357"
+      ],
+      "choices": [
+        "Wouldn’t a weekend route make our town more welcoming?",
+        "Should we avoid wasting money on weekend buses?",
+        "Do you support or oppose adding a weekend bus route?",
+        "Do you ride a bus now, and should the town add a weekend route?"
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Suggests that respondents ought to support the route.",
+        "B": "Frames opposition as the responsible choice.",
+        "D": "Asks about current use and opinion in a single answer."
+      }
+    },
+    {
+      "response_type": "numeric",
+      "stem_html": "<p>A random sample of eighth graders found 62% support for a longer lunch break, with a margin of error of 4 percentage points. What is the lower endpoint of the estimated percentage range? Enter the number without the percent sign.</p>",
+      "stimulus_html": null,
+      "choices": [],
+      "accepted_answers": [
+        "58"
+      ],
+      "numeric_tolerance": 0,
+      "explanation_html": "<p>Subtract the margin of error in percentage points: 62 − 4 = 58. The estimated interval is 58% to 66%.</p>",
+      "variation": "Apply the margin and preserve the population scope",
+      "source_cards": [
+        22,
+        23,
+        25,
+        31,
+        32
+      ],
+      "difficulty": 1,
+      "id": "L27-05",
+      "sequence": 5,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "9a2af73d-909f-4da2-87b8-68d18b794839",
+        "330187c5-8f90-45a4-ba96-9a7f73b8bd15",
+        "fa95db17-5ccf-4477-99a0-f2f57edce2b8",
+        "3eec2fcd-3a11-48c1-aaee-ae277609e1dc",
+        "b4b53540-c61a-4d93-939a-487293e86ba7"
+      ]
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Two surveys use equally representative random samples of 60 and 240 students from the same school, with similar response rates and the same neutral question. Which conclusion about precision is best supported?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>With the sampling method and response rates comparable, the larger random sample generally reduces sampling variability.</p>",
+      "variation": "Distinguish precision from selection and certainty",
+      "source_cards": [
+        25,
+        27,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L27-06",
+      "sequence": 6,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "fa95db17-5ccf-4477-99a0-f2f57edce2b8",
+        "e7c5e491-cb34-4796-86a4-4d9f37090a17",
+        "04733108-1ec3-4ec9-922c-9b12f8d0451f"
+      ],
+      "choices": [
+        "The 240-student sample should generally give a smaller margin of error.",
+        "The smaller sample should have a smaller margin of error.",
+        "The larger sample guarantees that the estimate equals the population result.",
+        "Both margins of error must be identical."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Reverses the effect of sample size on precision.",
+        "C": "Confuses greater precision with certainty.",
+        "D": "Ignores the difference in number of observations."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A survey in Redvale aims to estimate the views of all bus riders. Which sampling method best supports that goal?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The complete list covers the population, and random selection gives population members an opportunity to be included.</p>",
+      "variation": "Choose a random sample from the intended population",
+      "source_cards": [
+        3,
+        7,
+        8,
+        9
+      ],
+      "difficulty": 1,
+      "id": "L27-07",
+      "sequence": 7,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "3b7977dc-1675-45d7-9d66-27a9995465ff",
+        "63f0414d-6f8e-484a-b188-bddfca4fac7b",
+        "dc5dd1d2-b271-5b66-ba52-f4ad2159f60a",
+        "17889b3b-afd2-4f57-ae85-8e5cbe0a2cd8"
+      ],
+      "choices": [
+        "Survey the first 100 downtown commuters to volunteer.",
+        "Survey only downtown commuters.",
+        "Survey every downtown commuters met at one location.",
+        "Randomly select 100 people from the complete list of bus riders."
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Volunteer responses may differ from the population.",
+        "B": "This leaves out other members of the population.",
+        "C": "The location and group restrict who can be included."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A researcher in Eastport randomly selects 75 residents who rent their homes from a complete list of that group. All selected people answer. To which population can the results most reasonably be generalized?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The randomly sampled population consists of residents who rent their homes in Eastport. The results support generalization to that population.</p>",
+      "variation": "Keep every restriction of the sampled group",
+      "source_cards": [
+        17,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L27-08",
+      "sequence": 8,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "b4ec55ed-9628-5e91-8053-74ab56c81dd3",
+        "df36cf86-137f-4ae1-a5bd-c0fd351e1c66"
+      ],
+      "choices": [
+        "All residents in Eastport",
+        "All residents who rent their homes nationwide",
+        "Only the individuals who answered",
+        "All residents who rent their homes in Eastport"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Extends beyond the sampling frame.",
+        "B": "Extends the geography beyond the sampling frame.",
+        "C": "A representative random sample can estimate its source population."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A study in Elm Harbor needs the views of all registered voters. It randomly selects 160 from a complete list, but most selected people who cannot attend daytime meetings never respond. What concern matters most?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Random selection helps at the invitation stage. When response depends on availability, the group that answered can underrepresent people with different schedules.</p>",
+      "variation": "Recognize systematic nonresponse after random selection",
+      "source_cards": [
+        9,
+        11,
+        12
+      ],
+      "difficulty": 3,
+      "id": "L27-09",
+      "sequence": 9,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "17889b3b-afd2-4f57-ae85-8e5cbe0a2cd8",
+        "df99a5a0-d6a9-45ca-bbbd-46aa44ee5bc5",
+        "a722e44c-5a9e-567f-a9b1-7485d8dc4a38"
+      ],
+      "choices": [
+        "Random selection guarantees an unbiased response group.",
+        "Selecting more people guarantees the same view from everyone.",
+        "The people who answered may differ systematically from the people who did not answer.",
+        "Only opinions from outside the population are affected."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Initial selection does not fix systematic nonresponse.",
+        "B": "Sample size does not fix systematic missing responses.",
+        "D": "The missing voices belong to the population of interest."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A random sample of regular bus riders found 47% support for a weekend bus route, with a margin of error of 5 percentage points. Which interpretation is best supported?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Add and subtract 5 points from 47%. The resulting 42% to 52% is an estimate for the sampled population.</p>",
+      "variation": "Apply the margin and preserve the population scope",
+      "source_cards": [
+        22,
+        23,
+        25,
+        31,
+        32
+      ],
+      "difficulty": 2,
+      "id": "L27-10",
+      "sequence": 10,
+      "phase": "practice",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "9a2af73d-909f-4da2-87b8-68d18b794839",
+        "330187c5-8f90-45a4-ba96-9a7f73b8bd15",
+        "fa95db17-5ccf-4477-99a0-f2f57edce2b8",
+        "3eec2fcd-3a11-48c1-aaee-ae277609e1dc",
+        "b4b53540-c61a-4d93-939a-487293e86ba7"
+      ],
+      "choices": [
+        "Exactly 47% of all regular bus riders support it.",
+        "The estimated share of all regular bus riders who support it is between 42% and 52%.",
+        "The estimated share is between 47% and 52%.",
+        "The estimated share of everyone in the country is between 42% and 52%."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Treats a sample estimate as exact.",
+        "C": "Applies the margin only above the estimate.",
+        "D": "Extends the estimate beyond the sampled population."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Two surveys use equally representative random samples of 95 and 380 students from the same school, with similar response rates and the same neutral question. Which conclusion about precision is best supported?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>With the sampling method and response rates comparable, the larger random sample generally reduces sampling variability.</p>",
+      "variation": "Distinguish precision from selection and certainty",
+      "source_cards": [
+        25,
+        27,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L27-11",
+      "sequence": 11,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "fa95db17-5ccf-4477-99a0-f2f57edce2b8",
+        "e7c5e491-cb34-4796-86a4-4d9f37090a17",
+        "04733108-1ec3-4ec9-922c-9b12f8d0451f"
+      ],
+      "choices": [
+        "The 380-student sample should generally give a smaller margin of error.",
+        "The smaller sample should have a smaller margin of error.",
+        "The larger sample guarantees that the estimate equals the population result.",
+        "Both margins of error must be identical."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Reverses the effect of sample size on precision.",
+        "C": "Confuses greater precision with certainty.",
+        "D": "Ignores the difference in number of observations."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A survey in Dunmere aims to estimate the views of all high school students. Which sampling method best supports that goal?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The complete list covers the population, and random selection gives population members an opportunity to be included.</p>",
+      "variation": "Choose a random sample from the intended population",
+      "source_cards": [
+        3,
+        7,
+        8,
+        9
+      ],
+      "difficulty": 2,
+      "id": "L27-12",
+      "sequence": 12,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "3b7977dc-1675-45d7-9d66-27a9995465ff",
+        "63f0414d-6f8e-484a-b188-bddfca4fac7b",
+        "dc5dd1d2-b271-5b66-ba52-f4ad2159f60a",
+        "17889b3b-afd2-4f57-ae85-8e5cbe0a2cd8"
+      ],
+      "choices": [
+        "Randomly select 120 people from the complete list of high school students.",
+        "Survey the first 120 varsity athletes to volunteer.",
+        "Survey only varsity athletes.",
+        "Survey every varsity athletes met at one location."
+      ],
+      "correct_index": 0,
+      "distractor_notes": {
+        "B": "Volunteer responses may differ from the population.",
+        "C": "This leaves out other members of the population.",
+        "D": "The location and group restrict who can be included."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A researcher in Norwood randomly selects 65 employees on the night shift from a complete list of that group. All selected people answer. To which population can the results most reasonably be generalized?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>The randomly sampled population consists of employees on the night shift in Norwood. The results support generalization to that population.</p>",
+      "variation": "Keep every restriction of the sampled group",
+      "source_cards": [
+        17,
+        18
+      ],
+      "difficulty": 2,
+      "id": "L27-13",
+      "sequence": 13,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "b4ec55ed-9628-5e91-8053-74ab56c81dd3",
+        "df36cf86-137f-4ae1-a5bd-c0fd351e1c66"
+      ],
+      "choices": [
+        "All employees in Norwood",
+        "All employees on the night shift nationwide",
+        "Only the individuals who answered",
+        "All employees on the night shift in Norwood"
+      ],
+      "correct_index": 3,
+      "distractor_notes": {
+        "A": "Extends beyond the sampling frame.",
+        "B": "Extends the geography beyond the sampling frame.",
+        "C": "A representative random sample can estimate its source population."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>A random sample of music students found 71% support for new practice rooms, with a margin of error of 3 percentage points. Which interpretation is best supported?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>Add and subtract 3 points from 71%. The resulting 68% to 74% is an estimate for the sampled population.</p>",
+      "variation": "Apply the margin and preserve the population scope",
+      "source_cards": [
+        22,
+        23,
+        25,
+        31,
+        32
+      ],
+      "difficulty": 2,
+      "id": "L27-14",
+      "sequence": 14,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "9a2af73d-909f-4da2-87b8-68d18b794839",
+        "330187c5-8f90-45a4-ba96-9a7f73b8bd15",
+        "fa95db17-5ccf-4477-99a0-f2f57edce2b8",
+        "3eec2fcd-3a11-48c1-aaee-ae277609e1dc",
+        "b4b53540-c61a-4d93-939a-487293e86ba7"
+      ],
+      "choices": [
+        "Exactly 71% of all music students support it.",
+        "The estimated share is between 71% and 74%.",
+        "The estimated share of all music students who support it is between 68% and 74%.",
+        "The estimated share of everyone in the country is between 68% and 74%."
+      ],
+      "correct_index": 2,
+      "distractor_notes": {
+        "A": "Treats a sample estimate as exact.",
+        "B": "Applies the margin only above the estimate.",
+        "D": "Extends the estimate beyond the sampled population."
+      }
+    },
+    {
+      "response_type": "mcq",
+      "stem_html": "<p>Two surveys use equally representative random samples of 140 and 560 students from the same school, with similar response rates and the same neutral question. Which conclusion about precision is best supported?</p>",
+      "stimulus_html": null,
+      "explanation_html": "<p>With the sampling method and response rates comparable, the larger random sample generally reduces sampling variability.</p>",
+      "variation": "Distinguish precision from selection and certainty",
+      "source_cards": [
+        25,
+        27,
+        29
+      ],
+      "difficulty": 2,
+      "id": "L27-15",
+      "sequence": 15,
+      "phase": "later_review",
+      "task_scope": "complete_skill_application",
+      "approval_status": "pending_user_review",
+      "source_block_ids": [
+        "fa95db17-5ccf-4477-99a0-f2f57edce2b8",
+        "e7c5e491-cb34-4796-86a4-4d9f37090a17",
+        "04733108-1ec3-4ec9-922c-9b12f8d0451f"
+      ],
+      "choices": [
+        "The smaller sample should have a smaller margin of error.",
+        "The 560-student sample should generally give a smaller margin of error.",
+        "The larger sample guarantees that the estimate equals the population result.",
+        "Both margins of error must be identical."
+      ],
+      "correct_index": 1,
+      "distractor_notes": {
+        "A": "Reverses the effect of sample size on precision.",
+        "C": "Confuses greater precision with certainty.",
+        "D": "Ignores the difference in number of observations."
+      }
+    }
+  ],
+  "source_verification": "Exact ordered match to published student-facing lesson blocks",
+  "source_verified_date": "2026-11-20",
+  "published_lesson_updated_at": "2026-11-20 15:06:37.300377+00",
+  "lesson_number": 27,
+  "difficulty_counts": {
+    "1": 3,
+    "2": 11,
+    "3": 1
+  }
+}
