@@ -1,28 +1,7 @@
-// Student dashboard — the landing page and command center. Server
-// Component-first per docs/architecture-plan.md §3.4: every block reads
-// from the server in this one page and hands shaped props to
-// DashboardView (a Server Component too; the only client island on the
-// page is the first-visit HelpNudge). No useEffect + fetch.
-//
-// Boxes (see DashboardView.tsx for the layout):
-//   Banner   — greeting, plan week/phase line, target / accuracy /
-//              days-to-test chips, Resume + Free-practice links.
-//   Tasks    — today's plan tasks via the pure buildTodayView
-//              (lib/plan/today.ts). Assignments arrive as mirrored plan
-//              tasks (migration 20260919120000); without a plan the box
-//              is the setup callout plus the raw open assignments.
-//   Progress — three stat tiles + per-domain accuracy bars; the full
-//              statistics live on /performance.
-//   Recently finished — completed sessions, tests, and assignments.
-//
-// The test-date countdown reads the plan's date first, then a tutor-
-// registered exam, then the profile's personal date — the same
-// precedence the sidebar footer uses, so the two never disagree.
-
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
-import { buildTodayView } from '@/lib/plan/today';
+import { dashboardTasks, dashboardTutorNames } from '@/lib/plan/dashboard-tasks';
+import { buildTodayView, taskTitle } from '@/lib/plan/today';
 import { loadPlanTaskResumes } from '@/lib/plan/student-task';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
@@ -35,9 +14,6 @@ export const dynamic = 'force-dynamic';
 
 const RECENT_FINISHED_CAP = 6;
 const RECENT_FINISHED_PER_TYPE = 10;
-// Open assignments listed in the Tasks box when there is no plan to
-// mirror them into. Newest first; the header link exposes the inbox.
-const PENDING_DISPLAY_CAP = 3;
 
 export default async function StudentDashboardPage({ searchParams }) {
   const { user, profile, supabase } = await requireUser();
@@ -74,9 +50,8 @@ export default async function StudentDashboardPage({ searchParams }) {
     { data: recentTestAttempts },
     { data: assignmentRows },
     { data: activeSession },
-    { data: nextRegistrationRow },
     { data: assignmentLinkedSessions },
-    hasTutor,
+    { data: tutorLinks },
     { data: activePlanRow },
     { data: trendRows },
   ] = await Promise.all([
@@ -93,12 +68,12 @@ export default async function StudentDashboardPage({ searchParams }) {
     // belong in Practice hub's list, not here).
     supabase
       .from('practice_sessions')
-      .select('id, created_at, question_ids, mode, status, filter_criteria')
+      .select('id, created_at, last_activity_at, plan_task_id, question_ids, mode, status, filter_criteria')
       .eq('user_id', user.id)
       .in('mode', ['practice', 'review'])
       .eq('status', 'completed')
       .eq('test_type', 'sat')
-      .order('created_at', { ascending: false })
+      .order('last_activity_at', { ascending: false })
       .limit(RECENT_FINISHED_PER_TYPE),
     // Sibling ACT read. Same shape, same cap — the entries merge into
     // the single "Recently finished" list and sort by finish time
@@ -107,12 +82,12 @@ export default async function StudentDashboardPage({ searchParams }) {
     // buildSessionEntries drops them in memory.
     supabase
       .from('practice_sessions')
-      .select('id, created_at, question_ids, mode, status, filter_criteria')
+      .select('id, created_at, last_activity_at, plan_task_id, question_ids, mode, status, filter_criteria')
       .eq('user_id', user.id)
       .in('mode', ['practice', 'review'])
       .eq('status', 'completed')
       .eq('test_type', 'act')
-      .order('created_at', { ascending: false })
+      .order('last_activity_at', { ascending: false })
       .limit(RECENT_FINISHED_PER_TYPE),
     // Recent completed practice-test attempts.
     supabase
@@ -133,48 +108,38 @@ export default async function StudentDashboardPage({ searchParams }) {
       .select(`
         completed_at,
         assignment:assignments_v2 (
-          id, assignment_type, title, due_date, created_at, archived_at, deleted_at,
+          id, teacher_id, assignment_type, title, due_date, created_at, archived_at, deleted_at,
           question_ids, act_source_test,
           lesson:lessons (title),
           practice_test:practice_tests_v2 (name)
         )
       `)
       .eq('student_id', user.id),
-    // Active session for the Resume link (Up next card or header). SAT-only.
+    // Independent sessions have their own resume row. Linked sessions resume from their task.
     supabase
       .from('practice_sessions')
-      .select('id, current_position, question_ids, last_activity_at')
+      .select('id, mode, test_type, current_position, question_ids, last_activity_at, filter_criteria')
       .eq('user_id', user.id)
       .in('mode', ['practice', 'review'])
       .eq('status', 'in_progress')
-      .eq('test_type', 'sat')
+      .is('plan_task_id', null)
+      .is('filter_criteria->>assignment_id', null)
+      .is('filter_criteria->>plan_task_id', null)
+      .or('filter_criteria->>kind.is.null,filter_criteria->>kind.neq.practice_test')
       .gt('expires_at', nowIso)
       .order('last_activity_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    // Soonest upcoming SAT registration — a tutor-added row is a real
-    // registered exam, so it beats the profile's personal target date.
-    supabase
-      .from('sat_test_registrations')
-      .select('test_date')
-      .eq('student_id', user.id)
-      .gte('test_date', today)
-      .order('test_date', { ascending: true })
       .limit(1)
       .maybeSingle(),
     // This user's assignment-linked practice sessions, recent first;
     // the latest per assignment_id is the "View report" click-through.
     supabase
       .from('practice_sessions')
-      .select('id, created_at, filter_criteria')
+      .select('id, created_at, current_position, status, expires_at, filter_criteria')
       .eq('user_id', user.id)
-      .eq('test_type', 'sat')
       .not('filter_criteria->>assignment_id', 'is', null)
       .order('created_at', { ascending: false })
       .limit(ASSIGNMENT_LINKED_SESSIONS_CAP),
-    // Self-studiers (no row in teacher_student_assignments) never see
-    // assignment rows in the Tasks box.
-    hasAssignedTutor(supabase, user.id),
+    supabase.from('teacher_student_assignments').select('teacher_id').eq('student_id', user.id),
     // The active study plan drives the Tasks box, the header line, and
     // the countdown's first-choice date. SAT first if a student somehow
     // has both.
@@ -203,7 +168,8 @@ export default async function StudentDashboardPage({ searchParams }) {
   const accuracyAssignmentIds = completedAssignments.slice(0, RECENT_FINISHED_PER_TYPE)
     .filter(a => ['questions', 'lesson_pack'].includes(a.assignment_type) && Array.isArray(a.question_ids))
     .map(a => a.id);
-  const [recentAccuracy, { data: taskRows }, resumes] = await Promise.all([
+  const tutorIds = [...new Set([...(tutorLinks ?? []).map(t => t.teacher_id), ...allAssignments.map(a => a.teacher_id)].filter(Boolean))];
+  const [recentAccuracy, { data: taskRows }, resumes, { data: tutorCards }] = await Promise.all([
     loadDashboardRecentAccuracy(supabase, user.id, accuracySessionIds, accuracyAssignmentIds),
     activePlanRow ? supabase
       .from('plan_tasks')
@@ -212,13 +178,15 @@ export default async function StudentDashboardPage({ searchParams }) {
       .order('scheduled_date', { ascending: true, nullsFirst: true })
       .order('created_at', { ascending: true }) : Promise.resolve({ data: [] }),
     activePlanRow ? loadPlanTaskResumes(supabase, user.id, nowIso) : new Map(),
+    tutorIds.length ? supabase.from('profile_cards').select('id, first_name, last_name, tutor_name').in('id', tutorIds) : { data: [] },
   ]);
 
   // ---------- Tasks box: the plan's daily view ----------
   let view = null;
+  let tasks = [];
   let wasAutoRepaced = false;
   if (activePlanRow) {
-    const tasks = (taskRows ?? []).map((t) => ({
+    tasks = (taskRows ?? []).map((t) => ({
       id: t.id,
       weekIndex: t.week_index,
       scheduledDate: t.scheduled_date,
@@ -256,45 +224,30 @@ export default async function StudentDashboardPage({ searchParams }) {
     : null;
 
   // ---------- Header + Up next ----------
-  const testDateIso =
-    activePlanRow?.test_date
-    ?? (typeof nextRegistrationRow?.test_date === 'string' ? nextRegistrationRow.test_date : null)
-    ?? fullProfile?.sat_test_date
-    ?? null;
-  const daysToTest = daysUntil(testDateIso, nowMs);
   const targetScore = activePlanRow?.goal_score ?? fullProfile?.target_sat_score ?? null;
 
   const eyebrow = headerEyebrow(view, activePlanRow, targetScore);
-  const description = view
-    ? planDescription(view, today)
-    : statusLine({ weekAttempts: aggregate.weekAttempts, totalAttempts: aggregate.totalAttempts, accuracy }, daysToTest);
-
-  const resume = activeSession && Array.isArray(activeSession.question_ids) && activeSession.question_ids.length > 0
-    ? {
-        sessionId: activeSession.id,
-        position: activeSession.current_position,
-        total: activeSession.question_ids.length,
-      }
-    : null;
-
-  // Up next: the oldest due task, else the next one scheduled ahead.
-  const heroTask = view ? (view.due[0] ?? view.remainingDue[0] ?? view.upNext ?? null) : null;
-
-  // ---------- Assignments: pending (no-plan Tasks box) + completed (Recently finished) ----------
-  const openAssignments = allAssignments
-    .filter((a) => !a.student_completed_at)
-    .sort((a, b) => {
-      const ac = a.created_at ? Date.parse(a.created_at) : 0;
-      const bc = b.created_at ? Date.parse(b.created_at) : 0;
-      return bc - ac;
-    });
-  const pendingAssignments = openAssignments
-    .slice(0, PENDING_DISPLAY_CAP)
-    .map((a) => ({
-      id: a.id,
-      title: assignmentTitle(a),
-      dueDate: a.due_date ?? null,
-    }));
+  const tutorNames = dashboardTutorNames(tutorCards ?? []);
+  const tutors = (tutorLinks ?? []).map(link => tutorNames.get(link.teacher_id)?.display).filter(Boolean).sort();
+  const assignmentResumes = new Map();
+  for (const session of assignmentLinkedSessions ?? []) {
+    const criteria = session.filter_criteria;
+    if (session.status === 'in_progress' && Date.parse(session.expires_at) > nowMs && criteria?.assignment_id
+      && criteria.kind !== 'practice_test' && !assignmentResumes.has(criteria.assignment_id)) {
+      assignmentResumes.set(criteria.assignment_id, `/practice/s/${session.id}/${session.current_position}`);
+    }
+  }
+  const agenda = dashboardTasks(tasks, allAssignments.map(a => ({
+    ...a, title: assignmentTitle(a), resumeHref: assignmentResumes.get(a.id),
+  })), tutorNames, today);
+  const titlesByTask = new Map(tasks.map(t => [t.id, taskTitle(t)]));
+  const sessionTotal = Array.isArray(activeSession?.question_ids) ? activeSession.question_ids.length : 0;
+  const resume = activeSession && sessionTotal ? {
+    id: activeSession.id,
+    title: `${activeSession.test_type.toUpperCase()} ${activeSession.mode === 'review' ? 'review' : 'practice'}`,
+    position: activeSession.current_position,
+    total: sessionTotal,
+  } : null;
 
   // Latest session per assignment id — for the click-through link.
   // assignmentLinkedSessions is already ordered created_at desc, so
@@ -313,11 +266,11 @@ export default async function StudentDashboardPage({ searchParams }) {
 
   finishedEntries.push(
     ...buildSessionEntries(recentSessions, recentAccuracy, {
-      kind: 'session',
+      kind: 'session', titlesByTask,
       titlePrefix: 'Practice',
     }),
     ...buildSessionEntries(recentActSessions, recentAccuracy, {
-      kind: 'act_session',
+      kind: 'act_session', titlesByTask,
       titlePrefix: 'ACT practice',
     }),
   );
@@ -363,6 +316,7 @@ export default async function StudentDashboardPage({ searchParams }) {
       kind: 'assignment',
       id: a.id,
       title: assignmentTitle(a),
+      subtitle: tutorNames.get(a.teacher_id)?.byline ? `Assigned by ${tutorNames.get(a.teacher_id).byline}` : null,
       finishedAt: a.student_completed_at,
       metric,
       tone: 'neutral',
@@ -397,29 +351,14 @@ export default async function StudentDashboardPage({ searchParams }) {
       accountCreatedAt={fullProfile?.created_at ?? null}
       header={{
         firstName: fullProfile?.first_name ?? null,
-        eyebrow,
-        description,
-        resume,
+        tutors,
       }}
-      nextUp={view ? {
-        task: heroTask,
-        ahead: heroTask?.scheduledDate != null && heroTask.scheduledDate > today,
-        today,
-        week: view.week,
-        planFinished: view.planFinished,
-        doneTodayCount: view.doneToday.length,
-        resume,
+      resume={resume}
+      nextUp={view || agenda.hero ? {
+        task: agenda.hero, today, hasPlan: Boolean(view), week: view?.week ?? null,
+        planFinished: view?.planFinished ?? false, planContext: eyebrow,
       } : null}
-      tasks={{
-        view,
-        today,
-        error: taskError,
-        wasAutoRepaced,
-        heroTaskId: heroTask?.id ?? null,
-        hasTutor,
-        pendingAssignments,
-        assignmentsTotal: openAssignments.length,
-      }}
+      tasks={{agenda, today, error: taskError, wasAutoRepaced, hasPlan: Boolean(view)}}
       progress={{
         totalAttempts: aggregate.totalAttempts,
         accuracy,
@@ -438,7 +377,7 @@ export default async function StudentDashboardPage({ searchParams }) {
 // finished" cards. Test-type agnostic: the caller supplies the
 // matching compact accuracy summary (SAT / ACT) and
 // the badge kind, so both sides share one accuracy computation.
-function buildSessionEntries(sessions, accuracy, { kind, titlePrefix }) {
+function buildSessionEntries(sessions, accuracy, { kind, titlePrefix, titlesByTask }) {
   const entries = [];
   for (const sess of sessions ?? []) {
     if (!Array.isArray(sess.question_ids) || sess.question_ids.length === 0) continue;
@@ -454,8 +393,8 @@ function buildSessionEntries(sessions, accuracy, { kind, titlePrefix }) {
     entries.push({
       kind,
       id: sess.id,
-      title: `${titlePrefix} · ${total} question${total === 1 ? '' : 's'}`,
-      finishedAt: sess.created_at,
+      title: titlesByTask.get(sess.plan_task_id) ?? `${titlePrefix} · ${total} question${total === 1 ? '' : 's'}`,
+      finishedAt: sess.last_activity_at ?? sess.created_at,
       metric: dashboardAccuracyMetric(counts, total),
       tone: accuracyTone(accuracyPct),
       href: `/practice/review/${sess.id}`,
@@ -513,45 +452,4 @@ function headerEyebrow(view, plan, targetScore) {
   }
   if (targetScore) bits.push(`Target ${targetScore}`);
   return bits.length > 0 ? bits.join(' · ') : null;
-}
-
-// One line on what's waiting, led by catch-up work from earlier days.
-function planDescription(view, today) {
-  if (view.planFinished) return 'Every task in your plan is done.';
-  const overdue = view.due.filter((t) => t.scheduledDate && t.scheduledDate < today).length;
-  if (overdue > 1) return `${overdue} catch-up tasks from earlier days are waiting. Start with the first one.`;
-  if (overdue === 1) return 'One catch-up task from an earlier day is waiting. Start there.';
-  if (view.due.length > 0) {
-    return `${view.due.length} task${view.due.length === 1 ? '' : 's'} on today's plan.`;
-  }
-  if (view.doneToday.length > 0) return 'That’s today done. You can start the next task early.';
-  return 'Nothing due today. You can start the next task early.';
-}
-
-function statusLine(stats, daysToTest) {
-  const bits = [];
-  if (stats.weekAttempts > 0) {
-    bits.push(`${stats.weekAttempts} attempt${stats.weekAttempts === 1 ? '' : 's'} this week`);
-  }
-  if (stats.totalAttempts > 0 && stats.accuracy != null) {
-    bits.push(`${stats.accuracy}% accuracy overall`);
-  }
-  if (bits.length === 0) {
-    return 'Start your first practice session to see your stats here.';
-  }
-  if (daysToTest != null && daysToTest >= 0 && daysToTest <= 60) {
-    bits.push(`${daysToTest} day${daysToTest === 1 ? '' : 's'} to test day`);
-  }
-  return bits.join(' · ');
-}
-
-// Whole days from today (UTC midnight) to an ISO date — the same
-// arithmetic the sidebar footer strip uses.
-function daysUntil(iso, nowMs) {
-  if (!iso) return null;
-  const target = Date.parse(`${String(iso).slice(0, 10)}T00:00:00Z`);
-  if (Number.isNaN(target)) return null;
-  const now = new Date(nowMs);
-  const todayMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  return Math.round((target - todayMidnight) / 86_400_000);
 }
