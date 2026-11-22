@@ -189,6 +189,9 @@ test.describe('onboarding intake', () => {
     const coverage = tabs.getByRole('tab', { name: 'Coverage' });
     const focus = tabs.getByRole('tab', { name: 'Focus' });
     const rehearsal = tabs.getByRole('tab', { name: 'Rehearsal' });
+    await expect(coverage).toContainText('Learn each topic');
+    await expect(focus).toContainText('Build weaker skills');
+    await expect(rehearsal).toContainText('Practice for test day');
     await expect(coverage).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('#plan-week-1')).toBeVisible();
     await focus.click();

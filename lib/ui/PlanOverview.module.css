@@ -116,7 +116,8 @@
   padding-top: var(--s2);
   border-top: 1px solid var(--border);
 }
-.taskDone { opacity: 0.6; }
+.taskDone .taskTitle { color: var(--fg2); }
+.reportLink { color: var(--color-app-accent); font-weight: 600; text-underline-offset: .18em; white-space: nowrap; }
 .typeTag {
   font-size: 0.7rem;
   font-weight: 600;
@@ -176,25 +177,41 @@
 
 .phaseTabs {
   display: flex;
-  gap: var(--s1);
-  overflow-x: auto;
-  border-bottom: 1px solid var(--border);
+  gap: clamp(4px, 1vw, 10px);
+  align-items: stretch;
+  padding: 3px 2px 0;
+  border-bottom: 1px solid var(--border-strong, #b9c3cf);
 }
 .phaseTabs button {
   appearance: none;
-  flex: 0 0 auto;
-  padding: .7rem clamp(.45rem, 2vw, 1.15rem);
-  border: 0;
-  border-bottom: 3px solid transparent;
-  background: transparent;
+  display: flex;
+  flex: 0 1 12rem;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: .6rem clamp(.35rem, 1.5vw, 1rem);
+  margin-bottom: -1px;
+  border: 1px solid var(--border-strong, #b9c3cf);
+  border-radius: 8px 8px 0 0;
+  background: var(--color-navy-50, #eff3f8);
   color: var(--fg2);
   font: inherit;
-  font-size: .92rem;
+  font-size: .95rem;
   font-weight: 600;
+  text-align: start;
   cursor: pointer;
 }
-.phaseTabs button[aria-selected="true"] { color: var(--color-app-accent); border-bottom-color: currentColor; }
-.phaseTabs button:hover { background: var(--bg-hover, var(--bg)); }
-.phaseTabs button:focus-visible { outline: 2px solid var(--color-app-accent); outline-offset: -3px; }
+.phaseTabs button[aria-selected="true"] {
+  color: var(--color-app-accent);
+  background: var(--bg-white);
+  border-bottom-color: var(--bg-white);
+  box-shadow: inset 0 3px var(--color-app-accent);
+}
+.phaseTabs button:hover:not([aria-selected="true"]) { background: var(--border); }
+.phaseTabs button:focus-visible { outline: 2px solid var(--color-app-accent); outline-offset: -4px; }
+.tabPurpose { color: var(--fg2); font-size: .78rem; font-weight: 400; line-height: 1.25; }
+@media (max-width: 560px) {
+  .phaseTabs button { flex: 1 1 0; font-size: .86rem; overflow-wrap: anywhere; }
+}
 .panelMeta { margin: var(--s3) 0; font-size: .8rem; font-weight: 600; color: var(--fg2); }
 .panelSummary { margin: 0 0 var(--s3); color: var(--fg2); font-size: .9rem; line-height: 1.5; }

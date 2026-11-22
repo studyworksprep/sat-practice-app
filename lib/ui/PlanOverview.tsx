@@ -20,6 +20,7 @@ export interface OverviewTask {
   status?: 'pending' | 'completed' | 'skipped';
   resumeHref?: string;
   byline?: string;
+  reportHref?: string;
 }
 
 export interface PlanOverviewProps {
@@ -53,6 +54,13 @@ export const PHASE_LABEL: Record<PlanPhaseType, string> = {
   focus: 'Focus',
   rehearsal: 'Rehearsal',
   targets: 'Your targets',
+};
+
+const PHASE_PURPOSE: Record<PlanPhaseType, string> = {
+  coverage: 'Learn each topic',
+  focus: 'Build weaker skills',
+  rehearsal: 'Practice for test day',
+  targets: 'Practice your chosen skills',
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -175,6 +183,10 @@ export function PlanOverview({
                   {t.scheduledDate ? formatDate(t.scheduledDate) ?? t.scheduledDate : ''}
                   {minutes != null ? ` · ~${minutes} min` : ''}
                   {completed ? ' · done' : t.status === 'skipped' ? ' · skipped' : ''}
+                  {hub && completed && t.reportHref && (
+                    <Link href={t.reportHref} prefetch={false} className={s.reportLink}
+                      aria-label={`View Report for ${planTaskTitle(String(t.taskType), t.payload)}`}>View Report</Link>
+                  )}
                   {startAction && t.id && (t.status ?? 'pending') === 'pending' && (
                     t.resumeHref ? (
                       <Link href={t.resumeHref} className={s.startBtn}>Resume</Link>
@@ -206,6 +218,7 @@ export function PlanOverview({
   }
   const panels = Array.from(groups, ([phase, weeks]) => ({
     label: phase ? PHASE_LABEL[phase.type] : 'Other weeks',
+    purpose: phase ? PHASE_PURPOSE[phase.type] : 'More scheduled work',
     summary: phase?.summary ?? '',
     weeks,
     content: <div className={s.weeks}>{weeks.map((w) => weekCards[w])}</div>,

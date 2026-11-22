@@ -5,6 +5,7 @@ import s from './PlanOverview.module.css';
 
 export interface PhasePanel {
   label: string;
+  purpose: string;
   summary: string;
   weeks: number[];
   content: ReactNode;
@@ -71,7 +72,8 @@ export function PlanPhaseTabs({ panels, currentWeek }: { panels: PhasePanel[]; c
           aria-controls={`${id}-panel-${index}`} aria-selected={active === index}
           aria-current={current === index ? 'step' : undefined} tabIndex={active === index ? 0 : -1}
           onClick={() => select(index)} onKeyDown={(event) => navigate(event, index)}>
-          {panel.label}
+          <span>{panel.label}</span>
+          <span className={s.tabPurpose}>{panel.purpose}</span>
         </button>
       ))}
     </div>
