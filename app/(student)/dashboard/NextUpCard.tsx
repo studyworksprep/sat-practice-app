@@ -82,14 +82,14 @@ export function MarkDone({ task, primary = false }: { task: DashboardTask; prima
 
 export function NextUpCard({ task, today, hasPlan, week, planFinished, planContext }: NextUpCardProps) {
   const ahead = Boolean(task?.scheduledDate && task.scheduledDate > today);
-  const weekDone = week && week.count > 0 && week.count === week.done;
+  const weekDone = week && week.count > 0 && week.count === week.done + week.skipped;
   const heading =
     task && !ahead
       ? taskTitle(task)
       : planFinished
         ? 'Study Plan complete'
         : weekDone
-          ? `Week ${week.index + 1} complete`
+          ? `Week ${week.index + 1} ${week.skipped ? 'wrapped up' : 'complete'}`
           : 'You’re caught up for today';
   const date = task?.scheduledDate && formatDate(task.scheduledDate);
   const why = task && !ahead && taskWhy(task);
@@ -140,7 +140,7 @@ export function NextUpCard({ task, today, hasPlan, week, planFinished, planConte
             {week && (
               <>
                 <div className={s.weekCount}>
-                  {week.done} <span className={s.weekCountOf}>of {week.count} plan tasks this week</span>
+                  {week.done} <span className={s.weekCountOf}>of {week.count} plan tasks completed this week{week.skipped > 0 && ` · ${week.skipped} skipped`}</span>
                 </div>
                 {week.count > 0 && (
                   <progress

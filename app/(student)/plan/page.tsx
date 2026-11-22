@@ -18,32 +18,28 @@ import { planStartDate } from '@/lib/plan/customization';
 import { loadPlanTaskResumes } from '@/lib/plan/student-task';
 import { currentPlanRationale } from '@/lib/plan/rationale';
 import type { TodayTaskRow } from '@/lib/plan/today';
-import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
-import type { PlanMode, PlanPhaseType, PlanTaskType } from '@/lib/plan/generate-plan';
+import { planTaskTitle } from '@/lib/plan/task-labels';
+import type { PlanMode, PlanTaskType } from '@/lib/plan/generate-plan';
 import { findDomain } from '@/lib/practice/sat-taxonomy';
-import { MODE_LABEL, normalizePhases, PlanOverview } from '@/lib/ui/PlanOverview';
+import { normalizePhases, PlanOverview } from '@/lib/ui/PlanOverview';
+import { dashboardTutorNames, tutorAssignmentLabel } from '@/lib/plan/dashboard-tasks';
+import { planPosition, taskProgress } from '@/lib/plan/outline';
 import { startPlanTask } from '../dashboard/task-actions';
 import { adjustPlanAction, rebuildPlanAction } from './actions';
-import { AdjustPlanForm, RebuildPlanButton } from './PlanInteractive';
+import { AdjustPlanForm, RebuildPlanButton, ViewWeek } from './PlanInteractive';
 import s from './Plan.module.css';
 
 export const dynamic = 'force-dynamic';
 
-const PHASE_LABEL: Record<PlanPhaseType, string> = {
-  coverage: 'Coverage',
-  focus: 'Focus',
-  rehearsal: 'Rehearsal',
-  targets: 'Your targets',
-};
 
 const STATUS_ORDER = ['mastered', 'practiced', 'in_progress', 'decayed', 'not_started'] as const;
 type CoverageStatus = (typeof STATUS_ORDER)[number];
 const STATUS_LABEL: Record<CoverageStatus, string> = {
   mastered: 'Mastered',
   practiced: 'Practiced',
-  in_progress: 'Started',
-  decayed: 'Slipping',
-  not_started: 'Not yet',
+  in_progress: 'Getting started',
+  decayed: 'To revisit',
+  not_started: 'Not started',
 };
 
 interface SectionProgress {
@@ -53,8 +49,8 @@ interface SectionProgress {
 }
 
 export default async function PlanPage() {
-  const { user, profile, supabase } = await requireUser();
-  const firstName = profile.first_name ?? null;
+  const { user, supabase } = await requireUser();
+
 
   const [{ data: fullProfile }, { data: plan }] = await Promise.all([
     supabase.from('profiles').select('target_sat_score').eq('id', user.id).maybeSingle(),
@@ -98,7 +94,7 @@ export default async function PlanPage() {
     loadPlanTaskResumes(supabase, user.id, now),
   ]);
 
-  const tasks: TodayTaskRow[] = (taskRows ?? []).map((t) => ({
+  const rows: TodayTaskRow[] = (taskRows ?? []).map((t) => ({
     id: t.id,
     weekIndex: t.week_index,
     scheduledDate: t.scheduled_date,
@@ -111,23 +107,57 @@ export default async function PlanPage() {
       ? undefined : resumes.get(t.id),
   }));
 
+  const assignmentIds = rows.flatMap((t) =>
+    typeof t.payload.assignment_id === 'string' ? [t.payload.assignment_id] : []);
+  const [{ data: assigned }, { data: roster }, { data: activeSessions }] = assignmentIds.length
+    ? await Promise.all([
+        supabase.from('assignments_v2').select('id, teacher_id').in('id', assignmentIds),
+        supabase.from('teacher_student_assignments').select('teacher_id').eq('student_id', user.id),
+        supabase.from('practice_sessions').select('id, current_position, filter_criteria')
+          .eq('user_id', user.id).eq('status', 'in_progress').gt('expires_at', now)
+          .in('filter_criteria->>assignment_id', assignmentIds)
+          .order('last_activity_at', { ascending: false }),
+      ])
+    : [{ data: [] }, { data: [] }, { data: [] }] as const;
+  const teacherIds = [...new Set([...(assigned ?? []), ...(roster ?? [])].map((r) => r.teacher_id))];
+  const { data: tutorCards } = teacherIds.length
+    ? await supabase.from('profile_cards').select('id, first_name, last_name, tutor_name').in('id', teacherIds)
+    : { data: [] };
+  const tutors = dashboardTutorNames(tutorCards ?? []);
+  const authors = new Map((assigned ?? []).map((a) => [a.id, a.teacher_id] as const));
+  const sessionLinks = new Map<string, string>();
+  for (const session of activeSessions ?? []) {
+    const criteria = session.filter_criteria as Record<string, unknown> | null;
+    const id = criteria?.assignment_id;
+    if (typeof id === 'string' && criteria?.kind !== 'practice_test' && !sessionLinks.has(id))
+      sessionLinks.set(id, `/practice/s/${session.id}/${session.current_position}`);
+  }
+  const tasks = rows.map((t) => {
+    const id = t.payload.assignment_id;
+    return typeof id === 'string'
+      ? { ...t, byline: tutorAssignmentLabel(tutors, authors.get(id)), resumeHref: sessionLinks.get(id) }
+      : { ...t, byline: undefined };
+  });
+
   const today = now.slice(0, 10);
   const view = buildTodayView(tasks, today, plan.test_date,
     planStartDate(plan.config, plan.created_at, tasks.map((t) => t.scheduledDate)));
   const phases = normalizePhases(plan.phases);
-  const currentWeek = view.week?.index ?? 0;
-  const currentPhase = phases.find((p) => currentWeek >= p.startWeek && currentWeek <= p.endWeek) ?? null;
-  const doneCount = tasks.filter((t) => t.status === 'completed').length;
-  const dueCount = view.due.length + view.remainingDue.length;
-  const upcoming = [...view.due, ...view.remainingDue, ...view.ahead].slice(0, 3);
+  const { task: next, openWeek, heading } = planPosition(view, tasks);
+  const week = view.week;
+  const nextByline = next && tasks.find((t) => t.id === next.id)?.byline;
+  const early = !!next?.scheduledDate && next.scheduledDate > today && !next.resumeHref;
+  const completed = tasks.filter((t) => t.status === 'completed').length;
+  const skipped = tasks.filter((t) => t.status === 'skipped').length;
 
-  // Progress by section from the coverage rows (design doc §6.2 item 3).
+  // Skill coverage and task completion measure different parts of preparation.
   const sections: Record<'math' | 'rw', SectionProgress> = {
     math: { label: 'Math', total: 0, counts: emptyCounts() },
     rw: { label: 'Reading & Writing', total: 0, counts: emptyCounts() },
   };
   for (const row of coverageRows ?? []) {
-    const subject = findDomain(row.domain_code)?.subjectCode ?? 'math';
+    const subject = findDomain(row.domain_code)?.subjectCode;
+    if (!subject || testType !== 'sat') continue;
     const bucket = sections[subject];
     const status = (STATUS_ORDER as readonly string[]).includes(row.status)
       ? (row.status as CoverageStatus)
@@ -147,158 +177,14 @@ export default async function PlanPage() {
   return (
     <main className={s.container}>
       <PageHeader
-        eyebrow="Your plan"
-        title={`${plan.mode ? MODE_LABEL[plan.mode as PlanMode] : 'Study plan'}${firstName ? ` for ${firstName}` : ''}`}
-        actions={<div className={s.pills}>
-          {plan.goal_score != null && <span className={s.pill}>Target <strong>{plan.goal_score}</strong></span>}
-          {plan.test_date && (
-            <span className={s.pill}>
-              Test <strong>{formatDate(plan.test_date) ?? plan.test_date}</strong>
-            </span>
-          )}
-          {view.daysToTest != null && view.daysToTest >= 0 && (
-            <span className={`${s.pill} ${s.pillAccent}`}>
-              {view.daysToTest === 0 ? 'Test day' : `${view.daysToTest} day${view.daysToTest === 1 ? '' : 's'} to go`}
-            </span>
-          )}
-          <span className={s.pill}>
-            <strong>{doneCount}</strong> of {tasks.length} tasks done
-          </span>
-        </div>}
+        title={`My ${testType.toUpperCase()} Study Plan`}
+        description={[
+          plan.goal_score != null && `Target score ${plan.goal_score}`,
+          plan.test_date && `Test date ${formatDate(plan.test_date)}`,
+        ].filter(Boolean).join(' · ')}
       />
-
-      {/* ---------- Where you are ---------- */}
-      <section className={s.card}>
-        <div className={s.nowRow}>
-          <div>
-            <div className={s.nowLabel}>Right now</div>
-            <div className={s.nowTitle}>
-              Week {currentWeek + 1}
-              {view.week ? ` of ${view.week.total}` : ''}
-              {currentPhase ? ` · ${PHASE_LABEL[currentPhase.type]}` : ''}
-            </div>
-            {currentPhase?.summary && <p className={s.nowSummary}>{currentPhase.summary}</p>}
-          </div>
-          {view.week && view.week.count > 0 && (
-            <div className={s.weekProgress}>
-              <div className={s.weekCount}>{view.week.done} of {view.week.count} this week</div>
-              <div className={s.weekBar} role="progressbar" aria-valuemin={0} aria-valuemax={view.week.count} aria-valuenow={view.week.done}>
-                <div className={s.weekFill} style={{ width: `${Math.round((view.week.done / view.week.count) * 100)}%` }} />
-              </div>
-            </div>
-          )}
-        </div>
-        {plan.rationale && (
-          <details className={s.why}>
-            <summary className={s.whySummary}>Why this plan</summary>
-            <p className={s.rationale}>{currentPlanRationale(plan.rationale, plan.goal_score)}</p>
-          </details>
-        )}
-      </section>
-
-      {/* ---------- Coming up (startable now) ---------- */}
-      <section className={s.card}>
-        <h2 className={s.h2}>{view.planFinished ? 'Plan complete' : dueCount > 0 ? 'Up next' : 'Want to get ahead?'}</h2>
-        {upcoming.length === 0 ? (
-          <p className={s.body}>
-            {view.planFinished ? 'Every task on the plan is done.' : 'Nothing left to schedule.'}
-          </p>
-        ) : (
-          <>
-            {dueCount === 0 && (
-              <p className={s.body}>Today is clear — start one of these to get ahead.</p>
-            )}
-            <ul className={s.upList}>
-              {upcoming.map((t) => {
-                const why = planTaskWhy(t.payload);
-                return (
-                  <li key={t.id} className={s.upRow}>
-                    <div className={s.upBody}>
-                      <div className={s.upTitle}>{planTaskTitle(t.taskType, t.payload)}</div>
-                      <div className={s.upMeta}>
-                        {t.scheduledDate ? formatDate(t.scheduledDate) ?? t.scheduledDate : 'Any time'}
-                        {why ? ` · ${why}` : ''}
-                      </div>
-                    </div>
-                    {t.resumeHref ? (
-                      <Link href={t.resumeHref} className={s.startBtn}>Resume</Link>
-                    ) : (
-                      <form action={startPlanTask}>
-                        <input type="hidden" name="task_id" value={t.id} />
-                        <button type="submit" className={s.startBtn}>Start</button>
-                      </form>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-            <p className={s.body}>
-              <Link href="/dashboard" className={s.inlineLink}>Back to the dashboard →</Link>
-            </p>
-          </>
-        )}
-      </section>
-
-      {/* ---------- Progress by section ---------- */}
-      <section className={s.card}>
-        <h2 className={s.h2}>Progress by section</h2>
-        <p className={s.body}>Every SAT skill, by how far along you are.</p>
-        <div className={s.sections}>
-          {(['math', 'rw'] as const).map((key) => {
-            const sec = sections[key];
-            return (
-              <div key={key} className={s.sectionBlock}>
-                <div className={s.sectionHead}>
-                  <span className={s.sectionName}>{sec.label}</span>
-                  <span className={s.sectionCount}>
-                    {sec.counts.mastered + sec.counts.practiced} of {sec.total} skills practiced or mastered
-                  </span>
-                </div>
-                <div className={s.stack} aria-hidden="true">
-                  {STATUS_ORDER.map((st) =>
-                    sec.total > 0 && sec.counts[st] > 0 ? (
-                      <div
-                        key={st}
-                        className={`${s.seg} ${s[`seg_${st}`]}`}
-                        style={{ width: `${(sec.counts[st] / sec.total) * 100}%` }}
-                        title={`${STATUS_LABEL[st]}: ${sec.counts[st]}`}
-                      />
-                    ) : null,
-                  )}
-                </div>
-                <div className={s.legend}>
-                  {STATUS_ORDER.map((st) => (
-                    <span key={st} className={s.legendItem}>
-                      <span className={`${s.legendDot} ${s[`seg_${st}`]}`} />
-                      {STATUS_LABEL[st]} {sec.counts[st]}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ---------- The whole plan ---------- */}
-      <section className={s.card}>
-        <h2 className={s.h2}>Week by week</h2>
-        <PlanOverview
-          goalScore={plan.goal_score}
-          testDate={plan.test_date ?? today}
-          mode={(plan.mode as PlanMode | null) ?? null}
-          rationale={null}
-          phases={phases}
-          tasks={tasks}
-          expandWeeks={0}
-          currentWeek={currentWeek}
-          startAction={startPlanTask}
-        />
-      </section>
-
-      {/* ---------- Adjust ---------- */}
-      <section className={s.card}>
-        <h2 className={s.h2}>Adjust</h2>
+      <details className={s.settings}>
+        <summary>Plan settings</summary>
         <AdjustPlanForm
           action={adjustPlanAction}
           profileTarget={fullProfile?.target_sat_score ?? null}
@@ -310,25 +196,85 @@ export default async function PlanPage() {
           }}
         />
         <RebuildPlanButton action={rebuildPlanAction} />
+      </details>
+
+      <section className={s.position} aria-labelledby="plan-position">
+        <div>
+          <h2 id="plan-position" className={s.nowTitle}>{heading}</h2>
+          {week && <p className={s.body}>{week.count
+            ? `This week · ${taskProgress(week.done, week.count, week.skipped)}`
+            : 'No tasks scheduled this week.'}</p>}
+          {next && <div className={s.nextItem}>
+            <span className={s.nowLabel}>{next.resumeHref ? 'In progress' : early ? 'Next scheduled' :
+              next.scheduledDate && next.scheduledDate < today ? 'Catch up' : 'Up next'}</span>
+            <strong>{planTaskTitle(next.taskType, next.payload)}</strong>
+            <span>Week {next.weekIndex + 1}{next.scheduledDate && ` · ${formatDate(next.scheduledDate, { weekday: 'short' })}`}{nextByline && ` · ${nextByline}`}</span>
+          </div>}
+          {!week && !next && <p className={s.body}>Your plan has no scheduled tasks yet.</p>}
+        </div>
+        {next && <div className={s.actions}>
+          {early && <ViewWeek week={next.weekIndex} />}
+          {next.resumeHref ? <Link href={next.resumeHref} className={s.primaryLink}>Resume</Link> :
+            <form action={startPlanTask}>
+              <input type="hidden" name="task_id" value={next.id} />
+              <button type="submit" className={early ? s.secondaryBtn : s.primaryBtn}>{early ? 'Start early' : 'Start'}</button>
+            </form>}
+        </div>}
       </section>
 
-      <details className={s.masteryNote}>
-        <summary className={s.masteryNoteSummary}>How progress is measured</summary>
-        <div className={s.masteryNoteBody}>
-          <p>
-            Every skill has a mastery score out of 100, and 80 counts as mastered. It goes up
-            when you answer correctly — faster on harder questions — but it only climbs as high as
-            your practice count allows, because four right answers in a row aren&rsquo;t enough to
-            be sure of anything. Getting a few right in the last couple of weeks adds a small
-            bonus on top.
-          </p>
-          <p>
-            So a skill you&rsquo;re doing well on can still sit low: you haven&rsquo;t done enough
-            of it yet. That&rsquo;s also why this isn&rsquo;t your accuracy percentage — that one
-            lives on your <Link href="/dashboard" className={s.inlineLink}>dashboard</Link>.
-          </p>
+      <section className={s.card} aria-labelledby="plan-outline">
+        <div className={s.sectionHeading}>
+          <h2 className={s.h2} id="plan-outline">Week by week</h2>
+          <a href="#preparation" className={s.inlineLink}>Preparation summary</a>
         </div>
-      </details>
+        <PlanOverview
+          goalScore={plan.goal_score}
+          testDate={plan.test_date ?? today}
+          mode={(plan.mode as PlanMode | null) ?? null}
+          rationale={null}
+          phases={phases}
+          tasks={tasks}
+          currentWeek={week?.index}
+          hub={{ today, openWeek, totalWeeks: week?.total ?? 0 }}
+          startAction={startPlanTask}
+        />
+        {plan.rationale && <details className={s.why}>
+          <summary className={s.whySummary}>Why this plan</summary>
+          <p className={s.rationale}>{currentPlanRationale(plan.rationale, plan.goal_score)}</p>
+        </details>}
+      </section>
+
+      <section className={s.card} id="preparation" aria-labelledby="prep-title">
+        <h2 className={s.h2} id="prep-title">Your preparation so far</h2>
+        <div className={s.completion}>
+          <strong>Plan tasks</strong><span>{taskProgress(completed, tasks.length, skipped)}</span>
+        </div>
+        {testType === 'sat' && <>
+          <h3 className={s.coverageTitle}>Skill coverage</h3>
+          <div className={s.sections}>
+            {Object.values(sections).map((sec) => (
+              <div key={sec.label} className={s.sectionBlock}>
+                <strong>{sec.label}</strong>
+                {sec.total ? <>
+                  <span>{sec.total - sec.counts.not_started} of {sec.total} skills started · {sec.counts.mastered} mastered</span>
+                  {sec.counts.decayed > 0 && <span>{sec.counts.decayed} to revisit</span>}
+                </> : <span>Coverage unavailable</span>}
+              </div>
+            ))}
+          </div>
+          <details className={s.why}>
+            <summary className={s.whySummary}>Skill breakdown and how progress is measured</summary>
+            <div className={s.breakdown}>
+              {Object.values(sections).filter((sec) => sec.total > 0).map((sec) => (
+                <div key={sec.label}><strong>{sec.label}</strong>
+                  <ul>{STATUS_ORDER.map((st) => <li key={st}>{STATUS_LABEL[st]} · {sec.counts[st]}</li>)}</ul>
+                </div>
+              ))}
+            </div>
+            <p className={s.body}>A skill counts as started after your first practice question. Mastery also takes into account the number, difficulty, and recency of your answers. Skills marked to revisit have slipped from an earlier high.</p>
+          </details>
+        </>}
+      </section>
     </main>
   );
 }

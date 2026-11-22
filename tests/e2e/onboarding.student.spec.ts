@@ -178,9 +178,13 @@ test.describe('onboarding intake', () => {
 
     // The plan hub is reachable and shows where the student is.
     await page.goto('/plan');
-    await expect(page.getByRole('heading', { name: /foundations plan/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'My SAT Study Plan' })).toBeVisible();
     await expect(page.getByText(/week 1 of/i).first()).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Progress by section' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Your preparation so far' })).toBeVisible();
+
+    await expect(page.getByRole('heading', { name: 'Week by week' })).toBeVisible();
+    await page.getByText('Plan settings', { exact: true }).click();
+    await expect(page.getByRole('button', { name: /Change .*days/ })).toBeVisible();
 
     // The intake is done: the dashboard no longer bounces.
     await page.goto('/dashboard');

@@ -50,6 +50,7 @@ export interface TodayWeek {
   total: number;
   /** Tasks in this week that are completed / total tasks in the week. */
   done: number;
+  skipped: number;
   count: number;
 }
 
@@ -131,7 +132,8 @@ export function buildTodayView(
     week = {
       index,
       total,
-      done: inWeek.filter((t) => t.status !== 'pending').length,
+      done: inWeek.filter((t) => t.status === 'completed').length,
+      skipped: inWeek.filter((t) => t.status === 'skipped').length,
       count: inWeek.length,
     };
   }

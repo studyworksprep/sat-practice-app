@@ -163,3 +163,13 @@
 .why { font-size: 0.85rem; }
 .whySummary { cursor: pointer; color: var(--color-app-accent); font-weight: 600; }
 .why .rationale { margin-top: var(--s2); }
+
+.weekHeading { display: grid; gap: 2px; min-width: 0; }
+.focus { color: var(--fg2); font-size: .86rem; overflow-wrap: anywhere; }
+.week[id] { scroll-margin-top: 5rem; }
+.week[id] .weekTitle::before { content: '▸'; color: var(--fg3); }
+.week[id][open] .weekTitle::before { content: '▾'; }
+.taskBody, .taskMeta { overflow-wrap: anywhere; }
+@media (max-width: 560px) {
+  .taskMeta { flex-wrap: wrap; }
+}

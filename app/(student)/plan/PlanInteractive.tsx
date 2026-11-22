@@ -16,6 +16,17 @@ type Action = (prev: AdjustResult | null, fd: FormData) => Promise<AdjustResult>
 const HOUR_OPTIONS = [2, 3, 5, 8, 10, 15];
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+export function ViewWeek({ week }: { week: number }) {
+  const id = `plan-week-${week + 1}`;
+  return <a href={`#${id}`} className={s.primaryLink} onClick={() => {
+    const panel = document.getElementById(id);
+    if (panel instanceof HTMLDetailsElement) {
+      panel.open = true;
+      panel.querySelector('summary')?.focus();
+    }
+  }}>View Week {week + 1}</a>;
+}
+
 function Result({ state, verb }: { state: AdjustResult | null; verb: string }) {
   if (!state) return null;
   if (!state.ok) return <p className={s.error} role="alert">{state.error}</p>;
