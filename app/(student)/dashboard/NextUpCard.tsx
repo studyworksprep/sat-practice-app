@@ -1,163 +1,160 @@
-// Dashboard · Up next — the one thing to do now, as the page's single
-// primary action. The task is the oldest due plan task (catch-up work
-// first, the same order buildTodayView uses), or — when today is clear —
-// the next task scheduled ahead. Beside it: this week's progress and the
-// open practice session, if any.
-//
-// Server Component: Start / Mark done are the same <form action> Server
-// Actions the Tasks box uses (./task-actions).
-
 import Link from 'next/link';
 import { formatDate } from '@/lib/formatters';
-import { MANUAL_COMPLETE_TYPES, taskTitle, taskWhy } from '@/lib/plan/today';
-import type { TodayTaskRow, TodayWeek } from '@/lib/plan/today';
+import { MANUAL_COMPLETE_TYPES, taskTitle, taskWhy, type TodayWeek } from '@/lib/plan/today';
+import type { DashboardTask } from '@/lib/plan/dashboard-tasks';
 import { markTaskDone, startPlanTask } from './task-actions';
 import s from './Dashboard.module.css';
 
-const START_LABEL: Record<string, string> = {
-  lesson: 'Start lesson',
-  drill: 'Start drill',
-  practice_set: 'Start practice',
-  review: 'Start review',
-  full_test: 'Start test',
-  vocab: 'Start vocab',
-  flashcards: 'Start flashcards',
-};
-
 export interface NextUpCardProps {
-  /** null when nothing is due and nothing is scheduled ahead. */
-  task: TodayTaskRow | null;
-  /** The task is scheduled after today (offered early). */
-  ahead: boolean;
+  task: DashboardTask | null;
   today: string;
+  hasPlan: boolean;
   week: TodayWeek | null;
   planFinished: boolean;
-  doneTodayCount: number;
-  resume: { sessionId: string; position: number; total: number } | null;
+  planContext: string | null;
 }
 
-export function NextUpCard({
+export function TaskAction({
   task,
-  ahead,
-  today,
-  week,
-  planFinished,
-  doneTodayCount,
-  resume,
-}: NextUpCardProps) {
+  early,
+  primary = false,
+}: {
+  task: DashboardTask;
+  early?: boolean;
+  primary?: boolean;
+}) {
+  const actionClass = primary ? (early ? s.nextUpGhost : s.nextUpPrimary) : s.startBtn;
+  if (task.resumeHref)
+    return (
+      <Link className={actionClass} href={task.resumeHref}>
+        Resume {task.taskType === 'full_test' ? 'test' : 'practice'}
+      </Link>
+    );
+  if (task.assignmentHref)
+    return (
+      <Link className={actionClass} href={task.assignmentHref}>
+        Open assignment
+      </Link>
+    );
+  const labels = {
+    lesson: 'Start lesson',
+    drill: 'Start drill',
+    practice_set: 'Start practice',
+    review: 'Start review',
+    full_test: 'Start test',
+    vocab: 'Start vocab',
+    flashcards: 'Start flashcards',
+  };
+  return (
+    <form action={startPlanTask}>
+      <input type="hidden" name="task_id" value={task.id} />
+      <button type="submit" className={actionClass}>
+        {early ? 'Start early' : labels[task.taskType]}
+      </button>
+    </form>
+  );
+}
+
+export function TaskSource({ task }: { task: DashboardTask }) {
+  return (
+    <>
+      {task.byline}
+      {!task.outsidePlan && (
+        <>
+          {task.byline ? ' · ' : ''}Study Plan · Week {task.weekIndex + 1}
+        </>
+      )}
+    </>
+  );
+}
+
+export function MarkDone({ task, primary = false }: { task: DashboardTask; primary?: boolean }) {
+  if (task.assignmentHref || !MANUAL_COMPLETE_TYPES.includes(task.taskType)) return null;
+  return (
+    <form action={markTaskDone}>
+      <input type="hidden" name="task_id" value={task.id} />
+      <button type="submit" className={primary ? s.nextUpGhost : s.doneBtn}>
+        Mark done
+      </button>
+    </form>
+  );
+}
+
+export function NextUpCard({ task, today, hasPlan, week, planFinished, planContext }: NextUpCardProps) {
+  const ahead = Boolean(task?.scheduledDate && task.scheduledDate > today);
+  const weekDone = week && week.count > 0 && week.count === week.done;
+  const heading =
+    task && !ahead
+      ? taskTitle(task)
+      : planFinished
+        ? 'Study Plan complete'
+        : weekDone
+          ? `Week ${week.index + 1} complete`
+          : 'You’re caught up for today';
+  const date = task?.scheduledDate && formatDate(task.scheduledDate);
+  const why = task && !ahead && taskWhy(task);
   return (
     <section className={s.nextUp} aria-labelledby="dashboard-next-up">
       <div className={s.nextUpMain}>
-        {task ? (
-          <TaskHero task={task} ahead={ahead} today={today} />
-        ) : (
+        <p className={s.nextUpEyebrow}>{ahead || !task ? 'Today' : 'Up next'}</p>
+        <h2 className={s.nextUpTitle} id="dashboard-next-up">
+          {heading}
+        </h2>
+        {task && (
           <>
-            <p className={s.nextUpEyebrow}>Up next</p>
-            <h2 id="dashboard-next-up" className={s.nextUpTitle}>
-              {planFinished
-                ? 'Plan complete — every task is done.'
-                : doneTodayCount > 0
-                  ? 'That’s today done. Nice work.'
-                  : 'Nothing due today.'}
-            </h2>
-            {!planFinished && (
+            {ahead && (
               <p className={s.nextUpBody}>
-                Want more anyway? The Review hub always has something worth drilling.
+                Next on your schedule · {date}
+                <br />
+                <strong>{taskTitle(task)}</strong>
               </p>
             )}
+            <p className={s.nextUpMeta}>
+              <TaskSource task={task} />
+              {!ahead && date && (
+                <>
+                  {' '}
+                  · {task.scheduledDate! < today ? 'Catch-up from' : 'Scheduled'} {date}
+                </>
+              )}
+              {typeof task.payload.minutes === 'number' && <> · About {task.payload.minutes} min</>}
+            </p>
+            {why && <p className={s.nextUpBody}>{why}</p>}
             <div className={s.nextUpActions}>
-              <Link href="/review" className={s.nextUpPrimary}>Go to Review</Link>
+              <TaskAction task={task} early={ahead} primary />
+              {!ahead && <MarkDone task={task} primary />}
             </div>
           </>
         )}
       </div>
-
-      <div className={s.nextUpSide}>
-        {week && (
+      {hasPlan && (
+        <div className={s.nextUpSide}>
           <div className={s.weekBlock}>
             <div className={s.weekRow}>
-              <span className={s.weekLabel}>This week</span>
-              <span className={s.weekMeta}>Week {week.index + 1} of {week.total}</span>
+              <strong>Your Study Plan</strong>
+              <Link className={s.planLink} href="/plan">
+                Full plan →
+              </Link>
             </div>
-            <div className={s.weekCount}>
-              {week.done} <span className={s.weekCountOf}>of {week.count} tasks</span>
-            </div>
-            <div
-              className={s.weekBar}
-              role="progressbar"
-              aria-label="Tasks done this week"
-              aria-valuemin={0}
-              aria-valuemax={week.count}
-              aria-valuenow={week.done}
-            >
-              <div
-                className={s.weekFill}
-                style={{ width: `${week.count > 0 ? Math.round((week.done / week.count) * 100) : 0}%` }}
-              />
-            </div>
+            {planContext && <span className={s.weekMeta}>{planContext}</span>}
+            {week && (
+              <>
+                <div className={s.weekCount}>
+                  {week.done} <span className={s.weekCountOf}>of {week.count} plan tasks this week</span>
+                </div>
+                {week.count > 0 && (
+                  <progress
+                    className={s.planMeter}
+                    aria-label="Weekly study plan progress"
+                    max={week.count}
+                    value={week.done}
+                  />
+                )}
+              </>
+            )}
           </div>
-        )}
-        {resume && (
-          <div className={s.resumeBlock}>
-            <div>
-              <div className={s.resumeTitle}>Open session</div>
-              <div className={s.resumeMeta}>
-                At question {Math.min(resume.position + 1, resume.total)} of {resume.total}
-              </div>
-            </div>
-            <Link
-              href={`/practice/s/${resume.sessionId}/${resume.position}`}
-              className={s.resumeBtn}
-            >
-              Resume
-            </Link>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </section>
-  );
-}
-
-function TaskHero({ task, ahead, today }: { task: TodayTaskRow; ahead: boolean; today: string }) {
-  const assigned = typeof task.payload.assignment_id === 'string';
-  const overdue = !ahead && task.scheduledDate != null && task.scheduledDate < today;
-  const why = taskWhy(task);
-  const minutes = typeof task.payload.minutes === 'number' ? task.payload.minutes : null;
-  const manual = MANUAL_COMPLETE_TYPES.includes(task.taskType) && !assigned;
-  const scheduled = task.scheduledDate ? formatDate(task.scheduledDate) ?? task.scheduledDate : null;
-
-  const eyebrow = assigned
-    ? 'Up next · assigned by your tutor'
-    : overdue
-      ? `Up next · catch-up${scheduled ? ` from ${scheduled}` : ''}`
-      : ahead && scheduled
-        ? `Up next · scheduled ${scheduled}`
-        : 'Up next';
-
-  return (
-    <>
-      <p className={s.nextUpEyebrow}>{eyebrow}</p>
-      <h2 id="dashboard-next-up" className={s.nextUpTitle}>{taskTitle(task)}</h2>
-      {why && <p className={s.nextUpBody}>{why}</p>}
-      {minutes != null && <p className={s.nextUpMeta}>About {minutes} min</p>}
-      <div className={s.nextUpActions}>
-        {task.resumeHref && !assigned ? (
-          <Link href={task.resumeHref} className={s.nextUpPrimary}>Resume {task.taskType === 'full_test' ? 'test' : 'practice'}</Link>
-        ) : (
-          <form action={startPlanTask}>
-            <input type="hidden" name="task_id" value={task.id} />
-            <button type="submit" className={s.nextUpPrimary}>
-              {START_LABEL[task.taskType] ?? 'Start'}
-            </button>
-          </form>
-        )}
-        {manual && (
-          <form action={markTaskDone}>
-            <input type="hidden" name="task_id" value={task.id} />
-            <button type="submit" className={s.nextUpGhost}>Mark done</button>
-          </form>
-        )}
-      </div>
-    </>
   );
 }

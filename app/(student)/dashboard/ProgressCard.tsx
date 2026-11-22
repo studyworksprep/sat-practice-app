@@ -64,7 +64,7 @@ export function ProgressCard({
         <div>
           <h2 id="dashboard-progress" className={s.sectionLabel}>
             <IconTile icon={ProgressIcon} palette="success" size="sm" />
-            Progress
+            Practice performance
           </h2>
           <div className={s.cardSub}>Last 90 days, by domain.</div>
         </div>
