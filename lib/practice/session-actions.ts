@@ -485,20 +485,27 @@ export async function submitPracticeSession(
   // guard here just means a re-submit is a no-op write rather
   // than a redundant flip.
   if (session.status !== 'completed') {
-    const { error } = await supabase
+    const { data: completed, error } = await supabase
       .from('practice_sessions')
       .update({
         status: 'completed',
         last_activity_at: new Date().toISOString(),
       })
       .eq('id', sessionId)
-      .eq('status', 'in_progress');
+      .eq('status', 'in_progress')
+      .select('id')
+      .maybeSingle();
     if (error) return actionFail(`Could not submit session: ${error.message}`);
-    if (session.plan_task_id) {
-      revalidatePath('/dashboard');
-      revalidatePath('/plan');
+    if (!completed) {
+      // A concurrent Finish may already have succeeded.
+      const { data: current } = await supabase.from('practice_sessions')
+        .select('status').eq('id', sessionId).eq('user_id', user.id).maybeSingle();
+      if (current?.status !== 'completed') return actionFail('Could not confirm that this session finished.');
     }
   }
+  revalidatePath('/dashboard');
+  revalidatePath('/practice/history');
+  if (session.plan_task_id) revalidatePath('/plan');
 
   // Assignment completion. Submit Set is the explicit "I'm done"
   // signal — bump completed_at on every submit (even re-submits)

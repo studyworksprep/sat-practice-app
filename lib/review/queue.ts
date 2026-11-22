@@ -267,6 +267,25 @@ export async function syncDecayedSkillReviews(
   }
 }
 
+/** A lesson only appears as due when students can actually launch its drill.
+ * Keep unavailable lessons queued so publishing a drill makes them eligible. */
+async function availableLessonChecks(supabase: TypedSupabaseClient, rows: QueueRow[]) {
+  const lessonIds = rows.filter(row => row.item_type === 'lesson_check').map(row => row.item_ref);
+  if (!lessonIds.length) return rows;
+  const { data, error } = await supabase.from('lessons')
+    .select('id, drills:questions_v2!questions_v2_drill_lesson_id_fkey!inner(id)')
+    .in('id', lessonIds)
+    .eq('status', 'published')
+    .eq('drills.pool', 'lesson_drill')
+    .eq('drills.is_published', true)
+    .eq('drills.is_broken', false)
+    .is('drills.deleted_at', null)
+    .limit(1, { referencedTable: 'drills' });
+  if (error) throw error;
+  const available = new Set(data.map(row => row.id));
+  return rows.filter(row => row.item_type !== 'lesson_check' || available.has(row.item_ref));
+}
+
 /** The student's due items, oldest due first. */
 export async function getDueReviewItems(
   supabase: TypedSupabaseClient,
@@ -274,14 +293,20 @@ export async function getDueReviewItems(
   nowIso: string,
   limit = 200,
 ): Promise<ReviewQueueItem[]> {
-  const { data } = await supabase
-    .from('review_queue')
-    .select('id, item_type, item_ref, due_at, interval_days, ease, lapses')
-    .eq('student_id', userId)
-    .lte('due_at', nowIso)
-    .order('due_at', { ascending: true })
-    .limit(limit);
-  return ((data ?? []) as QueueRow[]).map(toItem);
+  const items: ReviewQueueItem[] = [];
+  for (let offset = 0; items.length < limit;) {
+    const pageSize = Math.min(80, limit - items.length);
+    const { data, error } = await supabase.from('review_queue')
+      .select('id, item_type, item_ref, due_at, interval_days, ease, lapses')
+      .eq('student_id', userId).lte('due_at', nowIso)
+      .order('due_at').order('id').range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    const rows = data ?? [];
+    items.push(...(await availableLessonChecks(supabase, rows)).map(toItem));
+    if (rows.length < pageSize) break;
+    offset += rows.length;
+  }
+  return items;
 }
 
 export interface DueSummary {
@@ -385,16 +410,15 @@ export async function buildReviewSessionQuestionIds(
 
   // A scheduled lesson review draws from that lesson's later-review
   // questions first. Lessons awaiting a drill set stay queued.
-  const lessonIds = dueItems
-    .filter((i) => i.itemType === 'lesson_check')
-    .slice(0, MAX_LESSONS_PER_SESSION)
-    .map((i) => i.itemRef);
+  const lessonIds = dueItems.filter((i) => i.itemType === 'lesson_check').map((i) => i.itemRef);
+  let lessonsAdded = 0;
   for (const lessonId of lessonIds) {
-    if (chosen.length >= size) break;
+    if (chosen.length >= size || lessonsAdded >= MAX_LESSONS_PER_SESSION) break;
     const ids = await selectLessonPracticeQuestionIds(
       supabase, userId, lessonId, Math.min(LESSON_MICRO_DRILL_COUNT, size - chosen.length),
       'later_review', seen,
-    ).catch(() => []);
+    );
+    if (ids.length) lessonsAdded++;
     for (const id of ids) {
       chosen.push(id);
       seen.add(id);

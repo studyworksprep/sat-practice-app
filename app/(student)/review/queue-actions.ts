@@ -60,15 +60,18 @@ export async function createDueReviewSession(
       // on question items; the next visit reconciles.
     }
   }
-  const due = await getDueReviewItems(supabase, user.id, nowIso);
-  const questionIds = await buildReviewSessionQuestionIds(
-    supabase, user.id, due, REVIEW_SESSION_SIZE, testType,
-  );
+  let questionIds: string[];
+  try {
+    const due = await getDueReviewItems(supabase, user.id, nowIso);
+    questionIds = await buildReviewSessionQuestionIds(supabase, user.id, due, REVIEW_SESSION_SIZE, testType);
+  } catch {
+    return actionFail('Could not load your review questions. Please try again.');
+  }
   if (questionIds.length === 0) {
     return actionFail(
       testType === 'act'
         ? 'Nothing due for ACT review right now. ACT questions you miss in practice queue up here automatically.'
-        : 'Nothing due for review right now. Missed questions and slipping skills queue up here automatically as you practice.',
+        : 'No SAT review questions are available right now. Check back after your next review is due.',
     );
   }
 
