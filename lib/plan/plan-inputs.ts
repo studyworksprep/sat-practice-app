@@ -5,6 +5,7 @@
 // export async functions.
 
 import type { PlanMode, SkillState } from './generate-plan';
+import { storedSectionFocus, type SectionFocus } from './section-focus';
 import { selfRatingToPrior } from './intake';
 import type { Database } from '@/lib/types/database';
 
@@ -35,6 +36,7 @@ export function mapSkillRow(r: PlanInputRow): SkillState {
  *  kind of plan the student activated. */
 export interface PlanComposition {
   mode: PlanMode | null;
+  sectionFocus: SectionFocus;
   studyDays: number[] | null;
   targets: string[] | null;
   fullTests: boolean;
@@ -71,6 +73,7 @@ export function planCompositionFromRow(row: {
     ? (config!.targets as unknown[]).filter((t): t is string => typeof t === 'string')
     : null;
   return {
+    sectionFocus: storedSectionFocus(config),
     mode: typeof row.mode === 'string' && PLAN_MODES.includes(row.mode) ? (row.mode as PlanMode) : null,
     studyDays: days && days.length > 0 ? days : null,
     targets: targets && targets.length > 0 ? targets : null,

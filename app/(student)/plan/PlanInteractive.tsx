@@ -6,6 +6,8 @@
 
 'use client';
 
+import { PlanSectionField } from '@/lib/ui/PlanSectionField';
+import type { SectionFocus } from '@/lib/plan/section-focus';
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
 import type { AdjustResult } from './actions';
@@ -44,7 +46,7 @@ export function AdjustPlanForm({
   profileTarget,
 }: {
   action: Action;
-  defaults: { target: number | ''; testDate: string; weeklyHours: number; studyDays: number[] };
+  defaults: { target: number | ''; testDate: string; weeklyHours: number; studyDays: number[]; sectionFocus?: SectionFocus };
   profileTarget: number | null;
 }) {
   const [state, formAction, pending] = useActionState<AdjustResult | null, FormData>(action, null);
@@ -56,7 +58,7 @@ export function AdjustPlanForm({
     return (
       <div className={s.adjustRow}>
         <button type="button" className={s.secondaryBtn} onClick={() => setOpen(true)}>
-          {profileTarget != null ? 'Change date, hours, or days' : 'Change target, date, hours, or days'}
+          {defaults.sectionFocus ? 'Change sections, hours, or study days' : 'Change schedule or study days'}
         </button>
         <Result state={state} verb="Plan updated" />
       </div>
@@ -65,6 +67,7 @@ export function AdjustPlanForm({
 
   return (
     <form action={formAction} className={s.form}>
+      {defaults.sectionFocus && <PlanSectionField styles={s} defaultValue={defaults.sectionFocus} />}
       <div className={s.fieldRow}>
         {profileTarget != null ? <div className={s.field}>
           <span className={s.label}>Target score</span>

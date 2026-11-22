@@ -6,7 +6,9 @@
 
 'use client';
 
-import { useActionState } from 'react';
+import { PlanSectionField } from '@/lib/ui/PlanSectionField';
+import type { SectionFocus } from '@/lib/plan/section-focus';
+import { useActionState, useState } from 'react';
 import type { ActionResult } from '@/lib/types';
 import type { PrepLevel, Intent, SatDomainCode, SelfRatingValue } from '@/lib/plan/intake';
 import type { SatDomain } from '@/lib/practice/sat-taxonomy';
@@ -256,16 +258,18 @@ export function TargetsForm({
 export interface SelfCheckRow {
   code: SatDomainCode;
   name: string;
-  section: string;
+  section: Exclude<SectionFocus, 'both'>;
   example: string;
 }
 
 export function SelfCheckGrid({
   action,
   rows,
+  defaultSection,
   defaults,
 }: {
   action: WizardAction;
+  defaultSection: SectionFocus;
   rows: SelfCheckRow[];
   defaults: Partial<Record<SatDomainCode, SelfRatingValue>> | null;
 }) {
@@ -275,10 +279,15 @@ export function SelfCheckGrid({
     const v = defaults[code];
     return v == null ? 'unsure' : String(v);
   };
+  const [focus, setFocus] = useState(defaultSection);
   const sections = [...new Set(rows.map((r) => r.section))];
 
   return (
     <form action={formAction} className={s.form}>
+      <PlanSectionField styles={s} defaultValue={defaultSection} onChange={setFocus} />
+      {rows.filter((r) => focus !== 'both' && r.section !== focus).map((r) => (
+        <input key={r.code} type="hidden" name={`rating_${r.code}`} value={current(r.code) ?? 'unsure'} />
+      ))}
       <div className={s.ratingScale} aria-hidden="true">
         <span />
         <div className={s.ratingScaleLabels}>
@@ -288,14 +297,14 @@ export function SelfCheckGrid({
       </div>
       <div className={s.ratingGrid} role="group" aria-label="Comfort by area">
         {sections.map((section) => (
-          <div key={section} className={s.ratingGrid}>
-            <div className={s.ratingSection}>{section}</div>
+          <div key={section} className={s.ratingGrid} style={focus === 'both' || section === focus ? undefined : { display: 'none' }}>
+            <div className={s.ratingSection}>{section === 'math' ? 'Math' : 'Reading & Writing'}</div>
             {rows
               .filter((r) => r.section === section)
               .map((r) => {
                 const chosen = current(r.code);
                 return (
-                  <fieldset key={r.code} className={s.ratingRow}>
+                  <fieldset key={r.code} className={s.ratingRow} disabled={focus !== 'both' && section !== focus}>
                     <legend className={s.ratingLegend}>
                       <span className={s.ratingName}>{r.name}</span>
                       <span className={s.ratingExample}>{r.example}</span>
@@ -338,24 +347,13 @@ export function SelfCheckGrid({
 
 // ── Build / activate / set aside ──────────────────────────────────
 
-export function BuildPlanButton({ action, label = 'Build my plan' }: { action: WizardAction; label?: string }) {
+export function BuildPlanButton({ action, defaultSection }: { action: WizardAction; defaultSection: SectionFocus }) {
   const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(action, null);
   return (
-    <form action={formAction} className={s.inlineForm}>
+    <form action={formAction} className={s.form}>
+      <PlanSectionField styles={s} defaultValue={defaultSection} />
       <button className={s.primaryBtn} type="submit" disabled={pending}>
-        {pending ? 'Building your plan…' : label}
-      </button>
-      <ErrorNote state={state} />
-    </form>
-  );
-}
-
-export function RebuildPlanLink({ action }: { action: WizardAction }) {
-  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(action, null);
-  return (
-    <form action={formAction} className={s.inlineForm}>
-      <button className={s.linkBtn} type="submit" disabled={pending}>
-        {pending ? 'Rebuilding…' : 'Rebuild the plan'}
+        {pending ? 'Building your plan…' : 'Build my plan'}
       </button>
       <ErrorNote state={state} />
     </form>

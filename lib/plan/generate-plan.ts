@@ -24,6 +24,7 @@
 
 import { domainDisplayName, skillDisplayName, renderDrillWhy, isSilentWhyCode, LESSON_DRILL_WHY } from './task-labels.ts';
 import type { DrillWhyCode } from './task-labels.ts';
+import type { SectionFocus } from './section-focus.ts';
 import { VOLUME_CURVE } from '../mastery.ts';
 import { filterCustomizedTasks, stampGeneratedTasks } from './customization.ts';
 
@@ -162,6 +163,7 @@ export interface PlanInput {
   targets?: readonly string[] | null;
   /** Include full-length practice tests (default true). */
   fullTests?: boolean;
+  sectionFocus?: SectionFocus;
   /** Weeks of the plan already elapsed before `today` — a re-pace
    *  regenerates the remaining horizon but phases are laid out over the
    *  ORIGINAL horizon, so a plan in its focus phase stays there. */
@@ -763,9 +765,24 @@ function hasEvidence(s: SkillState): boolean {
   return s.attemptsCount >= LOW_EVIDENCE_ATTEMPTS || s.evidencePrior != null;
 }
 
+/** Alternate whole units, retaining the curriculum or priority order within each section. */
+function interleaveUnits(ordered: SkillState[]): SkillState[] {
+  if (!ordered.length) return ordered;
+  const first = ordered.filter((s) => s.section === ordered[0].section);
+  const second = ordered.filter((s) => s.section !== ordered[0].section);
+  const units: SkillState[] = [];
+  for (let i = 0; i < Math.max(first.length, second.length); i++) {
+    if (first[i]) units.push(first[i]);
+    if (second[i]) units.push(second[i]);
+  }
+  return units;
+}
+
 export function generatePlan(input: PlanInput): PlanDraft {
   const mode: PlanMode = input.mode ?? 'targeted';
-  const fullTests = input.fullTests ?? true;
+  const sectionFocus = input.testType === 'sat' ? input.sectionFocus ?? 'both' : 'both';
+  const orderUnits = input.testType === 'sat' ? interleaveUnits : (units: SkillState[]) => units;
+  const fullTests = sectionFocus === 'both' && (input.fullTests ?? true);
   const cadence = input.practiceTestCadenceWeeks ?? DEFAULT_CADENCE_WEEKS;
   const elapsed = Math.max(0, Math.floor(input.elapsedWeeks ?? 0));
   const totalDays = Math.max(1, daysBetween(input.today, input.testDate));
@@ -781,7 +798,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
 
   // Only practicable skills: has questions, not already mastered.
   const practicable = input.skills.filter(
-    (s) => s.questionsAvailable > 0 && s.coverageStatus !== 'mastered',
+    (s) => (sectionFocus === 'both' || s.section === sectionFocus) && s.questionsAvailable > 0 && s.coverageStatus !== 'mastered',
   );
   const maxQBySection: Record<PlanSection, number> = { math: 0, reading_writing: 0 };
   for (const s of practicable) {
@@ -791,22 +808,22 @@ export function generatePlan(input: PlanInput): PlanDraft {
   }
   // Focus ranking: skills with evidence first (that's what focus is
   // for), then the rest; priority desc within each; sequence tiebreak.
-  const ranked = [...practicable].sort((a, b) => {
+  const ranked = orderUnits([...practicable].sort((a, b) => {
     const ea = hasEvidence(a) ? 0 : 1;
     const eb = hasEvidence(b) ? 0 : 1;
     if (ea !== eb) return ea - eb;
     const diff = priority(b, maxQBySection[b.section]) - priority(a, maxQBySection[a.section]);
     if (diff !== 0) return diff;
     return a.sequence - b.sequence;
-  });
+  }));
   // Coverage order: the curriculum, skipping skills that already carry
   // evidence (a re-paced plan resumes with what's still untouched).
-  const curriculum = practicable.filter(isUncovered).sort((a, b) => a.sequence - b.sequence);
+  const curriculum = orderUnits(practicable.filter(isUncovered).sort((a, b) => a.sequence - b.sequence));
   // Targets: the student's picks, in curriculum order; empty → focus ranking.
   const targetSet = new Set(input.targets ?? []);
-  const targetPool = practicable
+  const targetPool = orderUnits(practicable
     .filter((s) => targetSet.has(s.skillCode))
-    .sort((a, b) => a.sequence - b.sequence);
+    .sort((a, b) => a.sequence - b.sequence));
 
   const tasksPerWeek = clamp(
     Math.round((input.weeklyHours * 60) / AVG_TASK_MINUTES),
@@ -850,9 +867,16 @@ export function generatePlan(input: PlanInput): PlanDraft {
   /** Section foundations: where each section's front-load stands. A
    *  section's syllabus is walked to exhaustion before the first task
    *  of that section in any phase (docs §8.1 decision 6). */
+  // Explicit drill lists and foundation technique defaults can span sections.
+  const allowedCodes = new Set(input.skills.filter((s) => s.section === sectionFocus).map((s) => s.skillCode));
+  const scopedSteps = (steps: readonly UnitStep[]) => teachingSteps(sectionFocus === 'both' ? steps : steps.map((step) => ({
+    ...step,
+    skillCodes: step.skillCodes?.filter((code) => allowedCodes.has(code)),
+    techniqueSkillCodes: step.techniqueSkillCodes?.filter((code) => allowedCodes.has(code)),
+  })));
   const sectionSyllabi: SectionSyllabi | null = input.sectionSteps ? {
-    math: teachingSteps(input.sectionSteps.math ?? []),
-    reading_writing: teachingSteps(input.sectionSteps.reading_writing ?? []),
+    math: sectionFocus === 'reading_writing' ? [] : scopedSteps(input.sectionSteps.math ?? []),
+    reading_writing: sectionFocus === 'math' ? [] : scopedSteps(input.sectionSteps.reading_writing ?? []),
   } : null;
   const sectionWalks: Record<PlanSection, number> = { math: 0, reading_writing: 0 };
   const foundationLessonBefore = (steps: readonly UnitStep[], index: number): UnitStep | null => {
@@ -913,7 +937,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
   const stepsFor = (s: SkillState): readonly UnitStep[] => {
     let steps = normalizedSyllabi.get(s.skillCode);
     if (!steps) {
-      steps = teachingSteps(syllabi?.[s.skillCode] ?? defaultUnitSteps(s));
+      steps = scopedSteps(syllabi?.[s.skillCode] ?? defaultUnitSteps(s));
       normalizedSyllabi.set(s.skillCode, steps);
     }
     return steps;
@@ -1065,7 +1089,9 @@ export function generatePlan(input: PlanInput): PlanDraft {
         },
       });
     }
-    if (w + elapsed > 0) {
+    // The spaced-review queue can draw from either SAT section. Single-section
+    // plans use the scoped cumulative practice set below for review.
+    if (w + elapsed > 0 && sectionFocus === 'both') {
       weekTasks.push({
         weekIndex: w,
         taskType: 'review',
@@ -1208,6 +1234,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
     goalScore: input.goalScore,
     startingScore: input.startingScore,
     cadence,
+    sectionFocus: input.testType === 'sat' ? sectionFocus : undefined,
     fullTests,
     topSkills: ranked.slice(0, 3).map((s) => skillDisplayName(s.domainCode, s.skillCode)),
     targetCount: targetPool.length,
@@ -1235,6 +1262,7 @@ function buildRationale(args: {
   goalScore: number;
   startingScore: number | null;
   cadence: number;
+  sectionFocus?: SectionFocus;
   fullTests: boolean;
   topSkills: string[];
   targetCount: number;
@@ -1251,6 +1279,11 @@ function buildRationale(args: {
       : `toward ${args.goalScore}`;
   const parts: string[] = [`${total}-week plan ${gapText}.`];
 
+  if (args.sectionFocus) {
+    parts.push(args.sectionFocus === 'both'
+      ? 'Units alternate between Math and Reading & Writing when both sections have topics to study.'
+      : `Your scheduled practice focuses on ${sectionDisplayName(args.sectionFocus)}.`);
+  }
   for (const p of args.phases) {
     const range = weekRange(p, args.elapsed);
     if (p.type === 'coverage') {
@@ -1265,7 +1298,9 @@ function buildRationale(args: {
           (args.topSkills.length ? `, starting with ${args.topSkills.join(', ')}.` : '.'),
       );
     } else if (p.type === 'targets') {
-      parts.push(`${cap(range)} cycle through the ${args.targetCount} skill${args.targetCount === 1 ? '' : 's'} you chose.`);
+      parts.push(args.targetCount > 0
+        ? `${cap(range)} cycle through the ${args.targetCount} skill${args.targetCount === 1 ? '' : 's'} you chose.`
+        : `${cap(range)} focus on available skills in priority order.`);
     } else {
       parts.push(`${cap(range)} are test rehearsal: a full-length test each week with targeted review.`);
     }
@@ -1340,6 +1375,7 @@ export interface RepaceInput {
   studyDays?: readonly number[] | null;
   targets?: readonly string[] | null;
   fullTests?: boolean;
+  sectionFocus?: SectionFocus;
   /** Unit syllabi + completed lessons (flag `unit_syllabus`); see PlanInput. */
   unitSteps?: UnitSyllabi | null;
   /** Section foundation syllabi (same flag). */
@@ -1421,6 +1457,7 @@ export function repacePlan(input: RepaceInput): RepaceResult {
     studyDays: input.studyDays,
     targets: input.targets,
     fullTests: input.fullTests,
+    sectionFocus: input.sectionFocus,
     unitSteps: input.unitSteps,
     sectionSteps: input.sectionSteps,
     completedLessonIds: input.completedLessonIds,
@@ -1487,6 +1524,7 @@ export interface RegenerateWeekInput {
   studyDays?: readonly number[] | null;
   targets?: readonly string[] | null;
   fullTests?: boolean;
+  sectionFocus?: SectionFocus;
   /** Unit syllabi + completed lessons (flag `unit_syllabus`); see PlanInput. */
   unitSteps?: UnitSyllabi | null;
   /** Section foundation syllabi (same flag). */
@@ -1522,6 +1560,7 @@ export function regenerateWeekTasks(input: RegenerateWeekInput): PlanTaskDraft[]
     studyDays: input.studyDays,
     targets: input.targets,
     fullTests: input.fullTests,
+    sectionFocus: input.sectionFocus,
     unitSteps: input.unitSteps,
     sectionSteps: input.sectionSteps,
     completedLessonIds: input.completedLessonIds,

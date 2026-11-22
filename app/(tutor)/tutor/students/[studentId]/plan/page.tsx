@@ -23,6 +23,8 @@ import { PlanSchedule } from './PlanSchedule';
 import type { UnitOption } from './PlanEditor';
 import styles from './StudyPlan.module.css';
 
+import { storedSectionFocus } from '@/lib/plan/section-focus';
+
 export const dynamic = 'force-dynamic';
 
 type PageProps = { params: Promise<{ studentId: string }> };
@@ -73,6 +75,7 @@ export default async function StudentPlanPage({ params }: PageProps) {
   const defaults = {
     goalScore: (student.target_sat_score ?? draft?.goal_score ?? active?.goal_score ?? '') as number | '',
     testDate: (draft?.test_date ?? active?.test_date ?? student.sat_test_date ?? '') as string,
+    sectionFocus: storedSectionFocus((draft ?? active)?.config),
     weeklyHours: num(draft?.config, 'weekly_hours') ?? num(active?.config, 'weekly_hours') ?? 5,
   };
 

@@ -12,6 +12,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { ApiError } from '@/lib/api/response';
+import { isSectionFocus } from '@/lib/plan/section-focus';
 import { generateStudyPlan, activatePlan } from '@/lib/plan/plan-actions';
 import {
   addManualPlanTask,
@@ -50,7 +51,10 @@ export async function generatePlanAction(
   const studentId = String(fd.get('studentId') ?? '');
   if (!UUID_RE.test(studentId)) return { ok: false, error: 'Invalid student.' };
 
+  const sectionFocus = fd.get('sectionFocus') ?? undefined;
+  if (sectionFocus !== undefined && !isSectionFocus(sectionFocus)) return { ok: false, error: 'Choose an SAT section.' };
   const res = await generateStudyPlan({
+    sectionFocus,
     studentId,
     empty: fd.get('creationMode') === 'blank',
     goalScore: fd.has('goalScore') ? Number(fd.get('goalScore')) : undefined,

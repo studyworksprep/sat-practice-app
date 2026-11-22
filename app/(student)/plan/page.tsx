@@ -30,6 +30,8 @@ import { adjustPlanAction, rebuildPlanAction } from './actions';
 import { AdjustPlanForm, RebuildPlanButton } from './PlanInteractive';
 import s from './Plan.module.css';
 
+import { storedSectionFocus } from '@/lib/plan/section-focus';
+
 export const dynamic = 'force-dynamic';
 
 
@@ -205,6 +207,7 @@ export default async function PlanPage() {
             testDate: plan.test_date ? String(plan.test_date).slice(0, 10) : today,
             weeklyHours,
             studyDays,
+            sectionFocus: testType === 'sat' ? storedSectionFocus(config) : undefined,
           }}
         />
         <RebuildPlanButton action={rebuildPlanAction} />
