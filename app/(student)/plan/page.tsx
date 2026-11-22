@@ -18,6 +18,7 @@ import { planStartDate } from '@/lib/plan/customization';
 import { loadPlanTaskResumes, practiceResume, type TaskResume } from '@/lib/plan/student-task';
 import { currentPlanRationale } from '@/lib/plan/rationale';
 import type { TodayTaskRow } from '@/lib/plan/today';
+import { assignedTaskReports, recordedTaskReport } from '@/lib/plan/task-reports';
 import { WeeklyPlanCard } from './WeeklyPlanCard';
 import type { PlanMode, PlanTaskType } from '@/lib/plan/generate-plan';
 import { findDomain } from '@/lib/practice/sat-taxonomy';
@@ -86,7 +87,7 @@ export default async function PlanPage() {
   const [{ data: taskRows }, { data: coverageRows }, resumes] = await Promise.all([
     supabase
       .from('plan_tasks')
-      .select('id, week_index, scheduled_date, task_type, payload, status, completed_at, source')
+      .select('id, week_index, scheduled_date, task_type, payload, status, completed_at, completed_via, source')
       .eq('plan_id', plan.id)
       .order('scheduled_date', { ascending: true, nullsFirst: true })
       .order('created_at', { ascending: true }),
@@ -94,7 +95,7 @@ export default async function PlanPage() {
     loadPlanTaskResumes(supabase, user.id, now),
   ]);
 
-  const rows: (TodayTaskRow & { resumeProgress?: string })[] = (taskRows ?? []).map((t) => ({
+  const rows: (TodayTaskRow & { resumeProgress?: string; reportHref?: string })[] = (taskRows ?? []).map((t) => ({
     id: t.id,
     weekIndex: t.week_index,
     scheduledDate: t.scheduled_date,
@@ -102,6 +103,7 @@ export default async function PlanPage() {
     payload: (t.payload ?? {}) as Record<string, unknown>,
     status: (t.status ?? 'pending') as TodayTaskRow['status'],
     completedAt: t.completed_at,
+    reportHref: recordedTaskReport(t.task_type, t.status, t.completed_via),
     source: t.source ?? 'generated',
     resumeHref: t.payload && typeof t.payload === 'object' && 'assignment_id' in t.payload
       ? undefined : resumes.get(t.id)?.href,
@@ -112,7 +114,7 @@ export default async function PlanPage() {
     typeof t.payload.assignment_id === 'string' ? [t.payload.assignment_id] : []);
   const [{ data: assigned }, { data: roster }, { data: activeSessions }] = assignmentIds.length
     ? await Promise.all([
-        supabase.from('assignments_v2').select('id, teacher_id').in('id', assignmentIds),
+        supabase.from('assignments_v2').select('id, teacher_id, assignment_type, test_type, practice_test_id, act_source_test, created_at, sections:filter_criteria->sections').in('id', assignmentIds),
         supabase.from('teacher_student_assignments').select('teacher_id').eq('student_id', user.id),
         supabase.from('practice_sessions').select('id, current_position, question_ids, filter_criteria')
           .eq('user_id', user.id).eq('status', 'in_progress').gt('expires_at', now)
@@ -121,9 +123,12 @@ export default async function PlanPage() {
       ])
     : [{ data: [] }, { data: [] }, { data: [] }] as const;
   const teacherIds = [...new Set([...(assigned ?? []), ...(roster ?? [])].map((r) => r.teacher_id))];
-  const { data: tutorCards } = teacherIds.length
-    ? await supabase.from('profile_cards').select('id, first_name, last_name, tutor_name').in('id', teacherIds)
-    : { data: [] };
+  const finishedAssignments = new Set(rows.filter(t => t.status === 'completed' && !t.reportHref)
+    .map(t => t.payload.assignment_id));
+  const [{ data: tutorCards }, reports] = await Promise.all([
+    teacherIds.length ? supabase.from('profile_cards').select('id, first_name, last_name, tutor_name').in('id', teacherIds) : { data: [] },
+    assignedTaskReports(supabase, user.id, (assigned ?? []).filter(a => finishedAssignments.has(a.id))),
+  ]);
   const tutors = dashboardTutorNames(tutorCards ?? []);
   const authors = new Map((assigned ?? []).map((a) => [a.id, a.teacher_id] as const));
   const sessionLinks = new Map<string, TaskResume>();
@@ -136,7 +141,13 @@ export default async function PlanPage() {
   const tasks = rows.map((t) => {
     const id = t.payload.assignment_id;
     return typeof id === 'string'
-      ? { ...t, byline: tutorAssignmentLabel(tutors, authors.get(id)), resumeHref: sessionLinks.get(id)?.href, resumeProgress: sessionLinks.get(id)?.progress }
+      ? {
+        ...t,
+        reportHref: t.reportHref ?? (t.status === 'completed' ? reports.get(id) : undefined),
+        byline: tutorAssignmentLabel(tutors, authors.get(id)),
+        resumeHref: sessionLinks.get(id)?.href,
+        resumeProgress: sessionLinks.get(id)?.progress,
+      }
       : { ...t, byline: undefined };
   });
 
