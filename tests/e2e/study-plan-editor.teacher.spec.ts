@@ -184,7 +184,7 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
       await studentPage.getByRole('button', { name: 'Rebuild from my latest practice', exact: true }).click();
       await expect(studentPage.getByText(/Plan rebuilt/)).toBeVisible();
       expect(await blankTasks()).toHaveLength(1);
-      await studentPage.locator('section[aria-labelledby="plan-position"]').getByRole('button', { name: /^Start(?: early)?$/ }).click();
+      await studentPage.locator('section[aria-labelledby="plan-position"]').getByRole('button', { name: /^Start (?:practice|early)$/ }).click();
       await studentPage.waitForURL(/\/practice\/s\//, { timeout: 30_000 });
       const sessions = await checked(db.from('practice_sessions').select('id, plan_task_id').eq('user_id', studentId));
       expect(sessions!.length).toBeGreaterThan(0);
