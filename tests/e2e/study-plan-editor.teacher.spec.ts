@@ -160,7 +160,8 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
       expect({ ...afterProfile, goal_score: beforeProfile.goal_score, updated_at: beforeProfile.updated_at }).toEqual(beforeProfile);
       expect(await checked(db.from('plan_tasks').select('*').eq('plan_id', blank.id).order('id'))).toEqual(savedTasks);
       await studentPage.goto('/plan');
-      await expect(studentPage.getByText('Target 1530', { exact: true })).toBeVisible();
+      await expect(studentPage.locator('main header').getByText(/Target score 1530\b/)).toBeVisible();
+      await studentPage.getByText('Plan settings', { exact: true }).click();
       await studentPage.getByRole('button', { name: 'Change date, hours, or days', exact: true }).click();
       await expect(studentPage.getByLabel('Target score', { exact: true })).toHaveCount(0);
       await expect(studentPage.getByText('1530 · From your profile')).toBeVisible();
@@ -174,6 +175,7 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
       // Students without a saved target can supply one during adjustment.
       await checked(db.from('profiles').update({ target_sat_score: null }).eq('id', studentId));
       await studentPage.reload();
+      await studentPage.getByText('Plan settings', { exact: true }).click();
       await studentPage.getByRole('button', { name: 'Change target, date, hours, or days', exact: true }).click();
       await studentPage.getByLabel('Target score', { exact: true }).fill('1480');
       await studentPage.getByRole('button', { name: 'Save and update my plan', exact: true }).click();
@@ -182,7 +184,7 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
       await studentPage.getByRole('button', { name: 'Rebuild from my latest practice', exact: true }).click();
       await expect(studentPage.getByText(/Plan rebuilt/)).toBeVisible();
       expect(await blankTasks()).toHaveLength(1);
-      await studentPage.getByRole('button', { name: 'Start', exact: true }).first().click();
+      await studentPage.locator('section[aria-labelledby="plan-position"]').getByRole('button', { name: /^Start(?: early)?$/ }).click();
       await studentPage.waitForURL(/\/practice\/s\//, { timeout: 30_000 });
       const sessions = await checked(db.from('practice_sessions').select('id, plan_task_id').eq('user_id', studentId));
       expect(sessions!.length).toBeGreaterThan(0);
