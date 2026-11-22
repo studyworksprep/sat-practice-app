@@ -173,3 +173,28 @@
 @media (max-width: 560px) {
   .taskMeta { flex-wrap: wrap; }
 }
+
+.phaseTabs {
+  display: flex;
+  gap: var(--s1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+}
+.phaseTabs button {
+  appearance: none;
+  flex: 0 0 auto;
+  padding: .7rem clamp(.45rem, 2vw, 1.15rem);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--fg2);
+  font: inherit;
+  font-size: .92rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.phaseTabs button[aria-selected="true"] { color: var(--color-app-accent); border-bottom-color: currentColor; }
+.phaseTabs button:hover { background: var(--bg-hover, var(--bg)); }
+.phaseTabs button:focus-visible { outline: 2px solid var(--color-app-accent); outline-offset: -3px; }
+.panelMeta { margin: var(--s3) 0; font-size: .8rem; font-weight: 600; color: var(--fg2); }
+.panelSummary { margin: 0 0 var(--s3); color: var(--fg2); font-size: .9rem; line-height: 1.5; }
