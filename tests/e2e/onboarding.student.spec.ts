@@ -179,7 +179,9 @@ test.describe('onboarding intake', () => {
     // The plan hub is reachable and shows where the student is.
     await page.goto('/plan');
     await expect(page.getByRole('heading', { name: 'My SAT Study Plan' })).toBeVisible();
-    await expect(page.getByText(/week 1 of/i).first()).toBeVisible();
+    const weeklyCard = page.getByRole('region', { name: 'This week', exact: true });
+    await expect(weeklyCard.getByText(/week 1 of/i)).toBeVisible();
+    await expect(weeklyCard.getByText(/tasks? complete/)).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Your preparation so far' })).toBeVisible();
 
     await expect(page.getByRole('heading', { name: 'Week by week' })).toBeVisible();

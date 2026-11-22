@@ -48,7 +48,7 @@ export const MODE_LABEL: Record<PlanMode, string> = {
   self_directed: 'Your own plan',
 };
 
-const PHASE_LABEL: Record<PlanPhaseType, string> = {
+export const PHASE_LABEL: Record<PlanPhaseType, string> = {
   coverage: 'Coverage',
   focus: 'Focus',
   rehearsal: 'Rehearsal',

@@ -195,7 +195,7 @@ export default async function StudentDashboardPage({ searchParams }) {
       status: t.status ?? 'pending',
       completedAt: t.completed_at,
       source: t.source ?? 'generated',
-      resumeHref: resumes.get(t.id),
+      resumeHref: resumes.get(t.id)?.href,
     }));
     view = buildTodayView(tasks, today, activePlanRow.test_date, activePlanRow.config?.plan_start ?? null);
 

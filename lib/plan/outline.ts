@@ -19,10 +19,7 @@ export function planPosition(view: TodayView, tasks: TodayTaskRow[]) {
   const week = view.week;
   const weekClosed = !!week && week.count > 0 && week.done + week.skipped === week.count;
   const openWeek = week && week.count && !weekClosed ? week.index : task?.weekIndex;
-  let heading = week ? `Week ${week.index + 1} of ${week.total}` : 'Your schedule';
-  if (view.planFinished) heading = tasks.some((t) => t.status === 'skipped') ? 'No remaining plan tasks' : 'Study Plan complete';
-  else if (weekClosed && week) heading = week.skipped ? `Week ${week.index + 1} wrapped up` : `Week ${week.index + 1} complete`;
-  return { task, openWeek, heading };
+  return { task, openWeek, weekClosed };
 }
 
 export function taskProgress(done: number, total: number, skipped: number) {

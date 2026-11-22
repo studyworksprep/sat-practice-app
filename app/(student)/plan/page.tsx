@@ -15,18 +15,18 @@ import { PageHeader } from '@/lib/ui/PageHeader';
 import { formatDate } from '@/lib/formatters';
 import { buildTodayView } from '@/lib/plan/today';
 import { planStartDate } from '@/lib/plan/customization';
-import { loadPlanTaskResumes } from '@/lib/plan/student-task';
+import { loadPlanTaskResumes, practiceResume, type TaskResume } from '@/lib/plan/student-task';
 import { currentPlanRationale } from '@/lib/plan/rationale';
 import type { TodayTaskRow } from '@/lib/plan/today';
-import { planTaskTitle } from '@/lib/plan/task-labels';
+import { WeeklyPlanCard } from './WeeklyPlanCard';
 import type { PlanMode, PlanTaskType } from '@/lib/plan/generate-plan';
 import { findDomain } from '@/lib/practice/sat-taxonomy';
-import { normalizePhases, PlanOverview } from '@/lib/ui/PlanOverview';
+import { normalizePhases, PHASE_LABEL, PlanOverview } from '@/lib/ui/PlanOverview';
 import { dashboardTutorNames, tutorAssignmentLabel } from '@/lib/plan/dashboard-tasks';
 import { planPosition, taskProgress } from '@/lib/plan/outline';
 import { startPlanTask } from '../dashboard/task-actions';
 import { adjustPlanAction, rebuildPlanAction } from './actions';
-import { AdjustPlanForm, RebuildPlanButton, ViewWeek } from './PlanInteractive';
+import { AdjustPlanForm, RebuildPlanButton } from './PlanInteractive';
 import s from './Plan.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -94,7 +94,7 @@ export default async function PlanPage() {
     loadPlanTaskResumes(supabase, user.id, now),
   ]);
 
-  const rows: TodayTaskRow[] = (taskRows ?? []).map((t) => ({
+  const rows: (TodayTaskRow & { resumeProgress?: string })[] = (taskRows ?? []).map((t) => ({
     id: t.id,
     weekIndex: t.week_index,
     scheduledDate: t.scheduled_date,
@@ -104,7 +104,8 @@ export default async function PlanPage() {
     completedAt: t.completed_at,
     source: t.source ?? 'generated',
     resumeHref: t.payload && typeof t.payload === 'object' && 'assignment_id' in t.payload
-      ? undefined : resumes.get(t.id),
+      ? undefined : resumes.get(t.id)?.href,
+    resumeProgress: resumes.get(t.id)?.progress,
   }));
 
   const assignmentIds = rows.flatMap((t) =>
@@ -113,7 +114,7 @@ export default async function PlanPage() {
     ? await Promise.all([
         supabase.from('assignments_v2').select('id, teacher_id').in('id', assignmentIds),
         supabase.from('teacher_student_assignments').select('teacher_id').eq('student_id', user.id),
-        supabase.from('practice_sessions').select('id, current_position, filter_criteria')
+        supabase.from('practice_sessions').select('id, current_position, question_ids, filter_criteria')
           .eq('user_id', user.id).eq('status', 'in_progress').gt('expires_at', now)
           .in('filter_criteria->>assignment_id', assignmentIds)
           .order('last_activity_at', { ascending: false }),
@@ -125,17 +126,17 @@ export default async function PlanPage() {
     : { data: [] };
   const tutors = dashboardTutorNames(tutorCards ?? []);
   const authors = new Map((assigned ?? []).map((a) => [a.id, a.teacher_id] as const));
-  const sessionLinks = new Map<string, string>();
+  const sessionLinks = new Map<string, TaskResume>();
   for (const session of activeSessions ?? []) {
     const criteria = session.filter_criteria as Record<string, unknown> | null;
     const id = criteria?.assignment_id;
     if (typeof id === 'string' && criteria?.kind !== 'practice_test' && !sessionLinks.has(id))
-      sessionLinks.set(id, `/practice/s/${session.id}/${session.current_position}`);
+      sessionLinks.set(id, practiceResume(session));
   }
   const tasks = rows.map((t) => {
     const id = t.payload.assignment_id;
     return typeof id === 'string'
-      ? { ...t, byline: tutorAssignmentLabel(tutors, authors.get(id)), resumeHref: sessionLinks.get(id) }
+      ? { ...t, byline: tutorAssignmentLabel(tutors, authors.get(id)), resumeHref: sessionLinks.get(id)?.href, resumeProgress: sessionLinks.get(id)?.progress }
       : { ...t, byline: undefined };
   });
 
@@ -143,10 +144,10 @@ export default async function PlanPage() {
   const view = buildTodayView(tasks, today, plan.test_date,
     planStartDate(plan.config, plan.created_at, tasks.map((t) => t.scheduledDate)));
   const phases = normalizePhases(plan.phases);
-  const { task: next, openWeek, heading } = planPosition(view, tasks);
+  const { task, openWeek, weekClosed } = planPosition(view, tasks);
   const week = view.week;
-  const nextByline = next && tasks.find((t) => t.id === next.id)?.byline;
-  const early = !!next?.scheduledDate && next.scheduledDate > today && !next.resumeHref;
+  const next = task ? tasks.find((t) => t.id === task.id) : undefined;
+  const phase = week && phases.find((p) => week.index >= p.startWeek && week.index <= p.endWeek);
   const completed = tasks.filter((t) => t.status === 'completed').length;
   const skipped = tasks.filter((t) => t.status === 'skipped').length;
 
@@ -198,29 +199,9 @@ export default async function PlanPage() {
         <RebuildPlanButton action={rebuildPlanAction} />
       </details>
 
-      <section className={s.position} aria-labelledby="plan-position">
-        <div>
-          <h2 id="plan-position" className={s.nowTitle}>{heading}</h2>
-          {week && <p className={s.body}>{week.count
-            ? `This week · ${taskProgress(week.done, week.count, week.skipped)}`
-            : 'No tasks scheduled this week.'}</p>}
-          {next && <div className={s.nextItem}>
-            <span className={s.nowLabel}>{next.resumeHref ? 'In progress' : early ? 'Next scheduled' :
-              next.scheduledDate && next.scheduledDate < today ? 'Catch up' : 'Up next'}</span>
-            <strong>{planTaskTitle(next.taskType, next.payload)}</strong>
-            <span>Week {next.weekIndex + 1}{next.scheduledDate && ` · ${formatDate(next.scheduledDate, { weekday: 'short' })}`}{nextByline && ` · ${nextByline}`}</span>
-          </div>}
-          {!week && !next && <p className={s.body}>Your plan has no scheduled tasks yet.</p>}
-        </div>
-        {next && <div className={s.actions}>
-          {early && <ViewWeek week={next.weekIndex} />}
-          {next.resumeHref ? <Link href={next.resumeHref} className={s.primaryLink}>Resume</Link> :
-            <form action={startPlanTask}>
-              <input type="hidden" name="task_id" value={next.id} />
-              <button type="submit" className={early ? s.secondaryBtn : s.primaryBtn}>{early ? 'Start early' : 'Start'}</button>
-            </form>}
-        </div>}
-      </section>
+      <WeeklyPlanCard week={week} phase={phase ? PHASE_LABEL[phase.type] : undefined}
+        weekClosed={weekClosed} weekTasks={tasks.filter((t) => t.weekIndex === week?.index)}
+        next={next} today={today} finished={view.planFinished} skipped={skipped} />
 
       <section className={s.card} aria-labelledby="plan-outline">
         <div className={s.sectionHeading}>
