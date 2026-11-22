@@ -54,11 +54,12 @@ export function AdjustPlanForm({
   const days = new Set(defaults.studyDays);
   const hoursPreset = HOUR_OPTIONS.includes(defaults.weeklyHours) ? defaults.weeklyHours : 5;
 
+  const scheduleLabel = profileTarget != null ? 'Change date, hours, or days' : 'Change target, date, hours, or days';
   if (!open) {
     return (
       <div className={s.adjustRow}>
         <button type="button" className={s.secondaryBtn} onClick={() => setOpen(true)}>
-          {defaults.sectionFocus ? 'Change sections, hours, or study days' : 'Change schedule or study days'}
+          {defaults.sectionFocus ? 'Change sections, hours, or study days' : scheduleLabel}
         </button>
         <Result state={state} verb="Plan updated" />
       </div>
