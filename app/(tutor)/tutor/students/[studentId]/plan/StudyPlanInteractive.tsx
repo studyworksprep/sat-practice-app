@@ -8,6 +8,8 @@
 
 'use client';
 
+import { PlanSectionField } from '@/lib/ui/PlanSectionField';
+import type { SectionFocus } from '@/lib/plan/section-focus';
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
 import type { ActionResult } from '@/lib/types';
@@ -21,7 +23,7 @@ type PlanAction = (
 interface GenerateFormProps {
   studentId: string;
   action: PlanAction;
-  defaults: { goalScore: number | ''; testDate: string; weeklyHours: number };
+  defaults: { goalScore: number | ''; testDate: string; weeklyHours: number; sectionFocus: SectionFocus };
   profileTarget: number | null;
   /** True when an active plan already exists — regeneration produces a
    *  fresh draft to review; the active plan is left untouched until the
@@ -47,6 +49,7 @@ export function GeneratePlanForm({ studentId, action, defaults, profileTarget, h
           ? 'Create an empty draft, then add units and tasks. Any previous draft is saved in history.'
           : 'Build from current skills. Tutor additions, moves, and removals are kept when regenerating.'}
       </p>
+      {creationMode === 'automatic' && <PlanSectionField styles={styles} defaultValue={defaults.sectionFocus} />}
       <div className={styles.fieldRow}>
         {profileTarget != null ? <div className={styles.field}>
           <span className={styles.label}>Target score</span>

@@ -14,7 +14,7 @@ import { requireUser } from '@/lib/api/auth';
 import { PageHeader } from '@/lib/ui/PageHeader';
 import { formatDate } from '@/lib/formatters';
 import { buildTodayView } from '@/lib/plan/today';
-import { planStartDate } from '@/lib/plan/customization';
+import { editorConfig, planStartDate } from '@/lib/plan/customization';
 import { loadPlanTaskResumes, practiceResume, type TaskResume } from '@/lib/plan/student-task';
 import { currentPlanRationale } from '@/lib/plan/rationale';
 import type { TodayTaskRow } from '@/lib/plan/today';
@@ -29,6 +29,8 @@ import { startPlanTask } from '../dashboard/task-actions';
 import { adjustPlanAction, rebuildPlanAction } from './actions';
 import { AdjustPlanForm, RebuildPlanButton } from './PlanInteractive';
 import s from './Plan.module.css';
+
+import { storedSectionFocus } from '@/lib/plan/section-focus';
 
 export const dynamic = 'force-dynamic';
 
@@ -205,6 +207,7 @@ export default async function PlanPage() {
             testDate: plan.test_date ? String(plan.test_date).slice(0, 10) : today,
             weeklyHours,
             studyDays,
+            sectionFocus: testType === 'sat' && !editorConfig(config).manual ? storedSectionFocus(config) : undefined,
           }}
         />
         <RebuildPlanButton action={rebuildPlanAction} />

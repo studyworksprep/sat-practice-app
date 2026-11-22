@@ -47,12 +47,14 @@ import {
   HoursForm,
   DaysForm,
   SelfCheckGrid,
+  type SelfCheckRow,
   BuildPlanButton,
-  RebuildPlanLink,
   ActivateFirstPlanButton,
   SetAsideLink,
 } from './WelcomeInteractive';
 import s from './Welcome.module.css';
+
+import { storedSectionFocus } from '@/lib/plan/section-focus';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,7 +104,7 @@ export default async function WelcomePage({ searchParams }: PageProps) {
       .maybeSingle(),
     supabase
       .from('study_plans')
-      .select('id, goal_score, test_date, mode, rationale, phases')
+      .select('id, goal_score, test_date, mode, rationale, phases, config')
       .eq('student_id', user.id)
       .eq('test_type', 'sat')
       .eq('status', 'draft')
@@ -161,12 +163,12 @@ export default async function WelcomePage({ searchParams }: PageProps) {
   // the wizard from the dashboard can simply leave.
   const showSetAside = shouldRouteToWelcome({ hasActivePlan: false, hasPracticeHistory: practiced, hasTutor, intake });
   const selectedTargets = new Set(intake.targets.map((t) => `${t.domainCode}|${t.skillCode}`));
-  const selfCheckRows = SAT_DOMAIN_CODES.map((code) => {
+  const selfCheckRows: SelfCheckRow[] = SAT_DOMAIN_CODES.map((code) => {
     const d = findDomain(code);
     return {
       code,
       name: d?.name ?? code,
-      section: d?.subjectCode === 'math' ? 'Math' : 'Reading & Writing',
+      section: d?.subjectCode === 'math' ? 'math' : 'reading_writing',
       example: DOMAIN_EXAMPLES[code],
     };
   });
@@ -253,7 +255,7 @@ export default async function WelcomePage({ searchParams }: PageProps) {
               <DaysForm action={saveAnswerAction} defaultValue={intake.studyDays ?? [1, 2, 3, 4, 5]} />
             )}
             {step === 'assess' && (
-              <SelfCheckGrid action={saveAssessmentAction} rows={selfCheckRows} defaults={intake.selfRating} />
+              <SelfCheckGrid defaultSection={storedSectionFocus(draft?.config)} action={saveAssessmentAction} rows={selfCheckRows} defaults={intake.selfRating} />
             )}
             </div>
 
@@ -276,7 +278,7 @@ export default async function WelcomePage({ searchParams }: PageProps) {
               <strong>{intake.weeklyHours}</strong> hours a week.{' '}
               <Link href="/welcome?step=target" className={s.inlineLink}>Change an answer</Link>
             </p>
-            <BuildPlanButton action={buildPlanAction} />
+            <BuildPlanButton defaultSection={storedSectionFocus(draft?.config)} action={buildPlanAction} />
           </section>
         )}
 
@@ -299,7 +301,7 @@ export default async function WelcomePage({ searchParams }: PageProps) {
               <span className={s.skipLink}>
                 <Link href="/welcome?step=target" className={s.inlineLink}>Change an answer</Link>
                 {' · '}
-                <RebuildPlanLink action={buildPlanAction} />
+                <Link href="/welcome?step=build" className={s.inlineLink}>Change sections or rebuild</Link>
               </span>
             </div>
           </section>

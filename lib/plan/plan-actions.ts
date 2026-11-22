@@ -15,6 +15,7 @@ import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { composePhases, daysBetween, generatePlan, LOW_EVIDENCE_ATTEMPTS } from './generate-plan';
 import { applyEvidencePriors, mapSkillRow } from './plan-inputs';
+import { isSectionFocus, storedSectionFocus, type SectionFocus } from './section-focus';
 import { loadSyllabusInputs } from './unit-steps';
 import { editorConfig, filterCustomizedTasks, planStartDate, record, stampGeneratedTasks } from './customization';
 import { loadPlanForGeneration } from './editor-state';
@@ -57,6 +58,7 @@ export interface GenerateStudyPlanArgs {
   studyDays?: number[] | null;
   targets?: string[] | null;
   fullTests?: boolean;
+  sectionFocus?: SectionFocus;
   selfRating?: Record<string, number | null> | null;
 }
 
@@ -93,6 +95,7 @@ export async function generateStudyPlan(
   if (!Number.isFinite(args.weeklyHours) || args.weeklyHours < 1 || args.weeklyHours > 40) {
     return actionFail('Weekly hours must be between 1 and 40.');
   }
+  if (args.sectionFocus !== undefined && !isSectionFocus(args.sectionFocus)) return actionFail('Choose an SAT section.');
   const today = new Date().toISOString().slice(0, 10);
   if (args.testDate <= today) return actionFail('Choose a future test date.');
   if (args.empty) {
@@ -131,7 +134,9 @@ export async function generateStudyPlan(
   let mode = args.mode ?? null;
   let prepLevel = args.prepLevel ?? null;
   let intent = args.intent ?? null;
+  const sectionFocus = args.sectionFocus ?? storedSectionFocus(previous.plan?.config);
   let composition: Omit<PlanComposition, 'mode'> = {
+    sectionFocus,
     studyDays: args.studyDays ?? null,
     targets: args.targets ?? null,
     fullTests: args.fullTests ?? true,
@@ -149,13 +154,14 @@ export async function generateStudyPlan(
       prepLevel = intake.prepLevel;
       intent = intake.intent;
       composition = {
+        sectionFocus,
         studyDays: intake.studyDays,
         targets: intake.targets.map((t) => t.skillCode),
         fullTests: intake.fullTests,
         selfRating: intake.selfRating as Record<string, number | null> | null,
       };
     } else {
-      mode = rawSkills.some((s) => s.attemptsCount >= LOW_EVIDENCE_ATTEMPTS)
+      mode = rawSkills.some((s) => (sectionFocus === 'both' || s.section === sectionFocus) && s.attemptsCount >= LOW_EVIDENCE_ATTEMPTS)
         ? 'targeted'
         : 'foundations';
     }
@@ -189,11 +195,16 @@ export async function generateStudyPlan(
     studyDays: composition.studyDays,
     targets: composition.targets,
     fullTests: composition.fullTests,
+    sectionFocus,
     unitSteps: syllabus?.unitSteps ?? null,
     sectionSteps: syllabus?.sectionSteps ?? null,
     completedLessonIds: syllabus?.completedLessonIds ?? null,
     elapsedWeeks: elapsed,
   });
+
+  if (sectionFocus !== 'both' && draft.tasks.length === 0) {
+    return actionFail('There are no available units to schedule in this section.');
+  }
 
   const written = await writeDraftPlan(
     supabase,
@@ -209,7 +220,7 @@ export async function generateStudyPlan(
       prepLevel,
       intent,
       rationale: draft.rationale,
-      phases: composePhases(draft.mode, elapsed + draft.weeks, composition.fullTests),
+      phases: composePhases(draft.mode, elapsed + draft.weeks, sectionFocus === 'both' && composition.fullTests),
       composition,
       sourcePlanId: previous.plan?.id,
       expectedUpdatedAt: previous.plan?.updated_at,

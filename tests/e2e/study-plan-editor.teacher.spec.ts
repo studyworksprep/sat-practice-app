@@ -51,6 +51,7 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
     await page.getByLabel('Target score', { exact: true }).fill('1400');
     const date = new Date(Date.now() + 100 * 86_400_000).toISOString().slice(0, 10);
     await page.getByLabel('Test date', { exact: true }).fill(date);
+    await expect(page.getByLabel('SAT sections to study')).toHaveValue('both');
     await page.getByRole('button', { name: 'Generate plan', exact: true }).click();
     let draft = draftSection(page);
     await expect(draft.getByRole('heading', { name: 'Draft plan', exact: true })).toBeVisible({ timeout: 45_000 });
@@ -163,6 +164,7 @@ test('tutor builds and edits units/tasks, regeneration preserves decisions, stud
       await expect(studentPage.locator('main header').getByText(/Target score 1530\b/)).toBeVisible();
       await studentPage.getByText('Plan settings', { exact: true }).click();
       await studentPage.getByRole('button', { name: 'Change date, hours, or days', exact: true }).click();
+      await expect(studentPage.getByLabel('SAT sections to study')).toHaveCount(0);
       await expect(studentPage.getByLabel('Target score', { exact: true })).toHaveCount(0);
       await expect(studentPage.getByText('1530 · From your profile')).toBeVisible();
       await checked(db.from('profiles').update({ target_sat_score: 1520 }).eq('id', studentId));

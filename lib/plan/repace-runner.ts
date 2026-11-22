@@ -86,6 +86,7 @@ export async function writeDraftPlan(
       config: {
         ...(meta.editor ? { editor: meta.editor } : {}),
         weekly_hours: meta.weeklyHours, study_days: meta.composition?.studyDays ?? null,
+        section_focus: meta.composition?.sectionFocus ?? 'both',
         targets: meta.composition?.targets ?? null, full_tests: meta.composition?.fullTests ?? true,
         evidence: { self_rating: meta.composition?.selfRating ?? null },
       },
@@ -232,7 +233,7 @@ export async function runRepaceForStudent(
     mode: composition.mode ?? undefined,
     studyDays: composition.studyDays,
     targets: composition.targets,
-    fullTests: composition.fullTests,
+    fullTests: composition.fullTests, sectionFocus: composition.sectionFocus,
     unitSteps: syllabus?.unitSteps ?? null,
     sectionSteps: syllabus?.sectionSteps ?? null,
     completedLessonIds: syllabus?.completedLessonIds ?? null,
@@ -258,7 +259,7 @@ export async function runRepaceForStudent(
       intent: active.intent,
       rationale: result.rationale,
       phases: composePhases(result.mode ?? composition.mode ?? 'targeted',
-        Math.max(0, Math.floor(daysBetween(planStart, args.today) / 7)) + (result.weeks ?? 0), composition.fullTests),
+        Math.max(0, Math.floor(daysBetween(planStart, args.today) / 7)) + (result.weeks ?? 0), composition.sectionFocus === 'both' && composition.fullTests),
       composition,
       sourcePlanId: active.id,
       expectedUpdatedAt: active.updated_at,
@@ -339,7 +340,7 @@ export async function regenerateRemainingTasks(
       today: generationStart, weeklyHours: numFromJson(plan.config, 'weekly_hours') ?? 5,
       testType: plan.test_type as 'sat' | 'act', skills,
       mode: composition.mode ?? undefined, studyDays: composition.studyDays,
-      targets: composition.targets, fullTests: composition.fullTests,
+      targets: composition.targets, fullTests: composition.fullTests, sectionFocus: composition.sectionFocus,
       unitSteps: syllabus?.unitSteps, sectionSteps: syllabus?.sectionSteps,
       completedLessonIds: syllabus?.completedLessonIds, elapsedWeeks: elapsed,
     });
@@ -353,7 +354,7 @@ export async function regenerateRemainingTasks(
     });
     if (!isWeek) {
       const { error: summaryError } = await supabase.from('study_plans').update({
-        phases: composePhases(draft.mode, elapsed + draft.weeks, composition.fullTests)
+        phases: composePhases(draft.mode, elapsed + draft.weeks, composition.sectionFocus === 'both' && composition.fullTests)
           .map((p) => ({ type: p.type, start_week: p.startWeek, end_week: p.endWeek, summary: p.summary })),
         rationale: draft.rationale,
       }).eq('id', plan.id);

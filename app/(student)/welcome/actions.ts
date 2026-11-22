@@ -15,6 +15,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { logger } from '@/lib/api/logger';
+import { isSectionFocus, type SectionFocus } from '@/lib/plan/section-focus';
 import { generateStudyPlan, activatePlan } from '@/lib/plan/plan-actions';
 import {
   SAT_DOMAIN_CODES,
@@ -218,6 +219,9 @@ export async function saveAssessmentAction(
     return asFail(err);
   }
 
+  const sectionFocus = fd.get('sectionFocus') ?? 'both';
+  if (!isSectionFocus(sectionFocus)) return actionFail('Choose an SAT section.');
+
   // Each domain: "1".."5", or "unsure" (stored as null — no prior).
   const rating: Record<string, number | null> = {};
   for (const code of SAT_DOMAIN_CODES) {
@@ -235,9 +239,9 @@ export async function saveAssessmentAction(
   const intakeErr = await patchIntake(ctx, { self_rating: rating });
   if (intakeErr) return actionFail(intakeErr);
 
-  await dropDraft(ctx);
-  const built = await buildFromIntake(ctx);
+  const built = await buildFromIntake(ctx, sectionFocus);
   revalidatePath('/welcome');
+  if (built.ok) redirect('/welcome');
   return built;
 }
 
@@ -245,7 +249,7 @@ export async function saveAssessmentAction(
 
 export async function buildPlanAction(
   _prev: ActionResult | null,
-  _fd: FormData,
+  fd: FormData,
 ): Promise<ActionResult> {
   let ctx: Ctx;
   try {
@@ -253,14 +257,17 @@ export async function buildPlanAction(
   } catch (err) {
     return asFail(err);
   }
-  const built = await buildFromIntake(ctx);
+  const sectionFocus = fd.get('sectionFocus') ?? 'both';
+  if (!isSectionFocus(sectionFocus)) return actionFail('Choose an SAT section.');
+  const built = await buildFromIntake(ctx, sectionFocus);
   revalidatePath('/welcome');
+  if (built.ok) redirect('/welcome');
   return built;
 }
 
 /** Generate the draft from the profile + intake row. Shared by the
  *  self-check (auto-build) and the explicit build/rebuild button. */
-async function buildFromIntake(ctx: Ctx): Promise<ActionResult> {
+async function buildFromIntake(ctx: Ctx, sectionFocus: SectionFocus): Promise<ActionResult> {
   const { user, supabase } = ctx;
 
   const [{ data: profile }, { data: intakeRow }] = await Promise.all([
@@ -303,6 +310,7 @@ async function buildFromIntake(ctx: Ctx): Promise<ActionResult> {
   }
 
   const res = await generateStudyPlan({
+    sectionFocus,
     goalScore: profile.target_sat_score,
     testDate,
     weeklyHours: intake.weeklyHours,

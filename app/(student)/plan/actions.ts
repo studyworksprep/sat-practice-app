@@ -12,6 +12,7 @@ import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { logger } from '@/lib/api/logger';
+import { isSectionFocus } from '@/lib/plan/section-focus';
 import { regenerateRemainingTasks } from '@/lib/plan/repace-runner';
 import type { ActionResult } from '@/lib/types';
 import type { Json } from '@/lib/types/database';
@@ -66,6 +67,8 @@ export async function adjustPlanAction(
   const target = fd.has('target') ? Number(fd.get('target')) : fullProfile?.target_sat_score;
   const testDate = String(fd.get('testDate') ?? '');
   const weeklyHours = Number(fd.get('weeklyHours'));
+  const sectionFocus = fd.get('sectionFocus');
+  if (sectionFocus !== null && !isSectionFocus(sectionFocus)) return actionFail('Choose an SAT section.');
   const days = [
     ...new Set(
       fd
@@ -100,6 +103,7 @@ export async function adjustPlanAction(
     ...((plan.config && typeof plan.config === 'object' && !Array.isArray(plan.config)
       ? (plan.config as Record<string, unknown>)
       : {}) as Record<string, unknown>),
+    ...(sectionFocus ? { section_focus: sectionFocus } : {}),
     weekly_hours: weeklyHours,
     study_days: days,
   };
