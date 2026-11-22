@@ -5,6 +5,7 @@
 // with the first `expandWeeks` weeks open and the rest behind native
 // <details> — no client state anywhere on the surface.
 
+import { taskProgress, weekFocus } from '@/lib/plan/outline';
 import Link from 'next/link';
 import { formatDate } from '@/lib/formatters';
 import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
@@ -21,9 +22,11 @@ export interface OverviewTask {
   payload: Record<string, unknown>;
   status?: 'pending' | 'completed' | 'skipped';
   resumeHref?: string;
+  byline?: string;
 }
 
 export interface PlanOverviewProps {
+  hub?: { today: string; openWeek?: number; totalWeeks: number };
   goalScore: number | null;
   testDate: string;
   mode: PlanMode | null;
@@ -96,6 +99,7 @@ export function normalizePhases(raw: unknown): PlanPhase[] {
 }
 
 export function PlanOverview({
+  hub,
   goalScore,
   testDate,
   mode,
@@ -109,7 +113,7 @@ export function PlanOverview({
 }: PlanOverviewProps) {
   const explanation = currentPlanRationale(rationale, goalScore);
   const weekCount = tasks.reduce((m, t) => Math.max(m, t.weekIndex + 1), 0);
-  const totalWeeks = Math.max(weekCount, ...phases.map((p) => p.endWeek + 1), 0);
+  const totalWeeks = Math.max(hub?.totalWeeks ?? 0, weekCount, ...phases.map((p) => p.endWeek + 1), 0);
   const byWeek = new Map<number, OverviewTask[]>();
   for (const t of tasks) {
     if (!byWeek.has(t.weekIndex)) byWeek.set(t.weekIndex, []);
@@ -122,14 +126,14 @@ export function PlanOverview({
 
   return (
     <div className={s.root}>
-      <div className={s.summaryRow}>
+      {!hub && <div className={s.summaryRow}>
         <span className={s.modePill}>{mode ? MODE_LABEL[mode] : 'Study plan'}</span>
         <span className={s.summaryMeta}>
           {totalWeeks} week{totalWeeks === 1 ? '' : 's'} · {tasks.length} tasks ·{' '}
           {goalScore != null ? <>target <strong>{goalScore}</strong> by </> : 'test date '}
           <strong>{formatDate(testDate) ?? testDate}</strong>
         </span>
-      </div>
+      </div>}
 
       {explanation && !rationaleCollapsed && <p className={s.rationale}>{explanation}</p>}
 
@@ -143,10 +147,11 @@ export function PlanOverview({
               <li
                 key={`${p.type}-${p.startWeek}`}
                 className={`${s.phase} ${s[`phase_${p.type}`]} ${isNow ? s.phaseNow : ''}`}
+                aria-current={isNow ? 'step' : undefined}
                 style={{ flexGrow: span }}
               >
                 <div className={s.phaseLabel}>
-                  {PHASE_LABEL[p.type]}
+                  {PHASE_LABEL[p.type]}{hub && isNow && ' · Current phase'}
                   <span className={s.phaseWeeks}>
                     {span === 1
                       ? `week ${p.startWeek + 1}`
@@ -174,24 +179,29 @@ export function PlanOverview({
           const dates = list.map((t) => t.scheduledDate).filter((d): d is string => Boolean(d)).sort();
           const range =
             dates.length > 0
-              ? `${formatDate(dates[0]) ?? dates[0]}${dates.length > 1 ? ` – ${formatDate(dates[dates.length - 1]) ?? dates[dates.length - 1]}` : ''}`
+              ? `${formatDate(dates[0]) ?? dates[0]}${dates[0] !== dates[dates.length - 1] ? ` – ${formatDate(dates[dates.length - 1]) ?? dates[dates.length - 1]}` : ''}`
               : '';
           const done = list.filter((t) => t.status === 'completed').length;
           const isNow = currentWeek === w;
-          const open = w < expandWeeks || isNow;
+          const open = hub ? w === hub.openWeek : w < expandWeeks || isNow;
+          const skipped = list.filter((t) => t.status === 'skipped').length;
+          const focus = hub && weekFocus(list);
           return (
-            <details key={w} className={`${s.week} ${isNow ? s.weekNow : ''}`} open={open}>
+            <details id={hub ? `plan-week-${w + 1}` : undefined} key={w} className={`${s.week} ${isNow ? s.weekNow : ''}`} open={open}>
               <summary className={s.weekSummary}>
-                <span className={s.weekTitle}>
+                <span className={s.weekHeading}><span className={s.weekTitle}>
                   Week {w + 1}
-                  {isNow && <span className={s.nowPill}>now</span>}
+                  {isNow && <span className={s.nowPill}>This week</span>}
                 </span>
+                {focus && <span className={s.focus}>{focus}</span>}</span>
                 <span className={s.weekMeta}>
                   {[
-                    phase ? PHASE_LABEL[phase.type] : '',
+                    !hub && phase ? PHASE_LABEL[phase.type] : '',
                     range,
                     list.length === 0
                       ? 'no tasks'
+                      : hub && (done || skipped)
+                        ? taskProgress(done, list.length, skipped)
                       : done > 0
                         ? `${done} of ${list.length} done`
                         : `${list.length} task${list.length === 1 ? '' : 's'}`,
@@ -206,13 +216,14 @@ export function PlanOverview({
                   return (
                     <li key={t.id ?? `${w}-${i}`} className={`${s.task} ${completed ? s.taskDone : ''}`}>
                       <span className={`${s.typeTag} ${t.payload.assignment_id ? s.type_assigned : (s[`type_${t.taskType}`] ?? '')}`}>
-                        {t.payload.assignment_id ? 'Assigned' : (TYPE_LABEL[t.taskType] ?? 'Task')}
+                        {t.payload.assignment_id && !t.byline ? 'Assigned' : (TYPE_LABEL[t.taskType] ?? 'Task')}
                       </span>
                       <span className={s.taskBody}>
                         <span className={s.taskTitle}>{planTaskTitle(String(t.taskType), t.payload)}</span>
+                        {t.byline && <span className={s.taskWhy}>{t.byline}</span>}
                         {why && <span className={s.taskWhy}>{why}</span>}
                       </span>
-                      <span className={s.taskMeta}>
+                      <div className={s.taskMeta}>
                         {t.scheduledDate ? formatDate(t.scheduledDate) ?? t.scheduledDate : ''}
                         {minutes != null ? ` · ~${minutes} min` : ''}
                         {completed ? ' · done' : t.status === 'skipped' ? ' · skipped' : ''}
@@ -222,11 +233,11 @@ export function PlanOverview({
                           ) : (
                             <form action={startAction} className={s.startForm}>
                               <input type="hidden" name="task_id" value={t.id} />
-                              <button type="submit" className={s.startBtn}>Start</button>
+                              <button type="submit" className={s.startBtn}>{hub && t.scheduledDate && t.scheduledDate > hub.today ? 'Start early' : 'Start'}</button>
                             </form>
                           )
                         )}
-                      </span>
+                      </div>
                     </li>
                   );
                 })}

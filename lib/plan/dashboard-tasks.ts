@@ -28,6 +28,11 @@ export function dashboardTutorNames(cards: TutorCard[]) {
   );
 }
 
+export function tutorAssignmentLabel(tutors: ReturnType<typeof dashboardTutorNames>, teacherId?: string | null) {
+  const name = teacherId && tutors.get(teacherId)?.byline;
+  return name ? `Assigned by ${name}` : 'Tutor assignment';
+}
+
 type Assignment = {
   id: string;
   teacher_id: string;
@@ -50,10 +55,6 @@ export function dashboardTasks(
 ) {
   const byId = new Map(assignments.map((a) => [a.id, a]));
   const represented = new Set<string>();
-  const describe = (teacherId?: string) => {
-    const name = teacherId && tutors.get(teacherId)?.byline;
-    return name ? `Assigned by ${name}` : 'Tutor assignment';
-  };
   const tasks = plan.map((task) => {
     const id = task.payload.assignment_id;
     if (typeof id !== 'string') return task;
@@ -61,7 +62,7 @@ export function dashboardTasks(
     if (task.status === 'pending') represented.add(id);
     return {
       ...task,
-      byline: describe(assignment?.teacher_id),
+      byline: tutorAssignmentLabel(tutors, assignment?.teacher_id),
       resumeHref: assignment?.resumeHref ?? task.resumeHref,
       assignmentHref: `/assignments/${id}`,
     };
@@ -80,7 +81,7 @@ export function dashboardTasks(
       outsidePlan: true,
       resumeHref: a.resumeHref,
       assignmentHref: `/assignments/${a.id}`,
-      byline: describe(a.teacher_id),
+      byline: tutorAssignmentLabel(tutors, a.teacher_id),
     });
   }
   // Calendar progress is calculated separately, from the active plan alone.
