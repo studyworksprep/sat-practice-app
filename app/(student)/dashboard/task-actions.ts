@@ -48,6 +48,8 @@ import { buildWeakQueue, selectDrillQuestionIds } from '@/lib/practice/weak-queu
 import { recommendLessonsForSkills } from '@/lib/lesson/recommend';
 import { selectLessonPracticeQuestionIds } from '@/lib/lesson/practice-drill';
 import { partitionByTechnique } from '@/lib/practice/technique-match';
+import { fetchAll } from '@/lib/api/paginate';
+import { selectMixedQuestions } from '@/lib/plan/mixed-questions';
 import type { PlanTaskType } from '@/lib/plan/generate-plan';
 import type { Json } from '@/lib/types/database';
 import type { TypedSupabaseClient } from '@/lib/supabase/server';
@@ -258,23 +260,23 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       // difficulty ramping — the drill warms up before it bites;
       // unknown difficulty sorts last), display_code as the
       // deterministic tiebreak.
-      let candidateQuery = supabase
-        .from('questions_v2')
-        .select('id, display_code, skill_code')
-        .eq('is_published', true)
-        .eq('is_broken', false)
-        .is('deleted_at', null)
-        // Opt-in import batches are excluded from every auto-selector.
-        .eq('pool', 'standard')
-        .order('difficulty', { ascending: true, nullsFirst: false })
-        .order('display_code', { ascending: true })
-        .limit(500);
-      candidateQuery = skillCodes
-        ? candidateQuery.in('skill_code', skillCodes)
-        : candidateQuery.eq('domain_code', domainCode!);
-      const { data: candidateRows, error: qErr } = await candidateQuery;
-      if (qErr) fail(`Could not load questions: ${qErr.message}`);
-      let candidates = candidateRows ?? [];
+      const isMixed = payload.drill_role === 'mixed' || (task.taskType === 'practice_set' && !payload.drill_role);
+      const candidateQuery = () => {
+        const query = supabase
+          .from('questions_v2')
+          .select('id, display_code, skill_code, difficulty')
+          .eq('is_published', true)
+          .eq('is_broken', false)
+          .is('deleted_at', null)
+          .eq('pool', 'standard');
+        return skillCodes ? query.in('skill_code', skillCodes) : query.eq('domain_code', domainCode!);
+      };
+      // A cap on the easiest candidates can exclude entire levels and skills.
+      const order = [{ column: 'difficulty' }, { column: 'display_code' }, { column: 'id' }];
+      let candidates = isMixed
+        ? await fetchAll(candidateQuery, { order }).catch(() => fail('Could not load mixed practice questions.'))
+        : await candidateQuery().order('difficulty', { nullsFirst: false }).order('display_code').limit(500)
+          .then(({ data, error }) => error ? fail(`Could not load questions: ${error.message}`) : data ?? []);
       if (candidates.length === 0) {
         fail('No published questions match this drill right now.');
       }
@@ -315,17 +317,20 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       // drill should stretch the student before it repeats them. Within
       // a technique-narrowed drill that ordering applies to the matching
       // questions first, then to the top-up.
-      const { data: answered } = await supabase
+      const attempts = () => supabase
         .from('attempts')
         .select('question_id')
-        .eq('user_id', user.id)
-        .in('question_id', candidateIds);
+        .eq('user_id', user.id);
+      const answered = isMixed
+        ? await fetchAll(attempts, { order: { column: 'id' } })
+          .catch(() => fail('Could not load your practice history. Please try again.'))
+        : (await attempts().in('question_id', candidateIds)).data;
       const answeredSet = new Set((answered ?? []).map((r) => r.question_id));
       const freshFirst = (ids: string[]) => [
         ...ids.filter((id) => !answeredSet.has(id)),
         ...ids.filter((id) => answeredSet.has(id)),
       ];
-      const questionIds = [
+      const questionIds = isMixed ? selectMixedQuestions(candidates, count, skillCodes, answeredSet, matchingIds) : [
         ...freshFirst(candidateIds.filter((id) => matchingIds.has(id))),
         ...freshFirst(candidateIds.filter((id) => !matchingIds.has(id))),
       ].slice(0, count);
@@ -389,10 +394,13 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       try {
         await syncDecayedSkillReviews(supabase, user.id);
       } catch { /* best-effort — question items still flow */ }
-      const due = await getDueReviewItems(supabase, user.id, nowIso);
-      let questionIds = await buildReviewSessionQuestionIds(
-        supabase, user.id, due, REVIEW_TASK_SIZE,
-      );
+      let questionIds: string[];
+      try {
+        const due = await getDueReviewItems(supabase, user.id, nowIso);
+        questionIds = await buildReviewSessionQuestionIds(supabase, user.id, due, REVIEW_TASK_SIZE);
+      } catch {
+        fail('Could not load your review questions. Please try again.');
+      }
       if (questionIds.length === 0) {
         const scored = await buildWeakQueue(supabase, user.id);
         questionIds = selectDrillQuestionIds(scored, REVIEW_TASK_SIZE);

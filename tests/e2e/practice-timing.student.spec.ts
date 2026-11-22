@@ -64,6 +64,22 @@ test('practice session records per-question time and review shows the timing ban
   await page.getByRole('button', { name: /^submit( again)?$/i }).click();
   // Reveal appears only after the attempt row exists server-side.
   await expect(page.getByRole('button', { name: /reveal answer/i })).toBeVisible({ timeout: 10_000 });
+  // Resume with the saved answer. A failed Finish keeps the question open
+  // and allows a retry without answering again or revealing the solution.
+  await page.reload();
+  const finish = page.getByRole('button', { name: /^Finish →$/ });
+  await expect(finish).toBeVisible();
+  await page.route(page.url(), async route => {
+    if (route.request().headers()['next-action']) {
+      await route.abort();
+    } else {
+      await route.continue();
+    }
+  });
+  await finish.click();
+  const retry = page.getByRole('button', { name: 'Retry finish' });
+  await expect(retry).toBeVisible();
+  await page.unroute(page.url());
 
   // ── Post-submit segment flushes via the beacon ────────────────
   // Wait past the beacon's 500ms noise threshold, then leave the
@@ -74,7 +90,7 @@ test('practice session records per-question time and review shows the timing ban
     (res) => res.url().includes('/api/practice/time-ping') && res.request().method() === 'POST',
     { timeout: 20_000 },
   );
-  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await retry.click();
   const beaconRes = await beacon;
   const beaconBody = await beaconRes.json().catch(() => null);
   expect(beaconRes.status()).toBe(200);

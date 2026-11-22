@@ -448,30 +448,20 @@
       "block_type": "check",
       "content": {
         "allow_retry": true,
-        "prompt": "Keep both rows. On a new row, enter \\(ab\\). What is the product?",
-        "input": "numeric",
-        "answer": "54",
-        "hint": "The regression and definition leave both a and b available. Type ab on another row.",
-        "solution": "Use \\(a=15-b\\) and \\(a^2+b^2\\sim117\\).\nEnter \\(ab\\) on another row. Desmos displays \\(54\\).",
-        "explanation": "Either pair of solutions gives \\(ab=54\\). Desmos can use both values on later rows."
+        "prompt": "Two students get different fits for the same system. One gets \\((a,b)=(6,9)\\), and the other gets \\((9,6)\\). Which expression gives a different result for the two students?",
+        "choices": [
+          "\\(a+b\\)",
+          "\\(ab\\)",
+          "\\(a-b\\)",
+          "\\(a^2+b^2\\)"
+        ],
+        "correct_index": 2,
+        "hint": "Try each expression with both ordered pairs.",
+        "explanation": "With the first fit, \\(a-b=-3\\). With the second, \\(a-b=3\\). Swapping the values leaves the sum, product, and sum of squares unchanged."
       },
       "shared_prompt": "definition_and_regression_system",
       "calculator": {
-        "display": "open",
-        "mode": "preset",
-        "title": "Use a and b on a new row",
-        "initial_expressions": [
-          {
-            "id": "row_1",
-            "latex": "a=15-b"
-          },
-          {
-            "id": "row_2",
-            "latex": "a^2+b^2\\sim117"
-          }
-        ],
-        "editable": true,
-        "resettable": true
+        "display": "hidden"
       }
     },
     {
