@@ -505,6 +505,7 @@ export async function submitPracticeSession(
   }
   revalidatePath('/dashboard');
   revalidatePath('/practice/history');
+  if (sessionCriteria(session.filter_criteria)?.kind === 'srs_due') revalidatePath('/review');
   if (session.plan_task_id) revalidatePath('/plan');
 
   // Assignment completion. Submit Set is the explicit "I'm done"
