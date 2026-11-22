@@ -1,10 +1,7 @@
-// Plan overview — the one rendering of a whole plan, shared by the
-// wizard's preview step (docs/student-onboarding-and-plan-redesign-
-// 2026-09.md §3.2 step 6) and, in Phase 2, the /plan hub. Server
-// Component: rationale, phase strip, and the week-by-week task list
-// with the first `expandWeeks` weeks open and the rest behind native
-// <details> — no client state anywhere on the surface.
+// The intake preview shows the full outline. On the student hub each phase
+// is a tab, with the same server-rendered week details and task actions.
 
+import { PlanPhaseTabs } from './PlanPhaseTabs';
 import { taskProgress, weekFocus } from '@/lib/plan/outline';
 import Link from 'next/link';
 import { formatDate } from '@/lib/formatters';
@@ -124,6 +121,96 @@ export function PlanOverview({
       || taskScheduleOrder(a.payload) - taskScheduleOrder(b.payload));
   }
 
+  const weekCards = Array.from({ length: totalWeeks }, (_, w) => {
+    const list = byWeek.get(w) ?? [];
+    const phase = phaseFor(phases, w);
+    const dates = list.map((t) => t.scheduledDate).filter((d): d is string => Boolean(d)).sort();
+    const range =
+      dates.length > 0
+        ? `${formatDate(dates[0]) ?? dates[0]}${dates[0] !== dates[dates.length - 1] ? ` – ${formatDate(dates[dates.length - 1]) ?? dates[dates.length - 1]}` : ''}`
+        : '';
+    const done = list.filter((t) => t.status === 'completed').length;
+    const isNow = currentWeek === w;
+    const open = hub ? w === hub.openWeek : w < expandWeeks || isNow;
+    const skipped = list.filter((t) => t.status === 'skipped').length;
+    const focus = hub && weekFocus(list);
+    return (
+      <details id={hub ? `plan-week-${w + 1}` : undefined} key={w} className={`${s.week} ${isNow ? s.weekNow : ''}`} open={open}>
+        <summary className={s.weekSummary}>
+          <span className={s.weekHeading}><span className={s.weekTitle}>
+            Week {w + 1}
+            {isNow && <span className={s.nowPill}>This week</span>}
+          </span>
+          {focus && <span className={s.focus}>{focus}</span>}</span>
+          <span className={s.weekMeta}>
+            {[
+              !hub && phase ? PHASE_LABEL[phase.type] : '',
+              range,
+              list.length === 0
+                ? 'no tasks'
+                : hub && (done || skipped)
+                  ? taskProgress(done, list.length, skipped)
+                : done > 0
+                  ? `${done} of ${list.length} done`
+                  : `${list.length} task${list.length === 1 ? '' : 's'}`,
+            ].filter(Boolean).join(' · ')}
+          </span>
+        </summary>
+        <ul className={s.taskList}>
+          {list.map((t, i) => {
+            const why = planTaskWhy(t.payload);
+            const minutes = typeof t.payload.minutes === 'number' ? t.payload.minutes : null;
+            const completed = t.status === 'completed';
+            return (
+              <li key={t.id ?? `${w}-${i}`} className={`${s.task} ${completed ? s.taskDone : ''}`}>
+                <span className={`${s.typeTag} ${t.payload.assignment_id ? s.type_assigned : (s[`type_${t.taskType}`] ?? '')}`}>
+                  {t.payload.assignment_id && !t.byline ? 'Assigned' : (TYPE_LABEL[t.taskType] ?? 'Task')}
+                </span>
+                <span className={s.taskBody}>
+                  <span className={s.taskTitle}>{planTaskTitle(String(t.taskType), t.payload)}</span>
+                  {t.byline && <span className={s.taskWhy}>{t.byline}</span>}
+                  {why && <span className={s.taskWhy}>{why}</span>}
+                </span>
+                <div className={s.taskMeta}>
+                  {t.scheduledDate ? formatDate(t.scheduledDate) ?? t.scheduledDate : ''}
+                  {minutes != null ? ` · ~${minutes} min` : ''}
+                  {completed ? ' · done' : t.status === 'skipped' ? ' · skipped' : ''}
+                  {startAction && t.id && (t.status ?? 'pending') === 'pending' && (
+                    t.resumeHref ? (
+                      <Link href={t.resumeHref} className={s.startBtn}>Resume</Link>
+                    ) : (
+                      <form action={startAction} className={s.startForm}>
+                        <input type="hidden" name="task_id" value={t.id} />
+                        <button type="submit" className={s.startBtn}>{hub && t.scheduledDate && t.scheduledDate > hub.today ? 'Start early' : 'Start'}</button>
+                      </form>
+                    )
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </details>
+    );
+  });
+
+  // Group by actual membership so older plans with a gap keep every week reachable.
+  const groups = new Map<PlanPhase | null, number[]>();
+  if (hub && phases.length) {
+    weekCards.forEach((_, week) => {
+      const phase = phaseFor(phases, week);
+      const group = groups.get(phase);
+      if (group) group.push(week);
+      else groups.set(phase, [week]);
+    });
+  }
+  const panels = Array.from(groups, ([phase, weeks]) => ({
+    label: phase ? PHASE_LABEL[phase.type] : 'Other weeks',
+    summary: phase?.summary ?? '',
+    weeks,
+    content: <div className={s.weeks}>{weeks.map((w) => weekCards[w])}</div>,
+  }));
+
   return (
     <div className={s.root}>
       {!hub && <div className={s.summaryRow}>
@@ -137,7 +224,7 @@ export function PlanOverview({
 
       {explanation && !rationaleCollapsed && <p className={s.rationale}>{explanation}</p>}
 
-      {phases.length > 0 && (
+      {!hub && phases.length > 0 && (
         <ol className={s.phaseStrip} aria-label="Plan phases">
           {phases.map((p) => {
             const span = p.endWeek - p.startWeek + 1;
@@ -151,7 +238,7 @@ export function PlanOverview({
                 style={{ flexGrow: span }}
               >
                 <div className={s.phaseLabel}>
-                  {PHASE_LABEL[p.type]}{hub && isNow && ' · Current phase'}
+                  {PHASE_LABEL[p.type]}
                   <span className={s.phaseWeeks}>
                     {span === 1
                       ? `week ${p.startWeek + 1}`
@@ -172,80 +259,10 @@ export function PlanOverview({
         </details>
       )}
 
-      <div className={s.weeks}>
-        {Array.from({ length: totalWeeks }, (_, w) => {
-          const list = byWeek.get(w) ?? [];
-          const phase = phaseFor(phases, w);
-          const dates = list.map((t) => t.scheduledDate).filter((d): d is string => Boolean(d)).sort();
-          const range =
-            dates.length > 0
-              ? `${formatDate(dates[0]) ?? dates[0]}${dates[0] !== dates[dates.length - 1] ? ` – ${formatDate(dates[dates.length - 1]) ?? dates[dates.length - 1]}` : ''}`
-              : '';
-          const done = list.filter((t) => t.status === 'completed').length;
-          const isNow = currentWeek === w;
-          const open = hub ? w === hub.openWeek : w < expandWeeks || isNow;
-          const skipped = list.filter((t) => t.status === 'skipped').length;
-          const focus = hub && weekFocus(list);
-          return (
-            <details id={hub ? `plan-week-${w + 1}` : undefined} key={w} className={`${s.week} ${isNow ? s.weekNow : ''}`} open={open}>
-              <summary className={s.weekSummary}>
-                <span className={s.weekHeading}><span className={s.weekTitle}>
-                  Week {w + 1}
-                  {isNow && <span className={s.nowPill}>This week</span>}
-                </span>
-                {focus && <span className={s.focus}>{focus}</span>}</span>
-                <span className={s.weekMeta}>
-                  {[
-                    !hub && phase ? PHASE_LABEL[phase.type] : '',
-                    range,
-                    list.length === 0
-                      ? 'no tasks'
-                      : hub && (done || skipped)
-                        ? taskProgress(done, list.length, skipped)
-                      : done > 0
-                        ? `${done} of ${list.length} done`
-                        : `${list.length} task${list.length === 1 ? '' : 's'}`,
-                  ].filter(Boolean).join(' · ')}
-                </span>
-              </summary>
-              <ul className={s.taskList}>
-                {list.map((t, i) => {
-                  const why = planTaskWhy(t.payload);
-                  const minutes = typeof t.payload.minutes === 'number' ? t.payload.minutes : null;
-                  const completed = t.status === 'completed';
-                  return (
-                    <li key={t.id ?? `${w}-${i}`} className={`${s.task} ${completed ? s.taskDone : ''}`}>
-                      <span className={`${s.typeTag} ${t.payload.assignment_id ? s.type_assigned : (s[`type_${t.taskType}`] ?? '')}`}>
-                        {t.payload.assignment_id && !t.byline ? 'Assigned' : (TYPE_LABEL[t.taskType] ?? 'Task')}
-                      </span>
-                      <span className={s.taskBody}>
-                        <span className={s.taskTitle}>{planTaskTitle(String(t.taskType), t.payload)}</span>
-                        {t.byline && <span className={s.taskWhy}>{t.byline}</span>}
-                        {why && <span className={s.taskWhy}>{why}</span>}
-                      </span>
-                      <div className={s.taskMeta}>
-                        {t.scheduledDate ? formatDate(t.scheduledDate) ?? t.scheduledDate : ''}
-                        {minutes != null ? ` · ~${minutes} min` : ''}
-                        {completed ? ' · done' : t.status === 'skipped' ? ' · skipped' : ''}
-                        {startAction && t.id && (t.status ?? 'pending') === 'pending' && (
-                          t.resumeHref ? (
-                            <Link href={t.resumeHref} className={s.startBtn}>Resume</Link>
-                          ) : (
-                            <form action={startAction} className={s.startForm}>
-                              <input type="hidden" name="task_id" value={t.id} />
-                              <button type="submit" className={s.startBtn}>{hub && t.scheduledDate && t.scheduledDate > hub.today ? 'Start early' : 'Start'}</button>
-                            </form>
-                          )
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </details>
-          );
-        })}
-      </div>
+      {hub && phases.length > 0 && weekCards.length > 0 ? (
+        <PlanPhaseTabs key={`${currentWeek}-${panels.map((p) => p.weeks.join(',')).join('|')}`}
+          panels={panels} currentWeek={currentWeek} />
+      ) : <div className={s.weeks}>{weekCards}</div>}
     </div>
   );
 }

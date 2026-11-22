@@ -183,6 +183,24 @@ test.describe('onboarding intake', () => {
     await expect(page.getByRole('heading', { name: 'Your preparation so far' })).toBeVisible();
 
     await expect(page.getByRole('heading', { name: 'Week by week' })).toBeVisible();
+    const tabs = page.getByRole('tablist', { name: 'Study plan phases' });
+    const coverage = tabs.getByRole('tab', { name: 'Coverage' });
+    const focus = tabs.getByRole('tab', { name: 'Focus' });
+    const rehearsal = tabs.getByRole('tab', { name: 'Rehearsal' });
+    await expect(coverage).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#plan-week-1')).toBeVisible();
+    await focus.click();
+    await expect(page.getByRole('tabpanel', { name: 'Focus' })).toBeVisible();
+    await expect(page.locator('#plan-week-1')).toBeHidden();
+    await focus.press('ArrowRight');
+    await expect(rehearsal).toBeFocused();
+    await expect(rehearsal).toHaveAttribute('aria-selected', 'true');
+    const lastWeek = page.getByRole('tabpanel').locator('details').last();
+    const weekId = await lastWeek.getAttribute('id');
+    await coverage.click();
+    await page.goto(`/plan#${weekId}`);
+    await expect(rehearsal).toHaveAttribute('aria-selected', 'true');
+    await expect(lastWeek).toHaveAttribute('open', '');
     await page.getByText('Plan settings', { exact: true }).click();
     await expect(page.getByRole('button', { name: /Change .*days/ })).toBeVisible();
 
