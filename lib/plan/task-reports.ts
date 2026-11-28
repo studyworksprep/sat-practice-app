@@ -3,6 +3,10 @@ import { satisfiesActAssignmentScope } from '../practice/act-assignment-scope.ts
 import { parsePlanTaskId } from './student-task.ts';
 
 export function recordedTaskReport(type: string, status: string | null, completedVia: string | null) {
+  if (type === 'lesson' && status === 'completed' && completedVia?.startsWith('lesson:')) {
+    const lessonId = parsePlanTaskId(completedVia.slice(7));
+    return lessonId ? `/learn/${lessonId}/report` : undefined;
+  }
   const id = parsePlanTaskId(completedVia);
   if (status !== 'completed' || !id) return undefined;
   if (type === 'full_test') return `/practice/test/attempt/${id}/results`;
@@ -15,6 +19,7 @@ interface Assignment {
   assignment_type: string;
   test_type: string;
   practice_test_id: string | null;
+  lesson_id: string | null;
   act_source_test: string | null;
   created_at: string;
   sections: unknown;
@@ -39,6 +44,9 @@ export async function assignedTaskReports(db: TypedSupabaseClient, student: stri
       .order('finished_at', { ascending: false, nullsFirst: false }) : { data: [] },
   ]);
   const reports = new Map<string, string>();
+  for (const a of assignments) {
+    if (a.assignment_type === 'lesson' && a.lesson_id) reports.set(a.id, `/learn/${a.lesson_id}/report`);
+  }
   for (const session of sessions ?? []) {
     if (typeof session.assignment_id === 'string' && !reports.has(session.assignment_id))
       reports.set(session.assignment_id, `/practice/review/${session.id}`);

@@ -20,7 +20,6 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
-import { applyCheckAttempt } from '@/lib/lesson/runtime-progress.mjs';
 import { selectLessonPracticeQuestionIds } from '@/lib/lesson/practice-drill';
 import { markLessonAssignmentsComplete } from '@/lib/lesson/assignment-completion';
 import { enqueueLessonRetrieval } from '@/lib/review/queue';
@@ -69,61 +68,11 @@ async function loadProgress(supabase, lessonId, userId) {
 }
 
 export async function markBlockComplete(lessonId, blockId) {
-  const { user, supabase } = await requireUser();
-  const progress = await loadOrCreateProgress(supabase, lessonId, user.id);
-  const completedSet = new Set(progress.completed_blocks || []);
-  if (!completedSet.has(blockId)) {
-    completedSet.add(blockId);
-    await applyUpdates(supabase, lessonId, user.id, {
-      completed_blocks: [...completedSet],
-    });
-  }
-  return loadProgress(supabase, lessonId, user.id);
-}
-
-// Both submit actions persist EVERY attempt: the entry accumulates an
-// attempts array via applyCheckAttempt (shared with the slideshow's
-// local state). markComplete=false is the runtime's signal that this
-// attempt doesn't finalize the block — a wrong answer on a retry check
-// or a gated Desmos activity — so the block stays out of
-// completed_blocks and the Continue gate holds across a reload.
-export async function submitCheckAnswer(lessonId, blockId, selected, correct, options = {}) {
-  const markComplete = options?.markComplete !== false;
-  const { user, supabase } = await requireUser();
-  const progress = await loadOrCreateProgress(supabase, lessonId, user.id);
-  const completedSet = new Set(progress.completed_blocks || []);
-  if (markComplete) completedSet.add(blockId);
-  const answers = { ...(progress.check_answers || {}) };
-  answers[blockId] = applyCheckAttempt(answers[blockId], {
-    selected,
-    correct,
-    at: new Date().toISOString(),
+  const { supabase } = await requireUser();
+  const { error } = await supabase.rpc('record_lesson_step', {
+    p_lesson_id: lessonId, p_block_id: blockId, p_complete: true,
   });
-  await applyUpdates(supabase, lessonId, user.id, {
-    completed_blocks: [...completedSet],
-    check_answers: answers,
-  });
-  return loadProgress(supabase, lessonId, user.id);
-}
-
-export async function submitDesmosResult(lessonId, blockId, correct, options = {}) {
-  const markComplete = options?.markComplete !== false;
-  const { user, supabase } = await requireUser();
-  const progress = await loadOrCreateProgress(supabase, lessonId, user.id);
-  const completedSet = new Set(progress.completed_blocks || []);
-  if (markComplete) completedSet.add(blockId);
-  const answers = { ...(progress.check_answers || {}) };
-  answers[blockId] = applyCheckAttempt(answers[blockId], {
-    selected: null,
-    correct,
-    at: new Date().toISOString(),
-    type: 'desmos_interactive',
-  });
-  await applyUpdates(supabase, lessonId, user.id, {
-    completed_blocks: [...completedSet],
-    check_answers: answers,
-  });
-  return loadProgress(supabase, lessonId, user.id);
+  if (error) throw new Error(error.message);
 }
 
 export async function markLessonComplete(lessonId, planTaskId = null) {

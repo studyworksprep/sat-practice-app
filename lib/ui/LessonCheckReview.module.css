@@ -1,0 +1,37 @@
+.review { color: #182b40; margin: 1.5rem 0; }
+.review h2 { margin: 0; font-size: 1.35rem; }
+.score { margin: .4rem 0 1rem; color: #405167; }
+.controls { display: flex; flex-wrap: wrap; gap: .45rem; margin: 1rem 0; }
+.controls button { border: 1px solid #c4cfd9; border-radius: .5rem; padding: .45rem .8rem; background: white; color: #20354a; font: inherit; cursor: pointer; }
+.controls button[aria-pressed="true"] { background: #20354a; color: white; border-color: #20354a; }
+.section { margin-top: 1rem; }
+.section h3 { margin: 1.25rem 0 .45rem; font-size: 1rem; }
+.section h3 span, .note, .step { color: #546579; font-size: .85rem; }
+.row { border: 1px solid #d7dfe6; background: white; border-radius: .55rem; margin: .4rem 0; overflow: hidden; }
+.rowButton { width: 100%; display: grid; grid-template-columns: auto minmax(0,1fr) auto 1em; align-items: baseline; text-align: left; gap: .8rem; background: transparent; color: inherit; padding: .8rem 1rem; border: 0; cursor: pointer; font: inherit; }
+.rowButton:hover { background: #f5f8fa; }
+.rowButton:focus-visible { outline: 2px solid #305b85; outline-offset: -3px; }
+.label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.status { font-size: .85rem; font-weight: 600; }
+.detail { border-top: 1px solid #d7dfe6; padding: .15rem 1rem 1rem; line-height: 1.5; overflow-wrap: anywhere; }
+.version { padding-top: .9rem; }
+.version + .version { border-top: 1px solid #d7dfe6; margin-top: 1rem; }
+.prompt { font-weight: 600; }
+.figure { margin: .5rem 0; }
+.figure img { max-width: 100%; max-height: 18rem; object-fit: contain; }
+.context, .explanation { padding: .7rem .85rem; border-left: 3px solid #9db2c5; background: #f5f8fa; margin: .5rem 0; }
+.choices { padding-left: 2rem; }
+.choices li { padding: .1rem 0; }
+.history { border-block: 1px solid #d7dfe6; padding: .5rem 0; }
+.history > div { display: grid; grid-template-columns: minmax(8rem, max-content) 1fr; gap: .75rem; padding: .25rem 0; }
+.history dt { font-weight: 600; }
+.history dd, .expressions { margin: 0; }
+.typed, .expressions code { white-space: pre-wrap; }
+.good, .miss { display: inline-block; font-size: .8rem; margin-left: .65rem; font-weight: 600; }
+.good { color: #146441; }
+.miss { color: #973615; }
+@media(max-width: 640px) {
+  .rowButton { grid-template-columns: 1fr auto auto; gap: .25rem .6rem; }
+  .label { grid-column: 1 / -1; grid-row: 2; }
+  .history > div { grid-template-columns: 1fr; gap: 0; }
+}

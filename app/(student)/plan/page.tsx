@@ -116,7 +116,7 @@ export default async function PlanPage() {
     typeof t.payload.assignment_id === 'string' ? [t.payload.assignment_id] : []);
   const [{ data: assigned }, { data: roster }, { data: activeSessions }] = assignmentIds.length
     ? await Promise.all([
-        supabase.from('assignments_v2').select('id, teacher_id, assignment_type, test_type, practice_test_id, act_source_test, created_at, sections:filter_criteria->sections').in('id', assignmentIds),
+        supabase.from('assignments_v2').select('id, teacher_id, assignment_type, test_type, lesson_id, practice_test_id, act_source_test, created_at, sections:filter_criteria->sections').in('id', assignmentIds),
         supabase.from('teacher_student_assignments').select('teacher_id').eq('student_id', user.id),
         supabase.from('practice_sessions').select('id, current_position, question_ids, filter_criteria')
           .eq('user_id', user.id).eq('status', 'in_progress').gt('expires_at', now)

@@ -277,7 +277,7 @@ export default async function AssignmentDetailPage({ params }) {
           <PracticeTestView assignment={assignment} actResultsHref={actResultsHref} defaultTimeMultiplier={defaultTimeMultiplier} />
         )}
         {assignment.assignment_type === 'lesson' && (
-          <LessonView assignment={assignment} />
+          <LessonView assignment={assignment} completed={Boolean(enrolled.completed_at)} />
         )}
       </section>
     </main>
@@ -436,7 +436,7 @@ function PracticeTestView({ assignment, actResultsHref = null, defaultTimeMultip
   );
 }
 
-function LessonView({ assignment }) {
+function LessonView({ assignment, completed }) {
   const lesson = assignment.lesson;
   return (
     <section style={{
@@ -448,6 +448,9 @@ function LessonView({ assignment }) {
       </h2>
       {lesson?.description && (
         <p style={{ color: '#4b5563', margin: 0 }}>{lesson.description}</p>
+      )}
+      {completed && assignment.lesson_id && (
+        <Button href={`/learn/${assignment.lesson_id}/report`} style={{ alignSelf: 'flex-start' }}>View report</Button>
       )}
       {assignment.lesson_id && (
         <Button

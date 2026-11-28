@@ -51,6 +51,7 @@ import {
   parseDesmosInteractiveContent,
   validateDesmosSubmission,
 } from '@/lib/lesson/desmos-interactive.mjs';
+import { calculatorSubmission } from '@/lib/lesson/check-review.mjs';
 import { normalizeLessonFigure } from '@/lib/lesson/figure.mjs';
 import { indexSharedPrompts, sharedPromptIdFor } from '@/lib/lesson/editor-utils.mjs';
 import {
@@ -98,6 +99,7 @@ export function LessonSlideshow({
   calculatorStoragePrefix = 'lesson-desmos',
   // Optional call-to-action on the completion banner. The admin preview
   // leaves these unset so a read-only playthrough has no exit ramp.
+  reportHref = null,
   completionHref = null,
   completionLabel = 'Back to lessons',
   // Plan 5.2 — an optional node rendered as the completion banner's
@@ -126,7 +128,9 @@ export function LessonSlideshow({
     () => new Set(initialCompletedBlockIds),
   );
   const completedBlockIdsRef = useRef(new Set(initialCompletedBlockIds));
-  const progressWriteQueueRef = useRef(Promise.resolve());
+  const pendingWrites = useRef([]);
+  const writeInFlight = useRef(null);
+  const [writeFailed, setWriteFailed] = useState(false);
   const [checkAnswers, setCheckAnswers] = useState(initialCheckAnswers);
   const [isComplete, setIsComplete] = useState(initialIsComplete);
   const [isCompleting, setIsCompleting] = useState(false);
@@ -237,13 +241,32 @@ export function LessonSlideshow({
   })();
   const currentIsLocked = Boolean(lockReason);
 
-  const enqueueProgressWrite = useCallback((write) => {
-    if (typeof write !== 'function') return;
-    progressWriteQueueRef.current = progressWriteQueueRef.current
-      .catch(() => undefined)
-      .then(write);
-    return progressWriteQueueRef.current;
+  // A failed save stays at the front. Replaying an acknowledged submission
+  // is safe because its ID was created when the student clicked Check.
+  const flushWrites = useCallback(() => {
+    if (writeInFlight.current) return writeInFlight.current;
+    writeInFlight.current = Promise.resolve().then(async () => {
+      try {
+        while (pendingWrites.current.length) {
+          await pendingWrites.current[0]();
+          pendingWrites.current.shift();
+        }
+        setWriteFailed(false);
+        return true;
+      } catch {
+        setWriteFailed(true);
+        return false;
+      } finally {
+        writeInFlight.current = null;
+      }
+    });
+    return writeInFlight.current;
   }, []);
+
+  const enqueueProgressWrite = useCallback((write) => {
+    pendingWrites.current.push(write);
+    return flushWrites();
+  }, [flushWrites]);
 
   const recordBlocksComplete = useCallback((blockIds) => {
     if (reviewMode) return;
@@ -407,7 +430,8 @@ export function LessonSlideshow({
     setIsCompleting(true);
     setCompletionError(false);
     try {
-      if (onMarkComplete) await enqueueProgressWrite(onMarkComplete);
+      if (!await flushWrites()) return;
+      if (onMarkComplete) await onMarkComplete();
       setIsComplete(true);
     } catch {
       setCompletionError(true);
@@ -536,9 +560,11 @@ export function LessonSlideshow({
                   { markComplete: finalizes },
                 );
                 if (onSubmitCheck) {
+                  const id = crypto.randomUUID();
                   enqueueProgressWrite(() =>
                     onSubmitCheck(currentBlock.id, selected, correct, {
-                      markComplete: finalizes,
+                      markComplete: finalizes, id,
+                      revealed: solutionRevealed && Boolean(currentBlock.content.solution || currentBlock.content.explanation),
                     }),
                   );
                 }
@@ -563,7 +589,7 @@ export function LessonSlideshow({
               reviewMode={reviewMode}
               calculator={lessonCalculator}
               previousAnswer={checkAnswers[currentBlock.id]}
-              onResult={(isCorrect) => {
+              onResult={(isCorrect, expressions, revealed) => {
                 // For a require_success block, only a correct answer
                 // completes it (and so unlocks Continue) — an incorrect
                 // attempt leaves it locked so the learner can retry.
@@ -579,8 +605,9 @@ export function LessonSlideshow({
                   { markComplete },
                 );
                 if (onSubmitDesmos) {
+                  const id = crypto.randomUUID();
                   enqueueProgressWrite(() =>
-                    onSubmitDesmos(currentBlock.id, isCorrect, { markComplete }),
+                    onSubmitDesmos(currentBlock.id, isCorrect, { markComplete, id, expressions, revealed }),
                   );
                 }
                 recordAnswerNav(currentBlock, isCorrect);
@@ -718,6 +745,7 @@ export function LessonSlideshow({
           </div>
         )}
 
+      {writeFailed && <p role="alert">Some lesson work hasn’t saved. <button type="button" onClick={flushWrites}>Retry save</button></p>}
       {completionError && <p role="alert">Couldn’t save lesson completion. Try again.</p>}
 
       {!reviewMode && isComplete && (
@@ -726,62 +754,23 @@ export function LessonSlideshow({
             ✓
           </div>
           <div className={s.completeText}>Lesson complete</div>
-          {/* First-try accuracy, not final accuracy: retry checks are
-              always eventually correct, so counting the final answer
-              would read 100% for everyone. Copy is a draft pending the
-              tutor-team review (plan step 1.7). */}
-          {checkTally.answered > 0 && (
-            <>
-              <p className={s.completeScore}>
-                You got {checkTally.firstTryCorrect} of {checkTally.answered}{' '}
-                {checkTally.answered === 1 ? 'check' : 'checks'} right on the
-                first try.
-              </p>
-              {completionHighlights(checkTally).length > 0 && (
-                <ul className={s.completeHighlights}>
-                  {completionHighlights(checkTally).map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
-              )}
-              {checkTally.struggledBlocks.length > 0 && (
-                <p className={s.completeStruggled}>
-                  Worth another look:{' '}
-                  {checkTally.struggledBlocks
-                    .map((row) => `Step ${row.stepNumber}`)
-                    .join(', ')}
-                </p>
-              )}
-              <details className={s.completeBreakdown}>
-                <summary>Check-by-check breakdown</summary>
-                <table className={s.breakdownTable}>
-                  <thead>
-                    <tr>
-                      <th scope="col">Check</th>
-                      <th scope="col">First try</th>
-                      <th scope="col">Tries</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {checkTally.perBlock.map((row) => (
-                      <tr key={row.blockId}>
-                        <td>
-                          Step {row.stepNumber}
-                          {row.blockType === 'desmos_interactive'
-                            ? ' (Desmos)'
-                            : ''}
-                        </td>
-                        <td>{row.firstTryCorrect ? '✓' : '✗'}</td>
-                        <td>{row.attempts}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </details>
-            </>
+          {checkTally.knownChecks > 0 && (
+            <p className={s.completeScore}>
+              You got {checkTally.correctChecks} of {checkTally.knownChecks} knowledge checks right on the first try.
+            </p>
           )}
-          {(completionPrimary || completionHref) && (
+          {completionHighlights(checkTally).length > 0 && (
+            <ul className={s.completeHighlights}>
+              {completionHighlights(checkTally).map(line => <li key={line}>{line}</li>)}
+            </ul>
+          )}
+          {(reportHref || completionPrimary || completionHref) && (
             <div className={s.completeCtaRow}>
+              {reportHref && <a href={reportHref} className={s.completeCta}>View report</a>}
+              {reportHref && checkTally.perBlock.some(row => row.blockType === 'check' &&
+                (row.firstTryCorrect === false || row.finalCorrect === false)) && (
+                <a href={reportHref + '?view=missed'} className={`${s.completeCta} ${s.completeCtaSecondary}`}>Review missed checks</a>
+              )}
               {completionPrimary}
               {completionHref && (
                 <a
@@ -1343,7 +1332,7 @@ function DesmosInteractiveBlock({
       );
       setProgressiveHintHtml(result.progressiveHintHtml || '');
       setSolutionHtml(result.solutionHtml || '');
-      onResult?.(true);
+      onResult?.(true, calculatorSubmission(entered), Boolean(result.solutionHtml));
     } else {
       setFeedbackState('retry');
       setFeedbackHtml(
@@ -1351,7 +1340,7 @@ function DesmosInteractiveBlock({
       );
       setProgressiveHintHtml(result.progressiveHintHtml || '');
       setSolutionHtml(result.solutionHtml || '');
-      onResult?.(false);
+      onResult?.(false, calculatorSubmission(entered), Boolean(result.solutionHtml));
       if (result.solutionHtml && content.progression?.require_success) {
         onUnlock?.();
       }

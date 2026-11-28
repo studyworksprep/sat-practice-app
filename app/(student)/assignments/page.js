@@ -230,9 +230,10 @@ function CompletedCard({ row }) {
   const finishedLabel = row.student_completed_at
     ? formatDate(row.student_completed_at)
     : null;
+  const lessonReport = row.assignment_type === 'lesson' && row.lesson_id ? `/learn/${row.lesson_id}/report` : null;
   const href = row.reportSessionId
     ? `/practice/review/${row.reportSessionId}`
-    : `/assignments/${row.id}`;
+    : lessonReport ?? `/assignments/${row.id}`;
 
   return (
     <Link href={href} className={s.completedCard}>
@@ -260,7 +261,7 @@ function CompletedCard({ row }) {
         <div className={s.completedNote}>Lesson completed</div>
       )}
       <div className={s.completedFooter}>
-        {row.reportSessionId ? 'View report →' : 'View assignment →'}
+        {row.reportSessionId || lessonReport ? 'View report →' : 'View assignment →'}
       </div>
     </Link>
   );
