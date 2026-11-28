@@ -378,7 +378,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
   let lessonAnswered = 0;
   let lessonFirstTry = 0;
   for (const stats of lessonStatsByStudent.values()) {
-    lessonAnswered += stats.answered;
+    lessonAnswered += stats.tracked;
     lessonFirstTry += stats.firstTryCorrect;
   }
   const lessonFirstTryPctCohort =
@@ -558,9 +558,9 @@ export default async function TutorAssignmentDetailPage({ params }) {
                         )
                       : null;
                   const lessonFirstTryPct =
-                    isLesson && (stu.lesson?.answered ?? 0) > 0
+                    isLesson && (stu.lesson?.tracked ?? 0) > 0
                       ? Math.round(
-                          (stu.lesson.firstTryCorrect / stu.lesson.answered) * 100,
+                          (stu.lesson.firstTryCorrect / stu.lesson.tracked) * 100,
                         )
                       : null;
                   return (

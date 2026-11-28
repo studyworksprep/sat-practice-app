@@ -5256,6 +5256,10 @@ export type Database = {
         }
         Returns: number
       }
+      record_lesson_step: {
+        Args: { p_lesson_id: string; p_block_id: string; p_complete: boolean; p_expected?: Json; p_entry?: Json }
+        Returns: boolean
+      }
       complete_study_plan_lesson: {
         Args: { p_lesson_id: string; p_task_id: string }
         Returns: undefined

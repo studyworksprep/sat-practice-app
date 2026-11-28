@@ -12,13 +12,12 @@ import { LessonPracticeButton } from './LessonPracticeButton';
 import {
   createLessonPracticeDrill,
   markBlockComplete,
-  submitCheckAnswer,
-  submitDesmosResult,
   markLessonComplete,
 } from './actions';
 
 export function LessonViewerInteractive({
   lessonId,
+  submitByBlock,
   planTaskId = null,
   blocks,
   initialCompletedBlockIds,
@@ -41,15 +40,16 @@ export function LessonViewerInteractive({
       initialIsComplete={initialIsComplete}
       onMarkBlockComplete={(blockId) => markBlockComplete(lessonId, blockId)}
       onSubmitCheck={(blockId, selected, correct, options) =>
-        submitCheckAnswer(lessonId, blockId, selected, correct, options)
+        submitByBlock[blockId](selected, correct, options)
       }
       onSubmitDesmos={(blockId, correct, options) =>
-        submitDesmosResult(lessonId, blockId, correct, options)
+        submitByBlock[blockId](null, correct, options)
       }
       onMarkComplete={() => markLessonComplete(lessonId, planTaskId)}
       questionLinkHref={(qid) => `/practice/${qid}`}
       debugMode={debug}
       calculatorStoragePrefix={`lesson-desmos:${lessonId}`}
+      reportHref={`/learn/${lessonId}/report`}
       completionHref={planTaskId ? '/plan' : '/learn'}
       completionLabel={planTaskId ? 'Back to Study Plan' : 'Back to Learn'}
       completionPrimary={practiceCta}

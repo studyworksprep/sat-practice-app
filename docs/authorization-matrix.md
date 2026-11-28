@@ -74,7 +74,8 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/users/codes/actions.js` | `createTeacherCode`, `revokeTeacherCode`, `inviteStudent`, `revokeStudentInvite` | requireRole[admin] |
 | `app/(student)/assignments/[id]/actions.js` | `startAssignmentPractice`, `startAssignmentActTest` | requireUser + rateLimit |
 | `app/(student)/dashboard/task-actions.ts` | `startPlanTask`, `markTaskDone` | requireUser + rateLimit |
-| `app/(student)/learn/[lessonId]/actions.js` | `markBlockComplete`, `submitCheckAnswer`, `submitDesmosResult`, `markLessonComplete`, `createLessonPracticeDrill` | requireUser + rateLimit |
+| `app/(student)/learn/[lessonId]/actions.js` | `markBlockComplete`, `markLessonComplete`, `createLessonPracticeDrill` | requireUser + rateLimit |
+| `app/(student)/learn/[lessonId]/page.js` | — | requireUser |
 | `app/(student)/notes/actions.ts` | `createNote`, `updateNote`, `deleteNote`, `upsertNoteForQuestion` | requireUser |
 | `app/(student)/plan/actions.ts` | `adjustPlanAction`, `rebuildPlanAction` | requireUser |
 | `app/(student)/practice/start/actions.js` | `countAvailable`, `createSession`, `countAvailableAct`, `createActSession` | requireUser + rateLimit |
@@ -131,4 +132,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_22 route handlers, 78 server-action modules enumerated._
+_22 route handlers, 79 server-action modules enumerated._

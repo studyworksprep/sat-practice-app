@@ -8,6 +8,9 @@
 // — the legacy viewer kicked off the create from a useEffect,
 // which raced with the first markBlockComplete on fast clickers.
 
+import { createHash } from 'node:crypto';
+import { reviewQuestions } from '@/lib/lesson/check-review.mjs';
+import { recordLessonAnswer } from '@/lib/lesson/record-answer';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
@@ -112,6 +115,17 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
     }
   }
 
+  // Each action closes over the exact authored question this page delivered.
+  // Unrelated slides and calculator state stay out of each submission.
+  const submitByBlock = Object.fromEntries([...reviewQuestions(blocks)].map(([blockId, question]) => {
+    const version = createHash('sha256').update(JSON.stringify(question)).digest('hex');
+    async function submit(selected, correct, options) {
+      'use server';
+      await recordLessonAnswer(lessonId, blockId, question, version, selected, correct, options);
+    }
+    return [blockId, submit];
+  }));
+
   return (
     <main className={s.viewerPage}>
       <nav className={s.breadcrumb}>
@@ -149,6 +163,7 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
 
       <LessonViewerInteractive
         lessonId={lessonId}
+        submitByBlock={submitByBlock}
         planTaskId={parsePlanTaskId(sp.planTask)}
         blocks={blocks}
         initialCompletedBlockIds={resolvedProgress.completedBlockIds}

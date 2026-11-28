@@ -5,6 +5,8 @@
 // module the rest of the assignment detail uses.
 
 import Link from 'next/link';
+import { LessonCheckReview } from '@/lib/ui/LessonCheckReview';
+import type { buildCheckReview } from '@/lib/lesson/check-review.mjs';
 import { formatDate } from '@/lib/formatters';
 import s from './AssignmentDetail.module.css';
 
@@ -14,26 +16,15 @@ export interface LessonRollupRow {
   blockType: string;
   label: string;
   attemptedCount: number;
+  trackedCount: number;
   firstTryCount: number;
   struggledCount: number;
   avgAttempts: number | null;
 }
 
-export interface LessonCheckRow {
-  blockId: string;
-  stepNumber: number;
-  blockType: string;
-  label: string;
-  attempted: boolean;
-  attempts: number;
-  firstTryCorrect: boolean | null;
-  finalCorrect: boolean | null;
-  struggled: boolean;
-}
-
 function rollupTone(row: LessonRollupRow): string {
-  if (row.attemptedCount === 0) return s.qStatusPending;
-  const ratio = row.firstTryCount / row.attemptedCount;
+  if (row.trackedCount === 0) return s.qStatusPending;
+  const ratio = row.firstTryCount / row.trackedCount;
   if (ratio >= 0.8) return s.qStatusCorrect;
   if (ratio >= 0.5) return s.qStatusOk;
   return s.qStatusWrong;
@@ -66,7 +57,8 @@ export function LessonChecksRollupSection({
           const statusText =
             row.attemptedCount === 0
               ? `0 of ${studentCount} attempted`
-              : `${row.firstTryCount} of ${row.attemptedCount} first try${
+              : row.trackedCount === 0 ? 'First try unavailable'
+              : `${row.firstTryCount} of ${row.trackedCount} first try${
                   row.struggledCount > 0
                     ? ` · ${row.struggledCount} struggled`
                     : ''
@@ -105,13 +97,13 @@ export function LessonChecksRollupSection({
 }
 
 // Full per-student lesson report page body: header, progress stats,
-// and the per-check table (first try / tries / final per block).
+// and the shared expandable question review.
 export function LessonStudentReport({
   title,
   studentName,
   studentHref,
   backHref,
-  rows,
+  review,
   totalBlocks,
   completedBlocksCount,
   completedAt,
@@ -122,7 +114,7 @@ export function LessonStudentReport({
   studentName: string | null;
   studentHref: string;
   backHref: string;
-  rows: LessonCheckRow[];
+  review: ReturnType<typeof buildCheckReview>;
   totalBlocks: number;
   completedBlocksCount: number;
   completedAt: string | null;
@@ -133,9 +125,7 @@ export function LessonStudentReport({
   /** Optional control beside the title: the Reviewed checkbox. */
   headerExtra?: React.ReactNode;
 }) {
-  const answered = rows.filter((r) => r.attempted);
-  const firstTryCorrect = answered.filter((r) => r.firstTryCorrect).length;
-  const struggledSteps = rows.filter((r) => r.struggled);
+  const answered = review.rows.filter(r => r.attempted);
   const progressPct =
     totalBlocks > 0
       ? Math.round((completedBlocksCount / totalBlocks) * 100)
@@ -183,26 +173,7 @@ export function LessonStudentReport({
         <div className={s.statTile}>
           <div className={s.statLabel}>Checks answered</div>
           <div className={s.statValue}>
-            {answered.length} / {rows.length}
-          </div>
-        </div>
-        <div
-          className={`${s.statTile} ${
-            answered.length > 0 && firstTryCorrect / answered.length >= 0.8
-              ? s.statTile_good
-              : ''
-          }`}
-        >
-          <div className={s.statLabel}>First try</div>
-          <div className={s.statValue}>
-            {answered.length > 0
-              ? `${Math.round((firstTryCorrect / answered.length) * 100)}%`
-              : '—'}
-          </div>
-          <div className={s.statSub}>
-            {answered.length > 0
-              ? `${firstTryCorrect} of ${answered.length} checks`
-              : 'No checks answered yet'}
+            {answered.length} / {review.rows.length}
           </div>
         </div>
         <div className={s.statTile}>
@@ -210,79 +181,10 @@ export function LessonStudentReport({
           <div className={s.statValue}>
             {completedAt ? formatDate(completedAt) : '—'}
           </div>
-          {struggledSteps.length > 0 && (
-            <div className={s.statSub}>
-              Struggled:{' '}
-              {struggledSteps.map((r) => `Step ${r.stepNumber}`).join(', ')}
-            </div>
-          )}
         </div>
       </div>
 
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div>
-            <div className={s.h2}>Checks</div>
-            <div className={s.cardHint}>
-              Every check in lesson order — whether the first try landed,
-              how many tries it took, and where things ended up.
-            </div>
-          </div>
-        </div>
-        <div className={s.tableWrap}>
-          <table className={s.table}>
-            <thead>
-              <tr>
-                <th className={s.thNum}>Step</th>
-                <th className={s.th}>Check</th>
-                <th className={s.thNum}>First try</th>
-                <th className={s.thNum}>Tries</th>
-                <th className={s.thNum}>Final</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.blockId} className={s.row}>
-                  <td className={s.tdNum}>{row.stepNumber}</td>
-                  <td className={s.td}>
-                    {row.label}
-                    {row.blockType === 'desmos_interactive' && (
-                      <span className={s.muted}> · Desmos</span>
-                    )}
-                  </td>
-                  {row.attempted ? (
-                    <>
-                      <td className={s.tdNum}>
-                        <span
-                          className={`${s.accBadge} ${
-                            row.firstTryCorrect ? s.accGood : s.accBad
-                          }`}
-                        >
-                          {row.firstTryCorrect ? '✓' : '✗'}
-                        </span>
-                      </td>
-                      <td className={s.tdNum}>{row.attempts}</td>
-                      <td className={s.tdNum}>
-                        <span
-                          className={`${s.accBadge} ${
-                            row.finalCorrect ? s.accGood : s.accBad
-                          }`}
-                        >
-                          {row.finalCorrect ? '✓' : '✗'}
-                        </span>
-                      </td>
-                    </>
-                  ) : (
-                    <td className={s.td} colSpan={3}>
-                      <span className={s.muted}>Not answered</span>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <LessonCheckReview review={review} tutor />
     </main>
   );
 }

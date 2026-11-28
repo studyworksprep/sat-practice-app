@@ -30,7 +30,8 @@ import { AssignmentReport } from '@/lib/practice/AssignmentReport';
 import { actTestAssignmentTitle } from '@/lib/practice/act-form-names';
 import { ReviewedCheckbox } from '@/lib/tutor/ReviewedCheckbox';
 import { loadReviewState } from '@/lib/tutor/assignment-review-state';
-import { buildLessonCheckRows, resolveLessonProgress } from '@/lib/lesson/progress-report.mjs';
+import { buildCheckReview } from '@/lib/lesson/check-review.mjs';
+import { resolveLessonProgress } from '@/lib/lesson/progress-report.mjs';
 import { LessonStudentReport } from '../../LessonProgressSections';
 
 export const dynamic = 'force-dynamic';
@@ -144,7 +145,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
         studentName={ownerName}
         studentHref={ownerHomeHref}
         backHref={`/tutor/assignments/${assignmentId}`}
-        rows={buildLessonCheckRows(blocks, resolved.checkAnswers)}
+        review={buildCheckReview(blocks, lessonProgress?.check_answers ?? {})}
         totalBlocks={blocks.length}
         completedBlocksCount={resolved.completedBlockIds.length}
         completedAt={resolved.completedAt ?? junction.completed_at ?? null}
